@@ -9,7 +9,7 @@
     <meta name="robots" content="noindex,nofollow">
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
-    <link type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{min}}.js"></script>
@@ -21,8 +21,10 @@
     <script type="text/javascript" src="scripts/zlib-crc32{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-min.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image-min.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/webm-writer.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    {{{customJSTags}}}
 </head>
 <body style="overflow:hidden;background-color:black">
     <div id=p11 class="noselect" style="overflow:hidden">
@@ -123,6 +125,7 @@
         var domainUrl = '{{{domainurl}}}';
         var urlargs;
         var term = null;
+        var termimage = null;
 
         // Streaming values
         var ws = null;
@@ -1100,14 +1103,16 @@
         function setupXTerm() {
             // Setup the terminal
             if (term != null) { term.dispose(); }
+            termimage = new ImageAddon.ImageAddon();
             term = new Terminal();
+            term.loadAddon(termimage);
             term.open(Q('XTermParent'));
             term.resize(80, 25);
             //term.setOption('convertEol', true); // Consider \n to be \r\n, this should be taken care of by "termios"
         }
 
         function clearXTerm() {
-            if (term != null) { term.dispose(); term = null; }
+            if (term != null) { term.dispose(); term = termimage = null; }
         }
 
         function writeXTerm(data) {

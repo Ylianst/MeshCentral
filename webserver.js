@@ -59,6 +59,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Setup WebAuthn / FIDO2
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
+    if (process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) {
+        obj.httpsProxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+    }
+
     // Variables
     obj.args = args;
     obj.parent = parent;
@@ -870,6 +874,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return parent.config.domains[''];
     }
 
+    function parseAllowedFramingOrigins(val) {
+        if (val == null) return [];
+        var arr = [];
+        if (Array.isArray(val)) { arr = val.slice(); } else if (typeof val == 'string') { arr = val.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; }); } else { return []; }
+        var out = [];
+        for (var i = 0; i < arr.length; i++) {
+            var o = arr[i].trim().replace(/\/+$/, '');
+            if (o.length === 0) continue;
+            if (o.indexOf('https://') === 0 || o.indexOf('http://') === 0) { out.push(o); }
+        }
+        return out;
+    }
+
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -902,7 +919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
-                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
+                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + (domain.authstrategies.oidc.issuer.end_session_endpoint.indexOf('?') == -1 ? '?' : '&') + 'post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
                 }
@@ -1456,6 +1473,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const sec = parent.decryptSessionData(req.session.e);
             sec.rtuser = xusername;
             sec.rtpass = xpassword;
+            sec.rtreset = true;
             req.session.e = parent.encryptSessionData(sec);
 
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1713,7 +1731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const sec = parent.decryptSessionData(req.session.e);
 
         // Check everything is ok
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false) || (sec.rtreset === true));
         if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof sec.rtuser != 'string') || (typeof sec.rtpass != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
             delete req.session.e;
@@ -3220,6 +3238,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Custom files (CSS and JS)
+                var customFiles = '';
+                if (domain.customFiles != null) { 
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+                } else if (domain.customfiles != null) {
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+                }
+
                 // Server features
                 var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
@@ -3247,9 +3273,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var webstateJSON = JSON.parse(webstate);
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
                 } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                } else if (domain.sitestyle == 3) {
                     uiViewMode = 'default3';
                 }
                 // Refresh the session
@@ -3267,10 +3293,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     serverfeatures: serverFeatures,
                     features: allFeatures.features,
                     features2: allFeatures.features2,
+                    features3: allFeatures.features3,
                     sessiontime: (args.sessiontime) ? args.sessiontime : 60,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
                     customui: customui,
+                    customFiles: customFiles,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
                     footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, {
                         'serverversion': obj.parent.currentVer,
@@ -3289,8 +3317,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
-                    webrtcconfig: webRtcConfig
-                }, dbGetFunc.req, domain), user);
+                    webrtcconfig: webRtcConfig,
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -3340,12 +3369,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.getDomainUserFeatures = function (domain, user, req) {
         var features = 0;
         var features2 = 0;
+        var features3 = 0;
         if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
         if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
         if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
         if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
         if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
+        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null) || (parent.config.settings.allowedframingorigins != null) || (domain.allowedframingorigins != null)) { features += 0x00000020; } // Allow site within iframe
         if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
         if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
         // 0x00000100 --> This feature flag is free for future use.
@@ -3388,7 +3418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
         if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
-        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || (domain.passwordrequirements.logintokens.indexOf(user._id) >= 0)))) { features2 += 0x00000080; } // Indicates login tokens are allowed
+        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || ((domain.passwordrequirements.logintokens.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) >= 0)) )))) { features2 += 0x00000080; } // Indicates login tokens are allowed
         if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
         if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
         if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
@@ -3412,13 +3442,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
-        return { features: features, features2: features2 };
+        if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
+        if ((typeof domain.desktop == 'object') && (domain.desktop.disableconnectall == true)) { features3 += 0x00000001; } // Disable "Connect All" button when multiple sessions are active on a device
+        return { features: features, features2: features2, features3: features3 };
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         parent.debug('web', 'handleRootRequestLogin()');
         var features = 0;
-        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string'))) { features += 32; } // Allow site within iframe
+        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string') || (parent.config.settings.allowedframingorigins != null) || (domain != null && domain.allowedframingorigins != null))) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         var loginmode = 0;
@@ -3487,6 +3519,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var customui = '';
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+        // Custom files (CSS and JS)
+        var customFiles = '';
+        if (domain.customFiles != null) { 
+            customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+        } else if (domain.customfiles != null) {
+            customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+        }
+
         // Get two-factor screen timeout
         var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
         if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
@@ -3508,6 +3548,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Render the login page
+        // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
+        var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
+        if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl)) {
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttoniconurl;
+                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl2x)) {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl2x + ' 2x';
+                } else {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl + ' 2x';
+                }
+            } else {
+                switch (domain.authstrategies.oidc.custom.preset) {
+                    case 'azure':
+                        oidcButtonIcon = "images/login/azure32.png";
+                        oidcButtonIcon2x = "images/login/azure64.png 2x";
+                        break;
+                    case 'google':
+                        oidcButtonIcon = "images/login/google32.png";
+                        oidcButtonIcon2x = "images/login/google64.png 2x";
+                        break;
+                    default:
+                        oidcButtonIcon = "images/login/oidc32.png";
+                        oidcButtonIcon2x = "images/login/oidc64.png 2x";
+                }
+            }
+
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
+                oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
+            }
+        }
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
@@ -3525,7 +3595,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
-                footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, {
+                customFiles: customFiles,
+                footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
                     'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -3536,7 +3607,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
-                flashErrors: JSON.stringify(flashErrors),
+                flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
                 passhint: passhint,
 
                 welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {
@@ -3558,6 +3629,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
+                oidcButtonText: oidcButtonText || '',
+                oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
+                oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
@@ -4105,11 +4179,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                require('child_process').exec(process.argv[0] + ' translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
                     delete obj.pendingTranslation;
-                    //console.log('error', error);
-                    //console.log('stdout', stdout);
-                    //console.log('stderr', stderr);
+                    if (error) { console.log('Server translation error', error); }
+                    // console.log('stdout', stdout);
+                    if (stderr) { console.log('Server translation stderr', stderr); }
                     //console.log('Server restart...'); // Perform a server restart
                     //process.exit(0);
                     console.log('Server translation completed.');
@@ -4518,7 +4592,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
                         try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
                     });
-                }
+                });
                 res.send('');
             });
         });
@@ -4760,7 +4834,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
                             try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
                         }
-                    }
+                    });
                 }
             } else {
                 // Send a notification
@@ -4826,7 +4900,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
                     }
                 });
-            }
+            });
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
@@ -6703,7 +6777,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Start a second agent-only server if needed
         if (obj.args.agentport) {
             var agentPortTls = true;
-            if (obj.args.tlsoffload != null) { agentPortTls = false; }
+            if (obj.args.tlsoffload != null && obj.args.tlsoffload != false) { agentPortTls = false; }
             if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
             if (obj.certificates.webdefault == null) { agentPortTls = false; }
 
@@ -6930,14 +7004,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Finish setup security headers
+            var cspBase = "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'";
+            if (hasAllowedFramingOrigins) {
+                var frameAncestors = "'self'" + (framingOrigins.length > 0 ? ' ' + framingOrigins.join(' ') : '');
+                cspBase += "; frame-ancestors " + frameAncestors;
+            }
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'"
+                'Content-Security-Policy': cspBase
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
-            if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
+            if (hasAllowedFramingOrigins) {
+                if (framingOrigins.length === 0) { headers['X-Frame-Options'] = 'sameorigin'; }
+            } else if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) {
+                headers['X-Frame-Options'] = 'sameorigin';
+            }
             if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
 
             // If this domain has configured headers, add them. If a header is set to null, remove it.
@@ -7796,6 +7879,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
                 }
+                
+               // Theme Pack Override Middleware
+               obj.app.use(url, function (req, res, next) {
+                if (req.method !== 'GET') return next();
+                var domain = getDomain(req);
+                // Serve theme pack files if domain has a theme pack configured
+                if (domain && domain.themepack) {
+                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
+                    // Prevent directory traversal
+                    if (themeFilePath.indexOf('..') >= 0) return next();
+
+                    obj.fs.stat(themeFilePath, function (err, stats) {
+                        if (err || !stats.isFile()) return next();
+                        res.sendFile(themeFilePath);
+                    });
+                } else {
+                    next();
+                }
+            });
 
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
                 obj.app.use(url, function(req, res, next){
@@ -7921,6 +8023,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GitHubStrategy = require('passport-github2');
             let options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
             if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
+            //override passport-github2 defaults that point to github.com with urls specified by user
+            if (typeof domain.authstrategies.github.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.github.authorizationurl; }
+            if (typeof domain.authstrategies.github.tokenurl == 'string') { options.tokenURL = domain.authstrategies.github.tokenurl; }
+            if (typeof domain.authstrategies.github.userprofileurl == 'string') { options.userProfileURL = domain.authstrategies.github.userprofileurl; }
+            if (typeof domain.authstrategies.github.useremailurl == 'string') { options.userEmailURL = domain.authstrategies.github.useremailurl; }
             parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + JSON.stringify(options));
             passport.use('github-' + domain.id, new GitHubStrategy(options,
                 function (token, tokenSecret, profile, cb) {
@@ -7946,8 +8053,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
                     var user = null;
                     if (userex != null) {
-                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                        if (typeof userex.email == 'string') { user.email = userex.email; }
+                        var user = { sid: '~azure:' + userex.unique_name.toLowerCase(), name: userex.name, strategy: 'azure' };
+                        if (typeof userex.email == 'string') { user.email = userex.email.toLowerCase(); }
                     }
                     return done(null, user);
                 }
@@ -8088,10 +8195,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup Strategy Options
             strategy.custom.scope = obj.common.convertStrArray(strategy.custom.scope, ' ')
-            if (strategy.custom.scope.length > 1) {
-                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': strategy.custom.scope } })
+            if (strategy.custom.scope.length > 0) {
+                strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': strategy.custom.scope });
             } else {
-                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': ['openid', 'profile', 'email'] } })
+                strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
             }
             if (typeof strategy.groups == 'object') {
                 let groupScope = strategy.groups.scope || null
@@ -8104,6 +8211,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
+            if (obj.httpsProxyAgent) {
+                // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // add using environment variables if needs be not here
+                strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
+            }
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
@@ -8129,7 +8240,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!strategy.client.redirect_uri) {
                 strategy.client.redirect_uri = origin + url + 'auth-oidc-callback';
             }
-            if (!strategy.client.post_logout_redirect_uri) {
+            if (!strategy.client.post_logout_redirect_uri && strategy.client.post_logout_redirect_uri !== false) {
                 strategy.client.post_logout_redirect_uri = origin + url + 'login';
             }
 
@@ -8138,7 +8249,35 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.options = Object.assign(strategy.options, { 'client': client, sessionKey: 'oidc-' + domain.id });
             strategy.client = client.metadata
             strategy.obj.client = client
-
+            
+            // Validate OIDC Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttoniconurl);
+                    } else {
+                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl);
+                        strategy.custom.buttoniconurl = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttoniconurl);
+                    strategy.custom.buttoniconurl = null;
+                }
+            }
+            // Validate OIDC 2x Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl2x)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl2x)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl2x, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttoniconurl2x);
+                    } else {
+                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl2x);
+                        strategy.custom.buttoniconurl2x = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttoniconurl2x);
+                    strategy.custom.buttoniconurl2x = null;
+                }
+            }
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
@@ -8203,31 +8342,77 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
-            function oidcCallback(tokenset, profile, verified) {
+            function oidcCallback(tokenset, profile, done) {
+                // Handle case where done might not be the third parameter
+                if (typeof done !== 'function') {
+                    // OpenID Connect strategy calls with (tokenset, done) instead of (tokenset, profile, done)
+                    if (typeof profile === 'function') {
+                        done = profile;
+                        profile = null;
+                    } else {
+                        parent.debug('error', 'OIDC: Unable to find callback function in parameters');
+                        return;
+                    }
+                }
+
+                // If profile is null/undefined, extract user info from the tokenset
+                if (!profile && tokenset && tokenset.id_token) {
+                    try {
+                        // Simple JWT decoder to extract user claims from id_token
+                        const parts = tokenset.id_token.split('.');
+                        if (parts.length === 3) {
+                            const payload = parts[1];
+                            const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+                            const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
+                            if (decoded) {
+                                profile = decoded;
+                            }
+                        }
+                    } catch (err) {
+                        parent.debug('error', `OIDC: Failed to decode id_token: ${err.message}`);
+                    }
+                }
+
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
                 let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
-                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
-                user.name = obj.common.validateString(profile.name) ? profile.name : null;
-                user.email = obj.common.validateString(profile.email) ? profile.email : null;
+                
+                user.sid = null;
+                if (profile && obj.common.validateString(profile.sub)) {
+                    user.sid = '~oidc:' + profile.sub;
+                } else if (profile && obj.common.validateString(profile.oid)) {
+                    user.sid = '~oidc:' + profile.oid;
+                } else if (profile && obj.common.validateString(profile.email)) {
+                    user.sid = '~oidc:' + profile.email;
+                } else if (profile && obj.common.validateString(profile.upn)) {
+                    user.sid = '~oidc:' + profile.upn;
+                }
+                
+                user.name = profile && obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = profile && obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
                     user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
                     user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
                     user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
-                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                
+                // Ensure we have a valid sid before proceeding
+                if (!user.sid) {
+                    parent.debug('error', `OIDC: No valid user identifier found in profile`);
+                    return done(new Error('OIDC: No valid user identifier found in profile'));
+                }
+                
+                user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
-                    user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                    user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
-                // Setup end session enpoint if not already configured this requires an auth token
+                // Setup end session endpoint
                 try {
-                    if (!strategy.issuer.end_session_endpoint) {
-                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
-                        parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
-                    }
+                    strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
+                    parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
                 } catch (err) {
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
                     strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
@@ -8239,16 +8424,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (strategy.groups && typeof user.preset == 'string') {
                     getGroups(user.preset, tokenset).then((groups) => {
                         user = Object.assign(user, { 'groups': groups });
-                        return verified(null, user);
+                        done(null, user);
                     }).catch((err) => {
                         let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                         parent.debug('error', `${JSON.stringify(error)}`);
                         parent.authLog('oidcCallback', error.message);
                         user.groups = [];
-                        return verified(null, user);
+                        done(null, user);
                     });
                 } else {
-                    return verified(null, user);
+                    done(null, user);
                 }
 
                 async function getGroups(preset, tokenset) {
@@ -8259,6 +8444,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         const options = {
                             'headers': { authorization: 'Bearer ' + tokenset.access_token }
                         }
+                        if (obj.httpsProxyAgent) { options.agent = obj.httpsProxyAgent; }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
                             res.on('data', (chunk) => {
@@ -8728,7 +8914,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
                 if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
                 obj.authenticate(s[0], s[1], domain, function (err, userid, passhint, loginOptions) {
-                    var user = obj.users[userid];
+                    var user = obj.users[userid];      
                     if ((err == null) && (user)) {
                         // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
                         if ((user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
@@ -9122,7 +9308,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
             // This is a super user that can see all device groups for a given domain
-            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
+            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
                 func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return;
             }
 
@@ -9180,7 +9366,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { return []; }
 
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
@@ -9211,7 +9397,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof user == 'string') { user = obj.users[user]; }
         if (user == null) { return []; }
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
@@ -9256,7 +9442,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return 0;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
 
         // Check direct user to device group permissions
         if (user.links == null) return 0;
@@ -9301,7 +9487,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return false;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
         if (user.links == null) { return false; }
@@ -9330,15 +9516,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; } else return 0;
 
         // Check if we have this in the cache
-        const cacheid = user._id + '/' + meshid + '/' + nodeid;
-        const cache = GetNodeRightsCache[cacheid];
+
+        const cache = ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid];
         if (cache != null) { if (cache.t > Date.now()) { return cache.o; } else { GetNodeRightsCacheCount--; } } // Cache hit, or we need to update the cache
-        if (GetNodeRightsCacheCount > 2000) { GetNodeRightsCache = {}; GetNodeRightsCacheCount = 0; } // From time to time, flush the cache
+        if (GetNodeRightsCacheCount > 2000) { obj.FlushGetNodeRightsCache() } // From time to time, flush the cache
 
         var r = obj.GetMeshRights(user, mesh);
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9347,7 +9535,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9361,9 +9551,43 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         const out = removeUserRights(r, user);
-        GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+        GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+        GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+        GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
         GetNodeRightsCacheCount++;
         return out;
+    }
+
+    obj.InvalidateNodeCache = function (user, mesh, nodeid) {
+        if (user == null) { return; }
+        
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if (user == null) { return 0; }
+        var meshid;
+        if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; };
+        
+        if (mesh == null) {
+            for (let [key, val] of Object.entries(GetNodeRightsCache[user._id] || {})) {
+                GetNodeRightsCacheCount -= Object.keys(val).length
+            }
+            delete GetNodeRightsCache[user._id]; 
+            return;
+        }
+        if (nodeid == null) {
+            let cache_reduction = Object.keys((GetNodeRightsCache[user._id] || {})[meshid] || {}).length
+            delete (GetNodeRightsCache[user._id] || {})[meshid]
+            GetNodeRightsCacheCount -= cache_reduction;
+            return; 
+        }
+        if (((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]) {
+            delete ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]
+            GetNodeRightsCacheCount--;
+        }
+    }
+
+    obj.FlushGetNodeRightsCache = function() {
+        GetNodeRightsCache = {};
+        GetNodeRightsCacheCount = 0;
     }
 
     // Returns a list of displatch targets for a given mesh
@@ -9459,7 +9683,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Filter the user web site and only output state that we need to keep
     const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag','theme','lastThemes','uiViewMode'];
-    const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling', 'agentencoding']
+    const acceptableUserWebStateDesktopStrings = [
+        'encoding', 'showfocus', 'showmouse', 'quality', 'scaling', 'framerate', 'agentencoding', 'swapmouse',
+        'rmw', 'remotekeymap', 'autoclipboard', 'autolock', 'localkeymap', 'kvmrmw', 'rdpsize', 'rdpsmb',
+        'rdprmw', 'rdpautoclipboard', 'rdpflags'
+    ];
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
         if ((state == null) || (typeof state != 'object')) { return null; }
@@ -9539,6 +9767,118 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return null;
     }
 
+    function generateCustomCSSTags(customFilesObject, currentTemplate) {
+        var cssTags = '';
+        
+        cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+        
+
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.css && Array.isArray(customFilesObject.css)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.css.length; i++) {
+                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesObject.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return cssTags.trim();
+    }
+
+    function generateCustomJSTags(customFilesObject, currentTemplate) {
+        var jsTags = '';
+        
+        jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
+        
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.js && Array.isArray(customFilesObject.js)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.js.length; i++) {
+                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesObject.js[i] + '"></script>\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return jsTags.trim();
+    }
+
+    function generateThemePackCSSTags(domain, currentTemplate) {
+        var cssTags = '';
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'styles', 'theme.css'))) {
+                cssTags += '<link keeplink=1 type="text/css" href="styles/theme.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+            }
+        }
+        return cssTags;
+    }
+    function generateThemePackJSTags(domain, currentTemplate) {
+        var jsTags = '';
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'scripts', 'theme.js'))) {
+                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/theme.js"></script>\n    ';
+            }
+        }
+        return jsTags;
+    }
+
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
@@ -9578,6 +9918,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
         xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomBytes(1)[0]).toString('base64') : '';
 
+        // Generate custom CSS and JS tags
+        if (xargs.customFiles) {
+            try {
+                var customFiles = JSON.parse(decodeURIComponent(xargs.customFiles));
+                xargs.customCSSTags = generateCustomCSSTags(customFiles, page);
+                xargs.customJSTags = generateCustomJSTags(customFiles, page);
+            } catch (ex) {
+                xargs.customCSSTags = generateCustomCSSTags(null, page);
+                xargs.customJSTags = generateCustomJSTags(null, page);
+            }
+        } else {
+            xargs.customCSSTags = generateCustomCSSTags(null, page);
+            xargs.customJSTags = generateCustomJSTags(null, page);
+        }
+        xargs.customCSSTags += generateThemePackCSSTags(domain, page);
+        xargs.customJSTags += generateThemePackJSTags(domain, page);
         return xargs;
     }
 

@@ -18,7 +18,7 @@
     <link id="theme-stylesheet" href="styles/bootstrap{{{min}}}.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
-    <link type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -39,6 +39,7 @@
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/flatpickr.js"></script>
     <script type="text/javascript" src="mstsc/mstsc.js"></script>
     <script type="text/javascript" src="mstsc/keyboard.js"></script>
@@ -59,6 +60,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
 
@@ -139,87 +141,136 @@
     <!-- main page -->
     <div id=container>
         <div id="notifiyBox" class="notifiyBox" style="display:none"></div>
-        <div id=masthead class=noselect>
-            <div style="float:left">{{{titlehtml}}}</div>
-            <div class="title" onclick="go(1,event)">{{{title1}}}</div>
-            <div class="title2">{{{title2}}}</div>
-            <div style="float:right">
-                <div id=notificationCount onclick="clickNotificationIcon()" class="unselectable" style="display: none;"
-                    title="Click to view current notifications">0</div>
+        <div id="masthead" class="noselect masthead-container">
+            <div class="masthead-left">
+                <div class="masthead-title" onclick="go(1,event)">{{{titlehtml}}}</div>
+                <div class="masthead-titles-container">
+                    <div class="title" onclick="go(1,event)">{{{title1}}}</div>
+                    <div class="title2" onclick="go(1,event)">{{{title2}}}</div>
+                </div>
             </div>
-            <p id="logoutControl"><span id=logoutControlSpan class="logoncontrolspan"></span><span id=idleTimeoutNotify
-                    style="color:yellow"></span></p>
-            <img id="topMenuIcon" class=noselect
-                style="position:absolute;right:0;top:10px;color:#c8c8c8;font-size:44px;margin-right:8px;cursor:pointer;display:none"
-                onclick=topMenu() src="/images/3bars-30.png" width=30 height=30 />
-            <div class=textnewui id=textnewui onmouseup=toggleBootstrapUIMode() onkeypress="if (event.key=='Enter') { toggleBootstrapUIMode(); }">
-                <b>Try the new MeshCentral UI</b>
+
+            <div class="masthead-right">
+                <div id="notificationCount"
+                    class="notification-icon position-relative"
+                    title="Click to view current notifications"
+                    onclick="clickNotificationIcon()"
+                    style="display: none;">
+                    <i class="fa-solid fa-bell fa-xl text-white"></i>
+                    <span id="notificationBadge"
+                        class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger">0</span>
+                </div>
+
+                <div class="user-menu-container">
+                    <div id="userDropdown">
+                        <div id="userDropdownButton">
+                            <img id="userDropdownImage" src="images/user-256.png" alt="User" />
+                            <span id="userDropdownName" class="LogoffLinkColor"></span>
+                            <i class="fa fa-chevron-down LogoffLinkColor" style="font-size: 12px;"></i>
+                        </div>
+                        <div id="userDropdownMenu">
+                            <div id="userDropdownMenuContainer">
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="devices" onclick="handleUserMenuItem('devices')">
+                                    <i class="fa fa-desktop userDropdownMenuIcon"></i>
+                                    <span>My Devices</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem userDropdownMobileOnly mobile-menu-item" data-action="events" onclick="handleUserMenuItem('events')">
+                                    <i class="fa fa-calendar userDropdownMenuIcon"></i>
+                                    <span>My Events</span>
+                                </div>
+
+                                <div id="mobileUsersMenuItem" class="userDropdownMenuItem userDropdownMobileOnly users-menu-item mobile-menu-item d-none" data-action="users" onclick="handleUserMenuItem('users')">
+                                    <i class="fa fa-users userDropdownMenuIcon"></i>
+                                    <span>My Users</span>
+                                </div>
+
+                                <div id="mobileFilesMenuItem" class="userDropdownMenuItem userDropdownMobileOnly files-menu-item mobile-menu-item d-none" data-action="files" onclick="handleUserMenuItem('files')">
+                                    <i class="fa fa-folder userDropdownMenuIcon"></i>
+                                    <span>My Files</span>
+                                </div>
+
+                                <div id="mobileServerMenuItem" class="userDropdownMenuItem userDropdownMobileOnly server-menu-item mobile-menu-item d-none" data-action="server" onclick="handleUserMenuItem('server')">
+                                    <i class="fa fa-server userDropdownMenuIcon"></i>
+                                    <span>My Server</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider" class="userDropdownMobileOnly mobile-menu-item"></div>
+
+                                <div class="userDropdownMenuItem userDropdownUISettings" onclick="toggleUISubmenu(); event.stopPropagation();">
+                                    <i class="fa fa-sliders userDropdownMenuIcon"></i>
+                                    <span>UI Settings</span>
+                                    <i class="fa fa-chevron-right userDropdownMenuIcon submenu-arrow"></i>
+                                </div>
+
+                                <div id="uiSubmenu" class="userDropdownSubmenu">
+                                    <div id="toggleModernUIMenuItem" class="userDropdownMenuItem" data-action="toggle-modern-ui" onclick="handleUserMenuItem('toggle-modern-ui')">
+                                        <i class="fa fa-toggle-on userDropdownMenuIcon"></i>
+                                        <span>Toggle Modern UI</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="left-bar" onclick="handleUserMenuItem('left-bar')">
+                                        <i class="fa fa-window-maximize fa-rotate-270 userDropdownMenuIcon"></i>
+                                        <span>Left Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="top-bar" onclick="handleUserMenuItem('top-bar')">
+                                        <i class="fa fa-window-maximize userDropdownMenuIcon"></i>
+                                        <span>Top Bar Interface</span>
+                                    </div>
+                                    <div class="userDropdownMenuItem" data-action="fixed-width" onclick="handleUserMenuItem('fixed-width')">
+                                        <i class="fa fa-columns userDropdownMenuIcon"></i>
+                                        <span>Fixed Width Interface</span>
+                                    </div>
+                                    <div id="toggleFooterMenuItem" class="userDropdownMenuItem" data-action="toggle-footer" onclick="handleUserMenuItem('toggle-footer')">
+                                        <i class="fa fa-window-minimize userDropdownMenuIcon"></i>
+                                        <span>Toggle Footer Bar</span>
+                                    </div>
+                                    <div id="userDropdownMenuDivider" class="userDropdownMobileOnly"></div>
+                                </div>
+
+                                <div id="toggleNightMenuItem" class="userDropdownMenuItem" data-action="toggle-night" onclick="toggleNightMode(); QV('userDropdownMenu', false); QV('uiSubmenu', false); resetChevronArrow();">
+                                    <i id="nightModeIcon" class="fa userDropdownMenuIcon night-mode-icon"></i>
+                                    <span id="nightModeText">Toggle night mode</span>
+                                </div>
+
+
+                                <div class="userDropdownMenuItem" data-action="notes" onclick="handleUserMenuItem('notes')">
+                                    <i class="fa fa-sticky-note userDropdownMenuIcon"></i>
+                                    <span>Personal Notes</span>
+                                </div>
+
+                                <div class="userDropdownMenuItem" data-action="account" onclick="handleUserMenuItem('account')">
+                                    <i class="fa fa-user userDropdownMenuIcon"></i>
+                                    <span>My Account</span>
+                                </div>
+
+                                <div id="userDropdownMenuDivider"></div>
+
+                                <div class="userDropdownMenuItem" data-action="logout" onclick="handleUserMenuItem('logout')">
+                                    <i class="fa fa-sign-out userDropdownMenuIcon"></i>
+                                    <span>Logout</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <span id="idleTimeoutNotify" class="idle-timeout-notify"></span>
+                </div>
             </div>
         </div>
         <div class="sidebar flex-column" id="page_leftbar">
             <div style="height:24px"></div>
             <nav class="nav flex-column">
-                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#" data-target="general" onmouseup=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i class="fa-solid fa-computer me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account" onmouseup=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fa-solid fa-user-gear me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events" onmouseup=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i class="fa-solid fa-calendar-alt me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files" onmouseup=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fa-solid fa-folder-open me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users" onmouseup=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fa-solid fa-users me-2"></i></a>
-                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server" onmouseup=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fa-solid fa-server me-2"></i></a>
+                <a class="nav-link active text-center text-white lbbuttonsel" id="LeftMenuMyDevices" href="#" data-target="general" onclick=go(1,event) onkeypress="if (event.key=='Enter') { go(1); }"><i class="fa-solid fa-computer me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyAccount" href="#" data-target="account" onclick=go(2,event) onkeypress="if (event.key=='Enter') { go(2); }"><i class="fa-solid fa-user-gear me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyEvents" href="#" data-target="events" onclick=go(3,event) onkeypress="if (event.key=='Enter') { go(3); }"><i class="fa-solid fa-calendar-alt me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyFiles" href="#" data-target="files" onclick=go(5,event) onkeypress="if (event.key=='Enter') { go(5); }"><i class="fa-solid fa-folder-open me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyUsers" href="#" data-target="users" onclick=go(4,event) onkeypress="if (event.key=='Enter') { go(4); }"><i class="fa-solid fa-users me-2"></i></a>
+                <a class="nav-link text-center text-white" id="LeftMenuMyServer" href="#" data-target="server" onclick=go(6,event) onkeypress="if (event.key=='Enter') { go(6); }"><i class="fa-solid fa-server me-2"></i></a>
             </nav>
         </div>
         <div id=topbar class=noselect>
             <div>
                 <div style="position:relative">
                     <span id=logoutControlSpan2></span>
-                    <div tabindex=0 id=uiMenuButton title="User interface selection" onclick="showUserInterfaceSelectMenu()" onkeypress="if (event.key == 'Enter') showUserInterfaceSelectMenu()">
-                        &diams;
-                        <div id=uiMenu style="display:none">
-                            <table>
-                                <tr>
-                                    <td>
-                                        <div tabindex=0 id=uiViewButton1 class=uiSelector
-                                            onclick=userInterfaceSelectMenu(1) title="Left bar interface"
-                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(1)">
-                                            <div class="uiSelector1"></div>
-                                        </div>
-                                        <div tabindex=0 id=uiViewButton2 class=uiSelector
-                                            onclick=userInterfaceSelectMenu(2) title="Top bar interface"
-                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(2)">
-                                            <div class="uiSelector2"></div>
-                                        </div>
-                                        <div tabindex=0 id=uiViewButton3 class=uiSelector
-                                            onclick=userInterfaceSelectMenu(3) title="Fixed width interface"
-                                            onkeypress="if (event.key == 'Enter') userInterfaceSelectMenu(3)">
-                                            <div class="uiSelector3"></div>
-                                        </div>
-                                        <div tabindex=0 id=uiViewButton7 class=uiSelector
-                                            onclick=toggleBootstrapUIMode() title="Toggle Modern UI"
-                                            onkeypress="if (event.key == 'Enter') toggleBootstrapUIMode()">
-                                            <div class="uiSelector7"></div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div tabindex=0 id=uiViewButton6 class=uiSelector onclick="showNotes(false)"
-                                            title="Personal Notes"
-                                            onkeypress="if (event.key == 'Enter') showNotes(false)">
-                                            <div class="uiSelector6"></div>
-                                        </div>
-                                        <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode()
-                                            title="Toggle night mode"
-                                            onkeypress="if (event.key == 'Enter') toggleNightMode()">
-                                            <div class="uiSelector4"></div>
-                                        </div>
-                                        <div tabindex=0 id=uiViewButton5 class=uiSelector onclick=toggleFooterBarMode()
-                                            title="Toggle footer bar"
-                                            onkeypress="if (event.key == 'Enter') toggleFooterBarMode()">
-                                            <div class="uiSelector5"></div>
-                                        </div>
-                                        <div class=uiSelector_end>&nbsp;</div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
                     <table id=MainMenuSpan cellpadding=0 cellspacing=0 class=style1>
                         <tr>
                             <td tabindex=0 id=MainMenuMyDevices class="topbar_td style3x" onmouseup=go(1,event)
@@ -274,21 +325,15 @@
                         </table>
                     </div>
                     <div id=EventsSubMenuSpan style="display:none">
-                        <div id=EventsSubMenu class="style1">
-                            <div class="row d-flex">
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
-                                        onkeypress="if (event.key == 'Enter') go(3)">Events</div>
-                                </div>
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
-                                        onkeypress="if (event.key == 'Enter') go(60)">Reports</div>
-                                </div>
-                                <div class="col flex-grow-0 flex-shrink-0">
-                                    <div class="style3">&nbsp;</div>
-                                </div>
-                            </div>
-                        </div>
+                        <table id=EventsSubMenu cellpadding=0 cellspacing=0 class=style1>
+                            <tr>
+                                <td tabindex=0 id=EventsLive class="topbar_td style3x" onmouseup=go(3,event)
+                                    onkeypress="if (event.key == 'Enter') go(3)">Events</td>
+                                <td tabindex=0 id=EventsReport class="topbar_td style3x" onmouseup=go(60,event)
+                                    onkeypress="if (event.key == 'Enter') go(60)">Reports</td>
+                                <td class="topbar_td_end style3">&nbsp;</td>
+                            </tr>
+                        </table>
                     </div>
                     <div id=UserSubMenuSpan style="display:none">
                         <table id=UserSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -328,13 +373,6 @@
                                 <td tabindex=0 id=ServerPlugins class="topbar_td style3x" onmouseup=go(42,event)
                                     onkeypress="if (event.key == 'Enter') go(42)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div id=UserDummyMenuSpan>
-                        <table id=UserDummyMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td class=style3 style="">&nbsp;</td>
                             </tr>
                         </table>
                     </div>
@@ -445,10 +483,15 @@
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
                         </span>
-                        <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
-                        <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                        <span id="KvmDesktopButtons">
+                            <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
+                            <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
+                            <div class="form-check form-check-inline me-1 align-middle" title="Automatic connect">
+                                <input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" />
+                                <label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label>
+                            </div>
+                        </span>
                         <input type="button" class="btn btn-secondary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
-                        <div class="form-check me-1" title="Automatic connect"><input class="form-check-input me-1" type=checkbox id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" /><label class="form-check-label" for="autoConnectDesktopCheckbox">Auto</label></div>
                         <input type="button" class="btn btn-primary me-1 btn-sm" onclick="showMultiDesktopSettings()" value="Settings" />
                         <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
                         <span id=KvmSearchInputClearButton style="display:none;position:relative">
@@ -502,7 +545,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                                <img src="images/info.png" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -530,7 +573,7 @@
                 </div>
                 <div id="p2info" style="overflow-y:auto">
                     <div id="p2AccountImageFrame">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128"
+                        <img id="p2AccountImage" alt="" width="128" height="128"
                             onclick="account_manageImage(0)" src="images/user-256.png" />
                         <div><a href=# onclick="account_manageImage(0)">Change image</a></div>
                     </div>
@@ -599,7 +642,6 @@
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
                             <span id="accountCustomIconsSpan" style="display:none"><a href=# onclick="return showIconCustomization()">Icons Customization</a><br /></span>
                         </p>
-                        <br style=clear:both />
                     </div>
                     <div id=p2logintokens></div>
                     <strong>Device Groups</strong>
@@ -847,7 +889,12 @@
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
                     <div class='fs-4 fw-bold'>Desktop - <span id=p11deviceName></span></div>
-                    <div id="devListToolbarViewIcons" class="ms-auto">
+                    <div id="p11KeyboardLights" style="font-size:x-small;color:black" class="ms-auto pe-2">
+                        <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
+                        <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
+                        <div id="p11scrolllock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">SCROLL</div>
+                    </div>
+                    <div id="devListToolbarViewIcons">
                         <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
                 </div>
@@ -859,11 +906,6 @@
                     <div class="icon2"></div>
                     <div class="warningbox">Remote computer is not powered on, click here to issue a power command.
                     </div>
-                </div>
-                <div style="position:absolute;right:16px;margin-top:-14px;font-size:x-small;color:black">
-                    <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
-                    <div id="p11scrolllock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">SCROLL</div>
-                    <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                 </div>
                 <div id=deskarea0 cellpadding=0 cellspacing=0>
                     <div id=deskarea1 class="areaHead d-flex flex-wrap">
@@ -1213,6 +1255,7 @@
                                 <input type=button disabled="disabled" id=p13DeleteFileButton class="btn btn-primary me-1 btn-sm" value="Delete" onclick="p13deletefile()" />
                                 <input type=button disabled="disabled" id=p13ViewFileButton class="btn btn-primary me-1 btn-sm" value="Edit" onclick="p13viewfile()" />
                                 <input type=button disabled="disabled" id=p13NewFolderButton class="btn btn-primary me-1 btn-sm" value="New Folder" onclick="p13createfolder()" />
+                                <input type=button disabled="disabled" id=p13NewFileButton class="btn btn-primary me-1 btn-sm" value="New File" onclick="p13createfile()" />
                                 <input type=button disabled="disabled" id=p13UploadButton class="btn btn-primary me-1 btn-sm" value="Upload" onclick="p13uploadFile()" />
                                 <input type=button disabled="disabled" id=p13DownloadButton class="btn btn-primary me-1 btn-sm" value="Download" onclick="p13downloadButton()" />
                                 <input type=button disabled="disabled" id=p13CutButton class="btn btn-primary me-1 btn-sm" value="Cut" onclick="p13copyFile(1)" />
@@ -1374,6 +1417,7 @@
                     </div>
                     <div class='fs-4 fw-bold'>Details - <span id=p17deviceName></span></div>
                     <div id="devListToolbarViewIcons3" class="ms-auto">
+                        <i class="fa-solid fa-rotate-right fa-xl fa-border" role="button" onclick=refreshDetails(event) title="Refresh details information."></i>
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
                     </div>
                 </div>
@@ -1400,13 +1444,11 @@
                 </div>
             </div>
             <div id=p19 style="display:none">
-                <div id="p19title">
-                    <div id="p19BackButton" style="float:left">
-                        <div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()">
-                            <div class="backButtonEx"></div>
-                        </div>
+                <div id="p19title" class="d-flex align-items-center">
+                    <div id="p19BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <h1>Plugins - <span id=p19deviceName></span></h1>
+                    <div class='fs-4 fw-bold'>Plugins - <span id=p19deviceName></span></div>
                 </div>
                 <div id="p19headers"></div>
                 <div id=p19pages></div>
@@ -1419,10 +1461,17 @@
                         </div>
                         <div class='fs-4 fw-bold'>General - <span id=p20meshName></span></div>
                     </div>
-                    <picture id=MainMeshImage style=border-width:0px;height:200px;width:200px;float:right>
-                        <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
-                        <img alt="" width=200 height=200 src=images/mesh-256.png />
-                    </picture>
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <div id=p20info3></div>
+                        </div>
+                        <div>
+                            <picture id=MainMeshImage>
+                                <source type="image/webp" width=200 height=200 srcset="images/webp/mesh-256.webp" />
+                                <img alt="" width=200 height=200 src=images/mesh-256.png />
+                            </picture>
+                        </div>
+                    </div>
                     <p id=p20info></p>
                     <p id=p20info2></p>
                 </div>
@@ -1465,14 +1514,13 @@
                     </div>
                     <div class='fs-4 fw-bold'>General - <span id=p30userName></span></div>
                 </div>
-                <div id="p30info" style="overflow-y:auto">
-                    <div class="row">
+                <div id="p30info" class='pe-2' style="overflow-y:auto">
+                    <div class="d-flex">
                         <div class="col">
                             <div id="p30html"></div>
                         </div>
-                        <div class="col-auto" style="width: 20px;"></div>
-                        <div class="col-auto" style="width: 200px; position: relative;">
-                            <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
+                        <div class="col-auto">
+                            <img id="p30userAuthServiceLogo" style="display:none" class="userAuthStrategyLogo" width="64" height="64">
                             <picture id="MainUserImage"
                                 style="display:none; border-width:0px; height:200px; width:200px; float:right"
                                 onclick="account_manageImage(1)">
@@ -1718,7 +1766,7 @@
         </div>
         <div id="footer">
             <div class="footer1">{{{footer}}}</div>
-            <div class="footer2" style="display:none;">
+            <div class="footer2">
                 <div class="row">
                     <div class="col-md-6 d-flex gap-2">
                     </div>
@@ -1977,17 +2025,6 @@
                 class="btn btn-outline-success" /><input type=submit id=p13loginSubmit2 style="display:none"
                 class="btn btn-outline-success" /></form>
 
-        <div id=topMenu style="z-index:1000;background-color:#ffffff;box-shadow:0px 0px 15px #666;font-family:Arial,Helvetica,sans-serif;border-radius:0px 0px 5px 5px;position:fixed;top:50px;right:5px;width:170px;display:none">
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(1)>My Devices</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(2)>My Account</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(3)>My Events</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(5)>My Files</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(4)>My Users</div>
-            <div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer" onclick=topMenu(6)>My Server</div>
-            <div id="logoutMenuOption">
-                <a id="logoutMenuOptionRef" href=/logout><div style="padding:12px;border-top:1px solid gray;color:black;cursor:pointer">Logout</div></a>
-            </div>
-        </div>
 
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
         <iframe style=display:none name="fileDownloadFrame"></iframe>
@@ -2000,15 +2037,16 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         if ((webState == null) || (typeof webState != 'object')) { webState = {}; }
-        for (var i in webState) { if (i != 'desktopsettings') { try { localStorage.setItem(i, webState[i]); } catch (ex) { } } }
-        if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) { } }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V 64bit"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V 64bit"];
         var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
+        var domainStates = ["None", "Azure AD", "On-Premises AD", "Hybrid AD", "Microsoft Account"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -2037,6 +2075,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var features3 = parseInt('{{{features3}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -2076,6 +2115,7 @@
         var installedPluginList = null;
         var goBackStack = [];
         var CollapsedGroups = {};
+        var collapseGroups = '{{{collapseGroups}}}';
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch (ex) { }
         var deviceViewSettings = {};
         try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch (ex) { }
@@ -2083,6 +2123,7 @@
         try { userViewSettings = JSON.parse(getstore('_usersViewSettings', '{}')); } catch (ex) { }
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
         var miscState = {};
         var checkedNodeids = {};
@@ -2177,16 +2218,13 @@
             }
             args.hide = hide;
             QV('uiViewButton5', !(args.hide & 4)); // Hide the footer toggle button if footer is hidden anyway.
+            QV('toggleFooterMenuItem', !(args.hide & 4)); // Hide the footer toggle menu item if footer is hidden anyway.
+            QV('toggleNightMenuItem', ((features2 & 0x00100000) == 0) && ((features2 & 0x00200000) == 0)); // Hide night mode toggle if permanent night (1) or day (2) mode is set
+            //QV('toggleModernUIMenuItem', ((features2 & 0x80000000) == 0)); // Show only if allowed and not forced siteStyle=3
+            updateMobileTopBarVisibility();
             adjustPanels();
 
-            // Setup logout control
-            var logoutControl = '';
-            if (logoutControls) {
-                if (logoutControls.name != null) { logoutControl = ('<span onmouseup=go(2) CLASS="LogoffLinkColor" style="cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
-                if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
-            }
-            if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
-            if (logoutControls && logoutControls.logoutUrl) { Q('logoutMenuOptionRef').href = logoutControls.logoutUrl; }
+            setTimeout(updateUserDropdownVisibility, 100);
 
             // Setup the context menu
             document.onclick = function (e) { hideContextMenu(); }
@@ -2222,6 +2260,9 @@
 
             // Show the modern ui switcher
             QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
+
+            // Show Connect All and Disconnect All
+            QV('KvmDesktopButtons', ((features3 & 0x00000001) == 0) ? true : false);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
@@ -2313,26 +2354,26 @@
             // Custom UI
             if (customui != null) {
                 if (customui.devicesbarbuttons) {
-                    var x = '';
+                    var x = '&nbsp;';
                     for (var i in customui.devicesbarbuttons) {
                         var disabled = ((customui.devicesbarbuttons[i].selection == 'one') || (customui.devicesbarbuttons[i].selection == 'many')) ? 'disabled' : '';
-                        x += '<input id="cui:' + i + '" type="button" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />';
+                        x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.devicesbarbuttons[i].name + '" ' + disabled + ' onclick=customUIAction(event,"devicesbarbuttons") />&nbsp;';
                     }
                     QH('devsCustomUIBar', x);
                 }
                 if (customui.desktopbuttons) {
-                    var x = '';
-                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.desktopbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.desktopbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"desktopbuttons") />&nbsp;'; }
                     QH('desktopCustomUiButtons', x);
                 }
                 if (customui.terminalbuttons) {
-                    var x = '';
-                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.terminalbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.terminalbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"terminalbuttons") />&nbsp;'; }
                     QH('terminalCustomUiButtons', x);
                 }
                 if (customui.filesbuttons) {
-                    var x = '';
-                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />'; }
+                    var x = '&nbsp;';
+                    for (var i in customui.filesbuttons) { x += '<input id="cui:' + i + '" type="button" class="btn btn-secondary" value="' + customui.filesbuttons[i].name + '" style="float:left" onclick=customUIAction(event,"filesbuttons") />&nbsp;'; }
                     QH('filesCustomUiButtons', x);
                 }
             }
@@ -2418,18 +2459,18 @@
                         if (elem.name == null) {
                             x += '<textarea id=cui:' + i + ' style=width:356px;resize:none;height:100px autocomplete=off></textarea>';
                         } else {
-                            x += addHtmlFormFloating(elem.name, '<textarea id=cui:' + i + ' style=width:230px;resize:none;height:100px autocomplete=off></textarea>');
+                            x += addHtmlFormFloating(elem.name, '<textarea class=form-control id=cui:' + i + ' style=resize:none;height:100px autocomplete=off></textarea>');
                         }
                     }
                     if (elem.type == 'droplist') {
                         var y = '';
                         for (var j in elem.options) { y += '<option value="' + j + '">' + EscapeHtml(elem.options[j]) + '</option>'; }
-                        x += addHtmlFormFloating(elem.name, '<select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
+                        x += addHtmlFormFloating(elem.name, '<select class=form-select id="cui:' + i + '" class=form-select autocomplete=off />' + y + '</select>');
                     }
                 }
             }
             setModalContent('xxAddAgent', dialog.title, x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg })
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showCustomUiDialogEx(1, { action: 'uicustomevent', section: 'dialogs', element: name, src: tag, values: {}, logmsg: dialog.logmsg }) );
         }
 
         // Handle a generic custom UI dialog event
@@ -2614,6 +2655,105 @@
             if (footerBar) { Q('uiViewButton5').classList.add('uiSelectorSel'); }
         }
 
+        // Toggle user dropdown menu
+        function toggleUserDropdown() {
+            if (xxdialogMode) return;
+            var userDropdownMenu = Q('userDropdownMenu');
+            if (userDropdownMenu) {
+                var isVisible = (userDropdownMenu.style.display == 'none' || userDropdownMenu.style.display == '');
+                if (isVisible) {
+                    userDropdownMenu.style.display = 'block';
+                    QV('uiMenu', false);
+                    QV('topMenu', false);
+                    updateNightModeIcon();
+                    updateMobileTopBarVisibility();
+                } else {
+                    userDropdownMenu.style.display = 'none';
+                    var uiSubmenu = Q('uiSubmenu');
+                    if (uiSubmenu) {
+                        uiSubmenu.style.display = 'none';
+                    }
+                    resetChevronArrow();
+                }
+            }
+        }
+        function updateUserDropdown() {
+            if (logoutControls && logoutControls.name) {
+                var userImageSrc = 'images/user-256.png';
+                if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
+                    if (userinfo.accountImageRnd == null) { userinfo.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                    userImageSrc = 'userimage.ashx?rnd=' + userinfo.accountImageRnd;
+                }
+
+                var userImage = Q('userDropdownImage');
+                if (userImage) {
+                    userImage.src = userImageSrc;
+                }
+                
+                var userDropdownButton = Q('userDropdownButton');
+                if (userDropdownButton) {
+                    userDropdownButton.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleUserDropdown();
+                        return false;
+                    };
+                }
+                
+                var userDropdownMenu = Q('userDropdownMenu');
+                if (userDropdownMenu) {
+                    userDropdownMenu.style.display = 'none';
+                }
+            }
+        }
+
+        function toggleUISubmenu(event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            var uiSubmenu = Q('uiSubmenu');
+            if (uiSubmenu) {
+                var isVisible = (uiSubmenu.style.display == 'block');
+                
+                if (isVisible) {
+                    uiSubmenu.style.display = 'none';
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
+                    }
+                    document.removeEventListener('click', closeUISubmenu);
+                } else {
+                    uiSubmenu.style.display = 'block';
+                    uiSubmenu.classList.add('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.add('rotated');
+                    }
+                    setTimeout(function() {
+                        document.addEventListener('click', closeUISubmenu);
+                    }, 10);
+                }
+            }
+        }
+        
+        function closeUISubmenu(event) {
+            var uiSubmenu = Q('uiSubmenu');
+            var userDropdown = Q('userDropdown');
+            if (uiSubmenu && userDropdown) {
+                if (!uiSubmenu.contains(event.target) && !userDropdown.contains(event.target)) {
+                    uiSubmenu.style.display = 'none';
+                    uiSubmenu.classList.remove('show');
+                    var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+                    if (chevronIcon) {
+                        chevronIcon.classList.remove('rotated');
+                    }
+                    document.removeEventListener('click', closeUISubmenu);
+                }
+            }
+        }
+
         function userInterfaceSelectMenu(s) {
             if (s) { uiMode = s; putstore('uiMode', uiMode); }
             webPageFullScreen = (uiMode < 3);
@@ -2621,7 +2761,37 @@
             toggleFullScreen(0);
             toggleStackMenu(0);
             if (webPageStackMenu && (xxcurrentView >= 10)) { QC('column_l').add('room4submenu'); } else { QC('column_l').remove('room4submenu'); }
+            updateMobileTopBarVisibility();
             adjustPanels();
+        }
+
+        function updateMobileTopBarVisibility() {
+            try {
+                var items = document.querySelectorAll('.mobile-menu-item');
+                for (var i = 0; i < items.length; i++) {
+                    if ((uiMode == 2) || (uiMode == 3)) {
+                        items[i].classList.add('d-none');
+                    } else {
+                        if (!(items[i].classList.contains('users-menu-item') || items[i].classList.contains('files-menu-item') || items[i].classList.contains('server-menu-item'))) {
+                            items[i].classList.remove('d-none');
+                        }
+                    }
+                }
+
+                if ((uiMode != 2) && (uiMode != 3)) {
+                    var serverFeatures = parseInt('{{{serverfeatures}}}');
+                    var siteRights = userinfo.siteadmin;
+
+                    // Server Menu Item
+                    ((siteRights & 21) && ((serverFeatures & 64) != 0)) ? QC('mobileServerMenuItem').remove('d-none') : QC('mobileServerMenuItem').add('d-none');
+
+                    // Files Menu Item
+                    (siteRights & 8) ? QC('mobileFilesMenuItem').remove('d-none') : QC('mobileFilesMenuItem').add('d-none');
+
+                    // Users Menu Item
+                    (((users != null) && ((features & 4) == 0)) || (((userinfo.siteadmin & 512) != 0) && ((features & 0x08000000) != 0))) ? QC('mobileUsersMenuItem').remove('d-none') : QC('mobileUsersMenuItem').add('d-none');
+                }
+            } catch (ex) { }
         }
 
         function toggleNightMode() {
@@ -2683,7 +2853,6 @@
                 QC('body').remove('fullscreen');
                 QC('body').remove('arg_hide');
                 if (xxcurrentView >= 10) QC('column_l').add('room4submenu');
-                QV('UserDummyMenuSpan', false);
                 leftBar.classList.add('d-none');
                 //QV('page_leftbar', false);
             } else {
@@ -2692,7 +2861,6 @@
                 QV('page_leftbar', !(args.hide & 16));
                 QV('MainMenuSpan', !(args.hide & 16));
                 if (xxcurrentView >= 10) QC('column_l').remove('room4submenu');
-                QV('UserDummyMenuSpan', (xxcurrentView < 10) && webPageFullScreen);
                 leftBar.classList.remove('d-none');
             }
             mainUpdate(512);
@@ -2787,6 +2955,7 @@
         }
 
         function updateSiteAdmin() {
+            if (!userinfo) return;
             var serverFeatures = parseInt('{{{serverfeatures}}}');
             var siteRights = userinfo.siteadmin;
             var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0)) || ((features2 & 0x100) != 0); // Not admin and have account features locked, or using a loginToken
@@ -2846,6 +3015,7 @@
 
             // If we are site administrator, register to get server statistics
             if ((siteRights & 21) != 0) { meshserver.send({ action: 'serverstats', interval: 10000 }); }
+            updateUserDropdown();
         }
 
         // To boost the speed of the web page when even floods occur, this method perform a delayed update on the web page.
@@ -2896,6 +3066,7 @@
 
         var backupCodesWarningDone = false;
         function updateSelf() {
+            if (!userinfo) return;
             var authFactorCount = count2factoraAuths(); // Get the number of 2nd factors
             var accountSettingsLocked = ((userinfo.siteadmin != 0xFFFFFFFF) && ((userinfo.siteadmin & 1024) != 0));
             QV('verifyEmailId', (userinfo.emailVerified !== true) && (userinfo.email != null) && (serverinfo.emailcheck == true));
@@ -2966,7 +3137,8 @@
                     files = null;
                 }
                 if (serverinfo.logoutonidlesessiontimeout) {
-                    window.location.href = 'logout';
+                    if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
+					else { window.location.href = 'logout'; }
                 }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
@@ -3112,6 +3284,7 @@
                     userinfo = message.userinfo;
                     updateSiteAdmin();
                     updateSelf();
+                    updateUserDropdown();
                     break;
                 }
                 case 'users': {
@@ -3185,6 +3358,10 @@
                     updateDevicePageState();
 
                     mainUpdate(1 | 2 | 4 | 64);
+
+                    // If groups are to be collapsed by default, do it now
+                    if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
+                    
                     break;
                 }
                 case 'powertimeline': {
@@ -3215,6 +3392,7 @@
                     if (message.noinfo === true) {
                         updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
+                        message.hardware.time = message.time;
                         updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
                     }
                     break;
@@ -3370,6 +3548,7 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid)) {
                         var x = '<div class=dialogText>';
+                        if (currentNode.firstconnect) { x += addHtmlValue2("First agent connection", printDateTime(new Date(currentNode.firstconnect))); }
                         if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
                         if (currentNode.lastaddr) {
                             var splitip = currentNode.lastaddr.split(':');
@@ -4077,6 +4256,7 @@
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
                                 node.lusers = message.event.node.lusers;
+                                node.upnusers = message.event.node.upnusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -4122,11 +4302,13 @@
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
+                                if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
                                 if (message.event.node.lastbootuptime != null) { node.lastbootuptime = message.event.node.lastbootuptime; }
+                                if (message.event.node.idletime != null) { node.idletime = message.event.node.idletime; }
 
                                 // Check if this device has changed device group
                                 if (message.event.node.meshid != node.meshid) {
@@ -4427,7 +4609,6 @@
                     break;
                 }
                 case 'createDeviceShareLink': { // Guest sharing link
-                    if (xxdialogTag) break;
                     var node = getNodeFromId(message.nodeid), x = '';
                     if (node == null) break;
                     x += addHtmlValue("Device", node.name);
@@ -4562,10 +4743,11 @@
                     var x = "Take note of this username and password, the password cannot be shown again." + '<br /><br />';
                     x += addHtmlValue("Name", EscapeHtml(message.name))
                     if (message.expire != 0) { x += addHtmlValue("Expire", EscapeHtml(printDateTime(new Date(message.expire)))); }
-                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
-                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;background-color:orange;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
-                    setModalContent('xxAddAgent', "Create Login Token", x);
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    x += addHtmlValue("Username", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenUser) + '")></i><div class=selecttext style=width:230px;padding:5px;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenUser) + '</div>');
+                    x += addHtmlValue("Password", '<i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="margin:9px;cursor:pointer;float:right" onclick=copyTextToClip2("' + encodeURIComponentEx(message.tokenPass) + '")></i><div class=selecttext style=width:230px;padding:5px;border-radius:5px;font-size:15px>' + EscapeHtml(message.tokenPass) + '</div>');
+                    setModalContent('xxAddAgent', "Login Token Created", x);
+                    QV('idx_dlgOkButton', false);
+                    Q('idx_dlgCancelButton').innerHTML = "Close";
                     break;
                 }
                 case 'loginTokens': { // Reveiced the list of login tokens
@@ -4642,22 +4824,6 @@
         // MY DEVICES
         //
 
-        function topMenu(select) {
-            if ((xxdialogMode != null) && (xxdialogMode != 0) && (xxdialogMode != 999)) return;
-            if (select === undefined) {
-                var x = (QS('topMenu').display == 'none');
-                if (x == true) { if ((xxdialogMode == 0) || (xxdialogMode == null)) { QV('topMenu', true); xxdialogMode = 999; } } else { QV('topMenu', false); xxdialogMode = 0; }
-            } else {
-                QV('topMenu', false);
-                xxdialogMode = 0;
-                if ((select == 1)) { goForward('devices'); }
-                if ((select == 2)) { goForward('account'); }
-                if ((select == 3)) { goForward('events'); }
-                if ((select == 4)) { goForward('users'); }
-                if ((select == 5)) { goForward('files'); }
-                if ((select == 6)) { goForward('server'); }
-            }
-        }
 
         function onRealNameCheckBox() {
             showRealNames = Q('RealNameCheckBox').checked;
@@ -4729,6 +4895,7 @@
             x += '<label><input id=d2c12 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) ? ' checked' : '') + '>' + "Windows Update" + '</label><br />';
             x += '<label><input id=d2c13 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) ? ' checked' : '') + '>' + "Windows Firewall" + '</label><br />';
             x += '<label><input id=d2c14 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) ? ' checked' : '') + '>' + "Last Boot Up Time" + '</label><br />';
+            x += '<label><input id=d2c16 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('idletime') >= 0)?' checked':'') + '>' + "Idle Time" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('links') >= 0) ? ' checked' : '') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('user') >= 0) ? ' checked' : '') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox class="form-check-input me-2"' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0) ? ' checked' : '') + '>' + "Agent IP address" + '</label><br />';
@@ -4757,6 +4924,7 @@
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
             if (Q('d2c14').checked) { cols.push('lastbootuptime'); }
             if (Q('d2c15').checked) { cols.push('amthost'); }
+            if (Q('d2c16').checked) { cols.push('idletime'); }
             if (Q('d2c17').checked) { cols.push('amtstate'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
@@ -5202,6 +5370,7 @@
                         if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=width:120px>' + "Windows Update"; }
                         if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=width:120px>' + "Windows Firewall"; }
                         if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=width:120px>' + "Last Boot Up Time"; }
+                        if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { colums += '<th style=width:100px title="' + "Updated every 5 Minutes" + '">' + "Idle Time"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=width:120px>' + "Links"; }
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=width:120px>' + "Address"; }
@@ -5517,6 +5686,9 @@
                 }
                 if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { // Last Boot Up Time
                     r += '<td style=text-align:center;font-size:x-small>' + ((node.lastbootuptime != null) ? printDateTime(new Date(node.lastbootuptime)) : "");
+                }
+                if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { // Idle Time
+                    r += '<td style=text-align:center;font-size:x-small>' + ((node.idletime != null && node.idletime != -1) ? printTimer(node.idletime) : "");
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
@@ -5854,7 +6026,8 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
-            setModalContent('xxAddAgent', "Remote Desktop Settings", x);
+            changeDesktopSettingsTab(null, 'd7meshkvm');
+            setModalContent('xxAddAgent', "Remote Desktop Settings", 7);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showMultiDesktopSettingsChanged());
         }
 
@@ -6053,7 +6226,7 @@
         // Intel AMT ACM activation using setup.bin
         function showAmtAcmSetup() {
             if (xxdialogMode) return false;
-            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MBEx password. " + '</div></table>';
+            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formatted USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MEBx password. " + '</div></table>';
             x += addHtmlFormFloating("Old Password", '<input id=dp1password0 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlFormFloating("New Password*", '<input id=dp1password1 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlFormFloating("New Password*", '<input id=dp1password2 type=password class="form-control" autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
@@ -6236,7 +6409,7 @@
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() class=form-select><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
             if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
             opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
+            opts += '<option value=3>' + "Windows (Uninstall)" + '</option><option value=4>' + "Linux / BSD (Uninstall)" + '</option><option value=8>' + "Apple macOS (Uninstall)" + '</option></select>';
             x += addHtmlFormFloating("Operating System", opts);
 
             var servername = serverinfo.name;
@@ -6246,7 +6419,7 @@
 
             // Add Linux/macOS binary installer option
             var binaryInstallAgentsOrder = [6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 45, 16, 29];
-            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V 64bit', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V 64bit', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value="' + binaryInstallAgentsOrder[i] + '">' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id="aginsSysTypeDiv">';
             x += addHtmlFormFloating("System Type", '<select id="aginsSysType" onchange="addAgentToMeshClick()"  class="form-select">' + moreoptions + '</select>');
@@ -6264,7 +6437,7 @@
             meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
 
             // Windows agent install
-            x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_windows>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
@@ -6272,12 +6445,12 @@
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
+            x += '<div id=agins_linux style=display:none>' + format("To add a new computer to the device group of \"{0}\", run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px class=form-control></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" beforehand." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")>' + "Copy" + ' <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
@@ -6303,7 +6476,7 @@
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
+            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"Uninstall\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
@@ -6315,12 +6488,12 @@
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
+            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right-click the \".mpkg\" file and select \"Show Package Contents\", then right-click \"Uninstall.command\" and select \"Open\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
             // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
+            x += '<div id=agins_linux_inst style=display:none>' + "This is an executable on OSs with graphical user interfaces." + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine by running 'xattr -r -d com.apple.quarantine meshagent'." + '<br /><br />' + "You need to run 'chmod +x meshagent', and then run this file." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key ? ('&key=' + urlargs.key) : '') + '">' + "meshagent" + '</a> <i class="fa-regular fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)></i>', ['col-md-4', 'col-md-8']);
             x += addHtmlValue("Command" + '&nbsp;<i class="fa-regular fa-clipboard" title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")></i>', '<input id=aginsbincmd type=text class="form-control" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0) ? ' --no-check-certificate' : '') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' />', ['col-md-4 d-flex align-items-center', 'col-md-8']);
             x += '</div>';
@@ -6406,10 +6579,10 @@
         */
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
             if (xxModal == null) {
-                ['idx_dlgOkButton', 'idx_dlgCancelButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
                     Q(id).onclick = null;
-                    QE(id, true);
-                    QV(id, true);
+                    QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
+                    QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
                 });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 var hiddenModal = function (event) {
@@ -6752,7 +6925,7 @@
             } else if (op == 109) {
                 // Upload files
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (((n.agent.id > 0) && (n.agent.id < 5)) || (n.agent.id == 34)) { wintype = true; } else { linuxtype = true; } } }
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
                 var x = "Upload selected files to all selected devices" + '<br /><br />';
                 x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
                 x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
@@ -6934,7 +7107,7 @@
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) {
                     if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                    if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; }
+                    if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; }
                 }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
@@ -7086,20 +7259,20 @@
         function getDevicesThatMatchFilter(x) {
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
-            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
-            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
-            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
-            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
-            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
-            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = x.substring("tag:".length); }
-            else if (x.startsWith("t:".toLowerCase())) { tagSearch = x.substring("t:".length); }
-            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = x.substring("atag:".length); }
-            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = x.substring("a:".length); }
-            else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
-            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
-            else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
-            else if (x.startsWith("connectivity:".toLowerCase())) { connectivitySearch = x.substring("connectivity:".length); }
-            else if (x.startsWith("c:".toLowerCase())) { connectivitySearch = x.substring("c:".length); }
+            if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
+            else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
+            else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
+            else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
+            else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = x.substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = x.substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = x.substring('atag:'.length); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = x.substring('a:'.length); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = x.substring('os:'.length); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = x.substring('amt:'.length); }
+            else if (x.startsWith('desc:'.toLowerCase())) { descSearch = x.substring('desc:'.length); }
+            else if (x.startsWith('connectivity:'.toLowerCase())) { connectivitySearch = x.substring('connectivity:'.length); }
+            else if (x.startsWith('c:'.toLowerCase())) { connectivitySearch = x.substring('c:'.length); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -7591,6 +7764,7 @@
             QV('filesContextMenu', false);
             QV('deskPlayerContextMenu', false);
             QV('deskKeyShortcutContextMenu', false);
+            QV('userDropdownMenu', false);
             QV('deskPreConfigShortcutContextMenu', false);
             QV('deskPreConfigScriptContextMenu', false);
             QV('expandAllContextMenu', false);
@@ -8439,6 +8613,7 @@
                     var y = [];
                     if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
@@ -8459,11 +8634,20 @@
 
                 // Active Users
                 if (node.users && node.users.length > 0) {
-                    var u = node.users.map(function(user) {
-                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    var u = node.users.map(function(user, index) {
+                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
+                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
+                        var escapedUser = EscapeHtml(user);
+                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
+                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
+                        else { return escapedUser; }
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
+
+                // Windows Idle Time
+                if (node.idletime && node.idletime != -1) { x += addDeviceAttribute("Idle Time", printTimer(node.idletime)); }
+
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
                     var meshFeatures = [];
@@ -8582,7 +8766,7 @@
                 if ((customui != null) && (customui.devicebuttons != null)) {
                     for (var i in customui.devicebuttons) {
                         if ((customui.devicebuttons[i].showif == null) || ((mesh != null) && (customui.devicebuttons[i].showif == mesh._id)) || (customui.devicebuttons[i].showif == currentNode._id)) {
-                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />';
+                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />&nbsp;';
                         }
                     }
                 }
@@ -8861,7 +9045,7 @@
                     count = 1;
                     for (var i = 0; i < deviceShares.length; i++) {
                         var dshare = deviceShares[i], trash = '';
-                        if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><img src=images/link2.png border=0 height=10 width=10></a> '; }
+                        if (dshare.url != null) { trash += '<a href="' + dshare.url + '" rel="noreferrer noopener" target=_blank title="' + "Device Sharing Link" + '" style=cursor:pointer><i class="fa-fw fa-solid fa-share-from-square"></i></a> '; }
                         trash += '<i role=button onclick=\'return p30removeDeviceSharing(event,"' + encodeURIComponentEx(currentNode._id) + '","' + encodeURIComponentEx(dshare.publicid) + '","' + encodeURIComponentEx(dshare.guestName) + '")\' title="' + "Remove device sharing" + '" class="fa-fw fa-solid fa-trash text-danger"></i>';
                         var type = ''; if (dshare.p <= 7) { type = ['', "Terminal", "Desktop", "Desktop + Terminal", "Files", "Terminal + Files", "Desktop + Files", "Desktop + Terminal + Files"][dshare.p]; } else if (dshare.p == 8) { type = "HTTP/" + dshare.port; } else if (dshare.p == 16) { type = "HTTPS/" + dshare.port; }
                         var details = type;
@@ -9362,6 +9546,7 @@
             } else {
                 meshserver.send({ action: 'createDeviceShareLink', nodeid: currentNode._id, guestname: Q('d2inviteName').value.trim(), p: q, start: Math.floor(tag.start.selectedDates[0].getTime() / 1000), expire: parseInt(Q('d2inviteDuration').value), recurring: Q('d2timeRange').value - 1, consent: consent, viewOnly: viewOnly });
             }
+            return false;
         }
 
         function deviceActionFunction() {
@@ -9429,11 +9614,11 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false;
-                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (currentNode.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
-                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px>';
+                        x += '<select id=d2cmdtype style=width:100%;margin-bottom:4px;margin-top:4px> class=form-select>';
                         x += '<option value=1>' + "Windows Command Prompt" + '</option><option value=2>' + "Windows PowerShell" + '</option>';
                         if (linuxtype == true) { x += '<option value=3>' + "Linux/BSD/macOS Command Shell" + '</option>'; }
                         x += '</select>';
@@ -11184,12 +11369,14 @@
         function showDeskClip() {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
-            var x = '';
-            if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="' + "Get Clipboard" + '" style=width:160px onclick=showDeskClipGet()>';
-            if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="' + "Set Clipboard" + '" style=width:160px onclick=showDeskClipSet()>';
-            x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
-            x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
-            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
+            var x = '<div class="container text-center"><div class="row">';
+            if ((features2 & 0x0800) == 0) x += '<div class="col"><input class="btn btn-secondary" id=dlgClipGet type=button value="' + "Get Clipboard" + '" onclick=showDeskClipGet()></div>';
+            if ((features2 & 0x1000) == 0) x += '<div class="col"><input class="btn btn-secondary" id=dlgClipSet type=button value="' + "Set Clipboard" + '" onclick=showDeskClipSet()></div>';
+            x += '</div>';
+            x += '<div class="row"><div class="col"><div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div></div></div>';
+            x += '<div class="row"><div class="col"><textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea></div></div>';
+            x += '<div class="row"><div class="col"><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span></div></div></div>';
+            x += '</div>'
             xxdialogTag = 'clipboard';
             setModalContent('xxAddAgent', "Remote Clipboard", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
@@ -11594,7 +11781,7 @@
                         try { xterminal.m.TermResetScreen(); xterminal.m.TermDraw(); } catch (ex) { }
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (xterminal != null) { xterminal.Stop(); terminal = null; }
                     break;
@@ -11833,8 +12020,10 @@
                         // Setup the terminal with auto-fit
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
+                        xtermimage = new ImageAddon.ImageAddon();
                         xterm = new Terminal();
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
@@ -12211,7 +12400,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -12245,7 +12436,7 @@
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
                         h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
                     } else {
@@ -12265,7 +12456,7 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -12300,7 +12491,7 @@
 
         function p13gotofolder() {
             xxdialogButtons = 3;
-            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
+            setModalContent('xxAddAgent', "Go To Folder", '<input type=text id=p13folderinput style=width:100% value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'"placeholder="' + (isWindowsNode(currentNode) ? 'C:\\' : '/var/www') + '" />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p13gotofolderEx);
             focusTextBox('p13folderinput');
         }
@@ -12351,7 +12542,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winAgent) { path = slash + path; }
@@ -12384,6 +12575,7 @@
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);
                 QE('p13UploadButton', false);
+                QE('p13NewFileButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13ViewFileButton', false);
                 QE('p13SelectAllButton', false);
@@ -12400,10 +12592,11 @@
                 QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
+                QE('p13NewFileButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', advancedFeatures && (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ViewFileButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
@@ -12445,6 +12638,12 @@
             focusTextBox('p13renameinput'); p13fileNameCheck();
         }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
+        function p13createfile() {
+            setModalContent('xxAddAgent', "New File", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13createfileEx());
+            focusTextBox('p13renameinput'); p13fileNameCheck();
+        }
+        function p13createfileEx() { files.sendText({ action: 'mkfile', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13deletefile() {
             var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox class="form-check-input me-2" id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox class="form-check-input me-2" id=p13recdeleteinput style=\'display:none\'>';
             setModalContent('xxAddAgent', "Delete", (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec));
@@ -12459,7 +12658,7 @@
                 }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { oldname: renamefile }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
         }
@@ -12632,6 +12831,31 @@
                     setModalContent('xxAddAgent', EscapeHtml(gdownloadFile.file), 4, 'extra-large');
                     var file = gdownloadFile.file;
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13editSaveBack(3, file));
+                    const crlf = (gdownloadFile.data.match(/\r\n/g) || []).length;
+                    const cr = (gdownloadFile.data.match(/\r(?!\n)/g) || []).length;
+                    const lf = (gdownloadFile.data.match(/(?<!\r)\n/g) || []).length;
+                    let type;
+                    if (crlf > 0 && cr === 0 && lf === 0) {
+                        type = 'crlf';
+                    } else if (lf > 0 && crlf === 0 && cr === 0) {
+                        type = 'lf';
+                    } else if (cr > 0 && crlf === 0 && lf === 0) {
+                        type = 'cr';
+                    } else {
+                        // Mixed - pick dominant
+                        const dominant = Math.max(crlf, cr, lf);
+                        if (dominant === crlf) type = 'crlf';
+                        else if (dominant === lf) type = 'lf';
+                        else type = 'cr';
+                    }
+                    if (type === 'crlf') {
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (type === 'lf') {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    } else {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    }
+                    d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     if (d4EditEncodingVal == 1) {
@@ -12726,7 +12950,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14) || (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -13015,6 +13239,10 @@
             } else deviceDetailsStatsClear();
         }
 
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
+        }
+
         function deviceDetailsStatsClear() {
             QV('p17graph', false);
             if (window.deviceDetailsStatsChart != null) { window.deviceDetailsStatsChart.destroy(); delete window.deviceDetailsStatsChart; }
@@ -13078,6 +13306,7 @@
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
+				if(m.BuildRevision){ x += addDetailItem("Build Number", EscapeHtml(m.BuildRevision), s); }
                 if (m.OSArchitecture) {
                     if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
                     else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
@@ -13095,6 +13324,8 @@
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
+                if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
+                if(m.DomainState > 0){ x += addDetailItem("Domain State", (domainStates[m.DomainState] ? domainStates[m.DomainState] : "Unknown"), s); }
             }
             if (hardware.linux && hardware.linux.LastBootUpTime) {
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
@@ -13118,6 +13349,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -13142,6 +13374,9 @@
                         var d = Date.parse(hardware.agentvers.compileTime)
                         x += addDetailItem("Compile time", isNaN(d) ? hardware.agentvers.compileTime : printDateTime(new Date(d)));
                     }
+                }
+                if (hardware.time != null) {
+                    x += addDetailItem("Last details update", printDateTime(new Date(hardware.time)));
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png' }); }
             }
@@ -13225,6 +13460,9 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
+                    }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
                         if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
@@ -13285,18 +13523,55 @@
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
                 if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png' }); }
+
+                // System
+                x = '';
+                if (ident.chassis_manufacturer) { x += addDetailItem("Manufacturer", EscapeHtml(ident.chassis_manufacturer), s); }
+                if (ident.product_name) { x += addDetailItem("Product Name", EscapeHtml(ident.product_name), s); }
+                if (ident.chassis_serial) { x += addDetailItem("Serial", EscapeHtml(ident.chassis_serial), s); }
+                if (ident.chassis_assettag) { x += addDetailItem("Asset Tag", EscapeHtml(ident.chassis_assettag), s); }
+                if (x != '') { sections.push({ name: "System", html: x, img: 'system64.png' }); }
             }
 
             // TPM
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
                 if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png' }); }
+            }
+
+            if (hardware.battery) {
+                var x = '';
+                x += '<table class="table table-hover" style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery64.png'}); }
             }
 
             if (hardware.windows) {
@@ -13789,7 +14064,7 @@
             var x = '<input id=p2file type=file class="form-control" accept="image/*" onchange=account_manageImageEx()><div style=width:100%><canvas id=p2canvas width=256 height=256 style="width:256px;height:256px;margin-left:60px;margin-top:8px;border-radius:16px;background: var(--sub-menu-bg);border: 1px solid #cfcdcd; cursor: pointer;" onclick=account_canvasClick() /></div>';
 
             setModalContent('xxAddAgent', "Manage Account Image", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', account_manageImageEx2);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => account_manageImageEx2(1, user._id));
 
             var ctx = Q('p2canvas').getContext('2d');
             if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
@@ -13799,6 +14074,8 @@
             myImg.onload = function () { ctx.clearRect(0, 0, 256, 256); ctx.drawImage(myImg, 0, 0); };
             myImg.src = ((user.flags != null) && (user.flags & 1)) ? ('userimage.ashx?rnd=' + user.accountImageRnd + arg) : 'images/user-256.png';
             QE('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            QV('idx_dlgDeleteButton', (user.flags != null) && (user.flags & 1));
+            Q('idx_dlgDeleteButton').onclick = () => account_manageImageEx2(2, user._id);
             QE('idx_dlgOkButton', false);
         }
 
@@ -13825,6 +14102,7 @@
         function account_manageImageEx2(b, userid) {
             // Send updated image, or 0 if we pressed the delete button
             meshserver.send({ action: 'updateUserImage', userid: userid, image: (b == 2) ? 0 : Q('p2canvas').toDataURL(Q('p2file').files[0].type) });
+            if (b == 2) { xxModal.hide(); } // Close dialog on delete
             //meshserver.send({ action: 'updateUserImage', image: (b == 2)?0:Q('p2canvas').toDataURL('image/png', 0.8) });
         }
 
@@ -14126,6 +14404,7 @@
 
         function account_createLoginTokenEx() {
             meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: parseInt(Q('d2tokenExpire').value) });
+            return false;
         }
 
         function account_showAccountNotifySettings() {
@@ -14589,7 +14868,7 @@
             x += addHtmlValue("Name", EscapeHtml(token.name));
             x += addHtmlValue("Username", EscapeHtml(token.tokenUser));
             setModalContent('xxAddAgent', "Remove Login Token", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => function (b, tokenUser) { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { meshserver.send({ action: 'loginTokens', remove: [tokenUser] }); });
         }
 
         function gotoMesh(meshid) {
@@ -14826,9 +15105,11 @@
                 x += addHtmlValue("Intel&reg; AMT", addLinkConditional(intelAmtPolicy, 'p20editMeshAmt()', meshrights & 1));
             }
 
+            QH('p20info3', x);
+            x = '';
+
             // Display device group note support
-            if (meshrights & 1) { x += '<br><input type=button class="btn btn-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") />'; }
-            x += '<br style=clear:both><br>';
+            if (meshrights & 1) { x += '<div class="row py-1"><div class="col"><input type=button class="btn btn-primary btn-sm mb-1" value=' + "Notes" + ' title="' + "View notes about this device group" + '" onclick=showNotes(false,"' + encodeURIComponentEx(currentMesh._id) + '") /></div></div>'; }
             if (meshrights & 2) {
                 x += '<button class="btn btn-primary btn-sm me-2 mb-1" onclick="return p20showAddMeshUserDialog()"><i class="fa-solid fa-circle-plus"></i> ' + "Add Users" + '</button>';
                 if (usergroups != null) {
@@ -15431,7 +15712,7 @@
             x += '</div>';
 
             if (userid == null) {
-                xxdialogButtons = 3; xxdialogTag = '';
+                xxdialogButtons = 3; xxdialogTag = null;
                 setModalContent('xxAddAgent', "Add Users to Device Group", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                     p20showAddMeshUserDialogEx(xxdialogButtons, xxdialogTag);
@@ -15932,8 +16213,9 @@
             return false;
         }
 
-        function p20editMeshNotifyEx(b, emailNotify) {
+        function p20editMeshNotifyEx() {
             var meshNotify = 0;
+            var emailNotify = ((features2 & 0x00004000) && (userinfo.emailVerified));
             meshNotify += Q('p20notifyIntelDeviceConnect').checked ? 2 : 0;
             meshNotify += Q('p20notifyIntelDeviceDisconnect').checked ? 4 : 0;
             if (currentMesh.mtype < 3) { meshNotify += Q('p20notifyIntelAmtKvmActions').checked ? 8 : 0; }
@@ -16148,7 +16430,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -16161,12 +16445,12 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
                     if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -16211,6 +16495,14 @@
             if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
             if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
             return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+        }
+
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -16286,10 +16578,9 @@
                 if (checkboxes[i].checked) { renamefile = checkboxes[i].value; }
             }
             setModalContent('xxAddAgent', "Rename", '<input type=text id=p5renameinput class="form-control" maxlength=64 onkeyup=p5fileNameCheck(event) value="' + renamefile + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p5renamefileEx);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'fileoperation', fileop: 'rename', path: filetreelocation, oldname: renamefile, newname: Q('p5renameinput').value}); });
             focusTextBox('p5renameinput'); p5fileNameCheck();
         }
-        function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         function p5uploadFile() {
@@ -16633,7 +16924,8 @@
             160: "Enabled Duo two-factor authentication",
             161: "Disabled Duo two-factor authentication",
             162: "Started messenger session \"{0}\" from {1} to {2}",
-            163: "Removed device {0} from user group {1}"
+            163: "Removed device {0} from user group {1}",
+            164: "Create file: \"{0}\""
         };
 
         var eventsShortMessageId = {
@@ -17001,8 +17293,10 @@
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                //setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
+                setModalContent('xxAddAgent', "Delete Accounts", x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p3groupActionFunctionDelExec);
                 QE('idx_dlgOkButton', false);
+                return false;
             } else if (op == 4) {
                 // Validate emails
                 for (var i in userids) {
@@ -17900,7 +18194,7 @@
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
             setModalContent('xxAddAgent', "Remove Device Group Permissions", format("Confirm removal of access rights for device group \"{0}\"?", mesh.name));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p51removeMeshFromUserGroupEx(3, mesh._id));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removemeshuser', meshid: decodeURIComponent(meshid), userid: currentUserGroup._id }); });;
         }
         function p51editgroup(focus, nameReadOnly) {
             if (xxdialogMode) return;
@@ -17960,9 +18254,8 @@
             if (users && users[userid]) { uname = users[userid].name; }
             if (userinfo._id == userid) { uname = userinfo.name; }
             setModalContent('xxAddAgent', "Remove User Membership", format("Confirm membership removal of user \"{0}\"?", EscapeHtml(decodeURIComponent(uname))));
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p51viewuserEx2(3, userid));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); });
         }
-        function p51viewuserEx2(button, userid) { meshserver.send({ action: 'removeuserfromusergroup', ugrpid: currentUserGroup._id, userid: userid }); }
 
         function p51showAddUserDialog() {
             if (xxdialogMode) return false;
@@ -18697,6 +18990,174 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
+        
+        //
+        // UserDropDown Menu 
+        //
+
+        var userDropdownOpen = false;
+        var uiSubmenuOpen = false;
+
+        function initializeUserDropdown() {
+            var dropdownButton = Q('userDropdownButton');
+            var dropdownMenu = Q('userDropdownMenu');
+            var uiSettingsButton = document.querySelector('.userDropdownUISettings');
+            var uiSubmenu = Q('uiSubmenu');
+            
+            if (!dropdownButton || !dropdownMenu) return;
+            
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            dropdownMenu.classList.remove('show');
+
+                dropdownButton.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    userDropdownOpen = !userDropdownOpen;
+                    dropdownMenu.classList.toggle('show');
+                    if (!userDropdownOpen) {
+                        QS('uiSubmenu').display = 'none';
+                        QS('uiSubmenu').opacity = '0';
+                        QS('uiSubmenu').transform = 'translateX(12px)';
+                        uiSubmenuOpen = false;
+                        resetChevronArrow();
+                    }
+                };
+
+            document.addEventListener('click', function(e) {
+                var uiSubmenu = Q('uiSubmenu');
+                if (!dropdownMenu.contains(e.target) && !dropdownButton.contains(e.target) && !uiSubmenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    userDropdownOpen = false;
+                    uiSubmenuOpen = false;
+                    resetChevronArrow();
+                }
+            });
+        }
+
+        function toggleUISubmenu() {
+            uiSubmenuOpen = !uiSubmenuOpen;
+            
+            var uiSubmenu = Q('uiSubmenu');
+            var isDesktop = window.innerWidth > 769;
+            var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            
+            if (uiSubmenuOpen) {
+                QS('uiSubmenu').display = 'block';
+                
+                if (isDesktop && (reduceMotion == false)) {
+                    setTimeout(function() {
+                        QS('uiSubmenu').opacity = '1';
+                        QS('uiSubmenu').transform = 'translateX(0)';
+                    }, 10);
+                } else {
+                    QS('uiSubmenu').opacity = '1';
+                    QS('uiSubmenu').transform = 'translateX(0)';
+                }
+            } else {
+                if (isDesktop && (reduceMotion == false)) {
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                    setTimeout(function() {
+                        QS('uiSubmenu').display = 'none';
+                    }, 300);
+                } else {
+                    QS('uiSubmenu').display = 'none';
+                    QS('uiSubmenu').opacity = '0';
+                    QS('uiSubmenu').transform = 'translateX(12px)';
+                }
+            }
+            
+            var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (chevronIcon) {
+                chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
+            }
+        }
+
+        function handleUserMenuItem(action) {
+            Q('userDropdownMenu').classList.remove('show');
+            QS('uiSubmenu').display = 'none';
+            QS('uiSubmenu').opacity = '0';
+            QS('uiSubmenu').transform = 'translateX(12px)';
+            userDropdownOpen = false;
+            uiSubmenuOpen = false;
+            resetChevronArrow();
+
+            switch(action) {
+                case 'devices': goForward('devices'); break;
+                case 'events': goForward('events'); break;
+                case 'users': goForward('users'); break;
+                case 'files': goForward('files'); break;
+                case 'server': goForward('server'); break;
+                case 'toggle-modern-ui': toggleBootstrapUIMode(); break;
+                case 'left-bar': userInterfaceSelectMenu(1); break;
+                case 'top-bar': userInterfaceSelectMenu(2); break;
+                case 'fixed-width': userInterfaceSelectMenu(3); break;
+                case 'toggle-footer': toggleFooterBarMode(); break;
+                case 'toggle-night': toggleNightMode(); break;
+                case 'notes': showNotes(false); break;
+                case 'account': go(2); break;
+                case 'logout': 
+                    if (logoutControls && logoutControls.logoutUrl) {
+                        window.location.href = logoutControls.logoutUrl;
+                    }
+                    break;
+            }
+        }
+
+        function resetChevronArrow() {
+            var arrow = document.querySelector('.userDropdownUISettings .fa-chevron-right');
+            if (arrow) arrow.style.transform = '';
+        }
+
+        function updateUserDropdownVisibility() {
+            var userDropdown = Q('userDropdown');
+            var dropdownName = Q('userDropdownName');
+            var dropdownImage = Q('userDropdownImage');
+            
+            if (logoutControls && logoutControls.name) {
+                QS('userDropdown').display = 'block';
+                dropdownName.textContent = logoutControls.name;
+                
+                if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
+                    var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
+                    dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
+                }
+            } else {
+                QS('userDropdown').display = 'none';
+            }
+        }
+
+        function updateNightModeIcon() {
+            var nightModeItem = document.querySelector('.userDropdownMenuItem[data-action="toggle-night"]');
+            if (nightModeItem) {
+                var icon = nightModeItem.querySelector('#nightModeIcon');
+                var textSpan = nightModeItem.querySelector('#nightModeText');
+                if (icon && textSpan) {
+                    var isNightMode = document.body.classList.contains('night');
+                    var iconClass = isNightMode ? 'fa-sun' : 'fa-moon';
+                    var text = isNightMode ? "Toggle Light Mode" : "Toggle Dark Mode";
+                    var newIcon = document.createElement('i');
+                    newIcon.id = 'nightModeIcon';
+                    newIcon.className = 'fa ' + iconClass + ' userDropdownMenuIcon night-mode-icon';
+                    icon.parentNode.replaceChild(newIcon, icon);
+                    textSpan.textContent = text;
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeUserDropdown();
+            updateUserDropdownVisibility();
+            updateNightModeIcon();
+        });
+
+
+
+
         //
         // MY USER EVENTS
         //
@@ -18972,7 +19433,9 @@
 
                 // Filter out files
                 if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the size
                 var fsize = '';
@@ -18981,11 +19444,11 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
-                    h = '<div class=filelist file=3><input style=float:left name=fcx class="fcb form-check-input me-2" type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class="fcb form-check-input me-2" type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -19387,12 +19850,27 @@
 
         // Set the notification count on the upper right of the screen
         function setNotificationCount(c) {
-            if (parseInt(Q('notificationCount').innerHTML) == c) return; // If the count did not change, exit now.
-            QH('notificationCount', c);
-            QS('notificationCount')['background-color'] = (c == 0) ? 'lightblue' : 'orange';
+            var badge = Q('notificationBadge');
+            if (parseInt(badge.innerHTML) === c) return;
+            badge.innerHTML = c;
             QV('notificationCount', c > 0);
         }
 
+        // Close notification box when clicking outside
+        function setupNotificationClickOutside() {
+            document.addEventListener('click', function(event) {
+                var notificationBox = Q('notifiyBox');
+                var notificationIcon = Q('notificationCount');
+                if (notificationBox && QS('notifiyBox')['display'] !== 'none') {
+                    if (!notificationBox.contains(event.target) && !notificationIcon.contains(event.target)) {
+                        QV('notifiyBox', false);
+                    }
+                }
+            });
+        }
+        setupNotificationClickOutside();
+
+        
         // Refresh the notification box
         function drawNotifications() {
             var notifySettings = getstore('notifications', 0);
@@ -19411,14 +19889,14 @@
                         }
                     }
 
-                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
+                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;' + (notifications.length > 1 ? 'border-top:1px solid orange' : '') + '">';
                     if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
                     r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div><div style=margin-left:5px;margin-bottom:5px;color:gray;font-size:10px>' + printDateTime(d) + '</div></div>';
                 }
             }
             var deleteall = '';
-            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
-            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + deleteall + '</div>');
+            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + deleteall + r + '</div>');
         }
 
         // A notification was selected
@@ -20158,6 +20636,7 @@
             // If "shift" is pressed, open a new tab.
             if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
+                event.preventDefault();
                 if ((x >= 10) && (x <= 19)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key) ? ('&key=' + urlargs.key) : ''), 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
@@ -20185,7 +20664,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0) && (userinfo != null) && (userinfo._id.split('/')[2][0] != '~')) { x = 52; }
 
             // Stop the list graph if active
             if (xxcurrentView == 17) deviceDetailsStatsClear();
@@ -20269,7 +20748,6 @@
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
             QV('MainSubMenuSpan', (x >= 10) && (x < 20));
-            QV('UserDummyMenuSpan', (x == 51) || ((x < 10) && (x != 6) && webPageFullScreen));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
@@ -20754,10 +21232,11 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function printTimer(d) { return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2); }
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
 
         function addDetailItem(title, value, state, classNames = []) {
-            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-8'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-4 text-end'}"> ${value} </div></div>`;
+            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-7'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-5 text-end'}"> ${value} </div></div>`;
         }
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
@@ -20780,16 +21259,14 @@
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(node.agent.id) >= 0); }
+        function isMacNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([11,16,29].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            element.setAttribute('download', decodeURIComponent(name ? name : ''));
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 

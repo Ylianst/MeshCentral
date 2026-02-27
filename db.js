@@ -922,47 +922,63 @@ module.exports.CreateDB = function (parent, func) {
         }
     } else if (parent.args.postgres) {
         // Postgres SQL
-        let connectinArgs = parent.args.postgres;
-        connectinArgs.database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+        let connectionArgs = parent.args.postgres;
+        connectionArgs.database = (databaseName = (connectionArgs.database != null) ? connectionArgs.database : 'meshcentral');
 
         let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
         const { Client } = require('pg');
-        Datastore = new Client(connectinArgs);
-        //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
-        connectinArgs.database = 'postgres';
-        DatastoreTest = new Client(connectinArgs);
-        DatastoreTest.connect();
-        connectinArgs.database = databaseName; //put the name back for backupconfig info
-        DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
-            if (res.rowCount != 0) { // database exists now check tables exists
-                DatastoreTest.end();
-                Datastore.connect();
-                Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
-                    if (err == null) {
-                      (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
-                    } else
-                    if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
-                        postgreSqlCreateTables(func);
-                    } else {
-                        console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
-                    };
-                });
-            } else { // If not present, create the tables and indexes
-                //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
-                    if (err == null) {
-                        // Create the tables and indexes
-                        DatastoreTest.end();
-                        Datastore.connect();
-                        postgreSqlCreateTables(func);
-                    } else {
-                            console.log('Postgresql database create error: ', err.message);
-                            process.exit(0);
-                    }
-                });
-            }
-        });
+        Datastore = new Client(connectionArgs);
+        // Check if we should skip database creation check
+        if (connectionArgs.createdatabase === false ) {
+            // Skip database check/creation, just connect and run the SELECT query
+            Datastore.connect();
+            Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                if (err == null) {
+                    (res.rowCount == 0) ? postgreSqlCreateTables(func) : setupFunctions(func);
+                } else if (err.code == '42P01') { //42P01 = undefined table
+                    postgreSqlCreateTables(func);
+                } else {
+                    console.log('Postgresql connection error: ', err.message); 
+                    process.exit(0);
+                }
+            });
+        } else {
+            //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
+            connectionArgs.database = 'postgres';
+            DatastoreTest = new Client(connectionArgs);
+            DatastoreTest.connect();
+            connectionArgs.database = databaseName; //put the name back for backupconfig info
+            DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
+                if (res.rowCount != 0) { // database exists now check tables exists
+                    DatastoreTest.end();
+                    Datastore.connect();
+                    Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                        if (err == null) {
+                        (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
+                        } else
+                        if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
+                            postgreSqlCreateTables(func);
+                        } else {
+                            console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
+                        };
+                    });
+                } else { // If not present, create the tables and indexes
+                    //not needed, just use a create db statement: const pgtools = require('pgtools'); 
+                    DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
+                        if (err == null) {
+                            // Create the tables and indexes
+                            DatastoreTest.end();
+                            Datastore.connect();
+                            postgreSqlCreateTables(func);
+                        } else {
+                                console.log('Postgresql database create error: ', err.message);
+                                process.exit(0);
+                        }
+                    });
+                }
+            });
+        }
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = DB_MONGODB;
@@ -2767,12 +2783,20 @@ module.exports.CreateDB = function (parent, func) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -3011,15 +3035,26 @@ module.exports.CreateDB = function (parent, func) {
                 //if (id) { x._id = id; }
                 //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             //};
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                } else {
+                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                }
+            };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (extrasids == null) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {

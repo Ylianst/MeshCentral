@@ -14,7 +14,7 @@
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
-    <link type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -35,6 +35,7 @@
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/flatpickr.js"></script>
     <script type="text/javascript" src="mstsc/mstsc.js"></script>
     <script type="text/javascript" src="mstsc/keyboard.js"></script>
@@ -50,6 +51,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px" onload="if (typeof(startup) !== 'undefined') startup();">
@@ -347,10 +349,12 @@
                         <td id=kvmListToolbar class=style14 style="display:none">
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton2" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton2" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
-                            <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
-                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                            <span id=KvmDesktopButtons>
+                                <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                                <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                                <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
+                            </span>
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
-                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
                             <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
                             <span id=KvmSearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" /></span>
@@ -401,7 +405,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                                <img src="images/info.png" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -427,7 +431,7 @@
                 <div id="p2title"><h1>My Account</h1></div>
                 <div id="p2info" style="overflow-y:auto">
                     <div id="p2AccountImageFrame">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" />
+                        <img id="p2AccountImage" alt="" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" />
                         <div><a onclick="account_manageImage(0)">Change image</a></div>
                     </div>
                     <div id="p2AccountSecurity" style="display:none">
@@ -884,6 +888,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton value="Delete" onclick="p13deletefile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton value="Edit" onclick="p13viewfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton value="New Folder" onclick="p13createfolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFileButton value="New File" onclick="p13createfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton value="Upload" onclick="p13uploadFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton value="Download" onclick="p13downloadButton()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton value="Cut" onclick="p13copyFile(1)" />
@@ -1026,7 +1031,10 @@
             <div id=p17 style="display:none;margin-left:-18px">
                 <div id="p17title" style="margin-left:18px">
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <div id="devListToolbarViewIcons3"><div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div></div>
+                    <div id="devListToolbarViewIcons3">
+                        <div class="viewSelector" onclick=refreshDetails(event) title="Refresh details information."><div class="viewSelector12"></div></div>
+                        <div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div>
+                    </div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
                 <div id=p17info style="overflow-y:auto">
@@ -1113,7 +1121,7 @@
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px;position:relative valign=top>
-                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo width=64 height=64>
+                                <img id="p30userAuthServiceLogo" style="display:none" class=userAuthStrategyLogo width=64 height=64>
                                 <picture id=MainUserImage style="display:none;border-width:0px;height:200px;width:200px;float:right" onclick="account_manageImage(1)">
                                     <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
                                     <img alt="" width=200 height=200 src=images/user-256.png />
@@ -1514,15 +1522,16 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         if ((webState == null) || (typeof webState != 'object')) { webState = {}; }
-        for (var i in webState) { if (i != 'desktopsettings') { try { localStorage.setItem(i, webState[i]); } catch (ex) {} } }
-        if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) {} }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
         var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
+        var domainStates = ["None", "Azure AD", "On-Premises AD", "Hybrid AD", "Microsoft Account"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -1551,6 +1560,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var features3 = parseInt('{{{features3}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -1590,6 +1600,7 @@
         var installedPluginList = null;
         var goBackStack = [];
         var CollapsedGroups = {};
+        var collapseGroups = '{{{collapseGroups}}}';
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
         var deviceViewSettings = {};
         try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch(ex) {}
@@ -1597,6 +1608,7 @@
         try { userViewSettings = JSON.parse(getstore('_usersViewSettings', '{}')); } catch(ex) {}
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
         var miscState = {};
         var checkedNodeids = {};
@@ -1732,6 +1744,9 @@
 
             // Show the modern ui switcher
             QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
+
+            // Show Connect All and Disconnect All
+            QV('KvmDesktopButtons', ((features3 & 0x00000001) == 0) ? true : false);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
@@ -2452,7 +2467,8 @@
                     files = null;
                 }
                 if (serverinfo.logoutonidlesessiontimeout) {
-                    window.location.href = 'logout';
+                    if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
+					else { window.location.href = 'logout'; }
                 }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
@@ -2671,6 +2687,10 @@
                     updateDevicePageState();
 
                     mainUpdate(1 | 2 | 4 | 64);
+                    
+                    // If groups are to be collapsed by default, do it now
+                    if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
+                    
                     break;
                 }
                 case 'powertimeline': {
@@ -2701,6 +2721,7 @@
                     if (message.noinfo === true) {
                         updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
+                        message.hardware.time = message.time;
                         updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
                     }
                     break;
@@ -2856,6 +2877,7 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid))  {
                         var x = '<div class=dialogText>';
+                        if (currentNode.firstconnect) { x += addHtmlValue2("First agent connection", printDateTime(new Date(currentNode.firstconnect))); }
                         if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
                         if (currentNode.lastaddr) {
                             var splitip = currentNode.lastaddr.split(':');
@@ -3547,6 +3569,7 @@
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
                                 node.lusers = message.event.node.lusers;
+                                node.upnusers = message.event.node.upnusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -3592,11 +3615,13 @@
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
+                                if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
                                 if (message.event.node.lastbootuptime != null) { node.lastbootuptime = message.event.node.lastbootuptime; }
+                                if (message.event.node.idletime != null) { node.idletime = message.event.node.idletime; }
 
                                 // Check if this device has changed device group
                                 if (message.event.node.meshid != node.meshid) {
@@ -4177,6 +4202,7 @@
             x += '<label><input id=d2c12 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0)?' checked':'') + '>' + "Windows Update" + '</label><br />';
             x += '<label><input id=d2c13 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0)?' checked':'') + '>' + "Windows Firewall" + '</label><br />';
             x += '<label><input id=d2c14 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0)?' checked':'') + '>' + "Last Boot Up Time" + '</label><br />';
+            x += '<label><input id=d2c16 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('idletime') >= 0)?' checked':'') + '>' + "Idle Time" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
@@ -4204,6 +4230,7 @@
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
             if (Q('d2c14').checked) { cols.push('lastbootuptime'); }
             if (Q('d2c15').checked) { cols.push('amthost'); }
+            if (Q('d2c16').checked) { cols.push('idletime'); }
             if (Q('d2c17').checked) { cols.push('amtstate'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
@@ -4646,6 +4673,7 @@
                         if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Update"; }
                         if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Firewall"; }
                         if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Boot Up Time"; }
+                        if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { colums += '<th style=color:gray;width:100px title="' + "Updated every 5 Minutes" + '">' + "Idle Time"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
@@ -4963,6 +4991,9 @@
                 if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { // Last Boot Up Time
                     r += '<td style=text-align:center;font-size:x-small>' + ((node.lastbootuptime != null) ? printDateTime(new Date(node.lastbootuptime)) : "");
                 }
+                if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { // Idle Time
+                    r += '<td style=text-align:center;font-size:x-small>' + ((node.idletime != null && node.idletime != -1) ? printTimer(node.idletime) : "");
+                }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
                 if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + EscapeHtml(ip); } // IP address
@@ -5266,6 +5297,7 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
+            changeDesktopSettingsTab(null, 'd7meshkvm');
             setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
         }
 
@@ -5447,7 +5479,7 @@
         // Intel AMT ACM activation using setup.bin
         function showAmtAcmSetup() {
             if (xxdialogMode) return false;
-            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MBEx password. " + '</div></table>';
+            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formatted USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MEBx password. " + '</div></table>';
             x += addHtmlValue("Old Password", '<input id=dp1password0 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password1 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password2 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
@@ -5623,7 +5655,7 @@
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
             if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
             opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
+            opts += '<option value=3>' + "Windows (Uninstall)" + '</option><option value=4>' + "Linux / BSD (Uninstall)" + '</option><option value=8>' + "Apple macOS (Uninstall)" + '</option></select>';
             x += addHtmlValue("Operating System", opts);
 
             var servername = serverinfo.name;
@@ -5633,7 +5665,7 @@
 
             // Add Linux/macOS binary installer option
             var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 45, 16, 29 ];
-            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
@@ -5651,7 +5683,7 @@
             meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
 
             // Windows agent install
-            x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_windows>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
@@ -5659,12 +5691,12 @@
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
+            x += '<div id=agins_linux style=display:none>' + format("To add a new computer to the device group of \"{0}\", run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" beforehand." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
 
             // macOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)>');
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
@@ -5690,7 +5722,7 @@
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
+            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"Uninstall\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
@@ -5702,12 +5734,12 @@
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
+            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right-click the \".mpkg\" file and select \"Show Package Contents\", then right-click \"Uninstall.command\" and select \"Open\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
             // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
+            x += '<div id=agins_linux_inst style=display:none>' + "This is an executable on OSs with graphical user interfaces." + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine by running 'xattr -r -d com.apple.quarantine meshagent'." + '<br /><br />' + "You need to run 'chmod +x meshagent', and then run this file." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
             x += '</div>';
@@ -6017,7 +6049,7 @@
             } else if (op == 109) {
                 // Upload files
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (((n.agent.id > 0) && (n.agent.id < 5)) || (n.agent.id == 34)) { wintype = true; } else { linuxtype = true; } } }
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
                 var x = "Upload selected files to all selected devices" + '<br /><br />';
                 x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
                 x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
@@ -6187,7 +6219,7 @@
             for (var i in options.nodeids) {
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
                 // Fetch run options
@@ -6334,20 +6366,20 @@
         function getDevicesThatMatchFilter(x) {
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
-            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
-            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
-            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
-            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
-            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
-            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = x.substring("tag:".length); }
-            else if (x.startsWith("t:".toLowerCase())) { tagSearch = x.substring("t:".length); }
-            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = x.substring("atag:".length); }
-            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = x.substring("a:".length); }
-            else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
-            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
-            else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
-            else if (x.startsWith("connectivity:".toLowerCase())) { connectivitySearch = x.substring("connectivity:".length); }
-            else if (x.startsWith("c:".toLowerCase())) { connectivitySearch = x.substring("c:".length); }
+            if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
+            else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
+            else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
+            else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
+            else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = x.substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = x.substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = x.substring('atag:'.length); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = x.substring('a:'.length); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = x.substring('os:'.length); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = x.substring('amt:'.length); }
+            else if (x.startsWith('desc:'.toLowerCase())) { descSearch = x.substring('desc:'.length); }
+            else if (x.startsWith('connectivity:'.toLowerCase())) { connectivitySearch = x.substring('connectivity:'.length); }
+            else if (x.startsWith('c:'.toLowerCase())) { connectivitySearch = x.substring('c:'.length); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -7687,6 +7719,7 @@
                     var y = [];
                     if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
@@ -7707,11 +7740,19 @@
 
                 // Active Users
                 if (node.users && node.users.length > 0) {
-                    var u = node.users.map(function(user) {
-                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    var u = node.users.map(function(user, index) {
+                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
+                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
+                        var escapedUser = EscapeHtml(user);
+                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
+                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
+                        else { return escapedUser; }
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
+                
+                // Windows Idle Time
+                if (node.idletime && node.idletime != -1) { x += addDeviceAttribute("Idle Time", printTimer(node.idletime)); }
 
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
@@ -8647,7 +8688,7 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false;
-                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (currentNode.agent) { if (isWindowsNode(currentNode)) { wintype = true; } else { linuxtype = true; } }
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
@@ -10745,7 +10786,7 @@
                         try { xterminal.m.TermResetScreen(); xterminal.m.TermDraw(); } catch (ex) { }
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (xterminal != null) { xterminal.Stop(); terminal = null; }
                     break;
@@ -10975,8 +11016,10 @@
                         // Setup the terminal with auto-fit
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
+                        xtermimage = new ImageAddon.ImageAddon();
                         xterm = new Terminal();
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
@@ -11348,7 +11391,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -11382,7 +11427,7 @@
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
                         h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
                     } else {
@@ -11402,7 +11447,7 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -11435,7 +11480,7 @@
         }
 
         function p13gotofolder() {
-            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
+            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'" style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
             focusTextBox('p13folderinput');
         }
         function p13gotofolderEx() { 
@@ -11484,7 +11529,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winAgent) { path = slash + path; }
@@ -11516,6 +11561,7 @@
             if (p13filetree == null) {
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);
+                QE('p13NewFileButton', false);
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13ViewFileButton', false);
@@ -11533,10 +11579,11 @@
                 QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
+                QE('p13NewFileButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', advancedFeatures && (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ViewFileButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
@@ -11574,6 +11621,8 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
+        function p13createfile() { setDialogMode(2, "New File", 3, p13createfileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfileEx() { files.sendText({ action: 'mkfile', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
@@ -11733,11 +11782,37 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    const crlf = (gdownloadFile.data.match(/\r\n/g) || []).length;
+                    const cr = (gdownloadFile.data.match(/\r(?!\n)/g) || []).length;
+                    const lf = (gdownloadFile.data.match(/(?<!\r)\n/g) || []).length;
+                    let type;
+                    if (crlf > 0 && cr === 0 && lf === 0) {
+                        type = 'crlf';
+                    } else if (lf > 0 && crlf === 0 && cr === 0) {
+                        type = 'lf';
+                    } else if (cr > 0 && crlf === 0 && lf === 0) {
+                        type = 'cr';
+                    } else {
+                        // Mixed - pick dominant
+                        const dominant = Math.max(crlf, cr, lf);
+                        if (dominant === crlf) type = 'crlf';
+                        else if (dominant === lf) type = 'lf';
+                        else type = 'cr';
+                    }
+                    if (type === 'crlf') {
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (type === 'lf') {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    } else {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    }
+                    d4ToggleLineBreak(true);
                     if (d4EditEncodingVal == 1) {
                         Q('d4editorarea').value = decode_utf8(gdownloadFile.data); // UTF8 Encoding
                     } else {
@@ -11830,7 +11905,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -12112,6 +12187,10 @@
             } else deviceDetailsStatsClear();
         }
 
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
+        }
+
         function deviceDetailsStatsClear() {
             QV('p17graph', false);
             if (window.deviceDetailsStatsChart != null) { window.deviceDetailsStatsChart.destroy(); delete window.deviceDetailsStatsChart; }
@@ -12175,6 +12254,7 @@
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
+				if(m.BuildRevision){ x += addDetailItem("Build Number", EscapeHtml(m.BuildRevision), s); }
                 if (m.OSArchitecture) {
                     if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
                     else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
@@ -12192,6 +12272,8 @@
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
+                if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
+                if(m.DomainState > 0){ x += addDetailItem("Domain State", (domainStates[m.DomainState] ? domainStates[m.DomainState] : "Unknown"), s); }
             }
             if(hardware.linux && hardware.linux.LastBootUpTime){
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
@@ -12215,6 +12297,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -12239,6 +12322,9 @@
                         var d = Date.parse(hardware.agentvers.compileTime)
                         x += addDetailItem("Compile time", isNaN(d)?hardware.agentvers.compileTime:printDateTime(new Date(d)));
                     }
+                }
+                if (hardware.time != null) {
+                    x += addDetailItem("Last details update", printDateTime(new Date(hardware.time)));
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
             }
@@ -12322,6 +12408,9 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
+                    }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
                         if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
@@ -12384,18 +12473,56 @@
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
                 if (ident.gpu_name) {  for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png'}); }
+
+                // System
+                x = '';
+                if (ident.chassis_manufacturer) { x += addDetailItem("Manufacturer", EscapeHtml(ident.chassis_manufacturer), s); }
+                if (ident.product_name) { x += addDetailItem("Product Name", EscapeHtml(ident.product_name), s); }
+                if (ident.chassis_serial) { x += addDetailItem("Serial", EscapeHtml(ident.chassis_serial), s); }
+                if (ident.chassis_assettag) { x += addDetailItem("Asset Tag", EscapeHtml(ident.chassis_assettag), s); }
+                if (x != '') { sections.push({ name: "System", html: x, img: 'system64.png' }); }
             }
 
             // TPM
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
-                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png'}); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png' }); }
+            }
+
+            // Batteries
+            if (hardware.battery) {
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery64.png'}); }
             }
 
             if (hardware.windows) {
@@ -14955,7 +15082,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -14968,12 +15097,12 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key)?('&key=' + urlargs.key):'';
                     if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '") width=10 height=10>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -15018,6 +15147,14 @@
             if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
             if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
             return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+        }
+
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -15412,7 +15549,8 @@
             160: "Enabled Duo two-factor authentication",
             161: "Disabled Duo two-factor authentication",
             162: "Started messenger session \"{0}\" from {1} to {2}",
-            163: "Removed device {0} from user group {1}"
+            163: "Removed device {0} from user group {1}",
+            164: "Create file: \"{0}\""
         };
 
         var eventsShortMessageId = {
@@ -17637,7 +17775,9 @@
 
                 // Filter out files
                 if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the size
                 var fsize = '';
@@ -17646,11 +17786,11 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
-                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -18075,14 +18215,14 @@
                         }
                     }
 
-                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
+                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;' + (notifications.length > 1 ? 'border-top:1px solid orange' : '') + '">';
                     if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
                     r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div><div style=margin-left:5px;margin-bottom:5px;color:gray;font-size:10px>' + printDateTime(d) + '</div></div>';
                 }
             }
             var deleteall = '';
-            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
-            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + deleteall + '</div>' );
+            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + deleteall + r + '</div>' );
         }
 
         // A notification was selected
@@ -18810,7 +18950,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0) && (userinfo != null) && (userinfo._id.split('/')[2][0] != '~')) { x = 52; }
 
             // Stop the list graph if active
             if (xxcurrentView == 17) deviceDetailsStatsClear();
@@ -19373,6 +19513,7 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function printTimer(d) { return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2); }
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
@@ -19398,14 +19539,11 @@
         function isMacNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([11,16,29].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            element.setAttribute('download', decodeURIComponent(name?name:''));
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 

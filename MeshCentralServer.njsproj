@@ -125,6 +125,7 @@
     <Compile Include="meshagent.js" />
     <Compile Include="meshdevicefile.js" />
     <Compile Include="meshuser.js" />
+    <Compile Include="monitoring.js" />
     <Compile Include="mpsserver.js" />
     <Compile Include="mqttbroker.js" />
     <Compile Include="apprelays.js" />

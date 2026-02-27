@@ -24,9 +24,16 @@ var agents = {
     'meshagent_alpine-x86-64': 33,
     'meshagent_mipsel24kc': 40,
     'meshagent_aarch64-cortex-a53': 41,
+    'MeshServiceARM64.exe': 43,
     // 'meshagent_armvirt32': 44,
     'meshagent_riscv64': 45,
     'meshagent_osx-universal-64': 10005
+}
+
+function getAgentInfo(filename, id) {
+    if (fs.existsSync(filename) != true) return null;
+    var stats = fs.statSync(filename);
+    return { filename: filename, hash: getSHA384FileHash(filename).toString('hex'), size: stats.size, mtime: stats.mtime };
 }
 
 var agentinfo = {};
@@ -36,9 +43,3 @@ for (var i in agents) {
 }
 console.log(JSON.stringify(agentinfo, null, 2));
 process.exit();
-
-function getAgentInfo(filename, id) {
-    if (fs.existsSync(filename) != true) return null;
-    var stats = fs.statSync(filename);
-    return { filename: filename, hash: getSHA384FileHash(filename).toString('hex'), size: stats.size, mtime: stats.mtime };
-}

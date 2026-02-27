@@ -12,10 +12,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{{domainurl}}}favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="{{{domainurl}}}favicon-32x32.png">
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
+    {{{customCSSTags}}}
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
     <meta name="apple-mobile-web-app-title" content="{{{title}}}">
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
+    {{{customJSTags}}}
     <script type="text/javascript" src="scripts/u2f-api{{min}}.js"></script>
     <meta name="msapplication-TileColor" content="#00aba9">
     <meta name="theme-color" content="#ffffff">
@@ -85,16 +87,16 @@
                                     <div id="authStrategies" style="display:none">
                                         <hr />
                                         <div style="margin-bottom:8px">Log in using an existing account</div>
-                                        <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
-                                        <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
-                                        <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
-                                        <a id="auth-azure" href="auth-azure" style="display:none"><img src="images/login/azure32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Azure" /></a>
-                                        <a id="auth-oidc" href="auth-oidc" style="display:none"><img src="images/login/oidc32.png" srcset="images/login/oidc64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using OpenID Connect" /></a>
-                                        <a id="auth-oidc-azure" href="auth-oidc" style="display:none"><img src="images/login/azure32.png" srcset="images/login/azure64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in with Azure using OpenID Connect" /></a>
-                                        <a id="auth-oidc-google" href="auth-oidc" style="display:none"><img src="images/login/google32.png" srcset="images/login/google64.png 2x" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in with Google using OpenID Connect" /></a>
-                                        <a id="auth-jumpcloud" href="auth-jumpcloud" style="display:none"><img src="images/login/jumpcloud32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using JumpCloud" /></a>
-                                        <a id="auth-intel" href="auth-intel" style="display:none"><img src="images/login/intel32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Intel" /></a>
-                                        <a id="auth-saml" href="auth-saml" style="display:none"><img src="images/login/generic32.png" loading="lazy" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-in" /></a>
+                                        <a id="auth-twitter" href="auth-twitter" style="display:none"><img src="images/login/twitter32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Twitter" /></a>
+                                        <a id="auth-google" href="auth-google" style="display:none"><img src="images/login/google32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Google" /></a>
+                                        <a id="auth-github" href="auth-github" style="display:none"><img src="images/login/github32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using GitHub" /></a>
+                                        <a id="auth-azure" href="auth-azure" style="display:none"><img src="images/login/azure32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Azure" /></a>
+                                        <a id="auth-oidc" href="auth-oidc" title="Sign-in using OpenID Connect" style="display:none"><img src="{{oidcButtonIcon}}" srcset="{{oidcButtonIcon2x}}" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:white" /></a>
+                                        <a id="auth-oidc-azure" href="auth-oidc" title="Sign-in with Azure using OpenID Connect" style="display:none"><img src="{{oidcButtonIcon}}" srcset="{{oidcButtonIcon2x}}" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:white" /></a>
+                                        <a id="auth-oidc-google" href="auth-oidc" title="Sign-in with Google using OpenID Connect" style="display:none"><img src="{{oidcButtonIcon}}" srcset="{{oidcButtonIcon2x}}" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer;background-color:white" /></a>
+                                        <a id="auth-jumpcloud" href="auth-jumpcloud" style="display:none"><img src="images/login/jumpcloud32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using JumpCloud" /></a>
+                                        <a id="auth-intel" href="auth-intel" style="display:none"><img src="images/login/intel32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Sign-in using Intel" /></a>
+                                        <a id="auth-saml" href="auth-saml" style="display:none"><img src="images/login/generic32.png" width="32" height="32" style="margin-left:3px;margin-right:3px;border-radius:3px;box-shadow:2px 2px 5px black;cursor:pointer" title="Single Sign-in" /></a>
                                     </div>
                                 </form>
                             </div>
@@ -134,7 +136,7 @@
                                             </tr>
                                             <tr id=newAccountCaptchaImg title="CAPTCHA image">
                                                 <td></td>
-                                                <td colspan=2><img src="{{{newAccountCaptchaImage}}}" loading="lazy" /></td>
+                                                <td colspan=2><img src="{{{newAccountCaptchaImage}}}" /></td>
                                             </tr>
                                             <tr id=newAccountCaptcha title="Security check">
                                                 <td id="nuCaptcha" align=right>Security Check:</td>
@@ -418,6 +420,13 @@
                 if (authStrategies.indexOf('jumpcloud') >= 0) { QV('auth-jumpcloud', true); }
                 if (authStrategies.indexOf('intel') >= 0) { QV('auth-intel', true); }
                 if (authStrategies.indexOf('saml') >= 0) { QV('auth-saml', true); }
+                // Override OIDC button title if custom text is configured by admin
+                var oidcButtonText = '{{{oidcButtonText}}}';
+                if (oidcButtonText != '') {
+                    Q('auth-oidc').title = oidcButtonText;
+                    Q('auth-oidc-azure').title = oidcButtonText;
+                    Q('auth-oidc-google').title = oidcButtonText;
+                }
             }
 
             window.onresize = center;

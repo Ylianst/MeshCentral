@@ -12,6 +12,8 @@ python -m pip install --upgrade pip #only 1st time or use periodically to update
 pip install pytest #only 1st time
 pip install mkdocs #only 1st time
 pip install mkdocs-material #only 1st time
+pip install mkdocs-print-site-plugin #only 1st time
+pip install pymdown-extensions #only 1st time
 
 #Run mkdocs and look at changes as you make them
 start-process http://localhost:8010 #Opens Browser

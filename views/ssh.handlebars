@@ -9,6 +9,7 @@
     <meta name="robots" content="noindex,nofollow">
     <link type="text/css" href="styles/style.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
+    {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{min}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{min}}.js"></script>
@@ -16,6 +17,8 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{min}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-min.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit-min.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image-min.js"></script>
+    {{{customJSTags}}}
     <title>SSH</title>
 </head>
 <body style="overflow:hidden;background-color:black" onload="start()">
@@ -69,6 +72,7 @@
         var random = '{{{randomlength}}}' // Random length string for BREACH mitigation
         var term = null;
         var termfit = null;
+        var termimage = null;
         var resizeTimer = null;
         var urlargs = parseUriArgs();
         if (urlargs.key && (isAlphaNumeric(urlargs.key) == false)) { delete urlargs.key; }
@@ -101,8 +105,10 @@
             // Setup the terminal with auto-fit
             if (term != null) { term.dispose(); }
             if (urlargs.fixsize != 1) { termfit = new FitAddon.FitAddon(); }
+            termimage = new ImageAddon.ImageAddon();
             term = new Terminal();
             if (termfit) { term.loadAddon(termfit); }
+            term.loadAddon(termimage);
             term.open(Q('terminal'));
             term.onData(function (data) { if (state == 3) { socket.send('~' + data); } });
             if (termfit) { termfit.fit(); }

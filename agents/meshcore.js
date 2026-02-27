@@ -83,12 +83,12 @@ function bcdOK() {
 }
 function getDomainInfo() {
     var hostname = require('os').hostname();
-    var ret = { Name: hostname, Domain: "" };
+    var ret = { Name: hostname, Domain: "", PartOfDomain: false };
 
     switch (process.platform) {
         case 'win32':
             try {
-                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain'])[0];
+                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
             }
             catch (x) {
             }
@@ -126,7 +126,7 @@ function getDomainInfo() {
                 }
                 while (names.length > 0) {
                     if (hostname.endsWith('.' + names.peek())) {
-                        ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek() };
+                        ret = { Name: hostname.substring(0, hostname.length - names.peek().length - 1), Domain: names.peek(), PartOfDomain: true };
                         break;
                     }
                     names.pop();
@@ -137,6 +137,122 @@ function getDomainInfo() {
     return (ret);
 }
 
+function getLoggedOnUserBySessionId(sessionId) {
+    try {
+        const result = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine,
+            ("SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Authentication\\LogonUI\\SessionData\\" + sessionId), 'LoggedOnUser'
+        );
+
+        if (result) {
+            return result.replace(/^[^\\]+\\/, '');
+        }
+
+        return null;
+
+    } catch (err) {
+        return null;
+    }
+}
+
+function getLogonCacheKeys() {
+    var registry = require('win-registry');
+    var HKLM = registry.HKEY.LocalMachine;
+
+    var userObj = [];
+
+    function readSubKeys(path) {
+        var vals = registry.QueryKey(HKLM, path);
+        if (!vals) return;
+
+        // Extract IdentityName, SAMName, SID if they exist
+        var identityName = null, samName = null, sid = null;
+
+        for (var i = 0; i in vals.values; i++) {
+            if (vals.values[i].toLowerCase() === 'identityname' && identityName === null) {
+                identityName = registry.QueryKey(HKLM, path, vals.values[i]);
+            }
+            if (vals.values[i].toLowerCase() === 'samname' && samName === null) {
+                samName = registry.QueryKey(HKLM, path, vals.values[i]); 
+            }
+            if (vals.values[i].toLowerCase() === 'sid' && sid === null) {
+                sid = registry.QueryKey(HKLM, path, vals.values[i]);
+            }
+        }
+
+        // If IdentityName exists, add to userObj
+        if (identityName) {
+            userObj.push({
+                UPN: identityName,
+                SAM: samName,
+                SID: sid
+            });
+        }
+
+        // Recurse into subkeys if any
+        if (vals.subkeys && vals.subkeys.length > 0) {
+            for (var j = 0; j < vals.subkeys.length; j++) {
+                readSubKeys(path + '\\' + vals.subkeys[j]);
+            }
+        }
+    }
+
+    // Start recursion from the LogonCache root
+    readSubKeys('SOFTWARE\\Microsoft\\IdentityStore\\LogonCache');
+
+    var grouped = {};
+
+    function pushUnique(arr, val) {
+        if (val && arr.indexOf(val) === -1) arr.push(val);
+    }
+
+    // Group by UPN and merge values
+    for (var i = 0; i < userObj.length; i++) {
+        var u = userObj[i];
+
+        if (!grouped[u.UPN]) grouped[u.UPN] = {UPN: u.UPN, SID: [], SAM: []};
+
+        pushUnique(grouped[u.UPN].SID, u.SID);
+        pushUnique(grouped[u.UPN].SAM, u.SAM);
+    }
+
+    userObj = [];
+    // Convert grouped object to array
+    for (var k in grouped) if (grouped.hasOwnProperty(k)) userObj.push(grouped[k]);
+
+    return userObj;
+
+}
+
+function getJoinState() {
+    if (process.platform != 'win32') { return -1; }
+    var isAzureAD = false;
+    var isOnPrem = false;
+    var isHybrid = false;
+    var isMicrosoft = false;
+    // 1 Azure AD / Entra ID
+    try {
+        const joinInfo = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\CloudDomainJoin\\JoinInfo');
+        isAzureAD = Array.isArray(joinInfo.subkeys) && joinInfo.subkeys.length > 0;
+    } catch (e) {}
+    // 2 On-prem AD
+    try {
+        const tcpip = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters','Domain');
+        isOnPrem = !!(tcpip !== "" || null);
+    } catch (e) {}
+    // 3 Hybrid AD
+    isHybrid = isAzureAD && isOnPrem;
+    // 4 Microsoft Account
+    try {
+        const userAccounts = require('win-registry').QueryKey(require('win-registry').HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\IdentityStore\\LogonCache\\D7F9888F-E3FC-49b0-9EA6-A85B5F392A4F');
+        isMicrosoft = Array.isArray(userAccounts.subkeys) && userAccounts.subkeys.length > 0;
+    } catch (e) {}
+    if (isMicrosoft) return 4;
+    if (isHybrid) return 3;
+    if (isOnPrem) return 2;
+    if (isAzureAD) return 1;
+    return 0;
+
+}
 
 
 try {
@@ -681,11 +797,42 @@ function onUserSessionChanged(user, locked) {
 
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
+        if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
+        var ret = getDomainInfo();
         for (var i = 0; i < a.length; i++) {
             var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
             if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
             else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
+            if ((a[i].Domain != null && a[i].Domain == 'AzureAD') || getJoinState() == 1 ){
+				var userobj = getLogonCacheKeys();
+                if(userobj && userobj.length > 0){
+                    for (var j = 0; j < userobj.length; j++) {
+                        if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === a[i].Username) {
+                            meshCoreObj.upnusers.push(userobj[j].UPN);
+                            break;
+                        }
+                    }
+                }  
+            } else if (a[i].Domain != null) {
+                if (ret != null && ret.PartOfDomain === true) {
+					var loggedOnUser = getLoggedOnUserBySessionId(a[i].SessionId);
+                    if(loggedOnUser == null || (/^[^@]+@[^@]+\.[^@]+$/.test(loggedOnUser) == false)){
+                        loggedOnUser = a[i].Username + '@' + ret.Domain;
+                    }
+                    meshCoreObj.upnusers.push(loggedOnUser);
+                } else if (getJoinState() == 4) { // One account with Microsoft Account
+                    var userobj = getLogonCacheKeys();
+                    if(userobj && userobj.length > 0){
+                        for (var j = 0; j < userobj.length; j++) {
+                            if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
+                                meshCoreObj.upnusers.push(userobj[j].UPN);
+                                break;
+                            }
+                        }
+                    }  
+                }
+            }
         }
         meshCoreObj.lusers = meshCoreObj.lusers;
         meshCoreObj.users = u;
@@ -813,32 +960,43 @@ var getIpLocationDataExInProgress = false;
 var getIpLocationDataExCounts = [0, 0];
 function getIpLocationDataEx(func) {
     if (getIpLocationDataExInProgress == true) { return false; }
-    try {
         getIpLocationDataExInProgress = true;
         getIpLocationDataExCounts[0]++;
-        var options = http.parseUri("http://ipinfo.io/json");
+
+    function tryEndpoint(url, fallback) {
+        var options = http.parseUri(url);
         options.method = 'GET';
         http.request(options, function (resp) {
-            if (resp.statusCode == 200) {
-                var geoData = '';
-                resp.data = function (geoipdata) { geoData += geoipdata; };
+            var geoData = '';
+            resp.data = function (chunk) { geoData += chunk; };
                 resp.end = function () {
-                    var location = null;
                     try {
-                        if (typeof geoData == 'string') {
-                            var result = JSON.parse(geoData);
-                            if (result.ip && result.loc) { location = result; }
+                        var result = JSON.parse(geoData);
+                        if (result.ip && result.loc) {
+                            getIpLocationDataExInProgress = false;
+                            getIpLocationDataExCounts[1]++;
+                            func(result);
+                            return;
                         }
                     } catch (ex) { }
-                    if (func) { getIpLocationDataExCounts[1]++; func(location); }
-                }
-            } else
-            { func(null); }
-            getIpLocationDataExInProgress = false;
+                    if (fallback) { fallback(); } else { done(null); }
+                };
+            if (resp.statusCode != 200) { if (fallback) { fallback(); } else { done(null); } }
+        }).on('error', function () {
+            if (fallback) { fallback(); } else { done(null); }
         }).end();
-        return true;
     }
-    catch (ex) { return false; }
+
+    function done(result) {
+        getIpLocationDataExInProgress = false;
+        if (func) { func(result); }
+    }
+
+    tryEndpoint('http://v6.ipinfo.io/json', function () {
+        tryEndpoint('http://ipinfo.io/json', null);
+    });
+
+    return true;
 }
 
 // Remove all Gateway MAC addresses for interface list. This is useful because the gateway MAC is not always populated reliably.
@@ -1176,6 +1334,13 @@ function handleServerCommand(data) {
                                 tunnel.consentTimeout = (tunnel.soptions && tunnel.soptions.consentTimeout) ? tunnel.soptions.consentTimeout : 30;
                                 tunnel.consentAutoAccept = (tunnel.soptions && (tunnel.soptions.consentAutoAccept === true));
                                 tunnel.consentAutoAcceptIfNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfNoUser === true));
+                                tunnel.consentAutoAcceptIfDesktopNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfDesktopNoUser === true));
+                                tunnel.consentAutoAcceptIfTerminalNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfTerminalNoUser === true));
+                                tunnel.consentAutoAcceptIfFileNoUser = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfFileNoUser === true));
+                                tunnel.consentAutoAcceptIfLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfLocked === true));
+                                tunnel.consentAutoAcceptIfDesktopLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfDesktopLocked === true));
+                                tunnel.consentAutoAcceptIfTerminalLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfTerminalLocked === true));
+                                tunnel.consentAutoAcceptIfFileLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfFileLocked === true));
                                 tunnel.oldStyle = (tunnel.soptions && tunnel.soptions.oldStyle) ? tunnel.soptions.oldStyle : false;
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
@@ -1515,6 +1680,13 @@ function handleServerCommand(data) {
                             MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
                             try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
                         }
+                        break;
+                    }
+                    case 'sysinfo': {
+                        // Send system information
+                        getSystemInformation(function (results) {
+                            if ((results != null) && (data.hash != results.hash)) { mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results }); }
+                        });
                         break;
                     }
                     default:
@@ -1898,7 +2070,12 @@ function getSystemInformation(func) {
             try { delete x.TotalVisibleMemorySize; } catch (ex) { }
             try {
                 if (results.hardware.windows.memory) { for (var i in results.hardware.windows.memory) { delete results.hardware.windows.memory[i].Node; } }
-                if (results.hardware.windows.osinfo) { delete results.hardware.windows.osinfo.Node; }
+                if (results.hardware.windows.osinfo) { 
+                    delete results.hardware.windows.osinfo.Node;
+                    results.hardware.windows.osinfo.Domain = getDomainInfo().Domain;
+                    results.hardware.windows.osinfo.PartOfDomain = getDomainInfo().PartOfDomain;
+                    results.hardware.windows.osinfo.DomainState = getJoinState();
+                }
                 if (results.hardware.windows.partitions) { for (var i in results.hardware.windows.partitions) { delete results.hardware.windows.partitions[i].Node; } }
             } catch (ex) { }
             if (x.LastBootUpTime) { // detect windows uptime
@@ -1978,7 +2155,7 @@ function getSystemInformation(func) {
     } catch (ex) { func(null, ex); }
 }
 
-// Get a formated response for a given directory path
+// Get a formatted response for a given directory path
 function getDirectoryInfo(reqpath) {
     var response = { path: reqpath, dir: [] };
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
@@ -3067,7 +3244,7 @@ function onTunnelData(data)
                 // Perform User-Consent if needed. 
                 if (this.httprequest.consent && (this.httprequest.consent & 16)) {
                     // User asked for consent so now we check if we can auto accept if no user is present/loggedin
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                    if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfTerminalNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfTerminalLocked) {
                         var p = require('user-sessions').enumerateUsers();
                         p.sessionid = this.httprequest.sessionid;
                         p.ws = this;
@@ -3076,10 +3253,35 @@ function onTunnelData(data)
                             for (var i in u) {
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
-                            if (v.length == 0) { // No user is present, auto accept
+                            var autoAccept = false;
+                            
+                            // Check if we should auto-accept because no user is present
+                            if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfTerminalNoUser) && (v.length == 0)) {
+                                autoAccept = true;
+                            }
+                            
+                            // Check if we should auto-accept because all users are locked
+                            if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfTerminalLocked) && (v.length > 0)) {
+                                var allUsersLocked = true;
+                                if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                    // No locked users list available, assume users are not locked
+                                    allUsersLocked = false;
+                                } else {
+                                    for (var i in v) {
+                                        var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                        if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                            allUsersLocked = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (allUsersLocked) { autoAccept = true; }
+                            }
+                            
+                            if (autoAccept) {
                                 this.ws.httprequest.tpromise._res();
                             } else { 
-                                // User is present so we still need consent
+                                // User is present and not all locked, so we still need consent
                                 terminal_consent_ask(this.ws);
                             }
                         });
@@ -3188,7 +3390,7 @@ function onTunnelData(data)
                 if (this.httprequest.consent && (this.httprequest.consent & 8)) {
 
                     // User asked for consent but now we check if can auto accept if no user is present
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
+                    if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfDesktopNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfDesktopLocked) {
                         // Get list of users to check if we any actual users logged in, and if users logged in, we still need consent
                         var p = require('user-sessions').enumerateUsers();
                         p.sessionid = this.httprequest.sessionid;
@@ -3198,10 +3400,36 @@ function onTunnelData(data)
                             for (var i in u) {
                                 if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
                             }
-                            if (v.length == 0) { // No user is present, auto accept
+                            var autoAccept = false;
+                            
+                            // Check if we can auto-accept because no user is present
+                            if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfDesktopNoUser) && (v.length == 0)) {
+                                // No user is present, auto accept
+                                autoAccept = true;
+                            }
+                            
+                            // Check if we can auto-accept because all users are locked
+                            if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfDesktopLocked) && (v.length > 0)) {
+                                var allUsersLocked = true;
+                                if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                    // No locked users list available, assume users are not locked
+                                    allUsersLocked = false;
+                                } else {
+                                    for (var i in v) {
+                                        var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                        if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                            allUsersLocked = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (allUsersLocked) { autoAccept = true; }
+                            }
+                            
+                            if (autoAccept) {
                                 kvm_consent_ok(this.ws);
                             } else { 
-                                // User is present so we still need consent
+                                // User is present and not all locked, so we still need consent
                                 kvm_consent_ask(this.ws);
                             }
                         });
@@ -3259,31 +3487,55 @@ function onTunnelData(data)
                 };
 
                 // Perform notification if needed. Toast messages may not be supported on all platforms.
-                if (this.httprequest.consent && (this.httprequest.consent & 32))
-                {
+                if (this.httprequest.consent && (this.httprequest.consent & 32)) {
                     // User asked for consent so now we check if we can auto accept if no user is present/loggedin
-                    if (this.httprequest.consentAutoAcceptIfNoUser) {
-                        var p = require('user-sessions').enumerateUsers();
-                        p.sessionid = this.httprequest.sessionid;
-                        p.ws = this;
-                        p.then(function (u) {
-                            var v = [];
-                            for (var i in u) {
-                                if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
-                            }
-                            if (v.length == 0) { // No user is present, auto accept
-                                // User Consent Prompt is not required
-                                files_consent_ok(this.ws);
-                            } else { 
-                                // User is present so we still need consent
-                                files_consent_ask(this.ws);
-                            }
-                        });
+                    if (this.httprequest.consentAutoAcceptIfNoUser || this.httprequest.consentAutoAcceptIfFileNoUser || this.httprequest.consentAutoAcceptIfLocked || this.httprequest.consentAutoAcceptIfFileLocked) {
+                            var p = require('user-sessions').enumerateUsers();
+                            p.sessionid = this.httprequest.sessionid;
+                            p.ws = this;
+                            p.then(function (u) {
+                                var v = [];
+                                for (var i in u) {
+                                    if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
+                                }
+                                var autoAccept = false;
+                                
+                                // Check if we should auto-accept because no user is present
+                                if ((this.ws.httprequest.consentAutoAcceptIfNoUser || this.ws.httprequest.consentAutoAcceptIfFileNoUser) && (v.length == 0)) {
+                                    autoAccept = true;
+                                }
+                                
+                                // Check if we should auto-accept because all users are locked
+                                if ((this.ws.httprequest.consentAutoAcceptIfLocked || this.ws.httprequest.consentAutoAcceptIfFileLocked) && (v.length > 0)) {
+                                    var allUsersLocked = true;
+                                    if (!meshCoreObj.lusers || meshCoreObj.lusers.length == 0) {
+                                        // No locked users list available, assume users are not locked
+                                        allUsersLocked = false;
+                                    } else {
+                                        for (var i in v) {
+                                            var username = v[i].domain ? (v[i].domain + '\\' + v[i].user) : v[i].user;
+                                            if (meshCoreObj.lusers.indexOf(username) == -1) {
+                                                allUsersLocked = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (allUsersLocked) { autoAccept = true; }
+                                }
+                                
+                                if (autoAccept) {
+                                    // User Consent Prompt is not required
+                                    files_consent_ok(this.ws);
+                                } else { 
+                                    // User is present and not all locked, so we still need consent
+                                    files_consent_ask(this.ws);
+                                }
+                            });
                     } else {
-                        // User Consent Prompt is required
+                         // User Consent Prompt is required
                         files_consent_ask(this);
                     }
-                } else {
+                }  else {
                     // User Consent Prompt is not required
                     files_consent_ok(this);
                 }
@@ -3346,6 +3598,12 @@ function onTunnelData(data)
                     // Create a new empty folder
                     fs.mkdirSync(cmd.path);
                     MeshServerLogEx(44, [cmd.path], "Create folder: \"" + cmd.path + "\"", this.httprequest);
+                    break;
+                }
+                case 'mkfile': {
+                    // Create a new empty file
+                    fs.closeSync(fs.openSync(cmd.path, 'w'));
+                    MeshServerLogEx(164, [cmd.path], "Create file: \"" + cmd.path + "\"", this.httprequest);
                     break;
                 }
                 case 'rm': {
@@ -3962,15 +4220,19 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         var response = null;
         switch (cmd) {
             case 'help': { // Displays available commands
-                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,av,cpuinfo,sysinfo,apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
+                var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
+                availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
+                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo';
+                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,deskbackground';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
-                    try { require('win-info'); availcommands += ',installedapps,qfe'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',installedapps,qfe,defender,av,installedstoreapps'; } catch (ex) { }
+                    try { require('win-deskutils'); availcommands += ',mousetrails,idletime,deskbackground'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
                 if (process.platform != 'freebsd') { availcommands += ',vm'; }
@@ -4023,6 +4285,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         response = 'Proper usage: deskbackground [path]';
                         break;
                 }
+                break;
+            case 'idletime':
+                try { require('win-deskutils'); } catch (ex) { response = 'Unknown command "idletime", type "help" for list of available commands.'; break; }
+                require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) { sendConsoleText((seconds === -1 ? 'No active users' : 'Idle time for all sessions: ' + seconds + ' seconds'), sessionid); });
                 break;
             case 'taskbar':
                 try { require('win-utils'); } catch (ex) { response = 'Unknown command "taskbar", type "help" for list of available commands.'; break; }
@@ -4081,7 +4347,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'domaininfo':
                 {
                     if (process.platform != 'win32') {
-                        response = 'Unknown command "cs", type "help" for list of available commands.';
+                        response = 'Unknown command "domaininfo", type "help" for list of available commands.';
                         break;
                     }
                     if (global._domainQuery != null) {
@@ -4668,8 +4934,37 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     p.sessionid = sessionid;
                     p.then(function (u) {
                         var v = [];
+                        var ret = getDomainInfo();
                         for (var i in u) {
-                            if (u[i].State == 'Active') { v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain }); }
+                            if (u[i].State == 'Active') {
+                                if ((u[i].Domain != null && u[i].Domain == 'AzureAD') || getJoinState() == 1){
+                                    var userobj = getLogonCacheKeys();
+                                    if(userobj && userobj.length > 0){
+                                        for (var j = 0; j < userobj.length; j++) {
+                                            if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === u[i].Username) {
+                                                u[i].UPN = userobj[j].UPN
+                                                break;
+                                            }
+                                        }
+                                    }  
+                                } else if (u[i].Domain != null) {
+                                    if (ret != null && ret.PartOfDomain === true) {
+                                        u[i].UPN = u[i].Username + '@' + ret.Domain;
+                                    } else if (getJoinState() == 4) { // One account with Microsoft Account
+                                        var userobj = getLogonCacheKeys();
+                                        if(userobj && userobj.length > 0){
+                                            for (var j = 0; j < userobj.length; j++) {
+                                                if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
+                                                    u[i].UPN = userobj[j].UPN;
+                                                    break;
+                                                }
+                                            }
+                                        }  
+                                    }
+                                }
+                                if (u[i].UPN == null) { u[i].UPN = ''; }
+                                v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain, upn: u[i].UPN });
+                            }
                         }
                         sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
                     });
@@ -4808,6 +5103,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     response = 'Not supported on the platform';
                 }
                 break;
+            case 'defender':
+                 if (process.platform == 'win32') {
+                    // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
+                    response = JSON.stringify(require('win-info').defender(), null, 1);
+                } else {
+                    response = 'Not supported on the platform';
+                }
+                break;
             case 'log':
                 if (args['_'].length != 1) { response = 'Proper usage: log "sample text"'; } else { MeshServerLog(args['_'][0]); response = 'ok'; }
                 break;
@@ -4872,7 +5175,40 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'users': {
                 if (meshCoreObj.users == null) { response = 'Active users are unknown.'; } else { response = 'Active Users: ' + meshCoreObj.users.join(', ') + '.'; }
-                require('user-sessions').enumerateUsers().then(function (u) { for (var i in u) { sendConsoleText(u[i]); } });
+                require('user-sessions').enumerateUsers().then(function (u) { 
+                    var ret = getDomainInfo();
+                    for (var i in u) { 
+                       if ((u[i].Domain != null && u[i].Domain == 'AzureAD') || getJoinState() == 1){
+                            var userobj = getLogonCacheKeys();
+                            if(userobj && userobj.length > 0){
+                                for (var j = 0; j < userobj.length; j++) {
+                                    var a = userobj[j];
+                                    if (a && a.SAM && a.SAM[0].trim() === u[i].Username) {
+                                        u[i].UPN = a.UPN
+                                        break;
+                                    }
+                                }
+                            }  
+                        } else if (u[i].Domain != null) {
+                            if (ret != null && ret.PartOfDomain === true) {
+                                u[i].UPN = u[i].Username + '@' + ret.Domain;
+                            } else if (getJoinState() == 4) { // One account with Microsoft Account
+                                var userobj = getLogonCacheKeys();
+                                if(userobj && userobj.length > 0){
+                                    for (var j = 0; j < userobj.length; j++) {
+                                        var a = userobj[j];
+                                        if (a && a.SAM && a.SAM.length == 0 && a.UPN && a.UPN != '') {
+                                            u[i].UPN = a.UPN;
+                                            break;
+                                        }
+                                    }
+                                }  
+                            }
+                        }
+                        if (u[i].UPN == null) { u[i].UPN = ''; }
+                        sendConsoleText(u[i]);
+                    }
+                });
                 break;
             }
             case 'kvmusers':
@@ -5213,6 +5549,38 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'netinfo': { // Show network interface information
                 var interfaces = require('os').networkInterfaces();
+                if (process.platform == 'win32') {
+                    try {
+                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                        if (ret[0]) {
+                            var speedMap = {};
+                            for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
+                            var adapterNames = Object.keys(interfaces);
+                            for (var j = 0; j < adapterNames.length; j++) {
+                                var theinterfaces = interfaces[adapterNames[j]];
+                                for (var k = 0; k < theinterfaces.length; k++) {
+                                    var iface = theinterfaces[k], speed = speedMap[iface.index] || 0;
+                                    iface.speed = parseInt(speed); // bits per seconds
+                                }
+                            }
+                        }
+                    } catch(ex) { }
+                } else if (process.platform == 'linux') {
+                    var adapterNames = Object.keys(interfaces);
+                    for (var i = 0; i < adapterNames.length; i++) {
+                        var ifaceName = adapterNames[i];
+                        try {
+                            var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
+                            if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
+                                var theinterfaces = interfaces[ifaceName];
+                                for (var k = 0; k < theinterfaces.length; k++) {
+                                    var iface = theinterfaces[k];
+                                    iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
+                                }
+                            }
+                        } catch(ex) { }
+                    }
+                }
                 response = objToString(interfaces, 0, ' ', true);
                 break;
             }
@@ -5409,6 +5777,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'installedapps': {
                 if(process.platform == 'win32'){
                     require('win-info').installedApps().then(function (apps){ sendConsoleText(JSON.stringify(apps,null,1)); });
+                }
+                break;
+            }
+            case 'installedstoreapps': {
+                if(process.platform == 'win32'){
+                    var apps = require('win-info').installedStoreApps();
+                    if (apps[0]) {
+                        sendConsoleText(JSON.stringify(apps,null,1));
+                    };
                 }
                 break;
             }
@@ -5881,7 +6258,7 @@ function handleServerConnection(state) {
         LastPeriodicServerUpdate = null;
         sendPeriodicServerUpdate(null, true);
         if (selfInfoUpdateTimer == null) {
-            selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 1200000); // 20 minutes
+            selfInfoUpdateTimer = setInterval(sendPeriodicServerUpdate, 300000); // 5 minutes
             selfInfoUpdateTimer.metadata = 'meshcore (InfoUpdate Timer)';
         }
 
@@ -5908,6 +6285,38 @@ function sendNetworkUpdate(force) {
     try {
         // Update the network interfaces information data
         var netInfo = { netif2: require('os').networkInterfaces() };
+        if (process.platform == 'win32') {
+            try {
+                var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                if (ret[0]) {
+                    var speedMap = {};
+                    for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
+                    var adapterNames = Object.keys(netInfo.netif2);
+                    for (var j = 0; j < adapterNames.length; j++) {
+                        var interfaces = netInfo.netif2[adapterNames[j]];
+                        for (var k = 0; k < interfaces.length; k++) {
+                            var iface = interfaces[k], speed = speedMap[iface.index] || 0;
+                            iface.speed = parseInt(speed); // bits per seconds
+                        }
+                    }
+                }
+            } catch(ex) { }
+        } else if (process.platform == 'linux') {
+            var adapterNames = Object.keys(netInfo.netif2);
+            for (var i = 0; i < adapterNames.length; i++) {
+                var ifaceName = adapterNames[i];
+                try {
+                    var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
+                    if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
+                        var theinterfaces = netInfo.netif2[ifaceName];
+                        for (var k = 0; k < theinterfaces.length; k++) {
+                            var iface = theinterfaces[k];
+                            iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
+                        }
+                    }
+                } catch(ex) { }
+            }
+        }
         if (netInfo.netif2) {
             netInfo.action = 'netinfo';
             var netInfoStr = JSON.stringify(netInfo);
@@ -5954,14 +6363,19 @@ function sendPeriodicServerUpdate(flags, force) {
             } catch (ex) { }
         }
 
-        // Get Defender for Windows Server
-        try { 
-            var d = require('win-info').defender();
-            d.then(function(res){
-                meshCoreObj.defender = res;
+        // Get Defender Information
+        try {
+            meshCoreObj.defender = require('win-info').defender();
+            meshCoreObjChanged();
+        } catch (ex) { }
+
+        // Calculate Windows Idle Time
+        try {
+            require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
+                meshCoreObj.idletime = seconds;
                 meshCoreObjChanged();
             });
-        } catch (ex) { }
+        } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
     }
 
     // Send available data right now

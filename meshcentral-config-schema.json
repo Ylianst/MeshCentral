@@ -96,10 +96,14 @@
           }
         },
         "sqlite3": {
-          "type": [ "boolean", "string", "object" ],
+          "type": [
+            "boolean",
+            "string",
+            "object"
+          ],
           "default": false,
           "description": "Set boolean true to use SQLite3 as a local MeshCentral database with default db filename 'meshcentral' or enter a string for a different db filename. Extension .sqlite is appended",
-          "properties":{
+          "properties": {
             "name": {
               "type": "string",
               "default": "meshcentral",
@@ -210,6 +214,11 @@
               "type": "string",
               "default": "meshcentral",
               "description": "Name of PostgreSQL database used"
+            },
+            "createdatabase": {
+              "type": "boolean",
+              "default": true,
+              "description": "Set to false to skip database existence check and creation. Useful when the connected user does not have permission to create databases."
             }
           }
         },
@@ -448,6 +457,17 @@
           "type": "boolean",
           "default": false,
           "description": "When enabled, the MeshCentral web site can be embedded within another website's iframe."
+        },
+        "allowedFramingOrigins": {
+          "type": [
+            "array",
+            "string"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "default": null,
+          "description": "List of origins allowed to embed MeshCentral in an iframe. Uses Content-Security-Policy frame-ancestors. 'self' is always included. Example: [\"https://rmm.example.com\"]. Comma-separated string also supported."
         },
         "cookieIpCheck": {
           "type": [
@@ -799,7 +819,7 @@
         "log": {
           "type": "string",
           "default": null,
-          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs."
+          "description": "You can set this value in the format 'web,agent,relay', where each value is separated by a comma. Each specified value will output logs to a file named 'log.txt' located inside the 'meshcentral-data' folder. Setting it to '*' will output all logs. Available values are: cookie,dispatch,main,peer,web,webrequest,relay,webrelaydata,webrelay,mps,mpscmd,swarm,swarmcmd,agentupdate,agent,cert,db,email,amt,httpheaders,websocket"
         },
         "syslog": {
           "type": "string",
@@ -889,7 +909,7 @@
             "mongoDumpArgs": {
               "type": "string",
               "description": "Override the default mongodump --uri=<mongoDb>. The --db= option is automatically appended if omitted. (f.e. --host=127.0.0.1 --username=someUser --password=PaSsWORD --authenticationDatabase=admin)"
-            },    
+            },
             "mysqlDumpPath": {
               "type": "string",
               "default": "mysqldump",
@@ -915,7 +935,7 @@
               "default": 10,
               "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
-            "zipCompression" : {
+            "zipCompression": {
               "type": "integer",
               "default": "5",
               "description": "Set the zip compression level, 1=fast/less small file to 9=slow/smallest file."
@@ -951,7 +971,7 @@
               "default": [],
               "description": "Glob for ignoring files in the data directory. For example [\"**/*.log\"] !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !! Don't do string..."
             },
-            "backupSkipFoldersGlob":{
+            "backupSkipFoldersGlob": {
               "type": "array",
               "default": [],
               "description": "Glob for ignoring directories in the data directory. For example [\"**/signedagents\"]"
@@ -1172,6 +1192,14 @@
             }
           }
         }
+      },
+      "patternProperties": {
+        "^_.*": {
+          "type": "null",
+          "x-disabled": true,
+          "x-enabled-name": "Remove underscore prefix to enable",
+          "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+        }
       }
     },
     "domaindefaults": {
@@ -1326,7 +1354,7 @@
             "items": {
               "type": "string"
             },
-            "description": "When set, new accounts will be added to these groups." 
+            "description": "When set, new accounts will be added to these groups."
           },
           "userNameIsEmail": {
             "type": "boolean",
@@ -1350,7 +1378,7 @@
             "items": {
               "type": "string"
             },
-            "description": "When set, new accounts will be added to these siteadmin rights."
+            "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
           },
           "allowedOrigin": {
             "type": [
@@ -1776,7 +1804,7 @@
                   "array"
                 ],
                 "default": true,
-                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array to only allow some users."
+                "description": "Allows users to create alternative username/passwords for their account. Set to false to disallow all users, or set to a userid array or to a groupid array to only allow some users."
               },
               "twoFactorTimeout": {
                 "type": "integer",
@@ -1793,11 +1821,15 @@
                 "default": null,
                 "description": "Maximum number of FIDO/YubikeyOTP hardware 2FA keys that can be setup in a user account."
               },
-              "fidopininput": {  
-                "type": "string",  
-                "default": "preferred",  
-                "enum": ["preferred", "required", "discouraged"],
-                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."  
+              "fidopininput": {
+                "type": "string",
+                "default": "preferred",
+                "enum": [
+                  "preferred",
+                  "required",
+                  "discouraged"
+                ],
+                "description": "Controls FIDO PIN prompt behavior: 'preferred' (asks only if key requires PIN), 'required' (always asks for PIN), or 'discouraged' (never asks for PIN). Default: 'preferred'."
               },
               "allowaccountreset": {
                 "type": "boolean",
@@ -1914,6 +1946,11 @@
             "default": false,
             "description": "When enabled, this will show the notes panel in the device view"
           },
+          "collapseGroups": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, device groups will be collapsed by default in the devices tab."
+          },
           "userSessionsSort": {
             "type": "string",
             "default": "SessionId",
@@ -1987,6 +2024,70 @@
           "customUI": {
             "type": "object"
           },
+          "themePack": {
+            "type": "string",
+            "description": "The name of the theme pack to use for this domain. Example: \"Stylish-UI\""
+          },
+          "customFiles": {
+            "type": "object",
+            "description": "Advanced customization system allowing multiple CSS and JavaScript file configurations per domain. Each configuration is identified by a unique name and can target specific templates using the 'scope' property, enabling granular control over where custom files are loaded. All custom files are loaded after the default custom.css and custom.js files.",
+            "properties": {
+              "example-config": {
+                "type": "object",
+                "description": "Example configuration - replace 'example-config' with your desired name",
+                "properties": {
+                  "css": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-web/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                  },
+                  "js": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-web/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                  },
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                  }
+                }
+              }
+            },
+            "additionalProperties": {
+              "type": "object",
+              "description": "Custom file configuration identified by a unique name",
+              "properties": {
+                "css": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom CSS files to load. Files are loaded in the specified order after the default custom.css. Place files in the meshcentral-web/public/styles/ directory. Example: [\"theme.css\", \"overrides.css\", \"mobile.css\"]"
+                },
+                "js": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Ordered list of custom JavaScript files to load. Files are loaded in the specified order after the default custom.js. Place files in the meshcentral-web/public/scripts/ directory. Example: [\"analytics.js\", \"custom-functions.js\", \"ui-enhancements.js\"]"
+                },
+                "scope": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "List of template names where these custom files should be loaded. If not specified or empty, files will NOT be loaded anywhere. Use 'all' to load on all templates. Available template names: all, default, default3, default-mobile, login, login2, login-mobile, messenger, message, message2, invite, agentinvite, player, xterm, mstsc, ssh, sharing, sharing-mobile, download, download2, terms, terms-mobile, error404, error4042, error404-mobile. Example: [\"default3\", \"login2\", \"player\"] or [\"all\"]"
+                }
+              }
+            }
+          },
           "consentMessages": {
             "type": "object",
             "description": "This section is used to customize user consent prompts, these show up when asking if a remote session is allowed or not.",
@@ -2020,7 +2121,42 @@
               "autoAcceptIfNoUser": {
                 "type": "boolean",
                 "default": false,
-                "description": "If true, user consent is accepted if no user is logged in."
+                "description": "If true, user consents for desktop, terminal, and file are accepted if no user is logged in."
+              },
+              "autoAcceptIfDesktopNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if no user is logged in."
+              },
+              "autoAcceptIfTerminalNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if no user is logged in."
+              },
+              "autoAcceptIfFileNoUser": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if no user is logged in."
+              },
+              "autoAcceptIfLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consents for desktop, terminal, and file are accepted if device is locked."
+              },
+              "autoAcceptIfDesktopLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for desktop access is accepted if device is locked."
+              },
+              "autoAcceptIfTerminalLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for terminal access is accepted if device is locked."
+              },
+              "autoAcceptIfFileLocked": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, user consent for file access is accepted if device is locked."
               },
               "oldStyle": {
                 "type": "boolean",
@@ -2373,6 +2509,11 @@
               "viewonly": {
                 "type": "boolean",
                 "description": "When set to true, the remote desktop feature is view only.",
+                "default": "false"
+              },
+              "disableconnectall": {
+                "type": "boolean",
+                "description": "When set to true, the 'Connect All','Disconnect All' and 'Auto' buttons are removed from the desktop tab.",
                 "default": "false"
               }
             }
@@ -2801,6 +2942,17 @@
               "secret"
             ]
           },
+          "allowedFramingOrigins": {
+            "type": [
+              "array",
+              "string"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "default": null,
+            "description": "Per-domain override. List of origins allowed to embed this domain in an iframe. Uses Content-Security-Policy frame-ancestors. Overrides settings.allowedFramingOrigins when set."
+          },
           "httpHeaders": {
             "type": "object",
             "additionalProperties": {
@@ -3092,7 +3244,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3144,7 +3296,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3196,7 +3348,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3205,6 +3357,26 @@
                   "clientsecret": {
                     "type": "string",
                     "description": "GitHub client secret."
+                  },
+                  "authorizationurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain an authorization grant from the user."
+                  },
+                  "tokenurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to exchange a code for an access token."
+                  },
+                  "userprofileurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain user profile information."
+                  },
+                  "useremailurl": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "The URL used to obtain user email information."
                   },
                   "logouturl": {
                     "type": "string",
@@ -3233,7 +3405,7 @@
                   },
                   "newAccountsUserGroups": {
                     "type": "array",
-                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",  
+                    "description": "When set, new accounts will be created for users that authenticate with Azure and added to the specified groups.",
                     "uniqueItems": true,
                     "items": {
                       "type": "string"
@@ -3248,7 +3420,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3305,7 +3477,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3368,7 +3540,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3450,7 +3622,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "When set, new accounts will be added to these siteadmin rights."
+                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3551,9 +3723,12 @@
                         ]
                       },
                       "post_logout_redirect_uri": {
-                        "type": "string",
+                        "type": [
+                          "string",
+                          "boolean"
+                        ],
                         "format": "uri",
-                        "description": "URI for your IdP to send you after logging out of IdP via MeshCentral. (Default is https:[currentHost][currentPath]/login)"
+                        "description": "URI for your IdP to send you after logging out of IdP via MeshCentral. (Default is https:[currentHost][currentPath]/login) OR set to false to not send a post logout redirect_uri"
                       },
                       "default_max_age": {
                         "type": "number",
@@ -3789,6 +3964,24 @@
                           "google"
                         ]
                       },
+                      "buttonText": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Custom text for the OIDC login buttons shown on the login page (tooltip only). Minimum 1 character, maximum 128 characters."
+                      },
+                      "buttonIconUrl": {
+                        "type": "string",
+                        "description": "URL to a hosted icon for standard displays (supports PNG, JPEG, WEBP, GIF, ICO, SVG). The server validates remote images before use; if validation fails the UI falls back to local login icons. Used for both 1x and 2x if buttonIconUrl2x is not set.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
+                      "buttonIconUrl2x": {
+                        "type": "string",
+                        "description": "Optional URL to a higher resolution icon for 2x/high-DPI displays. If not set, buttonIconUrl is used for both. The server validates remote images before use.",
+                        "format": "uri",
+                        "pattern": "^[hH][tT][tT][pP][sS]?://"
+                      },
                       "tenant_id": {
                         "type": "string",
                         "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"
@@ -3866,6 +4059,14 @@
               "bottom"
             ]
           }
+        },
+        "patternProperties": {
+          "^_.*": {
+            "type": "null",
+            "x-disabled": true,
+            "x-enabled-name": "Remove underscore prefix to enable",
+            "errorMessage": "⚠️ DISABLED SETTING - This setting is currently disabled. Remove the underscore (_) prefix to enable it."
+          }
         }
       }
     },
@@ -3902,6 +4103,32 @@
           "type": "boolean",
           "default": false,
           "description": "If you choose \"true\", MeshCentral won't verify if \"email\" is valid, has a valid MX record, AND if \"names\" doesn't contain a wildcard, can be resolved by DNS A/AAAA record."
+        },
+        "custom": {
+          "type": "object",
+          "description": "If this object is set, we will use a custom acme server with custom kid and hmackey for SSL creation instead of Let's Encrypt",
+          "required": [
+            "server",
+            "kid",
+            "hmackey"
+          ],
+          "properties": {
+            "server": {
+              "type": "string",
+              "description": "ACME server URL e.g. https://acme.zerossl.com/v2/DV90",
+              "default": ""
+            },
+            "kid": {
+              "type": "string",
+              "description": "EAB KID",
+              "default": ""
+            },
+            "hmackey": {
+              "type": "string",
+              "description": "EAB HMAC KEY",
+              "default": ""
+            }
+          }
         },
         "zerossl": {
           "type": "object",
@@ -4135,7 +4362,7 @@
               "description": "Twilio SID"
             },
             "auth": {
-              "type": "string", 
+              "type": "string",
               "description": "Twilio Auth Token"
             },
             "from": {
@@ -4368,6 +4595,14 @@
           "description": "Enabled Zulip integration support."
         }
       }
+    }
+  },
+  "patternProperties": {
+    "^_.*": {
+      "type": "null",
+      "x-disabled": true,
+      "x-enabled-name": "Remove underscore prefix to enable",
+      "errorMessage": "⚠️ DISABLED SECTION - This section is currently disabled. Remove the underscore (_) prefix to enable it."
     }
   }
 }

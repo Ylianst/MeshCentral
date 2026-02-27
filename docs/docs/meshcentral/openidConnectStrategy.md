@@ -284,9 +284,12 @@ There are many available options you can configure but most of them go unused. A
             "description": "URI your IdP sends you after successful authorization. This must match what is listed with your IdP. (Default is https://[currentHost][currentPath]/auth-oidc-callback)"
         },
         "post_logout_redirect_uri": {
-            "type": "string",
+            "type": [
+                "string",
+                "boolean"
+            ],
             "format": "uri",
-            "description": "URI for your IdP to send you after logging out of IdP via MeshCentral.",
+            "description": "URI for your IdP to send you after logging out of IdP via MeshCentral OR set to false to not send a post logout redirect_uri"
             "default": "https:[currentHost][currentPath]/login"
         },
         "id_token_signed_response_alg": { "type": "string", "default": "RS256" },
@@ -338,8 +341,9 @@ These are all the options that dont fit with the issuer or client, including the
 
 | Name     | Description                                      | Default                                                   | Example                             | Required |
 | -------- | ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------- | -------- |
-| `scope`  | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
-| `claims` | A group of claims to use instead of the defaults | Defauts to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
+| `scope`      | A list of scopes to request from the issuer.     | `"openid profile email"`                                  | `["openid", "profile"]`             | `false`  |
+| `claims`     | A group of claims to use instead of the defaults | Defaults to name of property except that `uuid` used `sub` | `"claims": {"uuid": "unique_name"}` | `false`  |
+| `buttonText` | Custom tooltip for the OIDC login button. Min 1 character. Max 128 characters. | `Sign-in using OpenID Connect`                             | `"buttonText": "Login to Custom SSO Brand"` | `false` |
 
 #### *Advanced Config Example*
 
@@ -350,7 +354,8 @@ These are all the options that dont fit with the issuer or client, including the
     "claims": {
         "name": "nameOfUser",
         "email": "publicEmail"
-    }
+    },
+    "buttonText": "Login to Custom SSO Brand"
 },
 ```
 
@@ -381,11 +386,68 @@ As should be apparent by the name alone, the custom property does not need to be
         },
         "preset": { "type": "string", "enum": ["azure", "google"]},
         "tenant_id": { "type": "string", "description": "REQUIRED FOR AZURE PRESET: Tenantid for Azure"},
-        "customer_id": { "type": "string", "description": "REQUIRED FOR GOOGLE PRESET IF USING GROUPS: Customer ID from Google, should start with 'C'."}
+        "customer_id": { "type": "string", "description": "REQUIRED FOR GOOGLE PRESET IF USING GROUPS: Customer ID from Google, should start with 'C'."},
+        "buttonText": { "type": "string", "description": "Custom text for the OIDC login button. Default: 'Sign-in using OpenID Connect'."}
     },
     "additionalProperties": false
 },
 ```
+
+#### *Custom Login Button*
+
+MeshCentral allows customizing the tooltip/label text shown on OpenID Connect login buttons via the `authStrategies.oidc.custom` object. These settings are optional and can be defined per-domain and are part of the `custom` object described above.
+
+| Preset | Default button text |
+| --- | --- |
+| Generic (no preset) | `Sign-in using OpenID Connect` |
+| Google preset | `Sign-in with Google using OpenID Connect` |
+| Azure preset | `Sign-in with Azure using OpenID Connect` |
+
+Example:
+
+```json
+"authStrategies": {
+    "oidc": {
+        "custom": {
+            "buttonText": "Login to Custom SSO Brand"
+        }
+    }
+}
+```
+
+These properties only affect the login page UI (button tooltip) and are safe to set for branding or clarity. If using a custom button text, it will not be translated when changing languages.
+
+#### *Custom Icon*
+
+The OIDC login button icon can be customized by setting a remote image URL in the domain config under `authStrategies.oidc.custom`. MeshCentral will validate the image at startup and use it for the login button. Example:
+
+```json
+"authStrategies": {
+    "oidc": {
+        "custom": {
+            "buttonIconUrl": "https://cdn.example.com/icons/oidc32.png",
+            "buttonIconUrl2x": "https://cdn.example.com/icons/oidc64.png",
+            "buttonText": "Login to Custom SSO Brand"
+        }
+    }
+}
+```
+
+- **Server-side validation:** remote URLs are validated before use (timeouts, size limits, content-type checks and magic-byte inspection). If validation fails the UI falls back to the built-in local icons.
+- **Allowed formats:** PNG, JPEG, WEBP, GIF, ICO, and SVG.
+- **2x icon:** if `buttonIconUrl2x` is not set, `buttonIconUrl` is used for both standard and high-DPI displays.
+- **Fallback behavior:** if a remote image is not provided or validation fails, MeshCentral uses the default local icons (or any local overrides, see note below).
+
+!!! note "Alternative: local file replacement"
+    You can also replace the login icons on disk instead of using a remote URL. Create `meshcentral-web/public/images/login` in the MeshCentral installation root and copy the original icons from `node_modules/meshcentral/public/images/login` into it. Replace the files you want to change while keeping the same filenames and sizes:
+
+    | Icon | Filenames | Size / Notes |
+    | --- | --- | --- |
+    | Generic OIDC | `oidc32.png`, `oidc64.png` | 32x32, 64x64 (@2x) |
+    | Google preset | `google32.png`, `google64.png` | 32x32, 64x64 (@2x) |
+    | Azure preset | `azure32.png`, `azure64.png` | 32x32, 64x64 (@2x) |
+
+    Restart MeshCentral (or hard-refresh your browser) after replacing files. For full whitelabeling guidance see the Web Branding section: [customization.md](customization.md#customizing-web-icons).
 
 ### "Groups" Options
 
@@ -509,7 +571,8 @@ If you notice above I forgot to add any preset related configs, however because 
     },
     "custom": {
         "preset": "google",
-        "customer_id": "C46kyhmps"
+        "customer_id": "C46kyhmps",
+        "buttonText": "Custom Button Text"
     },
     "groups": {
         "siteadmin": ["GroupA", "GroupB"],
