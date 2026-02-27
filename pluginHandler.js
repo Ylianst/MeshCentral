@@ -253,8 +253,7 @@ module.exports.pluginHandler = function (parent) {
             if (configUrl.indexOf('://') === -1) reject("Unable to fetch the config: Bad URL (" + configUrl + ")");
             var options = require('url').parse(configUrl);
             if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
-                const HttpsProxyAgent = require('https-proxy-agent');
-                options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+                options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy));
             }
             http.get(options, function (res) {
                 var configStr = '';
