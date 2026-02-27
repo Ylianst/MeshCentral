@@ -252,8 +252,8 @@ module.exports.pluginHandler = function (parent) {
             var http = (configUrl.indexOf('https://') >= 0) ? require('https') : require('http');
             if (configUrl.indexOf('://') === -1) reject("Unable to fetch the config: Bad URL (" + configUrl + ")");
             var options = require('url').parse(configUrl);
-            if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
-                options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy));
+            if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+                options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
             }
             http.get(options, function (res) {
                 var configStr = '';
@@ -436,10 +436,9 @@ module.exports.pluginHandler = function (parent) {
                     followRedirects: true,
                     method: 'GET'
                 };
-                if (typeof parent.config.settings.plugins.proxy == 'string') {  // Proxy support
-                    const HttpsProxyAgent = require('https-proxy-agent');
-                    opts.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
-                }
+                if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+					opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+				}
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) {
@@ -531,10 +530,9 @@ module.exports.pluginHandler = function (parent) {
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 };
-                if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
-                    const HttpsProxyAgent = require('https-proxy-agent');
-                    options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
-                }
+                if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+					options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+				}
                 http.get(opts, function (res) {
                     var versStr = '';
                     res.on('data', function (chunk) {
