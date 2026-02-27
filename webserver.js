@@ -6988,6 +6988,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var selfurl = ' wss://' + req.headers.host;
             if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
             const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
+            const extraImgSrc = (parent.config.settings.extraimgsrc != null) ? (' ' + parent.config.settings.extraimgsrc) : '';
+            const allowedFramingOriginsValue = (domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
+            const hasAllowedFramingOrigins = (allowedFramingOriginsValue != null);
+            var framingOrigins = [];
+            if (typeof allowedFramingOriginsValue === 'string') {
+                framingOrigins = allowedFramingOriginsValue.split(/[,\s]+/).map(function (v) { return v.trim(); }).filter(function (v) { return v.length > 0; });
+            } else if (Array.isArray(allowedFramingOriginsValue)) {
+                framingOrigins = allowedFramingOriginsValue.filter(function (v) { return (typeof v === 'string') && (v.trim().length > 0); }).map(function (v) { return v.trim(); });
+            }
 
             // If the web relay port is enabled, allow the web page to redirect to it
             var extraFrameSrc = '';
