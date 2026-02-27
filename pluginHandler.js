@@ -256,12 +256,10 @@ module.exports.pluginHandler = function (parent) {
                 options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
             }
             http.get(options, function (res) {
-
                 var configStr = '';
                 res.on('data', function (chunk) {
                     configStr += chunk;
                 });
-
                 res.on('end', function () {
                     if (configStr[0] == '{') { // Let's be sure we're JSON
                         try {
@@ -277,7 +275,6 @@ module.exports.pluginHandler = function (parent) {
                         reject("Error getting plugin config. Check that you have valid JSON.");
                     }
                 });
-
             }).on('error', function (e) {
                 reject("Error getting plugin config: " + e.message);
             });
