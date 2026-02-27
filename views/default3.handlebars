@@ -640,6 +640,7 @@
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
+                            <span id="accountCustomIconsSpan" style="display:none"><a href=# onclick="return showIconCustomization()">Icons Customization</a><br /></span>
                         </p>
                     </div>
                     <div id=p2logintokens></div>
@@ -2974,6 +2975,7 @@
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
+            QV('accountCustomIconsSpan', (userinfo.siteadmin === 0xFFFFFFFF));
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
@@ -4002,6 +4004,8 @@
 
                                     var webstate = JSON.parse(message.event.state);
                                     for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
+                                    customIconValues = loadCustomIconState();
+                                    applyIconCustomization(customIconValues);
 
                                     // Update the web page
                                     //if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
@@ -19343,7 +19347,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -21295,11 +21299,152 @@
             }
         }
 
+        // --- Icons Customization ---
+        var customIconValues = {};
+        const customIconConfig = [
+            { key: 'myDevices', label: 'My Devices', elementId: 'LeftMenuMyDevices' },
+            { key: 'myAccount', label: 'My Account', elementId: 'LeftMenuMyAccount' },
+            { key: 'myEvents', label: 'My Events', elementId: 'LeftMenuMyEvents' },
+            { key: 'myFiles', label: 'My Files', elementId: 'LeftMenuMyFiles' },
+            { key: 'myUsers', label: 'My Users', elementId: 'LeftMenuMyUsers' },
+            { key: 'myServer', label: 'My Server', elementId: 'LeftMenuMyServer' }
+        ];
+
+        function loadCustomIconState() {
+            var raw = getstore('customIcons', '{}');
+            if ((typeof raw !== 'string') || (raw.length === 0)) { return {}; }
+            try { return JSON.parse(raw); } catch (ex) { return {}; }
+        }
+
+        function sanitizeCustomIconState(state) {
+            var sanitized = {};
+            if (state == null) { return sanitized; }
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var key = customIconConfig[i].key;
+                var value = state[key];
+                if (typeof value === 'string') {
+                    var trimmed = value.trim();
+                    if (trimmed.length > 0) { sanitized[key] = trimmed; }
+                }
+            }
+            return sanitized;
+        }
+
+        function persistCustomIconState(state) {
+            var sanitized = sanitizeCustomIconState(state);
+            putstore('customIcons', JSON.stringify(sanitized));
+            customIconValues = sanitized;
+            applyIconCustomization(sanitized);
+        }
+
+        function showIconCustomization() {
+            customIconValues = loadCustomIconState();
+            var x = '<p class="text-muted">Upload custom SVG icons or provide a URL/data URL. Uploaded files are stored in the public icons directory.</p>';
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                x += '<div class="mb-3">';
+                x += '<label class="form-label" for="iconInput_' + cfg.key + '">' + EscapeHtml(cfg.label) + '</label>';
+                x += '<div class="input-group">';
+                x += '<input type="text" class="form-control" id="iconInput_' + cfg.key + '" value="' + EscapeHtml(currentValue) + '" placeholder="Enter URL or data URL for ' + EscapeHtml(cfg.label) + ' icon" />';
+                x += '<button class="btn btn-outline-secondary" type="button" onclick="return triggerIconFileInput(\'' + cfg.key + '\')">Upload SVG</button>';
+                x += '</div>';
+                x += '<input type="file" class="d-none" accept=".svg,image/svg+xml" id="iconFile_' + cfg.key + '" onchange="handleIconFileChange(\'' + cfg.key + '\', this)" />';
+                x += '</div>';
+            }
+
+            setModalContent('xxAddAgent', 'Icons Customization', x, 'large');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', saveIconCustomization);
+            return false;
+        }
+
+        function triggerIconFileInput(iconKey) {
+            var fileInput = document.getElementById('iconFile_' + iconKey);
+            if (fileInput) { fileInput.click(); }
+            return false;
+        }
+
+        async function handleIconFileChange(iconKey, input) {
+            if (!input || !input.files || (input.files.length === 0)) { return; }
+            try {
+                var result = await uploadCustomIcon(iconKey, input.files[0]);
+                if ((result == null) || (result.path == null)) {
+                    messagebox('Icons Customization', 'The server did not return a valid icon path.');
+                } else {
+                    customIconValues[iconKey] = result.path;
+                    var textInput = document.getElementById('iconInput_' + iconKey);
+                    if (textInput) { textInput.value = result.path; }
+                    persistCustomIconState(customIconValues);
+                }
+            } catch (ex) {
+                messagebox('Icons Customization', (ex && ex.message) ? ex.message : 'Failed to upload the icon.');
+            } finally {
+                input.value = '';
+            }
+        }
+
+        async function uploadCustomIcon(iconKey, file) {
+            var formData = new FormData();
+            formData.append('iconType', iconKey);
+            if (customIconValues && typeof customIconValues[iconKey] === 'string' && customIconValues[iconKey].length > 0) {
+                formData.append('previousIcon', customIconValues[iconKey]);
+            }
+            formData.append('iconFile', file);
+
+            var response = await fetch('customiconupload.ashx', { method: 'POST', body: formData, credentials: 'same-origin' });
+            if (!response.ok) {
+                var message = 'Failed to upload the icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
+        function saveIconCustomization() {
+            var updatedState = {};
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var input = document.getElementById('iconInput_' + cfg.key);
+                if (input) { updatedState[cfg.key] = input.value; }
+            }
+            persistCustomIconState(updatedState);
+            if (xxModal) { xxModal.hide(); }
+        }
+
+        function applyIconCustomization(icons) {
+            var state = sanitizeCustomIconState(icons);
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (!anchor) { continue; }
+                var svg = anchor.querySelector('svg');
+                if (!svg) { continue; }
+                if (state[cfg.key]) {
+                    anchor.classList.add('custom-icon');
+                    svg.style.backgroundImage = `url(${state[cfg.key]})`;
+                } else {
+                    anchor.classList.remove('custom-icon');
+                    svg.style.removeProperty('background-image');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            customIconValues = loadCustomIconState();
+            applyIconCustomization(customIconValues);
+        });
+
+        window.addEventListener('load', function () {
+            applyIconCustomization(customIconValues);
+        });
+
         // Request Confirmation if closing while a desktop, terminal session is active
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
-
     </script>
 </body>
 
