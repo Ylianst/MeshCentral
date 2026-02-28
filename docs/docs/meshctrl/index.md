@@ -2,7 +2,7 @@
 
 MeshCmd Guide [as .pdf](https://meshcentral.com/docs/MeshCtrlUsersGuide.pdf) [as .odt](../documents/MeshCtrl%20User's%20Guide%20v0.0.1.odt)
 
-## Video Walkthru
+## Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/p_jdtYJyuBQ" frameborder="0" allowfullscreen></iframe>

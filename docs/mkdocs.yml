@@ -1,59 +1,60 @@
 site_name: "MeshCentral Documentation"
+
 nav:
   - Home:
-    - 'Abstract': './index.md'
+    - 'Abstract': 'index.md'
 
   - 'Install':
-    - 'Abstract': './install/abstract.md'
+    - 'Abstract': 'install/abstract.md'
     - 'Quickstart': 'install/quickstart.md'
     - 'Installation Guides':
-        - 'Abstract': './install/abstract.md'
-        - 'Advanced': './install/advanced.md'
-        - 'Container (Docker)': './install/container.md'
-        - 'Windows': './install/windows.md'
+        - 'Abstract': 'install/abstract.md'
+        - 'Advanced': 'install/advanced.md'
+        - 'Container (Docker)': 'install/container.md'
+        - 'Windows': 'install/windows.md'
     - 'Databases':
-      - 'MongoDB': './install/database/mongodb.md'
-      - 'PostgreSQL': './install/database/postgresql.md'
-      - 'MariaDB/MySQL': './install/database/mariadb.md'
-      - 'Local Databases': './install/database/local.md'
+      - 'MongoDB': 'install/database/mongodb.md'
+      - 'PostgreSQL': 'install/database/postgresql.md'
+      - 'MariaDB/MySQL': 'install/database/mariadb.md'
+      - 'Local Databases': 'install/database/local.md'
     - 'Security':
-      - 'Crowdsec': './install/security/crowdsec.md'
-      - 'Secure Installation': './install/security/secure.md'
+      - 'Crowdsec': 'install/security/crowdsec.md'
+      - 'Secure Installation': 'install/security/secure.md'
 
   - 'MeshCentral':
-      - 'MeshCentral Guide': './meshcentral/index.md'
-      - 'All Configuration Options': './meshcentral/config.md'
-      - 'SSL/TLS': './meshcentral/SSLnletsencrypt.md'
-      - 'Agent Information': './meshcentral/agents.md'
-      - 'Assistant': './meshcentral/assistant.md'
-      - 'Code Signing': './meshcentral/codesigning.md'
-      - 'Debugging': './meshcentral/debugging.md'
-      - 'Device Tabs': './meshcentral/devicetabs.md'
-      - 'Plugins': './meshcentral/plugins.md'
-      - 'Security': './meshcentral/security.md'
-      - 'Tokens': './meshcentral/tokens.md'
-      - 'FAQ': './meshcentral/faq.md'
-      - 'Tips n Tricks': './meshcentral/tipsntricks.md'
-      - 'Messaging': './messaging/index.md'
-      - 'Customization': './meshcentral/customization.md'
-      - 'OpenID Connect Strategy (OIDC)': './meshcentral/openidConnectStrategy.md'
+    - 'MeshCentral Guide': 'meshcentral/'
+    - 'All Configuration Options': 'meshcentral/config.md'
+    - 'SSL/TLS': 'meshcentral/SSLnletsencrypt.md'
+    - 'Agent Information': 'meshcentral/agents.md'
+    - 'Assistant': 'meshcentral/assistant.md'
+    - 'Code Signing': 'meshcentral/codesigning.md'
+    - 'Debugging': 'meshcentral/debugging.md'
+    - 'Device Tabs': 'meshcentral/devicetabs.md'
+    - 'Plugins': 'meshcentral/plugins.md'
+    - 'Security': 'meshcentral/security.md'
+    - 'Tokens': 'meshcentral/tokens.md'
+    - 'FAQ': 'meshcentral/faq.md'
+    - 'Tips n Tricks': 'meshcentral/tipsntricks.md'
+    - 'Messaging': 'messaging/'
+    - 'Customization': 'meshcentral/customization.md'
+    - 'OpenID Connect Strategy (OIDC)': 'meshcentral/openidConnectStrategy.md'
 
   - 'Submodules and Features':
-    - 'MeshCmd': ./meshcmd/index.md
-    - 'MeshCtrl': ./meshctrl/index.md
-    - 'Mesh Router': ./meshrouter/index.md
-    - 'Intel AMT': ./intelamt/index.md
+    - 'MeshCmd': 'meshcmd/'
+    - 'MeshCtrl': 'meshctrl/'
+    - 'Mesh Router': 'meshrouter/'
+    - 'Intel AMT': 'intelamt/'
 
-  - 'How to Contribute': './how-to-contribute/index.md'
+  - 'How to Contribute': 'how-to-contribute/'
 
-  - 'Design and Architecture': './design/index.md'
+  - 'Design and Architecture': 'design/'
 
   - 'Other':
-    - './other/adfs_sso_guide.md' 
-    - './other/meshcentral_satellite.md'
+    - 'other/adfs_sso_guide.md' 
+    - 'other/meshcentral_satellite.md'
 
 site_description: "A remote monitoring and management tool"
-site_author: "Ylianst and others"
+site_author: "Ylianst and contributors"
 site_url: "https://ylianst.github.io/MeshCentral/"
 
 dev_addr: "0.0.0.0:8010"
@@ -103,3 +104,5 @@ markdown_extensions:
       alternate_style: true
   - admonition
   - tables
+
+# to-do later on down the line; migrate to zensical.toml in an ideal world

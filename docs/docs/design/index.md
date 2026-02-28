@@ -2,7 +2,7 @@
 
 ![](images/2022-05-15-12-57-36.jpg)
 
-## 🎬 Video Walkthru
+## 🎬 Video Walkthrough
 
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/MOQ0uCUs7_M" frameborder="0" allowfullscreen></iframe>
@@ -10,15 +10,7 @@
 
 ## 🧾 Abstract
 
-This  document  attempts  to  describe  the  architecture  and  design  of  the  second  version  of MeshCentral on which work started in late 2016. The document covers the overview of the design, goes in details about the protocol and various decisions and trade-offs. This document is intended for anyone that wants to understand the inner workings of MeshCentral or someone that wants to make a security review of the software. 
-
----
-> **📌 Note :**
-
-> The software and added documentation and tutorial videos are available at :
-[ https://www.meshcommander.com/meshcentral2 ](https://www.meshcommander.com/meshcentral2)
-
----
+This document goes over the architecture and design of the second version of MeshCentral, on which work started in late 2016, and covers the overview of the design, as well as providing details about the protocol and various decisions and trade-offs. This document is intended for anyone that wants to understand the inner workings of MeshCentral or someone that wants to make a security review of the software. 
 
 ## 📘 Introduction
 
@@ -30,7 +22,7 @@ The advent of NodeJS, WebSocket, WebRTC and other web technologies coming out in
 
 The goal of MeshCentral is to be the best open source remote management software in the world. Remote computer management is a big area with many different usages and requirements. To best suite this, it’s important to have software that is as flexible as possible.
 
-Additionally, there are many other goals : 
+Additionally, there are many other goals: 
 
   > - **Must be quick and easy to install.** 
   > - **Must install on all major operating systems and platforms.** 
@@ -72,7 +64,7 @@ Another interesting design decision is that MeshCentral makes almost no use of R
 
 ## 🗄️ MeshCentral server
 
-The MeshCentral server is a NodeJS application that is published on NPM at : [https://www.npmjs.com/package/meshcentral](https://www.npmjs.com/package/meshcentral) Many administrators can get started quickly using “npm install meshcentral” once NodeJS is installed. MeshCentral will work on Node 6.x and higher. 
+The MeshCentral server is a NodeJS application that is published on NPM at : [https://www.npmjs.com/package/meshcentral](https://www.npmjs.com/package/meshcentral) Many administrators can get started quickly using `npm install meshcentral` once NodeJS is installed. MeshCentral will work on Node 6.x and higher. 
 
 ## 📦 Dependencies
 
@@ -368,7 +360,7 @@ A unique feature of MeshCentral is its use of WebRTC. WebRTC was introduced in m
 
 The use of WebRTC allows MeshCentral to scale better, to offer a faster user experience and lower hosting costs all at the same time. However, WebRTC is not easy, especially when you must maintain the C code for it and have to keep up with browser implementations, but the benefits are clear. 
 
-To setup WebRTC, browsers typically use STUN and TURN servers to get traffic thru any network obstacles (routers, proxies, firewalls). This infrastructure can be complex to setup especially if an administrator is not familiar with WebRTC concepts. To make things easy, MeshCentral opted to always start by using a websocket relay thru the server to get things started. While a session is active, the browser and agent will attempt to automatically switch the session traffic to WebRTC when possible. This way, the session always works and gets more efficient when network conditions allow. 
+To setup WebRTC, browsers typically use STUN and TURN servers to get traffic through any network obstacles (routers, proxies, firewalls). This infrastructure can be complex to setup especially if an administrator is not familiar with WebRTC concepts. To make things easy, MeshCentral opted to always start by using a websocket relay through the server to get things started. While a session is active, the browser and agent will attempt to automatically switch the session traffic to WebRTC when possible. This way, the session always works and gets more efficient when network conditions allow. 
 
 To perform the switch-over, both browser and agent will exchange WebRTC control messages over the newly established web socket relay session. 
 

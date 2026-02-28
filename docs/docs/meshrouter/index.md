@@ -4,7 +4,7 @@
 
 MeshCentral Router Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2RouterUserGuide.pdf) [as .odt](../documents/MeshCentral%20Router%20User%20Guide%20v0.0.2.odt)
 
-## Video Walkthru
+## Video Walkthrough
 
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/BubeVRmbCRM" frameborder="0" allowfullscreen></iframe>
@@ -12,11 +12,11 @@ MeshCentral Router Guide [as .pdf](https://meshcentral.com/docs/MeshCentral2Rout
 
 ## Abstract
 
-This document takes a look at MeshCentral Router, a Windows application that performs TCP and UDP port mapping from a local machine to any remote computer thru a MeshCentral servers. This document should allow the user to Internet relay traffic thru NAT routers and firewalls. 
+This document takes a look at MeshCentral Router, a Windows application that performs TCP and UDP port mapping from a local machine to any remote computer through a MeshCentral servers. This document should allow the user to Internet relay traffic through NAT routers and firewalls. 
 
 ## Introduction
 
-MeshCentral is a remote management web site that connects users to remote computers over a local network or the internet. In addition to remote management features, MeshCentral is capable of relaying TCP and UDP traffic thru the server and thru mesh agents installed on remote computers. This feature can be useful to, for example, perform a remote desktop session using RDP or route custom traffic that would otherwise be difficult to route. 
+MeshCentral is a remote management web site that connects users to remote computers over a local network or the internet. In addition to remote management features, MeshCentral is capable of relaying TCP and UDP traffic through the server and through mesh agents installed on remote computers. This feature can be useful to, for example, perform a remote desktop session using RDP or route custom traffic that would otherwise be difficult to route. 
 
 ## Downloading
 
@@ -57,7 +57,7 @@ agent as shown here.
 
 ![port_maps](images/port_maps2.png)
 
-A relay port map will route traffic thru the server and thru the remote agent to a target IP address
+A relay port map will route traffic through the server and through the remote agent to a target IP address
 on the remote agent’s network as shown here.
 
 ![](images/port_maps3.png)
@@ -131,7 +131,7 @@ traffic relay like this:
  :<app>:<remoteip>:<remoteport>
 ```
 
-This will relays a local port to thru the server and thru a remote agent to a target IP address and
+This will relays a local port to through the server and through a remote agent to a target IP address and
 port. For example:
 
 ```bash
@@ -171,7 +171,7 @@ You can't use the MeshCentral Router (MCR) login dialog box to login to a server
 
 ## Conclusion
 
-MeshCentral Router is a free, open source tool for routing TCP and UDP traffic over the internet. It’s a powerful as it allows for any traffic to go thru NAT routers and firewalls while being encrypted using TLS. 
+MeshCentral Router is a free, open source tool for routing TCP and UDP traffic over the internet. It’s a powerful as it allows for any traffic to go through NAT routers and firewalls while being encrypted using TLS. 
 
 ## License
 
