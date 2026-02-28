@@ -589,6 +589,75 @@ module.exports.pluginHandler = function (parent) {
         });
     };
 
+    // Reload a specific plugin without restarting the server
+    // Useful for development - call this after modifying plugin files
+    obj.reloadPlugin = function (pluginName, func) {
+        var pluginPath = obj.pluginPath + '/' + pluginName;
+        var mainFile = pluginPath + '/' + pluginName + '.js';
+
+        if (!obj.fs.existsSync(mainFile)) {
+            var errMsg = "Plugin not found: " + pluginName;
+            console.log(errMsg);
+            if (func) func({ success: false, error: errMsg });
+            return;
+        }
+        
+        // Clear the require cache for this plugin
+        var resolvedPath = require.resolve(mainFile);
+        if (require.cache[resolvedPath]) {
+            delete require.cache[resolvedPath];
+        }
+
+        // Also try to clear any nested requires (basic approach)
+        Object.keys(require.cache).forEach(function (key) {
+            if (key.startsWith(pluginPath + '/')) {
+                delete require.cache[key];
+            }
+        });
+
+        // Remove old plugin instance
+        delete obj.plugins[pluginName];
+        delete obj.exports[pluginName];
+
+        // Reload the plugin
+        try {
+            obj.plugins[pluginName] = require(mainFile)[pluginName](obj);
+            obj.exports[pluginName] = obj.plugins[pluginName].exports;
+
+            // Call server_startup hook if it exists (re-initializes the plugin)
+            if (typeof obj.plugins[pluginName].server_startup === 'function') {
+                obj.plugins[pluginName].server_startup();
+            }
+
+            console.log("Plugin reloaded successfully: " + pluginName);
+            if (func) func({ success: true, name: pluginName });
+        } catch (e) {
+            var errMsg = "Error reloading plugin " + pluginName + ": " + e;
+            console.log(errMsg, e.stack);
+            if (func) func({ success: false, error: errMsg });
+        }
+    };
+
+    // Reload all enabled plugins
+    obj.reloadAllPlugins = function (func) {
+        var results = [];
+        var pluginNames = Object.keys(obj.plugins);
+
+        if (pluginNames.length === 0) {
+            if (func) func({ success: true, reloaded: [] });
+            return;
+        }
+        
+        pluginNames.forEach(function (pluginName) {
+            obj.reloadPlugin(pluginName, function (result) {
+                results.push(result);
+                if (results.length === pluginNames.length) {
+                    if (func) func({ success: true, reloaded: results });
+                }
+            });
+        });
+    };
+
     obj.handleAdminReq = function (req, res, user, serv) {
         if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
         var path = obj.path.join(obj.pluginPath, req.query.pin, 'views');

@@ -4745,6 +4745,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
+            case 'reloadplugin': {
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if (command.plugin == "ALL") {
+                    // Reload all plugins
+                    parent.parent.pluginHandler.reloadAllPlugins(function(result) {
+                        try { ws.send(JSON.stringify({ action: 'pluginReloaded', result: result })); } catch (ex) { }
+                    });
+                } else {
+                    // Reload specific plugin
+                    parent.parent.pluginHandler.reloadPlugin(command.plugin, function(result) {
+                        try { ws.send(JSON.stringify({ action: 'pluginReloaded', result: result })); } catch (ex) { }
+                    });
+                }
+                break;
+            }
             case 'getpluginversions': {
                 if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginVersions(command.id)

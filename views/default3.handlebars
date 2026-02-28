@@ -20834,6 +20834,7 @@
                     1: {
                         'disable': 'Disable',
                         'upgrade': 'Upgrade',
+                        'reload': 'Reload',
                         //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                     }
                 };
@@ -20924,6 +20925,13 @@
                     break;
                 case 'disable':
                     meshserver.send({ 'action': 'disableplugin', 'id': id });
+                    break;
+                case 'reload':
+                    var plugin = null;
+                    for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                    if (plugin) {
+                        meshserver.send({ 'action': 'reloadplugin', 'plugin': plugin.shortName });
+                    }
                     break;
             }
             QV('pluginRestartNotice', true);
