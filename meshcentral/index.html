@@ -9,7 +9,7 @@
         <meta name="description" content="A remote monitoring and management tool">
       
       
-        <meta name="author" content="Ylianst and others">
+        <meta name="author" content="Ylianst and contributors">
       
       
         <link rel="canonical" href="https://ylianst.github.io/MeshCentral/meshcentral/">
@@ -18,14 +18,14 @@
         <link rel="prev" href="../install/security/secure/">
       
       
-        <link rel="next" href="config/">
+        <link rel="next" href="./config/">
       
       
         
       
       
       <link rel="icon" href="../images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="zensical-0.0.24">
     
     
       
@@ -33,10 +33,15 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.28978c9b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
       
       
 
@@ -50,18 +55,14 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
-      <link rel="stylesheet" href="../css/print-site.css">
-    
-      <link rel="stylesheet" href="../css/print-site-material.css">
-    
       <link rel="stylesheet" href="../stylesheets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
     
       
 
@@ -100,14 +101,14 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+    <a href="./.." title="MeshCentral Documentation" class="md-header__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
       
   <img src="../images/favicon.ico" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
       
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -132,7 +133,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
     
       <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -142,7 +143,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="none" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
@@ -161,57 +162,28 @@
       
         <label class="md-header__button md-icon" for="__search">
           
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
         </label>
-        <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
-      <label class="md-search__icon md-icon" for="__search">
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
-        
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
-      </label>
-      <nav class="md-search__options" aria-label="Search">
-        
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </nav>
-      
-        <div class="md-search__suggest" data-md-component="search-suggest"></div>
-      
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list" role="presentation"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
 </div>
       
     
-    
-      <div class="md-header__source">
+    <div class="md-header__source">
+      
         <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     Ylianst/MeshCentral
   </div>
 </a>
-      </div>
-    
+      
+    </div>
   </nav>
   
 </header>
@@ -234,9 +206,8 @@
     
     
       <li class="md-tabs__item">
-        <a href=".." class="md-tabs__link">
+        <a href="./.." class="md-tabs__link">
           
-  
   
   Home
 
@@ -257,7 +228,6 @@
         <a href="../install/abstract/" class="md-tabs__link">
           
   
-  
   Install
 
         </a>
@@ -276,9 +246,8 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="././" class="md-tabs__link">
           
-  
   
   MeshCentral
 
@@ -299,7 +268,6 @@
         <a href="../meshcmd/" class="md-tabs__link">
           
   
-  
   Submodules and Features
 
         </a>
@@ -317,9 +285,6 @@
       <a href="../how-to-contribute/" class="md-tabs__link">
         
   
-  
-    
-  
   How to Contribute
 
       </a>
@@ -335,9 +300,6 @@
     <li class="md-tabs__item">
       <a href="../design/" class="md-tabs__link">
         
-  
-  
-    
   
   Design and Architecture
 
@@ -356,7 +318,6 @@
       <li class="md-tabs__item">
         <a href="../other/adfs_sso_guide/" class="md-tabs__link">
           
-  
   
   Other
 
@@ -388,7 +349,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
+    <a href="./.." title="MeshCentral Documentation" class="md-nav__button md-logo" aria-label="MeshCentral Documentation" data-md-component="logo">
       
   <img src="../images/favicon.ico" alt="logo">
 
@@ -400,7 +361,7 @@
       <a href="https://github.com/Ylianst/MeshCentral" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
   </div>
   <div class="md-source__repository">
     Ylianst/MeshCentral
@@ -469,7 +430,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="./.." class="md-nav__link">
         
   
   
@@ -1163,7 +1124,7 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <a href="./" class="md-nav__link md-nav__link--active">
+      <a href="././" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1182,7 +1143,8 @@
       
         
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
   
@@ -1191,7 +1153,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -1218,10 +1180,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#video-walkthru" class="md-nav__link">
+  <a href="#video-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🎬 Video Walkthru
+        🎬 Video Walkthrough
       
     </span>
   </a>
@@ -1471,7 +1433,7 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SMTP: User/Pass">
+    <nav class="md-nav" aria-label="SMTP: User&#x2f;Pass">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1712,10 +1674,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#video-walkthrus" class="md-nav__link">
+  <a href="#video-walkthroughs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🎬 Video Walkthrus
+        🎬 Video Walkthroughs
       
     </span>
   </a>
@@ -1735,10 +1697,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#video-walkthru_1" class="md-nav__link">
+  <a href="#video-walkthrough_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video Walkthru
+        Video Walkthrough
       
     </span>
   </a>
@@ -1774,10 +1736,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#video-walkthru_2" class="md-nav__link">
+  <a href="#video-walkthrough_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video Walkthru
+        Video Walkthrough
       
     </span>
   </a>
@@ -2126,7 +2088,7 @@
   
   
     <li class="md-nav__item">
-      <a href="config/" class="md-nav__link">
+      <a href="./config/" class="md-nav__link">
         
   
   
@@ -2154,7 +2116,7 @@
   
   
     <li class="md-nav__item">
-      <a href="SSLnletsencrypt/" class="md-nav__link">
+      <a href="./SSLnletsencrypt/" class="md-nav__link">
         
   
   
@@ -2182,7 +2144,7 @@
   
   
     <li class="md-nav__item">
-      <a href="agents/" class="md-nav__link">
+      <a href="./agents/" class="md-nav__link">
         
   
   
@@ -2210,7 +2172,7 @@
   
   
     <li class="md-nav__item">
-      <a href="assistant/" class="md-nav__link">
+      <a href="./assistant/" class="md-nav__link">
         
   
   
@@ -2238,7 +2200,7 @@
   
   
     <li class="md-nav__item">
-      <a href="codesigning/" class="md-nav__link">
+      <a href="./codesigning/" class="md-nav__link">
         
   
   
@@ -2266,7 +2228,7 @@
   
   
     <li class="md-nav__item">
-      <a href="debugging/" class="md-nav__link">
+      <a href="./debugging/" class="md-nav__link">
         
   
   
@@ -2294,7 +2256,7 @@
   
   
     <li class="md-nav__item">
-      <a href="devicetabs/" class="md-nav__link">
+      <a href="./devicetabs/" class="md-nav__link">
         
   
   
@@ -2322,7 +2284,7 @@
   
   
     <li class="md-nav__item">
-      <a href="plugins/" class="md-nav__link">
+      <a href="./plugins/" class="md-nav__link">
         
   
   
@@ -2350,7 +2312,7 @@
   
   
     <li class="md-nav__item">
-      <a href="security/" class="md-nav__link">
+      <a href="./security/" class="md-nav__link">
         
   
   
@@ -2378,7 +2340,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tokens/" class="md-nav__link">
+      <a href="./tokens/" class="md-nav__link">
         
   
   
@@ -2406,7 +2368,7 @@
   
   
     <li class="md-nav__item">
-      <a href="faq/" class="md-nav__link">
+      <a href="./faq/" class="md-nav__link">
         
   
   
@@ -2434,7 +2396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="tipsntricks/" class="md-nav__link">
+      <a href="./tipsntricks/" class="md-nav__link">
         
   
   
@@ -2490,7 +2452,7 @@
   
   
     <li class="md-nav__item">
-      <a href="customization/" class="md-nav__link">
+      <a href="./customization/" class="md-nav__link">
         
   
   
@@ -2518,7 +2480,7 @@
   
   
     <li class="md-nav__item">
-      <a href="openidConnectStrategy/" class="md-nav__link">
+      <a href="./openidConnectStrategy/" class="md-nav__link">
         
   
   
@@ -2899,7 +2861,8 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
   
   
   
@@ -2908,7 +2871,7 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      On this page
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
@@ -2935,10 +2898,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#video-walkthru" class="md-nav__link">
+  <a href="#video-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🎬 Video Walkthru
+        🎬 Video Walkthrough
       
     </span>
   </a>
@@ -3188,7 +3151,7 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="SMTP: User/Pass">
+    <nav class="md-nav" aria-label="SMTP: User&#x2f;Pass">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3429,10 +3392,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#video-walkthrus" class="md-nav__link">
+  <a href="#video-walkthroughs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        🎬 Video Walkthrus
+        🎬 Video Walkthroughs
       
     </span>
   </a>
@@ -3452,10 +3415,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#video-walkthru_1" class="md-nav__link">
+  <a href="#video-walkthrough_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video Walkthru
+        Video Walkthrough
       
     </span>
   </a>
@@ -3491,10 +3454,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#video-walkthru_2" class="md-nav__link">
+  <a href="#video-walkthrough_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Video Walkthru
+        Video Walkthrough
       
     </span>
   </a>
@@ -3841,8 +3804,6 @@
               <article class="md-content__inner md-typeset">
                 
                   
-
-
   
   
 
@@ -3861,20 +3822,17 @@
 <li>Generates an agent and installs it on a target or each end-point that immediately attempts a connection back to MeshCentral server. </li>
 <li>Controls/manages assets or end-points that are available in respective administrative mesh</li>
 </ol>
-<h2 id="video-walkthru">🎬 Video Walkthru</h2>
+<h2 id="video-walkthrough">🎬 Video Walkthrough</h2>
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/D9Q7M7PdTg0" frameborder="0" allowfullscreen></iframe>
 </div>
 
 <h2 id="server-installation">🖥️ Server Installation</h2>
 <p>Because the MeshCentral server is written in NodeJS it can be installed on many operating systems including Windows, Linux. Please refer to the MeshCentral Installer’s Guide available at <a href="https://www.meshcommander.com/meshcentral2">https://www.meshcommander.com/meshcentral2</a> for information on how to install the server.</p>
-<hr />
-<blockquote>
-<p><strong>📌 Note:</strong></p>
-<p>For information on how to install the server, please refer to the <strong>MeshCentral Installer’s Guide</strong> available at:<br />
-<a href="https://www.meshcommander.com/meshcentral2">https://www.meshcommander.com/meshcentral2</a></p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For information on how to install the server, please refer to the <strong>MeshCentral Installer’s Guide</strong> available at <a href="https://www.meshcommander.com/meshcentral2">https://www.meshcommander.com/meshcentral2</a>.</p>
+</div>
 <p>The server can be installed both on a local area network for local computer management and in the cloud for management of computers over the Internet. You can also install it on small IoT devices like a Raspberry Pi all the way to big servers. It’s recommended to get started with a test setup to get a feel for this server. Once installed, come back to this document for configuring and using your new server.</p>
 <h2 id="basic-usage">🚀 Basic Usage</h2>
 <p>In this section we will cover the basics of MeshCentral in your newly setup server. </p>
@@ -3898,14 +3856,10 @@
 <li>Click <em>Proceed to <code>http://serverIP</code> (unsafe)</em></li>
 </ol>
 <hr />
-<hr />
-<blockquote>
-<p><strong>📌 Note:</strong></p>
-<p>You can also get to a device by specifying the device name in the URL by adding <em><code>?viewmode=10&amp;gotodevicename=MyComputer</code></em> to the URL of the MeshCentral web page.
-The new <em><code>gotodevicename</code></em> will find a device with the specified name and navigate to that device’s page.
-This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, <em><code>&amp;gotonode=</code></em> is always the preferred way to access a device. This feature also works on the mobile web site.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can also get to a device by specifying the device name in the URL by adding <em><code>?viewmode=10&amp;gotodevicename=MyComputer</code></em> to the URL of the MeshCentral web page. The new <em><code>gotodevicename</code></em> will find a device with the specified name and navigate to that device's page. This is perfect for integrating MeshCentral with other solutions but be aware that a computer name is not a unique identifier and so, <em><code>&amp;gotonode=</code></em> is always the preferred way to access a device. This feature also works on the mobile web site.</p>
+</div>
 <h3 id="create-account">Create Account</h3>
 <p>Create an account by clicking “Create One” and click “Create Account” once the text fields had been populated correctly. As shown in the following image :  </p>
 <p><img alt="" src="images/2022-05-18-22-20-08.jpg" /></p>
@@ -3975,8 +3929,8 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <li>Add webserver’s root certificate into web browser’s trust list. Click on “Root Certificate” link at the bottom right of login page to download the root certificate of the web server and then add/import this as a trusted certificate into web browser. Some web browser may require a restart before the certificate installation takes effect. </li>
 <li>If you own a domain name that points to your MeshCentral server, you can get a free trusted certificate using Let’s Encrypt (https://letsencrypt.org/). See the section on Let’s Encrypt in this document for more information on this option. MeshCentral has built-in support for Let’ Encrypt.</li>
 </ul>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
 <p>Before adding/importing the certificate, user must check the validity of the certificate presented by the website and compare with <code>“root-cert-public.crt”</code> file in the <code>“meshcentral-data”</code> folder of the server. </p>
 </div>
 <p>For large scale deployments or setup, a legitimate trusted certificate is highly recommended for your web server. This way, any web browser that navigates to this web server will be able to readily verify its authenticity.</p>
@@ -3984,18 +3938,16 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <li>If a legitimate trusted certificate is available, replace <code>“webserver-cert-public.crt”</code> and `“webserver-cert-private.key” with your certificate. These files are located in “meshcentral-data” folder of the server. </li>
 <li>If intermediate certificates are needed, add the files <code>“webserver-cert-chain1.crt”</code>, <code>“webserver-cert-chain2.crt”</code>, <code>“webserver-cert-chain3.crt”</code> respectively with the intermediate certificates.</li>
 </ul>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>If you are using TLS offloading, see the section on “TLS Offloading” cover in the latter parts of this document.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you're using TLS offloading, see the section on “TLS Offloading” cover in the latter parts of this document.</p>
+</div>
 <h2 id="files-and-folder-structure">📁 Files and Folder Structure</h2>
 <p>It’s important to know the basic file and folder structure from which MeshCentral was installed as shown below</p>
 <p><img alt="" src="images/2022-05-18-22-32-35.jpg" /></p>
 <p>Right after running the <code>npm install meshcentral</code> command, the node_module folder will be created which contains meshcentral and all of its dependent modules. When the server executes for the first time, both meshcentral-data and meshcentral-files folders will be created.</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
 <p>User must periodically backup both meshcentral-data and meshcentral-files which contains all of server’s data.</p>
 </div>
 <p>The <code>“meshcentral-data”</code> folder will contain:</p>
@@ -4014,8 +3966,8 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 </li>
 </ul>
 <p>The <code>“meshcentral-files”</code> folder contains user files that have been uploaded to the server. This folder can be quite large, especially if no user space quota is set in the config.json file. Users can upload a significant amount of files on the server.</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
 <p>Back-up the “meshcentral-data” folder since this is the folder needed to reconstruct the server if something goes wrong. Without it, user will to start over. Recommended to apply suitable encryption on both folders given that they contain sensitive data.</p>
 </div>
 <h2 id="server-configuration-file">⚙️ Server Configuration File</h2>
@@ -4151,20 +4103,18 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 </tr>
 <tr>
 <td><strong>ClickOnce</strong></td>
-<td>Set to "true" or "false" to allow or disallow browser ClickOnce features. When enabled, browsers running on Windows will be shown extra options to allow RDP and other sessions thru the MeshCentral server. This requires ClickOnce browser support that is built-in to IE and available as add-in to Chrome and Firefox. Default is true.</td>
+<td>Set to "true" or "false" to allow or disallow browser ClickOnce features. When enabled, browsers running on Windows will be shown extra options to allow RDP and other sessions through the MeshCentral server. This requires ClickOnce browser support that is built-in to IE and available as add-in to Chrome and Firefox. Default is true.</td>
 </tr>
 </tbody>
 </table>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
-<p>Changes in config.json will NOT take effect until server is restarted.</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Changes in config.json will <strong>NOT</strong> take effect until the server is restarted.</p>
 </div>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>We recommend the user to use a non-production server to experiment the setting options above.</p>
-</blockquote>
-<hr />
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We recommend that you use a non-production server to experiment with the options above.</p>
+</div>
 <h3 id="domains">Domains</h3>
 <p>In the domains section, you can set options for the default domain ("") in addition to creating new domains to establish a multi-tenancy server. For standard configuration, the root domain and other domains will be accessible like this :</p>
 <ul>
@@ -4183,8 +4133,8 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <table>
 <thead>
 <tr>
-<th><strong><em>Sub Settings</em></strong></th>
-<th><strong><em>Description</em></strong></th>
+<th><strong>Sub Settings</strong></th>
+<th><strong>Description</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -4226,12 +4176,10 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 </tr>
 </tbody>
 </table>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>When the DNS value is set for a domain, user can’t access the domain using “servername/customer1” instead it must be accessed with the valid DNS record and the DNS server should be setup to have two or more DNS records pointing to the same IP address.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When the DNS value is set for a domain, a user can't access the domain using <code>servername/customer1</code>, and instead, it must be accessed with a valid DNS record, and the DNS server should be setup to have two or more DNS records pointing to the same IP address.</p>
+</div>
 <p>In this mode, the server will serve a different TLS certificate depending on what DNS record is used to access the server.</p>
 <p><img alt="" src="images/2022-05-18-23-33-08.jpg" /></p>
 <p>As shown in the example above, we have two names that point to the same IP address. Since the configuration specifies the “dns” value, the second domain is only shown when the right name is used. We use “meshcentral” and “devbox” for DNS names, but in practice the user will use fully qualified domain names (FQDN) like “meshcentral.com” or “devbox.meshcentral.com”.</p>
@@ -4341,8 +4289,8 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <p><img alt="" src="images/2022-05-18-23-37-40.jpg" /></p>
 <h3 id="database-import">Database Import</h3>
 <p>Importing the MeshCentral database is useful when transitioning between database softwares (NeDB to/from MongoDB) or when importing the database from MeshCentral1 via migration tool.</p>
-<div class="admonition important">
-<p class="admonition-title">Important</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
 <p>Importing a JSON file will overwrite the entire content of the database. A starting empty database is recommended.</p>
 </div>
 <p>When you are ready to import a JSON file into the database, run meshcentral with <code>--dbimport</code> as shown below. If path is not specified, the application will default to use <code>meshcentral.db.json</code> that is in <code>meshcentral-data</code> folder. </p>
@@ -4354,8 +4302,8 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <table>
 <thead>
 <tr>
-<th><strong><em>Option</em></strong></th>
-<th><strong><em>Description</em></strong></th>
+<th><strong>Option</strong></th>
+<th><strong>Description</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -4388,50 +4336,44 @@ This is perfect for integrating MeshCentral with other solutions but be aware th
 <p>For example, you can show the list of users with the <code>--showusers</code></p>
 <p><img alt="" src="images/2022-05-18-23-41-23.jpg" /></p>
 <h3 id="mongodb-setup">MongoDB Setup</h3>
-<p>MongoDB is useful when setting up MeshCentral for two or more peer servers given that all peer servers much have access to the same database. NeDB and MongoDB have similar access interfaces hence the DB migration from one to the other is straight forward. Installing MongoDB depends on its host OS so do check for available download options at mongodb.com.
-In this guide, we will focus on the 64-bit windows with SSL support installer. </p>
+<p>MongoDB is useful when setting up MeshCentral for two or more peer servers given that all peer servers much have access to the same database. NeDB and MongoDB have similar access interfaces, hence the DB migration from one to the other is straight forward. Installing MongoDB depends on its host OS, so do check for available download options on <a href="mongodb.com">MongoDB's website</a>.</p>
+<p>In this guide, we will focus on the 64-bit version of MongoDB (with SSL support!)'s installer. </p>
 <p><img alt="" src="images/2022-05-18-23-41-58.jpg" /></p>
-<p>After completing the installation step,</p>
+<p>After completing the installation,</p>
 <ol>
-<li>Stop any instance of Meshcentral that is running locally or in any machine</li>
-<li>Start a terminal or Windows Command prompt (CMD), </li>
-<li>Create a folder “c:\data\db” </li>
-<li>
-<p>Go to the MongoDB bin folder and run <code>mongod --bind 127.0.0.1</code>. </p>
-<p>This execute the database engine and store the database data in the default location “/data/db” path and bind a loopback on the local port “127.0.0.1”.</p>
-<hr />
-</li>
+<li>Stop any instance of MeshCentral that is running locally or on any other machine.</li>
+<li>Start Terminal or Windows' Command Prompt.</li>
+<li>Create a folder at the path of <code>C:\data\db</code>.</li>
+<li>Enter MongoDB's <code>bin</code> folder and run <code>mongod --bind 127.0.0.1</code>. </li>
 </ol>
-<blockquote>
-<p><strong>📌 Note :</strong> </p>
-<p>We recommend the user to use a non-production server to experiment the setting options above.</p>
-</blockquote>
-<hr />
+<p>This executes the database engine and stores the database data in the default location of <code>/data/db</code> and binds a loopback on the local IP of <code>127.0.0.1</code>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We recommend that you use a non-production server to experiment with the options above.</p>
+</div>
 <p><img alt="" src="images/2022-05-18-23-42-51.jpg" /></p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>Upon successful execution, MongoDB will wait for connections on its default port 27017.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Upon successful execution, MongoDB will begin to wait for connections on its default port of <code>27017</code>.</p>
+</div>
 <ol>
-<li>
-<p>Now run MeshCentral with the command below, it will tell Meshcentral to connect to MongoDB and use “meshcentral” DB. MongoDB will create this DB if it does not exist.</p>
+<li>Now run MeshCentral with the command below, and this will tell MeshCentral to connect to MongoDB and use the <code>meshcentral</code> database. MongoDB will automatically create this database if it doesn't already exist.</li>
+</ol>
 <div class="highlight"><pre><span></span><code>node<span class="w"> </span>meshcentral<span class="w"> </span>--mongodb<span class="w"> </span>mongodb://127.0.0.1:27017/meshcentral
 </code></pre></div>
 <p><img alt="" src="images/2022-05-18-23-46-26.jpg" /></p>
-</li>
-<li>
-<p>Alternatively, to transition an existing meshcentral DB from NeDB and to MongoDB, just run commands below:</p>
+<ol>
+<li>Alternatively, to transition an existing MeshCentral DB from NeDB to MongoDB, just run the following commands below:</li>
+</ol>
 <div class="highlight"><pre><span></span><code>node<span class="w"> </span>meshcentral<span class="w"> </span>--dbexport
 </code></pre></div>
 <div class="highlight"><pre><span></span><code>node<span class="w"> </span>meshcentral<span class="w"> </span>--mongodb<span class="w"> </span>mongodb://127.0.0.1:27017/meshcentral<span class="w"> </span>--dbimport
 </code></pre></div>
 <div class="highlight"><pre><span></span><code>node<span class="w"> </span>meshcentral<span class="w"> </span>--mongodb<span class="w"> </span>mongodb://127.0.0.1:27017/meshcentral
 </code></pre></div>
-</li>
-<li>
-<p>We recommend the user to include MongoDB configuration into the server’s configuration “config.json” to avoid specifying the “--mongodb" each time MeshCentral is executed as shown below </p>
+<ol>
+<li>We recommend that you include your MongoDB configuration into MeshCentral's <code>config.json</code> to avoid specifying the <code>--mongodb</code> argument each time MeshCentral is executed, as shown below:</li>
+</ol>
 <div class="highlight"><pre><span></span><code><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;settings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">&quot;mongodb&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;mongodb://127.0.0.1:27017/meshcentral&quot;</span><span class="p">,</span>
@@ -4439,18 +4381,14 @@ In this guide, we will focus on the 64-bit windows with SSL support installer. <
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-</li>
-</ol>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>By default, MeshCentral will create a single collections called “meshcentral” in the specified database. If user want to specify a different collection name, use “--mongodbcol" or “mongodbcol” for settings like shown above.</p>
-</blockquote>
-<hr />
-<p>If you are using MongoDB with authentication, you can change the URL a little to add the username and password, for example:</p>
+<div class="admonition info">
+<p class="admonition-title">Info</p>
+<p>By default, MeshCentral will create a single collection called <code>meshcentral</code> in the specified database. If you want to specify a different collection name, use the <code>--mongodbcol</code> argument or specify the <code>mongodbcol</code> variable in MeshCentral's <code>config.json</code> for those settings, as shown above.</p>
+</div>
+<p>If you are using MongoDB with authentication, you can change the URL slightly to add the username and password, for example:</p>
 <div class="highlight"><pre><span></span><code>mongodb://username:password@127.0.0.1:27017/meshcentral
 </code></pre></div>
-<p>You can also provide extra connection parameters like this:</p>
+<p>You can also provide extra connection parameters, like this:</p>
 <div class="highlight"><pre><span></span><code>mongodb://username:password@127.0.0.1:27017/meshcentral?authMechanism=MONGODB-CR&amp;authSource=db
 </code></pre></div>
 <h2 id="running-state-less">🌀 Running State-less</h2>
@@ -4463,8 +4401,8 @@ In this guide, we will focus on the 64-bit windows with SSL support installer. <
 <table>
 <thead>
 <tr>
-<th><strong><em>Command</em></strong></th>
-<th><strong><em>Description</em></strong></th>
+<th><strong>Command</strong></th>
+<th><strong>Description</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -4537,8 +4475,8 @@ Server recovery commands, use only when MeshCentral is offline.
 <table>
 <thead>
 <tr>
-<th><strong><em>Port</em></strong></th>
-<th><strong><em>Function Description</em></strong></th>
+<th><strong>Port</strong></th>
+<th><strong>Function Description</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -4558,12 +4496,10 @@ Server recovery commands, use only when MeshCentral is offline.
 </table>
 <p>If possible, port 443 should be configured with a legitimate trusted certificate and the public part of the certificate named as <code>webserver-cert-public.crt</code> must be placed inside of <code>meshcentral-data</code> folder of the server. When the server is executed in tlsoffload mode, only the public part of the web certificate is used by the server.</p>
 <p>For Intel® AMT MPS port 4433, the certificate files “mpsserver-cert-public.crt” and “mpsserver-cert-public.key” must be copied from the “meshcentral-data” folder and loaded into the TLS offload module.</p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Please consult the TLS offloader user manual from the respective vendor to configure TLS offloading feature correctly.</p>
-</blockquote>
-<hr />
+</div>
 <h2 id="lets-encrypt-support">📜 Let’s Encrypt support</h2>
 <p>MeshCentral makes use of HTTPS to authenticate and encrypt management traffic over the network. By default, a self-signed certificate is used for the MeshCentral HTTPS server. That certificate is not trusted by browsers and so, you get a warning message when visiting the web site. You can solve this but obtaining a free trusted certificate from <a href="https://letsencrypt.org/">Let's Encrypt</a>. There are some limitations and so, it’s best to get familiar with this service before starting. You will also need a valid domain name that you own and that points to your MeshCentral server.</p>
 <p><img alt="" src="images/2022-05-18-23-55-26.jpg" /></p>
@@ -4583,7 +4519,7 @@ Server recovery commands, use only when MeshCentral is offline.
 <p>The only mandatory field is the email address, please enter a valid one.</p>
 <p>The names section is a list of domain names the requested certificate will be valid for. This must be a list of DNS names that are already pointing to your server. It’s important to understand you are not requesting these DNS names, rather, Let’s Encrypt will makes requests to prove control over all of these domain name before issuing the certificate. All the domain names you enter must point to the server and HTTP port 80 must be reachable over the internet. If you don’t specify names, the default MeshCentral certificate name is used, that is the configured <code>--cert [name]</code>.</p>
 <p>The RSA key size can only be 2048 or 3072, with the default being 3072. This is the number of bit used for the RSA key in the certificate. Bigger is more secure, but takes more time to compute.</p>
-<p>Lastly the production key, by default this is false. When set to false, MeshCentral will query the Let’s Encrypt staging server for a certificate. It’s highly recommended to try this first and make sure everything works before getting a real certificate. Keep production to false, run thru the process at least once and make sure everything works. You will get a new certificate installed on the HTTPS server signed by a staging Let’s Encrypt certificate authority.</p>
+<p>Lastly the production key, by default this is false. When set to false, MeshCentral will query the Let’s Encrypt staging server for a certificate. It’s highly recommended to try this first and make sure everything works before getting a real certificate. Keep production to false, run through the process at least once and make sure everything works. You will get a new certificate installed on the HTTPS server signed by a staging Let’s Encrypt certificate authority.</p>
 <p>The Let’s Encrypt certificates and files will be created in the “meshcentral-data” folder. Make sure to keep regular backups of the “meshcentral-data” folder and all sub-folders.</p>
 <p><img alt="" src="images/2022-05-18-23-56-29.jpg" /></p>
 <p>Once you placed the “letsencrypt” section in config.json, restart the server. The request to the Let’s Encrypt server may take a few minutes to a few hours. It’s best to have your DNS server name pointing to your server for over a day before doing this. Once the new certificate is received, the server will automatically restart and browsing to HTTPS on your server will show the new certificate. Here is what it looks like on FireFox:</p>
@@ -4607,12 +4543,10 @@ Server recovery commands, use only when MeshCentral is offline.
 </code></pre></div>
 <p>IP addresses are separated by a comma. As a result, only users coming these IP addresses will be able to see the server’s login page as illustrated below. Other IP addresses will be blocked effectively.</p>
 <p><img alt="" src="images/2022-05-18-23-59-28.jpg" /></p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>When IP address whitelist is effective, Mesh Agent connection from any IP address will be not affected. </p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When an IP address whitelist is in effect, MeshAgent's connection from any IP address will be not affected. </p>
+</div>
 <p>You can also use files for IP lists</p>
 <div class="highlight"><pre><span></span><code><span class="nt">&quot;userAllowedIp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file:userallowedips.txt&quot;</span><span class="p">,</span>
 <span class="nt">&quot;userBlockedIp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;file:userblockedips.txt&quot;</span><span class="p">,</span>
@@ -4728,21 +4662,17 @@ Server recovery commands, use only when MeshCentral is offline.
 </tr>
 </tbody>
 </table>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>Typically, the URL for the website is followed by “?” then a set of name=value pairs separated by <code>&amp;</code>. </p>
-</blockquote>
-<hr />
+<div class="admonition example">
+<p class="admonition-title">Example</p>
+<p>Typically, the URL for the website is followed by <code>?</code> then a set of name=value pairs separated by <code>&amp;</code>.</p>
+</div>
 <p>Based on the URL https://localhost/?node=UkSNlz7t...2Sve6Srl6FltDd&amp;viewmode=11&amp;hide=15 , the nodeID starts with “UkSNlz7t”. We shortened the value in this example, but it’s normally a long base64 encoded SHA384 value. The Viewmode set to 11 which is the remote desktop page and Hide set to 15 to hide everything. Hence the user may see as illustrated below. </p>
 <p><img alt="" src="images/2022-05-19-00-19-29.jpg" /></p>
 <p>Only the remote desktop viewer will be displayed embedded within an iframe.</p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
-<p>User must set “allowFraming” to true in the config.json of the server. This is in addition to the Node, Viewmode and Hide arguments, the login token must be specified to add complex features into another website.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must set <code>allowFraming</code> to true in the <code>config.json</code> of the server. This is in addition to the Node, Viewmode and Hide arguments, the login token must be specified to add complex features into another website.</p>
+</div>
 <h2 id="server-port-aliasing">🔀 Server port aliasing</h2>
 <p>In some cases, you may be setting up a server on a private network that uses non-standard ports, but use a router or firewall in front to perform port mapping. So, even if the server privately uses non-standard ports, the public ports are the standard ports 80 and 443. You have to tell MeshCentral to bind to private ports but pretend it’s using the other standard ports when communicating publicly. To make this work, MeshCentral supports port aliasing.</p>
 <p>For example you can run :</p>
@@ -4767,8 +4697,8 @@ Server recovery commands, use only when MeshCentral is offline.
 </code></pre></div></p>
 <p>The routing of IP and ports by the firewall shown on the picture must be configured separately from MeshCentral using separate software. Typically, routers or firewalls have the proper controls to configure this type of traffic routes.</p>
 <h2 id="web-relay-using-dns-names-and-multiple-web-relays">📡 Web relay using DNS names and multiple web relays</h2>
-<p>MeshCentral has a web relay feature that allows a user to access remote web sites thru the MeshCentral server without having to install MeshCentral Router. Web relay also allow you to use an alternate DNS name instead of a different web relay port which has a few advantages. You can also use multiple alternate DNS names which can be used at the same time to provide users with many HTTP/HTTPS relays.</p>
-<h2 id="video-walkthrus">🎬 Video Walkthrus</h2>
+<p>MeshCentral has a web relay feature that allows a user to access remote web sites through the MeshCentral server without having to install MeshCentral Router. Web relay also allow you to use an alternate DNS name instead of a different web relay port which has a few advantages. You can also use multiple alternate DNS names which can be used at the same time to provide users with many HTTP/HTTPS relays.</p>
+<h2 id="video-walkthroughs">🎬 Video Walkthroughs</h2>
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/GU7MQjkPSd8" frameborder="0" allowfullscreen></iframe>
 </div>
@@ -4777,13 +4707,13 @@ Server recovery commands, use only when MeshCentral is offline.
 </div>
 
 <h2 id="device-groups-with-relay-agent">🖧 Device Groups with Relay Agent</h2>
-<p>MeshCentral supports the local device group allowing devices that do not have an agent to be managed thru MeshCentral with regular SSH, SFTP, RDP, VNC protocols. Until now, the MeshCentral server had to be in LAN or Hybrid modes to support his device group and the managed devices had to be on the same network as the MeshCentral server. Starting with v1.0.11, users can create a local device group specifying a MeshAgent as a relay. This makes it possible to manage agent-less devices from anywhere on the Internet even if the server is in WAN mode. Simply install a single device with a MeshAgent on a network and create a local device group with that device as the relay.</p>
+<p>MeshCentral supports the local device group allowing devices that do not have an agent to be managed through MeshCentral with regular SSH, SFTP, RDP, VNC protocols. Until now, the MeshCentral server had to be in LAN or Hybrid modes to support his device group and the managed devices had to be on the same network as the MeshCentral server. Starting with v1.0.11, users can create a local device group specifying a MeshAgent as a relay. This makes it possible to manage agent-less devices from anywhere on the Internet even if the server is in WAN mode. Simply install a single device with a MeshAgent on a network and create a local device group with that device as the relay.</p>
 <p><img alt="" src="images/2022-05-31-10-30-07.jpg" /></p>
 <p><img alt="" src="images/2022-05-31-10-30-42.jpg" /></p>
 <p>To enable SSH support, add this line to the domain section of your <code>config.json</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">&quot;ssh&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 </code></pre></div>
-<h3 id="video-walkthru_1">Video Walkthru</h3>
+<h3 id="video-walkthrough_1">Video Walkthrough</h3>
 <div class="video-wrapper">
   <iframe width="320" height="180" src="https://www.youtube.com/embed/TtW5-g6SeZQ" frameborder="0" allowfullscreen></iframe>
 </div>
@@ -4794,7 +4724,7 @@ Server recovery commands, use only when MeshCentral is offline.
 <p><img alt="" src="images/2022-05-31-10-31-00.jpg" /></p>
 <p><img alt="" src="images/2022-05-31-10-32-46.jpg" /></p>
 <h2 id="nginx-reverse-proxy-setup">🧭 NGINX Reverse-Proxy Setup</h2>
-<h3 id="video-walkthru_2">Video Walkthru</h3>
+<h3 id="video-walkthrough_2">Video Walkthrough</h3>
 <div class="video-wrapper">
   <iframe src="https://www.youtube.com/embed/YSmiLyKSX2I" frameborder="0" allowfullscreen></iframe>
 </div>
@@ -4978,12 +4908,10 @@ MeshCentral<span class="w"> </span>HTTP<span class="w"> </span>web<span class="w
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<hr />
-<blockquote>
-<p><strong>📌 Note “agentConfig” line :</strong></p>
-<p>Because Traefik does not support web socket connections that are not “masked”, we have to tell the Mesh Agents to mask web socket connections using this line. Once set, any new agent will be installed with the web socket masking turned on. Also note that we will be running MeshCentral on port HTTPS/4430 and HTTP/800. However, we also indicate to MeshCentral that HTTPS will really be on port 443 using the “AliasPort” line.</p>
-</blockquote>
-<hr />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Relating to the <code>agentConfig</code> line, due to Traefik not supporting web socket connections that aren't “masked”, we have to tell MeshAgents to mask web socket connections using this line. Once set, any new agent will be installed with websocket masking turned on. Also note that we will be running MeshCentral on port HTTPS/4430 and HTTP/800. However, we also indicate to MeshCentral that HTTPS will really be on port 443 using the <code>AliasPort</code> line.</p>
+</div>
 <p>The <code>TlsOffload</code> line indicates that MeshCentral should not perform TLS on port 4430. And the <code>certUrl</code> line indicates what URL can be used to load the external certificate that will be presented on port 443 in front of MeshCentral.</p>
 <p>Now that we have MeshCentral setup, let’s take a look at a sample Traefik configuration file. In this case, we will manually configure the entrypoints, frontends and backends within the Traefik configuration file. There is a basic configuration file for Traefik 1.7:</p>
 <div class="highlight"><pre><span></span><code><span class="p">[</span><span class="err">global</span><span class="p">]</span>
@@ -5233,12 +5161,10 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 <div class="highlight"><pre><span></span><code>node<span class="w"> </span>node_modules/meshcentral<span class="w"> </span>--recordencryptionrecode
 </code></pre></div>
 <p>It’s really important to keep the encryption key in a safe place along with database backups. If the database is backed up but the record encryption key is lost, it will not be possible to recover the secured data in the database.</p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Also note that database record encryption can and should be used along with other data protection systems.</p>
-</blockquote>
-<hr />
+</div>
 <h2 id="mongodb-free-server-monitoring">📊 MongoDB free server monitoring</h2>
 <p>If running with MongoDB version 4.x, there is a free database monitoring service that is provided. Just run “mongo” and you may see the following:</p>
 <p><img alt="" src="images/2022-05-19-00-45-31.jpg" /></p>
@@ -5285,12 +5211,10 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Note that if you do not allow new accounts, any new users that use Twitter credentials will not be able to login to MeshCentral. One trick is to allow new account, login and change this setting again. Once the config.json is correct, restart the server and you should see the Twitter icon on the login screen. When restarting the MeshCentral server, new modules will need to be installed to support this new feature. Depending on how your server is setup, you may need to restart the server manually to allow the new modules to be installed.</p>
-</blockquote>
-<hr />
+</div>
 <p><img alt="" src="images/2022-05-19-00-49-25.jpg" /></p>
 <h3 id="google-github-reddit-authentication">Google, GitHub, Reddit Authentication</h3>
 <p>The exact same process as shown in the previous section can be repeated for Google, GitHub and Reddit. In each case, you need to go to each respective credential provider and get a <code>ClientID</code> and <code>ClientSecret</code> for each service. You also need to register the correct callback URL for each service.</p>
@@ -5366,7 +5290,7 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>The <code>Application ID</code> value is placed as <code>Client ID</code> in the configuration file. You can also see that in the example above, we have <code>NewAccounts</code> set to false in the default MeshCentral domain, but set to true in the Azure section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating thru Azure. Once done, restart the MeshCentral server. Depending on your setup, you many need to run MeshCentral once manually to allow new required modules to be installed. Once running again, you should see the Azure single sign-on button on the login page.</p>
+<p>The <code>Application ID</code> value is placed as <code>Client ID</code> in the configuration file. You can also see that in the example above, we have <code>NewAccounts</code> set to false in the default MeshCentral domain, but set to true in the Azure section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating through Azure. Once done, restart the MeshCentral server. Depending on your setup, you many need to run MeshCentral once manually to allow new required modules to be installed. Once running again, you should see the Azure single sign-on button on the login page.</p>
 <p><img alt="" src="images/2022-05-19-00-52-05.jpg" /></p>
 <h3 id="jumpcloud-authentication-using-saml">JumpCloud Authentication using SAML</h3>
 <p>While using OAuth may be interesting, it’s more likely that MeshCentral servers used in an enterprise environment will want to use SAML (Security Assertion Markup Language). This is a widely deployed sign-on protocol used in enterprises so that, for example, employees can login to many different web sites using a single set of company credentials. MeshCentral can be one of many web sites that some users may want to log into.</p>
@@ -5419,7 +5343,7 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>Take note that the <code>entityid</code>, <code>idpurl</code> and <code>cert</code> are values taken from JumpCloud. The callback URL should be configured in JumpCloud as we have done in previous steps. You can see that in the example above, we have <code>NewAccounts</code> set to false in the default MeshCentral domain, but set to true in the JumpCloud section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating thru JumpCloud.</p>
+<p>Take note that the <code>entityid</code>, <code>idpurl</code> and <code>cert</code> are values taken from JumpCloud. The callback URL should be configured in JumpCloud as we have done in previous steps. You can see that in the example above, we have <code>NewAccounts</code> set to false in the default MeshCentral domain, but set to true in the JumpCloud section. This indicates that new accounts are not allowed in this domain except if it’s a new user that is authenticating through JumpCloud.</p>
 <p>You are now ready to restart the MeshCentral server. Extra modules will be needed to support SAML and so, depending on your server configuration, you may need to run MeshCentral manually once to allow the new modules to be installed from NPM. Once restarted, you should see the JumpCloud sign-in button on the login screen.</p>
 <p><img alt="" src="images/2022-05-19-00-55-29.jpg" /></p>
 <p>Users can sign-in using the regular username and password or using JumpCloud.</p>
@@ -5481,13 +5405,11 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-<p>As you can see, this is roughly the same as all the other OAuth2 based authentication strategies. These are the basics you need to get started using OpenID Connect because it's still authenticating with OAuth2. If you plan to take advantage of some of the more advanced features provided by this strategy you should consider reading the <a href="openidConnectStrategy/">additional strategy documentation</a>.</p>
-<hr />
-<blockquote>
-<p><strong>📌 Note :</strong></p>
+<p>As you can see, this is roughly the same as all the other OAuth2 based authentication strategies. These are the basics you need to get started using OpenID Connect because it's still authenticating with OAuth2. If you plan to take advantage of some of the more advanced features provided by this strategy you should consider reading the <a href="./openidConnectStrategy/">additional strategy documentation</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>MeshCentral will use <code>https://mesh.your.domain/auth-oidc-callback</code> as the default redirect uri.</p>
-</blockquote>
-<hr />
+</div>
 <h2 id="improvements-to-meshcentral">✨ Improvements to MeshCentral</h2>
 <p>In 2007, the first version of MeshCentral was built. We will refer to it as “MeshCentral1”. When MeshCentral1 was designed, HTML5 did not exist and web sockets where not implemented in any of the major browsers. Many design decisions were made at the time that are no longer optimal today. With the advent of the latest MeshCentral, MeshCentral1 is no longer supported and MeshCentral v2 has been significantly redesigned and mostly re-written based of previous version. Here is a list of improvements made in MeshCentral when compared with MeshCentral1 :</p>
 <ul>
@@ -5650,7 +5572,9 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
 
 <h2 id="pdf-and-odt-handouts">PDF and ODT handout(s).</h2>
 <p><a href="https://meshcentral.com/docs/MeshCentral2UserGuide.pdf">MeshCentral Guide</a></p>
-<p>MeshCmd Guide <a href="https://meshcentral.com/docs/MeshCmdUserGuide.pdf">as .pdf</a> <a href="../documents/MeshCentral%20User%27s%20Guide%20v0.2.9.odt">as .odt</a></p>
+<p>MeshCmd Guide <a href="https://meshcentral.com/docs/MeshCmdUserGuide.pdf">as .pdf</a> <a href="../documents/MeshCentral%20User's%20Guide%20v0.2.9.odt">as .odt</a></p>
+
+
 
 
 
@@ -5673,7 +5597,7 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
         
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
   Back to top
 </button>
         
@@ -5701,12 +5625,11 @@ MeshCentral<span class="w"> </span>HTTPS<span class="w"> </span>web<span class="
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy", "content.code.select", "navigation.tabs", "navigation.top", "navigation.sections", "navigation.instant", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
-    
-    
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../js/print-site.js"></script>
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.copy","content.code.select","navigation.tabs","navigation.top","navigation.sections","navigation.instant","search.suggest"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.16f8adc2.min.js"></script>
       
     
   </body>
