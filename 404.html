@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        const newDomain = "https://docs.meshcentral.com";
-        const destination = newDomain + window.location.pathname + window.location.search;
-        
+        const segments = window.location.pathname.split('/').filter(Boolean);
+        const path = '/' + segments.slice(1).join('/');
+        const destination = `https://docs.meshcentral.com${path}${window.location.search}`;
+
         window.location.replace(destination);
-        window.onload = function() { document.getElementById('manual-link').href = destination; };
+        window.onload = () => { document.getElementById('manual-link').href = destination; };
     </script>
     <title>MeshCentral Documentation</title>
     <style>
