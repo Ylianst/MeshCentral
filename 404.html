@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const newDomain = "https://docs.meshcentral.com";
+        const destination = newDomain + window.location.pathname + window.location.search;
+        
+        window.location.replace(destination);
+        window.onload = function() { document.getElementById('manual-link').href = destination; };
+    </script>
+    <title>MeshCentral Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .note {
+            background-color: #e8f4fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .redirect {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+        }
+        a {
+            color: #2196F3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 MeshCentral Documentation</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> The Docs folder has been moved to its own repository for better organization and maintenance.
+        </div>
+        
+        <p>You can find the complete MeshCentral documentation at:</p>
+        
+        <p style="text-align: center; font-size: 18px;">
+            <a href="https://docs.meshcentral.com">MeshCentral Documentation</a>
+        </p>
+        
+        <div class="redirect">
+            <p>If you are not automatically redirected, <a id="manual-link" href="https://docs.meshcentral.com">click here</a>.</p>
+        </div>
+        
+        <hr>
+        
+        <p style="text-align: center; font-size: 14px; color: #666;">
+            For the main MeshCentral project, visit <a href="https://github.com/Ylianst/MeshCentral">Ylianst/MeshCentral</a>.
+        </p>
+    </div>
+</body>
+</html>
