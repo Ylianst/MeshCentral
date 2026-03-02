@@ -60,6 +60,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    <script type="text/javascript" src="js/ui-components.js"></script>
     {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
@@ -2689,7 +2690,7 @@
                 if (userImage) {
                     userImage.src = userImageSrc;
                 }
-                
+
                 var userDropdownButton = Q('userDropdownButton');
                 if (userDropdownButton) {
                     userDropdownButton.onclick = function(e) {
@@ -2699,7 +2700,7 @@
                         return false;
                     };
                 }
-                
+
                 var userDropdownMenu = Q('userDropdownMenu');
                 if (userDropdownMenu) {
                     userDropdownMenu.style.display = 'none';
@@ -2715,7 +2716,7 @@
             var uiSubmenu = Q('uiSubmenu');
             if (uiSubmenu) {
                 var isVisible = (uiSubmenu.style.display == 'block');
-                
+
                 if (isVisible) {
                     uiSubmenu.style.display = 'none';
                     uiSubmenu.classList.remove('show');
@@ -2737,7 +2738,7 @@
                 }
             }
         }
-        
+
         function closeUISubmenu(event) {
             var uiSubmenu = Q('uiSubmenu');
             var userDropdown = Q('userDropdown');
@@ -3361,7 +3362,7 @@
 
                     // If groups are to be collapsed by default, do it now
                     if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
-                    
+
                     break;
                 }
                 case 'powertimeline': {
@@ -13567,7 +13568,7 @@
                     if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
                     if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
                     if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }
                     x += '</div>';
                 }
                 x += '</table>';
@@ -18990,9 +18991,9 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
-        
+
         //
-        // UserDropDown Menu 
+        // UserDropDown Menu
         //
 
         var userDropdownOpen = false;
@@ -19003,9 +19004,9 @@
             var dropdownMenu = Q('userDropdownMenu');
             var uiSettingsButton = document.querySelector('.userDropdownUISettings');
             var uiSubmenu = Q('uiSubmenu');
-            
+
             if (!dropdownButton || !dropdownMenu) return;
-            
+
             QS('uiSubmenu').display = 'none';
             QS('uiSubmenu').opacity = '0';
             QS('uiSubmenu').transform = 'translateX(12px)';
@@ -19041,14 +19042,14 @@
 
         function toggleUISubmenu() {
             uiSubmenuOpen = !uiSubmenuOpen;
-            
+
             var uiSubmenu = Q('uiSubmenu');
             var isDesktop = window.innerWidth > 769;
             var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-            
+
             if (uiSubmenuOpen) {
                 QS('uiSubmenu').display = 'block';
-                
+
                 if (isDesktop && (reduceMotion == false)) {
                     setTimeout(function() {
                         QS('uiSubmenu').opacity = '1';
@@ -19071,7 +19072,7 @@
                     QS('uiSubmenu').transform = 'translateX(12px)';
                 }
             }
-            
+
             var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
             if (chevronIcon) {
                 chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
@@ -19101,7 +19102,7 @@
                 case 'toggle-night': toggleNightMode(); break;
                 case 'notes': showNotes(false); break;
                 case 'account': go(2); break;
-                case 'logout': 
+                case 'logout':
                     if (logoutControls && logoutControls.logoutUrl) {
                         window.location.href = logoutControls.logoutUrl;
                     }
@@ -19118,11 +19119,11 @@
             var userDropdown = Q('userDropdown');
             var dropdownName = Q('userDropdownName');
             var dropdownImage = Q('userDropdownImage');
-            
+
             if (logoutControls && logoutControls.name) {
                 QS('userDropdown').display = 'block';
                 dropdownName.textContent = logoutControls.name;
-                
+
                 if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
                     var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
                     dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
@@ -19870,7 +19871,7 @@
         }
         setupNotificationClickOutside();
 
-        
+
         // Refresh the notification box
         function drawNotifications() {
             var notifySettings = getstore('notifications', 0);
@@ -21316,6 +21317,24 @@
             try { return JSON.parse(raw); } catch (ex) { return {}; }
         }
 
+        function normalizeCustomIconPath(value) {
+            if (typeof value !== 'string') { return value; }
+            var trimmed = value.trim();
+            if (trimmed.length === 0) { return trimmed; }
+            var lower = trimmed.toLowerCase();
+            if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:')) { return trimmed; }
+            if ((typeof domainUrl === 'string') && (domainUrl !== '/') && (domainUrl.length > 0)) {
+                if (trimmed.startsWith('/icons/custom/')) {
+                    return domainUrl + trimmed.substring(1);
+                }
+                if (trimmed.startsWith('icons/custom/')) {
+                    return domainUrl + trimmed;
+                }
+            }
+            if (trimmed.startsWith('icons/custom/')) { return '/' + trimmed; }
+            return trimmed;
+        }
+
         function sanitizeCustomIconState(state) {
             var sanitized = {};
             if (state == null) { return sanitized; }
@@ -21323,7 +21342,7 @@
                 var key = customIconConfig[i].key;
                 var value = state[key];
                 if (typeof value === 'string') {
-                    var trimmed = value.trim();
+                    var trimmed = normalizeCustomIconPath(value.trim());
                     if (trimmed.length > 0) { sanitized[key] = trimmed; }
                 }
             }
@@ -21339,48 +21358,159 @@
 
         function showIconCustomization() {
             customIconValues = loadCustomIconState();
-            var x = '<p class="text-muted">Upload custom SVG icons or provide a URL/data URL. Uploaded files are stored in the public icons directory.</p>';
+            var x = '<div class="container-fluid">';
+            x += '<div class="row mb-4">';
+            x += '<div class="col-12">';
+            x += '<div class="d-flex align-items-center mb-3">';
+            x += '<div class="bg-primary bg-gradient rounded-circle p-3 me-3">';
+            x += '<i class="fas fa-palette fa-2x text-white"></i>';
+            x += '</div>';
+            x += '<div>';
+            x += '<h5 class="mb-1 fw-semibold">Customize Your Sidebar Icons</h5>';
+            x += '<p class="text-muted mb-0">Upload custom SVG/PNG icons or provide URLs to personalize your sidebar interface experience</p>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+
+            x += '<div class="row" id="iconCardsContainer">';
             for (var i = 0; i < customIconConfig.length; i++) {
                 var cfg = customIconConfig[i];
                 var currentValue = customIconValues[cfg.key] || '';
-                x += '<div class="mb-3">';
-                x += '<label class="form-label" for="iconInput_' + cfg.key + '">' + EscapeHtml(cfg.label) + '</label>';
-                x += '<div class="input-group">';
-                x += '<input type="text" class="form-control" id="iconInput_' + cfg.key + '" value="' + EscapeHtml(currentValue) + '" placeholder="Enter URL or data URL for ' + EscapeHtml(cfg.label) + ' icon" />';
-                x += '<button class="btn btn-outline-secondary" type="button" onclick="return triggerIconFileInput(\'' + cfg.key + '\')">Upload SVG</button>';
+                var hasIcon = currentValue.length > 0;
+
+                x += '<div class="col-lg-6 col-xl-4 mb-3">';
+                x += '<div class="card modern-card h-100 ' + (hasIcon ? 'border-success' : '') + '" data-icon-key="' + cfg.key + '">';
+                x += '<div class="card-header d-flex align-items-center">';
+                x += '<div class="bg-light rounded-circle p-2 me-3">';
+                x += '<i class="fas ' + getIconClass(cfg.key) + ' fa-lg text-secondary"></i>';
                 x += '</div>';
-                x += '<input type="file" class="d-none" accept=".svg,image/svg+xml" id="iconFile_' + cfg.key + '" onchange="handleIconFileChange(\'' + cfg.key + '\', this)" />';
+                x += '<div class="flex-grow-1">';
+                x += '<h6 class="card-title mb-1">' + EscapeHtml(cfg.label) + '</h6>';
+                x += '<small class="status-badge ' + (hasIcon ? 'text-success' : 'text-muted') + '">';
+                x += '<i class="fas ' + (hasIcon ? 'fa-check-circle' : 'fa-circle') + ' me-1"></i>';
+                x += '<span class="status-text">' + (hasIcon ? 'Custom icon set' : 'Default icon') + '</span>';
+                x += '</small>';
+                x += '</div>';
+                x += '</div>';
+
+                x += '<div class="card-body">';
+                x += '<div class="icon-upload-wrapper" data-icon-key="' + cfg.key + '"></div>';
+                x += '</div>';
+                x += '</div>';
                 x += '</div>';
             }
+            x += '</div>';
+            x += '</div>';
 
-            setModalContent('xxAddAgent', 'Icons Customization', x, 'large');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', saveIconCustomization);
+            openModal({
+                modalId: 'xxAddAgent',
+                title: 'Icons Customization',
+                body: x,
+                size: 'large',
+                okButtonId: 'idx_dlgOkButton',
+                onOk: saveIconCustomization
+            });
+
+            // Initialize icon upload components after modal is shown
+            setTimeout(function() {
+                initializeIconUploadComponents();
+            }, 100);
+
             return false;
         }
 
-        function triggerIconFileInput(iconKey) {
-            var fileInput = document.getElementById('iconFile_' + iconKey);
-            if (fileInput) { fileInput.click(); }
-            return false;
-        }
+        function initializeIconUploadComponents() {
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                var wrapper = document.querySelector('[data-icon-key="' + cfg.key + '"] .icon-upload-wrapper');
 
-        async function handleIconFileChange(iconKey, input) {
-            if (!input || !input.files || (input.files.length === 0)) { return; }
-            try {
-                var result = await uploadCustomIcon(iconKey, input.files[0]);
-                if ((result == null) || (result.path == null)) {
-                    messagebox('Icons Customization', 'The server did not return a valid icon path.');
-                } else {
-                    customIconValues[iconKey] = result.path;
-                    var textInput = document.getElementById('iconInput_' + iconKey);
-                    if (textInput) { textInput.value = result.path; }
-                    persistCustomIconState(customIconValues);
+                if (wrapper) {
+                    createIconUploadComponent(cfg.key, wrapper, {
+                        label: cfg.label,
+                        currentValue: currentValue,
+                        onUpload: uploadAndPersistCustomIcon,
+                        onUrlInput: handleUrlInput,
+                        onRemove: removeCustomIcon,
+                        normalizePreviewUrl: normalizeCustomIconPath
+                    });
                 }
-            } catch (ex) {
-                messagebox('Icons Customization', (ex && ex.message) ? ex.message : 'Failed to upload the icon.');
-            } finally {
-                input.value = '';
             }
+        }
+
+        // Upload via API, then persist local icon state so sidebar updates immediately.
+        async function uploadAndPersistCustomIcon(iconKey, file) {
+            var result = await uploadCustomIcon(iconKey, file);
+            if ((result != null) && (typeof result.path === 'string') && (result.path.length > 0)) {
+                customIconValues[iconKey] = result.path;
+                persistCustomIconState(customIconValues);
+                setIconCardStatus(iconKey, 'custom');
+            }
+            return result;
+        }
+
+        function setIconCardStatus(iconKey, state) {
+            var card = document.querySelector('[data-icon-key="' + iconKey + '"]');
+            if (!card) { return; }
+            var statusElement = card.querySelector('.card-header small');
+            card.classList.remove('border-warning', 'border-success');
+            if (state === 'custom') {
+                if (statusElement) {
+                    statusElement.className = 'text-success';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle me-1"></i>Custom icon set';
+                }
+                card.classList.add('border-success');
+            } else if (state === 'unsaved') {
+                if (statusElement) {
+                    statusElement.className = 'text-warning';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Unsaved changes';
+                }
+                card.classList.add('border-warning');
+            } else {
+                if (statusElement) {
+                    statusElement.className = 'text-muted';
+                    statusElement.innerHTML = '<i class="fas fa-circle me-1"></i>Default icon';
+                }
+            }
+        }
+
+        function getIconClass(iconKey) {
+            const iconMap = {
+                'myDevices': 'fa-desktop',
+                'myAccount': 'fa-user-circle',
+                'myEvents': 'fa-calendar-alt',
+                'myFiles': 'fa-folder',
+                'myUsers': 'fa-users',
+                'myServer': 'fa-server'
+            };
+            return iconMap[iconKey] || 'fa-icons';
+        }
+
+        function handleUrlInput(iconKey, inputOrValue) {
+            var value = '';
+            if (typeof inputOrValue === 'string') { value = inputOrValue.trim(); }
+            else if (inputOrValue && (typeof inputOrValue.value === 'string')) { value = inputOrValue.value.trim(); }
+            // Preview rendering is handled by IconUploadComponent.
+            setIconCardStatus(iconKey, (value.length > 0) ? 'unsaved' : 'default');
+        }
+
+        function removeCustomIcon(iconKey) {
+            var previousValue = (customIconValues && (typeof customIconValues[iconKey] === 'string')) ? customIconValues[iconKey] : '';
+            customIconValues[iconKey] = '';
+            var textInput = document.getElementById('iconInput_' + iconKey);
+            if (textInput) { textInput.value = ''; }
+            persistCustomIconState(customIconValues);
+
+            if ((typeof previousValue === 'string') && (previousValue.indexOf('/icons/custom/') >= 0)) {
+                deleteCustomIconFromServer(previousValue).catch(function (ex) {
+                    // Keep UX non-blocking: icon is already reset locally.
+                    if (window.console) { console.error('Failed to delete custom icon:', ex); }
+                });
+            }
+
+            setIconCardStatus(iconKey, 'default');
+            return false;
         }
 
         async function uploadCustomIcon(iconKey, file) {
@@ -21403,6 +21533,26 @@
             return response.json();
         }
 
+        async function deleteCustomIconFromServer(iconPath) {
+            var body = new URLSearchParams();
+            body.append('iconPath', iconPath);
+            var response = await fetch('customicondelete.ashx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString(),
+                credentials: 'same-origin'
+            });
+            if (!response.ok) {
+                var message = 'Failed to delete custom icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
         function saveIconCustomization() {
             var updatedState = {};
             for (var i = 0; i < customIconConfig.length; i++) {
@@ -21414,20 +21564,44 @@
             if (xxModal) { xxModal.hide(); }
         }
 
+        // Supports both SVG menu icons and the modern FontAwesome <i> icons.
         function applyIconCustomization(icons) {
             var state = sanitizeCustomIconState(icons);
             for (var i = 0; i < customIconConfig.length; i++) {
                 var cfg = customIconConfig[i];
                 var anchor = document.getElementById(cfg.elementId);
                 if (!anchor) { continue; }
-                var svg = anchor.querySelector('svg');
-                if (!svg) { continue; }
+                var iconElement = anchor.querySelector('i,svg');
+                if (!iconElement) { continue; }
                 if (state[cfg.key]) {
                     anchor.classList.add('custom-icon');
-                    svg.style.backgroundImage = `url(${state[cfg.key]})`;
+                    iconElement.style.setProperty('background-image', 'url("' + state[cfg.key].replace(/"/g, '%22') + '")', 'important');
+                    iconElement.style.setProperty('background-repeat', 'no-repeat', 'important');
+                    iconElement.style.setProperty('background-position', 'center', 'important');
+                    iconElement.style.setProperty('background-size', 'contain', 'important');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        // Font Awesome icons are pseudo-elements; hide glyph and show background image.
+                        iconElement.style.setProperty('font-size', '0', 'important');
+                        iconElement.style.setProperty('color', 'transparent', 'important');
+                        iconElement.style.setProperty('width', '1.1em', 'important');
+                        iconElement.style.setProperty('height', '1.1em', 'important');
+                        iconElement.style.setProperty('display', 'inline-block', 'important');
+                        iconElement.style.setProperty('vertical-align', 'middle', 'important');
+                    }
                 } else {
                     anchor.classList.remove('custom-icon');
-                    svg.style.removeProperty('background-image');
+                    iconElement.style.removeProperty('background-image');
+                    iconElement.style.removeProperty('background-repeat');
+                    iconElement.style.removeProperty('background-position');
+                    iconElement.style.removeProperty('background-size');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        iconElement.style.removeProperty('font-size');
+                        iconElement.style.removeProperty('color');
+                        iconElement.style.removeProperty('width');
+                        iconElement.style.removeProperty('height');
+                        iconElement.style.removeProperty('display');
+                        iconElement.style.removeProperty('vertical-align');
+                    }
                 }
             }
         }

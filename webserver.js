@@ -4668,34 +4668,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
 
             const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
-            if (extension !== '.svg') { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG files are supported.' }); return; }
+            if ((extension !== '.svg') && (extension !== '.png')) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG and PNG files are supported.' }); return; }
 
             const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
             const customDir = obj.path.join(iconsRoot, 'custom');
             try { obj.fs.mkdirSync(iconsRoot); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
             try { obj.fs.mkdirSync(customDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
 
-            const resolveExistingIconName = function (requestPath) {
-                if (typeof requestPath !== 'string') { return null; }
-                if (requestPath.startsWith('http://') || requestPath.startsWith('https://') || requestPath.startsWith('data:')) { return null; }
-                if (requestPath.startsWith('/icons/custom/') === false) { return null; }
-                const name = requestPath.substring('/icons/custom/'.length);
-                if (name.indexOf('/') !== -1 || name.indexOf('\\') !== -1) { return null; }
-                if (obj.common.IsFilenameValid(name) !== true) { return null; }
-                if (name.toLowerCase().endsWith('.svg') === false) { return null; }
-                return name;
-            };
-
             const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
-            const previousName = resolveExistingIconName(previousIcon);
+            const previousName = resolveCustomIconName(previousIcon);
             if (previousName != null) {
                 try { obj.fs.unlinkSync(obj.path.join(customDir, previousName)); } catch (ex) { }
             }
 
-            const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + '.svg';
+            const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + extension;
             const destinationPath = obj.path.join(customDir, newFilename);
 
-            const respondSuccess = function () { res.json({ success: true, path: '/icons/custom/' + newFilename }); };
+            const respondSuccess = function () { res.json({ success: true, path: domain.url + 'icons/custom/' + newFilename }); };
 
             obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
                 if (renameErr == null) { respondSuccess(); return; }
@@ -4713,6 +4702,41 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
+    function resolveCustomIconName(requestPath) {
+        if (typeof requestPath !== 'string') { return null; }
+        if (requestPath.startsWith('http://') || requestPath.startsWith('https://') || requestPath.startsWith('data:')) { return null; }
+        const pathOnly = requestPath.split('?')[0].split('#')[0];
+        const marker = '/icons/custom/';
+        const markerIndex = pathOnly.indexOf(marker);
+        if (markerIndex < 0) { return null; }
+        const name = pathOnly.substring(markerIndex + marker.length);
+        if (name.indexOf('/') !== -1 || name.indexOf('\\') !== -1) { return null; }
+        if (obj.common.IsFilenameValid(name) !== true) { return null; }
+        const lower = name.toLowerCase();
+        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false)) { return null; }
+        return name;
+    }
+
+    function handleCustomIconDelete(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+        if (user.siteadmin !== SITERIGHT_ADMIN) { res.sendStatus(401); return; }
+
+        const iconPath = (req.body && (typeof req.body.iconPath === 'string')) ? req.body.iconPath : null;
+        const iconName = resolveCustomIconName(iconPath);
+        if (iconName == null) { res.status(400).json({ success: false, error: 'Invalid icon path.' }); return; }
+
+        const customDir = obj.path.join(obj.parent.datapath, 'icons', 'custom');
+        const targetPath = obj.path.join(customDir, iconName);
+        obj.fs.unlink(targetPath, function (err) {
+            if (err && (err.code !== 'ENOENT')) { res.status(500).json({ success: false, error: 'Failed to delete icon.' }); return; }
+            res.json({ success: true });
+        });
+    }
+
     function handleCustomIconDownload(req, res) {
         const domain = getDomain(req);
         if (domain == null) { res.sendStatus(404); return; }
@@ -4721,7 +4745,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const iconName = req.params[0];
         if ((iconName.length === 0) || (iconName.indexOf('/') !== -1) || (iconName.indexOf('\\') !== -1)) { res.sendStatus(404); return; }
         if (obj.common.IsFilenameValid(iconName) !== true) { res.sendStatus(404); return; }
-        if (iconName.toLowerCase().endsWith('.svg') === false) { res.sendStatus(404); return; }
+        const iconNameLower = iconName.toLowerCase();
+        if ((iconNameLower.endsWith('.svg') === false) && (iconNameLower.endsWith('.png') === false)) { res.sendStatus(404); return; }
 
         const customDir = obj.path.join(obj.parent.datapath, 'icons', 'custom');
         var resolvedPath;
@@ -4731,7 +4756,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         obj.fs.readFile(resolvedPath, function (err, data) {
             if (err) { res.sendStatus(404); return; }
-            res.set({ 'Content-Type': 'image/svg+xml' });
+            res.set({ 'Content-Type': iconNameLower.endsWith('.png') ? 'image/png' : 'image/svg+xml' });
             res.send(data);
         });
     }
@@ -7178,6 +7203,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
                 obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
+                obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
                 obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
                 obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
                 obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
