@@ -140,6 +140,11 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
             sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
+		} else if (obj.databaseType == DB_POSTGRESQL) { // PostgreSQL
+            sqlDbQuery('DELETE FROM events WHERE time < $1', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expireEventsSeconds
+            sqlDbQuery('DELETE FROM power WHERE time < $1', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
+            sqlDbQuery('DELETE FROM serverstats WHERE time < $1', [new Date(Date.now() - (expireServerStatsSeconds * 1000))], function (doc, err) { }); // Delete server stats older than expireServerStatsSeconds
+            sqlDbQuery('DELETE FROM smbios WHERE expire < $1', [new Date()], function (doc, err) { }); // Delete SMBIOS records where expiration date is in the past
         } else if (obj.databaseType == DB_ACEBASE) { // AceBase
             //console.log('Performing AceBase maintenance');
             obj.file.query('events').filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
