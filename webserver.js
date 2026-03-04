@@ -5670,7 +5670,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     };
 
     // Handle a server backup request
-    function handleBackupRequest(req, res) {
+    async function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
@@ -5680,23 +5680,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
-        // Require modules
-        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
-
-        // Good practice to catch this error explicitly
-        archive.on('error', function (err) { throw err; });
-
-        // Set the archive name
-        res.attachment((domain.title ? domain.title : 'MeshCentral') + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
-
-        // Pipe archive data to the file 
-        archive.pipe(res);
-
-        // Append files from a glob pattern
-        archive.directory(obj.parent.datapath, false);
-
-        // Finalize the archive (ie we are done appending files but streams have to finish yet) 
-        archive.finalize();
+        // start a new backup and async wait for it to finish with a timeout of 60s
+        if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
+        obj.db.performBackup();
+        const waitFor = ms => new Promise(res => setTimeout(res, ms));
+        var backupStart = Date.now();
+        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 60 * 1000)) {
+            await waitFor(2000);
+        }
+        if (obj.fs.existsSync(obj.db.newAutoBackupFile) && obj.db.performingBackup == false) {
+            res.setHeader('Content-Type', 'application/x-zip-compressed');
+            res.download(obj.db.newAutoBackupFile);
+        } else {
+            obj.parent.addServerWarning('handleBackupRequest: Backup error', true);
+            res.status(500).send("Backup error.");
+        }
     }
 
     // Handle a server restore request
