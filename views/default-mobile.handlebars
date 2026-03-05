@@ -6386,8 +6386,16 @@
 
             // Active Users
            if (node.users && node.users.length > 0) {
-                var u = node.users.map(function(user) {
-                    return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                var u = node.users.map(function(user, index) {
+                    var upn = node.upnusers && node.upnusers[index];
+                    var label = (features3 & 0x00000002)
+                        ? ((node.users && node.users[index] != null) ? EscapeHtml(node.users[index]) : null)
+                        : (upn != null ? EscapeHtml(upn) : null);
+                    var escapedUser = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : user);
+                    var locked = node.lusers && node.lusers.indexOf(user) >= 0;
+                    if (locked) { return addKeyLinkConditional(escapedUser, label ? label + ' - ' + "Locked" : "Locked", true); }
+                    if (label) { return '<span style=cursor:default title=\'' + label + '\'>' + escapedUser + '</span>'; }
+                    return escapedUser;
                 }).join(', ');
                 x += addDetailItem((node.users.length > 1 ? "Active Users" : "Active User"), u);
             }
