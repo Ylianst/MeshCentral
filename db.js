@@ -752,7 +752,8 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE TABLE IF NOT EXISTS serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
+                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
                 ], function (err) {
                     parent.debug('db', 'Checking indexes...');
                     sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -1157,8 +1158,8 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
 
-            // Setup plugin info collection
-            if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
+        // Setup plugin info collection
+        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); obj.pluginpermissionsfile = db.collection('pluginpermissions'); }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -1392,7 +1393,8 @@ module.exports.CreateDB = function (parent, func) {
             'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
             'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
             'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
-            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
+            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)',
+            'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
         ], function (results) {
             parent.debug('db', 'Creating indexes...');
             sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -1879,6 +1881,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0) { func(null, [docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON DUPLICATE KEY UPDATE doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if (obj.databaseType == DB_ACEBASE) {
             // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
@@ -2171,6 +2175,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin').child(encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
+                obj.getPluginPermissions = function (pluginName, func) { obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).get(function(snapshot) { if (snapshot.exists()) { func(null, [snapshot.val()]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).set(data, func); };
             }
         } else if (obj.databaseType == DB_POSTGRESQL) {
             // Database actions on the main collection (Postgres)
@@ -2431,6 +2437,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0 && docs[0].doc) { func(null, [typeof docs[0].doc === 'string' ? JSON.parse(docs[0].doc) : docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Database actions on the main collection (MariaDB or MySQL)
@@ -2996,6 +3004,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginpermissionsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginpermissionsfile.updateOne({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
 
         } else {
@@ -3212,8 +3222,9 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginsfile.update({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
-
         }
 
         // Get all configuration files

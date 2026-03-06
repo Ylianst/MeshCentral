@@ -94,25 +94,25 @@ module.exports.pluginHandler = function (parent) {
             if (typeof pluginRegInfo == 'function') d = pluginRegInfo();
             else d = pluginRegInfo;
             if (d.tabId == null || d.tabTitle == null) { return false; }
-            if (!Q(d.tabId)) {
+            if (!document.getElementById(d.tabId)) {
                 var defaultOn = 'class="on"';
-                if (Q('p19headers').querySelectorAll("span.on").length) defaultOn = '';
-                QA('p19headers', '<span ' + defaultOn + ' id="p19ph-' + d.tabId + '" onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
-                QA('p19pages', '<div id="' + d.tabId + '"></div>');
+                if (document.getElementById('p19headers').querySelectorAll("span.on").length) defaultOn = '';
+                document.getElementById('p19headers').innerHTML += '<span ' + defaultOn + ' id="p19ph-' + d.tabId + '" onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>';
+                document.getElementById('p19pages').innerHTML += '<div id="' + d.tabId + '"></div>';
             }
-            QV('MainDevPlugins', true);
+            document.getElementById('MainDevPlugins').style.display = '';
         };
         obj.callPluginPage = function(id, el) {
-            var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
+            var pages = document.getElementById('p19pages').querySelectorAll("#p19pages>div"); 
             for (const i of pages) { i.style.display = 'none'; }
-            QV(id, true);
-            var tabs = Q('p19headers').querySelectorAll("span"); 
+            document.getElementById(id).style.display = '';
+            var tabs = document.getElementById('p19headers').querySelectorAll("span"); 
             for (const i of tabs) { i.classList.remove('on'); }
             el.classList.add('on');
             putstore('_curPluginPage', id);
         };
         obj.addPluginEx = function() {
-            meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
+            meshserver.send({ action: 'addplugin', url: document.getElementById('pluginurlinput').value});
         };
         obj.addPluginDlg = function() {
             if (typeof showModal === 'function') {
@@ -590,7 +590,7 @@ module.exports.pluginHandler = function (parent) {
     };
 
     // Reload a specific plugin without restarting the server
-    // Useful for development - call this after modifying plugin files
+    // Useful for development and upgrading - call this after modifying plugin files
     obj.reloadPlugin = function (pluginName, func) {
         var pluginPath = obj.pluginPath + '/' + pluginName;
         var mainFile = pluginPath + '/' + pluginName + '.js';
@@ -657,6 +657,280 @@ module.exports.pluginHandler = function (parent) {
             });
         });
     };
+    
+    // In-memory cache of registered permissions (loaded from plugins)
+    obj.pluginPermissions = {};
+    obj.pluginPermissionsCache = {}; // Loaded from database
+    
+    // Register a plugin's permissions (called by plugin during load)
+    // permissions: { 'can_edit': { title: 'Edit', desc: 'Can edit', default: 'allowed' }, ... }
+    // default value can be: 'allowed', 'denied', or 'inherited'
+    obj.registerPermissions = function(pluginName, permissions) {
+        var definitions = {};
+        var defaults = {};
+        
+        for (var key in permissions) {
+            definitions[key] = {
+                title: permissions[key].title,
+                desc: permissions[key].desc
+            };
+            defaults[key] = permissions[key].default || 'inherited';
+        }
+        
+        obj.pluginPermissions[pluginName] = {
+            definitions: definitions,
+            defaults: defaults
+        };
+        //console.log("Registered permissions for plugin: " + pluginName);
+    };
+    
+    // Helper to resolve meshId from nodeId (async)
+    obj.resolveMeshFromNode = function(nodeId) {
+        return new Promise(function(resolve, reject) {
+            parent.db.Get(nodeId, function(err, node) {
+                if (err || !node) {
+                    resolve(null);
+                } else {
+                    resolve(node[0].meshid);
+                }
+            });
+        });
+    };
+    
+    // Helper: do the actual permission check (sync)
+    function doCheckPluginPermission(user, pluginName, permission, nodeId, meshId) {
+        return obj.checkPluginPermission(user, pluginName, permission, nodeId, meshId);
+    }
+    
+    // New API: Get all permissions for a user/context
+    // Always returns a Promise. Returns an array of permission keys the user has access to.
+    // Usage: const perms = await parent.getAccessPermissions('pluginName', user, { nodeid: 'node/...' })
+    // Returns: ['can_access', 'can_edit', ...]
+    obj.getAccessPermissions = function(pluginName, user, context) {
+        var nodeId = null;
+        var meshId = null;
+        
+        if (typeof context === 'string') {
+            nodeId = context;
+        } else if (typeof context === 'object') {
+            nodeId = context.nodeId || context.nodeid;
+            meshId = context.meshId || context.meshid || context.mesh;
+        }
+        
+        // If we have nodeId but no meshId, resolve meshId from node
+        var meshPromise;
+        if (nodeId && !meshId) {
+            meshPromise = obj.resolveMeshFromNode(nodeId);
+        } else {
+            meshPromise = Promise.resolve(meshId);
+        }
+        
+        return meshPromise.then(function(resolvedMeshId) {
+            var pluginDef = obj.pluginPermissions[pluginName];
+            var permKeys = pluginDef ? Object.keys(pluginDef.definitions) : [];
+            
+            var allowedPerms = [];
+            for (var i = 0; i < permKeys.length; i++) {
+                var permKey = permKeys[i];
+                var allowed = doCheckPluginPermission(user, pluginName, permKey, nodeId, resolvedMeshId);
+                if (allowed === true) {
+                    allowedPerms.push(permKey);
+                }
+            }
+            
+            // Return a function that checks individual permissions
+            return function(permission) {
+                if (permission == '_ALL_') return allowedPerms;
+                return allowedPerms.indexOf(permission) >= 0;
+            };
+        });
+    };
+    
+    obj.loadPluginPermissions = function(pluginName, callback) {
+        parent.db.getPluginPermissions(pluginName, function(err, docs) {
+            if (err || docs.length === 0) {
+                // No permissions saved yet, create default structure
+                obj.pluginPermissionsCache[pluginName] = {
+                    _id: 'pluginpermission//' + pluginName,
+                    pluginName: pluginName,
+                    permissions: {},
+                    defaults: obj.pluginPermissions[pluginName] ? obj.pluginPermissions[pluginName].defaults : {}
+                };
+            } else {
+                obj.pluginPermissionsCache[pluginName] = docs[0];
+            }
+            if (callback) callback();
+        });
+    };
+    
+    obj.getPluginPermissions = function(pluginName) {
+        var cached = obj.pluginPermissionsCache[pluginName];
+        if (!cached) {
+            // Return in-memory registration if no DB entry
+            return obj.pluginPermissions[pluginName] || null;
+        }
+        
+        // Merge definitions from plugin registration with saved permissions
+        var definitions = obj.pluginPermissions[pluginName] ? obj.pluginPermissions[pluginName].definitions : {};
+        return {
+            _id: cached._id,
+            pluginName: pluginName,
+            definitions: definitions,
+            defaults: cached.defaults || {},
+            permissions: cached.permissions || {}
+        };
+    };
+    
+    obj.setPluginPermissions = function(pluginName, data, callback) {
+        var existing = obj.pluginPermissionsCache[pluginName] || {};
+        
+        var doc = {
+            _id: 'pluginpermission//' + pluginName,
+            pluginName: pluginName,
+            permissions: data.permissions || {},
+            defaults: data.defaults || existing.defaults || {}
+        };
+        
+        obj.pluginPermissionsCache[pluginName] = doc;
+        parent.db.setPluginPermissions(pluginName, doc, function(err) {
+            if (callback) callback(err);
+        });
+    };
+    
+    function userIsInGroup(user, groupId) {
+        if (!user || !user.links) return false;
+        return user.links[groupId] != null;
+    }
+    
+    // Evaluate if user has access at a specific level (global, mesh override, node override)
+    // Returns: 'allowed', 'denied', or 'inherited' (not set)
+    function evaluateAccessLevel(entry, user) {
+        if (!entry) return 'inherited';
+        
+        var allowed = entry.allowed || {};
+        var denied = entry.denied || {};
+        
+        // Check allowed lists first
+        if (allowed.users && allowed.users.indexOf(user._id) >= 0) return 'allowed';
+        if (allowed.userGroups) {
+            for (var i = 0; i < allowed.userGroups.length; i++) {
+                if (userIsInGroup(user, allowed.userGroups[i])) return 'allowed';
+            }
+        }
+        
+        // Check denied lists
+        if (denied.users && denied.users.indexOf(user._id) >= 0) return 'denied';
+        if (denied.userGroups) {
+            for (var i = 0; i < denied.userGroups.length; i++) {
+                if (userIsInGroup(user, denied.userGroups[i])) return 'denied';
+            }
+        }
+        
+        return 'inherited';
+    }
+    
+    // Core permission check function
+    // user: user object from MeshCentral
+    // pluginName: string, e.g., 'regedit'
+    // permission: string, e.g., 'can_edit'
+    // nodeId: optional node ID to check node-specific permissions
+    // meshId: optional mesh ID (if not provided, derived from node)
+    obj.checkPluginPermission = function(user, pluginName, permission, nodeId, meshId) {
+        // 1. Full admin always has access
+        if (user.siteadmin === 0xFFFFFFFF) return true;
+        
+        // 2. Get plugin permissions config
+        var config = obj.getPluginPermissions(pluginName);
+        if (!config) {
+            // No permissions defined, allow by default (backwards compatibility)
+            return true;
+        }
+        
+        // 3. Get permissions for this specific permission key
+        var permConfig = config.permissions ? config.permissions[permission] : null;
+        if (!permConfig) {
+            permConfig = {
+                allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                meshOverrides: {},
+                nodeOverrides: {}
+            };
+        }
+        
+        // 4. Resolve mesh if we have a node but no mesh
+        var targetMesh = meshId;
+        var targetNode = nodeId;
+        
+        if (targetNode && !targetMesh) {
+            // Try to get mesh from node cache
+            // MeshCentral typically stores nodes at parent.nodes
+            var node = null;
+            
+            // Try to get node from parent.nodes
+            if (obj.parent.nodes && obj.parent.nodes[targetNode]) {
+                node = obj.parent.nodes[targetNode];
+            } else if (parent.meshes) {
+                // Check each mesh's nodes
+                for (var mid in parent.meshes) {
+                    var mesh = parent.meshes[mid];
+                    if (mesh.nodes && mesh.nodes[targetNode]) {
+                        node = mesh.nodes[targetNode];
+                        break;
+                    }
+                }
+            }
+            
+            if (node && node.meshid) {
+                targetMesh = node.meshid;
+            }
+        }
+        
+        // 5. Check cascade: Node → Mesh → Global → Default
+        
+        // A) Check node-specific (highest priority)
+        if (targetNode && permConfig.nodeOverrides && permConfig.nodeOverrides[targetNode]) {
+            var result = evaluateAccessLevel(permConfig.nodeOverrides[targetNode], user);
+            if (result !== 'inherited') return result === 'allowed';
+        }
+        
+        // B) Check mesh-specific
+        if (targetMesh && permConfig.meshOverrides && permConfig.meshOverrides[targetMesh]) {
+            // Verify user has access to this mesh before applying mesh override
+            // User has mesh access if they have a link to the mesh
+            var userHasMeshAccess = (user.links && user.links[targetMesh]) ? true : false;
+            
+            if (userHasMeshAccess) {
+                var result = evaluateAccessLevel(permConfig.meshOverrides[targetMesh], user);
+                if (result !== 'inherited') return result === 'allowed';
+            }
+        }
+        
+        // C) Check global level
+        var globalResult = evaluateAccessLevel(permConfig, user);
+        if (globalResult !== 'inherited') return globalResult === 'allowed';
+        
+        // D) Fall back to default
+        var defaultValue = config.defaults ? config.defaults[permission] : 'inherited';
+        if (defaultValue === 'inherited') {
+            // If default is also inherited, use 'allowed' as safe fallback
+            defaultValue = 'allowed';
+        }
+        return defaultValue === 'allowed';
+    };
+    
+    obj.initPluginPermissions = function() {
+        parent.db.getPlugins(function(err, plugins) {
+            if (err || !plugins) return;
+            plugins.forEach(function(plugin) {
+                if (plugin.status === 1 && plugin.shortName) {
+                    obj.loadPluginPermissions(plugin.shortName);
+                }
+            });
+        });
+    };
+    
+    // Call init on load
+    obj.initPluginPermissions();
 
     obj.handleAdminReq = function (req, res, user, serv) {
         if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }
