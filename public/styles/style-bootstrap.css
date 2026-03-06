@@ -1134,6 +1134,10 @@ NoMeshesPanel img {
 #xdevices th {
     color: gray;
     text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bs-body-bg);
 }
 
 #xdevicesmap {

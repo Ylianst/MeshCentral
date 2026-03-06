@@ -959,6 +959,17 @@ NoMeshesPanel img {
     -webkit-overflow-scrolling: touch;
 }
 
+#xdevices th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: white;
+}
+
+.night #xdevices th {
+    background-color: black;
+}
+
 #xdevicesmap {
     height: calc(100vh - 239px);
     width: 100%;
