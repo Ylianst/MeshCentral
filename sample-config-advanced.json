@@ -582,6 +582,11 @@
               "filter": [ "groupB", "groupC" ]
             }
           },
+          "options" : {
+            "params": {
+              "prompt": "select_account"
+            }
+          },
           "newAccounts": true,
           "_newAccountsRights": [ "nonewgroups", "notools" ],
           "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ]
