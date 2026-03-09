@@ -5628,6 +5628,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'serverconsole': serverCommandServerConsole,
         'servererrors': serverCommandServerErrors,
         'serverconfig': serverCommandServerConfig,
+        'serverdownloadbackup': serverCommandServerDownloadBackup,
         'serverstats': serverCommandServerStats,
         'servertimelinestats': serverCommandServerTimelineStats,
         'serverupdate': serverCommandServerUpdate,
@@ -6431,6 +6432,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 156, msgArgs: [user.name], msg: 'Verified messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
+    }
+
+    function serverCommandServerDownloadBackup(command) {
+        if (command.check) {
+            //check for existing config.json password for requestercheckbox
+            obj.send({ action: 'downloadbackup', data: (Object.hasOwn(parent.parent.config.settings.autobackup, 'zippassword')) });
+        } else {
+            if (!command.override) {
+                parent.parent.config.settings.autobackup.zippasswordrequest = command.password;
+            }
+        }
     }
 
     function serverCommandEmailUser(command) {

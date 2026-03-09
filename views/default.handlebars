@@ -598,7 +598,7 @@
                     <div id="p2ServerActions">
                         <p><strong>Server actions</strong></p>
                         <div style="margin-left:25px">
-                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink" href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showBackupDlg()">Download serverbackup</a></div>
                             <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
                             <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
@@ -1881,9 +1881,6 @@
             // Make the dialog box movable
             dialogBoxDrag();
 
-            // Fix links
-            if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
-
             // Hide night mode button if needed
             QV('uiViewButton4', (features2 & 0x00300000) == 0);            
 
@@ -2938,6 +2935,10 @@
                         x += '</div>';
                         QH('d2netinfo', x);
                     }
+                    break;
+                }
+                case 'downloadbackup': {
+                    server_showBackupDlgUpdate(message.data);
                     break;
                 }
                 case 'serverversion': {
@@ -13649,6 +13650,25 @@
             if (t == 'gd0') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 0 }); }
             if (t == 'gd1') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 1, clientid: Q('gdclientid').value, clientsecret: Q('gdclientsecret').value }); }
             if (t == 'gd2') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 2, code: Q('gdcode').value }); }
+        }
+
+        function server_showBackupDlg() {
+            if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showBackupDlgUpdate
+            meshserver.send({ action: 'serverdownloadbackup', check: true });
+            return false;
+        }
+        function server_showBackupDlgUpdate(configPassword) {
+            var x = "Enter optional password for the backup" + '<br /><br />';
+            x += '<tr><td align=right>' + nobreak("Password:") + '</td><td><input id=dbackup_password style=width:256px maxlength=256 type=password name=backup_password autocomplete=off/> <b></b></td></tr>';
+            x += '<div><label><input id=doverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use config.json password" + '</label></div>';
+            setDialogMode(2, "Download backup", 3, backup_enterPassword, x);
+            Q('dbackup_password').focus();
+            return false;
+        }
+        function backup_enterPassword() {
+            meshserver.send({ action: 'serverdownloadbackup', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            window.location.href = "{{{domainurl}}}backup.zip" + ((urlargs.key)?('?key=' + urlargs.key):'');
         }
 
         function server_showRestoreDlg() {

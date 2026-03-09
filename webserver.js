@@ -3227,7 +3227,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
                 }
                 if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
-                    if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
+                    // backup function changed to support all types, only NeDB can be restored through the webinterface
+                    // if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
                     if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
@@ -5680,12 +5681,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
-        // start a new backup and async wait for it to finish with a timeout of 60s
+        // start a new backup and async wait for it to finish with a timeout
         if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
         obj.db.performBackup();
         const waitFor = ms => new Promise(res => setTimeout(res, ms));
         var backupStart = Date.now();
-        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 60 * 1000)) {
+        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 120 * 1000)) {
             await waitFor(2000);
         }
         if (obj.fs.existsSync(obj.db.newAutoBackupFile) && obj.db.performingBackup == false) {
