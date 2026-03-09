@@ -2389,6 +2389,8 @@ function CreateMeshCentralServer(config, args) {
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on('end', function () { zipfile.readEntry(); });
+                                // new backupmethode includes 'meshcentral-data' subdir, needs to be stripped
+                                entry.fileName = entry.fileName.replace('meshcentral-data\/', '');
                                 var directory = obj.path.dirname(entry.fileName);
                                 if (directory != '.') {
                                     directory = obj.getConfigFilePath(directory)
