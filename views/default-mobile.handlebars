@@ -3104,18 +3104,22 @@
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
             QS('SearchInput')['background-color'] = (x == '') ? '#FFFFFF' : '#FDFFBE';
+            var negate = x.startsWith('!');
+            if (negate) x = x.substring(1);
+            var rawVal = Q('SearchInput').value.trim();
+            if (negate) rawVal = rawVal.substring(1);
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
             else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
             else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
             else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
             else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
-            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring('tag:'.length); }
-            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = Q('SearchInput').value.trim().substring('t:'.length); }
-            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring('atag:'.length).toLowerCase(); }
-            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = Q('SearchInput').value.trim().substring('a:'.length).toLowerCase(); }
-            else if (x.startsWith('os:'.toLowerCase())) { osSearch = Q('SearchInput').value.trim().substring('os:'.length).toLowerCase(); }
-            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = Q('SearchInput').value.trim().substring('amt:'.length).toLowerCase(); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = rawVal.substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = rawVal.substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = rawVal.substring('atag:'.length).toLowerCase(); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = rawVal.substring('a:'.length).toLowerCase(); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = rawVal.substring('os:'.length).toLowerCase(); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = rawVal.substring('amt:'.length).toLowerCase(); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -3196,6 +3200,8 @@
                     }
                 } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
             }
+
+            if (negate) { for (var d in nodes) { nodes[d].v = !nodes[d].v; } }
 
             // Check power state
             var onlineOnly = Q('OnlineCheckBox').checked;
