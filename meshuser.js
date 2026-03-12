@@ -1023,6 +1023,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add tunnel pre-message deflate
                         if (typeof parent.parent.config.settings.agentwscompression == 'boolean') { command.perMessageDeflate = parent.parent.config.settings.agentwscompression; }
+
+                        // Add agent relay headers
+                        if (typeof domain.agentrelayheaders == 'object') { command.relayHeaders = domain.agentrelayheaders; }
                     }
 
                     // If a response is needed, set a callback function

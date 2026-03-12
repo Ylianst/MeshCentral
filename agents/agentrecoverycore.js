@@ -154,6 +154,8 @@ require('MeshAgent').AddCommandHandler(function (data)
                             if (xurl != null) {
                                 var woptions = http.parseUri(xurl);
                                 woptions.rejectUnauthorized = 0;
+                                // Add custom relay headers if provided by the server
+                                if (data.relayHeaders != null) { woptions.headers = data.relayHeaders; }
                                 //sendConsoleText(JSON.stringify(woptions));
                                 var tunnel = http.request(woptions);
                                 tunnel.on('upgrade', function (response, s, head)

@@ -2807,6 +2807,13 @@
             },
             "description": "This is used to add custom HTTP headers to all responses. For example setting \"httpHeaders\": { \"X-Frame-Options\":\"DENY\" } will add the X-Frame-Options header to all responses."
           },
+          "agentRelayHeaders": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Custom HTTP headers added to agent relay/tunnel WebSocket connections. Useful when MeshCentral is behind a gateway that requires specific headers on agent relay paths."
+          },
           "agentConfig": {
             "type": "array",
             "uniqueItems": true,

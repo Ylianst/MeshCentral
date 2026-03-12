@@ -2152,7 +2152,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.RequestCoreDump = function (agenthashhex, corehashhex) {
         if (agenthashhex.length > 16) { agenthashhex = agenthashhex.substring(0, 16); }
         const cookie = parent.parent.encodeCookie({ a: 'aft', b: 'coredump', c: obj.agentInfo.agentId + '-' + agenthashhex + '-' + obj.nodeid + '.dmp' }, parent.parent.loginCookieEncryptionKey);
-        obj.send('{"action":"msg","type":"tunnel","value":"*/' + (((domain.dns == null) && (domain.id != '')) ? (domain.id + '/') : '') + 'agenttransfer.ashx?c=' + cookie + '","rights":"4294967295"}');
+        const cmd = { action: 'msg', type: 'tunnel', value: '*/' + (((domain.dns == null) && (domain.id != '')) ? (domain.id + '/') : '') + 'agenttransfer.ashx?c=' + cookie, rights: '4294967295' };
+        if (typeof domain.agentrelayheaders == 'object') { cmd.relayHeaders = domain.agentrelayheaders; }
+        obj.send(JSON.stringify(cmd));
     }
 
     // Return true if we need to ignore the agent hash check

@@ -287,6 +287,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
         // Send connection request to agent
         const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
         const command = { nodeid: nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/devicefile.ashx?id=' + obj.id + '&rauth=' + rcookie, soptions: {} };
+        if (typeof domain.agentrelayheaders == 'object') { command.relayHeaders = domain.agentrelayheaders; }
         parent.parent.debug('relay', 'FileRelay: Sending agent tunnel command: ' + JSON.stringify(command));
         if (obj.sendAgentMessage(command, user, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'FileRelay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
     }
