@@ -809,6 +809,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE TABLE power (id INTEGER PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON);
                         CREATE TABLE smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON);
                         CREATE TABLE plugin (id INTEGER PRIMARY KEY, doc JSON);
+                        CREATE TABLE pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
                         CREATE INDEX ndxtypedomainextra ON main (type, domain, extra);
                         CREATE INDEX ndxextra ON main (extra);
                         CREATE INDEX ndxextraex ON main (extraex);
@@ -834,8 +835,14 @@ module.exports.CreateDB = function (parent, func) {
 
             //for existing db's
             sqliteSetOptions();
-            //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-            setupFunctions(func);
+            // Create any missing tables (e.g., pluginpermissions added in updates)
+            obj.file.exec(`
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+            `, function (err) {
+                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
+                setupFunctions(func);
+            });
         });
     } else if (parent.args.acebase) {
         // AceBase database setup
@@ -936,7 +943,9 @@ module.exports.CreateDB = function (parent, func) {
             Datastore.connect();
             Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
                 if (err == null) {
-                    (res.rowCount == 0) ? postgreSqlCreateTables(func) : setupFunctions(func);
+                    // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                    // This ensures new tables (like pluginpermissions) get created on upgrades
+                    postgreSqlCreateTables(func);
                 } else if (err.code == '42P01') { //42P01 = undefined table
                     postgreSqlCreateTables(func);
                 } else {
@@ -956,7 +965,9 @@ module.exports.CreateDB = function (parent, func) {
                     Datastore.connect();
                     Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
                         if (err == null) {
-                        (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
+                            // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                            // This ensures new tables (like pluginpermissions) get created on upgrades
+                            postgreSqlCreateTables(func);
                         } else
                         if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
                             postgreSqlCreateTables(func);
