@@ -2976,7 +2976,7 @@
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
-            QV('accountCustomIconsSpan', (userinfo.siteadmin === 0xFFFFFFFF));
+            QV('accountCustomIconsSpan', true);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
@@ -21311,6 +21311,18 @@
             { key: 'myServer', label: 'My Server', elementId: 'LeftMenuMyServer' }
         ];
 
+        function getVisibleCustomIconConfig() {
+            var visibleConfig = [];
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (anchor == null) { continue; }
+                if (window.getComputedStyle(anchor).display === 'none') { continue; }
+                visibleConfig.push(cfg);
+            }
+            return visibleConfig;
+        }
+
         function loadCustomIconState() {
             var raw = getstore('customIcons', '{}');
             if ((typeof raw !== 'string') || (raw.length === 0)) { return {}; }
@@ -21358,6 +21370,7 @@
 
         function showIconCustomization() {
             customIconValues = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
             var x = '<div class="container-fluid">';
             x += '<div class="row mb-4">';
             x += '<div class="col-12">';
@@ -21374,8 +21387,8 @@
             x += '</div>';
 
             x += '<div class="row" id="iconCardsContainer">';
-            for (var i = 0; i < customIconConfig.length; i++) {
-                var cfg = customIconConfig[i];
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
                 var currentValue = customIconValues[cfg.key] || '';
                 var hasIcon = currentValue.length > 0;
 
@@ -21400,6 +21413,9 @@
                 x += '</div>';
                 x += '</div>';
             }
+            if (visibleIconConfig.length === 0) {
+                x += '<div class="col-12"><div class="alert alert-secondary mb-0">No sidebar icons are available for customization on this account.</div></div>';
+            }
             x += '</div>';
             x += '</div>';
 
@@ -21421,8 +21437,9 @@
         }
 
         function initializeIconUploadComponents() {
-            for (var i = 0; i < customIconConfig.length; i++) {
-                var cfg = customIconConfig[i];
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
                 var currentValue = customIconValues[cfg.key] || '';
                 var wrapper = document.querySelector('[data-icon-key="' + cfg.key + '"] .icon-upload-wrapper');
 
@@ -21554,9 +21571,10 @@
         }
 
         function saveIconCustomization() {
-            var updatedState = {};
-            for (var i = 0; i < customIconConfig.length; i++) {
-                var cfg = customIconConfig[i];
+            var updatedState = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
                 var input = document.getElementById('iconInput_' + cfg.key);
                 if (input) { updatedState[cfg.key] = input.value; }
             }
