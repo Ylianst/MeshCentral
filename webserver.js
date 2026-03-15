@@ -4180,7 +4180,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec(process.argv[0] + ' translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                var child = require('child_process').spawn(process.argv[0],['translate.js', 'translateall', translateFile], { timeout: 300000, cwd: obj.path.join(__dirname, 'translate') });
+                var stdout = '', stderr = '';
+                child.stdout.on('data', function(d) { stdout += d; });
+                child.stderr.on('data', function(d) { stderr += d; });
+                child.on('close', function(error) {
                     delete obj.pendingTranslation;
                     if (error) { console.log('Server translation error', error); }
                     // console.log('stdout', stdout);
@@ -4188,6 +4192,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     //console.log('Server restart...'); // Perform a server restart
                     //process.exit(0);
                     console.log('Server translation completed.');
+                    stdout = null, stderr = null;
                 });
             } else {
                 // Unknown request
