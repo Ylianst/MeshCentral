@@ -1104,7 +1104,7 @@
             // Setup the terminal
             if (term != null) { term.dispose(); }
             termimage = new ImageAddon.ImageAddon();
-            term = new Terminal();
+            term = new Terminal({ allowProposedApi: true });
             term.loadAddon(termimage);
             term.open(Q('XTermParent'));
             term.resize(80, 25);

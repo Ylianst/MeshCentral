@@ -106,7 +106,7 @@
             if (term != null) { term.dispose(); }
             if (urlargs.fixsize != 1) { termfit = new FitAddon.FitAddon(); }
             termimage = new ImageAddon.ImageAddon();
-            term = new Terminal();
+            term = new Terminal({ allowProposedApi: true });
             if (termfit) { term.loadAddon(termfit); }
             term.loadAddon(termimage);
             term.open(Q('terminal'));
