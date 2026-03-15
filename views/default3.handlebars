@@ -60,6 +60,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    <script type="text/javascript" src="js/ui-components.js"></script>
     {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
@@ -641,6 +642,7 @@
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
+                            <span id="accountCustomIconsSpan" style="display:none"><a href=# onclick="return showIconCustomization()">Icons Customization</a><br /></span>
                         </p>
                     </div>
                     <div id=p2logintokens></div>
@@ -2689,7 +2691,7 @@
                 if (userImage) {
                     userImage.src = userImageSrc;
                 }
-                
+
                 var userDropdownButton = Q('userDropdownButton');
                 if (userDropdownButton) {
                     userDropdownButton.onclick = function(e) {
@@ -2699,7 +2701,7 @@
                         return false;
                     };
                 }
-                
+
                 var userDropdownMenu = Q('userDropdownMenu');
                 if (userDropdownMenu) {
                     userDropdownMenu.style.display = 'none';
@@ -2715,7 +2717,7 @@
             var uiSubmenu = Q('uiSubmenu');
             if (uiSubmenu) {
                 var isVisible = (uiSubmenu.style.display == 'block');
-                
+
                 if (isVisible) {
                     uiSubmenu.style.display = 'none';
                     uiSubmenu.classList.remove('show');
@@ -2737,7 +2739,7 @@
                 }
             }
         }
-        
+
         function closeUISubmenu(event) {
             var uiSubmenu = Q('uiSubmenu');
             var userDropdown = Q('userDropdown');
@@ -2975,6 +2977,7 @@
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
+            QV('accountCustomIconsSpan', true);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
@@ -3360,7 +3363,7 @@
 
                     // If groups are to be collapsed by default, do it now
                     if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
-                    
+
                     break;
                 }
                 case 'powertimeline': {
@@ -4003,6 +4006,8 @@
 
                                     var webstate = JSON.parse(message.event.state);
                                     for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
+                                    customIconValues = loadCustomIconState();
+                                    applyIconCustomization(customIconValues);
 
                                     // Update the web page
                                     //if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
@@ -13581,7 +13586,7 @@
                     if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
                     if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
                     if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }
                     x += '</div>';
                 }
                 x += '</table>';
@@ -19004,9 +19009,9 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
-        
+
         //
-        // UserDropDown Menu 
+        // UserDropDown Menu
         //
 
         var userDropdownOpen = false;
@@ -19017,9 +19022,9 @@
             var dropdownMenu = Q('userDropdownMenu');
             var uiSettingsButton = document.querySelector('.userDropdownUISettings');
             var uiSubmenu = Q('uiSubmenu');
-            
+
             if (!dropdownButton || !dropdownMenu) return;
-            
+
             QS('uiSubmenu').display = 'none';
             QS('uiSubmenu').opacity = '0';
             QS('uiSubmenu').transform = 'translateX(12px)';
@@ -19055,14 +19060,14 @@
 
         function toggleUISubmenu() {
             uiSubmenuOpen = !uiSubmenuOpen;
-            
+
             var uiSubmenu = Q('uiSubmenu');
             var isDesktop = window.innerWidth > 769;
             var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-            
+
             if (uiSubmenuOpen) {
                 QS('uiSubmenu').display = 'block';
-                
+
                 if (isDesktop && (reduceMotion == false)) {
                     setTimeout(function() {
                         QS('uiSubmenu').opacity = '1';
@@ -19085,7 +19090,7 @@
                     QS('uiSubmenu').transform = 'translateX(12px)';
                 }
             }
-            
+
             var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
             if (chevronIcon) {
                 chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
@@ -19115,7 +19120,7 @@
                 case 'toggle-night': toggleNightMode(); break;
                 case 'notes': showNotes(false); break;
                 case 'account': go(2); break;
-                case 'logout': 
+                case 'logout':
                     if (logoutControls && logoutControls.logoutUrl) {
                         window.location.href = logoutControls.logoutUrl;
                     }
@@ -19132,11 +19137,11 @@
             var userDropdown = Q('userDropdown');
             var dropdownName = Q('userDropdownName');
             var dropdownImage = Q('userDropdownImage');
-            
+
             if (logoutControls && logoutControls.name) {
                 QS('userDropdown').display = 'block';
                 dropdownName.textContent = logoutControls.name;
-                
+
                 if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
                     var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
                     dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
@@ -19361,7 +19366,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -19884,7 +19889,7 @@
         }
         setupNotificationClickOutside();
 
-        
+
         // Refresh the notification box
         function drawNotifications() {
             var notifySettings = getstore('notifications', 0);
@@ -21313,11 +21318,343 @@
             }
         }
 
+        // --- Icons Customization ---
+        var customIconValues = {};
+        const customIconConfig = [
+            { key: 'myDevices', label: 'My Devices', elementId: 'LeftMenuMyDevices' },
+            { key: 'myAccount', label: 'My Account', elementId: 'LeftMenuMyAccount' },
+            { key: 'myEvents', label: 'My Events', elementId: 'LeftMenuMyEvents' },
+            { key: 'myFiles', label: 'My Files', elementId: 'LeftMenuMyFiles' },
+            { key: 'myUsers', label: 'My Users', elementId: 'LeftMenuMyUsers' },
+            { key: 'myServer', label: 'My Server', elementId: 'LeftMenuMyServer' }
+        ];
+
+        function getVisibleCustomIconConfig() {
+            var visibleConfig = [];
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (anchor == null) { continue; }
+                if (window.getComputedStyle(anchor).display === 'none') { continue; }
+                visibleConfig.push(cfg);
+            }
+            return visibleConfig;
+        }
+
+        function loadCustomIconState() {
+            var raw = getstore('customIcons', '{}');
+            if ((typeof raw !== 'string') || (raw.length === 0)) { return {}; }
+            try { return JSON.parse(raw); } catch (ex) { return {}; }
+        }
+
+        function normalizeCustomIconPath(value) {
+            if (typeof value !== 'string') { return value; }
+            var trimmed = value.trim();
+            if (trimmed.length === 0) { return trimmed; }
+            var lower = trimmed.toLowerCase();
+            if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:')) { return trimmed; }
+            if ((typeof domainUrl === 'string') && (domainUrl !== '/') && (domainUrl.length > 0)) {
+                if (trimmed.startsWith('/icons/custom/')) {
+                    return domainUrl + trimmed.substring(1);
+                }
+                if (trimmed.startsWith('icons/custom/')) {
+                    return domainUrl + trimmed;
+                }
+            }
+            if (trimmed.startsWith('icons/custom/')) { return '/' + trimmed; }
+            return trimmed;
+        }
+
+        function sanitizeCustomIconState(state) {
+            var sanitized = {};
+            if (state == null) { return sanitized; }
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var key = customIconConfig[i].key;
+                var value = state[key];
+                if (typeof value === 'string') {
+                    var trimmed = normalizeCustomIconPath(value.trim());
+                    if (trimmed.length > 0) { sanitized[key] = trimmed; }
+                }
+            }
+            return sanitized;
+        }
+
+        function persistCustomIconState(state) {
+            var sanitized = sanitizeCustomIconState(state);
+            putstore('customIcons', JSON.stringify(sanitized));
+            customIconValues = sanitized;
+            applyIconCustomization(sanitized);
+        }
+
+        function showIconCustomization() {
+            customIconValues = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            var x = '<div class="container-fluid">';
+            x += '<div class="row mb-4">';
+            x += '<div class="col-12">';
+            x += '<div class="d-flex align-items-center mb-3">';
+            x += '<div class="bg-primary bg-gradient rounded-circle p-3 me-3">';
+            x += '<i class="fas fa-palette fa-2x text-white"></i>';
+            x += '</div>';
+            x += '<div>';
+            x += '<h5 class="mb-1 fw-semibold">Customize Your Sidebar Icons</h5>';
+            x += '<p class="text-muted mb-0">Upload custom SVG/PNG icons or provide URLs to personalize your sidebar interface experience</p>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+
+            x += '<div class="row" id="iconCardsContainer">';
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                var hasIcon = currentValue.length > 0;
+
+                x += '<div class="col-lg-6 col-xl-4 mb-3">';
+                x += '<div class="card modern-card h-100 ' + (hasIcon ? 'border-success' : '') + '" data-icon-key="' + cfg.key + '">';
+                x += '<div class="card-header d-flex align-items-center">';
+                x += '<div class="bg-light rounded-circle p-2 me-3">';
+                x += '<i class="fas ' + getIconClass(cfg.key) + ' fa-lg text-secondary"></i>';
+                x += '</div>';
+                x += '<div class="flex-grow-1">';
+                x += '<h6 class="card-title mb-1">' + EscapeHtml(cfg.label) + '</h6>';
+                x += '<small class="status-badge ' + (hasIcon ? 'text-success' : 'text-muted') + '">';
+                x += '<i class="fas ' + (hasIcon ? 'fa-check-circle' : 'fa-circle') + ' me-1"></i>';
+                x += '<span class="status-text">' + (hasIcon ? 'Custom icon set' : 'Default icon') + '</span>';
+                x += '</small>';
+                x += '</div>';
+                x += '</div>';
+
+                x += '<div class="card-body">';
+                x += '<div class="icon-upload-wrapper" data-icon-key="' + cfg.key + '"></div>';
+                x += '</div>';
+                x += '</div>';
+                x += '</div>';
+            }
+            if (visibleIconConfig.length === 0) {
+                x += '<div class="col-12"><div class="alert alert-secondary mb-0">No sidebar icons are available for customization on this account.</div></div>';
+            }
+            x += '</div>';
+            x += '</div>';
+
+            openModal({
+                modalId: 'xxAddAgent',
+                title: 'Icons Customization',
+                body: x,
+                size: 'large',
+                okButtonId: 'idx_dlgOkButton',
+                onOk: saveIconCustomization
+            });
+
+            // Initialize icon upload components after modal is shown
+            setTimeout(function() {
+                initializeIconUploadComponents();
+            }, 100);
+
+            return false;
+        }
+
+        function initializeIconUploadComponents() {
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                var wrapper = document.querySelector('[data-icon-key="' + cfg.key + '"] .icon-upload-wrapper');
+
+                if (wrapper) {
+                    createIconUploadComponent(cfg.key, wrapper, {
+                        label: cfg.label,
+                        currentValue: currentValue,
+                        onUpload: uploadAndPersistCustomIcon,
+                        onUrlInput: handleUrlInput,
+                        onRemove: removeCustomIcon,
+                        normalizePreviewUrl: normalizeCustomIconPath
+                    });
+                }
+            }
+        }
+
+        // Upload via API, then persist local icon state so sidebar updates immediately.
+        async function uploadAndPersistCustomIcon(iconKey, file) {
+            var result = await uploadCustomIcon(iconKey, file);
+            if ((result != null) && (typeof result.path === 'string') && (result.path.length > 0)) {
+                customIconValues[iconKey] = result.path;
+                persistCustomIconState(customIconValues);
+                setIconCardStatus(iconKey, 'custom');
+            }
+            return result;
+        }
+
+        function setIconCardStatus(iconKey, state) {
+            var card = document.querySelector('[data-icon-key="' + iconKey + '"]');
+            if (!card) { return; }
+            var statusElement = card.querySelector('.card-header small');
+            card.classList.remove('border-warning', 'border-success');
+            if (state === 'custom') {
+                if (statusElement) {
+                    statusElement.className = 'text-success';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle me-1"></i>Custom icon set';
+                }
+                card.classList.add('border-success');
+            } else if (state === 'unsaved') {
+                if (statusElement) {
+                    statusElement.className = 'text-warning';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Unsaved changes';
+                }
+                card.classList.add('border-warning');
+            } else {
+                if (statusElement) {
+                    statusElement.className = 'text-muted';
+                    statusElement.innerHTML = '<i class="fas fa-circle me-1"></i>Default icon';
+                }
+            }
+        }
+
+        function getIconClass(iconKey) {
+            const iconMap = {
+                'myDevices': 'fa-desktop',
+                'myAccount': 'fa-user-circle',
+                'myEvents': 'fa-calendar-alt',
+                'myFiles': 'fa-folder',
+                'myUsers': 'fa-users',
+                'myServer': 'fa-server'
+            };
+            return iconMap[iconKey] || 'fa-icons';
+        }
+
+        function handleUrlInput(iconKey, inputOrValue) {
+            var value = '';
+            if (typeof inputOrValue === 'string') { value = inputOrValue.trim(); }
+            else if (inputOrValue && (typeof inputOrValue.value === 'string')) { value = inputOrValue.value.trim(); }
+            // Preview rendering is handled by IconUploadComponent.
+            setIconCardStatus(iconKey, (value.length > 0) ? 'unsaved' : 'default');
+        }
+
+        function removeCustomIcon(iconKey) {
+            var previousValue = (customIconValues && (typeof customIconValues[iconKey] === 'string')) ? customIconValues[iconKey] : '';
+            customIconValues[iconKey] = '';
+            var textInput = document.getElementById('iconInput_' + iconKey);
+            if (textInput) { textInput.value = ''; }
+            persistCustomIconState(customIconValues);
+
+            if ((typeof previousValue === 'string') && (previousValue.indexOf('/icons/custom/') >= 0)) {
+                deleteCustomIconFromServer(previousValue).catch(function (ex) {
+                    // Keep UX non-blocking: icon is already reset locally.
+                    if (window.console) { console.error('Failed to delete custom icon:', ex); }
+                });
+            }
+
+            setIconCardStatus(iconKey, 'default');
+            return false;
+        }
+
+        async function uploadCustomIcon(iconKey, file) {
+            var formData = new FormData();
+            formData.append('iconType', iconKey);
+            if (customIconValues && typeof customIconValues[iconKey] === 'string' && customIconValues[iconKey].length > 0) {
+                formData.append('previousIcon', customIconValues[iconKey]);
+            }
+            formData.append('iconFile', file);
+
+            var response = await fetch('customiconupload.ashx', { method: 'POST', body: formData, credentials: 'same-origin' });
+            if (!response.ok) {
+                var message = 'Failed to upload the icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
+        async function deleteCustomIconFromServer(iconPath) {
+            var body = new URLSearchParams();
+            body.append('iconPath', iconPath);
+            var response = await fetch('customicondelete.ashx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString(),
+                credentials: 'same-origin'
+            });
+            if (!response.ok) {
+                var message = 'Failed to delete custom icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
+        function saveIconCustomization() {
+            var updatedState = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var input = document.getElementById('iconInput_' + cfg.key);
+                if (input) { updatedState[cfg.key] = input.value; }
+            }
+            persistCustomIconState(updatedState);
+            if (xxModal) { xxModal.hide(); }
+        }
+
+        // Supports both SVG menu icons and the modern FontAwesome <i> icons.
+        function applyIconCustomization(icons) {
+            var state = sanitizeCustomIconState(icons);
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (!anchor) { continue; }
+                var iconElement = anchor.querySelector('i,svg');
+                if (!iconElement) { continue; }
+                if (state[cfg.key]) {
+                    anchor.classList.add('custom-icon');
+                    iconElement.style.setProperty('background-image', 'url("' + state[cfg.key].replace(/"/g, '%22') + '")', 'important');
+                    iconElement.style.setProperty('background-repeat', 'no-repeat', 'important');
+                    iconElement.style.setProperty('background-position', 'center', 'important');
+                    iconElement.style.setProperty('background-size', 'contain', 'important');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        // Font Awesome icons are pseudo-elements; hide glyph and show background image.
+                        iconElement.style.setProperty('font-size', '0', 'important');
+                        iconElement.style.setProperty('color', 'transparent', 'important');
+                        iconElement.style.setProperty('width', '1.1em', 'important');
+                        iconElement.style.setProperty('height', '1.1em', 'important');
+                        iconElement.style.setProperty('display', 'inline-block', 'important');
+                        iconElement.style.setProperty('vertical-align', 'middle', 'important');
+                    }
+                } else {
+                    anchor.classList.remove('custom-icon');
+                    iconElement.style.removeProperty('background-image');
+                    iconElement.style.removeProperty('background-repeat');
+                    iconElement.style.removeProperty('background-position');
+                    iconElement.style.removeProperty('background-size');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        iconElement.style.removeProperty('font-size');
+                        iconElement.style.removeProperty('color');
+                        iconElement.style.removeProperty('width');
+                        iconElement.style.removeProperty('height');
+                        iconElement.style.removeProperty('display');
+                        iconElement.style.removeProperty('vertical-align');
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            customIconValues = loadCustomIconState();
+            applyIconCustomization(customIconValues);
+        });
+
+        window.addEventListener('load', function () {
+            applyIconCustomization(customIconValues);
+        });
+
         // Request Confirmation if closing while a desktop, terminal session is active
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
-
     </script>
 </body>
 

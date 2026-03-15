@@ -270,7 +270,7 @@ body {
     padding-top: 5px;
     cursor: pointer;
     position: absolute;
-    right: 0; 
+    right: 0;
     margin-right: 10px;
 }
 
@@ -346,7 +346,7 @@ body {
     -ms-box-sizing:border-box;
     -moz-box-sizing:border-box;
     box-sizing:border-box;
-    -webkit-box-sizing:border-box; 
+    -webkit-box-sizing:border-box;
 }
 
 .night #column_l {
@@ -555,6 +555,182 @@ body {
     cursor: move;
 }
 
+/* Reusable UI Components */
+
+/* Modern Card Component */
+.modern-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.2s ease-in-out;
+}
+
+.modern-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.modern-card.border-success {
+    border-color: var(--bs-success);
+    background-color: var(--bs-success-bg-subtle);
+}
+
+.modern-card.border-warning {
+    border-color: var(--bs-warning);
+    background-color: var(--bs-warning-bg-subtle);
+}
+
+/* Modern Icon Preview Component */
+.icon-preview-container {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--bs-light);
+    border-radius: var(--bs-border-radius);
+    transition: all 0.2s ease-in-out;
+}
+
+.icon-preview-item {
+    width: 32px;
+    height: 32px;
+    background-color: var(--bs-white);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 0.5rem;
+    object-fit: contain;
+    display: block;
+    flex: 0 0 32px;
+}
+
+/* Modern Input Group Component */
+.modern-input-group .form-control {
+    border-right: none;
+}
+
+.modern-input-group .btn {
+    border-left: none;
+}
+
+.modern-input-group .form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Status Badge Component */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-badge.text-success {
+    color: var(--bs-success-text-emphasis) !important;
+}
+
+.status-badge.text-warning {
+    color: var(--bs-warning-text-emphasis) !important;
+}
+
+.status-badge.text-muted {
+    color: var(--bs-secondary-text-emphasis) !important;
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 0.125em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Modern Icons Customization Modal Styles */
+.icon-customization-modal .modal-content {
+    border: none;
+    border-radius: var(--bs-border-radius-lg);
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+}
+
+.icon-customization-modal .modal-header {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-purple) 100%);
+    border: none;
+    border-radius: var(--bs-border-radius-lg) var(--bs-border-radius-lg) 0 0;
+}
+
+.icon-customization-modal .modal-title {
+    font-weight: 600;
+    color: white;
+}
+
+.icon-customization-modal .modal-body {
+    padding: 1.5rem;
+    background: var(--bs-gray-50);
+}
+
+/* Ensure close button is visible in all themes */
+.modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 0.8;
+}
+
+/* App night mode: force white close icon for icon customization modal */
+body.night .icon-customization-modal .btn-close,
+[data-bs-theme="dark"] .icon-customization-modal .btn-close {
+    filter: none;
+    opacity: 1;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-linecap='round' stroke-width='2'%3e%3cpath d='M2 2l12 12M14 2L2 14'/%3e%3c/svg%3e");
+}
+
+body.night .icon-customization-modal .btn-close:hover,
+[data-bs-theme="dark"] .icon-customization-modal .btn-close:hover {
+    opacity: 0.85;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .icon-preview-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .icon-preview-item {
+        margin-right: 0;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .icon-customization-modal .modal-body {
+        background: var(--bs-gray-900);
+    }
+
+    .modern-card {
+        background-color: var(--bs-gray-800);
+        border-color: var(--bs-gray-700);
+    }
+
+    .icon-preview-container {
+        background-color: var(--bs-gray-800);
+    }
+
+    .icon-preview-item {
+        background-color: var(--bs-gray-700);
+        border-color: var(--bs-gray-600);
+    }
+}
+
 #id_dialogclose {
     float: right;
     padding: 3px;
@@ -759,7 +935,7 @@ body {
     margin-left: 5px;
 }
 
-/* Example if <table> is relplaced with <div><p> then image can be defined in css 
+/* Example if <table> is relplaced with <div><p> then image can be defined in css
 #NoMeshesPanel {
     background: url(../images/info.png) no-repeat 23px 20px;
     height: 48px;
@@ -2655,7 +2831,7 @@ a {
     .deskToolsBar:hover {
         background-color: #EFE8B6;
     }
- 
+
     .night .deskToolsBar {
         color: #ddd;
     }
