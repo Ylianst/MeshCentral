@@ -459,6 +459,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                     // Fetch the node
                     obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.nodeid + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length !== 1)) {
                             var mesh = obj.parent.webserver.meshes[socket.tag.meshid];
                             if (mesh == null) {
@@ -692,6 +693,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     socket.tag.connectTime = Date.now();
 
                     obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.nodeid + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length !== 1)) {
                             // Check if we already have too many devices for this domain
                             if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
@@ -770,6 +772,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 } else if (initialMesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                     // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
                     obj.db.getAmtUuidMeshNode(initialMesh.domain, initialMesh.mtype, socket.tag.SystemId, function (err, nodes) { // TODO: Need to optimize this request with indexes
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.SystemId + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
                             // New CIRA connection for unknown node, create a new device.
                             unknownNodeCount++;
