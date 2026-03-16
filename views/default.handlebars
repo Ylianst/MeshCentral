@@ -11052,7 +11052,7 @@
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
                         xtermimage = new ImageAddon.ImageAddon();
-                        xterm = new Terminal();
+                        xterm = new Terminal({ allowProposedApi: true });
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
                         xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
@@ -19302,17 +19302,17 @@
             var modalHtml = '<div id="pluginPermModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">';
             modalHtml += '<div style="margin:30px auto; max-width:900px; background:#fff; border-radius:8px;">';
             modalHtml += '<div style="padding:15px 20px; border-bottom:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
-            modalHtml += '<h5 style="margin:0;">Plugin Permissions - ' + EscapeHtml(plugin.name) + '</h5>';
+            modalHtml += '<h5 style="margin:0;">' + "Plugin Permissions" + ' - ' + EscapeHtml(plugin.name) + '</h5>';
             modalHtml += '<button type="button" onclick="closePluginPermModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>';
             modalHtml += '</div>';
             modalHtml += '<div id="pluginPermBody" style="padding:20px; max-height:70vh; overflow-y:auto;">';
-            modalHtml += '<div style="text-align:center; padding:40px;">Loading permissions...</div>';
+            modalHtml += '<div style="text-align:center; padding:40px;">' + "Loading permissions" + '...</div>';
             modalHtml += '</div>';
             modalHtml += '<div style="padding:15px 20px; border-top:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
-            modalHtml += '<div style="font-size:12px; color:#666;">Permissions cascade: Node → Mesh → Global → Default</div>';
+            modalHtml += '<div style="font-size:12px; color:#666;">' + "Permissions cascade: Node → Mesh → Global → Default" + '</div>';
             modalHtml += '<div>';
-            modalHtml += '<button type="button" style="margin-right:10px; padding:5px 15px;" onclick="closePluginPermModal()">Cancel</button>';
-            modalHtml += '<button type="button" style="padding:5px 15px; background:#007bff; color:#fff; border:none; border-radius:4px;" onclick="savePluginPermissionsEx()">Save</button>';
+            modalHtml += '<button type="button" style="margin-right:10px; padding:5px 15px;" onclick="closePluginPermModal()">' + "Cancel" + '</button>';
+            modalHtml += '<button type="button" style="padding:5px 15px; background:#007bff; color:#fff; border:none; border-radius:4px;" onclick="savePluginPermissionsEx()">' + "Save" + '</button>';
             modalHtml += '</div>';
             modalHtml += '</div></div></div>';
             
@@ -19353,7 +19353,7 @@
             if (Object.keys(definitions).length === 0) {
                 var body = document.getElementById('pluginPermBody');
                 if (body) {
-                    body.innerHTML = '<div style="padding:20px;">This plugin has not defined any permissions.</div>';
+                    body.innerHTML = '<div style="padding:20px;">' + "This plugin has not defined any permissions." + '</div>';
                 }
                 return;
             }
@@ -19397,9 +19397,9 @@
             
             // Custom tab buttons
             x += '<div style="margin-bottom:15px; border-bottom:1px solid #dee2e6;">';
-            x += '<button class="btn btn-sm active" id="btnTabGlobal" style="margin-right:5px; background:#007bff; color:#fff;" onclick="switchPermTab(\'global\')">Global</button>';
-            x += '<button class="btn btn-sm" id="btnTabMeshes" style="margin-right:5px; background:#6c757d; color:#fff;" onclick="switchPermTab(\'meshes\')">Meshes</button>';
-            x += '<button class="btn btn-sm" id="btnTabNodes" style="background:#6c757d; color:#fff;" onclick="switchPermTab(\'nodes\')">Nodes</button>';
+            x += '<button class="btn btn-sm active" id="btnTabGlobal" style="margin-right:5px; background:#007bff; color:#fff;" onclick="switchPermTab(\'global\')">' + "Global" + '</button>';
+            x += '<button class="btn btn-sm" id="btnTabMeshes" style="margin-right:5px; background:#6c757d; color:#fff;" onclick="switchPermTab(\'meshes\')">' + "Meshes"+ '</button>';
+            x += '<button class="btn btn-sm" id="btnTabNodes" style="background:#6c757d; color:#fff;" onclick="switchPermTab(\'nodes\')">' + "Nodes" + '</button>';
             x += '</div>';
             
             x += '<div id="panel-global">';
@@ -19463,20 +19463,20 @@
                 x += '<div style="padding:12px 15px; background:#f8f9fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="togglePermCollapse(\'' + collapseId + '\')">';
                 x += '<div><strong>' + EscapeHtml(def.title || permKey) + '</strong><br><small style="color:#666;">' + EscapeHtml(def.desc || '') + '</small></div>';
                 x += '<div><select style="padding:3px;" id="perm_default_' + permKey + '" onclick="event.stopPropagation()">';
-                x += '<option value="allowed"' + (defaultVal === 'allowed' ? ' selected' : '') + '>✓ Allowed</option>';
-                x += '<option value="denied"' + (defaultVal === 'denied' ? ' selected' : '') + '>✗ Denied</option>';
-                x += '<option value="inherited"' + (defaultVal === 'inherited' ? ' selected' : '') + '>↩ Inherited</option>';
+                x += '<option value="allowed"' + (defaultVal === 'allowed' ? ' selected' : '') + '>✓ ' + "Allowed" + '</option>';
+                x += '<option value="denied"' + (defaultVal === 'denied' ? ' selected' : '') + '>✗ ' + "Denied" + '</option>';
+                x += '<option value="inherited"' + (defaultVal === 'inherited' ? ' selected' : '') + '>↩ ' + "Inherited" + '</option>';
                 x += '</select></div>';
                 x += '</div>';
                 x += '<div id="' + collapseId + '" style="padding:15px;' + (isFirst ? '' : 'display:none;') + '">';
                 
                 x += '<div style="display:flex; gap:20px; margin-bottom:15px;">';
                 x += '<div style="flex:1;">';
-                x += '<div style="margin-bottom:5px;"><span style="background:#28a745; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">Allowed</span></div>';
+                x += '<div style="margin-bottom:5px;"><span style="background:#28a745; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Allowed" + '</span></div>';
                 x += buildAutocompleteSection(permKey, level, 'allowed', parentId, useData ? useData.allowed : { users: [], userGroups: [], meshes: [], nodes: [] });
                 x += '</div>';
                 x += '<div style="flex:1;">';
-                x += '<div style="margin-bottom:5px;"><span style="background:#dc3545; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">Denied</span></div>';
+                x += '<div style="margin-bottom:5px;"><span style="background:#dc3545; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Denied" + '</span></div>';
                 x += buildAutocompleteSection(permKey, level, 'denied', parentId, useData ? useData.denied : { users: [], userGroups: [], meshes: [], nodes: [] });
                 x += '</div>';
                 x += '</div>';
@@ -19499,7 +19499,7 @@
             var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
             
             var x = '<div style="position:relative;">';
-            x += '<input type="text" id="' + inputId + '" placeholder="Search..." style="width:100%; padding:5px;" ';
+            x += '<input type="text" id="' + inputId + '" placeholder="' + "Search" + '..." style="width:100%; padding:5px;" ';
             x += 'onkeyup="searchPermEntities(this, \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + (parentId || '') + '\')" ';
             x += 'onfocus="showPermDropdown(\'' + listId + '\')">';
             x += '<div id="' + listId + '" style="position:relative; background:#fff; border:1px solid #ccc; border-top:none; max-height:200px; overflow-y:auto; display:none; cursor:pointer;"></div>';
@@ -19785,7 +19785,7 @@
         function buildMeshNodeSection(definitions, permissions, type) {
             var x = '<p style="color:#666;">Select a ' + type + ' to configure permissions:</p>';
             x += '<select style="width:100%; padding:8px; margin-bottom:15px;" id="perm_' + type + 'Select" onchange="renderMeshNodePerms(\'' + type + '\', this.value)">';
-            x += '<option value="">-- Select ' + (type === 'mesh' ? 'Device Group' : 'Device') + ' --</option>';
+            x += '<option value="">-- ' + (type === 'mesh' ? "Select Device Group" : "Select Device" ) + ' --</option>';
             
             if (type === 'mesh') {
                 var list = permissionListData.meshes;
@@ -19856,7 +19856,7 @@
             // Store current override data for this mesh/node in a temporary location
             window.currentPermOverride = { type: type, id: selectedId, data: overrideData };
             
-            var x = '<div style="background:#d1ecf1; padding:10px; border-radius:4px; margin-bottom:15px;"><strong>' + EscapeHtml(displayName) + '</strong> - Specific permissions</div>';
+            var x = '<div style="background:#d1ecf1; padding:10px; border-radius:4px; margin-bottom:15px;"><strong>' + EscapeHtml(displayName) + '</strong> - ' + "Specific permissions" + '</div>';
             x += buildPermissionSection(definitions, permissions, defaults, type, selectedId, overrideData);
             
             content.innerHTML = x;
