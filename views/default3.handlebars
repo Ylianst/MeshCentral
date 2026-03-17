@@ -4584,21 +4584,21 @@
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
-                        }
-                            break;
-                        }
+                    }
+                    break;
+                }
                 case 'pluginPermissions': {
                     handlePluginPermissions(message);
-                            break;
-                        }
+                    break;
+                }
                 case 'pluginPermissionsSet': {
                     if (message.success) {
                         alert("Permissions saved successfully");
                     } else {
                         alert("Error saving permissions: " + message.error);
                     }
-                            break;
-                    }
+                    break;
+                }
                 case 'pluginPermissionList': {
                     handlePluginPermissionList(message);
                     break;
@@ -21432,14 +21432,14 @@
             
             // Check if already exists
             var existingTags = container.querySelectorAll('span');
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
             for (var i = 0; i < existingTags.length; i++) {
-                if (existingTags[i].id && existingTags[i].id.includes(entityId.replace(/[^a-zA-Z0-9]/g, '_'))) {
+                if (existingTags[i].id && existingTags[i].id == tagId) {
                     return; // Already added
                 }
             }
             
             // Add new tag
-            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
             var tagHtml = '<span class="badge" style="background:#6c757d; padding:5px 8px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <i class="fa-solid fa-times" style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')"></i></span>';
             container.insertAdjacentHTML('beforeend', tagHtml);
             

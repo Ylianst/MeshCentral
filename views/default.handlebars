@@ -19672,13 +19672,13 @@
             document.getElementById(listId).style.display = 'none';
             
             var existingTags = container.querySelectorAll('span');
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
             for (var i = 0; i < existingTags.length; i++) {
-                if (existingTags[i].id && existingTags[i].id.includes(entityId.replace(/[^a-zA-Z0-9]/g, '_'))) {
+                if (existingTags[i].id && existingTags[i].id == tagId) {
                     return;
                 }
             }
             
-            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
             var tagHtml = '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')">×</span></span>';
             container.insertAdjacentHTML('beforeend', tagHtml);
             
