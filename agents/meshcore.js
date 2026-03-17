@@ -2716,6 +2716,7 @@ function terminal_promise_consent_resolved()
             var env = { HISTCONTROL: 'ignoreboth' };
             if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
             if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
+            env['MESHCENTRAL_USER'] = (this.httprequest.userid ? this.httprequest.userid.split('/')[2] : (this.httprequest.guestuserid ? 'deviceshare:' + this.httprequest.guestuserid.split('/')[2] : 'unknown'));
             if (this.httprequest.xoptions)
             {
                 if (this.httprequest.xoptions.rows) { env.LINES = ('' + this.httprequest.xoptions.rows); }
