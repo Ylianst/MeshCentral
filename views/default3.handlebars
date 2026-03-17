@@ -4576,22 +4576,6 @@
                             pluginHandler.refreshPluginHandler();
                             break;
                         }
-                        case 'pluginPermissions': {
-                            handlePluginPermissions(message.event);
-                            break;
-                        }
-                        case 'pluginPermissionsSet': {
-                            if (message.event.success) {
-                                alert("Permissions saved successfully");
-                            } else {
-                                alert("Error saving permissions: " + message.event.error);
-                            }
-                            break;
-                        }
-                        case 'pluginPermissionList': {
-                            handlePluginPermissionList(message.event);
-                            break;
-                        }
                         case 'plugin': {
                             if (pluginHandler == null) break;
                             try { pluginHandler[message.event.plugin][message.event.pluginaction](message); } catch (e) { console.log("PluginHandler could not event message: ", e); }
@@ -4600,7 +4584,23 @@
                         default:
                             //console.log('Unknown message.event.action', message.event.action);
                             break;
+                        }
+                            break;
+                        }
+                case 'pluginPermissions': {
+                    handlePluginPermissions(message);
+                            break;
+                        }
+                case 'pluginPermissionsSet': {
+                    if (message.success) {
+                        alert("Permissions saved successfully");
+                    } else {
+                        alert("Error saving permissions: " + message.error);
                     }
+                            break;
+                    }
+                case 'pluginPermissionList': {
+                    handlePluginPermissionList(message);
                     break;
                 }
                 case 'createInviteLink': { // Agent installation invitation link
@@ -21702,7 +21702,6 @@
             });
             
             closePluginPermModal();
-            alert('Permissions saved successfully');
         }
 
         //
