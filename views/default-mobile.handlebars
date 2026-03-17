@@ -909,6 +909,16 @@
                         <div id=p10html2></div>
                         <div id=p10html3 style="margin-left:8px"></div>
                     </div>
+                    <div id=p10registry style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                        <div class="style10" style="margin:12px;padding:12px;border-radius:8px">
+                            <div style="font-size:20px;font-weight:bold;margin-bottom:8px">Registry</div>
+                            <div style="line-height:20px">
+                                The Registry tab is now reserved in the device UI.
+                                <br />
+                                The next step will be wiring a read-only registry flow and validating it with smoke tests.
+                            </div>
+                        </div>
+                    </div>
                     <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton()" />
                     <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
                     <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
@@ -2345,7 +2355,12 @@
         function updateFooterMenu(options) {
             while (options != null && options.length < 3) { options.push({ n: '' }); }
             var x = '', prev = '';
-            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
+            if (options != null) {
+                for (var i in options) {
+                    x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + '" onclick="' + options[i].f + '"><div title="' + EscapeHtml(options[i].n) + '" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px">' + options[i].n + '</div>';
+                    prev = options[i].n;
+                }
+            }
             QH('footerMenu', '<tr>' + x);
         }
 
@@ -4083,11 +4098,12 @@
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
             QV('p10files', currentDevicePanel == 2);
+            QV('p10registry', currentDevicePanel == 6);
             QV('p10details', currentDevicePanel == 3);
             QV('p10console', currentDevicePanel == 4);
             QV('p10terminal', currentDevicePanel == 5);
             var menus = [];
-            if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
+            if (currentDevicePanel != 0) { menus.push({ n: "Summary", f: 'setupDeviceMenu(0)' }); }
 
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
@@ -4102,6 +4118,7 @@
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 6) && (currentNode != null) && (currentNode.agent != null) && (meshrights & 8)) { menus.push({ n: "Registry", f: 'setupDeviceMenu(6)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype < 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
