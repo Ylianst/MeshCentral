@@ -1431,7 +1431,7 @@ function CreateMeshCentralServer(config, args) {
         var i;
 
         // Add NodeJS version warning if needed
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { addServerWarning("MeshCentral will require Node v16 or above in the future, your current version is " + process.version + "."); }
+        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 20) { addServerWarning("MeshCentral will require Node v20 or above in the future, your current version is " + process.version + "."); }
 
         // Setup certificate operations
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);

@@ -1378,7 +1378,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+            "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
           },
           "allowedOrigin": {
             "type": [
@@ -2518,6 +2518,11 @@
               }
             }
           },
+          "upninsteadofuser": {
+            "type": "boolean",
+            "default": false,
+            "description": "When set to true, the UPN (User Principal Name) is shown instead of the username in the device General tab active users list."
+          },
           "amtScanOptions": {
             "description": "List of local network Intel AMT scanning options offered in the user interface. For example [\"LabNetwork 192.168.15.0/23\", \"SalesNetwork 192.168.8.0/24\"].",
             "type": "array",
@@ -3244,7 +3249,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3296,7 +3301,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3348,7 +3353,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3420,7 +3425,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3477,7 +3482,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3540,7 +3545,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "entityid": {
                     "type": "string",
@@ -3622,7 +3627,7 @@
                     "items": {
                       "type": "string"
                     },
-                    "description": "Default server rights assigned to newly created accounts. Accepted values (comma-separated): fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
+                    "description": "Default server rights assigned to newly created accounts. Accepted values: fulladmin, manageusers, serverbackup, serverrestore, serverupdate, fileaccess, locked, nonewgroups, nonewdevices, notools, usergroups, recordings, locksettings, allevents"
                   },
                   "clientid": {
                     "type": "string",
@@ -3989,7 +3994,17 @@
                       "customer_id": {
                         "type": "string",
                         "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
-                      }
+                      },
+                      "authorities": {
+                        "type": [
+                          "array"
+                        ],
+                        "description": "Default value is groups. Roles can be used in azure to assign app permissons",
+                        "enum": [
+                          "groups",
+                          "roles"
+                        ]
+                        }
                     }
                   },
                   "groups": {
@@ -4044,6 +4059,10 @@
                         "description": "Custom claim to use."
                       }
                     }
+                  },
+                  "options": {
+                    "type": "object",
+                    "description": "Custom options to pass to the OpenID Client"
                   }
                 }
               }

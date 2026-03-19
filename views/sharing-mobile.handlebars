@@ -1823,7 +1823,7 @@
 
                 // Setup the terminal with auto-fit
                 if (xterm != null) { xterm.dispose(); }
-                xterm = new Terminal();
+                xterm = new Terminal({ allowProposedApi: true });
                 xtermfit = new FitAddon.FitAddon();
                 xtermimage = new ImageAddon.ImageAddon();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }

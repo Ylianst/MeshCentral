@@ -39,6 +39,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.net = require('net');
     obj.tls = require('tls');
     obj.path = require('path');
+    obj.os = require('os');
     obj.bodyParser = require('body-parser');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
@@ -97,6 +98,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
+
+    const isWindowsPlatform = (obj.os.platform() === 'win32');
+    const safeUploadTempRoots = (function () {
+        const roots = [];
+        const addRoot = function (p) {
+            if (typeof p !== 'string') { return; }
+            var resolved;
+            try { resolved = obj.path.normalize(obj.path.resolve(p)); } catch (ex) { return; }
+            if (resolved.length === 0) { return; }
+            if ((resolved.length > 1) && resolved.endsWith(obj.path.sep)) { resolved = resolved.slice(0, -1); }
+            const comparison = isWindowsPlatform ? resolved.toLowerCase() : resolved;
+            const comparisonWithSep = comparison + obj.path.sep;
+            roots.push({ comparison: comparison, comparisonWithSep: comparisonWithSep });
+        };
+        addRoot(obj.os.tmpdir());
+        if (typeof obj.parent.filespath === 'string') { addRoot(obj.path.join(obj.parent.filespath, 'tmp')); }
+        return roots;
+    })();
+    function resolveSafeUploadTempPath(tempPath) {
+        if (typeof tempPath !== 'string') { return null; }
+        var resolvedPath;
+        try { resolvedPath = obj.path.normalize(obj.path.resolve(tempPath)); } catch (ex) { return null; }
+        var comparisonPath = isWindowsPlatform ? resolvedPath.toLowerCase() : resolvedPath;
+        var comparisonPathNoTrailing = comparisonPath;
+        if ((comparisonPathNoTrailing.length > 1) && comparisonPathNoTrailing.endsWith(obj.path.sep)) { comparisonPathNoTrailing = comparisonPathNoTrailing.slice(0, -1); }
+        for (var i = 0; i < safeUploadTempRoots.length; i++) {
+            var root = safeUploadTempRoots[i];
+            if ((comparisonPathNoTrailing === root.comparison) || comparisonPath.startsWith(root.comparisonWithSep)) { return resolvedPath; }
+        }
+        return null;
+    }
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
@@ -2125,7 +2157,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                             }
                         }
-                    });
+                });
                 }
             } else {
                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
@@ -2881,12 +2913,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.set('Content-Type', 'text/html');
         let url = domain.url;
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
-        
+
         // check for relaystate is set, test against configured server name and accepted query params
         if(req.body && req.body.RelayState !== undefined){
                 var relayState = decodeURIComponent(req.body.RelayState);
                 var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
-            
+
                 var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
                 `.*((?<=([\\?&])gotodevicename=(.{64})|` +
                 `gotonode=(.{64})|` +
@@ -2906,13 +2938,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 `webrtc=|` +
                 `hide=|` +
                 `viewmode=(\\d+)(?=[\\&]|\\b)))`;
-            
+
                 var regex = new RegExp(regexstr);
                 if(regex.test(relayState)){
                         url = relayState;
                 }
         }
-        
+
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
@@ -3235,7 +3267,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Get WebRTC configuration
                 var webRtcConfig = null;
                 if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
-                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
+                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
 
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
@@ -3269,7 +3301,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     customui: customui,
                     customFiles: customFiles,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
-                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
+                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, {
                         'serverversion': obj.parent.currentVer,
                         'servername': obj.getWebServerName(domain, req),
                         'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -3413,6 +3445,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
         if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
         if ((typeof domain.desktop == 'object') && (domain.desktop.disableconnectall == true)) { features3 += 0x00000001; } // Disable "Connect All" button when multiple sessions are active on a device
+        if (domain.upninsteadofuser === true) { features3 += 0x00000002; } // Show UPN instead of username in General tab
         return { features: features, features2: features2, features3: features3 };
     }
 
@@ -3578,8 +3611,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 messageid: msgid,
                 flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
                 passhint: passhint,
-                
-                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, { 
+
+                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
                     'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -4148,7 +4181,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec(process.argv[0] + ' translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 300000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                var child = require('child_process').spawn(process.argv[0],['translate.js', 'translateall', translateFile], { timeout: 300000, cwd: obj.path.join(__dirname, 'translate') });
+                var stdout = '', stderr = '';
+                child.stdout.on('data', function(d) { stdout += d; });
+                child.stderr.on('data', function(d) { stderr += d; });
+                child.on('close', function(error) {
                     delete obj.pendingTranslation;
                     if (error) { console.log('Server translation error', error); }
                     // console.log('stdout', stdout);
@@ -4156,6 +4193,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     //console.log('Server restart...'); // Perform a server restart
                     //process.exit(0);
                     console.log('Server translation completed.');
+                    stdout = null, stderr = null;
                 });
             } else {
                 // Unknown request
@@ -4551,14 +4589,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                files.files.forEach(function (file) {
-                    obj.fs.readFile(file.path, 'utf8', function (err, data) {
+                for (var i in files.files) {
+                    var file = files.files[i];
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
+                    obj.fs.readFile(uploadTempPath, 'utf8', function (err, data) {
                         if (err != null) return;
                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
-                        try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                        try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
                     });
-                });
+                }
                 res.send('');
             });
         });
@@ -4593,18 +4634,165 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const nodeid = fields.attrib[0];
             obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                files.files.forEach(function (file) {
-                    // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
-                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
+                for (var i in files.files) {
+                    var file = files.files[i];
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
 
-                    //try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
-                });
+                    // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
+                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: uploadTempPath });
+
+                    //try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { } // TODO: Remove this file after 30 minutes.
+                }
                 res.send('');
             });
         });
     }
 
     // Upload a file to the server
+    function getCustomIconUserKey(user) {
+        if ((user == null) || (typeof user._id !== 'string') || (user._id.length === 0)) { return null; }
+        return obj.crypto.createHash('sha256').update(user._id).digest('hex');
+    }
+
+    function getCustomIconUserDir(user) {
+        const userKey = getCustomIconUserKey(user);
+        if (userKey == null) { return null; }
+        return obj.path.join(obj.parent.datapath, 'icons', 'custom', userKey);
+    }
+
+    function handleCustomIconUpload(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
+        form.parse(req, function (err, fields, files) {
+            if (err) { res.status(400).json({ success: false, error: 'Invalid form submission.' }); return; }
+
+            const allowedTypes = { myDevices: 1, myAccount: 1, myEvents: 1, myFiles: 1, myUsers: 1, myServer: 1 };
+            const iconType = (fields && fields.iconType && fields.iconType[0]) ? fields.iconType[0] : null;
+            if ((typeof iconType !== 'string') || (allowedTypes[iconType] !== 1)) { res.status(400).json({ success: false, error: 'Invalid icon type.' }); return; }
+
+            const iconFile = (files && files.iconFile && files.iconFile[0]) ? files.iconFile[0] : null;
+            if ((iconFile == null) || (typeof iconFile.path !== 'string')) { res.status(400).json({ success: false, error: 'Missing icon file.' }); return; }
+            const iconTempPath = resolveSafeUploadTempPath(iconFile.path);
+            if (iconTempPath == null) { res.status(400).json({ success: false, error: 'Invalid icon file location.' }); return; }
+
+            const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
+
+            const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
+            if ((extension !== '.svg') && (extension !== '.png')) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG and PNG files are supported.' }); return; }
+
+            const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
+            const customDir = obj.path.join(iconsRoot, 'custom');
+            const userCustomDir = getCustomIconUserDir(user);
+            const userKey = getCustomIconUserKey(user);
+            if ((userCustomDir == null) || (userKey == null)) { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare user icons directory.' }); return; }
+            try { obj.fs.mkdirSync(iconsRoot); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
+            try { obj.fs.mkdirSync(customDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
+            try { obj.fs.mkdirSync(userCustomDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare user icons directory.' }); return; } }
+
+            const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
+            const previousInfo = resolveCustomIconPath(previousIcon, user);
+            if ((previousInfo != null) && (previousInfo.isOwned === true)) {
+                try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
+            }
+
+            const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + extension;
+            const destinationPath = obj.path.join(userCustomDir, newFilename);
+
+            const respondSuccess = function () { res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename }); };
+
+            obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
+                if (renameErr == null) { respondSuccess(); return; }
+                if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
+                    obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
+                        cleanupTempFile();
+                        if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
+                        respondSuccess();
+                    });
+                } else {
+                    cleanupTempFile();
+                    res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+                }
+            });
+        });
+    }
+
+    function resolveCustomIconPath(requestPath, user) {
+        if (typeof requestPath !== 'string') { return null; }
+        if (requestPath.startsWith('http://') || requestPath.startsWith('https://') || requestPath.startsWith('data:')) { return null; }
+        const pathOnly = requestPath.split('?')[0].split('#')[0];
+        const marker = '/icons/custom/';
+        const markerIndex = pathOnly.indexOf(marker);
+        if (markerIndex < 0) { return null; }
+        const relativePath = pathOnly.substring(markerIndex + marker.length);
+        if ((relativePath.length === 0) || (relativePath.indexOf('\\') !== -1)) { return null; }
+        const pathParts = relativePath.split('/');
+        if ((pathParts.length !== 1) && (pathParts.length !== 2)) { return null; }
+        for (var i = 0; i < pathParts.length; i++) {
+            if ((pathParts[i].length === 0) || (obj.common.IsFilenameValid(pathParts[i]) !== true)) { return null; }
+        }
+
+        var ownerKey = null, iconName = null, diskPath = null, isOwned = false;
+        const iconsRoot = obj.path.join(obj.parent.datapath, 'icons', 'custom');
+        if (pathParts.length === 1) {
+            iconName = pathParts[0];
+            diskPath = obj.path.join(iconsRoot, iconName);
+        } else {
+            ownerKey = pathParts[0];
+            iconName = pathParts[1];
+            diskPath = obj.path.join(iconsRoot, ownerKey, iconName);
+            const currentUserKey = getCustomIconUserKey(user);
+            isOwned = (currentUserKey != null) && (ownerKey === currentUserKey);
+        }
+
+        const lower = iconName.toLowerCase();
+        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false)) { return null; }
+        return { ownerKey: ownerKey, iconName: iconName, diskPath: diskPath, isOwned: isOwned, isLegacy: (pathParts.length === 1) };
+    }
+
+    function handleCustomIconDelete(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        const iconPath = (req.body && (typeof req.body.iconPath === 'string')) ? req.body.iconPath : null;
+        const iconInfo = resolveCustomIconPath(iconPath, user);
+        if ((iconInfo == null) || (iconInfo.isOwned !== true)) { res.status(400).json({ success: false, error: 'Invalid icon path.' }); return; }
+
+        obj.fs.unlink(iconInfo.diskPath, function (err) {
+            if (err && (err.code !== 'ENOENT')) { res.status(500).json({ success: false, error: 'Failed to delete icon.' }); return; }
+            res.json({ success: true });
+        });
+    }
+
+    function handleCustomIconDownload(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { res.sendStatus(404); return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        if ((req.params == null) || (typeof req.params[0] !== 'string')) { res.sendStatus(404); return; }
+        const iconInfo = resolveCustomIconPath('/icons/custom/' + req.params[0], user);
+        if (iconInfo == null) { res.sendStatus(404); return; }
+        if ((iconInfo.isLegacy !== true) && (iconInfo.isOwned !== true)) { res.sendStatus(404); return; }
+        const iconNameLower = iconInfo.iconName.toLowerCase();
+
+        obj.fs.readFile(iconInfo.diskPath, function (err, data) {
+            if (err) { res.sendStatus(404); return; }
+            res.set({ 'Content-Type': iconNameLower.endsWith('.png') ? 'image/png' : 'image/svg+xml' });
+            res.send(data);
+        });
+    }
+
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -4646,7 +4834,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
                     if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
                         for (var i = 0; i < names.length; i++) {
-                            if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
+                            var originalName = names[i];
+                            var safeName = obj.path.basename(originalName);
+                            if ((safeName !== originalName) || (obj.common.IsFilenameValid(safeName) == false)) { res.sendStatus(404); return; }
                             var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
                             if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
                                 // Create the user folder if needed
@@ -4657,7 +4847,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
-                                })(xfile.fullpath, names[i], filedata);
+                                })(xfile.fullpath, safeName, filedata);
                             } else {
                                 // Send a notification
                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: names[i], nolog: 1, id: Math.random() });
@@ -4666,9 +4856,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
-                    files.files.forEach(function (file) {
-                        var fpath = obj.path.join(xfile.fullpath, file.originalFilename);
-                        if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                    for (var i in files.files) {
+                        var file = files.files[i];
+                        var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                        var safeOriginalFilename = obj.path.basename(originalFilename);
+                        var isFilenameAcceptable = (safeOriginalFilename === originalFilename) && obj.common.IsFilenameValid(safeOriginalFilename);
+                        const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                        if (uploadTempPath == null) { res.sendStatus(400); return; }
+                        if (isFilenameAcceptable && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                            var fpath = obj.path.join(xfile.fullpath, safeOriginalFilename);
 
                             // See if we need to create the folder
                             var domainx = 'domain';
@@ -4678,11 +4874,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
 
                             // Rename the file
-                            obj.fs.rename(file.path, fpath, function (err) {
+                            obj.fs.rename(uploadTempPath, fpath, function (err) {
                                 if (err && (err.code === 'EXDEV')) {
                                     // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                                    obj.common.copyFile(file.path, fpath, function (err) {
-                                        obj.fs.unlink(file.path, function (err) {
+                                    obj.common.copyFile(uploadTempPath, fpath, function (err) {
+                                        obj.fs.unlink(uploadTempPath, function (err) {
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
@@ -4693,9 +4889,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             // Send a notification
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
-                            try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
+                            try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
                         }
-                    });
+                    }
                 }
             } else {
                 // Send a notification
@@ -4747,17 +4943,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
 
             // More typical upload method, the file data is in a multipart mime post.
-            files.files.forEach(function (file) {
-                var ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+            for (var i in files.files) {
+                var file = files.files[i];
+                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+                const targetPath = obj.path.join(serverpath, ftarget);
+                const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                if (uploadTempPath == null) { res.sendStatus(400); return; }
                 cmd.files.push({ name: file.originalFilename, target: ftarget });
                 // Rename the file
-                obj.fs.rename(file.path, fpath, function (err) {
+                obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
                         // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
+                        obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
                     }
                 });
-            });
+            }
 
             // Instruct one of more agents to download a URL to a given local drive location.
             var tlsCertHash = null;
@@ -5094,9 +5294,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
 
                     // Close the recording file
-                    if (ws.logfile != null) { 
+                    if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5148,7 +5348,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5224,7 +5424,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5266,7 +5466,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5369,7 +5569,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
                     var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
                     var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: 101, nodeid: node._id };
-                    obj.parent.DispatchEvent(['*', user._id], obj, event);   
+                    obj.parent.DispatchEvent(['*', user._id], obj, event);
                 }
 
                 // Update user last access time
@@ -6843,6 +7043,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var selfurl = ' wss://' + req.headers.host;
             if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
             const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
+            const extraImgSrc = (parent.config.settings.extraimgsrc != null) ? (' ' + parent.config.settings.extraimgsrc) : '';
+            const allowedFramingOriginsValue = (domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
+            const hasAllowedFramingOrigins = (allowedFramingOriginsValue != null);
+            var framingOrigins = [];
+            if (typeof allowedFramingOriginsValue === 'string') {
+                framingOrigins = allowedFramingOriginsValue.split(/[,\s]+/).map(function (v) { return v.trim(); }).filter(function (v) { return v.length > 0; });
+            } else if (Array.isArray(allowedFramingOriginsValue)) {
+                framingOrigins = allowedFramingOriginsValue.filter(function (v) { return (typeof v === 'string') && (v.trim().length > 0); }).map(function (v) { return v.trim(); });
+            }
 
             // If the web relay port is enabled, allow the web page to redirect to it
             var extraFrameSrc = '';
@@ -6850,31 +7059,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 extraFrameSrc = ' https://' + req.headers.host + ':' + parent.webrelayserver.port;
                 if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { extraFrameSrc += ' https://' + xforwardedhost + ':' + parent.webrelayserver.port; }
             }
-            
+
 
             // If using duo add apihostname to CSP
             var duoSrc = '';
             if ((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.apihostname == 'string')) {
                 duoSrc = domain.duo2factor.apihostname;
             }
-
-            // If a custom OIDC button icon URL is configured, allow its origin in img-src CSP
-            var extraImgSrc = '';
-            if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
-                const seen = {};
-                const urls = [domain.authstrategies.oidc.custom.buttoniconurl, domain.authstrategies.oidc.custom.buttoniconurl2x];
-                for (var k = 0; k < urls.length; k++) {
-                    if (obj.common.validateUrl(urls[k])) {
-                        try { const u = new URL(urls[k]); if (!seen[u.origin]) { extraImgSrc += ' ' + u.origin; seen[u.origin] = true; } } catch (e) {}
-                    }
-                }
-            }
-
-            // allowedFramingOrigins: domain override, else settings
-            var allowedFramingOriginsVal = (domain != null && domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
-            var framingOrigins = parseAllowedFramingOrigins(allowedFramingOriginsVal);
-            var hasAllowedFramingOrigins = (domain != null && domain.allowedframingorigins != null) || (parent.config.settings.allowedframingorigins != null);
-
 
             // Finish setup security headers
             var cspBase = "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'";
@@ -7041,6 +7232,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'commander.ashx', handleMeshCommander);
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
+                obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
+                obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
+                obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
                 obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
                 obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
                 obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
@@ -7115,7 +7309,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 obj.app.get(url + 'invite', handleInviteRequest);
                 obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
-                
+
                 if (parent.pluginHandler != null) {
                     obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                     obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
@@ -7440,7 +7634,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             // Notify account 2fa failed login
                                             const ua = obj.getUserAgentInfo(req);
                                             obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                            obj.setbad2Fa(req);            
+                                            obj.setbad2Fa(req);
                                             res.redirect(domain.url + getQueryPortion(req));
                                         });
                                     } else {
@@ -7798,7 +7992,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.debug('web', '404 Error ' + req.url);
                     var domain = getDomain(req);
                     if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
                     const cspNonce = obj.crypto.randomBytes(15).toString('base64');
                     res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
                     res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
@@ -7820,7 +8014,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         parent.debug('web', '404 Error ' + req.url);
         var domain = getDomain(req);
         if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
         if (obj.args.nice404 == false) { res.sendStatus(404); return; }
         const cspNonce = obj.crypto.randomBytes(15).toString('base64');
         res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
@@ -8072,13 +8266,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
             }
             if (typeof strategy.groups == 'object') {
-                let groupScope = strategy.groups.scope || null
-                if (groupScope == null) {
-                    if (preset == 'azure') { groupScope = 'Group.Read.All' }
-                    if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
-                    if (typeof preset != 'string') { groupScope = 'groups' }
+                strategy.custom.authorities = obj.common.convertStrArray(strategy.custom.authorities, ' ')
+                // Check if authorities does not exist or includes groups
+                if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                    let groupScope = strategy.groups.scope || null
+                    if (groupScope == null) {
+                        if (preset == 'azure') { groupScope = 'Group.Read.All' }
+                        if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
+                        if (typeof preset != 'string') { groupScope = 'groups' }
+                    }
+                    strategy.options.params.scope.push(groupScope)
+					parent.authLog('setupDomainAuthStrategy', `OIDC: Groups sync enabled, added group scope to request: ${strategy.options.params.scope}`);
                 }
-                strategy.options.params.scope.push(groupScope)
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
@@ -8226,8 +8425,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 }
 
-                // If profile is null/undefined, extract user info from the tokenset
-                if (!profile && tokenset && tokenset.id_token) {
+                // If profile is null/undefined or roles are requested, extract user info from the tokenset
+                if ((!profile || (strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
                     try {
                         // Simple JWT decoder to extract user claims from id_token
                         const parts = tokenset.id_token.split('.');
@@ -8236,7 +8435,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
                             const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
                             if (decoded) {
-                                profile = decoded;
+                                if(!profile){
+                                    profile = decoded;
+                                } else {
+                                    profile.roles = decoded.roles;
+                                }
                             }
                         }
                     } catch (err) {
@@ -8275,6 +8478,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 
                 user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
                 user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.roles = profile && obj.common.validateStrArray(profile.roles, 1) ? profile.roles : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
                     user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
@@ -8293,16 +8497,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    getGroups(user.preset, tokenset).then((groups) => {
-                        user = Object.assign(user, { 'groups': groups });
-                        done(null, user);
-                    }).catch((err) => {
-                        let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                        parent.debug('error', `${JSON.stringify(error)}`);
-                        parent.authLog('oidcCallback', error.message);
-                        user.groups = [];
-                        done(null, user);
-                    });
+                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                        getGroups(user.preset, tokenset).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            //done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('oidcCallback', error.message);
+                            user.groups = [];
+                            //done(null, user);
+                        });
+                    }
+                    if(strategy.custom.authorities.includes('roles')){
+                        if(user.roles){
+                            if(!strategy.custom.authorities.includes('groups')){
+                                user.groups = user.roles;
+                            } else {
+                                user.groups = (user.groups || []).concat(user.roles);
+                            }
+                        }
+                    }
+                    parent.authLog('OIDC: USER GROUPS/ROLES:', user);
+                    done(null, user);
                 } else {
                     done(null, user);
                 }
@@ -8338,7 +8555,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     if (Buffer.isBuffer(data[0])) {
                                         data = Buffer.concat(data);
                                         data = data.toString();
-                                    } else { // else if (typeof data[0] == 'string') 
+                                    } else { // else if (typeof data[0] == 'string')
                                         data = data.join();
                                     }
                                 } catch (err) {
@@ -8393,7 +8610,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return authStrategyFlags;
     }
 
-    // Handle an incoming request as a web relay 
+    // Handle an incoming request as a web relay
     function handleWebRelayRequest(req, res) {
         var webRelaySessionId = null;
         if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
@@ -8413,7 +8630,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Handle an incoming websocket connection as a web relay 
+    // Handle an incoming websocket connection as a web relay
     function handleWebRelayWebSocket(ws, req) {
         var webRelaySessionId = null;
         if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
@@ -8857,7 +9074,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Invalid login, asking for email validation');
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
-                            } else {                                
+                            } else {
                                 req.session.userid = user._id;
                                 req.session.ip = req.clientIp;
                                 setSessionRandom(req);
@@ -9772,7 +9989,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.title1 = domain.title1 ? domain.title1 : '';
             xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
-        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, { 
+        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, {
             'serverversion': obj.parent.currentVer,
             'servername': obj.getWebServerName(domain, req),
             'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -10146,7 +10363,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (ua.browser && ua.browser.name) { ua.browserStr = ua.browser.name; if (ua.browser.version) { ua.browserStr += '/' + ua.browser.version } }
             if (ua.os && ua.os.name) { ua.osStr = ua.os.name; if (ua.os.version) { ua.osStr += '/' + ua.os.version } }
             // If the platform is set, use that instead of the OS
-            if (ua.platform) { 
+            if (ua.platform) {
                 ua.osStr = ua.platform;
                 // Special case for Windows 11
                 if (ua.platformVersion) {
@@ -10160,9 +10377,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } catch (ex) { return { browserStr: browser, osStr: os } }
     }
 
-    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers    
+    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers
     function getQueryPortion(req) {
-        var removeKeys = ['duo_code', 'state']; // Keys to remove 
+        var removeKeys = ['duo_code', 'state']; // Keys to remove
         var s = req.url.indexOf('?');
         if (s == -1) {
             if (req.body && req.body.urlargs) {
@@ -10251,7 +10468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (parent.config.settings.maxinvalidlogin === false) return true;
         if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
         var ipTable = obj.badLoginTable[ip];
         if (ipTable == null) return true;
@@ -10309,7 +10526,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (parent.config.settings.maxinvalid2fa === false) return true;
         if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
         var ipTable = obj.bad2faTable[ip];
         if (ipTable == null) return true;

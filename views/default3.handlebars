@@ -60,6 +60,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    <script type="text/javascript" src="js/ui-components.js"></script>
     {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
@@ -452,7 +453,7 @@
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
                         <input type=button class="btn btn-primary me-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
-                        <input type="text" id=SearchInput class="form-control-sm me-1 btn-sm" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
+                        <input type="text" id=SearchInput class="form-control-sm me-1 btn-sm" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc">
                         <span id=SearchInputClearButton style="display:none;position:relative">
                             <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
                                 <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
@@ -493,7 +494,7 @@
                         </span>
                         <input type="button" class="btn btn-secondary me-1 btn-sm" onclick="onDevicesScroll(true);" value="Scroll To Top" />
                         <input type="button" class="btn btn-primary me-1 btn-sm" onclick="showMultiDesktopSettings()" value="Settings" />
-                        <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx">
+                        <input type="text" id=KvmSearchInput class="form-control-sm me-1" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc">
                         <span id=KvmSearchInputClearButton style="display:none;position:relative">
                             <span class="fa-layers fa-fw" role="button" onclick="clearDeviceSearch()" style="position:absolute;left:-25px;top:-15px">
                                 <i class="fa-solid fa-circle" style="color:var(--bs-secondary-bg)"></i>
@@ -535,6 +536,7 @@
                                 <option>Tags</option>
                                 <option>Group-Tags</option>
                                 <option>Last Seen</option>
+                                <option>Last Boot Up Time</option>
                             </select>
                             &nbsp;
                         </div>
@@ -640,6 +642,7 @@
                             </span>
                             <span id="accountCreateLoginTokenSpan" style="display:none"><a href=# onclick="return account_createLoginToken()">Create login token</a><br /></span>
                             <a href=# onclick="return account_showThemesSwitcher()">Switch theme</a><br />
+                            <span id="accountCustomIconsSpan" style="display:none"><a href=# onclick="return showIconCustomization()">Icons Customization</a><br /></span>
                         </p>
                     </div>
                     <div id=p2logintokens></div>
@@ -2685,7 +2688,7 @@
                 if (userImage) {
                     userImage.src = userImageSrc;
                 }
-                
+
                 var userDropdownButton = Q('userDropdownButton');
                 if (userDropdownButton) {
                     userDropdownButton.onclick = function(e) {
@@ -2695,7 +2698,7 @@
                         return false;
                     };
                 }
-                
+
                 var userDropdownMenu = Q('userDropdownMenu');
                 if (userDropdownMenu) {
                     userDropdownMenu.style.display = 'none';
@@ -2711,7 +2714,7 @@
             var uiSubmenu = Q('uiSubmenu');
             if (uiSubmenu) {
                 var isVisible = (uiSubmenu.style.display == 'block');
-                
+
                 if (isVisible) {
                     uiSubmenu.style.display = 'none';
                     uiSubmenu.classList.remove('show');
@@ -2733,7 +2736,7 @@
                 }
             }
         }
-        
+
         function closeUISubmenu(event) {
             var uiSubmenu = Q('uiSubmenu');
             var userDropdown = Q('userDropdown');
@@ -2971,6 +2974,7 @@
             QV('p2ServerActions', (siteRights & 21) && ((serverFeatures & 143) != 0));
             QV('LeftMenuMyServer', (siteRights & 21) && ((serverFeatures & 64) != 0)); // 16 + 4 + 1
             QV('MainMenuMyServer', siteRights & 21);
+            QV('accountCustomIconsSpan', true);
             QV('p2ServerActionsBackup', (siteRights & 1) && ((serverFeatures & 1) != 0));
             QV('p2ServerActionsRestore', (siteRights & 4) && ((serverFeatures & 2) != 0));
             QV('p2ServerActionsVersion', (siteRights & 16) && ((serverFeatures & 4) != 0));
@@ -3356,7 +3360,7 @@
 
                     // If groups are to be collapsed by default, do it now
                     if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
-                    
+
                     break;
                 }
                 case 'powertimeline': {
@@ -4003,6 +4007,8 @@
 
                                     var webstate = JSON.parse(message.event.state);
                                     for (var i in webstate) { localStorage.setItem(i, webstate[i]); }
+                                    customIconValues = loadCustomIconState();
+                                    applyIconCustomization(customIconValues);
 
                                     // Update the web page
                                     //if ((webstate.deskAspectRatio != null) && (webstate.deskAspectRatio != deskAspectRatio)) { deskAspectRatio = webstate.deskAspectRatio; deskAdjust(); }
@@ -4582,6 +4588,22 @@
                     }
                     break;
                 }
+                case 'pluginPermissions': {
+                    handlePluginPermissions(message);
+                    break;
+                }
+                case 'pluginPermissionsSet': {
+                    if (message.success) {
+                        alert("Permissions saved successfully");
+                    } else {
+                        alert("Error saving permissions: " + message.error);
+                    }
+                    break;
+                }
+                case 'pluginPermissionList': {
+                    handlePluginPermissionList(message);
+                    break;
+                }
                 case 'createInviteLink': { // Agent installation invitation link
                     if (xxdialogTag != message.meshid) break;
                     var servername = serverinfo.name;
@@ -5142,6 +5164,16 @@
                     }
                     nodes.sort(lastConnectSort);
                 }
+                else if (sort == 6) {
+                    // Last Boot Up Time
+                    if (!(deviceViewSettings && deviceViewSettings.devsCols && deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0)) {
+                        // Force initialize the view settings
+                        if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                        if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user', 'ip', 'conn', 'lastbootuptime']; }
+                        else { deviceViewSettings.devsCols.push('lastbootuptime'); }
+                    }
+                    nodes.sort(lastBootUpTimeSort);
+                }
 
                 // Compute the width of the device view.
                 var totalDeviceViewWidth = Q('column_l').clientWidth - 60;
@@ -5212,7 +5244,7 @@
                             c = 0;
                             if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true) ? ' style=display:none' : '') + '>'; } // Open collapse div
                         }
-                    } else if (sort == 2 || sort == 5) {
+                    } else if (sort == 2 || sort == 5 || sort == 6) {
                         // Device header
                         if (current == null) { current = '1'; }
                     }
@@ -5938,7 +5970,8 @@
             if (node.users.length > 1) { return '<span title="' + EscapeHtml(node.users.join(', ')) + '">' + nobreak(format("{0} users", node.users.length)) + '</span>'; }
             var u = node.users[0], su = u, i = u.indexOf('\\');
             if (i > 0) { su = u.substring(i + 1); }
-            su = EscapeHtml(su);
+            var upn = node.upnusers && node.upnusers[0];
+			su = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
             if (node.lusers && node.lusers.length > 0) {
                 return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
@@ -7231,6 +7264,7 @@
         function deviceSort(a, b) { return sortCollator.compare(a.namel, b.namel); }
         function deviceHostSort(a, b) { return sortCollator.compare(a.rnamel, b.rnamel); }
         function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn > 0) { aa = 99999999999998; } if (b.conn > 0) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
+        function lastBootUpTimeSort(a, b) { var aa = a.lastbootuptime, bb = b.lastbootuptime; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
 
         function onSearchFocus(x) { searchFocus = x; }
         function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; onOnlineCheckBox(); mainUpdate(1); }
@@ -7254,6 +7288,8 @@
         }
 
         function getDevicesThatMatchFilter(x) {
+            var negate = x.startsWith('!');
+            if (negate) x = x.substring(1);
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
@@ -7299,7 +7335,7 @@
             } else if (userSearch != null) {
                 // User search
                 for (var d in nodes) {
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(d); } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0 || (nodes[d].upnusers && nodes[d].upnusers[i] && nodes[d].upnusers[i].toLowerCase().indexOf(userSearch) >= 0)) { r.push(d); } } }
                 }
             } else if (osSearch != null) {
                 // OS search
@@ -7382,6 +7418,7 @@
                 } catch (ex) { for (var d in nodes) { r.push(d); } }
             }
 
+            if (negate) { var allIds = []; for (var d in nodes) { allIds.push(d); } return allIds.filter(function(d) { return r.indexOf(d) < 0; }); }
             return r;
         }
 
@@ -8632,12 +8669,15 @@
                 // Active Users
                 if (node.users && node.users.length > 0) {
                     var u = node.users.map(function(user, index) {
-                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
-                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
-                        var escapedUser = EscapeHtml(user);
-                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
-                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
-                        else { return escapedUser; }
+                        var upn = node.upnusers && node.upnusers[index];
+                        var label = (features3 & 0x00000002)
+                            ? ((node.users && node.users[index] != null) ? EscapeHtml(node.users[index]) : null)
+                            : (upn != null ? EscapeHtml(upn) : null);
+                        var escapedUser = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : user);
+                        var locked = node.lusers && node.lusers.indexOf(user) >= 0;
+                        if (locked) { return addKeyLinkConditional(escapedUser, label ? label + ' - ' + "Locked" : "Locked", true); }
+                        if (label) { return '<span style=cursor:default title=\'' + label + '\'>' + escapedUser + '</span>'; }
+                        return escapedUser;
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
@@ -12018,7 +12058,7 @@
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
                         xtermimage = new ImageAddon.ImageAddon();
-                        xterm = new Terminal();
+                        xterm = new Terminal({ allowProposedApi: true });
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
                         xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
@@ -13564,7 +13604,7 @@
                     if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
                     if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
                     if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }
                     x += '</div>';
                 }
                 x += '</table>';
@@ -19036,9 +19076,9 @@
             meshserver.send({ action: 'removemeshuser', meshid: meshid, userid: currentUser._id });
         }
 
-        
+
         //
-        // UserDropDown Menu 
+        // UserDropDown Menu
         //
 
         var userDropdownOpen = false;
@@ -19049,9 +19089,9 @@
             var dropdownMenu = Q('userDropdownMenu');
             var uiSettingsButton = document.querySelector('.userDropdownUISettings');
             var uiSubmenu = Q('uiSubmenu');
-            
+
             if (!dropdownButton || !dropdownMenu) return;
-            
+
             QS('uiSubmenu').display = 'none';
             QS('uiSubmenu').opacity = '0';
             QS('uiSubmenu').transform = 'translateX(12px)';
@@ -19087,14 +19127,14 @@
 
         function toggleUISubmenu() {
             uiSubmenuOpen = !uiSubmenuOpen;
-            
+
             var uiSubmenu = Q('uiSubmenu');
             var isDesktop = window.innerWidth > 769;
             var reduceMotion = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-            
+
             if (uiSubmenuOpen) {
                 QS('uiSubmenu').display = 'block';
-                
+
                 if (isDesktop && (reduceMotion == false)) {
                     setTimeout(function() {
                         QS('uiSubmenu').opacity = '1';
@@ -19117,7 +19157,7 @@
                     QS('uiSubmenu').transform = 'translateX(12px)';
                 }
             }
-            
+
             var chevronIcon = document.querySelector('.userDropdownUISettings .fa-chevron-right');
             if (chevronIcon) {
                 chevronIcon.style.transform = uiSubmenuOpen ? 'rotate(90deg)' : '';
@@ -19147,7 +19187,7 @@
                 case 'toggle-night': toggleNightMode(); break;
                 case 'notes': showNotes(false); break;
                 case 'account': go(2); break;
-                case 'logout': 
+                case 'logout':
                     if (logoutControls && logoutControls.logoutUrl) {
                         window.location.href = logoutControls.logoutUrl;
                     }
@@ -19164,11 +19204,11 @@
             var userDropdown = Q('userDropdown');
             var dropdownName = Q('userDropdownName');
             var dropdownImage = Q('userDropdownImage');
-            
+
             if (logoutControls && logoutControls.name) {
                 QS('userDropdown').display = 'block';
                 dropdownName.textContent = logoutControls.name;
-                
+
                 if (userinfo && userinfo.flags && (userinfo.flags & 1)) {
                     var rnd = userinfo.accountImageRnd || Math.floor(Math.random() * 9999999999);
                     dropdownImage.src = 'userimage.ashx?rnd=' + rnd;
@@ -19393,7 +19433,7 @@
             if (rec.meshname) { x += addHtmlValue4("Device Group", EscapeHtml(rec.meshname)); }
             if (rec.size) { x += addHtmlValue4("Size", format("{0} bytes", rec.size)); }
             if (rec.startTime) { x += addHtmlValue4("Start Time", printTime(new Date(rec.startTime))); }
-            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
+            if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
             if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
@@ -19916,7 +19956,7 @@
         }
         setupNotificationClickOutside();
 
-        
+
         // Refresh the notification box
         function drawNotifications() {
             var notifySettings = getstore('notifications', 0);
@@ -20884,6 +20924,8 @@
                     1: {
                         'disable': 'Disable',
                         'upgrade': 'Upgrade',
+                        'reload': 'Reload',
+                        'permissions': 'Permissions',
                         //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                     }
                 };
@@ -20975,12 +21017,31 @@
                 case 'disable':
                     meshserver.send({ 'action': 'disableplugin', 'id': id });
                     break;
+                case 'reload':
+                    var plugin = null;
+                    for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                    if (plugin) {
+                        meshserver.send({ 'action': 'reloadplugin', 'plugin': plugin.shortName });
+                    }
+                    break;
             }
-            QV('pluginRestartNotice', true);
+            QV('pluginRestartNotice', false);
         }
 
         function pluginAction(elem, id) {
             if (pluginHandler == null) return;
+            
+            // Special handling for permissions - opens matrix dialog
+            if (elem.value == 'permissions') {
+                var plugin = null;
+                for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                if (plugin) {
+                    openPluginPermissionsDialog(plugin);
+                }
+                elem.value = '';
+                return;
+            }
+            
             if (elem.value == 'downgrade') {
                 meshserver.send({ 'action': 'getpluginversions', 'id': id });
             } else {
@@ -20995,6 +21056,702 @@
         function goPlugin(pname, title) {
             if (pluginHandler == null) return;
             if (pname == null) { Q('p43iframe').src = ''; } else { QH('p43title', title); Q('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
+        }
+
+        // Plugin Permissions Dialog - Custom Modal Implementation
+        var currentPluginPermissions = null;
+        var permissionListData = null;
+        var permissionState = {}; // JavaScript state for permissions
+        
+        function openPluginPermissionsDialog(plugin) {
+            meshserver.send({ action: 'getpluginpermissions', plugin: plugin.shortName });
+            meshserver.send({ action: 'getpluginpermissionlist' });
+            
+            currentPluginPermissions = { plugin: plugin.shortName, name: plugin.name };
+            
+            // Create custom modal
+            var modalHtml = createPluginPermissionsModal(plugin);
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show the custom modal
+            var modal = Q('pluginPermModal');
+            modal.style.display = 'block';
+            document.body.classList.add('modal-open');
+        }
+        
+        function createPluginPermissionsModal(plugin) {
+            var x = '<div id="pluginPermModal" class="modal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">';
+            x += '<div class="modal-dialog modal-xl" style="margin:30px auto; max-width:900px;">';
+            x += '<div class="modal-content" style="background:#fff; border-radius:8px;">';
+            
+            // Header
+            x += '<div class="modal-header" style="padding:15px 20px; border-bottom:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            x += '<h5 class="modal-title" style="margin:0; font-size:18px;">' + "Plugin Permissions" + ' - ' + EscapeHtml(plugin.name) + '</h5>';
+            x += '<button type="button" class="btn-close" onclick="closePluginPermModal()" aria-label="Close"></button>';
+            x += '</div>';
+            
+            // Body
+            x += '<div class="modal-body" id="pluginPermBody" style="padding:20px; max-height:70vh; overflow-y:auto;">';
+            x += '<div style="text-align:center; padding:40px;"><i class="fa-solid fa-spinner fa-spin"></i> ' + "Loading permissions" + '...</div>';
+            x += '</div>';
+            
+            // Footer
+            x += '<div class="modal-footer" style="padding:15px 20px; border-top:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            x += '<div style="font-size:12px; color:#666;">' + "Permissions cascade: Node → Mesh → Global → Default" + '</div>';
+            x += '<div>';
+            x += '<button type="button" class="btn btn-secondary" style="margin-right:10px;" onclick="closePluginPermModal()">' + "Cancel" + '</button>';
+            x += '<button type="button" class="btn btn-primary" onclick="savePluginPermissionsEx()">' + "Save" + '</button>';
+            x += '</div>';
+            x += '</div>';
+            
+            x += '</div></div></div>';
+            
+            return x;
+        }
+        
+        function closePluginPermModal() {
+            var modal = Q('pluginPermModal');
+            if (modal) {
+                modal.remove();
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        function handlePluginPermissions(msg) {
+            if (msg.action != 'pluginPermissions') return;
+            currentPluginPermissions.data = msg.permissions;
+            renderPermissionMatrixEx();
+        }
+        
+        function handlePluginPermissionList(msg) {
+            if (msg.action != 'pluginPermissionList') return;
+            permissionListData = msg.list;
+            renderPermissionMatrixEx();
+        }
+        
+        function renderPermissionMatrixEx() {
+            if (!currentPluginPermissions || !currentPluginPermissions.data || !permissionListData) return;
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            // Check if plugin has no permissions defined
+            if (Object.keys(definitions).length === 0) {
+                var body = document.getElementById('pluginPermBody');
+                if (body) {
+                    body.innerHTML = '<div class="alert alert-info">' + "This plugin has not defined any permissions." + '</div>';
+                }
+                return;
+            }
+            
+            // Initialize permissionState from loaded data
+            permissionState = {};
+            window.meshOverridesState = {};
+            window.nodeOverridesState = {};
+            for (var permKey in definitions) {
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                permissionState[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                };
+                if (permData.allowed) {
+                    if (permData.allowed.users) permissionState[permKey].allowed.users = permData.allowed.users.slice();
+                    if (permData.allowed.userGroups) permissionState[permKey].allowed.userGroups = permData.allowed.userGroups.slice();
+                    if (permData.allowed.meshes) permissionState[permKey].allowed.meshes = permData.allowed.meshes.slice();
+                    if (permData.allowed.nodes) permissionState[permKey].allowed.nodes = permData.allowed.nodes.slice();
+                }
+                if (permData.denied) {
+                    if (permData.denied.users) permissionState[permKey].denied.users = permData.denied.users.slice();
+                    if (permData.denied.userGroups) permissionState[permKey].denied.userGroups = permData.denied.userGroups.slice();
+                    if (permData.denied.meshes) permissionState[permKey].denied.meshes = permData.denied.meshes.slice();
+                    if (permData.denied.nodes) permissionState[permKey].denied.nodes = permData.denied.nodes.slice();
+                }
+                
+                // Initialize meshOverridesState and nodeOverridesState from loaded data
+                window.meshOverridesState[permKey] = permData.meshOverrides || {};
+                window.nodeOverridesState[permKey] = permData.nodeOverrides || {};
+            }
+            
+            var x = '';
+            
+            // Custom tab buttons (no Bootstrap JS required)
+            x += '<div class="mb-3" style="border-bottom:1px solid #dee2e6;">';
+            x += '<button class="btn btn-sm btn-outline-primary me-1 active" id="btnTabGlobal" onclick="switchPermTab(\'global\')">' + "Global" + '</button>';
+            x += '<button class="btn btn-sm btn-outline-secondary me-1" id="btnTabMeshes" onclick="switchPermTab(\'meshes\')">' + "Meshes" + '</button>';
+            x += '<button class="btn btn-sm btn-outline-secondary" id="btnTabNodes" onclick="switchPermTab(\'nodes\')">' + "Nodes" + '</button>';
+            x += '</div>';
+            
+            // Global Panel
+            x += '<div id="panel-global">';
+            x += buildPermissionSection(definitions, permissions, defaults, 'global', null);
+            x += '</div>';
+            
+            // Meshes Panel (hidden by default)
+            x += '<div id="panel-meshes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'mesh');
+            x += '</div>';
+            
+            // Nodes Panel (hidden by default)
+            x += '<div id="panel-nodes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'node');
+            x += '</div>';
+            
+            x += '<input type="hidden" id="permPluginShortName" value="' + currentPluginPermissions.plugin + '" />';
+            
+            Q('pluginPermBody').innerHTML = x;
+        }
+        
+        function switchPermTab(tab) {
+            // Hide all panels
+            Q('panel-global').style.display = 'none';
+            Q('panel-meshes').style.display = 'none';
+            Q('panel-nodes').style.display = 'none';
+            
+            // Reset all buttons
+            Q('btnTabGlobal').className = 'btn btn-sm btn-outline-secondary me-1';
+            Q('btnTabMeshes').className = 'btn btn-sm btn-outline-secondary me-1';
+            Q('btnTabNodes').className = 'btn btn-sm btn-outline-secondary';
+            
+            // Show selected panel and highlight button
+            Q('panel-' + tab).style.display = 'block';
+            Q('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = 'btn btn-sm btn-primary me-1';
+        }
+        
+        function buildPermissionSection(definitions, permissions, defaults, level, parentId, overrideData) {
+            var x = '<div id="permAccordion">';
+            
+            var idx = 0;
+            for (var permKey in definitions) {
+                var def = definitions[permKey];
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                var defaultVal = defaults[permKey] || 'inherited';
+                
+                var collapseId = 'permCollapse-' + level + '-' + permKey + (parentId ? '-' + parentId : '');
+                var isFirst = idx === 0;
+                
+                // Determine which data to use: overrideData (for mesh/node) or permissionState (for global)
+                var useData;
+                if (overrideData && overrideData[permKey]) {
+                    useData = overrideData[permKey];
+                } else if (permissionState[permKey]) {
+                    useData = permissionState[permKey];
+                } else {
+                    useData = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                
+                x += '<div class="mb-2" style="border:1px solid #dee2e6; border-radius:8px; overflow:hidden;">';
+                x += '<div style="padding:12px 15px; background:#f8f9fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="togglePermCollapse(\'' + collapseId + '\')">';
+                x += '<div><strong>' + EscapeHtml(def.title || permKey) + '</strong><br><small class="text-muted">' + EscapeHtml(def.desc || '') + '</small></div>';
+                x += '<div style="min-width:120px; text-align:right;"><select class="form-select form-select-sm" style="width:auto; display:inline-block;" id="perm_default_' + permKey + '" onclick="event.stopPropagation()">';
+                x += '<option value="allowed"' + (defaultVal === 'allowed' ? ' selected' : '') + '>✓ ' + "Allowed" + '</option>';
+                x += '<option value="denied"' + (defaultVal === 'denied' ? ' selected' : '') + '>✗ ' + "Denied" + '</option>';
+                x += '<option value="inherited"' + (defaultVal === 'inherited' ? ' selected' : '') + '>↩ ' + "Inherited" + '</option>';
+                x += '</select></div>';
+                x += '</div>';
+                x += '<div id="' + collapseId + '" class="perm-collapse" style="padding:15px;' + (isFirst ? '' : 'display:none;') + '">';
+                
+                // Allowed section
+                x += '<div class="row mb-3">';
+                x += '<div class="col-md-6">';
+                x += '<h6><span class="badge bg-success">' + "Allowed" + '</span></h6>';
+                x += buildAutocompleteSection(permKey, level, 'allowed', parentId, useData ? useData.allowed : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '<div class="col-md-6">';
+                x += '<h6><span class="badge bg-danger">' + "Denied" + '</span></h6>';
+                x += buildAutocompleteSection(permKey, level, 'denied', parentId, useData ? useData.denied : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '</div>';
+                
+                x += '</div></div>';
+                idx++;
+            }
+            x += '</div>';
+            
+            return x;
+        }
+        
+        function togglePermCollapse(id) {
+            var el = Q(id);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+        
+        function buildAutocompleteSection(permKey, level, accessType, parentId, currentData) {
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            var x = '<div class="position-relative">';
+            x += '<input type="text" class="form-control form-control-sm" id="' + inputId + '" placeholder="' + "Search users, groups, devices" + '..." ';
+            x += 'onkeyup="searchPermEntities(this, \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + (parentId || '') + '\')" ';
+            x += 'onfocus="showPermDropdown(\'' + listId + '\')" autocomplete="off">';
+            x += '<div id="' + listId + '" class="list-group w-100" style="max-height:200px; overflow-y:auto; display:none; cursor:pointer;"></div>';
+            x += '</div>';
+            
+            // Show selected tags
+            x += '<div id="' + containerId + '" class="mt-2" style="display:flex; flex-wrap:wrap; gap:5px;">';
+            
+            // Render existing selections
+            var allEntities = [];
+            if (permissionListData.users) allEntities = allEntities.concat(permissionListData.users);
+            if (permissionListData.userGroups) allEntities = allEntities.concat(permissionListData.userGroups);
+            if (permissionListData.meshes) allEntities = allEntities.concat(permissionListData.meshes);
+            if (permissionListData.nodes) allEntities = allEntities.concat(permissionListData.nodes);
+            
+            var selectedIds = currentData.users || [];
+            selectedIds.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) {
+                    x += buildPermTag(entity, permKey, level, accessType, 'user', parentId);
+                }
+            });
+            
+            var selectedGroups = currentData.userGroups || [];
+            selectedGroups.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) {
+                    x += buildPermTag(entity, permKey, level, accessType, 'userGroup', parentId);
+                }
+            });
+            
+            x += '</div>';
+            
+            return x;
+        }
+        
+        function buildPermTag(entity, permKey, level, accessType, entityType, parentId) {
+            var icon = entity._id.startsWith('user/') ? '👤' : (entity._id.startsWith('ugrp/') ? '👥' : (entity._id.startsWith('mesh/') ? '🖥️' : '💻'));
+            var tagId = 'perm_tag_' + entity._id.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var safeId = entity._id.replace(/'/g, '___');
+            
+            return '<span class="badge" style="background:#6c757d; padding:5px 8px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entity._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + entityType + '" data-parentid="' + (parentId || '') + '">' + icon + ' ' + EscapeHtml(entity.name || entity._id) + ' <i class="fa-solid fa-times" style="cursor:pointer; margin-left:5px;" onclick="removePermTagFromTag(this)"></i></span>';
+        }
+        
+        function removePermTagFromTag(el) {
+            var span = el.parentElement;
+            removePermTag(span.getAttribute('data-actualid'), span.getAttribute('data-perm'), span.getAttribute('data-level'), span.getAttribute('data-access'), span.getAttribute('data-type'), span.getAttribute('data-parentid') || '');
+        }
+        
+        function searchPermEntities(input, permKey, level, accessType, parentId) {
+            var query = input.value.toLowerCase();
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var list = Q(listId);
+            if (!list) return;
+            
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+            
+            // Get currently selected IDs to filter out
+            var selectedIds = [];
+            if (permissionState[permKey] && permissionState[permKey][accessType]) {
+                var state = permissionState[permKey][accessType];
+                if (state.users) selectedIds = selectedIds.concat(state.users);
+                if (state.userGroups) selectedIds = selectedIds.concat(state.userGroups);
+                if (state.meshes) selectedIds = selectedIds.concat(state.meshes);
+                if (state.nodes) selectedIds = selectedIds.concat(state.nodes);
+            }
+            
+            // Also check mesh/node overrides for the current context
+            if (level === 'mesh' && parentId && window.meshOverridesState && window.meshOverridesState[permKey] && window.meshOverridesState[permKey][parentId] && window.meshOverridesState[permKey][parentId][accessType]) {
+                var meshState = window.meshOverridesState[permKey][parentId][accessType];
+                if (meshState.users) selectedIds = selectedIds.concat(meshState.users);
+                if (meshState.userGroups) selectedIds = selectedIds.concat(meshState.userGroups);
+                if (meshState.meshes) selectedIds = selectedIds.concat(meshState.meshes);
+                if (meshState.nodes) selectedIds = selectedIds.concat(meshState.nodes);
+            }
+            if (level === 'node' && parentId && window.nodeOverridesState && window.nodeOverridesState[permKey] && window.nodeOverridesState[permKey][parentId] && window.nodeOverridesState[permKey][parentId][accessType]) {
+                var nodeState = window.nodeOverridesState[permKey][parentId][accessType];
+                if (nodeState.users) selectedIds = selectedIds.concat(nodeState.users);
+                if (nodeState.userGroups) selectedIds = selectedIds.concat(nodeState.userGroups);
+                if (nodeState.meshes) selectedIds = selectedIds.concat(nodeState.meshes);
+                if (nodeState.nodes) selectedIds = selectedIds.concat(nodeState.nodes);
+            }
+            
+            var results = [];
+            var groupedNodes = {};
+            
+            // Search users
+            if (permissionListData.users) {
+                permissionListData.users.forEach(function(u) {
+                    if (selectedIds.indexOf(u._id) >= 0) return;
+                    if ((u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query))) {
+                        results.push({ _id: u._id, name: u.name || u.email, type: 'user', icon: '👤' });
+                    }
+                });
+            }
+            
+            // Search user groups
+            if (permissionListData.userGroups) {
+                permissionListData.userGroups.forEach(function(ug) {
+                    if (selectedIds.indexOf(ug._id) >= 0) return;
+                    if (ug.name && ug.name.toLowerCase().includes(query)) {
+                        results.push({ _id: ug._id, name: ug.name, type: 'userGroup', icon: '👥' });
+                    }
+                });
+            }
+            
+            // Search meshes (only for global level)
+            if (level === 'global' && permissionListData.meshes) {
+                permissionListData.meshes.forEach(function(m) {
+                    if (selectedIds.indexOf(m._id) >= 0) return;
+                    if (m.name && m.name.toLowerCase().includes(query)) {
+                        results.push({ _id: m._id, name: m.name, type: 'mesh', icon: '🖥️' });
+                    }
+                });
+            }
+            
+            // Search nodes and group by mesh
+            if (level === 'node' && permissionListData.nodes) {
+                permissionListData.nodes.forEach(function(n) {
+                    if (selectedIds.indexOf(n._id) >= 0) return;
+                    if (n.name && n.name.toLowerCase().includes(query)) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push({ _id: n._id, name: n.name, type: 'node', icon: '💻', meshname: meshGroup });
+                    }
+                });
+            }
+            
+            list.innerHTML = '';
+            
+            // Add individual results first
+            results.slice(0, 10).forEach(function(r) {
+                var safeId = r._id.replace(/'/g, '___');
+                list.innerHTML += '<a class="list-group-item list-group-item-action" style="padding:8px 12px; cursor:pointer;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(r._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + r.type + '" data-name="' + EscapeHtml(r.name) + '" data-icon="' + r.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + r.icon + ' ' + EscapeHtml(r.name) + ' <small class="text-muted">' + r.type + '</small></a>';
+            });
+            
+            // Add grouped nodes at the end
+            if (level === 'node') {
+                for (var meshName in groupedNodes) {
+                    list.innerHTML += '<div class="list-group-item" style="padding:8px 12px; background:#eee; font-weight:bold; font-size:11px;">🖥️ ' + EscapeHtml(meshName) + '</div>';
+                    groupedNodes[meshName].forEach(function(n) {
+                        var safeId = n._id.replace(/'/g, '___');
+                        list.innerHTML += '<a class="list-group-item list-group-item-action" style="padding:8px 12px; cursor:pointer; padding-left:20px;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(n._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + n.type + '" data-name="' + EscapeHtml(n.name) + '" data-icon="' + n.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + n.icon + ' ' + EscapeHtml(n.name) + '</a>';
+                    });
+                }
+            }
+            
+            list.style.display = (results.length > 0 || (level === 'node' && Object.keys(groupedNodes).length > 0)) ? 'block' : 'none';
+        }
+        
+        function addPermEntityFromDropdown(el) {
+            var entityId = el.getAttribute('data-actualid');
+            var permKey = el.getAttribute('data-perm');
+            var level = el.getAttribute('data-level');
+            var accessType = el.getAttribute('data-access');
+            var entityType = el.getAttribute('data-type');
+            var entityName = el.getAttribute('data-name');
+            var entityIcon = el.getAttribute('data-icon');
+            var parentId = el.getAttribute('data-parentid') || '';
+            addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon);
+        }
+        
+        function showPermDropdown(listId) {
+            var list = Q(listId);
+            if (list && list.children.length > 0) {
+                list.style.display = 'block';
+            }
+        }
+        
+        function addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon) {
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var container = Q(containerId);
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            // Clear input and hide dropdown
+            Q(inputId).value = '';
+            Q(listId).style.display = 'none';
+            
+            // Check if already exists
+            var existingTags = container.querySelectorAll('span');
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            for (var i = 0; i < existingTags.length; i++) {
+                if (existingTags[i].id && existingTags[i].id == tagId) {
+                    return; // Already added
+                }
+            }
+            
+            // Add new tag
+            var tagHtml = '<span class="badge" style="background:#6c757d; padding:5px 8px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <i class="fa-solid fa-times" style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')"></i></span>';
+            container.insertAdjacentHTML('beforeend', tagHtml);
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : (entityType === 'node' ? 'nodes' : null)));
+            
+            // Skip if entityTypeKey is invalid
+            if (entityTypeKey === null) {
+                console.log('Invalid entityType:', entityType);
+                return;
+            }
+            
+            // Update permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    if (permissionState[permKey][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                        permissionState[permKey][accessType][entityTypeKey].push(entityId);
+                    }
+                }
+            }
+            
+            // Update mesh/node overrides if in context
+            if (level === 'mesh' && parentId) {
+                if (!window.meshOverridesState[permKey][parentId]) {
+                    window.meshOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.meshOverridesState[permKey][parentId][accessType]) {
+                    window.meshOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                if (window.meshOverridesState[permKey][parentId][accessType][entityTypeKey] && window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+            if (level === 'node' && parentId) {
+                if (!window.nodeOverridesState[permKey][parentId]) {
+                    window.nodeOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType]) {
+                    window.nodeOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                // Ensure entityTypeKey array exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey]) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] = [];
+                }
+                if (window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] && window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+        }
+        
+        function removePermTag(entityId, permKey, level, accessType, entityType, parentId) {
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var tag = Q(tagId);
+            if (tag) tag.remove();
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : 'nodes'));
+            
+            // Remove from permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    var idx = permissionState[permKey][accessType][entityTypeKey].indexOf(entityId);
+                    if (idx > -1) {
+                        permissionState[permKey][accessType][entityTypeKey].splice(idx, 1);
+                    }
+                }
+            }
+            
+            // Remove from mesh overrides if in mesh context
+            if (level === 'mesh' && parentId && window.meshOverridesState[permKey][parentId]) {
+                var override = window.meshOverridesState[permKey][parentId];
+                if (override[accessType] && override[accessType][entityTypeKey]) {
+                    var idx3 = override[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx3 > -1) {
+                        override[accessType][entityTypeKey].splice(idx3, 1);
+                    }
+                }
+            }
+            
+            // Remove from node overrides if in node context
+            if (level === 'node' && parentId && window.nodeOverridesState[permKey][parentId]) {
+                var nodeOverride = window.nodeOverridesState[permKey][parentId];
+                if (nodeOverride[accessType] && nodeOverride[accessType][entityTypeKey]) {
+                    var idx4 = nodeOverride[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx4 > -1) {
+                        nodeOverride[accessType][entityTypeKey].splice(idx4, 1);
+                    }
+                }
+            }
+            
+            // Update mesh overrides if in mesh context
+            if (level === 'mesh' && parentId && window.meshOverridesState[permKey][parentId]) {
+                var override = window.meshOverridesState[permKey][parentId];
+                if (override[accessType] && override[accessType][entityTypeKey]) {
+                    var idx3 = override[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx3 > -1) {
+                        override[accessType][entityTypeKey].splice(idx3, 1);
+                    }
+                }
+            }
+            
+            // Update node overrides if in node context
+            if (level === 'node' && parentId && window.nodeOverridesState[permKey][parentId]) {
+                var nodeOverride = window.nodeOverridesState[permKey][parentId];
+                if (nodeOverride[accessType] && nodeOverride[accessType][entityTypeKey]) {
+                    var idx4 = nodeOverride[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx4 > -1) {
+                        nodeOverride[accessType][entityTypeKey].splice(idx4, 1);
+                    }
+                }
+            }
+        }
+        
+        function buildMeshNodeSection(definitions, permissions, type) {
+            var x = '<p class="text-muted">Select a ' + type + ' to configure permissions:</p>';
+            x += '<select class="form-select mb-3" id="perm_' + type + 'Select" onchange="renderMeshNodePerms(\'' + type + '\', this.value)">';
+            x += '<option value="">-- ' + (type === 'mesh' ? "Select Device Group" : "Select Device" ) + ' --</option>';
+            
+            if (type === 'mesh') {
+                var list = permissionListData.meshes;
+                if (list) {
+                    list.forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">' + EscapeHtml(item.name) + '</option>';
+                    });
+                }
+            } else {
+                // Group nodes by mesh
+                var groupedNodes = {};
+                if (permissionListData.nodes) {
+                    permissionListData.nodes.forEach(function(n) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push(n);
+                    });
+                }
+                for (var meshName in groupedNodes) {
+                    x += '<optgroup label="🖥️ ' + EscapeHtml(meshName) + '">';
+                    groupedNodes[meshName].forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">  ' + EscapeHtml(item.name) + '</option>';
+                    });
+                    x += '</optgroup>';
+                }
+            }
+            x += '</select>';
+            
+            x += '<div id="meshNodePermContent_' + type + '"></div>';
+            
+            return x;
+        }
+        
+        function renderMeshNodePerms(type, selectedId) {
+            var content = Q('meshNodePermContent_' + type);
+            if (!selectedId) {
+                content.innerHTML = '';
+                return;
+            }
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            var overrideKey = type === 'mesh' ? 'meshOverrides' : 'nodeOverrides';
+            
+            // Extract override data for the selected mesh/node
+            var overrideData = {};
+            for (var pk in definitions) {
+                if (permissions[pk] && permissions[pk][overrideKey] && permissions[pk][overrideKey][selectedId]) {
+                    overrideData[pk] = permissions[pk][overrideKey][selectedId];
+                } else {
+                    overrideData[pk] = {
+                        allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                        denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                    };
+                }
+            }
+            
+            var displayName = '';
+            var list = type === 'mesh' ? permissionListData.meshes : permissionListData.nodes;
+            if (list) {
+                var item = list.find(function(i) { return i._id === selectedId; });
+                if (item) displayName = item.name;
+            }
+            
+            // Store current override data for this mesh/node in a temporary location
+            window.currentPermOverride = { type: type, id: selectedId, data: overrideData };
+            
+            var x = '<div class="alert alert-info"><strong>' + EscapeHtml(displayName) + '</strong> - ' + (type === 'mesh' ? "Specific permissions for this device group" : "Specific permissions for this device") + '</div>';
+            x += buildPermissionSection(definitions, permissions, defaults, type, selectedId, overrideData);
+            
+            content.innerHTML = x;
+        }
+        
+        function updatePermBadge(permKey) {
+            // Visual feedback when default changes
+        }
+        
+        function savePluginPermissionsEx() {
+            if (!currentPluginPermissions || !permissionListData) return;
+            
+            console.log('Saving permissionState:', JSON.stringify(permissionState));
+            
+            var pluginName = Q('permPluginShortName').value;
+            var definitions = currentPluginPermissions.data.definitions || {};
+            var permissions = {};
+            var defaults = {};
+            
+            // Initialize mesh and node overrides storage if not exists
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            
+            // Collect defaults from DOM
+            for (var permKey in definitions) {
+                defaults[permKey] = Q('perm_default_' + permKey).value;
+            }
+            
+            // Use permissionState for permissions (more reliable than DOM scraping)
+            for (var permKey in definitions) {
+                var state = permissionState[permKey] || { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                permissions[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: window.meshOverridesState[permKey] || {},
+                    nodeOverrides: window.nodeOverridesState[permKey] || {}
+                };
+                
+                // Copy from permissionState (global)
+                if (state.allowed) {
+                    permissions[permKey].allowed.users = state.allowed.users ? state.allowed.users.slice() : [];
+                    permissions[permKey].allowed.userGroups = state.allowed.userGroups ? state.allowed.userGroups.slice() : [];
+                    permissions[permKey].allowed.meshes = state.allowed.meshes ? state.allowed.meshes.slice() : [];
+                    permissions[permKey].allowed.nodes = state.allowed.nodes ? state.allowed.nodes.slice() : [];
+                }
+                if (state.denied) {
+                    permissions[permKey].denied.users = state.denied.users ? state.denied.users.slice() : [];
+                    permissions[permKey].denied.userGroups = state.denied.userGroups ? state.denied.userGroups.slice() : [];
+                    permissions[permKey].denied.meshes = state.denied.meshes ? state.denied.meshes.slice() : [];
+                    permissions[permKey].denied.nodes = state.denied.nodes ? state.denied.nodes.slice() : [];
+                }
+            }
+            
+            console.log('Sending permissions:', JSON.stringify(permissions));
+            
+            meshserver.send({
+                action: 'setpluginpermissions',
+                plugin: pluginName,
+                data: { permissions: permissions, defaults: defaults }
+            });
+            
+            closePluginPermModal();
         }
 
         //
@@ -21345,11 +22102,343 @@
             }
         }
 
+        // --- Icons Customization ---
+        var customIconValues = {};
+        const customIconConfig = [
+            { key: 'myDevices', label: 'My Devices', elementId: 'LeftMenuMyDevices' },
+            { key: 'myAccount', label: 'My Account', elementId: 'LeftMenuMyAccount' },
+            { key: 'myEvents', label: 'My Events', elementId: 'LeftMenuMyEvents' },
+            { key: 'myFiles', label: 'My Files', elementId: 'LeftMenuMyFiles' },
+            { key: 'myUsers', label: 'My Users', elementId: 'LeftMenuMyUsers' },
+            { key: 'myServer', label: 'My Server', elementId: 'LeftMenuMyServer' }
+        ];
+
+        function getVisibleCustomIconConfig() {
+            var visibleConfig = [];
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (anchor == null) { continue; }
+                if (window.getComputedStyle(anchor).display === 'none') { continue; }
+                visibleConfig.push(cfg);
+            }
+            return visibleConfig;
+        }
+
+        function loadCustomIconState() {
+            var raw = getstore('customIcons', '{}');
+            if ((typeof raw !== 'string') || (raw.length === 0)) { return {}; }
+            try { return JSON.parse(raw); } catch (ex) { return {}; }
+        }
+
+        function normalizeCustomIconPath(value) {
+            if (typeof value !== 'string') { return value; }
+            var trimmed = value.trim();
+            if (trimmed.length === 0) { return trimmed; }
+            var lower = trimmed.toLowerCase();
+            if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:')) { return trimmed; }
+            if ((typeof domainUrl === 'string') && (domainUrl !== '/') && (domainUrl.length > 0)) {
+                if (trimmed.startsWith('/icons/custom/')) {
+                    return domainUrl + trimmed.substring(1);
+                }
+                if (trimmed.startsWith('icons/custom/')) {
+                    return domainUrl + trimmed;
+                }
+            }
+            if (trimmed.startsWith('icons/custom/')) { return '/' + trimmed; }
+            return trimmed;
+        }
+
+        function sanitizeCustomIconState(state) {
+            var sanitized = {};
+            if (state == null) { return sanitized; }
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var key = customIconConfig[i].key;
+                var value = state[key];
+                if (typeof value === 'string') {
+                    var trimmed = normalizeCustomIconPath(value.trim());
+                    if (trimmed.length > 0) { sanitized[key] = trimmed; }
+                }
+            }
+            return sanitized;
+        }
+
+        function persistCustomIconState(state) {
+            var sanitized = sanitizeCustomIconState(state);
+            putstore('customIcons', JSON.stringify(sanitized));
+            customIconValues = sanitized;
+            applyIconCustomization(sanitized);
+        }
+
+        function showIconCustomization() {
+            customIconValues = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            var x = '<div class="container-fluid">';
+            x += '<div class="row mb-4">';
+            x += '<div class="col-12">';
+            x += '<div class="d-flex align-items-center mb-3">';
+            x += '<div class="bg-primary bg-gradient rounded-circle p-3 me-3">';
+            x += '<i class="fas fa-palette fa-2x text-white"></i>';
+            x += '</div>';
+            x += '<div>';
+            x += '<h5 class="mb-1 fw-semibold">Customize Your Sidebar Icons</h5>';
+            x += '<p class="text-muted mb-0">Upload custom SVG/PNG icons or provide URLs to personalize your sidebar interface experience</p>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+            x += '</div>';
+
+            x += '<div class="row" id="iconCardsContainer">';
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                var hasIcon = currentValue.length > 0;
+
+                x += '<div class="col-lg-6 col-xl-4 mb-3">';
+                x += '<div class="card modern-card h-100 ' + (hasIcon ? 'border-success' : '') + '" data-icon-key="' + cfg.key + '">';
+                x += '<div class="card-header d-flex align-items-center">';
+                x += '<div class="bg-light rounded-circle p-2 me-3">';
+                x += '<i class="fas ' + getIconClass(cfg.key) + ' fa-lg text-secondary"></i>';
+                x += '</div>';
+                x += '<div class="flex-grow-1">';
+                x += '<h6 class="card-title mb-1">' + EscapeHtml(cfg.label) + '</h6>';
+                x += '<small class="status-badge ' + (hasIcon ? 'text-success' : 'text-muted') + '">';
+                x += '<i class="fas ' + (hasIcon ? 'fa-check-circle' : 'fa-circle') + ' me-1"></i>';
+                x += '<span class="status-text">' + (hasIcon ? 'Custom icon set' : 'Default icon') + '</span>';
+                x += '</small>';
+                x += '</div>';
+                x += '</div>';
+
+                x += '<div class="card-body">';
+                x += '<div class="icon-upload-wrapper" data-icon-key="' + cfg.key + '"></div>';
+                x += '</div>';
+                x += '</div>';
+                x += '</div>';
+            }
+            if (visibleIconConfig.length === 0) {
+                x += '<div class="col-12"><div class="alert alert-secondary mb-0">No sidebar icons are available for customization on this account.</div></div>';
+            }
+            x += '</div>';
+            x += '</div>';
+
+            openModal({
+                modalId: 'xxAddAgent',
+                title: 'Icons Customization',
+                body: x,
+                size: 'large',
+                okButtonId: 'idx_dlgOkButton',
+                onOk: saveIconCustomization
+            });
+
+            // Initialize icon upload components after modal is shown
+            setTimeout(function() {
+                initializeIconUploadComponents();
+            }, 100);
+
+            return false;
+        }
+
+        function initializeIconUploadComponents() {
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var currentValue = customIconValues[cfg.key] || '';
+                var wrapper = document.querySelector('[data-icon-key="' + cfg.key + '"] .icon-upload-wrapper');
+
+                if (wrapper) {
+                    createIconUploadComponent(cfg.key, wrapper, {
+                        label: cfg.label,
+                        currentValue: currentValue,
+                        onUpload: uploadAndPersistCustomIcon,
+                        onUrlInput: handleUrlInput,
+                        onRemove: removeCustomIcon,
+                        normalizePreviewUrl: normalizeCustomIconPath
+                    });
+                }
+            }
+        }
+
+        // Upload via API, then persist local icon state so sidebar updates immediately.
+        async function uploadAndPersistCustomIcon(iconKey, file) {
+            var result = await uploadCustomIcon(iconKey, file);
+            if ((result != null) && (typeof result.path === 'string') && (result.path.length > 0)) {
+                customIconValues[iconKey] = result.path;
+                persistCustomIconState(customIconValues);
+                setIconCardStatus(iconKey, 'custom');
+            }
+            return result;
+        }
+
+        function setIconCardStatus(iconKey, state) {
+            var card = document.querySelector('[data-icon-key="' + iconKey + '"]');
+            if (!card) { return; }
+            var statusElement = card.querySelector('.card-header small');
+            card.classList.remove('border-warning', 'border-success');
+            if (state === 'custom') {
+                if (statusElement) {
+                    statusElement.className = 'text-success';
+                    statusElement.innerHTML = '<i class="fas fa-check-circle me-1"></i>Custom icon set';
+                }
+                card.classList.add('border-success');
+            } else if (state === 'unsaved') {
+                if (statusElement) {
+                    statusElement.className = 'text-warning';
+                    statusElement.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Unsaved changes';
+                }
+                card.classList.add('border-warning');
+            } else {
+                if (statusElement) {
+                    statusElement.className = 'text-muted';
+                    statusElement.innerHTML = '<i class="fas fa-circle me-1"></i>Default icon';
+                }
+            }
+        }
+
+        function getIconClass(iconKey) {
+            const iconMap = {
+                'myDevices': 'fa-desktop',
+                'myAccount': 'fa-user-circle',
+                'myEvents': 'fa-calendar-alt',
+                'myFiles': 'fa-folder',
+                'myUsers': 'fa-users',
+                'myServer': 'fa-server'
+            };
+            return iconMap[iconKey] || 'fa-icons';
+        }
+
+        function handleUrlInput(iconKey, inputOrValue) {
+            var value = '';
+            if (typeof inputOrValue === 'string') { value = inputOrValue.trim(); }
+            else if (inputOrValue && (typeof inputOrValue.value === 'string')) { value = inputOrValue.value.trim(); }
+            // Preview rendering is handled by IconUploadComponent.
+            setIconCardStatus(iconKey, (value.length > 0) ? 'unsaved' : 'default');
+        }
+
+        function removeCustomIcon(iconKey) {
+            var previousValue = (customIconValues && (typeof customIconValues[iconKey] === 'string')) ? customIconValues[iconKey] : '';
+            customIconValues[iconKey] = '';
+            var textInput = document.getElementById('iconInput_' + iconKey);
+            if (textInput) { textInput.value = ''; }
+            persistCustomIconState(customIconValues);
+
+            if ((typeof previousValue === 'string') && (previousValue.indexOf('/icons/custom/') >= 0)) {
+                deleteCustomIconFromServer(previousValue).catch(function (ex) {
+                    // Keep UX non-blocking: icon is already reset locally.
+                    if (window.console) { console.error('Failed to delete custom icon:', ex); }
+                });
+            }
+
+            setIconCardStatus(iconKey, 'default');
+            return false;
+        }
+
+        async function uploadCustomIcon(iconKey, file) {
+            var formData = new FormData();
+            formData.append('iconType', iconKey);
+            if (customIconValues && typeof customIconValues[iconKey] === 'string' && customIconValues[iconKey].length > 0) {
+                formData.append('previousIcon', customIconValues[iconKey]);
+            }
+            formData.append('iconFile', file);
+
+            var response = await fetch('customiconupload.ashx', { method: 'POST', body: formData, credentials: 'same-origin' });
+            if (!response.ok) {
+                var message = 'Failed to upload the icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
+        async function deleteCustomIconFromServer(iconPath) {
+            var body = new URLSearchParams();
+            body.append('iconPath', iconPath);
+            var response = await fetch('customicondelete.ashx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+                body: body.toString(),
+                credentials: 'same-origin'
+            });
+            if (!response.ok) {
+                var message = 'Failed to delete custom icon.';
+                try {
+                    var errorInfo = await response.json();
+                    if (errorInfo && typeof errorInfo.error === 'string' && errorInfo.error.length > 0) { message = errorInfo.error; }
+                } catch (ex) { }
+                throw new Error(message);
+            }
+            return response.json();
+        }
+
+        function saveIconCustomization() {
+            var updatedState = loadCustomIconState();
+            var visibleIconConfig = getVisibleCustomIconConfig();
+            for (var i = 0; i < visibleIconConfig.length; i++) {
+                var cfg = visibleIconConfig[i];
+                var input = document.getElementById('iconInput_' + cfg.key);
+                if (input) { updatedState[cfg.key] = input.value; }
+            }
+            persistCustomIconState(updatedState);
+            if (xxModal) { xxModal.hide(); }
+        }
+
+        // Supports both SVG menu icons and the modern FontAwesome <i> icons.
+        function applyIconCustomization(icons) {
+            var state = sanitizeCustomIconState(icons);
+            for (var i = 0; i < customIconConfig.length; i++) {
+                var cfg = customIconConfig[i];
+                var anchor = document.getElementById(cfg.elementId);
+                if (!anchor) { continue; }
+                var iconElement = anchor.querySelector('i,svg');
+                if (!iconElement) { continue; }
+                if (state[cfg.key]) {
+                    anchor.classList.add('custom-icon');
+                    iconElement.style.setProperty('background-image', 'url("' + state[cfg.key].replace(/"/g, '%22') + '")', 'important');
+                    iconElement.style.setProperty('background-repeat', 'no-repeat', 'important');
+                    iconElement.style.setProperty('background-position', 'center', 'important');
+                    iconElement.style.setProperty('background-size', 'contain', 'important');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        // Font Awesome icons are pseudo-elements; hide glyph and show background image.
+                        iconElement.style.setProperty('font-size', '0', 'important');
+                        iconElement.style.setProperty('color', 'transparent', 'important');
+                        iconElement.style.setProperty('width', '1.1em', 'important');
+                        iconElement.style.setProperty('height', '1.1em', 'important');
+                        iconElement.style.setProperty('display', 'inline-block', 'important');
+                        iconElement.style.setProperty('vertical-align', 'middle', 'important');
+                    }
+                } else {
+                    anchor.classList.remove('custom-icon');
+                    iconElement.style.removeProperty('background-image');
+                    iconElement.style.removeProperty('background-repeat');
+                    iconElement.style.removeProperty('background-position');
+                    iconElement.style.removeProperty('background-size');
+                    if (iconElement.tagName.toLowerCase() === 'i') {
+                        iconElement.style.removeProperty('font-size');
+                        iconElement.style.removeProperty('color');
+                        iconElement.style.removeProperty('width');
+                        iconElement.style.removeProperty('height');
+                        iconElement.style.removeProperty('display');
+                        iconElement.style.removeProperty('vertical-align');
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            customIconValues = loadCustomIconState();
+            applyIconCustomization(customIconValues);
+        });
+
+        window.addEventListener('load', function () {
+            applyIconCustomization(customIconValues);
+        });
+
         // Request Confirmation if closing while a desktop, terminal session is active
         window.addEventListener('beforeunload', function (e) {
             if (((desktop != null) && (xxcurrentView == 11)) || ((terminal != null) && (xxcurrentView == 12))) { e.preventDefault(); e.returnValue = ''; }
         });
-
     </script>
 </body>
 

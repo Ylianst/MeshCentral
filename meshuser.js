@@ -4745,6 +4745,96 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 });
                 break;
             }
+            case 'reloadplugin': {
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
+                if (command.plugin == "ALL") {
+                    // Reload all plugins
+                    parent.parent.pluginHandler.reloadAllPlugins(function(result) {
+                        try { ws.send(JSON.stringify({ action: 'pluginReloaded', result: result })); } catch (ex) { }
+                    });
+                } else {
+                    // Reload specific plugin
+                    parent.parent.pluginHandler.reloadPlugin(command.plugin, function(result) {
+                        try { ws.send(JSON.stringify({ action: 'pluginReloaded', result: result })); } catch (ex) { }
+                    });
+                }
+                break;
+            }
+            case 'getpluginpermissions': {
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin
+                var perms = parent.parent.pluginHandler.getPluginPermissions(command.plugin);
+                try { ws.send(JSON.stringify({ action: 'pluginPermissions', plugin: command.plugin, permissions: perms })); } catch (ex) { }
+                break;
+            }
+            case 'setpluginpermissions': {
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin
+                parent.parent.pluginHandler.setPluginPermissions(command.plugin, command.data, function(err) {
+                    try { ws.send(JSON.stringify({ action: 'pluginPermissionsSet', plugin: command.plugin, success: !err, error: err })); } catch (ex) { }
+                });
+                break;
+            }
+            case 'getpluginpermissionlist': {
+                // Return list of users, user groups, meshes, nodes for permission assignment UI
+                if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break;
+                
+                var result = { users: [], userGroups: [], meshes: [], nodes: [] };
+                
+                // Get all users
+                parent.db.GetAllType('user', function(err, docs) {
+                    if (docs) {
+                        docs.forEach(function(u) {
+                            if (u.name && u._id) {
+                                result.users.push({ _id: u._id, name: u.name, email: u.email });
+                            }
+                        });
+                    }
+                    
+                    // Get all user groups
+                    parent.db.GetAllType('ugrp', function(err, ugrps) {
+                        if (ugrps) {
+                            ugrps.forEach(function(ug) {
+                                if (ug.name && ug._id) {
+                                    result.userGroups.push({ _id: ug._id, name: ug.name });
+                                }
+                            });
+                        }
+                        
+                        // Get all meshes (device groups)
+                        parent.db.GetAllType('mesh', function(err, meshes) {
+                            if (meshes) {
+                                meshes.forEach(function(m) {
+                                    if (m.name && m._id && !m.deleted) {
+                                        result.meshes.push({ _id: m._id, name: m.name });
+                                    }
+                                });
+                            }
+                            
+                            // Get all nodes (devices)
+                            parent.db.GetAllType('node', function(err, nodes) {
+                                if (nodes) {
+                                    // Create a map of meshid to meshname for grouping
+                                    var meshMap = {};
+                                    if (meshes) {
+                                        meshes.forEach(function(m) {
+                                            meshMap[m._id] = m.name;
+                                        });
+                                    }
+                                    
+                                    nodes.forEach(function(n) {
+                                        if (n.name && n._id && !n.deleted) {
+                                            var meshname = meshMap[n.meshid] || 'Ungrouped';
+                                            result.nodes.push({ _id: n._id, name: n.name, meshid: n.meshid, meshname: meshname });
+                                        }
+                                    });
+                                }
+                                
+                                try { ws.send(JSON.stringify({ action: 'pluginPermissionList', list: result })); } catch (ex) { }
+                            });
+                        });
+                    });
+                });
+                break;
+            }
             case 'getpluginversions': {
                 if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 parent.parent.pluginHandler.getPluginVersions(command.id)

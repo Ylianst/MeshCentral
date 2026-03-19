@@ -329,7 +329,7 @@
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
-                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any connectivity:xxx c:xxx"/>&nbsp;
+                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
@@ -356,7 +356,7 @@
                             </span>
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc" />&nbsp;
                             <span id=KvmSearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" /></span>
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
@@ -385,6 +385,7 @@
                                     <option>Tags</option>
                                     <option>Group-Tags</option>
                                     <option>Last Seen</option>
+                                    <option>Last Boot Up Time</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -3899,6 +3900,22 @@
                     }
                     break;
                 }
+                case 'pluginPermissions': {
+                    handlePluginPermissions(message);
+                    break;
+                }
+                case 'pluginPermissionsSet': {
+                    if (message.success) {
+                        // Already handled in save function
+                    } else {
+                        alert("Error saving permissions: " + message.error);
+                    }
+                    break;
+                }
+                case 'pluginPermissionList': {
+                    handlePluginPermissionList(message);
+                    break;
+                }
                 case 'createInviteLink': { // Agent installation invitation link
                     if (xxdialogTag != message.meshid) break;
                     var servername = serverinfo.name;
@@ -4449,6 +4466,16 @@
                     }
                     nodes.sort(lastConnectSort);
                 }
+                else if (sort == 6) {
+                    // Last Boot Up Time
+                    if (!(deviceViewSettings && deviceViewSettings.devsCols && deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0)) {
+                        // Force initialize the view settings
+                        if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                        if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn', 'lastbootuptime']; }
+                        else { deviceViewSettings.devsCols.push('lastbootuptime'); }
+                    }
+                    nodes.sort(lastBootUpTimeSort);
+                }
 
                 // Compute the width of the device view.
                 var totalDeviceViewWidth = Q('column_l').clientWidth - 60;
@@ -4519,7 +4546,7 @@
                             c = 0;
                             if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
-                    } else if (sort == 2 || sort == 5) {
+                    } else if (sort == 2 || sort == 5 || sort == 6) {
                         // Device header
                         if (current == null) { current = '1'; }
                     }
@@ -5225,7 +5252,8 @@
             if (node.users.length > 1) { return '<span title="' + EscapeHtml(node.users.join(', ')) + '">' + nobreak(format("{0} users", node.users.length)) + '</span>'; }
             var u = node.users[0], su = u, i = u.indexOf('\\');
             if (i > 0) { su = u.substring(i + 1); }
-            su = EscapeHtml(su);
+            var upn = node.upnusers && node.upnusers[0];
+			su = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
             if (node.lusers && node.lusers.length > 0) {
                 return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
@@ -6342,6 +6370,7 @@
         function deviceSort(a, b) { return sortCollator.compare(a.namel, b.namel); }
         function deviceHostSort(a, b) { return sortCollator.compare(a.rnamel, b.rnamel); }
         function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn > 0) { aa = 99999999999998; } if (b.conn > 0) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
+        function lastBootUpTimeSort(a, b) { var aa = a.lastbootuptime, bb = b.lastbootuptime; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
 
         function onSearchFocus(x) { searchFocus = x; }
         function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; onOnlineCheckBox(); mainUpdate(1); }
@@ -6365,6 +6394,8 @@
         }
 
         function getDevicesThatMatchFilter(x) {
+            var negate = x.startsWith('!');
+            if (negate) x = x.substring(1);
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
@@ -6410,7 +6441,7 @@
             } else if (userSearch != null) {
                 // User search
                 for (var d in nodes) {
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(d); } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0 || (nodes[d].upnusers && nodes[d].upnusers[i] && nodes[d].upnusers[i].toLowerCase().indexOf(userSearch) >= 0)) { r.push(d); } } }
                 }
             } else if (osSearch != null) {
                 // OS search
@@ -6493,6 +6524,7 @@
                 } catch (ex) { for (var d in nodes) { r.push(d); } }
             }
 
+            if (negate) { var allIds = []; for (var d in nodes) { allIds.push(d); } return allIds.filter(function(d) { return r.indexOf(d) < 0; }); }
             return r;
         }
 
@@ -7742,12 +7774,15 @@
                 // Active Users
                 if (node.users && node.users.length > 0) {
                     var u = node.users.map(function(user, index) {
-                        var label = (node.upnusers && node.upnusers[index] != null) ? EscapeHtml(node.upnusers[index]) : null;
-                        var locked = (node.lusers && node.lusers.indexOf(user) >= 0);
-                        var escapedUser = EscapeHtml(user);
-                        if (locked) { return addKeyLinkConditional(escapedUser, (label ? (label + ' - ' + "Locked") : "Locked"), true); }
-                        else if (label) { return '<span style=cursor:default title=\''+ label + '\'>' + escapedUser + '</span>'; }
-                        else { return escapedUser; }
+                        var upn = node.upnusers && node.upnusers[index];
+                        var label = (features3 & 0x00000002)
+                            ? ((node.users && node.users[index] != null) ? EscapeHtml(node.users[index]) : null)
+                            : (upn != null ? EscapeHtml(upn) : null);
+                        var escapedUser = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : user);
+                        var locked = node.lusers && node.lusers.indexOf(user) >= 0;
+                        if (locked) { return addKeyLinkConditional(escapedUser, label ? label + ' - ' + "Locked" : "Locked", true); }
+                        if (label) { return '<span style=cursor:default title=\'' + label + '\'>' + escapedUser + '</span>'; }
+                        return escapedUser;
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
@@ -11018,7 +11053,7 @@
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
                         xtermimage = new ImageAddon.ImageAddon();
-                        xterm = new Terminal();
+                        xterm = new Terminal({ allowProposedApi: true });
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
                         xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
@@ -19124,7 +19159,7 @@
                     if (installedPluginList['version_info'] == null) installedPluginList['version_info'] = [];
                     installedPluginList['version_info'][versInfo.id] = versInfo;
                 }
-                var tr = Q('p42tbl').querySelectorAll('.p42tblRow');
+                var tr = document.getElementById('p42tbl').querySelectorAll('.p42tblRow');
                 if (tr.length) {
                     for (var i in Object.values(tr)) {
                         tr[i].parentNode.removeChild(tr[i]);
@@ -19148,12 +19183,14 @@
                     1: {
                         'disable': 'Disable',
                         'upgrade': 'Upgrade',
+                        'reload': 'Reload',
+                        'permissions': 'Permissions',
                         //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                     }
                 };
                 var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
 
-                var tbl = Q('p42tbl');
+                var tbl = document.getElementById('p42tbl');
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
                     if (p.hasAdminPanel == true && p.status) {
@@ -19200,7 +19237,7 @@
                     tr.setAttribute('id', 'pluginRow-' + p._id);
                 });
             } else {
-                var tr = Q('p42tbl').querySelectorAll('.p42tblRow');
+                var tr = document.getElementById('p42tbl').querySelectorAll('.p42tblRow');
                 for (var i in Object.values(tr)) { tr[i].parentNode.removeChild(tr[i]); }
             }
             if (versInfo == null) refreshPluginLatest();
@@ -19214,12 +19251,12 @@
         function distributeCore() {
             if (pluginHandler == null) return;
             meshserver.send({ action: 'distributeCore', nodes: nodes }); // All nodes the user has access to
-            QV('pluginRestartNotice', false);
+            document.getElementById('pluginRestartNotice').style.display = 'none';
         }
 
         function pluginActionEx() {
             if (pluginHandler == null) return;
-            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
+            var act = document.getElementById('lastPluginAct').value, id = document.getElementById('lastPluginId').value, pVersUrl = document.getElementById('lastPluginVersion').value;
 
             switch(act) {
                 case 'upgrade':
@@ -19227,7 +19264,7 @@
                     meshserver.send({ 'action': 'installplugin', 'id': id, 'version_only': false });
                     break;
                 case 'downgrade':
-                    Q('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
+                    document.getElementById('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
                         if (opt.value == pVersUrl) pVers = opt.text;
                     });
                     meshserver.send({ 'action': 'installplugin', 'id': id, 'version_only': { 'name': pVers, 'url': pVersUrl }});
@@ -19238,12 +19275,31 @@
                 case 'disable':
                     meshserver.send({ 'action': 'disableplugin', 'id': id });
                     break;
+                case 'reload':
+                    var plugin = null;
+                    for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                    if (plugin) {
+                        meshserver.send({ 'action': 'reloadplugin', 'plugin': plugin.shortName });
+                    }
+                    break;
             }
-            QV('pluginRestartNotice', true);
+            document.getElementById('pluginRestartNotice').style.display = 'none';
         }
 
         function pluginAction(elem, id) {
             if (pluginHandler == null) return;
+            
+            // Special handling for permissions - opens matrix dialog
+            if (elem.value == 'permissions') {
+                var plugin = null;
+                for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                if (plugin) {
+                    openPluginPermissionsDialog(plugin);
+                }
+                elem.value = '';
+                return;
+            }
+            
             if (elem.value == 'downgrade') {
                 meshserver.send({ 'action': 'getpluginversions', 'id': id });
             } else {
@@ -19254,9 +19310,635 @@
             elem.value = '';
         }
 
+        // Plugin Permissions Dialog - Custom Modal (same as default3)
+        var currentPluginPermissions = null;
+        var permissionListData = null;
+        var permissionState = {}; // JavaScript state for permissions
+        
+        function openPluginPermissionsDialog(plugin) {
+            meshserver.send({ action: 'getpluginpermissions', plugin: plugin.shortName });
+            meshserver.send({ action: 'getpluginpermissionlist' });
+            
+            currentPluginPermissions = { plugin: plugin.shortName, name: plugin.name };
+            
+            // Create custom modal
+            var modalHtml = '<div id="pluginPermModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">';
+            modalHtml += '<div style="margin:30px auto; max-width:900px; background:#fff; border-radius:8px;">';
+            modalHtml += '<div style="padding:15px 20px; border-bottom:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            modalHtml += '<h5 style="margin:0;">' + "Plugin Permissions" + ' - ' + EscapeHtml(plugin.name) + '</h5>';
+            modalHtml += '<button type="button" onclick="closePluginPermModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>';
+            modalHtml += '</div>';
+            modalHtml += '<div id="pluginPermBody" style="padding:20px; max-height:70vh; overflow-y:auto;">';
+            modalHtml += '<div style="text-align:center; padding:40px;">' + "Loading permissions" + '...</div>';
+            modalHtml += '</div>';
+            modalHtml += '<div style="padding:15px 20px; border-top:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            modalHtml += '<div style="font-size:12px; color:#666;">' + "Permissions cascade: Node → Mesh → Global → Default" + '</div>';
+            modalHtml += '<div>';
+            modalHtml += '<button type="button" style="margin-right:10px; padding:5px 15px;" onclick="closePluginPermModal()">' + "Cancel" + '</button>';
+            modalHtml += '<button type="button" style="padding:5px 15px; background:#007bff; color:#fff; border:none; border-radius:4px;" onclick="savePluginPermissionsEx()">' + "Save" + '</button>';
+            modalHtml += '</div>';
+            modalHtml += '</div></div></div>';
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('pluginPermModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePluginPermModal() {
+            var modal = document.getElementById('pluginPermModal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function handlePluginPermissions(msg) {
+            if (msg.action != 'pluginPermissions') return;
+            currentPluginPermissions.data = msg.permissions;
+            renderPermissionMatrixEx();
+        }
+        
+        function handlePluginPermissionList(msg) {
+            if (msg.action != 'pluginPermissionList') return;
+            permissionListData = msg.list;
+            renderPermissionMatrixEx();
+        }
+        
+        function renderPermissionMatrixEx() {
+            if (!currentPluginPermissions || !currentPluginPermissions.data || !permissionListData) return;
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            // Check if plugin has no permissions defined
+            if (Object.keys(definitions).length === 0) {
+                var body = document.getElementById('pluginPermBody');
+                if (body) {
+                    body.innerHTML = '<div style="padding:20px;">' + "This plugin has not defined any permissions." + '</div>';
+                }
+                return;
+            }
+            
+            // Initialize permissionState from loaded data
+            permissionState = {};
+            window.meshOverridesState = {};
+            window.nodeOverridesState = {};
+            for (var permKey in definitions) {
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                permissionState[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                };
+                // Copy allowed
+                if (permData.allowed) {
+                    if (permData.allowed.users) permissionState[permKey].allowed.users = permData.allowed.users.slice();
+                    if (permData.allowed.userGroups) permissionState[permKey].allowed.userGroups = permData.allowed.userGroups.slice();
+                    if (permData.allowed.meshes) permissionState[permKey].allowed.meshes = permData.allowed.meshes.slice();
+                    if (permData.allowed.nodes) permissionState[permKey].allowed.nodes = permData.allowed.nodes.slice();
+                }
+                // Copy denied
+                if (permData.denied) {
+                    if (permData.denied.users) permissionState[permKey].denied.users = permData.denied.users.slice();
+                    if (permData.denied.userGroups) permissionState[permKey].denied.userGroups = permData.denied.userGroups.slice();
+                    if (permData.denied.meshes) permissionState[permKey].denied.meshes = permData.denied.meshes.slice();
+                    if (permData.denied.nodes) permissionState[permKey].denied.nodes = permData.denied.nodes.slice();
+                }
+                
+                // Initialize meshOverridesState and nodeOverridesState from loaded data
+                window.meshOverridesState[permKey] = permData.meshOverrides || {};
+                window.nodeOverridesState[permKey] = permData.nodeOverrides || {};
+            }
+            
+            var x = '';
+            
+            // Custom tab buttons
+            x += '<div style="margin-bottom:15px; border-bottom:1px solid #dee2e6;">';
+            x += '<button class="btn btn-sm active" id="btnTabGlobal" style="margin-right:5px; background:#007bff; color:#fff;" onclick="switchPermTab(\'global\')">' + "Global" + '</button>';
+            x += '<button class="btn btn-sm" id="btnTabMeshes" style="margin-right:5px; background:#6c757d; color:#fff;" onclick="switchPermTab(\'meshes\')">' + "Meshes"+ '</button>';
+            x += '<button class="btn btn-sm" id="btnTabNodes" style="background:#6c757d; color:#fff;" onclick="switchPermTab(\'nodes\')">' + "Nodes" + '</button>';
+            x += '</div>';
+            
+            x += '<div id="panel-global">';
+            x += buildPermissionSection(definitions, permissions, defaults, 'global', null);
+            x += '</div>';
+            
+            x += '<div id="panel-meshes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'mesh');
+            x += '</div>';
+            
+            x += '<div id="panel-nodes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'node');
+            x += '</div>';
+            
+            x += '<input type="hidden" id="permPluginShortName" value="' + currentPluginPermissions.plugin + '" />';
+            
+            document.getElementById('pluginPermBody').innerHTML = x;
+        }
+        
+        function switchPermTab(tab) {
+            document.getElementById('panel-global').style.display = 'none';
+            document.getElementById('panel-meshes').style.display = 'none';
+            document.getElementById('panel-nodes').style.display = 'none';
+            
+            document.getElementById('btnTabGlobal').style.background = '#6c757d';
+            document.getElementById('btnTabMeshes').style.background = '#6c757d';
+            document.getElementById('btnTabNodes').style.background = '#6c757d';
+            
+            document.getElementById('panel-' + tab).style.display = 'block';
+            document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.background = '#007bff';
+        }
+        
+        function buildPermissionSection(definitions, permissions, defaults, level, parentId, overrideData) {
+            var x = '';
+            
+            var idx = 0;
+            for (var permKey in definitions) {
+                var def = definitions[permKey];
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                var defaultVal = defaults[permKey] || 'inherited';
+                
+                var collapseId = 'permCollapse-' + level + '-' + permKey + (parentId ? '-' + parentId : '');
+                var isFirst = idx === 0;
+                
+                // Determine which data to use: overrideData (for mesh/node) or permissionState (for global)
+                var useData;
+                if (overrideData && overrideData[permKey]) {
+                    useData = overrideData[permKey];
+                } else if (permissionState[permKey]) {
+                    useData = permissionState[permKey];
+                } else {
+                    useData = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                
+                x += '<div style="border:1px solid #dee2e6; border-radius:8px; margin-bottom:10px; overflow:hidden;">';
+                x += '<div style="padding:12px 15px; background:#f8f9fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="togglePermCollapse(\'' + collapseId + '\')">';
+                x += '<div><strong>' + EscapeHtml(def.title || permKey) + '</strong><br><small style="color:#666;">' + EscapeHtml(def.desc || '') + '</small></div>';
+                x += '<div><select style="padding:3px;" id="perm_default_' + permKey + '" onclick="event.stopPropagation()">';
+                x += '<option value="allowed"' + (defaultVal === 'allowed' ? ' selected' : '') + '>✓ ' + "Allowed" + '</option>';
+                x += '<option value="denied"' + (defaultVal === 'denied' ? ' selected' : '') + '>✗ ' + "Denied" + '</option>';
+                x += '<option value="inherited"' + (defaultVal === 'inherited' ? ' selected' : '') + '>↩ ' + "Inherited" + '</option>';
+                x += '</select></div>';
+                x += '</div>';
+                x += '<div id="' + collapseId + '" style="padding:15px;' + (isFirst ? '' : 'display:none;') + '">';
+                
+                x += '<div style="display:flex; gap:20px; margin-bottom:15px;">';
+                x += '<div style="flex:1;">';
+                x += '<div style="margin-bottom:5px;"><span style="background:#28a745; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Allowed" + '</span></div>';
+                x += buildAutocompleteSection(permKey, level, 'allowed', parentId, useData ? useData.allowed : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '<div style="flex:1;">';
+                x += '<div style="margin-bottom:5px;"><span style="background:#dc3545; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Denied" + '</span></div>';
+                x += buildAutocompleteSection(permKey, level, 'denied', parentId, useData ? useData.denied : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '</div>';
+                
+                x += '</div></div>';
+                idx++;
+            }
+            
+            return x;
+        }
+        
+        function togglePermCollapse(id) {
+            var el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function buildAutocompleteSection(permKey, level, accessType, parentId, currentData) {
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            var x = '<div style="position:relative;">';
+            x += '<input type="text" id="' + inputId + '" placeholder="' + "Search" + '..." style="width:100%; padding:5px;" ';
+            x += 'onkeyup="searchPermEntities(this, \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + (parentId || '') + '\')" ';
+            x += 'onfocus="showPermDropdown(\'' + listId + '\')">';
+            x += '<div id="' + listId + '" style="position:relative; background:#fff; border:1px solid #ccc; border-top:none; max-height:200px; overflow-y:auto; display:none; cursor:pointer;"></div>';
+            x += '</div>';
+            
+            x += '<div id="' + containerId + '" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;">';
+            
+            var allEntities = [];
+            if (permissionListData.users) allEntities = allEntities.concat(permissionListData.users);
+            if (permissionListData.userGroups) allEntities = allEntities.concat(permissionListData.userGroups);
+            if (permissionListData.meshes) allEntities = allEntities.concat(permissionListData.meshes);
+            if (permissionListData.nodes) allEntities = allEntities.concat(permissionListData.nodes);
+            
+            var selectedIds = currentData.users || [];
+            selectedIds.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) x += buildPermTag(entity, permKey, level, accessType, 'user', parentId);
+            });
+            
+            var selectedGroups = currentData.userGroups || [];
+            selectedGroups.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) x += buildPermTag(entity, permKey, level, accessType, 'userGroup', parentId);
+            });
+            
+            x += '</div>';
+            
+            return x;
+        }
+        
+        function buildPermTag(entity, permKey, level, accessType, entityType, parentId) {
+            var icon = entity._id.startsWith('user/') ? '👤' : (entity._id.startsWith('ugrp/') ? '👥' : (entity._id.startsWith('mesh/') ? '🖥️' : '💻'));
+            var tagId = 'perm_tag_' + entity._id.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var safeId = entity._id.replace(/'/g, '___');
+            
+            return '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entity._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + entityType + '" data-parentid="' + (parentId || '') + '">' + icon + ' ' + EscapeHtml(entity.name || entity._id) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTagFromTag(this)">×</span></span>';
+        }
+        
+        function removePermTagFromTag(el) {
+            var span = el.parentElement;
+            removePermTag(span.getAttribute('data-actualid'), span.getAttribute('data-perm'), span.getAttribute('data-level'), span.getAttribute('data-access'), span.getAttribute('data-type'), span.getAttribute('data-parentid') || '');
+        }
+        
+        function searchPermEntities(input, permKey, level, accessType, parentId) {
+            var query = input.value.toLowerCase();
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var list = document.getElementById(listId);
+            if (!list) return;
+            
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+            
+            // Get currently selected IDs to filter out
+            var selectedIds = [];
+            if (permissionState[permKey] && permissionState[permKey][accessType]) {
+                var state = permissionState[permKey][accessType];
+                if (state.users) selectedIds = selectedIds.concat(state.users);
+                if (state.userGroups) selectedIds = selectedIds.concat(state.userGroups);
+                if (state.meshes) selectedIds = selectedIds.concat(state.meshes);
+                if (state.nodes) selectedIds = selectedIds.concat(state.nodes);
+            }
+            
+            // Also check mesh/node overrides for the current context
+            if (level === 'mesh' && parentId && window.meshOverridesState && window.meshOverridesState[permKey] && window.meshOverridesState[permKey][parentId] && window.meshOverridesState[permKey][parentId][accessType]) {
+                var meshState = window.meshOverridesState[permKey][parentId][accessType];
+                if (meshState.users) selectedIds = selectedIds.concat(meshState.users);
+                if (meshState.userGroups) selectedIds = selectedIds.concat(meshState.userGroups);
+                if (meshState.meshes) selectedIds = selectedIds.concat(meshState.meshes);
+                if (meshState.nodes) selectedIds = selectedIds.concat(meshState.nodes);
+            }
+            if (level === 'node' && parentId && window.nodeOverridesState && window.nodeOverridesState[permKey] && window.nodeOverridesState[permKey][parentId] && window.nodeOverridesState[permKey][parentId][accessType]) {
+                var nodeState = window.nodeOverridesState[permKey][parentId][accessType];
+                if (nodeState.users) selectedIds = selectedIds.concat(nodeState.users);
+                if (nodeState.userGroups) selectedIds = selectedIds.concat(nodeState.userGroups);
+                if (nodeState.meshes) selectedIds = selectedIds.concat(nodeState.meshes);
+                if (nodeState.nodes) selectedIds = selectedIds.concat(nodeState.nodes);
+            }
+            
+            var results = [];
+            var groupedNodes = {};
+            
+            if (permissionListData.users) {
+                permissionListData.users.forEach(function(u) {
+                    if (selectedIds.indexOf(u._id) >= 0) return;
+                    if ((u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query))) {
+                        results.push({ _id: u._id, name: u.name || u.email, type: 'user', icon: '👤' });
+                    }
+                });
+            }
+            
+            if (permissionListData.userGroups) {
+                permissionListData.userGroups.forEach(function(ug) {
+                    if (selectedIds.indexOf(ug._id) >= 0) return;
+                    if (ug.name && ug.name.toLowerCase().includes(query)) {
+                        results.push({ _id: ug._id, name: ug.name, type: 'userGroup', icon: '👥' });
+                    }
+                });
+            }
+            
+            if (level === 'global' && permissionListData.meshes) {
+                permissionListData.meshes.forEach(function(m) {
+                    if (selectedIds.indexOf(m._id) >= 0) return;
+                    if (m.name && m.name.toLowerCase().includes(query)) {
+                        results.push({ _id: m._id, name: m.name, type: 'mesh', icon: '🖥️' });
+                    }
+                });
+            }
+            
+            if (level === 'node' && permissionListData.nodes) {
+                permissionListData.nodes.forEach(function(n) {
+                    if (selectedIds.indexOf(n._id) >= 0) return;
+                    if (n.name && n.name.toLowerCase().includes(query)) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push({ _id: n._id, name: n.name, type: 'node', icon: '💻', meshname: meshGroup });
+                    }
+                });
+            }
+            
+            list.innerHTML = '';
+            
+            // Add individual results first
+            results.slice(0, 10).forEach(function(r) {
+                var safeId = r._id.replace(/'/g, '___');
+                list.innerHTML += '<div class="perm-result-item" style="padding:8px 12px; cursor:pointer;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(r._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + r.type + '" data-name="' + EscapeHtml(r.name) + '" data-icon="' + r.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + r.icon + ' ' + EscapeHtml(r.name) + ' <small style="color:#666;">(' + r.type + ')</small></div>';
+            });
+            
+            // Add grouped nodes at the end
+            if (level === 'node') {
+                for (var meshName in groupedNodes) {
+                    list.innerHTML += '<div style="padding:8px 12px; background:#eee; font-weight:bold; font-size:11px;">🖥️ ' + EscapeHtml(meshName) + '</div>';
+                    groupedNodes[meshName].forEach(function(n) {
+                        var safeId = n._id.replace(/'/g, '___');
+                        list.innerHTML += '<div class="perm-result-item" style="padding:8px 12px; cursor:pointer; padding-left:20px;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(n._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + n.type + '" data-name="' + EscapeHtml(n.name) + '" data-icon="' + n.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + n.icon + ' ' + EscapeHtml(n.name) + '</div>';
+                    });
+                }
+            }
+            
+            list.style.display = (results.length > 0 || (level === 'node' && Object.keys(groupedNodes).length > 0)) ? 'block' : 'none';
+        }
+        
+        function addPermEntityFromDropdown(el) {
+            var entityId = el.getAttribute('data-actualid');
+            var permKey = el.getAttribute('data-perm');
+            var level = el.getAttribute('data-level');
+            var accessType = el.getAttribute('data-access');
+            var entityType = el.getAttribute('data-type');
+            var entityName = el.getAttribute('data-name');
+            var entityIcon = el.getAttribute('data-icon');
+            var parentId = el.getAttribute('data-parentid') || '';
+            addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon);
+        }
+        
+        function showPermDropdown(listId) {
+            var list = document.getElementById(listId);
+            if (list && list.children.length > 0) {
+                list.style.display = 'block';
+            }
+        }
+        
+        function addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon) {
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var container = document.getElementById(containerId);
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            document.getElementById(inputId).value = '';
+            document.getElementById(listId).style.display = 'none';
+            
+            var existingTags = container.querySelectorAll('span');
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            for (var i = 0; i < existingTags.length; i++) {
+                if (existingTags[i].id && existingTags[i].id == tagId) {
+                    return;
+                }
+            }
+            
+            var tagHtml = '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')">×</span></span>';
+            container.insertAdjacentHTML('beforeend', tagHtml);
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : (entityType === 'node' ? 'nodes' : null)));
+            
+            // Skip if entityTypeKey is invalid
+            if (entityTypeKey === null) {
+                console.log('Invalid entityType:', entityType);
+                return;
+            }
+            
+            // Update permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    if (permissionState[permKey][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                        permissionState[permKey][accessType][entityTypeKey].push(entityId);
+                    }
+                }
+            }
+            
+            // Update mesh/node overrides if in context
+            if (level === 'mesh' && parentId) {
+                if (!window.meshOverridesState[permKey][parentId]) {
+                    window.meshOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.meshOverridesState[permKey][parentId][accessType]) {
+                    window.meshOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                if (window.meshOverridesState[permKey][parentId][accessType][entityTypeKey] && window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+            if (level === 'node' && parentId) {
+                if (!window.nodeOverridesState[permKey][parentId]) {
+                    window.nodeOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType]) {
+                    window.nodeOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                // Ensure entityTypeKey array exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey]) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] = [];
+                }
+                if (window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] && window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+        }
+        
+        function removePermTag(entityId, permKey, level, accessType, entityType, parentId) {
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var tag = document.getElementById(tagId);
+            if (tag) tag.remove();
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : 'nodes'));
+            
+            // Remove from permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    var idx = permissionState[permKey][accessType][entityTypeKey].indexOf(entityId);
+                    if (idx > -1) {
+                        permissionState[permKey][accessType][entityTypeKey].splice(idx, 1);
+                    }
+                }
+            }
+            
+            // Remove from mesh overrides if in mesh context
+            if (level === 'mesh' && parentId && window.meshOverridesState[permKey][parentId]) {
+                var override = window.meshOverridesState[permKey][parentId];
+                if (override[accessType] && override[accessType][entityTypeKey]) {
+                    var idx3 = override[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx3 > -1) {
+                        override[accessType][entityTypeKey].splice(idx3, 1);
+                    }
+                }
+            }
+            
+            // Remove from node overrides if in node context
+            if (level === 'node' && parentId && window.nodeOverridesState[permKey][parentId]) {
+                var nodeOverride = window.nodeOverridesState[permKey][parentId];
+                if (nodeOverride[accessType] && nodeOverride[accessType][entityTypeKey]) {
+                    var idx4 = nodeOverride[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx4 > -1) {
+                        nodeOverride[accessType][entityTypeKey].splice(idx4, 1);
+                    }
+                }
+            }
+        }
+        
+        function buildMeshNodeSection(definitions, permissions, type) {
+            var x = '<p style="color:#666;">Select a ' + type + ' to configure permissions:</p>';
+            x += '<select style="width:100%; padding:8px; margin-bottom:15px;" id="perm_' + type + 'Select" onchange="renderMeshNodePerms(\'' + type + '\', this.value)">';
+            x += '<option value="">-- ' + (type === 'mesh' ? "Select Device Group" : "Select Device" ) + ' --</option>';
+            
+            if (type === 'mesh') {
+                var list = permissionListData.meshes;
+                if (list) {
+                    list.forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">' + EscapeHtml(item.name) + '</option>';
+                    });
+                }
+            } else {
+                // Group nodes by mesh
+                var groupedNodes = {};
+                if (permissionListData.nodes) {
+                    permissionListData.nodes.forEach(function(n) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push(n);
+                    });
+                }
+                for (var meshName in groupedNodes) {
+                    x += '<optgroup label="🖥️ ' + EscapeHtml(meshName) + '">';
+                    groupedNodes[meshName].forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">  ' + EscapeHtml(item.name) + '</option>';
+                    });
+                    x += '</optgroup>';
+                }
+            }
+            x += '</select>';
+            
+            x += '<div id="meshNodePermContent_' + type + '"></div>';
+            
+            return x;
+        }
+        
+        function renderMeshNodePerms(type, selectedId) {
+            var content = document.getElementById('meshNodePermContent_' + type);
+            if (!selectedId) {
+                content.innerHTML = '';
+                return;
+            }
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            var overrideKey = type === 'mesh' ? 'meshOverrides' : 'nodeOverrides';
+            
+            // Extract override data for the selected mesh/node
+            var overrideData = {};
+            for (var pk in definitions) {
+                if (permissions[pk] && permissions[pk][overrideKey] && permissions[pk][overrideKey][selectedId]) {
+                    overrideData[pk] = permissions[pk][overrideKey][selectedId];
+                } else {
+                    overrideData[pk] = {
+                        allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                        denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                    };
+                }
+            }
+            
+            var displayName = '';
+            var list = type === 'mesh' ? permissionListData.meshes : permissionListData.nodes;
+            if (list) {
+                var item = list.find(function(i) { return i._id === selectedId; });
+                if (item) displayName = item.name;
+            }
+            
+            // Store current override data for this mesh/node in a temporary location
+            window.currentPermOverride = { type: type, id: selectedId, data: overrideData };
+            
+            var x = '<div style="background:#d1ecf1; padding:10px; border-radius:4px; margin-bottom:15px;"><strong>' + EscapeHtml(displayName) + '</strong> - ' + "Specific permissions" + '</div>';
+            x += buildPermissionSection(definitions, permissions, defaults, type, selectedId, overrideData);
+            
+            content.innerHTML = x;
+        }
+        
+        function savePluginPermissionsEx() {
+            if (!currentPluginPermissions || !permissionListData) return;
+                        
+            var pluginName = document.getElementById('permPluginShortName').value;
+            var definitions = currentPluginPermissions.data.definitions || {};
+            var permissions = {};
+            var defaults = {};
+            
+            // Initialize mesh and node overrides storage if not exists
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            
+            // Collect defaults from DOM
+            for (var permKey in definitions) {
+                defaults[permKey] = document.getElementById('perm_default_' + permKey).value;
+            }
+            
+            // Use permissionState for permissions (more reliable than DOM scraping)
+            for (var permKey in definitions) {
+                var state = permissionState[permKey] || { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                permissions[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: window.meshOverridesState[permKey] || {},
+                    nodeOverrides: window.nodeOverridesState[permKey] || {}
+                };
+                
+                // Copy from permissionState (global)
+                if (state.allowed) {
+                    permissions[permKey].allowed.users = state.allowed.users ? state.allowed.users.slice() : [];
+                    permissions[permKey].allowed.userGroups = state.allowed.userGroups ? state.allowed.userGroups.slice() : [];
+                    permissions[permKey].allowed.meshes = state.allowed.meshes ? state.allowed.meshes.slice() : [];
+                    permissions[permKey].allowed.nodes = state.allowed.nodes ? state.allowed.nodes.slice() : [];
+                }
+                if (state.denied) {
+                    permissions[permKey].denied.users = state.denied.users ? state.denied.users.slice() : [];
+                    permissions[permKey].denied.userGroups = state.denied.userGroups ? state.denied.userGroups.slice() : [];
+                    permissions[permKey].denied.meshes = state.denied.meshes ? state.denied.meshes.slice() : [];
+                    permissions[permKey].denied.nodes = state.denied.nodes ? state.denied.nodes.slice() : [];
+                }
+            }
+            
+            meshserver.send({
+                action: 'setpluginpermissions',
+                plugin: pluginName,
+                data: { permissions: permissions, defaults: defaults }
+            });
+            
+            closePluginPermModal();
+        }
+
         function goPlugin(pname, title) {
             if (pluginHandler == null) return;
-            if (pname == null) { Q('p43iframe').src = ''; } else { QH('p43title', title); Q('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
+            if (pname == null) { document.getElementById('p43iframe').src = ''; } else { document.getElementById('p43title').innerHTML =  title; document.getElementById('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
         }
 
         //
