@@ -103,6 +103,7 @@ var minifyMeshCentralSourceFiles = [
     "../public/scripts/meshcentral.js",
     "../public/scripts/u2f-api.js",
     "../public/scripts/xterm-addon-fit.js",
+    "../public/scripts/xterm-addon-image.js",
     "../public/scripts/xterm.js",
     "../public/scripts/zlib-adler32.js",
     "../public/scripts/zlib-crc32.js",
@@ -358,7 +359,7 @@ async function startEx(argv) {
                 if (sourceFiles[i].endsWith('.js')) {
                     // Minify the file .js file
                     const destinationFile = path.join(argv[4], sourceFiles[i].substring(0, sourceFiles[i].length - 3) + '.min.js');
-                    if (minifyLib = 2) {
+                    if (minifyLib == 2) {
                         var inFile = fs.readFileSync(sourceFile).toString();
 
                         // Perform minification pre-processing
@@ -423,7 +424,7 @@ async function startEx(argv) {
                     dist: outnamemin
                 }, function (e, compress) {
                     if (e) { log('ERROR ', e); return done(); }
-                    compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
+                    compress.run((e) => { e ? log('Minification fail', e) : log('Minification success'); minifyDone(); });
                 }
                 );
             }
@@ -453,7 +454,6 @@ async function startEx(argv) {
                         removeScriptTypeAttributes: true,
                         removeTagWhitespace: true,
                         preserveLineBreaks: false,
-                        useShortDoctype: true,
                         log: function(a) { if (typeof a !== 'string') { console.log(a); } } // Log errors from UglifyJS to console output
                     });
                 } catch (ex) {
@@ -500,7 +500,7 @@ async function startEx(argv) {
         log('Generating ' + path.basename(outnamemin) + '...');
 
         // Minify the file
-        if (minifyLib = 2) {
+        if (minifyLib == 2) {
             var inFile = fs.readFileSync(outname).toString()
 
             // Perform minification pre-processing
@@ -980,13 +980,13 @@ async function translateFromHtml(lang, file, createSubDir) {
             dist: outnamemin
         }, function(e, compress) {
             if (e) { log('ERROR ', e); return done(); }
-            compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
+            compress.run((e) => { e ? log('Minification fail', e) : log('Minification success'); minifyDone(); });
         }
         );
     }
 
     // Minify the file
-    if (minifyLib = 2) {
+    if (minifyLib == 2) {
         if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
         var minifiedOut = await minify(out, {
             collapseBooleanAttributes: true,
@@ -1130,7 +1130,7 @@ function InstallModuleEx(modulenames, func) {
     InstallModuleChildProcess = child_process.exec(`npm install --no-audit --no-optional --omit=optional ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if ((error != null) && (error != '')) {
-            log('ERROR: Unable to install required modules. May not have access to npm, or npm may not have suffisent rights to load the new modules. Try "npm install ' + names + '" to manualy install the modules.\r\n');
+            log('ERROR: Unable to install required modules. May not have access to npm, or npm may not have suffisent rights to load the new modules. Try "npm install ' + names + '" to manually install the modules.\r\n');
             process.exit();
             return;
         }

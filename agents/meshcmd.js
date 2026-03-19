@@ -1917,7 +1917,7 @@ var path = {
     }
 };
 
-// Get a formated response for a given directory path
+// Get a formatted response for a given directory path
 function getDirectoryInfo(reqpath) {
     var response = { path: reqpath, dir: [] };
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
@@ -2014,6 +2014,11 @@ function kvmCtrlData(channel, cmd) {
         case 'mkdir': {
             // Create a new empty folder
             fs.mkdirSync(cmd.path);
+            break;
+        }
+        case 'mkfile': {
+            // Create a new empty file
+            fs.closeSync(fs.openSync(cmd.path, 'w'));
             break;
         }
         case 'rm': {

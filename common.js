@@ -17,6 +17,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
 const path = require('path');
+const { URL } = require('url');
 
 // Binary encoding and decoding functions
 module.exports.ReadShort = function (v, p) { return (v.charCodeAt(p) << 8) + v.charCodeAt(p + 1); };
@@ -216,6 +217,201 @@ module.exports.validateEmailDomain = function(email, allowedDomains) {
 
     return true;
 }
+
+// Validate that a string is a parseable http or https URL with a hostname
+module.exports.validateUrl = function (url) {
+    if (!module.exports.validateString(url, 1, 4096)) return false;
+    try {
+        const u = new URL(url);
+        const scheme = (u.protocol || '').replace(/:$/, '').toLowerCase();
+        if (scheme !== 'http' && scheme !== 'https') return false;
+        if (!u.hostname || u.hostname.length === 0) return false;
+        return true;
+    } catch (ex) {
+        return false;
+    }
+}
+
+// Validate a remote image URL by checking headers and magic bytes (PNG/JPEG/GIF/WEBP/ICO)
+// Returns a Promise<boolean> that always resolves to true (valid image) or false (invalid/error) and never rejects.
+module.exports.validateRemoteImage = function (url, options) {
+    options = options || {};
+    const timeoutMs = (typeof options.timeoutMs === 'number') ? options.timeoutMs : 5000;
+    const maxHeadBytes = (typeof options.maxHeadBytes === 'number') ? options.maxHeadBytes : 16384; // 16 KB
+    const maxContentLength = (typeof options.maxContentLength === 'number') ? options.maxContentLength : (5 * 1024 * 1024); // 5 MB
+    const allowedMimes = options.allowedMimes || ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/x-icon', 'image/vnd.microsoft.icon', 'image/svg+xml'];
+    const agent = options.agent || undefined;
+    // This function MUST always resolve to boolean true/false and never reject.
+    return new Promise((resolve) => {
+        try {
+            if (!module.exports.validateUrl(url)) return resolve(false);
+
+            const http = require('http');
+            const https = require('https');
+
+            function doRequest(method, reqUrl, headers, redirectsLeft, cb) {
+                try {
+                    const u = new URL(reqUrl);
+                    const lib = (u.protocol === 'https:') ? https : http;
+                    const reqOpts = { method: method, headers: headers || {}, timeout: timeoutMs };
+                    if (agent) { reqOpts.agent = agent; }
+                    const req = lib.request(u, reqOpts, (res) => {
+                        // Follow redirects (3xx)
+                        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+                            res.resume();
+                            const redirectUrl = new URL(res.headers.location, u).toString();
+                            // Re-validate each redirect target
+                            if (!module.exports.validateUrl(redirectUrl)) {
+                                return cb(new Error('Invalid redirect URL'));
+                            }
+                            return doRequest(method, redirectUrl, headers, redirectsLeft - 1, cb);
+                        }
+                        cb(null, res, u.toString());
+                    });
+                    req.on('error', (e) => cb(e));
+                    req.on('timeout', () => { req.destroy(new Error('timeout')); });
+                    req.end();
+                } catch (ex) { cb(ex); }
+            }
+
+            // Centralized magic-byte detector
+            function detectBuffer(b) {
+                if (!b || b.length < 4) return null;
+                // PNG
+                if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47 && b[4] === 0x0D && b[5] === 0x0A && b[6] === 0x1A && b[7] === 0x0A) return { mime: 'image/png', ext: 'png' };
+                // JPEG
+                if (b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return { mime: 'image/jpeg', ext: 'jpg' };
+                // GIF
+                if (b.length >= 6 && b.slice(0, 3).toString('ascii') === 'GIF') return { mime: 'image/gif', ext: 'gif' };
+                // WEBP (RIFF....WEBP)
+                if (b.length >= 12 && b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP') return { mime: 'image/webp', ext: 'webp' };
+                // ICO (00 00 01 00)
+                if (b[0] === 0x00 && b[1] === 0x00 && b[2] === 0x01 && b[3] === 0x00) return { mime: 'image/x-icon', ext: 'ico' };
+                // SVG (text-based XML; look for '<svg' or '<?xml' after optional whitespace/BOM)
+                try {
+                    var svgHead = b.slice(0, Math.min(b.length, 256)).toString('utf8').trimStart();
+                    if (svgHead.charCodeAt(0) === 0xFEFF) { svgHead = svgHead.slice(1); } // strip BOM
+                    if (svgHead.startsWith('<svg') || svgHead.startsWith('<?xml')) return { mime: 'image/svg+xml', ext: 'svg' };
+                } catch (e) {}
+                return null;
+            }
+
+            // Inspect an incoming GET response stream for image magic bytes.
+            function inspectStreamForImage(getRes) {
+                return new Promise((resolveInspect) => {
+                    try {
+                        const chunks = [];
+                        let length = 0;
+                        let timedOut = false;
+                        let finished = false;
+                        const to = setTimeout(() => { timedOut = true; try { getRes.destroy(new Error('timeout')); } catch (e) {} }, timeoutMs + 1000);
+
+                        function finalize(result) {
+                            if (finished) return;
+                            finished = true;
+                            clearTimeout(to);
+                            try { getRes.removeAllListeners('data'); getRes.removeAllListeners('end'); getRes.removeAllListeners('close'); getRes.removeAllListeners('error'); } catch (e) {}
+                            try { return resolveInspect(result); } catch (e) { return; }
+                        }
+
+                        getRes.on('data', (chunk) => {
+                            if (timedOut || finished) return;
+                            if (length < maxHeadBytes) {
+                                const remaining = maxHeadBytes - length;
+                                if (chunk.length <= remaining) {
+                                    chunks.push(chunk);
+                                    length += chunk.length;
+                                } else {
+                                    chunks.push(chunk.slice(0, remaining));
+                                    length += remaining;
+                                }
+                            }
+                            if (length >= maxHeadBytes) {
+                                try {
+                                    const buf = Buffer.concat(chunks, Math.min(length, maxHeadBytes));
+                                    const det = detectBuffer(buf);
+                                    if (!det) finalize(false);
+                                    else if (allowedMimes.indexOf(det.mime) === -1) finalize(false);
+                                    else finalize(true);
+                                } catch (ex) { finalize(false); }
+                                try { getRes.destroy(); } catch (e) {}
+                            }
+                        });
+
+                        getRes.on('end', () => {
+                            if (finished) return;
+                            try {
+                                const buf = Buffer.concat(chunks, Math.min(length, maxHeadBytes));
+                                const det = detectBuffer(buf);
+                                if (!det) finalize(false);
+                                else if (allowedMimes.indexOf(det.mime) === -1) finalize(false);
+                                else finalize(true);
+                            } catch (ex) { finalize(false); }
+                        });
+
+                        getRes.on('close', () => { if (!finished) finalize(false); });
+                        getRes.on('error', (e) => { if (!finished) finalize(false); });
+                    } catch (ex) { try { return resolveInspect(false); } catch (e) {} }
+                });
+            }
+
+            // First do a HEAD to validate content-type/length. Some hosts/CDNs don't
+            // support HEAD (returning 405/403/501) even though GET would work. In
+            // that case, fall back to a small ranged GET to validate magic bytes.
+            doRequest('HEAD', url, { 'User-Agent': 'MeshCentral/validateRemoteImage' }, 5, (err, headRes, finalUrl) => {
+                // If doRequest failed to produce a finalUrl (network error),
+                // fall back to the original requested URL to allow GET to be
+                // attempted when HEAD fails with network/DNS issues.
+                const effectiveUrl = finalUrl || url;
+                try {
+                    // If HEAD errored or returned a client/server error
+                    if (err || (headRes && headRes.statusCode >= 400)) {
+                        // If the status suggests HEAD is not allowed/implemented or forbidden,
+                        // attempt a ranged GET fallback. For other 4xx/5xx responses, fail fast.
+                        const status = headRes && headRes.statusCode ? headRes.statusCode : 0;
+                        if (err || status === 405 || status === 501 || status === 403) {
+                            try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                            const headers = { 'Range': 'bytes=0-' + (maxHeadBytes - 1), 'User-Agent': 'MeshCentral/validateRemoteImage' };
+                            // Ranged GET fallback: reuse the same GET inspection logic.
+                            // Use the effectiveUrl (finalUrl or original url) in case
+                            // the HEAD redirect wasn't available.
+                            doRequest('GET', effectiveUrl, headers, 5, (err2, getRes) => {
+                                try {
+                                    if (err2) return resolve(false);
+                                    if (getRes.statusCode !== 200 && getRes.statusCode !== 206) { getRes.resume(); return resolve(false); }
+                                    inspectStreamForImage(getRes).then((r) => resolve(r)).catch(() => resolve(false));
+                                } catch (ex) { return resolve(false); }
+                            });
+                            return;
+                        }
+                        // Other HTTP errors from HEAD should fail fast
+                        try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                        return resolve(false);
+                    }
+                    const ct = (headRes.headers['content-type'] || '').toLowerCase();
+                    const clen = parseInt(headRes.headers['content-length'] || '0', 10) || 0;
+                    if (clen > 0 && clen > maxContentLength) { headRes.resume(); return resolve(false); }
+                    if (ct && (allowedMimes.indexOf(ct.split(';')[0].trim()) === -1)) { headRes.resume(); return resolve(false); }
+                    // Now fetch a partial range to inspect magic bytes
+                    const headers = { 'Range': 'bytes=0-' + (maxHeadBytes - 1), 'User-Agent': 'MeshCentral/validateRemoteImage' };
+                    // Drain any potential body from the HEAD response so the
+                    // socket can be reused and not held open when issuing the GET.
+                    try { if (headRes && headRes.resume) headRes.resume(); } catch (e) {}
+                    doRequest('GET', effectiveUrl, headers, 5, (err2, getRes) => {
+                        try {
+                            if (err2) return resolve(false);
+                            if (getRes.statusCode !== 200 && getRes.statusCode !== 206) { getRes.resume(); return resolve(false); }
+                            inspectStreamForImage(getRes).then((r) => resolve(r)).catch(() => resolve(false));
+                        } catch (ex) { return resolve(false); }
+                    });
+                } catch (ex) { return resolve(false); }
+            });
+        } catch (ex) {
+            return resolve(false);
+        }
+    });
+}
+
 // Check password requirements
 module.exports.checkPasswordRequirements = function(password, requirements) {
     if ((requirements == null) || (requirements == '') || (typeof requirements != 'object')) return true;

@@ -56,7 +56,7 @@ function SMBiosTables()
                     var stringsFinal = [];
                     for (var strx in strings) {
                         var tmp = strings[strx].trim().replaceAll(' ', '').replaceAll('\x09', '');
-                        if (!(tmp[0] == '"')) { stringsFinal.push(tmp); }
+                        if (tmp && tmp[0] !== '"' && /^[0-9a-fA-F]+$/.test(tmp)) { stringsFinal.push(tmp); }
                     }
                     ms.write(Buffer.from(stringsFinal.join(''), 'hex'));
                     ms.write(Buffer.from('00', 'hex'));
@@ -178,7 +178,7 @@ function SMBiosTables()
         }
         try
         {
-            r.systemSlots = this.systemInfo(data);
+            r.systemSlots = this.systemSlots(data);
         }
         catch(e)
         {

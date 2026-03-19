@@ -4,6 +4,8 @@ services:
     environment:
       - DYNAMIC_CONFIG=false # Show the option but disable it by default, for safety.
       - HOSTNAME=myserver.domain.com # Set the hostname in the config.json
+      - PORT=443 # Set the port in the config.json
+      - REDIR_PORT=80 # Set the redirection port in the config.json
       - ALLOW_NEW_ACCOUNTS=false # Disable creation of new accounts (except for the first user) in the config.json
       - USE_MONGODB=true # Enable the Mongo connector in the config.json
       - MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral # Example MONGO_URL
@@ -13,8 +15,8 @@ services:
       - meshcentral-web:/opt/meshcentral/meshcentral-web
       - meshcentral-backups:/opt/meshcentral/meshcentral-backups
     ports:
-      - "80:80"
-      - "443:443"
+      - ${PORT}:${PORT}
+      - ${REDIR_PORT}:${REDIR_PORT}
 volumes:
   meshcentral-data:
   meshcentral-files:

@@ -158,7 +158,7 @@ inherits(X224, events.EventEmitter);
 /**
  * Main data received function 
  * after connection sequence
- * @param s {type.Stream} stream formated from transport layer
+ * @param s {type.Stream} stream formatted from transport layer
  */
 X224.prototype.recvData = function(s) {
     // check header
@@ -169,7 +169,7 @@ X224.prototype.recvData = function(s) {
 /**
  * Format message from x224 layer to transport layer
  * @param message {type}
- * @returns {type.Component} x224 formated message
+ * @returns {type.Component} x224 formatted message
  */
 X224.prototype.send = function(message) {
 	this.transport.send(new type.Component([x224DataHeader(), message]));

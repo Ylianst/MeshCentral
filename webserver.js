@@ -39,6 +39,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.net = require('net');
     obj.tls = require('tls');
     obj.path = require('path');
+    obj.os = require('os');
     obj.bodyParser = require('body-parser');
     obj.exphbs = require('express-handlebars');
     obj.crypto = require('crypto');
@@ -57,6 +58,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Setup WebAuthn / FIDO2
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
+
+    if (process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) {
+        obj.httpsProxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+    }
 
     // Variables
     obj.args = args;
@@ -93,6 +98,37 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
+
+    const isWindowsPlatform = (obj.os.platform() === 'win32');
+    const safeUploadTempRoots = (function () {
+        const roots = [];
+        const addRoot = function (p) {
+            if (typeof p !== 'string') { return; }
+            var resolved;
+            try { resolved = obj.path.normalize(obj.path.resolve(p)); } catch (ex) { return; }
+            if (resolved.length === 0) { return; }
+            if ((resolved.length > 1) && resolved.endsWith(obj.path.sep)) { resolved = resolved.slice(0, -1); }
+            const comparison = isWindowsPlatform ? resolved.toLowerCase() : resolved;
+            const comparisonWithSep = comparison + obj.path.sep;
+            roots.push({ comparison: comparison, comparisonWithSep: comparisonWithSep });
+        };
+        addRoot(obj.os.tmpdir());
+        if (typeof obj.parent.filespath === 'string') { addRoot(obj.path.join(obj.parent.filespath, 'tmp')); }
+        return roots;
+    })();
+    function resolveSafeUploadTempPath(tempPath) {
+        if (typeof tempPath !== 'string') { return null; }
+        var resolvedPath;
+        try { resolvedPath = obj.path.normalize(obj.path.resolve(tempPath)); } catch (ex) { return null; }
+        var comparisonPath = isWindowsPlatform ? resolvedPath.toLowerCase() : resolvedPath;
+        var comparisonPathNoTrailing = comparisonPath;
+        if ((comparisonPathNoTrailing.length > 1) && comparisonPathNoTrailing.endsWith(obj.path.sep)) { comparisonPathNoTrailing = comparisonPathNoTrailing.slice(0, -1); }
+        for (var i = 0; i < safeUploadTempRoots.length; i++) {
+            var root = safeUploadTempRoots[i];
+            if ((comparisonPathNoTrailing === root.comparison) || comparisonPath.startsWith(root.comparisonWithSep)) { return resolvedPath; }
+        }
+        return null;
+    }
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
@@ -286,6 +322,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }
                     }
                     obj.userGroups[docs[i]._id] = docs[i]; // Get all user groups
+                }
+
+                // Mapping between users and groups
+                for (var ugrpId in obj.userGroups) {
+                    const ugrp = obj.userGroups[ugrpId];
+                    if (ugrp.links != null) {
+                        for (var userId in ugrp.links) {
+                            if (userId.startsWith('user/') && (obj.users[userId] != null)) {
+                                const user = obj.users[userId];
+                                if (user.links == null) { user.links = {}; }
+                                if (user.links[ugrpId] == null) {
+                                    // Adding group link to user
+                                    user.links[ugrpId] = { rights: ugrp.links[userId].rights || 1 };
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // Perform device group link cleanup
@@ -821,6 +874,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return parent.config.domains[''];
     }
 
+    function parseAllowedFramingOrigins(val) {
+        if (val == null) return [];
+        var arr = [];
+        if (Array.isArray(val)) { arr = val.slice(); } else if (typeof val == 'string') { arr = val.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; }); } else { return []; }
+        var out = [];
+        for (var i = 0; i < arr.length; i++) {
+            var o = arr[i].trim().replace(/\/+$/, '');
+            if (o.length === 0) continue;
+            if (o.indexOf('https://') === 0 || o.indexOf('http://') === 0) { out.push(o); }
+        }
+        return out;
+    }
+
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -853,7 +919,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
-                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + '?post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
+                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + (domain.authstrategies.oidc.issuer.end_session_endpoint.indexOf('?') == -1 ? '?' : '&') + 'post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
                 }
@@ -1073,10 +1139,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // If we have a match, check the OTP
             if (match === true) {
-                var yubikeyotp = require('yubikeyotp');
-                var request = { otp: token, id: domain.yubikey.id, key: domain.yubikey.secret, timestamp: true }
-                if (domain.yubikey.proxy) { request.requestParams = { proxy: domain.yubikey.proxy }; }
-                yubikeyotp.verifyOTP(request, function (err, results) {
+                var yub = require('yub');
+                yub.init(domain.yubikey.id, domain.yubikey.secret);
+                yub.verify(token, function (err, results) {
                     if ((results != null) && (results.status == 'OK')) {
                         parent.debug('web', 'checkUserOneTimePassword: success (Yubikey).');
                         func(true, { twoFactorType: 'hwotp' });
@@ -1408,6 +1473,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const sec = parent.decryptSessionData(req.session.e);
             sec.rtuser = xusername;
             sec.rtpass = xpassword;
+            sec.rtreset = true;
             req.session.e = parent.encryptSessionData(sec);
 
             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
@@ -1665,7 +1731,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const sec = parent.decryptSessionData(req.session.e);
 
         // Check everything is ok
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
+        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false) || (sec.rtreset === true));
         if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof sec.rtuser != 'string') || (typeof sec.rtpass != 'string')) {
             parent.debug('web', 'handleResetPasswordRequest: checks failed');
             delete req.session.e;
@@ -2091,7 +2157,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 }
                             }
                         }
-                    });
+                });
                 }
             } else {
                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
@@ -2847,12 +2913,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.set('Content-Type', 'text/html');
         let url = domain.url;
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
-        
+
         // check for relaystate is set, test against configured server name and accepted query params
         if(req.body && req.body.RelayState !== undefined){
                 var relayState = decodeURIComponent(req.body.RelayState);
                 var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
-            
+
                 var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
                 `.*((?<=([\\?&])gotodevicename=(.{64})|` +
                 `gotonode=(.{64})|` +
@@ -2872,13 +2938,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 `webrtc=|` +
                 `hide=|` +
                 `viewmode=(\\d+)(?=[\\&]|\\b)))`;
-            
+
                 var regex = new RegExp(regexstr);
                 if(regex.test(relayState)){
                         url = relayState;
                 }
         }
-        
+
         res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
     }
 
@@ -3172,6 +3238,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var customui = '';
                 if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+                // Custom files (CSS and JS)
+                var customFiles = '';
+                if (domain.customFiles != null) { 
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+                } else if (domain.customfiles != null) {
+                    customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+                }
+
                 // Server features
                 var serverFeatures = 255;
                 if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
@@ -3192,16 +3266,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Get WebRTC configuration
                 var webRtcConfig = null;
                 if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
-                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }                
+                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
 
                 // Load default page style or new modern ui
                 var uiViewMode = 'default';
                 var webstateJSON = JSON.parse(webstate);
                 if (req.query.sitestyle != null) {
                     if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
                 } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
+                    uiViewMode = 'default3';
+                } else if (domain.sitestyle == 3) {
                     uiViewMode = 'default3';
                 }
                 // Refresh the session
@@ -3219,12 +3293,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     serverfeatures: serverFeatures,
                     features: allFeatures.features,
                     features2: allFeatures.features2,
+                    features3: allFeatures.features3,
                     sessiontime: (args.sessiontime) ? args.sessiontime : 60,
                     mpspass: args.mpspass,
                     passRequirements: passRequirements,
                     customui: customui,
+                    customFiles: customFiles,
                     webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
-                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, { 
+                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, {
                         'serverversion': obj.parent.currentVer,
                         'servername': obj.getWebServerName(domain, req),
                         'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -3241,8 +3317,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
-                    webrtcconfig: webRtcConfig
-                }, dbGetFunc.req, domain), user);
+                    webrtcconfig: webRtcConfig,
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
             xdbGetFunc.res = res;
@@ -3292,12 +3369,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.getDomainUserFeatures = function (domain, user, req) {
         var features = 0;
         var features2 = 0;
+        var features3 = 0;
         if (obj.args.wanonly == true) { features += 0x00000001; } // WAN-only mode
         if (obj.args.lanonly == true) { features += 0x00000002; } // LAN-only mode
         if (obj.args.nousers == true) { features += 0x00000004; } // Single user mode
         if (domain.userQuota == -1) { features += 0x00000008; } // No server files mode
         if (obj.args.mpstlsoffload) { features += 0x00000010; } // No mutual-auth CIRA
-        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null)) { features += 0x00000020; } // Allow site within iframe
+        if ((parent.config.settings.allowframing != null) || (domain.allowframing != null) || (parent.config.settings.allowedframingorigins != null) || (domain.allowedframingorigins != null)) { features += 0x00000020; } // Allow site within iframe
         if ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true)) { features += 0x00000040; } // Email invites
         if (obj.args.webrtc == true) { features += 0x00000080; } // Enable WebRTC (Default false for now)
         // 0x00000100 --> This feature flag is free for future use.
@@ -3340,7 +3418,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true))) { features2 += 0x00000010; } // No agent update
         if (parent.amtProvisioningServer != null) { features2 += 0x00000020; } // Intel AMT LAN provisioning server
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.push2factor != false)) && (obj.parent.firebase != null)) { features2 += 0x00000040; } // Indicates device push notification 2FA is enabled
-        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || (domain.passwordrequirements.logintokens.indexOf(user._id) >= 0)))) { features2 += 0x00000080; } // Indicates login tokens are allowed
+        if ((typeof domain.passwordrequirements != 'object') || ((domain.passwordrequirements.logintokens !== false) && ((Array.isArray(domain.passwordrequirements.logintokens) == false) || ((domain.passwordrequirements.logintokens.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) >= 0)) )))) { features2 += 0x00000080; } // Indicates login tokens are allowed
         if (req.session.loginToken != null) { features2 += 0x00000100; } // LoginToken mode, no account changes.
         if (domain.ssh == true) { features2 += 0x00000200; } // SSH is enabled
         if (domain.localsessionrecording === false) { features2 += 0x00000400; } // Disable local recording feature
@@ -3364,13 +3442,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
         if (domain.showmodernuitoggle == true) { features2 += 0x40000000; } // Indicates that the new UI should be shown
-        return { features: features, features2: features2 };
+        if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
+        if ((typeof domain.desktop == 'object') && (domain.desktop.disableconnectall == true)) { features3 += 0x00000001; } // Disable "Connect All" button when multiple sessions are active on a device
+        if (domain.upninsteadofuser === true) { features3 += 0x00000002; } // Show UPN instead of username in General tab
+        return { features: features, features2: features2, features3: features3 };
     }
 
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         parent.debug('web', 'handleRootRequestLogin()');
         var features = 0;
-        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string'))) { features += 32; } // Allow site within iframe
+        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string') || (parent.config.settings.allowedframingorigins != null) || (domain != null && domain.allowedframingorigins != null))) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
         var loginmode = 0;
@@ -3439,6 +3520,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var customui = '';
         if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
 
+        // Custom files (CSS and JS)
+        var customFiles = '';
+        if (domain.customFiles != null) { 
+            customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
+        } else if (domain.customfiles != null) {
+            customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
+        }
+
         // Get two-factor screen timeout
         var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
         if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
@@ -3460,6 +3549,36 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Render the login page
+        // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
+        var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
+        if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
+            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl)) {
+                oidcButtonIcon = domain.authstrategies.oidc.custom.buttoniconurl;
+                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl2x)) {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl2x + ' 2x';
+                } else {
+                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl + ' 2x';
+                }
+            } else {
+                switch (domain.authstrategies.oidc.custom.preset) {
+                    case 'azure':
+                        oidcButtonIcon = "images/login/azure32.png";
+                        oidcButtonIcon2x = "images/login/azure64.png 2x";
+                        break;
+                    case 'google':
+                        oidcButtonIcon = "images/login/google32.png";
+                        oidcButtonIcon2x = "images/login/google64.png 2x";
+                        break;
+                    default:
+                        oidcButtonIcon = "images/login/oidc32.png";
+                        oidcButtonIcon2x = "images/login/oidc64.png 2x";
+                }
+            }
+
+            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
+                oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
+            }
+        }
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
@@ -3477,6 +3596,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
+                customFiles: customFiles,
                 footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
@@ -3488,10 +3608,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
-                flashErrors: JSON.stringify(flashErrors),
+                flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
                 passhint: passhint,
-                
-                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, { 
+
+                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {
                     'serverversion': obj.parent.currentVer,
                     'servername': obj.getWebServerName(domain, req),
                     'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -3510,6 +3630,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 autofido: autofido,
                 twoFactorCookieDays: twoFactorCookieDays,
                 authStrategies: authStrategies.join(','),
+                oidcButtonText: oidcButtonText || '',
+                oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
+                oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
@@ -3834,9 +3957,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Return a customised mainifest.json for PWA
     function handleManifestRequest(req, res){
-        const domain = getDomain(req);
+        const domain = checkUserIpAddress(req);
         if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleManifestRequest: invalid ip'); return; } // Check server-wide IP filter only.
         parent.debug('web', 'handleManifestRequest()');
         var manifest = {
             "name": (domain.title != null) ? domain.title : 'MeshCentral',
@@ -3887,7 +4009,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Handle device file request
     function handleDeviceFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
+        const domain = getDomain(req, res);
         if (domain == null) { return; }
         if ((req.query.c == null) || (req.query.f == null)) { res.sendStatus(404); return; }
 
@@ -4058,14 +4180,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 res.send(JSON.stringify({ response: 'ok' }));
                 console.log('Started server translation...');
                 obj.pendingTranslation = true;
-                require('child_process').exec('node translate.js translateall \"' + translateFile + '\"', { maxBuffer: 512000, timeout: 120000, cwd: obj.path.join(__dirname, 'translate') }, function (error, stdout, stderr) {
+                var child = require('child_process').spawn(process.argv[0],['translate.js', 'translateall', translateFile], { timeout: 300000, cwd: obj.path.join(__dirname, 'translate') });
+                var stdout = '', stderr = '';
+                child.stdout.on('data', function(d) { stdout += d; });
+                child.stderr.on('data', function(d) { stderr += d; });
+                child.on('close', function(error) {
                     delete obj.pendingTranslation;
-                    //console.log('error', error);
-                    //console.log('stdout', stdout);
-                    //console.log('stderr', stderr);
+                    if (error) { console.log('Server translation error', error); }
+                    // console.log('stdout', stdout);
+                    if (stderr) { console.log('Server translation stderr', stderr); }
                     //console.log('Server restart...'); // Perform a server restart
                     //process.exit(0);
                     console.log('Server translation completed.');
+                    stdout = null, stderr = null;
                 });
             } else {
                 // Unknown request
@@ -4463,11 +4590,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
                 for (var i in files.files) {
                     var file = files.files[i];
-                    obj.fs.readFile(file.path, 'utf8', function (err, data) {
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
+                    obj.fs.readFile(uploadTempPath, 'utf8', function (err, data) {
                         if (err != null) return;
                         data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
                         obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
-                        try { obj.fs.unlinkSync(file.path); } catch (e) { }
+                        try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
                     });
                 }
                 res.send('');
@@ -4506,11 +4635,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
                 for (var i in files.files) {
                     var file = files.files[i];
+                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                    if (uploadTempPath == null) { res.sendStatus(400); return; }
 
                     // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
-                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: file.path });
+                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: uploadTempPath });
 
-                    //try { obj.fs.unlinkSync(file.path); } catch (e) { } // TODO: Remove this file after 30 minutes.
+                    //try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { } // TODO: Remove this file after 30 minutes.
                 }
                 res.send('');
             });
@@ -4518,6 +4649,149 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Upload a file to the server
+    function getCustomIconUserKey(user) {
+        if ((user == null) || (typeof user._id !== 'string') || (user._id.length === 0)) { return null; }
+        return obj.crypto.createHash('sha256').update(user._id).digest('hex');
+    }
+
+    function getCustomIconUserDir(user) {
+        const userKey = getCustomIconUserKey(user);
+        if (userKey == null) { return null; }
+        return obj.path.join(obj.parent.datapath, 'icons', 'custom', userKey);
+    }
+
+    function handleCustomIconUpload(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
+        form.parse(req, function (err, fields, files) {
+            if (err) { res.status(400).json({ success: false, error: 'Invalid form submission.' }); return; }
+
+            const allowedTypes = { myDevices: 1, myAccount: 1, myEvents: 1, myFiles: 1, myUsers: 1, myServer: 1 };
+            const iconType = (fields && fields.iconType && fields.iconType[0]) ? fields.iconType[0] : null;
+            if ((typeof iconType !== 'string') || (allowedTypes[iconType] !== 1)) { res.status(400).json({ success: false, error: 'Invalid icon type.' }); return; }
+
+            const iconFile = (files && files.iconFile && files.iconFile[0]) ? files.iconFile[0] : null;
+            if ((iconFile == null) || (typeof iconFile.path !== 'string')) { res.status(400).json({ success: false, error: 'Missing icon file.' }); return; }
+            const iconTempPath = resolveSafeUploadTempPath(iconFile.path);
+            if (iconTempPath == null) { res.status(400).json({ success: false, error: 'Invalid icon file location.' }); return; }
+
+            const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
+
+            const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
+            if ((extension !== '.svg') && (extension !== '.png')) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG and PNG files are supported.' }); return; }
+
+            const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
+            const customDir = obj.path.join(iconsRoot, 'custom');
+            const userCustomDir = getCustomIconUserDir(user);
+            const userKey = getCustomIconUserKey(user);
+            if ((userCustomDir == null) || (userKey == null)) { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare user icons directory.' }); return; }
+            try { obj.fs.mkdirSync(iconsRoot); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
+            try { obj.fs.mkdirSync(customDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare icons directory.' }); return; } }
+            try { obj.fs.mkdirSync(userCustomDir); } catch (ex) { if (ex.code !== 'EEXIST') { cleanupTempFile(); res.status(500).json({ success: false, error: 'Unable to prepare user icons directory.' }); return; } }
+
+            const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
+            const previousInfo = resolveCustomIconPath(previousIcon, user);
+            if ((previousInfo != null) && (previousInfo.isOwned === true)) {
+                try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
+            }
+
+            const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + extension;
+            const destinationPath = obj.path.join(userCustomDir, newFilename);
+
+            const respondSuccess = function () { res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename }); };
+
+            obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
+                if (renameErr == null) { respondSuccess(); return; }
+                if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
+                    obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
+                        cleanupTempFile();
+                        if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
+                        respondSuccess();
+                    });
+                } else {
+                    cleanupTempFile();
+                    res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+                }
+            });
+        });
+    }
+
+    function resolveCustomIconPath(requestPath, user) {
+        if (typeof requestPath !== 'string') { return null; }
+        if (requestPath.startsWith('http://') || requestPath.startsWith('https://') || requestPath.startsWith('data:')) { return null; }
+        const pathOnly = requestPath.split('?')[0].split('#')[0];
+        const marker = '/icons/custom/';
+        const markerIndex = pathOnly.indexOf(marker);
+        if (markerIndex < 0) { return null; }
+        const relativePath = pathOnly.substring(markerIndex + marker.length);
+        if ((relativePath.length === 0) || (relativePath.indexOf('\\') !== -1)) { return null; }
+        const pathParts = relativePath.split('/');
+        if ((pathParts.length !== 1) && (pathParts.length !== 2)) { return null; }
+        for (var i = 0; i < pathParts.length; i++) {
+            if ((pathParts[i].length === 0) || (obj.common.IsFilenameValid(pathParts[i]) !== true)) { return null; }
+        }
+
+        var ownerKey = null, iconName = null, diskPath = null, isOwned = false;
+        const iconsRoot = obj.path.join(obj.parent.datapath, 'icons', 'custom');
+        if (pathParts.length === 1) {
+            iconName = pathParts[0];
+            diskPath = obj.path.join(iconsRoot, iconName);
+        } else {
+            ownerKey = pathParts[0];
+            iconName = pathParts[1];
+            diskPath = obj.path.join(iconsRoot, ownerKey, iconName);
+            const currentUserKey = getCustomIconUserKey(user);
+            isOwned = (currentUserKey != null) && (ownerKey === currentUserKey);
+        }
+
+        const lower = iconName.toLowerCase();
+        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false)) { return null; }
+        return { ownerKey: ownerKey, iconName: iconName, diskPath: diskPath, isOwned: isOwned, isLegacy: (pathParts.length === 1) };
+    }
+
+    function handleCustomIconDelete(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        const iconPath = (req.body && (typeof req.body.iconPath === 'string')) ? req.body.iconPath : null;
+        const iconInfo = resolveCustomIconPath(iconPath, user);
+        if ((iconInfo == null) || (iconInfo.isOwned !== true)) { res.status(400).json({ success: false, error: 'Invalid icon path.' }); return; }
+
+        obj.fs.unlink(iconInfo.diskPath, function (err) {
+            if (err && (err.code !== 'ENOENT')) { res.status(500).json({ success: false, error: 'Failed to delete icon.' }); return; }
+            res.json({ success: true });
+        });
+    }
+
+    function handleCustomIconDownload(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { res.sendStatus(404); return; }
+        if ((req.session == null) || (typeof req.session.userid !== 'string')) { res.sendStatus(401); return; }
+        const user = obj.users[req.session.userid];
+        if (user == null) { res.sendStatus(401); return; }
+
+        if ((req.params == null) || (typeof req.params[0] !== 'string')) { res.sendStatus(404); return; }
+        const iconInfo = resolveCustomIconPath('/icons/custom/' + req.params[0], user);
+        if (iconInfo == null) { res.sendStatus(404); return; }
+        if ((iconInfo.isLegacy !== true) && (iconInfo.isOwned !== true)) { res.sendStatus(404); return; }
+        const iconNameLower = iconInfo.iconName.toLowerCase();
+
+        obj.fs.readFile(iconInfo.diskPath, function (err, data) {
+            if (err) { res.sendStatus(404); return; }
+            res.set({ 'Content-Type': iconNameLower.endsWith('.png') ? 'image/png' : 'image/svg+xml' });
+            res.send(data);
+        });
+    }
+
     function handleUploadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -4559,7 +4833,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
                     if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
                         for (var i = 0; i < names.length; i++) {
-                            if (obj.common.IsFilenameValid(names[i]) == false) { res.sendStatus(404); return; }
+                            var originalName = names[i];
+                            var safeName = obj.path.basename(originalName);
+                            if ((safeName !== originalName) || (obj.common.IsFilenameValid(safeName) == false)) { res.sendStatus(404); return; }
                             var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
                             if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
                                 // Create the user folder if needed
@@ -4570,7 +4846,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
-                                })(xfile.fullpath, names[i], filedata);
+                                })(xfile.fullpath, safeName, filedata);
                             } else {
                                 // Send a notification
                                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: names[i], nolog: 1, id: Math.random() });
@@ -4580,8 +4856,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 } else {
                     // More typical upload method, the file data is in a multipart mime post.
                     for (var i in files.files) {
-                        var file = files.files[i], fpath = obj.path.join(xfile.fullpath, file.originalFilename);
-                        if (obj.common.IsFilenameValid(file.originalFilename) && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                        var file = files.files[i];
+                        var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                        var safeOriginalFilename = obj.path.basename(originalFilename);
+                        var isFilenameAcceptable = (safeOriginalFilename === originalFilename) && obj.common.IsFilenameValid(safeOriginalFilename);
+                        const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                        if (uploadTempPath == null) { res.sendStatus(400); return; }
+                        if (isFilenameAcceptable && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                            var fpath = obj.path.join(xfile.fullpath, safeOriginalFilename);
 
                             // See if we need to create the folder
                             var domainx = 'domain';
@@ -4591,11 +4873,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
 
                             // Rename the file
-                            obj.fs.rename(file.path, fpath, function (err) {
+                            obj.fs.rename(uploadTempPath, fpath, function (err) {
                                 if (err && (err.code === 'EXDEV')) {
                                     // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                                    obj.common.copyFile(file.path, fpath, function (err) {
-                                        obj.fs.unlink(file.path, function (err) {
+                                    obj.common.copyFile(uploadTempPath, fpath, function (err) {
+                                        obj.fs.unlink(uploadTempPath, function (err) {
                                             obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
@@ -4606,7 +4888,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             // Send a notification
                             obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
-                            try { obj.fs.unlink(file.path, function (err) { }); } catch (e) { }
+                            try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
                         }
                     }
                 }
@@ -4661,13 +4943,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // More typical upload method, the file data is in a multipart mime post.
             for (var i in files.files) {
-                var file = files.files[i], ftarget = getRandomPassword() + '-' + file.originalFilename, fpath = obj.path.join(serverpath, ftarget);
+                var file = files.files[i];
+                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+                const targetPath = obj.path.join(serverpath, ftarget);
+                const uploadTempPath = resolveSafeUploadTempPath(file.path);
+                if (uploadTempPath == null) { res.sendStatus(400); return; }
                 cmd.files.push({ name: file.originalFilename, target: ftarget });
                 // Rename the file
-                obj.fs.rename(file.path, fpath, function (err) {
+                obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
                         // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                        obj.common.copyFile(file.path, fpath, function (err) { obj.fs.unlink(file.path, function (err) { }); });
+                        obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
                     }
                 });
             }
@@ -5007,9 +5293,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
 
                     // Close the recording file
-                    if (ws.logfile != null) { 
+                    if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5061,7 +5347,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5137,7 +5423,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5179,7 +5465,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Close the recording file
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) { 
+                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
                                 obj.fs.close(logfile.fd);
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
@@ -5282,7 +5568,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
                     var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
                     var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: 101, nodeid: node._id };
-                    obj.parent.DispatchEvent(['*', user._id], obj, event);   
+                    obj.parent.DispatchEvent(['*', user._id], obj, event);
                 }
 
                 // Update user last access time
@@ -5595,7 +5881,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
         // Require modules
-        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum. 
+        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum.
 
         // Good practice to catch this error explicitly
         archive.on('error', function (err) { throw err; });
@@ -5603,13 +5889,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Set the archive name
         res.attachment((domain.title ? domain.title : 'MeshCentral') + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
 
-        // Pipe archive data to the file 
+        // Pipe archive data to the file
         archive.pipe(res);
 
         // Append files from a glob pattern
         archive.directory(obj.parent.datapath, false);
 
-        // Finalize the archive (ie we are done appending files but streams have to finish yet) 
+        // Finalize the archive (ie we are done appending files but streams have to finish yet)
         archive.finalize();
     }
 
@@ -6547,7 +6833,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Start a second agent-only server if needed
         if (obj.args.agentport) {
             var agentPortTls = true;
-            if (obj.args.tlsoffload != null) { agentPortTls = false; }
+            if (obj.args.tlsoffload != null && obj.args.tlsoffload != false) { agentPortTls = false; }
             if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
             if (obj.certificates.webdefault == null) { agentPortTls = false; }
 
@@ -6758,6 +7044,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var selfurl = ' wss://' + req.headers.host;
             if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
             const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
+            const extraImgSrc = (parent.config.settings.extraimgsrc != null) ? (' ' + parent.config.settings.extraimgsrc) : '';
+            const allowedFramingOriginsValue = (domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
+            const hasAllowedFramingOrigins = (allowedFramingOriginsValue != null);
+            var framingOrigins = [];
+            if (typeof allowedFramingOriginsValue === 'string') {
+                framingOrigins = allowedFramingOriginsValue.split(/[,\s]+/).map(function (v) { return v.trim(); }).filter(function (v) { return v.length > 0; });
+            } else if (Array.isArray(allowedFramingOriginsValue)) {
+                framingOrigins = allowedFramingOriginsValue.filter(function (v) { return (typeof v === 'string') && (v.trim().length > 0); }).map(function (v) { return v.trim(); });
+            }
 
             // If the web relay port is enabled, allow the web page to redirect to it
             var extraFrameSrc = '';
@@ -6765,23 +7060,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 extraFrameSrc = ' https://' + req.headers.host + ':' + parent.webrelayserver.port;
                 if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { extraFrameSrc += ' https://' + xforwardedhost + ':' + parent.webrelayserver.port; }
             }
-            
+
 
             // If using duo add apihostname to CSP
             var duoSrc = '';
             if ((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.apihostname == 'string')) {
                 duoSrc = domain.duo2factor.apihostname;
             }
-                
+
             // Finish setup security headers
+            var cspBase = "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'";
+            if (hasAllowedFramingOrigins) {
+                var frameAncestors = "'self'" + (framingOrigins.length > 0 ? ' ' + framingOrigins.join(' ') : '');
+                cspBase += "; frame-ancestors " + frameAncestors;
+            }
             const headers = {
                 'Referrer-Policy': 'no-referrer',
                 'X-XSS-Protection': '1; mode=block',
                 'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'"
+                'Content-Security-Policy': cspBase
             };
             if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
-            if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) { headers['X-Frame-Options'] = 'sameorigin'; }
+            if (hasAllowedFramingOrigins) {
+                if (framingOrigins.length === 0) { headers['X-Frame-Options'] = 'sameorigin'; }
+            } else if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) {
+                headers['X-Frame-Options'] = 'sameorigin';
+            }
             if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
 
             // If this domain has configured headers, add them. If a header is set to null, remove it.
@@ -6929,6 +7233,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'commander.ashx', handleMeshCommander);
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
+                obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
+                obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
+                obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
                 obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
                 obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
                 obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
@@ -7003,7 +7310,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
                 obj.app.get(url + 'invite', handleInviteRequest);
                 obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
-                
+
                 if (parent.pluginHandler != null) {
                     obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
                     obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
@@ -7328,7 +7635,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             // Notify account 2fa failed login
                                             const ua = obj.getUserAgentInfo(req);
                                             obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                            obj.setbad2Fa(req);            
+                                            obj.setbad2Fa(req);
                                             res.redirect(domain.url + getQueryPortion(req));
                                         });
                                     } else {
@@ -7638,6 +7945,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Handle all incoming requests as web relays
                     obj.webRelayRouter.head('/*', function (req, res) { try { handleWebRelayRequest(req, res); } catch (ex) { console.log(ex); } })
                 }
+                
+               // Theme Pack Override Middleware
+               obj.app.use(url, function (req, res, next) {
+                if (req.method !== 'GET') return next();
+                var domain = getDomain(req);
+                // Serve theme pack files if domain has a theme pack configured
+                if (domain && domain.themepack) {
+                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
+                    // Prevent directory traversal
+                    if (themeFilePath.indexOf('..') >= 0) return next();
+
+                    obj.fs.stat(themeFilePath, function (err, stats) {
+                        if (err || !stats.isFile()) return next();
+                        res.sendFile(themeFilePath);
+                    });
+                } else {
+                    next();
+                }
+            });
 
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
                 obj.app.use(url, function(req, res, next){
@@ -7667,7 +7993,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.debug('web', '404 Error ' + req.url);
                     var domain = getDomain(req);
                     if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
                     const cspNonce = obj.crypto.randomBytes(15).toString('base64');
                     res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
                     res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
@@ -7689,7 +8015,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         parent.debug('web', '404 Error ' + req.url);
         var domain = getDomain(req);
         if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL 
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
         if (obj.args.nice404 == false) { res.sendStatus(404); return; }
         const cspNonce = obj.crypto.randomBytes(15).toString('base64');
         res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
@@ -7763,6 +8089,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GitHubStrategy = require('passport-github2');
             let options = { clientID: domain.authstrategies.github.clientid, clientSecret: domain.authstrategies.github.clientsecret };
             if (typeof domain.authstrategies.github.callbackurl == 'string') { options.callbackURL = domain.authstrategies.github.callbackurl; } else { options.callbackURL = url + 'auth-github-callback'; }
+            //override passport-github2 defaults that point to github.com with urls specified by user
+            if (typeof domain.authstrategies.github.authorizationurl == 'string') { options.authorizationURL = domain.authstrategies.github.authorizationurl; }
+            if (typeof domain.authstrategies.github.tokenurl == 'string') { options.tokenURL = domain.authstrategies.github.tokenurl; }
+            if (typeof domain.authstrategies.github.userprofileurl == 'string') { options.userProfileURL = domain.authstrategies.github.userprofileurl; }
+            if (typeof domain.authstrategies.github.useremailurl == 'string') { options.userEmailURL = domain.authstrategies.github.useremailurl; }
             parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + JSON.stringify(options));
             passport.use('github-' + domain.id, new GitHubStrategy(options,
                 function (token, tokenSecret, profile, cb) {
@@ -7788,8 +8119,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     parent.authLog('setupDomainAuthStrategy', 'Azure profile: ' + JSON.stringify(userex));
                     var user = null;
                     if (userex != null) {
-                        var user = { sid: '~azure:' + userex.unique_name, name: userex.name, strategy: 'azure' };
-                        if (typeof userex.email == 'string') { user.email = userex.email; }
+                        var user = { sid: '~azure:' + userex.unique_name.toLowerCase(), name: userex.name, strategy: 'azure' };
+                        if (typeof userex.email == 'string') { user.email = userex.email.toLowerCase(); }
                     }
                     return done(null, user);
                 }
@@ -7930,22 +8261,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Setup Strategy Options
             strategy.custom.scope = obj.common.convertStrArray(strategy.custom.scope, ' ')
-            if (strategy.custom.scope.length > 1) {
-                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': strategy.custom.scope } })
+            if (strategy.custom.scope.length > 0) {
+                strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': strategy.custom.scope });
             } else {
-                strategy.options = Object.assign(strategy.options, { 'params': { 'scope': ['openid', 'profile', 'email'] } })
+                strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
             }
             if (typeof strategy.groups == 'object') {
-                let groupScope = strategy.groups.scope || null
-                if (groupScope == null) {
-                    if (preset == 'azure') { groupScope = 'Group.Read.All' }
-                    if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
-                    if (typeof preset != 'string') { groupScope = 'groups' }
+                strategy.custom.authorities = obj.common.convertStrArray(strategy.custom.authorities, ' ')
+                // Check if authorities does not exist or includes groups
+                if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                    let groupScope = strategy.groups.scope || null
+                    if (groupScope == null) {
+                        if (preset == 'azure') { groupScope = 'Group.Read.All' }
+                        if (preset == 'google') { groupScope = 'https://www.googleapis.com/auth/cloud-identity.groups.readonly' }
+                        if (typeof preset != 'string') { groupScope = 'groups' }
+                    }
+                    strategy.options.params.scope.push(groupScope)
+					parent.authLog('setupDomainAuthStrategy', `OIDC: Groups sync enabled, added group scope to request: ${strategy.options.params.scope}`);
                 }
-                strategy.options.params.scope.push(groupScope)
             }
             strategy.options.params.scope = strategy.options.params.scope.join(' ')
 
+            if (obj.httpsProxyAgent) {
+                // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // add using environment variables if needs be not here
+                strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
+            }
             // Discover additional information if available, use endpoints from config if present
             let issuer
             try {
@@ -7971,7 +8311,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!strategy.client.redirect_uri) {
                 strategy.client.redirect_uri = origin + url + 'auth-oidc-callback';
             }
-            if (!strategy.client.post_logout_redirect_uri) {
+            if (!strategy.client.post_logout_redirect_uri && strategy.client.post_logout_redirect_uri !== false) {
                 strategy.client.post_logout_redirect_uri = origin + url + 'login';
             }
 
@@ -7980,7 +8320,35 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             strategy.options = Object.assign(strategy.options, { 'client': client, sessionKey: 'oidc-' + domain.id });
             strategy.client = client.metadata
             strategy.obj.client = client
-
+            
+            // Validate OIDC Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated Icon URL and Image: ' + strategy.custom.buttoniconurl);
+                    } else {
+                        parent.debug('warning', 'OIDC: Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl);
+                        strategy.custom.buttoniconurl = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid Icon URL: ' + strategy.custom.buttoniconurl);
+                    strategy.custom.buttoniconurl = null;
+                }
+            }
+            // Validate OIDC 2x Icon Url once and null it if it fails validation
+            if (obj.common.validateObject(strategy.custom) && obj.common.validateString(strategy.custom.buttoniconurl2x)) {
+                if (obj.common.validateUrl(strategy.custom.buttoniconurl2x)){
+                    if (await obj.common.validateRemoteImage(strategy.custom.buttoniconurl2x, { agent: obj.httpsProxyAgent })) {
+                        parent.debug('verbose', 'OIDC: Validated 2x Icon URL and Image: ' + strategy.custom.buttoniconurl2x);
+                    } else {
+                        parent.debug('warning', 'OIDC: 2x Icon URL and Image validation failed: ' + strategy.custom.buttoniconurl2x);
+                        strategy.custom.buttoniconurl2x = null;
+                    }
+                } else {
+                    parent.debug('warning', 'OIDC: Invalid 2x Icon URL: ' + strategy.custom.buttoniconurl2x);
+                    strategy.custom.buttoniconurl2x = null;
+                }
+            }
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
@@ -8045,31 +8413,82 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // Callback function must be able to grab info from API's using the access token, would prefer to use the token here.
-            function oidcCallback(tokenset, profile, verified) {
+            function oidcCallback(tokenset, profile, done) {
+                // Handle case where done might not be the third parameter
+                if (typeof done !== 'function') {
+                    // OpenID Connect strategy calls with (tokenset, done) instead of (tokenset, profile, done)
+                    if (typeof profile === 'function') {
+                        done = profile;
+                        profile = null;
+                    } else {
+                        parent.debug('error', 'OIDC: Unable to find callback function in parameters');
+                        return;
+                    }
+                }
+
+                // If profile is null/undefined or roles are requested, extract user info from the tokenset
+                if ((!profile || (strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
+                    try {
+                        // Simple JWT decoder to extract user claims from id_token
+                        const parts = tokenset.id_token.split('.');
+                        if (parts.length === 3) {
+                            const payload = parts[1];
+                            const paddedPayload = payload + '='.repeat((4 - payload.length % 4) % 4);
+                            const decoded = JSON.parse(Buffer.from(paddedPayload, 'base64').toString());
+                            if (decoded) {
+                                if(!profile){
+                                    profile = decoded;
+                                } else {
+                                    profile.roles = decoded.roles;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        parent.debug('error', `OIDC: Failed to decode id_token: ${err.message}`);
+                    }
+                }
+
                 // Initialize user object
                 let user = { 'strategy': 'oidc' }
                 let claims = obj.common.validateObject(strategy.custom.claims) ? strategy.custom.claims : null;
-                user.sid = obj.common.validateString(profile.sub) ? '~oidc:' + profile.sub : null;
-                user.name = obj.common.validateString(profile.name) ? profile.name : null;
-                user.email = obj.common.validateString(profile.email) ? profile.email : null;
+                
+                user.sid = null;
+                if (profile && obj.common.validateString(profile.sub)) {
+                    user.sid = '~oidc:' + profile.sub;
+                } else if (profile && obj.common.validateString(profile.oid)) {
+                    user.sid = '~oidc:' + profile.oid;
+                } else if (profile && obj.common.validateString(profile.email)) {
+                    user.sid = '~oidc:' + profile.email;
+                } else if (profile && obj.common.validateString(profile.upn)) {
+                    user.sid = '~oidc:' + profile.upn;
+                }
+                
+                user.name = profile && obj.common.validateString(profile.name) ? profile.name : null;
+                user.email = profile && obj.common.validateString(profile.email) ? profile.email : null;
                 if (claims != null) {
                     user.sid = obj.common.validateString(profile[claims.uuid]) ? '~oidc:' + profile[claims.uuid] : user.sid;
                     user.name = obj.common.validateString(profile[claims.name]) ? profile[claims.name] : user.name;
                     user.email = obj.common.validateString(profile[claims.email]) ? profile[claims.email] : user.email;
                 }
-                user.emailVerified = profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
-                user.groups = obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                
+                // Ensure we have a valid sid before proceeding
+                if (!user.sid) {
+                    parent.debug('error', `OIDC: No valid user identifier found in profile`);
+                    return done(new Error('OIDC: No valid user identifier found in profile'));
+                }
+                
+                user.emailVerified = profile && profile.email_verified ? profile.email_verified : obj.common.validateEmail(user.email);
+                user.groups = profile && obj.common.validateStrArray(profile.groups, 1) ? profile.groups : null;
+                user.roles = profile && obj.common.validateStrArray(profile.roles, 1) ? profile.roles : null;
                 user.preset = obj.common.validateString(strategy.custom.preset) ? strategy.custom.preset : null;
                 if (strategy.groups && obj.common.validateString(strategy.groups.claim)) {
-                    user.groups = obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
+                    user.groups = profile && obj.common.validateStrArray(profile[strategy.groups.claim], 1) ? profile[strategy.groups.claim] : null
                 }
 
-                // Setup end session enpoint if not already configured this requires an auth token
+                // Setup end session endpoint
                 try {
-                    if (!strategy.issuer.end_session_endpoint) {
-                        strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
-                        parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
-                    }
+                    strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
+                    parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
                 } catch (err) {
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
                     strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
@@ -8079,18 +8498,31 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    getGroups(user.preset, tokenset).then((groups) => {
-                        user = Object.assign(user, { 'groups': groups });
-                        return verified(null, user);
-                    }).catch((err) => {
-                        let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                        parent.debug('error', `${JSON.stringify(error)}`);
-                        parent.authLog('oidcCallback', error.message);
-                        user.groups = [];
-                        return verified(null, user);
-                    });
+                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
+                        getGroups(user.preset, tokenset).then((groups) => {
+                            user = Object.assign(user, { 'groups': groups });
+                            //done(null, user);
+                        }).catch((err) => {
+                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                            parent.debug('error', `${JSON.stringify(error)}`);
+                            parent.authLog('oidcCallback', error.message);
+                            user.groups = [];
+                            //done(null, user);
+                        });
+                    }
+                    if(strategy.custom.authorities.includes('roles')){
+                        if(user.roles){
+                            if(!strategy.custom.authorities.includes('groups')){
+                                user.groups = user.roles;
+                            } else {
+                                user.groups = (user.groups || []).concat(user.roles);
+                            }
+                        }
+                    }
+                    parent.authLog('OIDC: USER GROUPS/ROLES:', user);
+                    done(null, user);
                 } else {
-                    return verified(null, user);
+                    done(null, user);
                 }
 
                 async function getGroups(preset, tokenset) {
@@ -8101,6 +8533,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         const options = {
                             'headers': { authorization: 'Bearer ' + tokenset.access_token }
                         }
+                        if (obj.httpsProxyAgent) { options.agent = obj.httpsProxyAgent; }
                         const req = require('https').get(url, options, (res) => {
                             let data = []
                             res.on('data', (chunk) => {
@@ -8123,7 +8556,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     if (Buffer.isBuffer(data[0])) {
                                         data = Buffer.concat(data);
                                         data = data.toString();
-                                    } else { // else if (typeof data[0] == 'string') 
+                                    } else { // else if (typeof data[0] == 'string')
                                         data = data.join();
                                     }
                                 } catch (err) {
@@ -8178,7 +8611,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return authStrategyFlags;
     }
 
-    // Handle an incoming request as a web relay 
+    // Handle an incoming request as a web relay
     function handleWebRelayRequest(req, res) {
         var webRelaySessionId = null;
         if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
@@ -8198,7 +8631,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Handle an incoming websocket connection as a web relay 
+    // Handle an incoming websocket connection as a web relay
     function handleWebRelayWebSocket(ws, req) {
         var webRelaySessionId = null;
         if ((req.session.userid != null) && (req.session.x != null)) { webRelaySessionId = req.session.userid + '/' + req.session.x; }
@@ -8570,7 +9003,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 for (var i in s) { s[i] = Buffer.from(s[i], 'base64').toString(); }
                 if ((s.length < 2) || (s.length > 3)) { try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2c' })); ws.close(); } catch (e) { } return; }
                 obj.authenticate(s[0], s[1], domain, function (err, userid, passhint, loginOptions) {
-                    var user = obj.users[userid];
+                    var user = obj.users[userid];      
                     if ((err == null) && (user)) {
                         // Check if user as the "notools" site right. If so, deny this connection as tools are not allowed to connect.
                         if ((user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & SITERIGHT_NOMESHCMD)) {
@@ -8642,7 +9075,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if (emailcheck && (user.email != null) && (!(user._id.split('/')[2].startsWith('~'))) && (user.emailVerified !== true)) {
                                 parent.debug('web', 'Invalid login, asking for email validation');
                                 try { ws.send(JSON.stringify({ action: 'close', cause: 'emailvalidation', msg: 'emailvalidationrequired', email2fa: email2fa, email2fasent: true })); ws.close(); } catch (e) { }
-                            } else {                                
+                            } else {
                                 req.session.userid = user._id;
                                 req.session.ip = req.clientIp;
                                 setSessionRandom(req);
@@ -8964,7 +9397,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((nodes == null) || (nodes.length != 1)) { func(null, 0, false); return; } // No such nodeid
 
             // This is a super user that can see all device groups for a given domain
-            if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (nodes[0].domain == user.domain)) {
+            if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (nodes[0].domain == user.domain)) {
                 func(nodes[0], removeUserRights(0xFFFFFFFF, user), true); return;
             }
 
@@ -9022,7 +9455,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { return []; }
 
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) ) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]); } }
@@ -9053,7 +9486,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof user == 'string') { user = obj.users[user]; }
         if (user == null) { return []; }
         var r = [];
-        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0)) {
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0)))) {
             // This is a super user that can see all device groups for a given domain
             var meshStartStr = 'mesh/' + user.domain + '/';
             for (var i in obj.meshes) { if ((obj.meshes[i]._id.startsWith(meshStartStr)) && (obj.meshes[i].deleted == null)) { r.push(obj.meshes[i]._id); } }
@@ -9098,7 +9531,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return 0;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return removeUserRights(0xFFFFFFFF, user); }
 
         // Check direct user to device group permissions
         if (user.links == null) return 0;
@@ -9143,7 +9576,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else return false;
 
         // Check if this is a super user that can see all device groups for a given domain
-        if ((user.siteadmin == 0xFFFFFFFF) && (parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
+        if ((user.siteadmin == 0xFFFFFFFF) && ((parent.config.settings.managealldevicegroups.indexOf(user._id) >= 0) || (user.links && Object.keys(user.links).some(key => parent.config.settings.managealldevicegroups.indexOf(key) >= 0))) && (meshid.startsWith('mesh/' + user.domain + '/'))) { return true; }
 
         // Check direct user to device group permissions
         if (user.links == null) { return false; }
@@ -9172,15 +9605,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; } else return 0;
 
         // Check if we have this in the cache
-        const cacheid = user._id + '/' + meshid + '/' + nodeid;
-        const cache = GetNodeRightsCache[cacheid];
+
+        const cache = ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid];
         if (cache != null) { if (cache.t > Date.now()) { return cache.o; } else { GetNodeRightsCacheCount--; } } // Cache hit, or we need to update the cache
-        if (GetNodeRightsCacheCount > 2000) { GetNodeRightsCache = {}; GetNodeRightsCacheCount = 0; } // From time to time, flush the cache
+        if (GetNodeRightsCacheCount > 2000) { obj.FlushGetNodeRightsCache() } // From time to time, flush the cache
 
         var r = obj.GetMeshRights(user, mesh);
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9189,7 +9624,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.links != null) && (user.links[nodeid] != null)) { r |= user.links[nodeid].rights; } // TODO: Deal with reverse permissions
         if (r == 0xFFFFFFFF) {
             const out = removeUserRights(r, user);
-            GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+            GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+            GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+            GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
             GetNodeRightsCacheCount++;
             return out;
         }
@@ -9203,9 +9640,43 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         const out = removeUserRights(r, user);
-        GetNodeRightsCache[cacheid] = { t: Date.now() + 10000, o: out };
+        GetNodeRightsCache[user._id] = GetNodeRightsCache[user._id] || {}
+        GetNodeRightsCache[user._id][meshid] = GetNodeRightsCache[user._id][meshid] || {}
+        GetNodeRightsCache[user._id][meshid][nodeid] = { t: Date.now() + 10000, o: out };
         GetNodeRightsCacheCount++;
         return out;
+    }
+
+    obj.InvalidateNodeCache = function (user, mesh, nodeid) {
+        if (user == null) { return; }
+        
+        if (typeof user == 'string') { user = obj.users[user]; }
+        if (user == null) { return 0; }
+        var meshid;
+        if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; };
+        
+        if (mesh == null) {
+            for (let [key, val] of Object.entries(GetNodeRightsCache[user._id] || {})) {
+                GetNodeRightsCacheCount -= Object.keys(val).length
+            }
+            delete GetNodeRightsCache[user._id]; 
+            return;
+        }
+        if (nodeid == null) {
+            let cache_reduction = Object.keys((GetNodeRightsCache[user._id] || {})[meshid] || {}).length
+            delete (GetNodeRightsCache[user._id] || {})[meshid]
+            GetNodeRightsCacheCount -= cache_reduction;
+            return; 
+        }
+        if (((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]) {
+            delete ((GetNodeRightsCache[user._id] || {})[meshid] || {})[nodeid]
+            GetNodeRightsCacheCount--;
+        }
+    }
+
+    obj.FlushGetNodeRightsCache = function() {
+        GetNodeRightsCache = {};
+        GetNodeRightsCacheCount = 0;
     }
 
     // Returns a list of displatch targets for a given mesh
@@ -9301,7 +9772,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Filter the user web site and only output state that we need to keep
     const acceptableUserWebStateStrings = ['webPageStackMenu', 'notifications', 'deviceView', 'nightMode', 'webPageFullScreen', 'search', 'showRealNames', 'sort', 'deskAspectRatio', 'viewsize', 'DeskControl', 'uiMode', 'footerBar','loctag','theme','lastThemes','uiViewMode'];
-    const acceptableUserWebStateDesktopStrings = ['encoding', 'showfocus', 'showmouse', 'showcad', 'limitFrameRate', 'noMouseRotate', 'quality', 'scaling', 'agentencoding']
+    const acceptableUserWebStateDesktopStrings = [
+        'encoding', 'showfocus', 'showmouse', 'quality', 'scaling', 'framerate', 'agentencoding', 'swapmouse',
+        'rmw', 'remotekeymap', 'autoclipboard', 'autolock', 'localkeymap', 'kvmrmw', 'rdpsize', 'rdpsmb',
+        'rdprmw', 'rdpautoclipboard', 'rdpflags'
+    ];
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
         if ((state == null) || (typeof state != 'object')) { return null; }
@@ -9381,6 +9856,118 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return null;
     }
 
+    function generateCustomCSSTags(customFilesObject, currentTemplate) {
+        var cssTags = '';
+        
+        cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+        
+
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.css && Array.isArray(customFilesObject.css)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.css.length; i++) {
+                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesObject.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.css.length; j++) {
+                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return cssTags.trim();
+    }
+
+    function generateCustomJSTags(customFilesObject, currentTemplate) {
+        var jsTags = '';
+        
+        jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
+        
+        if (customFilesObject) {
+            if (Array.isArray(customFilesObject)) {
+                // Legacy array support - convert to object format
+                for (var i = 0; i < customFilesObject.length; i++) {
+                    var customFileConfig = customFilesObject[i];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            } else if (customFilesObject.js && Array.isArray(customFilesObject.js)) {
+                // Legacy single object support
+                for (var i = 0; i < customFilesObject.js.length; i++) {
+                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesObject.js[i] + '"></script>\n    ';
+                }
+            } else if (typeof customFilesObject === 'object') {
+                // New object format - iterate through each custom file configuration
+                for (var configName in customFilesObject) {
+                    var customFileConfig = customFilesObject[configName];
+                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
+                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
+                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
+                            for (var j = 0; j < customFileConfig.js.length; j++) {
+                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return jsTags.trim();
+    }
+
+    function generateThemePackCSSTags(domain, currentTemplate) {
+        var cssTags = '';
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'styles', 'theme.css'))) {
+                cssTags += '<link keeplink=1 type="text/css" href="styles/theme.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
+            }
+        }
+        return cssTags;
+    }
+    function generateThemePackJSTags(domain, currentTemplate) {
+        var jsTags = '';
+        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
+        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
+        if (domain && domain.themepack && isModernUI) {
+            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+            if (obj.fs.existsSync(obj.path.join(themePath, 'scripts', 'theme.js'))) {
+                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/theme.js"></script>\n    ';
+            }
+        }
+        return jsTags;
+    }
+
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
@@ -9403,7 +9990,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             xargs.title1 = domain.title1 ? domain.title1 : '';
             xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
         }
-        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, { 
+        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, {
             'serverversion': obj.parent.currentVer,
             'servername': obj.getWebServerName(domain, req),
             'agentsessions': Object.keys(parent.webserver.wsagents).length,
@@ -9420,6 +10007,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
         xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomBytes(1)[0]).toString('base64') : '';
 
+        // Generate custom CSS and JS tags
+        if (xargs.customFiles) {
+            try {
+                var customFiles = JSON.parse(decodeURIComponent(xargs.customFiles));
+                xargs.customCSSTags = generateCustomCSSTags(customFiles, page);
+                xargs.customJSTags = generateCustomJSTags(customFiles, page);
+            } catch (ex) {
+                xargs.customCSSTags = generateCustomCSSTags(null, page);
+                xargs.customJSTags = generateCustomJSTags(null, page);
+            }
+        } else {
+            xargs.customCSSTags = generateCustomCSSTags(null, page);
+            xargs.customJSTags = generateCustomJSTags(null, page);
+        }
+        xargs.customCSSTags += generateThemePackCSSTags(domain, page);
+        xargs.customJSTags += generateThemePackJSTags(domain, page);
         return xargs;
     }
 
@@ -9761,7 +10364,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (ua.browser && ua.browser.name) { ua.browserStr = ua.browser.name; if (ua.browser.version) { ua.browserStr += '/' + ua.browser.version } }
             if (ua.os && ua.os.name) { ua.osStr = ua.os.name; if (ua.os.version) { ua.osStr += '/' + ua.os.version } }
             // If the platform is set, use that instead of the OS
-            if (ua.platform) { 
+            if (ua.platform) {
                 ua.osStr = ua.platform;
                 // Special case for Windows 11
                 if (ua.platformVersion) {
@@ -9775,9 +10378,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } catch (ex) { return { browserStr: browser, osStr: os } }
     }
 
-    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers    
+    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers
     function getQueryPortion(req) {
-        var removeKeys = ['duo_code', 'state']; // Keys to remove 
+        var removeKeys = ['duo_code', 'state']; // Keys to remove
         var s = req.url.indexOf('?');
         if (s == -1) {
             if (req.body && req.body.urlargs) {
@@ -9866,7 +10469,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (parent.config.settings.maxinvalidlogin === false) return true;
         if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
         var ipTable = obj.badLoginTable[ip];
         if (ipTable == null) return true;
@@ -9924,7 +10527,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (parent.config.settings.maxinvalid2fa === false) return true;
         if (typeof ip == 'object') { ip = ip.clientIp; }
         var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first 
+        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
         var ipTable = obj.bad2faTable[ip];
         if (ipTable == null) return true;
