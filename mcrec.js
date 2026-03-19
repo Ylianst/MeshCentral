@@ -121,7 +121,7 @@ function processBlock(state, block, err) {
                     case 3: // Tile
                         var x = block.data.readUInt16BE(4);
                         var y = block.data.readUInt16BE(6);
-                        var dimensions = require('image-size')(block.data.slice(8));
+                        var dimensions = require('image-size').imageSize(block.data.slice(8));
                         //log("Tile", x, y, dimensions.width, dimensions.height, block.ptr);
                         //console.log(elapseSeconds);
 

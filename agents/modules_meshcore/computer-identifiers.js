@@ -18,6 +18,7 @@ function trimIdentifiers(val)
 {
     for(var v in val)
     {
+        if(typeof val[v] === 'string') val[v] = val[v].trim();
         if (!val[v] || val[v] == 'None' || val[v] == '') { delete val[v]; }
     }
 }
@@ -68,6 +69,7 @@ function linux_identifiers()
     var identifiers = {};
     var ret = {};
     var values = {};
+    var child = null;
 
     if (!require('fs').existsSync('/sys/class/dmi/id')) {         
         if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
@@ -76,7 +78,7 @@ function linux_identifiers()
                 identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
                 identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
                 const memorySlots = [];
-                var child = require('child_process').execFile('/bin/sh', ['sh']);
+                child = require('child_process').execFile('/bin/sh', ['sh']);
                 child.stdout.str = ''; child.stdout.on('data', dataHandler);
                 child.stdin.write('vcgencmd get_mem arm && vcgencmd get_mem gpu\nexit\n');
                 child.waitExit();
@@ -118,24 +120,46 @@ function linux_identifiers()
         identifiers['product_name'] = ret['product_name'];
     }
 
+    // BIOS Mode
     try {
-        identifiers['bios_mode'] = (require('fs').statSync('/sys/firmware/efi').isDirectory() ? 'UEFI': 'Legacy');
-    } catch (ex) { identifiers['bios_mode'] = 'Legacy'; }
+        var uefiExist = false;
+        var assumePi = false;
 
-    var child = require('child_process').execFile('/bin/sh', ['sh']);
+        try { uefiExist = (require('fs')).existsSync('/sys/firmware/efi'); }
+        catch (ex) { uefiExist = false; }
+
+        try { assumePi = (require('fs')).existsSync('/sys/firmware/devicetree/base/model'); }
+        catch (ex) { assumePi = false; }
+
+        if (uefiExist) {
+            identifiers['bios_mode'] = 'UEFI';
+        } else if (assumePi) {
+            var modelBuffer = (require('fs')).readFileSync('/sys/firmware/devicetree/base/model');
+            var modelString = modelBuffer.toString().trim()
+
+            if (modelString.includes('Raspberry Pi')) {
+                identifiers['bios_mode'] = 'Raspberry Pi Firmware (Proprietary)';
+            }
+        } else {
+            identifiers['bios_mode'] = 'Legacy BIOS (MBR)';
+        }
+    } catch (ex) { identifiers['bios_mode'] = 'Legacy / Unknown'; }
+
+    // CPU Model info
+    child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
     child.stdin.write('cat /proc/cpuinfo | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
     child.waitExit();
-    identifiers['cpu_name'] = child.stdout.str.trim();
-    if (identifiers['cpu_name'] == "") { // CPU BLANK, check lscpu instead
-        child = require('child_process').execFile('/bin/sh', ['sh']);
-        child.stdout.str = ''; child.stdout.on('data', dataHandler);
-        child.stdin.write('lscpu | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
-        child.waitExit();
+    try {
         identifiers['cpu_name'] = child.stdout.str.trim();
-    }
-    child = null;
-
+        if (identifiers['cpu_name'] == "") { // CPU BLANK, check lscpu instead
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = ''; child.stdout.on('data', dataHandler);
+            child.stdin.write('lscpu | grep -i "model name" | ' + "tr '\\n' ':' | awk -F: '{ print $2 }'\nexit\n");
+            child.waitExit();
+            try { identifiers['cpu_name'] = child.stdout.str.trim(); } catch (xx) { }
+        }
+    } catch (xx) { }
 
     // Fetch GPU info
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -143,7 +167,6 @@ function linux_identifiers()
     child.stdin.write("lspci | grep ' VGA ' | tr '\\n' '`' | awk '{ a=split($0,lines" + ',"`"); printf "["; for(i=1;i<a;++i) { split(lines[i],gpu,"r: "); printf "%s\\"%s\\"", (i==1?"":","),gpu[2]; } printf "]"; }\'\nexit\n');
     child.waitExit();
     try { identifiers['gpu_name'] = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     // Fetch Storage Info
     child = require('child_process').execFile('/bin/sh', ['sh']);
@@ -151,15 +174,13 @@ function linux_identifiers()
     child.stdin.write("lshw -class disk -disable network | tr '\\n' '`' | awk '" + '{ len=split($0,lines,"*"); printf "["; for(i=2;i<=len;++i) { model=""; caption=""; size=""; clen=split(lines[i],item,"`"); for(j=2;j<clen;++j) { split(item[j],tokens,":"); split(tokens[1],key," "); if(key[1]=="description") { caption=substr(tokens[2],2); } if(key[1]=="product") { model=substr(tokens[2],2); } if(key[1]=="size") { size=substr(tokens[2],2);  } } if(model=="") { model=caption; } if(caption!="" || model!="") { printf "%s{\\"Caption\\":\\"%s\\",\\"Model\\":\\"%s\\",\\"Size\\":\\"%s\\"}",(i==2?"":","),caption,model,size; }  } printf "]"; }\'\nexit\n');
     child.waitExit();
     try { identifiers['storage_devices'] = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     // Fetch storage volumes using df
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
-    child.stdin.write('df -T | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
+    child.stdin.write('df -T -x tmpfs -x devtmpfs -x efivarfs | awk \'NR==1 || $1 ~ ".+"{print $3, $4, $5, $7, $2}\' | awk \'NR>1 {printf "{\\"size\\":\\"%s\\",\\"used\\":\\"%s\\",\\"available\\":\\"%s\\",\\"mount_point\\":\\"%s\\",\\"type\\":\\"%s\\"},", $1, $2, $3, $4, $5}\' | sed \'$ s/,$//\' | awk \'BEGIN {printf "["} {printf "%s", $0} END {printf "]"}\'\nexit\n');
     child.waitExit();
     try { ret.volumes = JSON.parse(child.stdout.str.trim()); } catch (xx) { }
-    child = null;
 
     values.identifiers = identifiers;
     values.linux = ret;
@@ -388,6 +409,53 @@ function linux_identifiers()
         }
     } catch (ex) { }
 
+    // Linux Batteries
+    try {
+        var batteries = require('fs').readdirSync('/sys/class/power_supply/');
+        if (batteries.length != 0) {
+            values.battery = [];
+            for (var i in batteries) {
+                const filesToRead = [
+                    'capacity', 'cycle_count', 'energy_full', 'energy_full_design',
+                    'energy_now', 'manufacturer', 'model_name', 'power_now',
+                    'serial_number', 'status', 'technology', 'voltage_now'
+                ];
+                const thedata = {};
+                for (var x in filesToRead) {
+                    try {   
+                        const content = require('fs').readFileSync('/sys/class/power_supply/' + batteries[i] + '/' + filesToRead[x]).toString().trim();
+                        thedata[filesToRead[x]] = /^\d+$/.test(content) ? parseInt(content, 10) : content;
+                    } catch (err) { }
+                }
+                if (Object.keys(thedata).length === 0) continue; // No data read, skip
+                const status = (thedata.status || '').toLowerCase();
+                const isCharging = status === 'charging';
+                const isDischarging = status === 'discharging';
+                const toMilli = function (val) { return Math.round((val || 0) / 1000) }; // Convert from µ units to m units (divide by 1000)
+                const batteryJson = {
+                    "InstanceName": batteries[i],
+                    "CycleCount": thedata.cycle_count || 0,
+                    "FullChargedCapacity": toMilli(thedata.energy_full),
+                    "Chemistry": (thedata.technology || ''),
+                    "DesignedCapacity": toMilli(thedata.energy_full_design),
+                    "DeviceName": thedata.model_name || "Battery",
+                    "ManufactureName": thedata.manufacturer || "Unknown",
+                    "SerialNumber": thedata.serial_number || "unknown",
+                    "ChargeRate": isCharging ? toMilli(thedata.power_now) : 0,
+                    "Charging": isCharging,
+                    "DischargeRate": isDischarging ? toMilli(thedata.power_now) : 0,
+                    "Discharging": isDischarging,
+                    "RemainingCapacity": toMilli(thedata.energy_now),
+                    "Voltage": toMilli(thedata.voltage_now),
+                    "Health": (thedata.energy_full && thedata.energy_full_design ? Math.floor((thedata.energy_full / thedata.energy_full_design) * 100) : 0),
+                    "BatteryCharge": (thedata.energy_now && thedata.energy_full ? Math.floor((thedata.energy_now / thedata.energy_full) * 100) : (thedata.capacity ? thedata.capacity : 0))
+                };
+                values.battery.push(batteryJson);
+            }
+            if (values.battery.length == 0) { delete values.battery; }
+        }
+    } catch (ex) { }
+
     return (values);
 }
 
@@ -450,8 +518,16 @@ function windows_identifiers()
     if(values[0]){
         ret['identifiers']['product_uuid'] = values[0]['UUID'];
         ret['identifiers']['product_name'] = values[0]['Name'];
-        trimIdentifiers(ret.identifiers);
     }
+
+    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_SystemEnclosure", ['SerialNumber', 'SMBIOSAssetTag', 'Manufacturer']);
+    if(values[0]){
+        ret['identifiers']['chassis_serial'] = values[0]['SerialNumber'];
+        ret['identifiers']['chassis_assettag'] = values[0]['SMBIOSAssetTag'];
+        ret['identifiers']['chassis_manufacturer'] = values[0]['Manufacturer'];
+    }
+
+    trimIdentifiers(ret.identifiers);
 
     values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_PhysicalMemory");
     if(values[0]){
@@ -463,14 +539,22 @@ function windows_identifiers()
     if(values[0]){
         trimResults(values);
         ret.windows.osinfo = values[0];
+		
+		try {
+            var reg = require('win-registry');
+            var ubr = reg.QueryKey(reg.HKEY.LocalMachine, 'Software\\Microsoft\\Windows NT\\CurrentVersion', 'UBR');
+            if(ubr && ret.windows.osinfo.Version){
+                ret.windows.osinfo.BuildRevision = ret.windows.osinfo.Version + "." + ubr 
+            }
+        } catch (ex){}
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskPartition");
     if(values[0]){
         trimResults(values);
         ret.windows.partitions = values;
         for (var i in values) {
-            if (values[i].Description=='GPT: System') {
+            if (values[i].Type=='GPT: System') {
                 ret['identifiers']['bios_mode'] = 'UEFI';
             }
         }
@@ -521,6 +605,91 @@ function windows_identifiers()
                 IsOwned: values[0].IsOwned_InitialValue,
             }
         }
+    } catch (ex) { }
+
+    // Windows Batteries
+    IntToStrLE = function (v) { return String.fromCharCode(v & 0xFF, (v >> 8) & 0xFF, (v >> 16) & 0xFF, (v >> 24) & 0xFF); };
+    try {
+        function mergeJSONArrays() {
+            var resultMap = {};
+            var result = [];
+            // Loop through all arguments (arrays)
+            for (var i = 0; i < arguments.length; i++) {
+                var currentArray = arguments[i];
+                // Skip if not an array
+                if (!currentArray || currentArray.constructor !== Array) {
+                    continue;
+                }
+                // Process each object in the array
+                for (var j = 0; j < currentArray.length; j++) {
+                    var obj = currentArray[j];
+                    // Skip if not an object or missing InstanceName
+                    if (!obj || typeof obj !== 'object' || !obj.InstanceName) {
+                        continue;
+                    }
+                    var name = obj.InstanceName;
+                    // Create new entry if it doesn't exist
+                    if (!resultMap[name]) {
+                        resultMap[name] = { InstanceName: name };
+                        result.push(resultMap[name]);
+                    }
+                    // Copy all properties except InstanceName
+                    for (var key in obj) {
+                        if (obj.hasOwnProperty(key) && key !== 'InstanceName') {
+                            resultMap[name][key] = obj[key];
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+        values = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
+        var values2 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
+        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
+        for (i = 0; i < values4.length; ++i) {
+            if (values4[i].Chemistry) { values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry)); }
+            if (values4[i].ManufactureDate) { if (values4[i].ManufactureDate.indexOf('*****') != -1) delete values4[i].ManufactureDate; }
+        }
+        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        var values6 = [];
+        if (values2.length > 0 && values4.length > 0) {
+            for (i = 0; i < values2.length; ++i) {
+                for (var j = 0; j < values4.length; ++j) {
+                    if (values2[i].InstanceName == values4[j].InstanceName) {
+                        if ((values4[j].DesignedCapacity && values4[j].DesignedCapacity > 0) && (values2[i].FullChargedCapacity && values2[i].FullChargedCapacity > 0)) {
+                            values6[i] = { 
+                                Health: Math.floor((values2[i].FullChargedCapacity / values4[j].DesignedCapacity) * 100),
+                                InstanceName: values2[i].InstanceName
+                            };
+                            if (values6[i].Health > 100) { values6[i].Health = 100; }
+                        } else {
+                            values6[i] = { Health: 0, InstanceName: values2[i].InstanceName };
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        var values7 = [];
+        if (values2.length > 0 && values5.length > 0) {
+            for (i = 0; i < values2.length; ++i) {
+                for (var j = 0; j < values5.length; ++j) {
+                    if (values2[i].InstanceName == values5[j].InstanceName) {
+                        if ((values2[i].FullChargedCapacity && values2[i].FullChargedCapacity > 0) && (values5[j].RemainingCapacity && values5[j].RemainingCapacity > 0)) {
+                            values7[i] = { 
+                                BatteryCharge: Math.floor((values5[j].RemainingCapacity / values2[i].FullChargedCapacity) * 100),
+                                InstanceName: values2[i].InstanceName
+                            };
+                        } else {
+                            values7[i] = { BatteryCharge: 0, InstanceName: values2[i].InstanceName };
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        ret.battery = mergeJSONArrays(values, values2, values3, values4, values5, values6, values7);
     } catch (ex) { }
 
     return (ret);
@@ -702,17 +871,12 @@ function hexToAscii(hexString) {
 
 function win_chassisType()
 {
-    // needs to be replaced with win-wmi but due to bug in win-wmi it doesnt handle arrays correctly
-    var child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-'], {});
-    if (child == null) { return ([]); }
-    child.descriptorMetadata = 'process-manager';
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.str = ''; child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.stdin.write('Get-WmiObject Win32_SystemEnclosure | Select-Object -ExpandProperty ChassisTypes\r\n');
-    child.stdin.write('exit\r\n');
-    child.waitExit();
+    // use new win-wmi-fixed module to get arrays correctly for time being
     try {
-        return (parseInt(child.stdout.str));
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT ChassisTypes FROM Win32_SystemEnclosure', ['ChassisTypes']);
+        if (tokens[0]) {
+            return (parseInt(tokens[0]['ChassisTypes'][0]));
+        }
     } catch (e) {
         return (2); // unknown
     }

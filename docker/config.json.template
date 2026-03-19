@@ -1,8 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/Ylianst/MeshCentral/master/meshcentral-config-schema.json",
   "settings": {
-    "plugins":{"enabled": false},
-    "_mongoDb": null,
+    "plugins":{
+      "enabled": false
+    },
     "cert": "myserver.mydomain.com",
     "_WANonly": true,
     "_LANonly": true,
@@ -15,7 +16,22 @@
     "TLSOffload": false,
     "SelfUpdate": false,
     "AllowFraming": false,
-    "WebRTC": false
+    "WebRTC": false,
+    "_mongoDb": "",
+    "_postgres": {
+      "host": "",
+      "port": "",
+      "user": "",
+      "password": "",
+      "database": ""
+    },
+    "_mariaDB": {
+      "host": "",
+      "port": "",
+      "user": "",
+      "password": "",
+      "database": ""
+    }
   },
   "domains": {
     "": {

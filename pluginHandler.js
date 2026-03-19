@@ -94,29 +94,36 @@ module.exports.pluginHandler = function (parent) {
             if (typeof pluginRegInfo == 'function') d = pluginRegInfo();
             else d = pluginRegInfo;
             if (d.tabId == null || d.tabTitle == null) { return false; }
-            if (!Q(d.tabId)) {
+            if (!document.getElementById(d.tabId)) {
                 var defaultOn = 'class="on"';
-                if (Q('p19headers').querySelectorAll("span.on").length) defaultOn = '';
-                QA('p19headers', '<span ' + defaultOn + ' id="p19ph-' + d.tabId + '" onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>');
-                QA('p19pages', '<div id="' + d.tabId + '"></div>');
+                if (document.getElementById('p19headers').querySelectorAll("span.on").length) defaultOn = '';
+                document.getElementById('p19headers').innerHTML += '<span ' + defaultOn + ' id="p19ph-' + d.tabId + '" onclick="return pluginHandler.callPluginPage(\\''+d.tabId+'\\', this);">'+d.tabTitle+'</span>';
+                document.getElementById('p19pages').innerHTML += '<div id="' + d.tabId + '"></div>';
             }
-            QV('MainDevPlugins', true);
+            document.getElementById('MainDevPlugins').style.display = '';
         };
         obj.callPluginPage = function(id, el) {
-            var pages = Q('p19pages').querySelectorAll("#p19pages>div"); 
+            var pages = document.getElementById('p19pages').querySelectorAll("#p19pages>div"); 
             for (const i of pages) { i.style.display = 'none'; }
-            QV(id, true);
-            var tabs = Q('p19headers').querySelectorAll("span"); 
+            document.getElementById(id).style.display = '';
+            var tabs = document.getElementById('p19headers').querySelectorAll("span"); 
             for (const i of tabs) { i.classList.remove('on'); }
             el.classList.add('on');
             putstore('_curPluginPage', id);
         };
         obj.addPluginEx = function() {
-            meshserver.send({ action: 'addplugin', url: Q('pluginurlinput').value});
+            meshserver.send({ action: 'addplugin', url: document.getElementById('pluginurlinput').value});
         };
         obj.addPluginDlg = function() {
-            setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />'); 
-            focusTextBox('pluginurlinput');
+            if (typeof showModal === 'function') {
+                setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />');
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', obj.addPluginEx);
+                focusTextBox('pluginurlinput');
+            } else {
+                // Fallback to setDialogMode for default.handlebars
+                setDialogMode(2, "Plugin Download URL", 3, obj.addPluginEx, '<p><b>WARNING:</b> Downloading plugins may compromise server security. Only download from trusted sources.</p><input type=text id=pluginurlinput style=width:100% placeholder="https://" />'); 
+                focusTextBox('pluginurlinput');
+            }
         };
         obj.refreshPluginHandler = function() {
             let st = document.createElement('script');
@@ -200,10 +207,12 @@ module.exports.pluginHandler = function (parent) {
     obj.deviceViewPanel = function () {
         var panel = {};
         for (var p in obj.plugins) {
-            if (typeof obj.plugins[p][hookName] == 'function') {
+            if (typeof obj.plugins[p].on_device_header === "function" && typeof obj.plugins[p].on_device_page === "function") {
                 try {
-                    panel[p].header = obj.plugins[p].on_device_header();
-                    panel[p].content = obj.plugins[p].on_device_page();
+                    panel[p] = {
+                        header: obj.plugins[p].on_device_header(),
+                        content: obj.plugins[p].on_device_page()
+                    };
                 } catch (e) {
                     console.log("Error occurred while getting plugin views " + p + ':' + ' (' + e + ')');
                 }
@@ -243,9 +252,8 @@ module.exports.pluginHandler = function (parent) {
             var http = (configUrl.indexOf('https://') >= 0) ? require('https') : require('http');
             if (configUrl.indexOf('://') === -1) reject("Unable to fetch the config: Bad URL (" + configUrl + ")");
             var options = require('url').parse(configUrl);
-            if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
-                const HttpsProxyAgent = require('https-proxy-agent');
-                options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+            if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+                options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
             }
             http.get(options, function (res) {
                 var configStr = '';
@@ -267,7 +275,6 @@ module.exports.pluginHandler = function (parent) {
                         reject("Error getting plugin config. Check that you have valid JSON.");
                     }
                 });
-
             }).on('error', function (e) {
                 reject("Error getting plugin config: " + e.message);
             });
@@ -285,6 +292,36 @@ module.exports.pluginHandler = function (parent) {
         for (var i = 0; i < c.length; i++) { var cx = parseInt(c[i]), cm = parseInt(m[i]); if (cx > cm) { return true; } if (cx < cm) { return false; } }
         return true;
     }
+
+    obj.versionGreater = function(a, b) {
+        a = obj.versionToNumber(String(a).replace(/^v/, ''));
+        b = obj.versionToNumber(String(b).replace(/^v/, ''));
+        const partsA = a.split('.').map(Number);
+        const partsB = b.split('.').map(Number);
+        
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const numA = partsA[i] || 0;
+            const numB = partsB[i] || 0;
+            if (numA > numB) return true;
+            if (numA < numB) return false;
+        }
+        return false;
+    };
+
+    obj.versionLower = function(a, b) {
+        a = obj.versionToNumber(String(a).replace(/^v/, ''));
+        b = obj.versionToNumber(String(b).replace(/^v/, ''));
+        const partsA = a.split('.').map(Number);
+        const partsB = b.split('.').map(Number);
+        
+        for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const numA = partsA[i] || 0;
+            const numB = partsB[i] || 0;
+            if (numA < numB) return true;
+            if (numA > numB) return false;
+        }
+        return false;
+    };
 
     obj.getPluginLatest = function () {
         return new Promise(function (resolve, reject) {
@@ -305,12 +342,11 @@ module.exports.pluginHandler = function (parent) {
                                 if (conf.configUrl == newconf.configUrl) curconf = conf;
                             });
                             if (curconf == null) reject("Some plugin configs could not be parsed");
-                            var s = require('semver');
                             latestRet.push({
                                 'id': curconf._id,
                                 'installedVersion': curconf.version,
                                 'version': newconf.version,
-                                'hasUpdate': s.gt(newconf.version, curconf.version),
+                                'hasUpdate': obj.versionGreater(newconf.version, curconf.version),
                                 'meshCentralCompat': obj.versionCompare(parent.currentVer, newconf.meshCentralCompat),
                                 'changelogUrl': curconf.changelogUrl,
                                 'status': curconf.status
@@ -355,10 +391,34 @@ module.exports.pluginHandler = function (parent) {
         parent.db.getPlugin(id, function (err, docs) {
             // the "id" would probably suffice, but is probably an sanitary issue, generate a random instead
             var randId = Math.random().toString(32).replace('0.', '');
-            var fileName = obj.parent.path.join(require('os').tmpdir(), 'Plugin_' + randId + '.zip');
+            var tmpDir = require('os').tmpdir();
+            var fileName = obj.parent.path.join(tmpDir, 'Plugin_' + randId + '.zip');
+            try {
+                obj.fs.accessSync(tmpDir, obj.fs.constants.W_OK);
+            } catch (e) {
+                var pluginTmpPath = obj.parent.path.join(obj.pluginPath, '_tmp');
+                if (!obj.fs.existsSync(pluginTmpPath)) {
+                    obj.fs.mkdirSync(pluginTmpPath, { recursive: true });
+                }
+                fileName = obj.parent.path.join(pluginTmpPath, 'Plugin_' + randId + '.zip');
+            }
             var plugin = docs[0];
             if (plugin.repository.type == 'git') {
-                const file = obj.fs.createWriteStream(fileName);
+                var file;
+                try {
+                    file = obj.fs.createWriteStream(fileName);
+                } catch (e) {
+                    if (fileName.indexOf(tmpDir) >= 0) {
+                        var pluginTmpPath = obj.parent.path.join(obj.pluginPath, '_tmp');
+                        if (!obj.fs.existsSync(pluginTmpPath)) {
+                            obj.fs.mkdirSync(pluginTmpPath, { recursive: true });
+                        }
+                        fileName = obj.parent.path.join(pluginTmpPath, 'Plugin_' + randId + '.zip');
+                        file = obj.fs.createWriteStream(fileName);
+                    } else {
+                        throw e;
+                    }
+                }
                 var dl_url = plugin.downloadUrl;
                 if (version_only != null && version_only != false) dl_url = version_only.url;
                 if (force_url != null) dl_url = force_url;
@@ -375,16 +435,17 @@ module.exports.pluginHandler = function (parent) {
                     followRedirects: true,
                     method: 'GET'
                 };
-                if (typeof parent.config.settings.plugins.proxy == 'string') {  // Proxy support
-                    const HttpsProxyAgent = require('https-proxy-agent');
-                    opts.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+                if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+                    opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
                 }
+                var done = false;
                 var request = http.get(opts, function (response) {
                     // handle redirections with grace
                     if (response.headers.location) {
-                        file.close(function () { obj.fs.unlink(file.path, function(err) { void err; }); });
+                        file.close(() => obj.fs.unlink(fileName, () => {}));
                         return obj.installPlugin(id, version_only, response.headers.location, func);
                     }
+                    if ((response.statusCode != null) && (response.statusCode >= 400)) { return console.log('Error downloading plugin: HTTP ' + response.statusCode); }
                     response.pipe(file);
                     file.on('finish', function () {
                         file.close(function () {
@@ -424,11 +485,11 @@ module.exports.pluginHandler = function (parent) {
                                 });
                                 zipfile.on('end', function () {
                                     setTimeout(function () {
-                                        obj.fs.unlinkSync(fileName);
+                                        try { obj.fs.unlinkSync(fileName); } catch (ex) { }
                                         if (version_only == null || version_only === false) {
-                                            parent.db.setPluginStatus(id, 1, func);
+                                            parent.db.setPluginStatus(id, 1, function () { if (done) return; done = true; if (typeof func == 'function') { func(null); } });
                                         } else {
-                                            parent.db.updatePlugin(id, { status: 1, version: version_only.name }, func);
+                                            parent.db.updatePlugin(id, { status: 1, version: version_only.name }, function () { if (done) return; done = true; if (typeof func == 'function') { func(null); } });
                                         }
                                         try {
                                             obj.plugins[plugin.shortName] = require(obj.pluginPath + '/' + plugin.shortName + '/' + plugin.shortName + '.js')[plugin.shortName](obj);
@@ -443,10 +504,13 @@ module.exports.pluginHandler = function (parent) {
                                         parent.updateMeshCore();
                                     });
                                 });
+                                zipfile.on('error', function (e) { console.log('Error extracting plugin ZIP: ' + e.message); });
                             });
                         });
                     });
                 });
+                request.on('error', function (e) { console.log('Error downloading plugin: ' + e.message); });
+                request.setTimeout(30000, function () { request.destroy(new Error('Timed out while downloading plugin')); });
             } else if (plugin.repository.type == 'npm') {
                 // @TODO npm support? (need a test plugin)
             }
@@ -470,9 +534,8 @@ module.exports.pluginHandler = function (parent) {
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 };
-                if (typeof parent.config.settings.plugins.proxy == 'string') { // Proxy support
-                    const HttpsProxyAgent = require('https-proxy-agent');
-                    options.agent = new HttpsProxyAgent(require('url').parse(parent.config.settings.plugins.proxy));
+                if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
+                    options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
                 }
                 http.get(opts, function (res) {
                     var versStr = '';
@@ -484,9 +547,8 @@ module.exports.pluginHandler = function (parent) {
                             try {
                                 var vers = JSON.parse(versStr);
                                 var vList = [];
-                                var s = require('semver');
                                 vers.forEach((v) => {
-                                    if (s.lt(v.name, plugin.version)) vList.push(v);
+                                    if (obj.versionLower(v.name, plugin.version)) vList.push(v);
                                 });
                                 if (vers.length == 0) reject("No previous versions available.");
                                 resolve({ 'id': plugin._id, 'name': plugin.name, versionList: vList });
@@ -516,11 +578,360 @@ module.exports.pluginHandler = function (parent) {
         parent.db.getPlugin(id, function (err, docs) {
             var plugin = docs[0];
             let pluginPath = obj.parent.path.join(obj.pluginPath, plugin.shortName);
-            obj.fs.rmdirSync(pluginPath, { recursive: true });
+            if (obj.fs.existsSync(pluginPath)) {
+                try {
+                    obj.fs.rmSync(pluginPath, { recursive: true, force: true });
+                } catch (e) {
+                    console.log("Error removing plugin directory:", e);
+                }
+            }
             parent.db.deletePlugin(id, func);
             delete obj.plugins[plugin.shortName];
         });
     };
+
+    // Reload a specific plugin without restarting the server
+    // Useful for development and upgrading - call this after modifying plugin files
+    obj.reloadPlugin = function (pluginName, func) {
+        var pluginPath = obj.pluginPath + '/' + pluginName;
+        var mainFile = pluginPath + '/' + pluginName + '.js';
+
+        if (!obj.fs.existsSync(mainFile)) {
+            var errMsg = "Plugin not found: " + pluginName;
+            console.log(errMsg);
+            if (func) func({ success: false, error: errMsg });
+            return;
+        }
+        
+        // Clear the require cache for this plugin
+        var resolvedPath = require.resolve(mainFile);
+        if (require.cache[resolvedPath]) {
+            delete require.cache[resolvedPath];
+        }
+
+        // Also try to clear any nested requires (basic approach)
+        Object.keys(require.cache).forEach(function (key) {
+            if (key.startsWith(pluginPath + '/')) {
+                delete require.cache[key];
+            }
+        });
+
+        // Remove old plugin instance
+        delete obj.plugins[pluginName];
+        delete obj.exports[pluginName];
+
+        // Reload the plugin
+        try {
+            obj.plugins[pluginName] = require(mainFile)[pluginName](obj);
+            obj.exports[pluginName] = obj.plugins[pluginName].exports;
+
+            // Call server_startup hook if it exists (re-initializes the plugin)
+            if (typeof obj.plugins[pluginName].server_startup === 'function') {
+                obj.plugins[pluginName].server_startup();
+            }
+
+            console.log("Plugin reloaded successfully: " + pluginName);
+            if (func) func({ success: true, name: pluginName });
+        } catch (e) {
+            var errMsg = "Error reloading plugin " + pluginName + ": " + e;
+            console.log(errMsg, e.stack);
+            if (func) func({ success: false, error: errMsg });
+        }
+    };
+
+    // Reload all enabled plugins
+    obj.reloadAllPlugins = function (func) {
+        var results = [];
+        var pluginNames = Object.keys(obj.plugins);
+
+        if (pluginNames.length === 0) {
+            if (func) func({ success: true, reloaded: [] });
+            return;
+        }
+        
+        pluginNames.forEach(function (pluginName) {
+            obj.reloadPlugin(pluginName, function (result) {
+                results.push(result);
+                if (results.length === pluginNames.length) {
+                    if (func) func({ success: true, reloaded: results });
+                }
+            });
+        });
+    };
+    
+    // In-memory cache of registered permissions (loaded from plugins)
+    obj.pluginPermissions = {};
+    obj.pluginPermissionsCache = {}; // Loaded from database
+    
+    // Register a plugin's permissions (called by plugin during load)
+    // permissions: { 'can_edit': { title: 'Edit', desc: 'Can edit', default: 'allowed' }, ... }
+    // default value can be: 'allowed', 'denied', or 'inherited'
+    obj.registerPermissions = function(pluginName, permissions) {
+        var definitions = {};
+        var defaults = {};
+        
+        for (var key in permissions) {
+            definitions[key] = {
+                title: permissions[key].title,
+                desc: permissions[key].desc
+            };
+            defaults[key] = permissions[key].default || 'inherited';
+        }
+        
+        obj.pluginPermissions[pluginName] = {
+            definitions: definitions,
+            defaults: defaults
+        };
+        //console.log("Registered permissions for plugin: " + pluginName);
+    };
+    
+    // Helper to resolve meshId from nodeId (async)
+    obj.resolveMeshFromNode = function(nodeId) {
+        return new Promise(function(resolve, reject) {
+            parent.db.Get(nodeId, function(err, node) {
+                if (err || !node) {
+                    resolve(null);
+                } else {
+                    resolve(node[0].meshid);
+                }
+            });
+        });
+    };
+    
+    // Helper: do the actual permission check (sync)
+    function doCheckPluginPermission(user, pluginName, permission, nodeId, meshId) {
+        return obj.checkPluginPermission(user, pluginName, permission, nodeId, meshId);
+    }
+    
+    // New API: Get all permissions for a user/context
+    // Always returns a Promise. Returns an array of permission keys the user has access to.
+    // Usage: const perms = await parent.getAccessPermissions('pluginName', user, { nodeid: 'node/...' })
+    // Returns: ['can_access', 'can_edit', ...]
+    obj.getAccessPermissions = function(pluginName, user, context) {
+        var nodeId = null;
+        var meshId = null;
+        
+        if (typeof context === 'string') {
+            nodeId = context;
+        } else if (typeof context === 'object') {
+            nodeId = context.nodeId || context.nodeid;
+            meshId = context.meshId || context.meshid || context.mesh;
+        }
+        
+        // If we have nodeId but no meshId, resolve meshId from node
+        var meshPromise;
+        if (nodeId && !meshId) {
+            meshPromise = obj.resolveMeshFromNode(nodeId);
+        } else {
+            meshPromise = Promise.resolve(meshId);
+        }
+        
+        return meshPromise.then(function(resolvedMeshId) {
+            var pluginDef = obj.pluginPermissions[pluginName];
+            var permKeys = pluginDef ? Object.keys(pluginDef.definitions) : [];
+            
+            var allowedPerms = [];
+            for (var i = 0; i < permKeys.length; i++) {
+                var permKey = permKeys[i];
+                var allowed = doCheckPluginPermission(user, pluginName, permKey, nodeId, resolvedMeshId);
+                if (allowed === true) {
+                    allowedPerms.push(permKey);
+                }
+            }
+            
+            // Return a function that checks individual permissions
+            return function(permission) {
+                if (permission == '_ALL_') return allowedPerms;
+                return allowedPerms.indexOf(permission) >= 0;
+            };
+        });
+    };
+    
+    obj.loadPluginPermissions = function(pluginName, callback) {
+        parent.db.getPluginPermissions(pluginName, function(err, docs) {
+            if (err || docs.length === 0) {
+                // No permissions saved yet, create default structure
+                obj.pluginPermissionsCache[pluginName] = {
+                    _id: 'pluginpermission//' + pluginName,
+                    pluginName: pluginName,
+                    permissions: {},
+                    defaults: obj.pluginPermissions[pluginName] ? obj.pluginPermissions[pluginName].defaults : {}
+                };
+            } else {
+                obj.pluginPermissionsCache[pluginName] = docs[0];
+            }
+            if (callback) callback();
+        });
+    };
+    
+    obj.getPluginPermissions = function(pluginName) {
+        var cached = obj.pluginPermissionsCache[pluginName];
+        if (!cached) {
+            // Return in-memory registration if no DB entry
+            return obj.pluginPermissions[pluginName] || null;
+        }
+        
+        // Merge definitions from plugin registration with saved permissions
+        var definitions = obj.pluginPermissions[pluginName] ? obj.pluginPermissions[pluginName].definitions : {};
+        return {
+            _id: cached._id,
+            pluginName: pluginName,
+            definitions: definitions,
+            defaults: cached.defaults || {},
+            permissions: cached.permissions || {}
+        };
+    };
+    
+    obj.setPluginPermissions = function(pluginName, data, callback) {
+        var existing = obj.pluginPermissionsCache[pluginName] || {};
+        
+        var doc = {
+            _id: 'pluginpermission//' + pluginName,
+            pluginName: pluginName,
+            permissions: data.permissions || {},
+            defaults: data.defaults || existing.defaults || {}
+        };
+        
+        obj.pluginPermissionsCache[pluginName] = doc;
+        parent.db.setPluginPermissions(pluginName, doc, function(err) {
+            if (callback) callback(err);
+        });
+    };
+    
+    function userIsInGroup(user, groupId) {
+        if (!user || !user.links) return false;
+        return user.links[groupId] != null;
+    }
+    
+    // Evaluate if user has access at a specific level (global, mesh override, node override)
+    // Returns: 'allowed', 'denied', or 'inherited' (not set)
+    function evaluateAccessLevel(entry, user) {
+        if (!entry) return 'inherited';
+        
+        var allowed = entry.allowed || {};
+        var denied = entry.denied || {};
+        
+        // Check allowed lists first
+        if (allowed.users && allowed.users.indexOf(user._id) >= 0) return 'allowed';
+        if (allowed.userGroups) {
+            for (var i = 0; i < allowed.userGroups.length; i++) {
+                if (userIsInGroup(user, allowed.userGroups[i])) return 'allowed';
+            }
+        }
+        
+        // Check denied lists
+        if (denied.users && denied.users.indexOf(user._id) >= 0) return 'denied';
+        if (denied.userGroups) {
+            for (var i = 0; i < denied.userGroups.length; i++) {
+                if (userIsInGroup(user, denied.userGroups[i])) return 'denied';
+            }
+        }
+        
+        return 'inherited';
+    }
+    
+    // Core permission check function
+    // user: user object from MeshCentral
+    // pluginName: string, e.g., 'regedit'
+    // permission: string, e.g., 'can_edit'
+    // nodeId: optional node ID to check node-specific permissions
+    // meshId: optional mesh ID (if not provided, derived from node)
+    obj.checkPluginPermission = function(user, pluginName, permission, nodeId, meshId) {
+        // 1. Full admin always has access
+        if (user.siteadmin === 0xFFFFFFFF) return true;
+        
+        // 2. Get plugin permissions config
+        var config = obj.getPluginPermissions(pluginName);
+        if (!config) {
+            // No permissions defined, allow by default (backwards compatibility)
+            return true;
+        }
+        
+        // 3. Get permissions for this specific permission key
+        var permConfig = config.permissions ? config.permissions[permission] : null;
+        if (!permConfig) {
+            permConfig = {
+                allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                meshOverrides: {},
+                nodeOverrides: {}
+            };
+        }
+        
+        // 4. Resolve mesh if we have a node but no mesh
+        var targetMesh = meshId;
+        var targetNode = nodeId;
+        
+        if (targetNode && !targetMesh) {
+            // Try to get mesh from node cache
+            // MeshCentral typically stores nodes at parent.nodes
+            var node = null;
+            
+            // Try to get node from parent.nodes
+            if (obj.parent.nodes && obj.parent.nodes[targetNode]) {
+                node = obj.parent.nodes[targetNode];
+            } else if (parent.meshes) {
+                // Check each mesh's nodes
+                for (var mid in parent.meshes) {
+                    var mesh = parent.meshes[mid];
+                    if (mesh.nodes && mesh.nodes[targetNode]) {
+                        node = mesh.nodes[targetNode];
+                        break;
+                    }
+                }
+            }
+            
+            if (node && node.meshid) {
+                targetMesh = node.meshid;
+            }
+        }
+        
+        // 5. Check cascade: Node → Mesh → Global → Default
+        
+        // A) Check node-specific (highest priority)
+        if (targetNode && permConfig.nodeOverrides && permConfig.nodeOverrides[targetNode]) {
+            var result = evaluateAccessLevel(permConfig.nodeOverrides[targetNode], user);
+            if (result !== 'inherited') return result === 'allowed';
+        }
+        
+        // B) Check mesh-specific
+        if (targetMesh && permConfig.meshOverrides && permConfig.meshOverrides[targetMesh]) {
+            // Verify user has access to this mesh before applying mesh override
+            // User has mesh access if they have a link to the mesh
+            var userHasMeshAccess = (user.links && user.links[targetMesh]) ? true : false;
+            
+            if (userHasMeshAccess) {
+                var result = evaluateAccessLevel(permConfig.meshOverrides[targetMesh], user);
+                if (result !== 'inherited') return result === 'allowed';
+            }
+        }
+        
+        // C) Check global level
+        var globalResult = evaluateAccessLevel(permConfig, user);
+        if (globalResult !== 'inherited') return globalResult === 'allowed';
+        
+        // D) Fall back to default
+        var defaultValue = config.defaults ? config.defaults[permission] : 'inherited';
+        if (defaultValue === 'inherited') {
+            // If default is also inherited, use 'allowed' as safe fallback
+            defaultValue = 'allowed';
+        }
+        return defaultValue === 'allowed';
+    };
+    
+    obj.initPluginPermissions = function() {
+        parent.db.getPlugins(function(err, plugins) {
+            if (err || !plugins) return;
+            plugins.forEach(function(plugin) {
+                if (plugin.status === 1 && plugin.shortName) {
+                    obj.loadPluginPermissions(plugin.shortName);
+                }
+            });
+        });
+    };
+    
+    // Call init on load
+    obj.initPluginPermissions();
 
     obj.handleAdminReq = function (req, res, user, serv) {
         if ((req.query.pin == null) || (obj.common.isAlphaNumeric(req.query.pin) !== true)) { res.sendStatus(401); return; }

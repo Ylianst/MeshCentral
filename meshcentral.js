@@ -139,7 +139,32 @@ function CreateMeshCentralServer(config, args) {
         try { require('./pass').hash('test', function () { }, 0); } catch (ex) { console.log('Old version of node, must upgrade.'); return; } // TODO: Not sure if this test works or not.
 
         // Check for invalid arguments
-        const validArguments = ['_', 'user', 'port', 'aliasport', 'mpsport', 'mpsaliasport', 'redirport', 'rediraliasport', 'cert', 'mpscert', 'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem', 'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes', 'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations', 'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall', 'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate', 'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly', 'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport', 'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload', 'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip', 'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport', 'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin', 'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore', 'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt', 'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles', 'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey', 'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault', 'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount', 'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount', 'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb', 'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass', 'indexmcrec', 'mpsdebug', 'dumpcores', 'dev', 'mysql', 'mariadb', 'trustedproxy'];
+        const validArguments = [
+            '_', 'user', 'port', 'portbind', 'relayport', 'relayaliasport', 'agentport',
+            'agentportbind', 'agentaliasport', 'aliasport', 'mpsport', 'mpsaliasport',
+            'redirport', 'redirportbind', 'rediraliasport', 'cert', 'mpscert',
+            'deletedomain', 'deletedefaultdomain', 'showall', 'showusers', 'showitem',
+            'listuserids', 'showusergroups', 'shownodes', 'showallmeshes', 'showmeshes',
+            'showevents', 'showsmbios', 'showpower', 'clearpower', 'showiplocations',
+            'help', 'exactports', 'xinstall', 'xuninstall', 'install', 'uninstall',
+            'start', 'stop', 'restart', 'debug', 'filespath', 'datapath', 'noagentupdate',
+            'launch', 'noserverbackup', 'mongodb', 'mongodbcol', 'wanonly', 'lanonly',
+            'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport',
+            'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload',
+            'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip',
+            'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport',
+            'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin',
+            'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore',
+            'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt',
+            'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles',
+            'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey',
+            'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault',
+            'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount',
+            'setuptelegram', 'resetaccount', 'pass', 'removesubdomain', 'adminaccount',
+            'domain', 'email', 'configfile', 'maintenancemode', 'nedbtodb',
+            'removetestagents', 'agentupdatetest', 'hashpassword', 'hashpass',
+            'indexmcrec', 'mpsdebug', 'dumpcores', 'dev', 'mysql', 'mariadb', 'trustedproxy'
+        ];
         for (var arg in obj.args) { obj.args[arg.toLocaleLowerCase()] = obj.args[arg]; if (validArguments.indexOf(arg.toLocaleLowerCase()) == -1) { console.log('Invalid argument "' + arg + '", use --help.'); return; } }
         const ENVVAR_PREFIX = "meshcentral_"
         let envArgs = []
@@ -569,13 +594,10 @@ function CreateMeshCentralServer(config, args) {
         } else {
             // if "--launch" is not specified, launch the server as a child process.
             const startArgs = [];
-            for (i in process.argv) {
-                if (i > 0) {
-                    const arg = process.argv[i];
-                    if ((arg.length > 0) && ((arg.indexOf(' ') >= 0) || (arg.indexOf('&') >= 0))) { startArgs.push(arg); } else { startArgs.push(arg); }
-                }
-            }
-            startArgs.push('--launch', process.pid);
+            for (const flag of process.execArgv) { startArgs.push(flag); }
+            startArgs.push(process.argv[1]);
+            for (let i = 2; i < process.argv.length; i++) { startArgs.push(process.argv[i]); }
+            startArgs.push('--launch', process.pid.toString());
             obj.launchChildServer(startArgs);
         }
     };
@@ -585,9 +607,7 @@ function CreateMeshCentralServer(config, args) {
         const child_process = require('child_process');
         const isInspectorAttached = (()=> { try { return require('node:inspector').url() !== undefined; } catch (_) { return false; } }).call();
         const logFromChildProcess = isInspectorAttached ? () => {} : console.log.bind(console);
-        try { if (process.traceDeprecation === true) { startArgs.unshift('--trace-deprecation'); } } catch (ex) { }
-        try { if (process.traceProcessWarnings === true) { startArgs.unshift('--trace-warnings'); } } catch (ex) { }
-        if (startArgs[0] != "--disable-proto=delete") startArgs.unshift("--disable-proto=delete")
+        if (!startArgs.includes('--disable-proto=delete')) { startArgs.unshift('--disable-proto=delete'); }
         childProcess = child_process.execFile(process.argv[0], startArgs, { maxBuffer: Infinity, cwd: obj.parentpath }, function (error, stdout, stderr) {
             if (childProcess.xrestart == 1) {
                 setTimeout(function () { obj.launchChildServer(startArgs); }, 500); // This is an expected restart.
@@ -855,7 +875,7 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Look for easy command line instructions and do them here.
-    obj.StartEx = function () {
+    obj.StartEx = async function () {
         var i;
         //var wincmd = require('node-windows');
         //wincmd.list(function (svc) { console.log(svc); }, true);
@@ -915,6 +935,13 @@ function CreateMeshCentralServer(config, args) {
         if ((typeof obj.args.agentupdateblocksize == 'number') && (obj.args.agentupdateblocksize >= 1024) && (obj.args.agentupdateblocksize <= 65531)) { obj.agentUpdateBlockSize = obj.args.agentupdateblocksize; }
         if (typeof obj.args.trustedproxy == 'string') { obj.args.trustedproxy = obj.args.trustedproxy.split(' ').join('').split(','); }
         if (typeof obj.args.tlsoffload == 'string') { obj.args.tlsoffload = obj.args.tlsoffload.split(' ').join('').split(','); }
+
+        // Check IP lists and ranges and if DNS return IP addresses
+        config.settings.userallowedip = await resolveDomainsToIps(config.settings.userallowedip);
+        config.settings.userblockedip = await resolveDomainsToIps(config.settings.userblockedip);
+        config.settings.agentallowedip = await resolveDomainsToIps(config.settings.agentallowedip);
+        config.settings.agentblockedip = await resolveDomainsToIps(config.settings.agentblockedip);
+        config.settings.swarmallowedip = await resolveDomainsToIps(config.settings.swarmallowedip);
 
         // Check the "cookieIpCheck" value
         if ((obj.args.cookieipcheck === false) || (obj.args.cookieipcheck == 'none')) { obj.args.cookieipcheck = 'none'; }
@@ -997,7 +1024,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err != null) { console.log("Database error: " + err); process.exit(); return; }
                             if ((docs == null) || (docs.length == 0)) { console.log("Unknown userid, usage: --resetaccount [userid] --domain (domain) --pass [password]."); process.exit(); return; }
                             const user = docs[0]; if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { user.siteadmin -= 32; } // Unlock the account.
-                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; // Disable 2FA
+                            delete user.phone; delete user.otpekey; delete user.otpsecret; delete user.otpkeys; delete user.otphkeys; delete user.otpdev; delete user.otpsms; delete user.otpmsg; user.otpduo; // Disable 2FA
                             delete user.msghandle; // Disable users 2fa messaging too
                             var config = getConfig(false);
                             if (config.domains[user.domain].auth || config.domains[user.domain].authstrategies) {
@@ -1404,7 +1431,7 @@ function CreateMeshCentralServer(config, args) {
         var i;
 
         // Add NodeJS version warning if needed
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { addServerWarning("MeshCentral will require Node v16 or above in the future, your current version is " + process.version + "."); }
+        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 20) { addServerWarning("MeshCentral will require Node v20 or above in the future, your current version is " + process.version + "."); }
 
         // Setup certificate operations
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
@@ -1472,6 +1499,11 @@ function CreateMeshCentralServer(config, args) {
             if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { delete obj.config.domains[i].userblockedip; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userblockedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { delete obj.config.domains[i].agentallowedip; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { delete obj.config.domains[i].agentblockedip; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(' ').join('').split(','); } }
+            // Check IP lists and ranges and if DNS return IP addresses
+            obj.config.domains[i].userallowedip = await resolveDomainsToIps(obj.config.domains[i].userallowedip);
+            obj.config.domains[i].userblockedip = await resolveDomainsToIps(obj.config.domains[i].userblockedip);
+            obj.config.domains[i].agentallowedip = await resolveDomainsToIps(obj.config.domains[i].agentallowedip);
+            obj.config.domains[i].agentblockedip = await resolveDomainsToIps(obj.config.domains[i].agentblockedip);
             if (typeof obj.config.domains[i].ignoreagenthashcheck == 'string') { if (obj.config.domains[i].ignoreagenthashcheck == '') { delete obj.config.domains[i].ignoreagenthashcheck; } else { obj.config.domains[i].ignoreagenthashcheck = obj.config.domains[i].ignoreagenthashcheck.split(','); } }
             if (typeof obj.config.domains[i].allowedorigin == 'string') { if (obj.config.domains[i].allowedorigin == '') { delete obj.config.domains[i].allowedorigin; } else { obj.config.domains[i].allowedorigin = obj.config.domains[i].allowedorigin.split(','); } }
             if ((obj.config.domains[i].passwordrequirements != null) && (typeof obj.config.domains[i].passwordrequirements == 'object')) {
@@ -1845,8 +1877,12 @@ function CreateMeshCentralServer(config, args) {
             if (obj.fs.existsSync(translationpath2)) { translationpath = translationpath2; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             var translations = JSON.parse(obj.fs.readFileSync(translationpath).toString());
             if (translations['zh-chs']) { translations['zh-hans'] = translations['zh-chs']; delete translations['zh-chs']; }
-            if (translations['zh-cht']) { translations['zh-hant'] = translations['zh-cht']; delete translations['zh-cht']; }
-
+            if (translations['zh-cht']) {
+                translations['zh-hant'] = translations['zh-cht'];
+                translations['zh-tw'] = translations['zh-cht'];
+                translations['zh-hk'] = translations['zh-cht'];
+                delete translations['zh-cht'];
+            }
             // If there is domain customizations to the agent strings, do this here.
             for (var i in obj.config.domains) {
                 var domainTranslations = translations;
@@ -2015,7 +2051,7 @@ function CreateMeshCentralServer(config, args) {
                     }
 
                     // Setup monitoring
-                    obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args);
+                    if (obj.config.settings.prometheus != null) { obj.monitoring = require('./monitoring.js').CreateMonitoring(obj, obj.args); }
 
                     // Start periodic maintenance
                     obj.maintenanceTimer = setInterval(obj.maintenanceActions, 1000 * 60 * 60); // Run this every hour
@@ -2108,10 +2144,10 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.nousers == true) { obj.updateServerState('nousers', '1'); }
                     obj.updateServerState('state', "running");
 
-                    // Setup auto-backup defaults
-                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: 0}; } //no schedule, but able to console autobackup
+                    // Setup auto-backup defaults. Unless autobackup is set to false try to make a backup.
+                    if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: -1}; } //block all autobackup functions
                     else {
-                        if (obj.config.settings.autobackup == null || obj.config.settings.autobackup === true) { obj.config.settings.autobackup = {backupintervalhours: 24, keeplastdaysbackup: 10}; };
+                        if (typeof obj.config.settings.autobackup != 'object') { obj.config.settings.autobackup = {}; };
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
@@ -2123,6 +2159,12 @@ function CreateMeshCentralServer(config, args) {
                         else if (typeof obj.config.settings.autobackup.backupskipfoldersglob == 'string') { obj.config.settings.autobackup.backupskipfoldersglob = obj.config.settings.autobackup.backupskipfoldersglob.replaceAll(', ', ',').split(','); };
                         if (typeof obj.config.settings.autobackup.backuppath == 'string') { obj.backuppath = (obj.config.settings.autobackup.backuppath = (obj.path.resolve(obj.config.settings.autobackup.backuppath))) } else { obj.config.settings.autobackup.backuppath = obj.backuppath };
                         if (typeof obj.config.settings.autobackup.backupname != 'string') { obj.config.settings.autobackup.backupname = 'meshcentral-autobackup-'};
+                        if (typeof obj.config.settings.autobackup.webdav == 'object') {
+                            //make webdav compliant: http://www.webdav.org/specs/rfc4918.html#rfc.section.5.2, http://www.webdav.org/specs/rfc2518.html#METHOD_MKCOL
+                            // So with leading and trailing slash in the foldername, and no double and backslashes
+                            if (typeof obj.config.settings.autobackup.webdav.foldername != 'string') {obj.config.settings.autobackup.webdav.foldername = '/MeshCentral-Backups/'}
+                            else {obj.config.settings.autobackup.webdav.foldername = ('/' + obj.config.settings.autobackup.webdav.foldername + '/').replaceAll("\\", "/").replaceAll("//", "/").replaceAll("//", "/")};
+                        }
                     }
 
                     // Check if the database is capable of performing a backup
@@ -3195,12 +3237,12 @@ function CreateMeshCentralServer(config, args) {
         23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node', core: 'nodejs', rcore: 'nodejs', arcore: 'nodejs', tcore: 'nodejs' }, // NodeJS based agent
         24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
         25: { id: 25, localname: 'meshagent_armhf', rname: 'meshagent', desc: 'Linux ARM - HardFloat', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // "armv6l" and "armv7l"
-        26: { id: 26, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit (glibc/2.24)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // This is replaced by ARCHID 32
+        26: { id: 26, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // This is replaced by ARCHID 32
         27: { id: 27, localname: 'meshagent_armhf2', rname: 'meshagent', desc: 'Linux ARM - HardFloat', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Raspbian 7 2015-02-02 for old Raspberry Pi.
         28: { id: 28, localname: 'meshagent_mips24kc', rname: 'meshagent', desc: 'Linux MIPS24KC/MUSL (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MIPS Router with OpenWRT
         29: { id: 29, localname: 'meshagent_osx-arm-64', rname: 'meshagent', desc: 'Apple macOS ARM-64', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon ARM 64bit
         30: { id: 30, localname: 'meshagent_freebsd_x86-64', rname: 'meshagent', desc: 'FreeBSD x86-64', update: true, amt: false, platform: 'freebsd', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // FreeBSD x64
-        32: { id: 32, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit (glibc/2.24)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
+        32: { id: 32, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
         33: { id: 33, localname: 'meshagent_openwrt_x86_64', rname: 'meshagent', desc: 'OpenWRT x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // This is replaced with ARCHID 36.
         34: { id: 34, localname: 'assistant_windows', rname: 'meshassistant', desc: 'MeshCentral Assistant (Windows)', update: false, amt: false, platform: 'assistant', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MeshCentral Assistant for Windows
         35: { id: 35, localname: 'meshagent_linux-armada370-hf', rname: 'meshagent', desc: 'Armada370 - ARM32/HF (libc/2.26)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Armada370
@@ -3576,9 +3618,9 @@ function CreateMeshCentralServer(config, args) {
                 try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
             }
 
-            // If agents must be stored in RAM or if this is a Windows 32/64 agent, load the agent in RAM.
-            if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4)) && (obj.args.agentsinram !== false))) {
-                if ((archid == 3) || (archid == 4)) {
+            // If agents must be stored in RAM or if this is a Windows 32/64/ARM64 agent, load the agent in RAM.
+            if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4) || (archid == 43)) && (obj.args.agentsinram !== false))) {
+                if ((archid == 3) || (archid == 4) || (archid == 43)) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
                     outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
@@ -3692,7 +3734,7 @@ function CreateMeshCentralServer(config, args) {
             obj.exeHandler.hashExecutableFile(options);
 
             // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
-            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4))) {
+            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4) || (archid == 43))) {
                 const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
                 objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
                 objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
@@ -3971,7 +4013,16 @@ function CreateMeshCentralServer(config, args) {
         try { lines = obj.fs.readFileSync(obj.path.join(obj.datapath, arg.substring(5))).toString().split(/\r?\n/).join('\r').split('\r'); } catch (ex) { }
         if (lines == null) return null;
         const validLines = [];
-        for (var i in lines) { if ((lines[i].length > 0) && (((lines[i].charAt(0) > '0') && (lines[i].charAt(0) < '9')) || (lines[i].charAt(0) == ':'))) validLines.push(lines[i]); }
+        for (var i in lines) { 
+            const line = lines[i].trim();
+            if (line.length === 0) continue;
+            if (line.charAt(0) === '#') continue;
+            const parts = line.split('#');
+            const candidate = parts[0].trim();
+            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.charAt(0) === ':')) {
+                validLines.push(candidate);
+            }
+        }
         return validLines;
     }
 
@@ -4025,6 +4076,26 @@ function checkResolveAll(names, func) {
             if (--this.state.count == 0) { this.state.func(this.state.err); }
         }.bind({ name: names[i], state: state }))
     }
+}
+
+// Resolve a list of domains to IP addresses, return a flat array of IPs.
+async function resolveDomainsToIps(originalArray) {
+    if (!Array.isArray(originalArray)) { return undefined; }
+    const flatResult = [];
+    for (const item of originalArray) {
+        if (new require('ipcheck')(item).valid) {
+            flatResult.push(item);
+            continue;
+        }
+        try {
+            const results = await require('dns').promises.lookup(item, { all: true });
+            flatResult.push(...results.map(r => r.address));
+        } catch (err) {
+            console.log(`Could not resolve ${item}`);
+        }
+    }
+    if (flatResult.length == 0) { return undefined; }
+    return flatResult;
 }
 
 // Return the server configuration
@@ -4103,6 +4174,8 @@ function InstallModules(modules, args, func) {
                     // If the module is not installed, but we get the ERR_PACKAGE_PATH_NOT_EXPORTED error, try a second way.
                     if ((versionMatch == false) && (modulePath != null)) {
                         if (JSON.parse(require('fs').readFileSync(modulePath, 'utf8')).version != moduleVersion) { throw new Error(); }
+                    } else if (versionMatch == false) { 
+                        throw new Error();
                     }
                 } else {
                     // For all other modules, do the check here.
@@ -4259,11 +4332,11 @@ function mainStart() {
             if (mstsc == false) { config.domains[i].mstsc = false; }
             if (config.domains[i].ssh == true) { ssh = true; }
             if ((typeof config.domains[i].authstrategies == 'object')) {
-                if (passport.indexOf('passport') == -1) { passport.push('passport','connect-flash'); } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
-                if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter'); }
-                if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20'); }
-                if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2'); }
-                if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2'); passport.push('jwt-simple'); }
+                if (passport.indexOf('passport') == -1) { passport.push('passport@0.7.0','connect-flash@0.1.1'); } // Passport v0.6.0 requires a patch, see https://github.com/jaredhanson/passport/issues/904 and include connect-flash here to display errors
+                if ((typeof config.domains[i].authstrategies.twitter == 'object') && (typeof config.domains[i].authstrategies.twitter.clientid == 'string') && (typeof config.domains[i].authstrategies.twitter.clientsecret == 'string') && (passport.indexOf('passport-twitter') == -1)) { passport.push('passport-twitter@1.0.4'); }
+                if ((typeof config.domains[i].authstrategies.google == 'object') && (typeof config.domains[i].authstrategies.google.clientid == 'string') && (typeof config.domains[i].authstrategies.google.clientsecret == 'string') && (passport.indexOf('passport-google-oauth20') == -1)) { passport.push('passport-google-oauth20@2.0.0'); }
+                if ((typeof config.domains[i].authstrategies.github == 'object') && (typeof config.domains[i].authstrategies.github.clientid == 'string') && (typeof config.domains[i].authstrategies.github.clientsecret == 'string') && (passport.indexOf('passport-github2') == -1)) { passport.push('passport-github2@0.1.12'); }
+                if ((typeof config.domains[i].authstrategies.azure == 'object') && (typeof config.domains[i].authstrategies.azure.clientid == 'string') && (typeof config.domains[i].authstrategies.azure.clientsecret == 'string') && (typeof config.domains[i].authstrategies.azure.tenantid == 'string') && (passport.indexOf('passport-azure-oauth2') == -1)) { passport.push('passport-azure-oauth2@0.1.0'); passport.push('jwt-simple@0.5.6'); }
                 if ((typeof config.domains[i].authstrategies.oidc == 'object') && (passport.indexOf('openid-client@5.7.1') == -1)) {
                     if ((nodeVersion >= 17)
                         || ((Math.floor(nodeVersion) == 16) && (nodeVersion >= 16.13))
@@ -4280,37 +4353,37 @@ function mainStart() {
             if (config.domains[i].sessionrecording != null) { sessionRecording = true; }
             if ((config.domains[i].passwordrequirements != null) && (config.domains[i].passwordrequirements.bancommonpasswords == true)) { wildleek = true; }
             if ((config.domains[i].newaccountscaptcha != null) && (config.domains[i].newaccountscaptcha !== false)) { captcha = true; }
-            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal'); }
+            if ((typeof config.domains[i].duo2factor == 'object') && (passport.indexOf('@duosecurity/duo_universal') == -1)) { passport.push('@duosecurity/duo_universal@2.1.0'); }
         }
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'body-parser@1.20.3', 'cbor@5.2.0', 'compression@1.7.5', 'cookie-session@2.1.0', 'express@4.21.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb', 'node-forge@1.3.1', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.0', 'yauzl@2.10.0'];
+        var modules = ['archiver@7.0.1', 'body-parser@1.20.4', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.1', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.2.3', '@seald-io/nedb@4.1.2', 'node-forge@1.3.2', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.18.3', 'yauzl@2.10.0'];
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
-        if (ssh == true) { modules.push('ssh2@1.16.0'); }
+        if (ssh == true) { modules.push('ssh2@1.17.0'); }
         if (passport != null) { modules.push(...passport); }
         if (captcha == true) { modules.push('svg-captcha@1.4.0'); }
 
-        if (sessionRecording == true) { modules.push('image-size@1.1.1'); } // Need to get the remote desktop JPEG sizes to index the recodring file.
+        if (sessionRecording == true) { modules.push('image-size@2.0.2'); } // Need to get the remote desktop JPEG sizes to index the recording file.
         if (config.letsencrypt != null) { modules.push('acme-client@4.2.5'); } // Add acme-client module. We need to force v4.2.4 or higher since olver versions using SHA-1 which is no longer supported by Let's Encrypt.
-        if (config.settings.mqtt != null) { modules.push('aedes@0.39.0'); } // Add MQTT Modules
-        if (config.settings.mysql != null) { modules.push('mysql2@3.11.4'); } // Add MySQL.
+        if (config.settings.mqtt != null) { modules.push('aedes@0.51.3'); } // Add MQTT Modules
+        if (config.settings.mysql != null) { modules.push('mysql2@3.15.1'); } // Add MySQL.
         //if (config.settings.mysql != null) { modules.push('@mysql/xdevapi@8.0.33'); } // Add MySQL, official driver (https://dev.mysql.com/doc/dev/connector-nodejs/8.0/)
-        if (config.settings.mongodb != null) { modules.push('mongodb@4.13.0'); modules.push('saslprep@1.0.3'); } // Add MongoDB, official driver.
-        if (config.settings.postgres != null) { modules.push('pg@8.14.1') } // Add Postgres, official driver.
-        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.0'); } // Add MariaDB, official driver.
+        if (config.settings.mongodb != null) { modules.push('mongodb@4.17.2'); modules.push('@mongodb-js/saslprep@1.3.1')} // Add MongoDB, official driver.
+        if (config.settings.postgres != null) { modules.push('pg@8.16.3') } // Add Postgres, official driver.
+        if (config.settings.mariadb != null) { modules.push('mariadb@3.4.5'); } // Add MariaDB, official driver.
         if (config.settings.acebase != null) { modules.push('acebase@1.29.5'); } // Add AceBase, official driver.
         if (config.settings.sqlite3 != null) { modules.push('sqlite3@5.1.7'); } // Add sqlite3, official driver.
-        if (config.settings.vault != null) { modules.push('node-vault@0.10.2'); } // Add official HashiCorp's Vault module.
-        if (config.settings.plugins != null) { modules.push('semver@7.7.1'); } // Required for version compat testing and update checks
-        if ((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) { modules.push('https-proxy-agent@7.0.2'); } // Required for HTTP/HTTPS proxy support
+        if (config.settings.vault != null) { modules.push('node-vault@0.10.5'); } // Add official HashiCorp's Vault module.
+        const hasExistingProxy = process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy'];
+        if (((config.settings.plugins != null) && (config.settings.plugins.proxy != null)) || (hasExistingProxy)) { modules.push('https-proxy-agent@7.0.6'); } // Required for HTTP/HTTPS proxy support
         else if (config.settings.xmongodb != null) { modules.push('mongojs@3.1.0'); } // Add MongoJS, old driver.
-        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.9.16'); } // Add SMTP support
-        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail'); } // Add SendGrid support
-        if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier@4.0.0'); } // Translation support
+        if (nodemailer || ((config.smtp != null) && (config.smtp.name != 'console')) || (config.sendmail != null)) { modules.push('nodemailer@6.10.1'); } // Add SMTP support
+        if (sendgrid || (config.sendgrid != null)) { modules.push('@sendgrid/mail@8.1.6'); } // Add SendGrid support
+        if ((args.translate || args.dev) && (Number(process.version.match(/^v(\d+\.\d+)/)[1]) >= 16)) { modules.push('jsdom@22.1.0'); modules.push('esprima@4.0.1'); modules.push('html-minifier-terser@7.2.0'); } // Translation support
         if (typeof config.settings.crowdsec == 'object') { modules.push('@crowdsec/express-bouncer@0.1.0'); } // Add CrowdSec bounser module (https://www.npmjs.com/package/@crowdsec/express-bouncer)
-        if (config.settings.prometheus != null) { modules.push('prom-client'); } // Add Prometheus Metrics support
+        if (config.settings.prometheus != null) { modules.push('prom-client@15.1.3'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
             // Setup encrypted zip support if needed
@@ -4319,10 +4392,10 @@ function mainStart() {
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
             if (typeof config.settings.autobackup.webdav == 'object') {
-                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@4.11.4'); }
+                if ((typeof config.settings.autobackup.webdav.url != 'string') || (typeof config.settings.autobackup.webdav.username != 'string') || (typeof config.settings.autobackup.webdav.password != 'string')) { addServerWarning("Missing WebDAV parameters.", 2, null, !args.launch); } else { modules.push('webdav@5.9.0'); }
             }
             // Enable S3 Support
-            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.2'); }
+            if (typeof config.settings.autobackup.s3 == 'object') { modules.push('minio@8.0.6'); }
         }
 
         // Setup common password blocking
@@ -4331,31 +4404,31 @@ function mainStart() {
         // Setup 2nd factor authentication
         if (config.settings.no2factorauth !== true) {
             // Setup YubiKey OTP if configured
-            if (yubikey == true) { modules.push('yubikeyotp@0.2.0'); } // Add YubiKey OTP support
+            if (yubikey == true) { modules.push('yub@0.11.1'); } // Add YubiKey OTP support (replaced yubikeyotp due to form-data issues)
             if (allsspi == false) { modules.push('otplib@12.0.1'); } // Google Authenticator support (v10 supports older NodeJS versions).
         }
 
         // Desktop multiplexor support
-        if (config.settings.desktopmultiplex === true) { modules.push('image-size@1.1.1'); }
+        if (config.settings.desktopmultiplex === true) { modules.push('image-size@2.0.2'); }
 
         // SMS support
         if (config.sms != null) {
-            if (config.sms.provider == 'twilio') { modules.push('twilio@4.19.0'); }
-            if (config.sms.provider == 'plivo') { modules.push('plivo@4.58.0'); }
+            if (config.sms.provider == 'twilio') { modules.push('twilio@4.23.0'); }
+            if (config.sms.provider == 'plivo') { modules.push('plivo@4.75.1'); }
             if (config.sms.provider == 'telnyx') { modules.push('telnyx@1.25.5'); }
         }
 
         // Messaging support
         if (config.messaging != null) {
-            if (config.messaging.telegram != null) { modules.push('telegram@2.19.8'); modules.push('input@1.0.1'); }
+            if (config.messaging.telegram != null) { modules.push('telegram@2.26.22'); modules.push('input@1.0.1'); }
             if (config.messaging.discord != null) { if (nodeVersion >= 17) { modules.push('discord.js@14.6.0'); } else { delete config.messaging.discord; addServerWarning('This NodeJS version does not support Discord.js.', 26); } }
-            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.1'); }
+            if (config.messaging.xmpp != null) { modules.push('@xmpp/client@0.13.6'); }
             if (config.messaging.pushover != null) { modules.push('node-pushover@1.0.0'); }
             if (config.messaging.zulip != null) { modules.push('zulip@0.1.0'); }
         }
 
         // Setup web based push notifications
-        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.6'); }
+        if ((typeof config.settings.webpush == 'object') && (typeof config.settings.webpush.email == 'string')) { modules.push('web-push@3.6.7'); }
 
         // Firebase Support
         if ((config.firebase != null) && (typeof config.firebase.serviceaccountfile == 'string')) { modules.push('firebase-admin@12.7.0'); }

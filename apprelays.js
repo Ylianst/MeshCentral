@@ -107,7 +107,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
 
     // Check if any tunnels need to be cleaned up
     obj.checkTimeout = function () {
-        const limit = Date.now() - (1 * 60 * 1000); // This is is 5 minutes before current time
+        const limit = Date.now() - (5 * 60 * 1000); // This is 5 minutes before current time
 
         // Close any old non-websocket tunnels
         const tunnelToRemove = [];
@@ -149,7 +149,7 @@ module.exports.CreateWebRelaySession = function (parent, db, req, args, domain, 
         // Check to see if any of the tunnels are free
         var count = 0;
         for (var i in tunnels) {
-            count += ((tunnels[i].isWebSocket || tunnels[i].isStreaming) ? 0 : 1);
+            count += ((tunnels[i].isWebSocket || tunnels[i].isStreaming || (tunnels[i].res != null)) ? 0 : 1);
             if ((tunnels[i].relayActive == true) && (tunnels[i].res == null) && (tunnels[i].isWebSocket == false) && (tunnels[i].isStreaming == false)) {
                 // Found a free tunnel, use it
                 const x = pendingRequests.shift();
@@ -338,6 +338,9 @@ module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
         for (var i in req.headers) { if (blockedHeaders.indexOf(i) == -1) { request += i + ': ' + req.headers[i] + '\r\n'; } }
         var cookieStr = '';
         for (var i in parent.webCookies) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + parent.webCookies[i].value); }
+        if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
+        var reqCookies = parseRequestCookies(req.headers.cookie);
+        for (var i in reqCookies) { if ((i != 'xid') && (i != 'xid.sig')) { if (cookieStr != '') { cookieStr += '; ' } cookieStr += (i + '=' + reqCookies[i]); } }
         if (cookieStr.length > 0) { request += 'cookie: ' + cookieStr + '\r\n' } // If we have session cookies, set them in the header here
         request += '\r\n';
         send(Buffer.from(request));
@@ -2049,6 +2052,28 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         const targets = ['*', 'server-users'];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 44, msgArgs: [requestedPath], msg: 'Create folder: \"' + requestedPath + '\"', domain: domain.id });
+                        break;
+                    }
+                    case 'mkfile': {
+                        if (obj.sftp == null) return;
+                        var requestedPath = msg.path;
+                        if (requestedPath.startsWith('/') == false) { requestedPath = '/' + requestedPath; }
+                        obj.sftp.open(requestedPath, 'w', 0o666, function (err, handle) {
+                            if (err != null) {
+                                // To-do: Report error?
+                            } else {
+                                obj.uploadHandle = handle;
+                                if (obj.uploadHandle != null) {
+                                    obj.sftp.close(obj.uploadHandle, function () {
+                                        // Event the file create
+                                        const targets = ['*', 'server-users'];
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 164, msgArgs: [requestedPath], msg: 'Create file: \"' + requestedPath + '\"', domain: domain.id });    
+                                    });
+                                    delete obj.uploadHandle;
+                                }
+                            }
+                        });
                         break;
                     }
                     case 'rm': {

@@ -14,6 +14,7 @@
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
+    {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
@@ -34,6 +35,7 @@
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/xterm-addon-image{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/flatpickr.js"></script>
     <script type="text/javascript" src="mstsc/mstsc.js"></script>
     <script type="text/javascript" src="mstsc/keyboard.js"></script>
@@ -49,6 +51,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/marked{{{min}}}.js"></script>
+    {{{customJSTags}}}
     <title>{{{title}}}</title>
 </head>
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px" onload="if (typeof(startup) !== 'undefined') startup();">
@@ -326,7 +329,7 @@
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
-                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter: user:xxx or u:xxx ip:xxx group:xxx or g:xxx tag:xxx or t: xxx atag:xxx or a:xxx os:xxx amt:xxx desc:xxx wsc:ok wsc:noav wsc:noupdate wsc:nofirewall wsc:any"/>&nbsp;
+                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
@@ -346,12 +349,14 @@
                         <td id=kvmListToolbar class=style14 style="display:none">
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton2" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
                             <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton2" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
-                            <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
-                            <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                            <span id=KvmDesktopButtons>
+                                <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
+                                <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
+                                <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
+                            </span>
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
-                            <label><input type="checkbox" id="autoConnectDesktopCheckbox" onclick="autoConnectDesktops(event)" title="Automatic connect" />Auto&nbsp;</label>
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) />&nbsp;
+                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc" />&nbsp;
                             <span id=KvmSearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" /></span>
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
@@ -380,6 +385,7 @@
                                     <option>Tags</option>
                                     <option>Group-Tags</option>
                                     <option>Last Seen</option>
+                                    <option>Last Boot Up Time</option>
                                 </select>
                                 &nbsp;
                             </div>
@@ -400,7 +406,7 @@
                     <table>
                         <tr>
                             <td valign="top" style="width:50px">
-                                <img src="images/info.png" loading="lazy" width="47" height="48" />
+                                <img src="images/info.png" width="47" height="48" />
                             </td>
                             <td>
                                 <div id="getStarted1">To get started, <a href=# onclick="return account_createMesh()"><strong>click here to create a device group</strong></a>.</div>
@@ -426,7 +432,7 @@
                 <div id="p2title"><h1>My Account</h1></div>
                 <div id="p2info" style="overflow-y:auto">
                     <div id="p2AccountImageFrame">
-                        <img id="p2AccountImage" alt="" loading="lazy" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" />
+                        <img id="p2AccountImage" alt="" width="128" height="128" onclick="account_manageImage(0)" src="images/user-256.png" />
                         <div><a onclick="account_manageImage(0)">Change image</a></div>
                     </div>
                     <div id="p2AccountSecurity" style="display:none">
@@ -883,6 +889,7 @@
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13DeleteFileButton value="Delete" onclick="p13deletefile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13ViewFileButton value="Edit" onclick="p13viewfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFolderButton value="New Folder" onclick="p13createfolder()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p13NewFileButton value="New File" onclick="p13createfile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13UploadButton value="Upload" onclick="p13uploadFile()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13DownloadButton value="Download" onclick="p13downloadButton()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p13CutButton value="Cut" onclick="p13copyFile(1)" />
@@ -1025,7 +1032,10 @@
             <div id=p17 style="display:none;margin-left:-18px">
                 <div id="p17title" style="margin-left:18px">
                     <div id="p17BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <div id="devListToolbarViewIcons3"><div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div></div>
+                    <div id="devListToolbarViewIcons3">
+                        <div class="viewSelector" onclick=refreshDetails(event) title="Refresh details information."><div class="viewSelector12"></div></div>
+                        <div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div>
+                    </div>
                     <h1>Details - <span id=p17deviceName></span></h1>
                 </div>
                 <div id=p17info style="overflow-y:auto">
@@ -1112,7 +1122,7 @@
                             </td>
                             <td style=width:20px></td>
                             <td style=width:200px;position:relative valign=top>
-                                <img id="p30userAuthServiceLogo" loading="lazy" style="display:none" class=userAuthStrategyLogo width=64 height=64>
+                                <img id="p30userAuthServiceLogo" style="display:none" class=userAuthStrategyLogo width=64 height=64>
                                 <picture id=MainUserImage style="display:none;border-width:0px;height:200px;width:200px;float:right" onclick="account_manageImage(1)">
                                     <source type="image/webp" width=200 height=200 srcset="images/webp/user-256.webp" />
                                     <img alt="" width=200 height=200 src=images/user-256.png />
@@ -1513,15 +1523,16 @@
         var webState = '{{{webstate}}}';
         if (webState != '') { webState = JSON.parse(decodeURIComponent(webState)); }
         if ((webState == null) || (typeof webState != 'object')) { webState = {}; }
-        for (var i in webState) { if (i != 'desktopsettings') { try { localStorage.setItem(i, webState[i]); } catch (ex) {} } }
-        if (!webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
+        for (var i in webState) { try { localStorage.setItem(i, webState[i]); } catch (ex) {} }
+        if (webState && !webState.loctag) { try { delete localStorage.removeItem('loctag'); } catch (ex) { } }
 
         var args, urlargs;
         var autoReconnect = true;
         var powerStatetable = ['', "Powered", "Sleep", "Sleep", "Sleep", "Hibernating", "Power off", "Present"];
         var StatusStrs = ["Disconnected", "Connecting...", "Setup...", "Connected", "Intel&reg; AMT Connected"];
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
         var agentsStrNoAgent = ['', '', '', '', "Windows", '', "Linux", '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', "Apple"];
+        var domainStates = ["None", "Azure AD", "On-Premises AD", "Hybrid AD", "Microsoft Account"];
         var sort = 0;
         var searchFocus = 0;
         var mapSearchFocus = 0;
@@ -1550,6 +1561,7 @@
         var debugLevel = parseInt('{{{debuglevel}}}');
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
+        var features3 = parseInt('{{{features3}}}');
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -1589,6 +1601,7 @@
         var installedPluginList = null;
         var goBackStack = [];
         var CollapsedGroups = {};
+        var collapseGroups = '{{{collapseGroups}}}';
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
         var deviceViewSettings = {};
         try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch(ex) {}
@@ -1596,6 +1609,7 @@
         try { userViewSettings = JSON.parse(getstore('_usersViewSettings', '{}')); } catch(ex) {}
         var xterm = null;
         var xtermfit = null;
+        var xtermimage = null;
         var xtermResizeTimer = null;
         var miscState = {};
         var checkedNodeids = {};
@@ -1647,6 +1661,7 @@
             delete urlargs.viewmode;
             delete urlargs.gotonode;
             delete urlargs.gotodevicename;
+            delete urlargs.gotodevicername;
             delete urlargs.gotodeviceip;
             delete urlargs.gotomesh;
             delete urlargs.gotouser;
@@ -1730,6 +1745,9 @@
 
             // Show the modern ui switcher
             QV('textnewui', ((features2 & 0x40000000) == 0) ? false : true);
+
+            // Show Connect All and Disconnect All
+            QV('KvmDesktopButtons', ((features3 & 0x00000001) == 0) ? true : false);
 
             // Connect to the mesh server
             meshserver = MeshServerCreateControl(domainUrl);
@@ -2368,6 +2386,8 @@
             if (userinfo == null) return -1;
             var authFactorCount = 0;
             if (userinfo.otpsecret == 1) { authFactorCount++; } // Authenticator time factor
+            if (userinfo.otpduo == 1) { authFactorCount++; } // Duo factor
+            if (userinfo.otpdev == 1) { authFactorCount++; } // Push authentication factor
             if (userinfo.otphkeys > 0) { authFactorCount += userinfo.otphkeys; } // FIDO hardware factor
             if ((features & 0x00800000) && (userinfo.otpekey == 1)) { authFactorCount++; } // EMail factor
             if ((features & 0x02000000) && (features & 0x04000000) && (userinfo.phone != null)) { authFactorCount++; } // SMS factor
@@ -2448,7 +2468,8 @@
                     files = null;
                 }
                 if (serverinfo.logoutonidlesessiontimeout) {
-                    window.location.href = 'logout';
+                    if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
+					else { window.location.href = 'logout'; }
                 }
             } else {
                 var ds = Math.round((serverinfo.timeout - delta) / 1000);
@@ -2667,6 +2688,10 @@
                     updateDevicePageState();
 
                     mainUpdate(1 | 2 | 4 | 64);
+                    
+                    // If groups are to be collapsed by default, do it now
+                    if (collapseGroups === 'true' && Object.keys(CollapsedGroups).length === 0 && typeof(getstore('_collapse')) === 'undefined') { cmexpandaction(2); }
+                    
                     break;
                 }
                 case 'powertimeline': {
@@ -2697,6 +2722,7 @@
                     if (message.noinfo === true) {
                         updateDeviceDetails(getNodeFromId(message.nodeid));
                     } else {
+                        message.hardware.time = message.time;
                         updateDeviceDetails(getNodeFromId(message.nodeid), message.hardware);
                     }
                     break;
@@ -2852,6 +2878,7 @@
                     updateDeviceDetails(getNodeFromId(message.nodeid), null, message);
                     if ((xxdialogMode == 2) && (xxdialogTag == 'if' + message.nodeid))  {
                         var x = '<div class=dialogText>';
+                        if (currentNode.firstconnect) { x += addHtmlValue2("First agent connection", printDateTime(new Date(currentNode.firstconnect))); }
                         if (currentNode.lastconnect) { x += addHtmlValue2("Last agent connection", printDateTime(new Date(currentNode.lastconnect))); }
                         if (currentNode.lastaddr) {
                             var splitip = currentNode.lastaddr.split(':');
@@ -3543,6 +3570,7 @@
                                 node.name = message.event.node.name;
                                 node.rname = message.event.node.rname;
                                 node.lusers = message.event.node.lusers;
+                                node.upnusers = message.event.node.upnusers;
                                 node.users = message.event.node.users;
                                 node.host = message.event.node.host;
                                 node.desc = message.event.node.desc;
@@ -3588,10 +3616,13 @@
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
+                                if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
+                                if (message.event.node.lastbootuptime != null) { node.lastbootuptime = message.event.node.lastbootuptime; }
+                                if (message.event.node.idletime != null) { node.idletime = message.event.node.idletime; }
 
                                 // Check if this device has changed device group
                                 if (message.event.node.meshid != node.meshid) {
@@ -3868,6 +3899,22 @@
                     }
                     break;
                 }
+                case 'pluginPermissions': {
+                    handlePluginPermissions(message);
+                    break;
+                }
+                case 'pluginPermissionsSet': {
+                    if (message.success) {
+                        // Already handled in save function
+                    } else {
+                        alert("Error saving permissions: " + message.error);
+                    }
+                    break;
+                }
+                case 'pluginPermissionList': {
+                    handlePluginPermissionList(message);
+                    break;
+                }
                 case 'createInviteLink': { // Agent installation invitation link
                     if (xxdialogTag != message.meshid) break;
                     var servername = serverinfo.name;
@@ -4059,6 +4106,10 @@
                 var foundNode = null;
                 if (nodes != null) { for (var i in nodes) { if (nodes[i].name == args.gotodevicename) { foundNode =  nodes[i]._id; } } }
                 if (foundNode) { gotoDevice(foundNode, xviewmode); goBackStack.push(1); }
+            } else if (args.gotodevicername != null) {
+                var foundNode = null;
+                if (nodes != null) { for (var i in nodes) { if (nodes[i].rname == args.gotodevicername) { foundNode =  nodes[i]._id; } } }
+                if (foundNode) { gotoDevice(foundNode, xviewmode); goBackStack.push(1); }
             } else if (args.gotodeviceip != null) {
                 var foundNode = null;
                 if (nodes != null) { for (var i in nodes) { if (nodes[i].ip == args.gotodeviceip) { foundNode =  nodes[i]._id; } } }
@@ -4168,13 +4219,14 @@
             x += '<label><input id=d2c12 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0)?' checked':'') + '>' + "Windows Update" + '</label><br />';
             x += '<label><input id=d2c13 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0)?' checked':'') + '>' + "Windows Firewall" + '</label><br />';
             x += '<label><input id=d2c14 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0)?' checked':'') + '>' + "Last Boot Up Time" + '</label><br />';
+            x += '<label><input id=d2c16 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('idletime') >= 0)?' checked':'') + '>' + "Idle Time" + '</label><br />';
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
-            x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
             x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0)?' checked':'') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
             x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0)?' checked':'') + '>' + "Intel&reg; AMT state" + '</label><br />';
+            x += '<label><input id=d2c7 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lastseen') >= 0)?' checked':'') + '>' + "Last Seen" + '</label><br />';
             setDialogMode(2, "Device View Columns", 3, onDeviceViewSettingsEx, x);
         }
 
@@ -4195,6 +4247,7 @@
             if (Q('d2c13').checked) { cols.push('windowsfirewall'); }
             if (Q('d2c14').checked) { cols.push('lastbootuptime'); }
             if (Q('d2c15').checked) { cols.push('amthost'); }
+            if (Q('d2c16').checked) { cols.push('idletime'); }
             if (Q('d2c17').checked) { cols.push('amtstate'); }
             deviceViewSettings.devsCols = cols;
             putstore('_deviceViewSettings', JSON.stringify(deviceViewSettings));
@@ -4412,6 +4465,16 @@
                     }
                     nodes.sort(lastConnectSort);
                 }
+                else if (sort == 6) {
+                    // Last Boot Up Time
+                    if (!(deviceViewSettings && deviceViewSettings.devsCols && deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0)) {
+                        // Force initialize the view settings
+                        if (deviceViewSettings == null) { deviceViewSettings = {}; }
+                        if (!Array.isArray(deviceViewSettings.devsCols)) { deviceViewSettings.devsCols = ['user','ip','conn', 'lastbootuptime']; }
+                        else { deviceViewSettings.devsCols.push('lastbootuptime'); }
+                    }
+                    nodes.sort(lastBootUpTimeSort);
+                }
 
                 // Compute the width of the device view.
                 var totalDeviceViewWidth = Q('column_l').clientWidth - 60;
@@ -4482,7 +4545,7 @@
                             c = 0;
                             if ((view == 1) || (view == 3) || (view == 5)) { r += '<div id=DevxCol' + deviceHeaderId + ((collapsed === true)?' style=display:none':'') + '>'; } // Open collapse div
                         }
-                    } else if (sort == 2 || sort == 5) {
+                    } else if (sort == 2 || sort == 5 || sort == 6) {
                         // Device header
                         if (current == null) { current = '1'; }
                     }
@@ -4637,6 +4700,7 @@
                         if (deviceViewSettings.devsCols.indexOf('windowsupdate') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Update"; }
                         if (deviceViewSettings.devsCols.indexOf('windowsfirewall') >= 0) { colums += '<th style=color:gray;width:120px>' + "Windows Firewall"; }
                         if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Boot Up Time"; }
+                        if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { colums += '<th style=color:gray;width:100px title="' + "Updated every 5 Minutes" + '">' + "Idle Time"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
                         if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
@@ -4649,7 +4713,7 @@
                         }
 
                         // This height of 1 div at the end to fix a problem in Linux firefox browsers
-                        r = '<table style=width:100%;margin-top:4px cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';
+                        r = '<table style=width:100%;margin-top:4px;table-layout:fixed cellpadding=0 cellspacing=0><th style=color:gray>' + colums + r + '</tr></table><div style=height:1px></div>';
                     }
                 } else {
                     r += '</table>';
@@ -4954,11 +5018,13 @@
                 if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { // Last Boot Up Time
                     r += '<td style=text-align:center;font-size:x-small>' + ((node.lastbootuptime != null) ? printDateTime(new Date(node.lastbootuptime)) : "");
                 }
+                if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { // Idle Time
+                    r += '<td style=text-align:center;font-size:x-small>' + ((node.idletime != null && node.idletime != -1) ? printTimer(node.idletime) : "");
+                }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
-                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center>' + ip; } // IP address
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + EscapeHtml(ip); } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
-                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
                     var amtstate = '';
@@ -4969,7 +5035,7 @@
                     }
                     r += '<td style=text-align:center>' + amtstate;
                 }
-
+                if (deviceViewSettings.devsCols.indexOf('lastseen') >= 0) { r += '<td style=text-align:center;font-size:x-small>'; if (node.conn > 0) { r += "Connected"; } else if (node.lastconnect != null) { r += printDateTime(new Date(node.lastconnect)); } }
                 div.innerHTML = r;
             } else if ((view == 3) || (view == 5)) {
                 // Draw the device and canvas
@@ -5185,7 +5251,8 @@
             if (node.users.length > 1) { return '<span title="' + EscapeHtml(node.users.join(', ')) + '">' + nobreak(format("{0} users", node.users.length)) + '</span>'; }
             var u = node.users[0], su = u, i = u.indexOf('\\');
             if (i > 0) { su = u.substring(i + 1); }
-            su = EscapeHtml(su);
+            var upn = node.upnusers && node.upnusers[0];
+			su = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : su);
             if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
             if (node.lusers && node.lusers.length > 0) {
                 return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
@@ -5258,6 +5325,7 @@
             d7bitmapscaling.value = multidesktopsettings.scaling;
             d7encoding.value = multidesktopsettings.agentencoding;
             if (multidesktopsettings.framerate) { d7framelimiter.value = multidesktopsettings.framerate; } else { d7framelimiter.value = 100; }
+            changeDesktopSettingsTab(null, 'd7meshkvm');
             setDialogMode(7, "Remote Desktop Settings", 3, showMultiDesktopSettingsChanged);
         }
 
@@ -5439,7 +5507,7 @@
         // Intel AMT ACM activation using setup.bin
         function showAmtAcmSetup() {
             if (xxdialogMode) return false;
-            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formated USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MBEx password. " + '</div></table>';
+            var x = '<table><tr><td><img src=images/usbkey70.png height=70 width=31 style=margin-left:4px;margin-right:8px><td><div>' + "Activate Intel&reg; AMT in Admin Control Mode (ACM) using a FAT formatted USB key. Place setup.bin on it and boot one or more computers with this key." + '</div><div style=margin-top:6px>' + "Start by entering the old and new MEBx password. " + '</div></table>';
             x += addHtmlValue("Old Password", '<input id=dp1password0 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password1 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
             x += addHtmlValue("New Password*", '<input id=dp1password2 type=password style=width:230px autocomplete=off maxlength=32 onchange=validateAmtAcmSetupEx() onkeyup=validateAmtAcmSetupEx() />');
@@ -5458,7 +5526,8 @@
         }
 
         function showAmtAcmSetupEx() {
-            meshserver.send({ action: 'amtsetupbin', oldmebxpass: Q('dp1password0').value, newmebxpass: Q('dp1password1').value, baremetal: ((features2 & 0x00000020) && (Q('dp1lanprov').checked)) });
+            var baremetal = ((features2 & 0x00000020) && (currentMesh.mtype == 1) && (serverinfo.amtProvServerMeshId == currentMesh._id) && (Q('dp1lanprov').checked));
+            meshserver.send({ action: 'amtsetupbin', oldmebxpass: Q('dp1password0').value, newmebxpass: Q('dp1password1').value, baremetal: baremetal });
         }
 
         // Display the Intel AMT scanning dialog box
@@ -5614,7 +5683,7 @@
             var opts = '<select id=aginsSelect onchange=addAgentToMeshClick() style=width:236px><option value=0>' + "Windows" + '</option><option value=1>' + "Linux / BSD" + '</option><option value=5>' + "Linux / BSD / macOS Binary Installer" + '</option><option value=2>' + "Apple macOS" + '</option>';
             if ((features & 2) == 0) { opts += '<option value=6>' + "Mobile device" + '</option>'; } // Don't display mobile setup in LAN mode.
             opts += '<option value=7>' + "MeshCentral Assistant" + '</option>';
-            opts += '<option value=3>' + "Windows (UnInstall)" + '</option><option value=4>' + "Linux / BSD (UnInstall)" + '</option><option value=8>' + "Apple macOS (UnInstall)" + '</option></select>';
+            opts += '<option value=3>' + "Windows (Uninstall)" + '</option><option value=4>' + "Linux / BSD (Uninstall)" + '</option><option value=8>' + "Apple macOS (Uninstall)" + '</option></select>';
             x += addHtmlValue("Operating System", opts);
 
             var servername = serverinfo.name;
@@ -5624,7 +5693,7 @@
 
             // Add Linux/macOS binary installer option
             var binaryInstallAgentsOrder = [ 6, 5, 10005, 25, 26, 28, 30, 32, 36, 37, 40, 41, 45, 16, 29 ];
-            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit (glibc/2.24 NOKVM)', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
+            var binaryInstallAgents = { 6 : 'Linux x86-64', 5 : 'Linux x86-32', 10005 : 'Apple OSX Universal', 25 : 'Linux ARM-HF, Rasberry Pi', 26 : 'Linux ARM64-HF', 28: 'Linux MIPS24KC (OpenWRT)', 30 : 'FreeBSD x86-64', 32: 'Linux ARM 64 bit', 36: 'OpenWRT x86-64', 37: 'OpenBSD x86-64', 40: 'Linux MIPSEL24KC (OpenWRT)', 41: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', 45: 'RISC-V x86-64', 16: 'Apple macOS x86-64', 29: 'Apple macOS ARM-64' };
             for (var i in binaryInstallAgentsOrder) { moreoptions += '<option value=' + binaryInstallAgentsOrder[i] + '>' + binaryInstallAgents[binaryInstallAgentsOrder[i]] + '</option>' }
             x += '<div id=aginsSysTypeDiv>';
             x += addHtmlValue("System Type", '<select id=aginsSysType onchange=addAgentToMeshClick() style=width:236px>' + moreoptions + '</select>');
@@ -5642,7 +5711,7 @@
             meshfilename = meshfilename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
 
             // Windows agent install
-            x += '<div id=agins_windows>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_windows>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsw32lnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginsw64lnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginswa64lnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
@@ -5650,12 +5719,12 @@
             x += '</div>';
 
             // Linux agent install
-            x += '<div id=agins_linux style=display:none>' + format("To add a computer to \"{0}\" run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
+            x += '<div id=agins_linux style=display:none>' + format("To add a new computer to the device group of \"{0}\", run the following command. Root credentials will be needed.", EscapeHtml(mesh.name)) + '<br />';
             x += '<textarea id=agins_linux_area rows=2 cols=20 readonly=readonly style=border-radius:4px;padding:6px;margin-top:4px;margin-bottom:4px;background-color:#FFF9D3;border:0;width:100%;resize:none;height:160px;overflow:auto;font-size:12px></textarea>';
-            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" first." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
+            x += '<div style=font-size:x-small;float:right>' + "* For BSD, run \"pkg install wget sudo bash\" beforehand." + '</div><a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area")><img src=images/link4.png height=10 width=10 style=cursor:pointer> ' + "Copy" + '</a></div>';
 
             // macOS agent install
-            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to device group \"{0}\", download the mesh agent and install it the computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
+            x += '<div id=agins_osx style=display:none>' + format("To add a new computer to the device group of \"{0}\", download the mesh agent and install it onto the designated computer to manage. This agent installer has server and device group information embedded within it.", EscapeHtml(mesh.name)) + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "x86-64bit version of macOS Mesh Agent" + '">' + "macOS x86-64bit" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=16&meshid=' + meshid.split('/')[2] + '",0)>');
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "ARM 64bit version of macOS Mesh Agent" + '">' + "macOS ARM (64bit)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=29&meshid=' + meshid.split('/')[2] + '",0)>');
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "Universal version of macOS Mesh Agent" + '">' + "macOS (Universal)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
@@ -5681,7 +5750,7 @@
             x += '</td><td><img src=images/assistant-100.png width=74 height=100 srcset="images/assistant-200.png 2x"></td></tr></table></div>';
 
             // Windows agent uninstall
-            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"uninstall\"." + '<br /><br />';
+            x += '<div id=agins_windows_un style=display:none>' + "To remove a mesh agent, download the file below, run it and click \"Uninstall\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsw32unlnk name="meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 32bit version of the MeshAgent" + '">' + "Windows x86-32 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 32bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=3&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginsw64unlnk name="meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "x86 64bit version of the MeshAgent" + '">' + "Windows x86-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows x86 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=4&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Mesh Agent", '<a id=aginswa64unlnk name="meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '" title="' + "ARM 64bit version of the MeshAgent" + '">' + "Windows ARM-64 (.exe)" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy Windows ARM 64bit agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=43&meshid=' + meshid.split('/')[2] + '&installflags=",1)>');
@@ -5693,12 +5762,12 @@
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")><img src=images/link4.png height=10 width=10 style=cursor:pointer> Copy</a></div>';
 
             // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right click on the \".mpkg\" file and click \"Show Package Contents\", then right click on \"Uninstall.command\" and click \"Open\"" + '<br /><br />';
+            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right-click the \".mpkg\" file and select \"Show Package Contents\", then right-click \"Uninstall.command\" and select \"Open\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key?('&key=' + urlargs.key):'') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <img src=images/link4.png height=10 width=10 title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)>');
             x += '</div>';
 
             // Linux binary installer
-            x += '<div id=agins_linux_inst style=display:none>' + "This is a executable on OS's with graphical user interfaces" + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine to run 'xattr -r -d com.apple.quarantine meshagent'" + '<br /><br />' + "You need to 'chmod +x meshagent' and run this file" + '<br /><br />';
+            x += '<div id=agins_linux_inst style=display:none>' + "This is an executable on OSs with graphical user interfaces." + '<br /><br />' + "Apple macOS executables will need to be removed from quarantine by running 'xattr -r -d com.apple.quarantine meshagent'." + '<br /><br />' + "You need to run 'chmod +x meshagent', and then run this file." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a id=aginsbinlnk name="meshagents?id=' + meshid.split('/')[2] + '&installflags=0' + (urlargs.key?('&key=' + urlargs.key):'') + '">' + "meshagent" + '</a> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshagents?id=' + meshid.split('/')[2] + '&installflags=",1)>');
             x += addHtmlValue("Command", '<input id=aginsbincmd type=text style="width:216px" readonly value=\'wget -O meshagent' + (((features & 0x80000000) != 0)?' --no-check-certificate':'') + ' \"https://' + servername + portStr + domainUrl + 'meshagents?id=' + meshid.split('/')[2].split('$').join('%24').split('@').join('%40') + '\' /> <img src=images/link4.png height=10 width=10 title="' + "Copy agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentIdValue("aginsbincmd")>');
             x += '</div>';
@@ -5707,7 +5776,7 @@
 
             // Create the QR code
             new QRCode(Q('agins_qrimage'), { text: serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2], width: 180, height: 180, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.M });
-            Q('agins_qrimage_a').setAttribute('href', serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2])
+            Q('agins_qrimage_a').setAttribute('href', serverinfo.magenturl + ',' + serverinfo.agentCertHash + ',' + meshid.split('/')[2]);
 
             if ((features & 0x2000) == 0)
             {
@@ -6008,7 +6077,7 @@
             } else if (op == 109) {
                 // Upload files
                 var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (((n.agent.id > 0) && (n.agent.id < 5)) || (n.agent.id == 34)) { wintype = true; } else { linuxtype = true; } } }
+                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
                 var x = "Upload selected files to all selected devices" + '<br /><br />';
                 x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
                 x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
@@ -6178,7 +6247,7 @@
             for (var i in options.nodeids) {
                 var n = getNodeFromId(options.nodeids[i]);
                 if (n.agent) { if ((GetNodeRights(n) & 24) == 24) { agenttype = true; }
-                if ((n.agent.id > 0) && (n.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } }
             }
             if ((wintype == true) || (linuxtype == true) || (agenttype == true)) {
                 // Fetch run options
@@ -6300,6 +6369,7 @@
         function deviceSort(a, b) { return sortCollator.compare(a.namel, b.namel); }
         function deviceHostSort(a, b) { return sortCollator.compare(a.rnamel, b.rnamel); }
         function lastConnectSort(a, b) { var aa = a.lastconnect, bb = b.lastconnect; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (a.conn > 0) { aa = 99999999999998; } if (b.conn > 0) { bb = 99999999999998; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
+        function lastBootUpTimeSort(a, b) { var aa = a.lastbootuptime, bb = b.lastbootuptime; if (aa == null) { aa = 99999999999999; } if (bb == null) { bb = 99999999999999; } if (aa == bb) { return nameSort(a, b); } return (aa - bb); }
 
         function onSearchFocus(x) { searchFocus = x; }
         function clearDeviceSearch() { Q('KvmSearchInput').value = Q('SearchInput').value = ''; onOnlineCheckBox(); mainUpdate(1); }
@@ -6323,20 +6393,24 @@
         }
 
         function getDevicesThatMatchFilter(x) {
+            var negate = x.startsWith('!');
+            if (negate) x = x.substring(1);
             var r = [];
-            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null;
-            if (x.startsWith("user:".toLowerCase())) { userSearch = x.substring("user:".length); }
-            else if (x.startsWith("u:".toLowerCase())) { userSearch = x.substring("u:".length); }
-            else if (x.startsWith("ip:".toLowerCase())) { ipSearch = x.substring("ip:".length); }
-            else if (x.startsWith("group:".toLowerCase())) { groupSearch = x.substring("group:".length); }
-            else if (x.startsWith("g:".toLowerCase())) { groupSearch = x.substring("g:".length); }
-            else if (x.startsWith("tag:".toLowerCase())) { tagSearch = x.substring("tag:".length); }
-            else if (x.startsWith("t:".toLowerCase())) { tagSearch = x.substring("t:".length); }
-            else if (x.startsWith("atag:".toLowerCase())) { agentTagSearch = x.substring("atag:".length); }
-            else if (x.startsWith("a:".toLowerCase())) { agentTagSearch = x.substring("a:".length); }
-            else if (x.startsWith("os:".toLowerCase())) { osSearch = x.substring("os:".length); }
-            else if (x.startsWith("amt:".toLowerCase())) { amtSearch = x.substring("amt:".length); }
-            else if (x.startsWith("desc:".toLowerCase())) { descSearch = x.substring("desc:".length); }
+            var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
+            if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
+            else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
+            else if (x.startsWith('ip:'.toLowerCase())) { ipSearch = x.substring('ip:'.length); }
+            else if (x.startsWith('group:'.toLowerCase())) { groupSearch = x.substring('group:'.length); }
+            else if (x.startsWith('g:'.toLowerCase())) { groupSearch = x.substring('g:'.length); }
+            else if (x.startsWith('tag:'.toLowerCase())) { tagSearch = x.substring('tag:'.length); }
+            else if (x.startsWith('t:'.toLowerCase())) { tagSearch = x.substring('t:'.length); }
+            else if (x.startsWith('atag:'.toLowerCase())) { agentTagSearch = x.substring('atag:'.length); }
+            else if (x.startsWith('a:'.toLowerCase())) { agentTagSearch = x.substring('a:'.length); }
+            else if (x.startsWith('os:'.toLowerCase())) { osSearch = x.substring('os:'.length); }
+            else if (x.startsWith('amt:'.toLowerCase())) { amtSearch = x.substring('amt:'.length); }
+            else if (x.startsWith('desc:'.toLowerCase())) { descSearch = x.substring('desc:'.length); }
+            else if (x.startsWith('connectivity:'.toLowerCase())) { connectivitySearch = x.substring('connectivity:'.length); }
+            else if (x.startsWith('c:'.toLowerCase())) { connectivitySearch = x.substring('c:'.length); }
             else if (x == 'wsc:ok') { wscSearch = 1; }
             else if (x == 'wsc:noav') { wscSearch = 2; }
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
@@ -6366,7 +6440,7 @@
             } else if (userSearch != null) {
                 // User search
                 for (var d in nodes) {
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(d); } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0 || (nodes[d].upnusers && nodes[d].upnusers[i] && nodes[d].upnusers[i].toLowerCase().indexOf(userSearch) >= 0)) { r.push(d); } } }
                 }
             } else if (osSearch != null) {
                 // OS search
@@ -6385,6 +6459,35 @@
                         else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK'))  { r.push(d); }
                         else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK'))  { r.push(d); }
                         else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK'))  { r.push(d); }
+                    }
+                }
+            } else if (connectivitySearch != null) {
+                // Connectivity search
+                for (var d in nodes) {
+                    if (nodes[d].conn) {
+                        if ((nodes[d].conn & 1) != 0) {
+                            if (nodes[d].mtype == 4) {
+                                if ((nodes[d].porttype == 'PDU') && (connectivitySearch.toLowerCase() == 'switch')) {
+                                    r.push(d);
+                                } else if (connectivitySearch.toLowerCase() == 'ipkvm') {
+                                    r.push(d);
+                                }
+                            } else if (connectivitySearch.toLowerCase() == 'agent') {
+                                r.push(d);
+                            }
+                        }
+                        if (((nodes[d].conn & 2) != 0) && (connectivitySearch.toLowerCase() == 'cira')) { r.push(d); }
+                        else if (((nodes[d].conn & 4) != 0) && (connectivitySearch.toLowerCase() == 'amt')) { r.push(d); }
+                        if (((nodes[d].conn & 8) != 0) && (connectivitySearch.toLowerCase() == 'relay')) { r.push(d); }
+                        if (((nodes[d].conn & 16) != 0) && (connectivitySearch.toLowerCase() == 'mqtt')) { r.push(d); }
+                    }
+                    if (nodes[d].mtype == 3) {
+                        var mesh = meshes[nodes[d].meshid];
+                        if (mesh && mesh.relayid && (connectivitySearch.toLowerCase() == 'relay')) {
+                            r.push(d);
+                        } else if (mesh && (typeof mesh.relayid == 'undefined') && connectivitySearch.toLowerCase() == 'local') {
+                            r.push(d);
+                        }
                     }
                 }
             } else if (x == '*') {
@@ -6420,6 +6523,7 @@
                 } catch (ex) { for (var d in nodes) { r.push(d); } }
             }
 
+            if (negate) { var allIds = []; for (var d in nodes) { allIds.push(d); } return allIds.filter(function(d) { return r.indexOf(d) < 0; }); }
             return r;
         }
 
@@ -7647,6 +7751,7 @@
                     var y = [];
                     if (node.defender.RealTimeProtection != null) { if (node.defender.RealTimeProtection == true) { y.push("RealTimeProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("RealTimeProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
+                    if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
                 }
 
@@ -7667,11 +7772,22 @@
 
                 // Active Users
                 if (node.users && node.users.length > 0) {
-                    var u = node.users.map(function(user) {
-                        return addKeyLinkConditional(EscapeHtml(user), "Locked", (node.lusers && node.lusers.indexOf(user) >= 0));
+                    var u = node.users.map(function(user, index) {
+                        var upn = node.upnusers && node.upnusers[index];
+                        var label = (features3 & 0x00000002)
+                            ? ((node.users && node.users[index] != null) ? EscapeHtml(node.users[index]) : null)
+                            : (upn != null ? EscapeHtml(upn) : null);
+                        var escapedUser = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : user);
+                        var locked = node.lusers && node.lusers.indexOf(user) >= 0;
+                        if (locked) { return addKeyLinkConditional(escapedUser, label ? label + ' - ' + "Locked" : "Locked", true); }
+                        if (label) { return '<span style=cursor:default title=\'' + label + '\'>' + escapedUser + '</span>'; }
+                        return escapedUser;
                     }).join(', ');
                     x += addDeviceAttribute((node.users.length > 1 ? "Active Users" : "Active User"), u);
                 }
+                
+                // Windows Idle Time
+                if (node.idletime && node.idletime != -1) { x += addDeviceAttribute("Idle Time", printTimer(node.idletime)); }
 
                 // Display device user consent
                 if ((node.agent != null) && (node.agent.id != 14) && (node.mtype != 3)) {
@@ -8607,7 +8723,7 @@
             } else if (op == 106) {
                 // Run commands
                 var wintype = false, linuxtype = false;
-                if (currentNode.agent) { if ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) { wintype = true; } else { linuxtype = true; } }
+                if (currentNode.agent) { if (isWindowsNode(currentNode)) { wintype = true; } else { linuxtype = true; } }
                 if ((wintype == true) || (linuxtype == true)) {
                     var x = "Run commands on selected devices." + '<br />';
                     if (wintype == true) {
@@ -9852,7 +9968,7 @@
 
                 // If shift is pressed, enter browser full screen.
                 if (e.shiftKey == true) {
-                    enterBrowserFullscreen(Q('container'));
+                    enterBrowserFullscreen(Q('body'));
                     browserfullscreen = true;
                 }
             } else {
@@ -10605,7 +10721,7 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
-        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), id); return false; }
+        function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), (id + '|' + name)); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
         //
@@ -10705,7 +10821,7 @@
                         try { xterminal.m.TermResetScreen(); xterminal.m.TermDraw(); } catch (ex) { }
                     } else {
                         xterm.dispose();
-                        xterm = xtermfit = null;
+                        xterm = xtermfit = xtermimage = null;
                     }
                     if (xterminal != null) { xterminal.Stop(); terminal = null; }
                     break;
@@ -10935,8 +11051,10 @@
                         // Setup the terminal with auto-fit
                         if (xterm != null) { xterm.dispose(); }
                         xtermfit = new FitAddon.FitAddon();
-                        xterm = new Terminal();
+                        xtermimage = new ImageAddon.ImageAddon();
+                        xterm = new Terminal({ allowProposedApi: true });
                         if (xtermfit) { xterm.loadAddon(xtermfit); }
+                        xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
@@ -11308,7 +11426,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -11342,7 +11462,7 @@
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
                         h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
                     } else {
@@ -11362,7 +11482,7 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -11395,7 +11515,7 @@
         }
 
         function p13gotofolder() {
-            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
+            setDialogMode(2, "Go To Folder", 3, p13gotofolderEx, '<input type=text id=p13folderinput value="' + (isWindowsNode(currentNode) ? p13targetpath.replaceAll('/','\\') + '\\' : p13targetpath + '/') +'" style=width:100% placeholder="'+(isWindowsNode(currentNode) ? 'C:\\' : '/var/www')+'" />');
             focusTextBox('p13folderinput');
         }
         function p13gotofolderEx() { 
@@ -11444,7 +11564,7 @@
 
         function p13findfileEx(b, t) {
             if (Q('d2findFilter').value.length == 0) return;
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var slash = winAgent ? '\\' : '/';
             var path = p13filetreelocation.join(slash) + slash;
             if (!winAgent) { path = slash + path; }
@@ -11476,6 +11596,7 @@
             if (p13filetree == null) {
                 QE('p13DeleteFileButton', false);
                 QE('p13NewFolderButton', false);
+                QE('p13NewFileButton', false);
                 QE('p13UploadButton', false);
                 QE('p13RenameFileButton', false);
                 QE('p13ViewFileButton', false);
@@ -11493,10 +11614,11 @@
                 QE('p13OpenButton', false);
             } else {
                 var cc = p13getFileSelCount(), tc = p13getFileCount(), sfc = p13getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-                var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+                var winAgent = isWindowsNode(currentNode);
                 QE('p13DeleteFileButton', (cc > 0) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13NewFolderButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13UploadButton', ((p13filetreelocation.length > 0) || (winAgent == false) || (currentNode.agent.id == 14)));
+                QE('p13NewFileButton', advancedFeatures && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13RenameFileButton', advancedFeatures && (cc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13ViewFileButton', advancedFeatures && (cc == 1) && (sfc == 1) && ((p13filetreelocation.length > 0) || (winAgent == false)));
                 QE('p13SelectAllButton', tc > 0);
@@ -11534,6 +11656,8 @@
         function p13selectallfile() { var nv = (p13getFileSelCount() == 0), checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; } p13setActions(); }
         function p13createfolder() { setDialogMode(2, "New Folder", 3, p13createfolderEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
+        function p13createfile() { setDialogMode(2, "New File", 3, p13createfileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% />'); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13createfileEx() { files.sendText({ action: 'mkfile', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
         function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile}); focusTextBox('p13renameinput'); p13fileNameCheck(); }
@@ -11693,11 +11817,37 @@
                 if (gdownloadFile.tag == 'viewer') {
                     // View the file in the dialog box
                     setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    d4ToggleLineBreak(true);
                     QV('d4EncodingButton', true);
                     QV('d4LineBreakButton', true);
                     QS('dialog').width = 'auto';
                     QS('dialog').bottom = '80px';
                     QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    const crlf = (gdownloadFile.data.match(/\r\n/g) || []).length;
+                    const cr = (gdownloadFile.data.match(/\r(?!\n)/g) || []).length;
+                    const lf = (gdownloadFile.data.match(/(?<!\r)\n/g) || []).length;
+                    let type;
+                    if (crlf > 0 && cr === 0 && lf === 0) {
+                        type = 'crlf';
+                    } else if (lf > 0 && crlf === 0 && cr === 0) {
+                        type = 'lf';
+                    } else if (cr > 0 && crlf === 0 && lf === 0) {
+                        type = 'cr';
+                    } else {
+                        // Mixed - pick dominant
+                        const dominant = Math.max(crlf, cr, lf);
+                        if (dominant === crlf) type = 'crlf';
+                        else if (dominant === lf) type = 'lf';
+                        else type = 'cr';
+                    }
+                    if (type === 'crlf') {
+                        d4EditLineBreakVal = 0; // Windows (CR LF)
+                    } else if (type === 'lf') {
+                        d4EditLineBreakVal = 1; // Linux (LF)
+                    } else {
+                        d4EditLineBreakVal = 2; // Mac (CR)
+                    }
+                    d4ToggleLineBreak(true);
                     if (d4EditEncodingVal == 1) {
                         Q('d4editorarea').value = decode_utf8(gdownloadFile.data); // UTF8 Encoding
                     } else {
@@ -11790,7 +11940,7 @@
             if (xxdialogMode) return;
 
             // Check if we are going to overwrite any files
-            var winAgent = ((currentNode.agent.id > 0) && (currentNode.agent.id < 5)) || (currentNode.agent.id == 14)|| (currentNode.agent.id == 34);
+            var winAgent = isWindowsNode(currentNode);
             var targetFiles = [], overWriteCount = 0;
             for (var i in p13filetree.dir) { if (winAgent) { targetFiles.push(p13filetree.dir[i].n.toLowerCase()); } else { targetFiles.push(p13filetree.dir[i].n); } }
             for (var i = 0; i < files.length; i++) {
@@ -12072,6 +12222,10 @@
             } else deviceDetailsStatsClear();
         }
 
+        function refreshDetails() {
+            meshserver.send({ action: 'msg', type: 'sysinfo', nodeid: currentNode._id });
+        }
+
         function deviceDetailsStatsClear() {
             QV('p17graph', false);
             if (window.deviceDetailsStatsChart != null) { window.deviceDetailsStatsChart.destroy(); delete window.deviceDetailsStatsChart; }
@@ -12135,6 +12289,7 @@
             if (node.osdesc) { x += addDetailItem("Version", EscapeHtml(node.osdesc), s); }
             if (hardware.windows && hardware.windows.osinfo) {
                 var m = hardware.windows.osinfo;
+				if(m.BuildRevision){ x += addDetailItem("Build Number", EscapeHtml(m.BuildRevision), s); }
                 if (m.OSArchitecture) {
                     if (m.OSArchitecture.startsWith('32')) { x += addDetailItem("Architecture", "32-bit", s); }
                     else if (m.OSArchitecture.startsWith('64')) { x += addDetailItem("Architecture", "64-bit", s); }
@@ -12152,6 +12307,8 @@
                     const date = printDateTime(new Date(thedate.year, thedate.month, thedate.day, thedate.hours, thedate.minutes, thedate.seconds));
                     x += addDetailItem("Last Boot Up Time", date);
                 }
+                if(m.Domain){ x += addDetailItem((m.PartOfDomain ? "Domain" : "Workgroup"), EscapeHtml(m.Domain), s); }
+                if(m.DomainState > 0){ x += addDetailItem("Domain State", (domainStates[m.DomainState] ? domainStates[m.DomainState] : "Unknown"), s); }
             }
             if(hardware.linux && hardware.linux.LastBootUpTime){
                 var lastBootUpTime = new Date(hardware.linux.LastBootUpTime);
@@ -12175,6 +12332,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
@@ -12184,7 +12342,7 @@
                     var splitip = node.lastaddr.split(':');
                     if (splitip.length > 2) {
                         // IPv6
-                        x += addDetailItem("Last agent address", node.lastaddr);
+                        x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip.slice(0, -1).join(':') + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip.slice(0, -1).join(':') + '</a>');
                     } else {
                         // IPv4
                         if (isPrivateIP(node.lastaddr)) {
@@ -12199,6 +12357,9 @@
                         var d = Date.parse(hardware.agentvers.compileTime)
                         x += addDetailItem("Compile time", isNaN(d)?hardware.agentvers.compileTime:printDateTime(new Date(d)));
                     }
+                }
+                if (hardware.time != null) {
+                    x += addDetailItem("Last details update", printDateTime(new Date(hardware.time)));
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent64.png'}); }
             }
@@ -12282,6 +12443,9 @@
                             x += addDetailItem("MAC Layer", format("MAC: {0}", EscapeHtml(m[0].mac)));
                         }
                     }
+                    if (typeof m[0].speed == 'number' && (m[0].speed != 9223372036854775807 && m[0].speed > 0)) {
+                        x += addDetailItem("Interface Speed", format("{0}", getNetworkSpeed(m[0].speed)));
+                    }
                     for (var j = 0; j < m.length; j++) {
                         var iplayer = m[j], items = [];
                         if (iplayer.address) { items.push(format("IP: {0}", EscapeHtml(iplayer.address))); }
@@ -12344,18 +12508,56 @@
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
                 if (ident.gpu_name) {  for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png'}); }
+
+                // System
+                x = '';
+                if (ident.chassis_manufacturer) { x += addDetailItem("Manufacturer", EscapeHtml(ident.chassis_manufacturer), s); }
+                if (ident.product_name) { x += addDetailItem("Product Name", EscapeHtml(ident.product_name), s); }
+                if (ident.chassis_serial) { x += addDetailItem("Serial", EscapeHtml(ident.chassis_serial), s); }
+                if (ident.chassis_assettag) { x += addDetailItem("Asset Tag", EscapeHtml(ident.chassis_assettag), s); }
+                if (x != '') { sections.push({ name: "System", html: x, img: 'system64.png' }); }
             }
 
             // TPM
             if (hardware.tpm) {
                 var x = '', tpm = hardware.tpm;
                 if (tpm.SpecVersion) { x += addDetailItem("SpecVersion", parseFloat(EscapeHtml(tpm.SpecVersion)).toFixed(1), s); }
-                if (tpm.ManufacturerId) { x += addDetailItem("ManufacturerId", EscapeHtml(tpm.ManufacturerId), s); }
-                if (tpm.ManufacturerVersion) { x += addDetailItem("ManufacturerVersion", EscapeHtml(tpm.ManufacturerVersion), s); }
-                if (tpm.IsActivated != null) { x += addDetailItem("IsActivated", (tpm.IsActivated ? "Yes" : "No"), s); }
-                if (tpm.IsEnabled != null) { x += addDetailItem("IsEnabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
-                if (tpm.IsOwned != null) { x += addDetailItem("IsOwned", (tpm.IsOwned ? "Yes" : "No"), s); }
-                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png'}); }
+                if (tpm.ManufacturerId) { x += addDetailItem("Identifier", EscapeHtml(tpm.ManufacturerId), s); }
+                if (tpm.ManufacturerVersion) { x += addDetailItem("Version", EscapeHtml(tpm.ManufacturerVersion), s); }
+                if (tpm.IsActivated != null) { x += addDetailItem("Activated", (tpm.IsActivated ? "Yes" : "No"), s); }
+                if (tpm.IsEnabled != null) { x += addDetailItem("Enabled", (tpm.IsEnabled ? "Yes" : "No"), s); }
+                if (tpm.IsOwned != null) { x += addDetailItem("Owned", (tpm.IsOwned ? "Yes" : "No"), s); }
+                if (x != '') { sections.push({ name: "TPM", html: x, img: 'tpm64.png' }); }
+            }
+
+            // Batteries
+            if (hardware.battery) {
+                var x = '';
+                x += '<table style=width:100%>';
+                for (var i in hardware.battery) {
+                    var battery = hardware.battery[i];
+                    x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
+                    if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
+                    if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
+                    if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
+                    if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    x += '</div>';
+                }
+                x += '</table>';
+                if (x != '') { sections.push({ name: "Battery", html: x, img: 'battery64.png'}); }
             }
 
             if (hardware.windows) {
@@ -14915,7 +15117,9 @@
             for (var i in filetreexx) {
                 // Figure out the name and shortname
                 var f = filetreexx[i], name = f.n, shortname;
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + "..." + '</span>'; } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the date
                 var fdatestr = '';
@@ -14928,12 +15132,12 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4)?p5getQuotabar(f):'', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key)?('&key=' + urlargs.key):'';
                     if (publicfolder) { publiclink = '<img src="images/link2.png" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\' width=10 height=10 /> <img src="images/link4.png" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '") width=10 height=10>'; }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -14978,6 +15182,14 @@
             if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
             if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
             return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+        }
+
+        function getNetworkSpeed(bitsPerSecond) {
+            if (bitsPerSecond <= 0) return "0 bps";
+            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
+            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -15228,7 +15440,7 @@
             16: "Started file management session \"{0}\" from {1} to {2}",
             17: "Processing console command: \"{0}\"",
             18: "Displaying message box, title=\"{0}\", message=\"{1}\"",
-            19: "Killing process {0}",
+            19: "Killing process {0} ({1})",
             20: "Opening: {0}",
             21: "Getting clipboard content, {0} byte(s)",
             22: "Setting clipboard content, {0} byte(s)",
@@ -15371,7 +15583,9 @@
             159: "Device Powered On",
             160: "Enabled Duo two-factor authentication",
             161: "Disabled Duo two-factor authentication",
-            162: "Started messenger session \"{0}\" from {1} to {2}"
+            162: "Started messenger session \"{0}\" from {1} to {2}",
+            163: "Removed device {0} from user group {1}",
+            164: "Create file: \"{0}\""
         };
 
         var eventsShortMessageId = {
@@ -17467,6 +17681,9 @@
             if (rec.protocol == 1) { sessionName += ' - ' + "Terminal Session"; }
             if (rec.protocol == 2) { sessionName += ' - ' + "Desktop Session"; }
             if (rec.protocol == 5) { sessionName += ' - ' + "File Transfer"; }
+            if (rec.protocol == 6) { sessionName += ' - ' + "Admin PowerShell"; }
+            if (rec.protocol == 8) { sessionName += ' - ' + "User Shell"; }
+            if (rec.protocol == 9) { sessionName += ' - ' + "User PowerShell"; }
             if (rec.protocol == 100) { sessionName += ' - ' + "Intel&reg; AMT WSMAN"; }
             if (rec.protocol == 101) { sessionName += ' - ' + "Intel&reg; AMT Redirection"; }
             if (rec.protocol == 200) { sessionName += ' - ' + "Messenger"; }
@@ -17497,6 +17714,9 @@
                 if (rec.protocol == 1) { protocolStr = "Terminal"; }
                 if (rec.protocol == 2) { protocolStr = "Desktop"; }
                 if (rec.protocol == 5) { protocolStr = "Files"; }
+                if (rec.protocol == 6) { protocolStr = "Admin PowerShell"; }
+                if (rec.protocol == 8) { protocolStr = "User Shell"; }
+                if (rec.protocol == 9) { protocolStr = "User PowerShell"; }
                 if (rec.protocol == 100) { protocolStr = "Intel&reg; AMT WSMAN"; }
                 if (rec.protocol == 101) { protocolStr = "Intel&reg; AMT Redirection"; }
                 if (rec.protocol == 200) { protocolStr = "Messenger"; }
@@ -17590,7 +17810,9 @@
 
                 // Filter out files
                 if ((f.t == 3) && (fileFilter != '') && (f.nx.toLowerCase().endsWith(fileFilter) == false)) { continue; }
-                if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // if (name.length > 70) { shortname = '<span title="' + EscapeHtml(name) + '">' + EscapeHtml(name.substring(0, 70)) + ("..." + '</span>'); } else { shortname = EscapeHtml(name); }
+                // Removed redundant filename length check because we handle it in the CSS
+                shortname = EscapeHtml(name);
 
                 // Figure out the size
                 var fsize = '';
@@ -17599,11 +17821,11 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
-                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input style=float:left name=fcx class=fcb type=checkbox onchange=d3setActions() value="' + f.nx + '">&nbsp;<span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -17839,6 +18061,9 @@
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
+                if (v == 6) return "Admin PowerShell";
+                if (v == 8) return "User Shell";
+                if (v == 9) return "User PowerShell";
                 if (v == 100) return "AMT-WSMAN";
                 if (v == 101) return "AMT-Redir";
                 if (v == 200) return "Messenger";
@@ -17940,7 +18165,17 @@
                 if (v == 1) return "Terminal";
                 if (v == 2) return "Desktop";
                 if (v == 5) return "Files";
-                return "Unknown";
+                if (v == 6) return "Admin PowerShell";
+                if (v == 8) return "User Shell";
+                if (v == 9) return "User PowerShell";
+                if (v == 100) return "AMT-WSMAN";
+                if (v == 101) return "AMT-Redir";
+                if (v == 200) return "Messenger";
+                if (v == 201) return "Web-RDP";
+                if (v == 202) return "Web-SSH";
+                if (v == 203) return "Web-SFTP";
+                if (v == 204) return "Web-VNC";
+                return "Unknown" + ' (' + v + ')';
             }
             if (f == 'node') {
                 var node = getNodeFromId(v);
@@ -18015,14 +18250,14 @@
                         }
                     }
 
-                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;border-top:1px solid ' + ((r == '') ? 'transparent' : 'orange') + '">';
+                    r += '<div title="' + format("Occured at {0}", printDateTime(d)) + '" id="notifyx' + n.id + '" class=notification style="cursor:pointer;' + (notifications.length > 1 ? 'border-top:1px solid orange' : '') + '">';
                     if (icon) { r += '<div class=j' + icon + ' onclick="notificationSelected(' + n.id + ')" style=margin:5px;float:left></div>'; }
                     r += '<div onclick="notificationDelete(' + n.id + ')" class=unselectable title="' + "Clear this notification" + '" style=margin:5px;float:right;color:orange><b>X</b></div><div onclick="notificationSelected(' + n.id + ')" style=margin:5px>' + t + EscapeHtml(n.text) + '</div><div style=margin-left:5px;margin-bottom:5px;color:gray;font-size:10px>' + printDateTime(d) + '</div></div>';
                 }
             }
             var deleteall = '';
-            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;border-top:1px solid orange;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
-            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + r + deleteall + '</div>' );
+            if (notifications.length > 1) { deleteall = '<div id="notifyRemoveAll" onclick="deleteAllNotifications()" style="cursor:pointer;margin:5px;color:orange;text-align:right;padding-right:3px">' + "Clear all" + '</div>'; }
+            QH('notifiyBox', '<div class=customScroll style="max-height:170px;overflow-y:auto;margin:5px">' + deleteall + r + '</div>' );
         }
 
         // A notification was selected
@@ -18750,7 +18985,7 @@
             if ((xxcurrentView == 11) && (desktop != null) && (desktop.m.recordedData != null)) { deskRecordSession(); }
 
             // If we are trying to go to "My Users" and we are not a user manager, move to recordings
-            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0)) { x = 52; }
+            if (((x == 4) && (userinfo != null) && ((userinfo.siteadmin & 2) == 0)) || ((features & 4) != 0) && (userinfo != null) && (userinfo._id.split('/')[2][0] != '~')) { x = 52; }
 
             // Stop the list graph if active
             if (xxcurrentView == 17) deviceDetailsStatsClear();
@@ -18901,7 +19136,7 @@
                     if (installedPluginList['version_info'] == null) installedPluginList['version_info'] = [];
                     installedPluginList['version_info'][versInfo.id] = versInfo;
                 }
-                var tr = Q('p42tbl').querySelectorAll('.p42tblRow');
+                var tr = document.getElementById('p42tbl').querySelectorAll('.p42tblRow');
                 if (tr.length) {
                     for (var i in Object.values(tr)) {
                         tr[i].parentNode.removeChild(tr[i]);
@@ -18925,12 +19160,14 @@
                     1: {
                         'disable': 'Disable',
                         'upgrade': 'Upgrade',
+                        'reload': 'Reload',
+                        'permissions': 'Permissions',
                         //  'downgrade': 'Downgrade' // disabling until plugins have prior versions available for better testing
                     }
                 };
                 var vers_not_compat = ' [ <span onclick="return setDialogMode(2, \'Compatibility Issue\', 1, null, \'This plugin version is not compatible with your MeshCentral installation, please upgrade MeshCentral first.\');" title="' + "Version incompatible, please upgrade your MeshCentral installation first" + '" style="cursor: pointer; color:red;"> ! </span> ]';
 
-                var tbl = Q('p42tbl');
+                var tbl = document.getElementById('p42tbl');
                 installedPluginList.forEach(function(p){
                     var cant_action = [];
                     if (p.hasAdminPanel == true && p.status) {
@@ -18977,7 +19214,7 @@
                     tr.setAttribute('id', 'pluginRow-' + p._id);
                 });
             } else {
-                var tr = Q('p42tbl').querySelectorAll('.p42tblRow');
+                var tr = document.getElementById('p42tbl').querySelectorAll('.p42tblRow');
                 for (var i in Object.values(tr)) { tr[i].parentNode.removeChild(tr[i]); }
             }
             if (versInfo == null) refreshPluginLatest();
@@ -18991,12 +19228,12 @@
         function distributeCore() {
             if (pluginHandler == null) return;
             meshserver.send({ action: 'distributeCore', nodes: nodes }); // All nodes the user has access to
-            QV('pluginRestartNotice', false);
+            document.getElementById('pluginRestartNotice').style.display = 'none';
         }
 
         function pluginActionEx() {
             if (pluginHandler == null) return;
-            var act = Q('lastPluginAct').value, id = Q('lastPluginId').value, pVersUrl = Q('lastPluginVersion').value;
+            var act = document.getElementById('lastPluginAct').value, id = document.getElementById('lastPluginId').value, pVersUrl = document.getElementById('lastPluginVersion').value;
 
             switch(act) {
                 case 'upgrade':
@@ -19004,7 +19241,7 @@
                     meshserver.send({ 'action': 'installplugin', 'id': id, 'version_only': false });
                     break;
                 case 'downgrade':
-                    Q('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
+                    document.getElementById('lastPluginVersion').querySelectorAll('option').forEach(function(opt) {
                         if (opt.value == pVersUrl) pVers = opt.text;
                     });
                     meshserver.send({ 'action': 'installplugin', 'id': id, 'version_only': { 'name': pVers, 'url': pVersUrl }});
@@ -19015,12 +19252,31 @@
                 case 'disable':
                     meshserver.send({ 'action': 'disableplugin', 'id': id });
                     break;
+                case 'reload':
+                    var plugin = null;
+                    for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                    if (plugin) {
+                        meshserver.send({ 'action': 'reloadplugin', 'plugin': plugin.shortName });
+                    }
+                    break;
             }
-            QV('pluginRestartNotice', true);
+            document.getElementById('pluginRestartNotice').style.display = 'none';
         }
 
         function pluginAction(elem, id) {
             if (pluginHandler == null) return;
+            
+            // Special handling for permissions - opens matrix dialog
+            if (elem.value == 'permissions') {
+                var plugin = null;
+                for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
+                if (plugin) {
+                    openPluginPermissionsDialog(plugin);
+                }
+                elem.value = '';
+                return;
+            }
+            
             if (elem.value == 'downgrade') {
                 meshserver.send({ 'action': 'getpluginversions', 'id': id });
             } else {
@@ -19031,9 +19287,635 @@
             elem.value = '';
         }
 
+        // Plugin Permissions Dialog - Custom Modal (same as default3)
+        var currentPluginPermissions = null;
+        var permissionListData = null;
+        var permissionState = {}; // JavaScript state for permissions
+        
+        function openPluginPermissionsDialog(plugin) {
+            meshserver.send({ action: 'getpluginpermissions', plugin: plugin.shortName });
+            meshserver.send({ action: 'getpluginpermissionlist' });
+            
+            currentPluginPermissions = { plugin: plugin.shortName, name: plugin.name };
+            
+            // Create custom modal
+            var modalHtml = '<div id="pluginPermModal" style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">';
+            modalHtml += '<div style="margin:30px auto; max-width:900px; background:#fff; border-radius:8px;">';
+            modalHtml += '<div style="padding:15px 20px; border-bottom:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            modalHtml += '<h5 style="margin:0;">' + "Plugin Permissions" + ' - ' + EscapeHtml(plugin.name) + '</h5>';
+            modalHtml += '<button type="button" onclick="closePluginPermModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">&times;</button>';
+            modalHtml += '</div>';
+            modalHtml += '<div id="pluginPermBody" style="padding:20px; max-height:70vh; overflow-y:auto;">';
+            modalHtml += '<div style="text-align:center; padding:40px;">' + "Loading permissions" + '...</div>';
+            modalHtml += '</div>';
+            modalHtml += '<div style="padding:15px 20px; border-top:1px solid #dee2e6; display:flex; justify-content:space-between; align-items:center;">';
+            modalHtml += '<div style="font-size:12px; color:#666;">' + "Permissions cascade: Node → Mesh → Global → Default" + '</div>';
+            modalHtml += '<div>';
+            modalHtml += '<button type="button" style="margin-right:10px; padding:5px 15px;" onclick="closePluginPermModal()">' + "Cancel" + '</button>';
+            modalHtml += '<button type="button" style="padding:5px 15px; background:#007bff; color:#fff; border:none; border-radius:4px;" onclick="savePluginPermissionsEx()">' + "Save" + '</button>';
+            modalHtml += '</div>';
+            modalHtml += '</div></div></div>';
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('pluginPermModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePluginPermModal() {
+            var modal = document.getElementById('pluginPermModal');
+            if (modal) {
+                modal.remove();
+                document.body.style.overflow = '';
+            }
+        }
+        
+        function handlePluginPermissions(msg) {
+            if (msg.action != 'pluginPermissions') return;
+            currentPluginPermissions.data = msg.permissions;
+            renderPermissionMatrixEx();
+        }
+        
+        function handlePluginPermissionList(msg) {
+            if (msg.action != 'pluginPermissionList') return;
+            permissionListData = msg.list;
+            renderPermissionMatrixEx();
+        }
+        
+        function renderPermissionMatrixEx() {
+            if (!currentPluginPermissions || !currentPluginPermissions.data || !permissionListData) return;
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            // Check if plugin has no permissions defined
+            if (Object.keys(definitions).length === 0) {
+                var body = document.getElementById('pluginPermBody');
+                if (body) {
+                    body.innerHTML = '<div style="padding:20px;">' + "This plugin has not defined any permissions." + '</div>';
+                }
+                return;
+            }
+            
+            // Initialize permissionState from loaded data
+            permissionState = {};
+            window.meshOverridesState = {};
+            window.nodeOverridesState = {};
+            for (var permKey in definitions) {
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                permissionState[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                };
+                // Copy allowed
+                if (permData.allowed) {
+                    if (permData.allowed.users) permissionState[permKey].allowed.users = permData.allowed.users.slice();
+                    if (permData.allowed.userGroups) permissionState[permKey].allowed.userGroups = permData.allowed.userGroups.slice();
+                    if (permData.allowed.meshes) permissionState[permKey].allowed.meshes = permData.allowed.meshes.slice();
+                    if (permData.allowed.nodes) permissionState[permKey].allowed.nodes = permData.allowed.nodes.slice();
+                }
+                // Copy denied
+                if (permData.denied) {
+                    if (permData.denied.users) permissionState[permKey].denied.users = permData.denied.users.slice();
+                    if (permData.denied.userGroups) permissionState[permKey].denied.userGroups = permData.denied.userGroups.slice();
+                    if (permData.denied.meshes) permissionState[permKey].denied.meshes = permData.denied.meshes.slice();
+                    if (permData.denied.nodes) permissionState[permKey].denied.nodes = permData.denied.nodes.slice();
+                }
+                
+                // Initialize meshOverridesState and nodeOverridesState from loaded data
+                window.meshOverridesState[permKey] = permData.meshOverrides || {};
+                window.nodeOverridesState[permKey] = permData.nodeOverrides || {};
+            }
+            
+            var x = '';
+            
+            // Custom tab buttons
+            x += '<div style="margin-bottom:15px; border-bottom:1px solid #dee2e6;">';
+            x += '<button class="btn btn-sm active" id="btnTabGlobal" style="margin-right:5px; background:#007bff; color:#fff;" onclick="switchPermTab(\'global\')">' + "Global" + '</button>';
+            x += '<button class="btn btn-sm" id="btnTabMeshes" style="margin-right:5px; background:#6c757d; color:#fff;" onclick="switchPermTab(\'meshes\')">' + "Meshes"+ '</button>';
+            x += '<button class="btn btn-sm" id="btnTabNodes" style="background:#6c757d; color:#fff;" onclick="switchPermTab(\'nodes\')">' + "Nodes" + '</button>';
+            x += '</div>';
+            
+            x += '<div id="panel-global">';
+            x += buildPermissionSection(definitions, permissions, defaults, 'global', null);
+            x += '</div>';
+            
+            x += '<div id="panel-meshes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'mesh');
+            x += '</div>';
+            
+            x += '<div id="panel-nodes" style="display:none;">';
+            x += buildMeshNodeSection(definitions, permissions, 'node');
+            x += '</div>';
+            
+            x += '<input type="hidden" id="permPluginShortName" value="' + currentPluginPermissions.plugin + '" />';
+            
+            document.getElementById('pluginPermBody').innerHTML = x;
+        }
+        
+        function switchPermTab(tab) {
+            document.getElementById('panel-global').style.display = 'none';
+            document.getElementById('panel-meshes').style.display = 'none';
+            document.getElementById('panel-nodes').style.display = 'none';
+            
+            document.getElementById('btnTabGlobal').style.background = '#6c757d';
+            document.getElementById('btnTabMeshes').style.background = '#6c757d';
+            document.getElementById('btnTabNodes').style.background = '#6c757d';
+            
+            document.getElementById('panel-' + tab).style.display = 'block';
+            document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.background = '#007bff';
+        }
+        
+        function buildPermissionSection(definitions, permissions, defaults, level, parentId, overrideData) {
+            var x = '';
+            
+            var idx = 0;
+            for (var permKey in definitions) {
+                var def = definitions[permKey];
+                var permData = permissions[permKey] || { 
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, 
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: {}, 
+                    nodeOverrides: {} 
+                };
+                var defaultVal = defaults[permKey] || 'inherited';
+                
+                var collapseId = 'permCollapse-' + level + '-' + permKey + (parentId ? '-' + parentId : '');
+                var isFirst = idx === 0;
+                
+                // Determine which data to use: overrideData (for mesh/node) or permissionState (for global)
+                var useData;
+                if (overrideData && overrideData[permKey]) {
+                    useData = overrideData[permKey];
+                } else if (permissionState[permKey]) {
+                    useData = permissionState[permKey];
+                } else {
+                    useData = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                
+                x += '<div style="border:1px solid #dee2e6; border-radius:8px; margin-bottom:10px; overflow:hidden;">';
+                x += '<div style="padding:12px 15px; background:#f8f9fa; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="togglePermCollapse(\'' + collapseId + '\')">';
+                x += '<div><strong>' + EscapeHtml(def.title || permKey) + '</strong><br><small style="color:#666;">' + EscapeHtml(def.desc || '') + '</small></div>';
+                x += '<div><select style="padding:3px;" id="perm_default_' + permKey + '" onclick="event.stopPropagation()">';
+                x += '<option value="allowed"' + (defaultVal === 'allowed' ? ' selected' : '') + '>✓ ' + "Allowed" + '</option>';
+                x += '<option value="denied"' + (defaultVal === 'denied' ? ' selected' : '') + '>✗ ' + "Denied" + '</option>';
+                x += '<option value="inherited"' + (defaultVal === 'inherited' ? ' selected' : '') + '>↩ ' + "Inherited" + '</option>';
+                x += '</select></div>';
+                x += '</div>';
+                x += '<div id="' + collapseId + '" style="padding:15px;' + (isFirst ? '' : 'display:none;') + '">';
+                
+                x += '<div style="display:flex; gap:20px; margin-bottom:15px;">';
+                x += '<div style="flex:1;">';
+                x += '<div style="margin-bottom:5px;"><span style="background:#28a745; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Allowed" + '</span></div>';
+                x += buildAutocompleteSection(permKey, level, 'allowed', parentId, useData ? useData.allowed : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '<div style="flex:1;">';
+                x += '<div style="margin-bottom:5px;"><span style="background:#dc3545; color:#fff; padding:2px 8px; border-radius:3px; font-size:12px;">' + "Denied" + '</span></div>';
+                x += buildAutocompleteSection(permKey, level, 'denied', parentId, useData ? useData.denied : { users: [], userGroups: [], meshes: [], nodes: [] });
+                x += '</div>';
+                x += '</div>';
+                
+                x += '</div></div>';
+                idx++;
+            }
+            
+            return x;
+        }
+        
+        function togglePermCollapse(id) {
+            var el = document.getElementById(id);
+            el.style.display = el.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function buildAutocompleteSection(permKey, level, accessType, parentId, currentData) {
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            var x = '<div style="position:relative;">';
+            x += '<input type="text" id="' + inputId + '" placeholder="' + "Search" + '..." style="width:100%; padding:5px;" ';
+            x += 'onkeyup="searchPermEntities(this, \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + (parentId || '') + '\')" ';
+            x += 'onfocus="showPermDropdown(\'' + listId + '\')">';
+            x += '<div id="' + listId + '" style="position:relative; background:#fff; border:1px solid #ccc; border-top:none; max-height:200px; overflow-y:auto; display:none; cursor:pointer;"></div>';
+            x += '</div>';
+            
+            x += '<div id="' + containerId + '" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;">';
+            
+            var allEntities = [];
+            if (permissionListData.users) allEntities = allEntities.concat(permissionListData.users);
+            if (permissionListData.userGroups) allEntities = allEntities.concat(permissionListData.userGroups);
+            if (permissionListData.meshes) allEntities = allEntities.concat(permissionListData.meshes);
+            if (permissionListData.nodes) allEntities = allEntities.concat(permissionListData.nodes);
+            
+            var selectedIds = currentData.users || [];
+            selectedIds.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) x += buildPermTag(entity, permKey, level, accessType, 'user', parentId);
+            });
+            
+            var selectedGroups = currentData.userGroups || [];
+            selectedGroups.forEach(function(id) {
+                var entity = allEntities.find(function(e) { return e._id === id; });
+                if (entity) x += buildPermTag(entity, permKey, level, accessType, 'userGroup', parentId);
+            });
+            
+            x += '</div>';
+            
+            return x;
+        }
+        
+        function buildPermTag(entity, permKey, level, accessType, entityType, parentId) {
+            var icon = entity._id.startsWith('user/') ? '👤' : (entity._id.startsWith('ugrp/') ? '👥' : (entity._id.startsWith('mesh/') ? '🖥️' : '💻'));
+            var tagId = 'perm_tag_' + entity._id.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var safeId = entity._id.replace(/'/g, '___');
+            
+            return '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entity._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + entityType + '" data-parentid="' + (parentId || '') + '">' + icon + ' ' + EscapeHtml(entity.name || entity._id) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTagFromTag(this)">×</span></span>';
+        }
+        
+        function removePermTagFromTag(el) {
+            var span = el.parentElement;
+            removePermTag(span.getAttribute('data-actualid'), span.getAttribute('data-perm'), span.getAttribute('data-level'), span.getAttribute('data-access'), span.getAttribute('data-type'), span.getAttribute('data-parentid') || '');
+        }
+        
+        function searchPermEntities(input, permKey, level, accessType, parentId) {
+            var query = input.value.toLowerCase();
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var list = document.getElementById(listId);
+            if (!list) return;
+            
+            if (query.length < 1) {
+                list.style.display = 'none';
+                return;
+            }
+            
+            // Get currently selected IDs to filter out
+            var selectedIds = [];
+            if (permissionState[permKey] && permissionState[permKey][accessType]) {
+                var state = permissionState[permKey][accessType];
+                if (state.users) selectedIds = selectedIds.concat(state.users);
+                if (state.userGroups) selectedIds = selectedIds.concat(state.userGroups);
+                if (state.meshes) selectedIds = selectedIds.concat(state.meshes);
+                if (state.nodes) selectedIds = selectedIds.concat(state.nodes);
+            }
+            
+            // Also check mesh/node overrides for the current context
+            if (level === 'mesh' && parentId && window.meshOverridesState && window.meshOverridesState[permKey] && window.meshOverridesState[permKey][parentId] && window.meshOverridesState[permKey][parentId][accessType]) {
+                var meshState = window.meshOverridesState[permKey][parentId][accessType];
+                if (meshState.users) selectedIds = selectedIds.concat(meshState.users);
+                if (meshState.userGroups) selectedIds = selectedIds.concat(meshState.userGroups);
+                if (meshState.meshes) selectedIds = selectedIds.concat(meshState.meshes);
+                if (meshState.nodes) selectedIds = selectedIds.concat(meshState.nodes);
+            }
+            if (level === 'node' && parentId && window.nodeOverridesState && window.nodeOverridesState[permKey] && window.nodeOverridesState[permKey][parentId] && window.nodeOverridesState[permKey][parentId][accessType]) {
+                var nodeState = window.nodeOverridesState[permKey][parentId][accessType];
+                if (nodeState.users) selectedIds = selectedIds.concat(nodeState.users);
+                if (nodeState.userGroups) selectedIds = selectedIds.concat(nodeState.userGroups);
+                if (nodeState.meshes) selectedIds = selectedIds.concat(nodeState.meshes);
+                if (nodeState.nodes) selectedIds = selectedIds.concat(nodeState.nodes);
+            }
+            
+            var results = [];
+            var groupedNodes = {};
+            
+            if (permissionListData.users) {
+                permissionListData.users.forEach(function(u) {
+                    if (selectedIds.indexOf(u._id) >= 0) return;
+                    if ((u.name && u.name.toLowerCase().includes(query)) || (u.email && u.email.toLowerCase().includes(query))) {
+                        results.push({ _id: u._id, name: u.name || u.email, type: 'user', icon: '👤' });
+                    }
+                });
+            }
+            
+            if (permissionListData.userGroups) {
+                permissionListData.userGroups.forEach(function(ug) {
+                    if (selectedIds.indexOf(ug._id) >= 0) return;
+                    if (ug.name && ug.name.toLowerCase().includes(query)) {
+                        results.push({ _id: ug._id, name: ug.name, type: 'userGroup', icon: '👥' });
+                    }
+                });
+            }
+            
+            if (level === 'global' && permissionListData.meshes) {
+                permissionListData.meshes.forEach(function(m) {
+                    if (selectedIds.indexOf(m._id) >= 0) return;
+                    if (m.name && m.name.toLowerCase().includes(query)) {
+                        results.push({ _id: m._id, name: m.name, type: 'mesh', icon: '🖥️' });
+                    }
+                });
+            }
+            
+            if (level === 'node' && permissionListData.nodes) {
+                permissionListData.nodes.forEach(function(n) {
+                    if (selectedIds.indexOf(n._id) >= 0) return;
+                    if (n.name && n.name.toLowerCase().includes(query)) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push({ _id: n._id, name: n.name, type: 'node', icon: '💻', meshname: meshGroup });
+                    }
+                });
+            }
+            
+            list.innerHTML = '';
+            
+            // Add individual results first
+            results.slice(0, 10).forEach(function(r) {
+                var safeId = r._id.replace(/'/g, '___');
+                list.innerHTML += '<div class="perm-result-item" style="padding:8px 12px; cursor:pointer;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(r._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + r.type + '" data-name="' + EscapeHtml(r.name) + '" data-icon="' + r.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + r.icon + ' ' + EscapeHtml(r.name) + ' <small style="color:#666;">(' + r.type + ')</small></div>';
+            });
+            
+            // Add grouped nodes at the end
+            if (level === 'node') {
+                for (var meshName in groupedNodes) {
+                    list.innerHTML += '<div style="padding:8px 12px; background:#eee; font-weight:bold; font-size:11px;">🖥️ ' + EscapeHtml(meshName) + '</div>';
+                    groupedNodes[meshName].forEach(function(n) {
+                        var safeId = n._id.replace(/'/g, '___');
+                        list.innerHTML += '<div class="perm-result-item" style="padding:8px 12px; cursor:pointer; padding-left:20px;" data-id="' + safeId + '" data-actualid="' + EscapeHtml(n._id) + '" data-perm="' + permKey + '" data-level="' + level + '" data-access="' + accessType + '" data-type="' + n.type + '" data-name="' + EscapeHtml(n.name) + '" data-icon="' + n.icon + '" data-parentid="' + (parentId || '') + '" onclick="addPermEntityFromDropdown(this)">' + n.icon + ' ' + EscapeHtml(n.name) + '</div>';
+                    });
+                }
+            }
+            
+            list.style.display = (results.length > 0 || (level === 'node' && Object.keys(groupedNodes).length > 0)) ? 'block' : 'none';
+        }
+        
+        function addPermEntityFromDropdown(el) {
+            var entityId = el.getAttribute('data-actualid');
+            var permKey = el.getAttribute('data-perm');
+            var level = el.getAttribute('data-level');
+            var accessType = el.getAttribute('data-access');
+            var entityType = el.getAttribute('data-type');
+            var entityName = el.getAttribute('data-name');
+            var entityIcon = el.getAttribute('data-icon');
+            var parentId = el.getAttribute('data-parentid') || '';
+            addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon);
+        }
+        
+        function showPermDropdown(listId) {
+            var list = document.getElementById(listId);
+            if (list && list.children.length > 0) {
+                list.style.display = 'block';
+            }
+        }
+        
+        function addPermEntity(entityId, permKey, level, accessType, entityType, parentId, entityName, entityIcon) {
+            var containerId = 'perm_tags_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var container = document.getElementById(containerId);
+            var inputId = 'perm_input_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            var listId = 'perm_list_' + level + '_' + accessType + '_' + permKey + (parentId ? '_' + parentId : '');
+            
+            document.getElementById(inputId).value = '';
+            document.getElementById(listId).style.display = 'none';
+            
+            var existingTags = container.querySelectorAll('span');
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            for (var i = 0; i < existingTags.length; i++) {
+                if (existingTags[i].id && existingTags[i].id == tagId) {
+                    return;
+                }
+            }
+            
+            var tagHtml = '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')">×</span></span>';
+            container.insertAdjacentHTML('beforeend', tagHtml);
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : (entityType === 'node' ? 'nodes' : null)));
+            
+            // Skip if entityTypeKey is invalid
+            if (entityTypeKey === null) {
+                console.log('Invalid entityType:', entityType);
+                return;
+            }
+            
+            // Update permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    if (permissionState[permKey][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                        permissionState[permKey][accessType][entityTypeKey].push(entityId);
+                    }
+                }
+            }
+            
+            // Update mesh/node overrides if in context
+            if (level === 'mesh' && parentId) {
+                if (!window.meshOverridesState[permKey][parentId]) {
+                    window.meshOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.meshOverridesState[permKey][parentId][accessType]) {
+                    window.meshOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                if (window.meshOverridesState[permKey][parentId][accessType][entityTypeKey] && window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.meshOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+            if (level === 'node' && parentId) {
+                if (!window.nodeOverridesState[permKey][parentId]) {
+                    window.nodeOverridesState[permKey][parentId] = { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                }
+                // Ensure accessType object exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType]) {
+                    window.nodeOverridesState[permKey][parentId][accessType] = { users: [], userGroups: [], meshes: [], nodes: [] };
+                }
+                // Ensure entityTypeKey array exists
+                if (!window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey]) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] = [];
+                }
+                if (window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey] && window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].indexOf(entityId) === -1) {
+                    window.nodeOverridesState[permKey][parentId][accessType][entityTypeKey].push(entityId);
+                }
+            }
+        }
+        
+        function removePermTag(entityId, permKey, level, accessType, entityType, parentId) {
+            var tagId = 'perm_tag_' + entityId.replace(/[^a-zA-Z0-9]/g, '_') + '_' + permKey + '_' + level + '_' + accessType + (parentId ? '_' + parentId : '');
+            var tag = document.getElementById(tagId);
+            if (tag) tag.remove();
+            
+            // Initialize overrides storage
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            if (!window.meshOverridesState[permKey]) window.meshOverridesState[permKey] = {};
+            if (!window.nodeOverridesState[permKey]) window.nodeOverridesState[permKey] = {};
+            
+            var entityTypeKey = entityType === 'user' ? 'users' : (entityType === 'userGroup' ? 'userGroups' : (entityType === 'mesh' ? 'meshes' : 'nodes'));
+            
+            // Remove from permissionState only for global level
+            if (level === 'global') {
+                if (permissionState[permKey] && permissionState[permKey][accessType] && permissionState[permKey][accessType][entityTypeKey]) {
+                    var idx = permissionState[permKey][accessType][entityTypeKey].indexOf(entityId);
+                    if (idx > -1) {
+                        permissionState[permKey][accessType][entityTypeKey].splice(idx, 1);
+                    }
+                }
+            }
+            
+            // Remove from mesh overrides if in mesh context
+            if (level === 'mesh' && parentId && window.meshOverridesState[permKey][parentId]) {
+                var override = window.meshOverridesState[permKey][parentId];
+                if (override[accessType] && override[accessType][entityTypeKey]) {
+                    var idx3 = override[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx3 > -1) {
+                        override[accessType][entityTypeKey].splice(idx3, 1);
+                    }
+                }
+            }
+            
+            // Remove from node overrides if in node context
+            if (level === 'node' && parentId && window.nodeOverridesState[permKey][parentId]) {
+                var nodeOverride = window.nodeOverridesState[permKey][parentId];
+                if (nodeOverride[accessType] && nodeOverride[accessType][entityTypeKey]) {
+                    var idx4 = nodeOverride[accessType][entityTypeKey].indexOf(entityId);
+                    if (idx4 > -1) {
+                        nodeOverride[accessType][entityTypeKey].splice(idx4, 1);
+                    }
+                }
+            }
+        }
+        
+        function buildMeshNodeSection(definitions, permissions, type) {
+            var x = '<p style="color:#666;">Select a ' + type + ' to configure permissions:</p>';
+            x += '<select style="width:100%; padding:8px; margin-bottom:15px;" id="perm_' + type + 'Select" onchange="renderMeshNodePerms(\'' + type + '\', this.value)">';
+            x += '<option value="">-- ' + (type === 'mesh' ? "Select Device Group" : "Select Device" ) + ' --</option>';
+            
+            if (type === 'mesh') {
+                var list = permissionListData.meshes;
+                if (list) {
+                    list.forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">' + EscapeHtml(item.name) + '</option>';
+                    });
+                }
+            } else {
+                // Group nodes by mesh
+                var groupedNodes = {};
+                if (permissionListData.nodes) {
+                    permissionListData.nodes.forEach(function(n) {
+                        var meshGroup = n.meshname || 'Ungrouped';
+                        if (!groupedNodes[meshGroup]) groupedNodes[meshGroup] = [];
+                        groupedNodes[meshGroup].push(n);
+                    });
+                }
+                for (var meshName in groupedNodes) {
+                    x += '<optgroup label="🖥️ ' + EscapeHtml(meshName) + '">';
+                    groupedNodes[meshName].forEach(function(item) {
+                        x += '<option value="' + EscapeHtml(item._id) + '">  ' + EscapeHtml(item.name) + '</option>';
+                    });
+                    x += '</optgroup>';
+                }
+            }
+            x += '</select>';
+            
+            x += '<div id="meshNodePermContent_' + type + '"></div>';
+            
+            return x;
+        }
+        
+        function renderMeshNodePerms(type, selectedId) {
+            var content = document.getElementById('meshNodePermContent_' + type);
+            if (!selectedId) {
+                content.innerHTML = '';
+                return;
+            }
+            
+            var data = currentPluginPermissions.data;
+            var definitions = data.definitions || {};
+            var permissions = data.permissions || {};
+            var defaults = data.defaults || {};
+            
+            var overrideKey = type === 'mesh' ? 'meshOverrides' : 'nodeOverrides';
+            
+            // Extract override data for the selected mesh/node
+            var overrideData = {};
+            for (var pk in definitions) {
+                if (permissions[pk] && permissions[pk][overrideKey] && permissions[pk][overrideKey][selectedId]) {
+                    overrideData[pk] = permissions[pk][overrideKey][selectedId];
+                } else {
+                    overrideData[pk] = {
+                        allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                        denied: { users: [], userGroups: [], meshes: [], nodes: [] }
+                    };
+                }
+            }
+            
+            var displayName = '';
+            var list = type === 'mesh' ? permissionListData.meshes : permissionListData.nodes;
+            if (list) {
+                var item = list.find(function(i) { return i._id === selectedId; });
+                if (item) displayName = item.name;
+            }
+            
+            // Store current override data for this mesh/node in a temporary location
+            window.currentPermOverride = { type: type, id: selectedId, data: overrideData };
+            
+            var x = '<div style="background:#d1ecf1; padding:10px; border-radius:4px; margin-bottom:15px;"><strong>' + EscapeHtml(displayName) + '</strong> - ' + "Specific permissions" + '</div>';
+            x += buildPermissionSection(definitions, permissions, defaults, type, selectedId, overrideData);
+            
+            content.innerHTML = x;
+        }
+        
+        function savePluginPermissionsEx() {
+            if (!currentPluginPermissions || !permissionListData) return;
+                        
+            var pluginName = document.getElementById('permPluginShortName').value;
+            var definitions = currentPluginPermissions.data.definitions || {};
+            var permissions = {};
+            var defaults = {};
+            
+            // Initialize mesh and node overrides storage if not exists
+            if (!window.meshOverridesState) window.meshOverridesState = {};
+            if (!window.nodeOverridesState) window.nodeOverridesState = {};
+            
+            // Collect defaults from DOM
+            for (var permKey in definitions) {
+                defaults[permKey] = document.getElementById('perm_default_' + permKey).value;
+            }
+            
+            // Use permissionState for permissions (more reliable than DOM scraping)
+            for (var permKey in definitions) {
+                var state = permissionState[permKey] || { allowed: { users: [], userGroups: [], meshes: [], nodes: [] }, denied: { users: [], userGroups: [], meshes: [], nodes: [] } };
+                permissions[permKey] = {
+                    allowed: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    denied: { users: [], userGroups: [], meshes: [], nodes: [] },
+                    meshOverrides: window.meshOverridesState[permKey] || {},
+                    nodeOverrides: window.nodeOverridesState[permKey] || {}
+                };
+                
+                // Copy from permissionState (global)
+                if (state.allowed) {
+                    permissions[permKey].allowed.users = state.allowed.users ? state.allowed.users.slice() : [];
+                    permissions[permKey].allowed.userGroups = state.allowed.userGroups ? state.allowed.userGroups.slice() : [];
+                    permissions[permKey].allowed.meshes = state.allowed.meshes ? state.allowed.meshes.slice() : [];
+                    permissions[permKey].allowed.nodes = state.allowed.nodes ? state.allowed.nodes.slice() : [];
+                }
+                if (state.denied) {
+                    permissions[permKey].denied.users = state.denied.users ? state.denied.users.slice() : [];
+                    permissions[permKey].denied.userGroups = state.denied.userGroups ? state.denied.userGroups.slice() : [];
+                    permissions[permKey].denied.meshes = state.denied.meshes ? state.denied.meshes.slice() : [];
+                    permissions[permKey].denied.nodes = state.denied.nodes ? state.denied.nodes.slice() : [];
+                }
+            }
+            
+            meshserver.send({
+                action: 'setpluginpermissions',
+                plugin: pluginName,
+                data: { permissions: permissions, defaults: defaults }
+            });
+            
+            closePluginPermModal();
+        }
+
         function goPlugin(pname, title) {
             if (pluginHandler == null) return;
-            if (pname == null) { Q('p43iframe').src = ''; } else { QH('p43title', title); Q('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
+            if (pname == null) { document.getElementById('p43iframe').src = ''; } else { document.getElementById('p43title').innerHTML =  title; document.getElementById('p43iframe').src = '/pluginadmin.ashx?pin=' + pname; go(43); }
         }
 
         //
@@ -19231,7 +20113,6 @@
             return outputArray;
         }
 
-        function joinPaths() { var x = []; for (var i in arguments) { var w = arguments[i]; if ((w != null) && (w != '')) { while (w.endsWith('/') || w.endsWith('\\')) { w = w.substring(0, w.length - 1); } while (w.startsWith('/') || w.startsWith('\\')) { w = w.substring(1); } x.push(w); } } return x.join('/'); }
         function putstore(name, val) {
             try {
                 if ((typeof (localStorage) === 'undefined') || (localStorage.getItem(name) == val)) return;
@@ -19314,6 +20195,7 @@
         function printDate(d) { return d.toLocaleDateString(args.locale); }
         function printTime(d) { return d.toLocaleTimeString(args.locale); }
         function printDateTime(d) { return d.toLocaleString(args.locale); }
+        function printTimer(d) { return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2); }
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
@@ -19330,6 +20212,7 @@
             if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
             if (userid == userinfo._id) { return (userinfo.name + guestname); }
             if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
+            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
             return (useridsplit[2] + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
@@ -19338,14 +20221,11 @@
         function isMacNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([11,16,29].indexOf(node.agent.id) >= 0); }
 
         function downloadFile(link, name, closeDialog) {
-            var element = document.createElement('a');
-            element.setAttribute('href', link);
-            element.setAttribute('rel', 'noreferrer noopener');
-            element.setAttribute('target', 'fileDownloadFrame');
-            element.setAttribute('download', decodeURIComponent(name?name:''));
+            var element = document.createElement('iframe');
+            element.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            element.src = link;
             document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
         }
 

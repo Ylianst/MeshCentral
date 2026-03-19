@@ -162,7 +162,19 @@ module.exports.CreateMeshScanner = function (parent) {
         try {
             if ((typeof obj.parent.config.domains[''].title == 'string') && (obj.parent.config.domains[''].title.length > 0)) {
                 name = obj.parent.config.domains[''].title; info = '';
-                try { if ((typeof obj.parent.config.domains[''].title2 == 'string') && (obj.parent.config.domains[''].title2.length > 0)) { info = obj.parent.config.domains[''].title2; } } catch (ex) { }
+                try { 
+                    if ((typeof obj.parent.config.domains[''].title2 == 'string') && (obj.parent.config.domains[''].title2.length > 0)) { 
+                        info = obj.common.replacePlaceholders(obj.parent.config.domains[''].title2, { 
+                            'serverversion': obj.parent.currentVer,
+                            'servername': obj.getWebServerName(domain, req),
+                            'agentsessions': Object.keys(parent.webserver.wsagents).length,
+                            'connectedusers': Object.keys(parent.webserver.wssessions).length,
+                            'userssessions': Object.keys(parent.webserver.wssessions2).length,
+                            'relaysessions': parent.webserver.relaySessionCount,
+                            'relaycount': Object.keys(parent.webserver.wsrelays).length
+                        });
+                    }
+                } catch (ex) { }
             }
         } catch (ex) { }
         try {

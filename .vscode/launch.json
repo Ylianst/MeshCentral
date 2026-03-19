@@ -10,6 +10,16 @@
             "name": "Launch Chrome against localhost",
             "url": "http://localhost:8080",
             "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Test docs locally with mkdocs",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/docs/env/Scripts/mkdocs.exe",
+            "args": ["serve", "--dev-addr", "127.0.0.1:8010"],
+            "cwd": "${workspaceFolder}/docs",
+            "console": "integratedTerminal",
+            "preLaunchTask": "Start MkDocs Server"
         }
     ]
 }

@@ -101,9 +101,9 @@ var minifyMeshCentralSourceFiles = [
     "../public/scripts/amt-wsman-ws-0.2.0.js",
     "../public/scripts/common-0.0.1.js",
     "../public/scripts/meshcentral.js",
-    "../public/scripts/ol3-contextmenu.js",
     "../public/scripts/u2f-api.js",
     "../public/scripts/xterm-addon-fit.js",
+    "../public/scripts/xterm-addon-image.js",
     "../public/scripts/xterm.js",
     "../public/scripts/zlib-adler32.js",
     "../public/scripts/zlib-crc32.js",
@@ -143,8 +143,8 @@ if (directRun && (NodeJSVer >= 12)) {
             // Get things setup
             jsdom = require('jsdom');
             esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-            if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-            if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
+            if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+            if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier
 
             switch (op) {
                 case 'translate': {
@@ -161,19 +161,19 @@ if (directRun) { setup(); }
 
 function setup() {
     var libs = ['jsdom@22.1.0', 'esprima@4.0.1'];
-    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-    if (minifyLib == 2) { libs.push('html-minifier@4.0.0'); }
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+    if (minifyLib == 2) { libs.push('html-minifier-terser@7.2.0'); }
     InstallModules(libs, start);
 }
 
 function start() { startEx(process.argv); }
 
-function startEx(argv) {
+async function startEx(argv) {
     // Load dependencies
     jsdom = require('jsdom');
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
-    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier\""); process.exit(); return; }
-    if (minifyLib == 2) { minify = require('html-minifier').minify; } // https://www.npmjs.com/package/html-minifier
+    if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
+    if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier-terser
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
@@ -359,14 +359,14 @@ function startEx(argv) {
                 if (sourceFiles[i].endsWith('.js')) {
                     // Minify the file .js file
                     const destinationFile = path.join(argv[4], sourceFiles[i].substring(0, sourceFiles[i].length - 3) + '.min.js');
-                    if (minifyLib = 2) {
+                    if (minifyLib == 2) {
                         var inFile = fs.readFileSync(sourceFile).toString();
 
                         // Perform minification pre-processing
                         if (sourceFile.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
                         if (sourceFile.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
-                        var minifiedOut = minify(inFile, {
+                        var minifiedOut = await minify(inFile, {
                             collapseBooleanAttributes: true,
                             collapseInlineTagWhitespace: false, // This is not good.
                             collapseWhitespace: true,
@@ -424,7 +424,7 @@ function startEx(argv) {
                     dist: outnamemin
                 }, function (e, compress) {
                     if (e) { log('ERROR ', e); return done(); }
-                    compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
+                    compress.run((e) => { e ? log('Minification fail', e) : log('Minification success'); minifyDone(); });
                 }
                 );
             }
@@ -440,7 +440,7 @@ function startEx(argv) {
 
                 var minifiedOut = null;
                 try {
-                    minifiedOut = minify(inFile, {
+                    minifiedOut = await minify(inFile, {
                         collapseBooleanAttributes: true,
                         collapseInlineTagWhitespace: false, // This is not good.
                         collapseWhitespace: true,
@@ -454,7 +454,6 @@ function startEx(argv) {
                         removeScriptTypeAttributes: true,
                         removeTagWhitespace: true,
                         preserveLineBreaks: false,
-                        useShortDoctype: true,
                         log: function(a) { if (typeof a !== 'string') { console.log(a); } } // Log errors from UglifyJS to console output
                     });
                 } catch (ex) {
@@ -464,7 +463,6 @@ function startEx(argv) {
                 // Perform minification post-processing
                 if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
                 if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
 
                 /*
@@ -502,14 +500,14 @@ function startEx(argv) {
         log('Generating ' + path.basename(outnamemin) + '...');
 
         // Minify the file
-        if (minifyLib = 2) {
+        if (minifyLib == 2) {
             var inFile = fs.readFileSync(outname).toString()
 
             // Perform minification pre-processing
             if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
             if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
 
-            var minifiedOut = minify(inFile, {
+            var minifiedOut = await minify(inFile, {
                 collapseBooleanAttributes: true,
                 collapseInlineTagWhitespace: false, // This is not good.
                 collapseWhitespace: true,
@@ -530,6 +528,7 @@ function startEx(argv) {
             if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
             if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
             fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+
         }
     }
 }
@@ -656,14 +655,27 @@ function translate(lang, langFile, sources, createSubDir) {
 
         langs = {};
         for (var i in langFileData.strings) { var entry = langFileData.strings[i]; for (var j in entry) { if ((j != 'en') && (j != 'xloc') && (j != '*')) { langs[j.toLowerCase()] = true; } } }
-        for (var i in langs) {
-            const { Worker } = require('worker_threads')
-            const worker = new Worker('./translate.js', { stdout: true, workerData: { op: 'translate', args: [i, langFile, sources, createSubDir] } });
-            worker.stdout.on('data', function (msg) { console.log('wstdio:', msg.toString()); });
-            worker.on('message', function (message) { console.log(message.msg); });
-            worker.on('error', function (error) { console.log('error', error); });
-            worker.on('exit', function (code) { /*console.log('exit', code);*/ })
+        var Worker = require('worker_threads').Worker;
+        var MAX_WORKERS = os.cpus().length; // limit to the number of CPU cores for now
+        var activeWorkers = 0;
+        var taskQueue = [];
+        function processNextTask() {
+            if (activeWorkers < MAX_WORKERS && taskQueue.length > 0) {
+                var nextTask = taskQueue.shift();
+                activeWorkers++;
+                var worker = new Worker('./translate.js', { stdout: true, workerData: { op: 'translate', args: [nextTask.lang, nextTask.langFile, nextTask.sources, nextTask.createSubDir] } });
+                worker.stdout.on('data', function (msg) { console.log('wstdio:', msg.toString()); });
+                worker.on('message', function (message) { console.log(message.msg); });
+                worker.on('error', function (error) { console.log('error', error); activeWorkers--; processNextTask(); });
+                worker.on('exit', function (code) { /*console.log('exit', code);*/ activeWorkers--; processNextTask(); });
+            }
         }
+        for (var lang in langs) {
+            if (langs.hasOwnProperty(lang)) {
+                taskQueue.push({ lang: lang, langFile: langFile, sources: sources, createSubDir: createSubDir});
+            }
+        }
+        for (var i = 0; i < Math.min(MAX_WORKERS, taskQueue.length); i++) { processNextTask(); }
     } else {
         // Single threaded translation
         translateSingleThreaded(lang, langFile, sources, createSubDir);
@@ -922,7 +934,7 @@ function translateAllInJson(xlang, langFile, file) {
     fs.writeFileSync(file, JSON.stringify(json, null, 2), { flag: 'w+' });
 }
 
-function translateFromHtml(lang, file, createSubDir) {
+async function translateFromHtml(lang, file, createSubDir) {
     var data = fs.readFileSync(file);
     if (file.endsWith('.js')) { data = '<html><head></head><body><script>' + data + '</script></body></html>'; }
     var { JSDOM } = jsdom;
@@ -968,15 +980,15 @@ function translateFromHtml(lang, file, createSubDir) {
             dist: outnamemin
         }, function(e, compress) {
             if (e) { log('ERROR ', e); return done(); }
-            compress.run((e) => { e ? log('Minification fail', e) : log('Minification sucess'); minifyDone(); });
+            compress.run((e) => { e ? log('Minification fail', e) : log('Minification success'); minifyDone(); });
         }
         );
     }
 
     // Minify the file
-    if (minifyLib = 2) {
+    if (minifyLib == 2) {
         if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-        var minifiedOut = minify(out, {
+        var minifiedOut = await minify(out, {
             collapseBooleanAttributes: true,
             collapseInlineTagWhitespace: false, // This is not good.
             collapseWhitespace: true,
@@ -993,7 +1005,7 @@ function translateFromHtml(lang, file, createSubDir) {
             useShortDoctype: true
         });
         if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
-        fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
+        fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' }); 
     }
 }
 
@@ -1118,7 +1130,7 @@ function InstallModuleEx(modulenames, func) {
     InstallModuleChildProcess = child_process.exec(`npm install --no-audit --no-optional --omit=optional ${names}`, { maxBuffer: 512000, timeout: 300000, cwd: parentpath }, function (error, stdout, stderr) {
         InstallModuleChildProcess = null;
         if ((error != null) && (error != '')) {
-            log('ERROR: Unable to install required modules. May not have access to npm, or npm may not have suffisent rights to load the new modules. Try "npm install ' + names + '" to manualy install the modules.\r\n');
+            log('ERROR: Unable to install required modules. May not have access to npm, or npm may not have suffisent rights to load the new modules. Try "npm install ' + names + '" to manually install the modules.\r\n');
             process.exit();
             return;
         }

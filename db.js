@@ -140,6 +140,11 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
             sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
+		} else if (obj.databaseType == DB_POSTGRESQL) { // PostgreSQL
+            sqlDbQuery('DELETE FROM events WHERE time < $1', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expireEventsSeconds
+            sqlDbQuery('DELETE FROM power WHERE time < $1', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
+            sqlDbQuery('DELETE FROM serverstats WHERE time < $1', [new Date(Date.now() - (expireServerStatsSeconds * 1000))], function (doc, err) { }); // Delete server stats older than expireServerStatsSeconds
+            sqlDbQuery('DELETE FROM smbios WHERE expire < $1', [new Date()], function (doc, err) { }); // Delete SMBIOS records where expiration date is in the past
         } else if (obj.databaseType == DB_ACEBASE) { // AceBase
             //console.log('Performing AceBase maintenance');
             obj.file.query('events').filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
@@ -258,6 +263,20 @@ module.exports.CreateDB = function (parent, func) {
                                                     // Notify user change
                                                     var targets = ['*', 'server-users', cuser._id];
                                                     var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: node.domain, account: parent.webserver.CloneSafeUser(cuser) };
+                                                    if (obj.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                                                    parent.DispatchEvent(targets, obj, event);
+                                                }
+                                            } else if (i.startsWith('ugrp/')) {
+                                                var cusergroup = parent.userGroups[i];
+                                                if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
+                                                    // Remove the user link & save the user
+                                                    delete cusergroup.links[node._id];
+                                                    if (Object.keys(cusergroup.links).length == 0) { delete cusergroup.links; }
+                                                    obj.Set(cusergroup);
+
+                                                    // Notify user change
+                                                    var targets = ['*', 'server-users', cusergroup._id];
+                                                    var event = { etype: 'ugrp', ugrpid: cusergroup._id, name: cusergroup.name, desc: cusergroup.desc, action: 'usergroupchange', links: cusergroup.links, msgid: 163, msgArgs: [node.name, cusergroup.name], msg: 'Removed device ' + node.name + ' from user group ' + cusergroup.name };
                                                     if (obj.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                                     parent.DispatchEvent(targets, obj, event);
                                                 }
@@ -738,7 +757,8 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE TABLE IF NOT EXISTS serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
+                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
                 ], function (err) {
                     parent.debug('db', 'Checking indexes...');
                     sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -794,6 +814,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE TABLE power (id INTEGER PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON);
                         CREATE TABLE smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON);
                         CREATE TABLE plugin (id INTEGER PRIMARY KEY, doc JSON);
+                        CREATE TABLE pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
                         CREATE INDEX ndxtypedomainextra ON main (type, domain, extra);
                         CREATE INDEX ndxextra ON main (extra);
                         CREATE INDEX ndxextraex ON main (extraex);
@@ -819,8 +840,14 @@ module.exports.CreateDB = function (parent, func) {
 
             //for existing db's
             sqliteSetOptions();
-            //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-            setupFunctions(func);
+            // Create any missing tables (e.g., pluginpermissions added in updates)
+            obj.file.exec(`
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+            `, function (err) {
+                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
+                setupFunctions(func);
+            });
         });
     } else if (parent.args.acebase) {
         // AceBase database setup
@@ -908,47 +935,67 @@ module.exports.CreateDB = function (parent, func) {
         }
     } else if (parent.args.postgres) {
         // Postgres SQL
-        let connectinArgs = parent.args.postgres;
-        connectinArgs.database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+        let connectionArgs = parent.args.postgres;
+        connectionArgs.database = (databaseName = (connectionArgs.database != null) ? connectionArgs.database : 'meshcentral');
 
         let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
         const { Client } = require('pg');
-        Datastore = new Client(connectinArgs);
-        //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
-        connectinArgs.database = 'postgres';
-        DatastoreTest = new Client(connectinArgs);
-        DatastoreTest.connect();
-
-        DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
-            if (res.rowCount != 0) { // database exists now check tables exists
-                DatastoreTest.end();
-                Datastore.connect();
-                Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
-                    if (err == null) {
-                      (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
-                    } else
-                    if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
-                        postgreSqlCreateTables(func);
-                    } else {
-                        console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
-                    };
-                });
-            } else { // If not present, create the tables and indexes
-                //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE '+ databaseName + ';', [], function (err, res) {
-                    if (err == null) {
-                        // Create the tables and indexes
-                        DatastoreTest.end();
-                        Datastore.connect();
-                        postgreSqlCreateTables(func);
-                    } else {
-                            console.log('Postgresql database create error: ', err.message);
-                            process.exit(0);
-                    }
-                });
-            }
-        });
+        Datastore = new Client(connectionArgs);
+        // Check if we should skip database creation check
+        if (connectionArgs.createdatabase === false ) {
+            // Skip database check/creation, just connect and run the SELECT query
+            Datastore.connect();
+            Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                if (err == null) {
+                    // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                    // This ensures new tables (like pluginpermissions) get created on upgrades
+                    postgreSqlCreateTables(func);
+                } else if (err.code == '42P01') { //42P01 = undefined table
+                    postgreSqlCreateTables(func);
+                } else {
+                    console.log('Postgresql connection error: ', err.message); 
+                    process.exit(0);
+                }
+            });
+        } else {
+            //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
+            connectionArgs.database = 'postgres';
+            DatastoreTest = new Client(connectionArgs);
+            DatastoreTest.connect();
+            connectionArgs.database = databaseName; //put the name back for backupconfig info
+            DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
+                if (res.rowCount != 0) { // database exists now check tables exists
+                    DatastoreTest.end();
+                    Datastore.connect();
+                    Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                        if (err == null) {
+                            // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                            // This ensures new tables (like pluginpermissions) get created on upgrades
+                            postgreSqlCreateTables(func);
+                        } else
+                        if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
+                            postgreSqlCreateTables(func);
+                        } else {
+                            console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
+                        };
+                    });
+                } else { // If not present, create the tables and indexes
+                    //not needed, just use a create db statement: const pgtools = require('pgtools'); 
+                    DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
+                        if (err == null) {
+                            // Create the tables and indexes
+                            DatastoreTest.end();
+                            Datastore.connect();
+                            postgreSqlCreateTables(func);
+                        } else {
+                                console.log('Postgresql database create error: ', err.message);
+                                process.exit(0);
+                        }
+                    });
+                }
+            });
+        }
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = DB_MONGODB;
@@ -1127,8 +1174,8 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
 
-            // Setup plugin info collection
-            if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
+        // Setup plugin info collection
+        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); obj.pluginpermissionsfile = db.collection('pluginpermissions'); }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -1362,7 +1409,8 @@ module.exports.CreateDB = function (parent, func) {
             'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
             'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
             'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
-            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
+            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)',
+            'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
         ], function (results) {
             parent.debug('db', 'Creating indexes...');
             sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -1849,6 +1897,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0) { func(null, [docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON DUPLICATE KEY UPDATE doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if (obj.databaseType == DB_ACEBASE) {
             // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
@@ -2141,6 +2191,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin').child(encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
+                obj.getPluginPermissions = function (pluginName, func) { obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).get(function(snapshot) { if (snapshot.exists()) { func(null, [snapshot.val()]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).set(data, func); };
             }
         } else if (obj.databaseType == DB_POSTGRESQL) {
             // Database actions on the main collection (Postgres)
@@ -2401,6 +2453,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0 && docs[0].doc) { func(null, [typeof docs[0].doc === 'string' ? JSON.parse(docs[0].doc) : docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Database actions on the main collection (MariaDB or MySQL)
@@ -2753,12 +2807,20 @@ module.exports.CreateDB = function (parent, func) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -2958,6 +3020,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginpermissionsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginpermissionsfile.updateOne({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
 
         } else {
@@ -2997,15 +3061,26 @@ module.exports.CreateDB = function (parent, func) {
                 //if (id) { x._id = id; }
                 //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             //};
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                } else {
+                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                }
+            };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (extrasids == null) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -3013,7 +3088,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (id) { x._id = id; }
                 obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, common.unEscapeAllLinksFieldName(performTypedRecordDecrypt(docs))); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -3163,8 +3238,9 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginsfile.update({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
-
         }
 
         // Get all configuration files
@@ -3192,6 +3268,7 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }
         else if ((typeof parent.args.mariadb == 'object') && (typeof parent.args.mariadb.database == 'string')) { dbname = parent.args.mariadb.database; }
         else if ((typeof parent.args.mysql == 'object') && (typeof parent.args.mysql.database == 'string')) { dbname = parent.args.mysql.database; }
+        else if ((typeof parent.args.postgres == 'object') && (typeof parent.args.postgres.database == 'string')) { dbname = parent.args.postgres.database; }
         else if (typeof parent.config.settings.sqlite3 == 'string') {dbname = parent.config.settings.sqlite3 + '.sqlite'};
 
         const currentDate = new Date();
@@ -3200,18 +3277,17 @@ module.exports.CreateDB = function (parent, func) {
 
         r += 'DB Name: ' + dbname + '\r\n';
         r += 'DB Type: ' + DB_LIST[obj.databaseType] + '\r\n';
-        r += 'BackupPath: ' + backupPath + '\r\n';
-        r += 'BackupFile: ' + obj.newAutoBackupFile + '.zip\r\n';
 
-        if (parent.config.settings.autobackup == null) {
-            r += 'No Settings/AutoBackup\r\n';
+        if (parent.config.settings.autobackup.backupintervalhours == -1) {
+            r += 'Backup disabled\r\n';
         } else {
+            r += 'BackupPath: ' + backupPath + '\r\n';
+            r += 'BackupFile: ' + obj.newAutoBackupFile + '.zip\r\n';
+
             if (parent.config.settings.autobackup.backuphour != null && parent.config.settings.autobackup.backuphour != -1) {
                 r += 'Backup between: ' + parent.config.settings.autobackup.backuphour + 'H-' + (parent.config.settings.autobackup.backuphour + 1)  + 'H\r\n';
             }
-            if (parent.config.settings.autobackup.backupintervalhours != null) {
-                r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
-            }
+            r += 'Backup Interval (Hours): ' + parent.config.settings.autobackup.backupintervalhours + '\r\n';
             if (parent.config.settings.autobackup.keeplastdaysbackup != null) {
                 r += 'Keep Last Backups (Days): ' + parent.config.settings.autobackup.keeplastdaysbackup + '\r\n';
             }
@@ -3230,6 +3306,11 @@ module.exports.CreateDB = function (parent, func) {
                 r += 'MySqlDump Path: ';
                 if (typeof parent.config.settings.autobackup.mysqldumppath != 'string') { r += 'Bad mysqldump type\r\n'; }
                 else { r += parent.config.settings.autobackup.mysqldumppath + '\r\n'; }
+            }
+            if (parent.config.settings.autobackup.pgdumppath != null) {
+                r += 'pgDump Path: ';
+                if (typeof parent.config.settings.autobackup.pgdumppath != 'string') { r += 'Bad pgdump type\r\n'; }
+                else { r += parent.config.settings.autobackup.pgdumppath + '\r\n'; }
             }
             if (parent.config.settings.autobackup.backupotherfolders) {
                 r += 'Backup other folders: ';
@@ -3334,7 +3415,7 @@ module.exports.CreateDB = function (parent, func) {
     // Tries configured custom location with fallback to default location
     // Now runs after autobackup config init in meshcentral.js so config options are checked
     obj.checkBackupCapability = function (func) {
-        if ((parent.config.settings.autobackup == null) || (parent.config.settings.autobackup == false)) { return; };
+        if (parent.config.settings.autobackup.backupintervalhours == -1) { return; };
         //block backup until validated. Gets put back if all checks are ok.
         let backupInterval = parent.config.settings.autobackup.backupintervalhours;
         parent.config.settings.autobackup.backupintervalhours = -1;
@@ -3381,7 +3462,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Mongodump error, backup will not be performed. Command tried: " + cmd + ' --> ERROR: ' + stderr);
+                        func(1, "Mongodump error, backup will not be performed. Check path or use mongodumppath & mongodumpargs");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3392,7 +3473,7 @@ module.exports.CreateDB = function (parent, func) {
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find mysqldump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "mysqldump error, backup will not be performed. Check path or use mysqldumppath");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3401,13 +3482,13 @@ module.exports.CreateDB = function (parent, func) {
             // Check that we have access to pg_dump
             parent.config.settings.autobackup.pgdumppath = path.normalize(parent.config.settings.autobackup.pgdumppath ? parent.config.settings.autobackup.pgdumppath : 'pg_dump');
             let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
                     + ' > ' + ((parent.platform == 'win32') ? '\"nul\"' : '\"/dev/null\"');
             const child_process = require('child_process');
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
-                        func(1, "Unable to find pg_dump tool, backup will not be performed. Command tried: " + cmd);
+                        func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
@@ -3595,11 +3676,11 @@ module.exports.CreateDB = function (parent, func) {
                 });
             } else if (obj.databaseType == DB_POSTGRESQL) {
                 // Perform a PostgresDump backup
-                const newBackupFile = databaseName + '-pgdump-' + fileSuffix + '.sql';
+                const newBackupFile = 'pgdump-' + fileSuffix + '.sql';
                 obj.newDBDumpFile = path.join(backupPath, newBackupFile);
                 let cmd = '"' + parent.config.settings.autobackup.pgdumppath + '"'
-                    + ' --dbname=postgresql://' + parent.config.settings.postgres.user + ":" +parent.config.settings.postgres.password
-                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + databaseName
+                    + ' --dbname=postgresql://' + encodeURIComponent(parent.config.settings.postgres.user) + ":" + encodeURIComponent(parent.config.settings.postgres.password)
+                    + "@" + parent.config.settings.postgres.host + ":" + parent.config.settings.postgres.port + "/" + encodeURIComponent(databaseName)
                     + " --file=" + obj.newDBDumpFile;
                 parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');
@@ -3780,84 +3861,50 @@ module.exports.CreateDB = function (parent, func) {
         }
     }
 
+    async function webDAVBackup(filename, func) {
+        try {
+            const webDAV = await import ('webdav');
+            const wdConfig = parent.config.settings.autobackup.webdav;
+            const client = webDAV.createClient(wdConfig.url, {
+                username: wdConfig.username,
+                password: wdConfig.password,
+                maxContentLength: Infinity,
+                maxBodyLength: Infinity
+            });
+            if (await client.exists(wdConfig.foldername) === false) {
+                await client.createDirectory(wdConfig.foldername, { recursive: true});
+            } else {
+                // Clean up our WebDAV folder
+                if ((typeof wdConfig.maxfiles == 'number') && (wdConfig.maxfiles > 1)) {
+                    const fileName = parent.config.settings.autobackup.backupname;
+                    //only files matching our backupfilename
+                    let files = await client.getDirectoryContents(wdConfig.foldername, { deep: false, glob: "/**/" + fileName + "*.zip" });
+                    const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
+                    for (const i in files) { files[i].xdate = new Date(files[i].lastmod); }
+                    files.sort(xdateTimeSort);
+                    while (files.length >= wdConfig.maxfiles) {
+                        let delFile = files.shift().filename;
+                        await client.deleteFile(delFile);
+                        console.log('WebDAV file deleted: ' + delFile); if (func) { func('WebDAV file deleted: ' + delFile); }
+                    }
+                }
+            }
+            // Upload to the WebDAV folder
+            const { pipeline } = require('stream/promises');
+            await pipeline(fs.createReadStream(filename), client.createWriteStream( wdConfig.foldername + path.basename(filename)));
+            console.log('WebDAV upload completed: ' + wdConfig.foldername + path.basename(filename)); if (func) { func('WebDAV upload completed: ' + wdConfig.foldername + path.basename(filename)); }
+        }
+        catch(err) {
+            console.error('WebDAV error: ' + err.message); if (func) { func('WebDAV error: ' + err.message);}
+        }
+    }
+
     // Perform cloud backup
     obj.performCloudBackup = function (filename, func) {
         // WebDAV Backup
         if ((typeof parent.config.settings.autobackup == 'object') && (typeof parent.config.settings.autobackup.webdav == 'object')) {
-            parent.debug( 'backup', 'Entering WebDAV backup');
-            if (func) { func('Entering WebDAV backup.'); }
-
-            const xdateTimeSort = function (a, b) { if (a.xdate > b.xdate) return 1; if (a.xdate < b.xdate) return -1; return 0; }
-            // Fetch the folder name
-            var webdavfolderName = 'MeshCentral-Backups';
-            if (typeof parent.config.settings.autobackup.webdav.foldername == 'string') { webdavfolderName = parent.config.settings.autobackup.webdav.foldername; }
-
-            // Clean up our WebDAV folder
-            function performWebDavCleanup(client) {
-                if ((typeof parent.config.settings.autobackup.webdav.maxfiles == 'number') && (parent.config.settings.autobackup.webdav.maxfiles > 1)) {
-                    let fileName = parent.config.settings.autobackup.backupname;
-                    //only files matching our backupfilename
-                    let directoryItems = client.getDirectoryContents(webdavfolderName, { deep: false, glob: "/**/" + fileName + "*.zip" });
-                    directoryItems.then(
-                        function (files) {
-                            for (var i in files) { files[i].xdate = new Date(files[i].lastmod); }
-                            files.sort(xdateTimeSort);
-                            parent.debug('backup','WebDAV filtered directory contents: ' + JSON.stringify(files, null, 4));
-                            while (files.length >= parent.config.settings.autobackup.webdav.maxfiles) {
-                                let delFile = files.shift().filename;
-                                client.deleteFile(delFile).then(function (state) {
-                                    parent.debug('backup','WebDAV file deleted: ' + delFile);
-                                    if (func) { func('WebDAV file deleted: ' + delFile); }
-                                }).catch(function (err) {
-                                    console.error(err);
-                                    if (func) { func('WebDAV (deleteFile) error: ' + err.message); }
-                                });
-                            }
-                        }
-                    ).catch(function (err) {
-                        console.error(err);
-                        if (func) { func('WebDAV (getDirectoryContents) error: ' + err.message); }
-                    });
-                }
-            }
-
-            // Upload to the WebDAV folder
-            function performWebDavUpload(client, filepath) {
-                require('fs').stat(filepath, function(err,stat){
-                    var fileStream = require('fs').createReadStream(filepath);
-                    fileStream.on('close', function () { console.log('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); if (func) { func('WebDAV upload completed: ' + webdavfolderName + '/' + require('path').basename(filepath)); } })
-                    fileStream.on('error', function (err) { console.error(err); if (func) { func('WebDAV (fileUpload) error: ' + err.message); } })
-                    fileStream.pipe(client.createWriteStream('/' + webdavfolderName + '/' + require('path').basename(filepath), { headers: { "Content-Length": stat.size } }));
-                    parent.debug('backup', 'Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url);
-                    if (func) { func('Uploading using WebDAV to: ' + parent.config.settings.autobackup.webdav.url); }
-                });
-            }
-
-            const { createClient } = require('webdav');
-            const client = createClient(parent.config.settings.autobackup.webdav.url, {
-                username: parent.config.settings.autobackup.webdav.username,
-                password: parent.config.settings.autobackup.webdav.password,
-                maxContentLength: Infinity,
-                maxBodyLength: Infinity
-            });
-            client.exists(webdavfolderName).then(function(a){
-                if(a){
-                    performWebDavCleanup(client);
-                    performWebDavUpload(client, filename);
-                }else{
-                    client.createDirectory(webdavfolderName, {recursive: true}).then(function (a) {
-                        console.log('backup','WebDAV folder created: ' + webdavfolderName);
-                        if (func) { func('WebDAV folder created: ' + webdavfolderName); }
-                        performWebDavUpload(client, filename);
-                    }).catch(function (err) {
-                        console.error(err);
-                        if (func) { func('WebDAV (createDirectory) error: ' + err.message); }
-                    });
-                }
-            }).catch(function (err) {
-                console.error(err);
-                if (func) { func('WebDAV (exists) error: ' + err.message); }
-            });
+            parent.debug( 'backup', 'Entering WebDAV backup'); if (func) { func('Entering WebDAV backup.'); }
+            webDAVBackup(filename, func);
         }
 
         // Google Drive Backup

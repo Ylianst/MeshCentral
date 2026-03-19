@@ -53,6 +53,7 @@
         "allevents",
         "allowaccountreset",
         "allowframing",
+        "allowedframingorigins",
         "allowfullscreen",
         "allowhighqualitydesktop",
         "allowsavingdevicecredentials",

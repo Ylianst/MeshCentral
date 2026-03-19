@@ -869,7 +869,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // This node does not exist, create it.
         var agentName = obj.agentName ? obj.agentName : obj.agentInfo.computerName;
-        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null };
+        var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null, firstconnect: obj.connectTime  };
         db.Set(device);
 
         // Event the new node
@@ -1087,7 +1087,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // If we need to ask for IP location, see if we have the quota to do it.
                     if (doIpLocation > 0) {
-                        db.getValueOfTheDay('ipLocationRequestLimitor', 10, function (ipLocationLimitor) {
+                        db.getValueOfTheDay('ipLocationRequestLimitor', 1000, function (ipLocationLimitor) {
                             if ((ipLocationLimitor != null) && (ipLocationLimitor.value > 0)) {
                                 ipLocationLimitor.value--;
                                 db.Set(ipLocationLimitor);
@@ -1933,6 +1933,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.lastbootuptime) { device.lastbootuptime = ""; }
                     if (device.lastbootuptime != command.lastbootuptime) { /*changes.push('Last Boot Up Time');*/ device.lastbootuptime = command.lastbootuptime; change = 1; log = 1; }
                 }
+                if (command.idletime != null) { // Idle Time
+                    if (!device.idletime) { device.idletime = 0; }
+                    if (parseInt(device.idletime) != parseInt(command.idletime)) { /*changes.push('Idle Time');*/ device.idletime = parseInt(command.idletime); change = 1; } // Don't log idle time changes, this is too volatile.
+                }
 
                 // Push Messaging Token
                 if ((command.pmt != null) && (typeof command.pmt == 'string') && (device.pmt != command.pmt)) {
@@ -1944,6 +1948,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 
                 if ((command.users != null) && (Array.isArray(command.users)) && (device.users != command.users)) { device.users = command.users; change = 1; } // Don't save this to the db.
                 if ((command.lusers != null) && (Array.isArray(command.lusers)) && (device.lusers != command.lusers)) { device.lusers = command.lusers; change = 1; } // Don't save this to the db.
+                if ((command.upnusers != null) && (Array.isArray(command.upnusers)) && (device.upnusers != command.upnusers)) { device.upnusers = command.upnusers; change = 1; } // Don't save this to the db.
                 if ((mesh.mtype == 2) && (!args.wanonly)) {
                     // In WAN mode, the hostname of a computer is not important. Don't log hostname changes.
                     if (device.host != obj.remoteaddr) { device.host = obj.remoteaddr; change = 1; changes.push('host'); }
@@ -1980,7 +1985,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {
-        if (obj.agentInfo.capabilities & 0x40) return;
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
         if ((command == null) || (command == null)) { return; } // Safety, should never happen.
 
         // Check that the mesh exists

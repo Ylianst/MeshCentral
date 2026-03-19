@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Setup Python Environment",
+            "type": "shell",
+            "command": "python",
+            "args": ["-m", "venv", "env"],
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install MkDocs Requirements",
+            "type": "shell",
+            "command": ".\\env\\Scripts\\activate.ps1; python -m pip install --upgrade pip; pip install -r requirements.txt",
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "dependsOn": "Setup Python Environment"
+        },
+        {
+            "label": "Start MkDocs Server",
+            "type": "shell",
+            "command": ".\\env\\Scripts\\activate.ps1; Start-Process http://localhost:8010; mkdocs serve",
+            "options": {
+                "cwd": "${workspaceFolder}/docs"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "isBackground": true,
+            "dependsOn": "Install MkDocs Requirements"
+        }
+    ]
+}
