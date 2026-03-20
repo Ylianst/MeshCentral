@@ -1,0 +1,51 @@
+name: Generate Changes
+
+on:
+  workflow_call:
+    outputs:
+      docker:
+        value: ${{ jobs.changes.outputs.docker }}
+      helm:
+        value: ${{ jobs.changes.outputs.helm }}
+      timestamp:
+        value: ${{ jobs.changes.outputs.timestamp }}
+      commit_sha:
+        value: ${{ jobs.changes.outputs.commit_sha }}
+      test_commit_sha:
+        value: ${{ jobs.changes.outputs.test_commit_sha }}
+
+jobs:
+  changes:
+    name: Changes check
+    runs-on: ubuntu-latest
+    outputs:
+      docker: ${{ steps.filter.outputs.docker }}
+      helm: ${{ steps.filter.outputs.helm }}
+      timestamp: ${{ steps.setup_env.outputs.timestamp }}
+      commit_sha: ${{ steps.setup_env.outputs.commit_sha }}
+      test_commit_sha: ${{ steps.setup_env.outputs.test_commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up environment
+        id: setup_env
+        run: |
+          echo "timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+          echo "commit_sha=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+          echo "test_commit_sha=test-${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            docker:
+              - 'docker/**'
+              - 'package.json'
+              - 'translate/**'
+              - '*.js'
+              - 'views/**'
+              - 'public/**'
+            helm:
+              - 'charts/**'

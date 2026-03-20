@@ -1,0 +1,53 @@
+image:
+  repository: ghcr.io/ylianst/meshcentral
+  tag: ""  # defaults to appVersion
+
+# -- MeshCentral config.json contents
+# Ref: https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json
+config:
+  settings:
+    plugins:
+      enabled: true
+      list:
+        - openframe
+    mongodb: ""  # Set via --set or values override
+    dbExpire:
+      events: 157680000
+    certUrl: []
+    port: 4430
+    aliasPort: 443
+    alias: []
+    agentAliasUrl: ""
+    agentAliasDns: []
+    tlsOffload: true
+    redirPort: 0
+    AgentPong: 300
+    SelfUpdate: false
+    AllowFraming: true
+    AllowLoginToken: true
+    WebRTC: false
+    IgnoreAgentHashCheck: true
+    production: false
+    meshAgentBinaries:
+      darwin-x64:
+        compile: true
+        force: true
+      darwin-arm64:
+        compile: true
+        force: true
+  domains:
+    "":
+      title: MeshCentral
+      title2: MeshCentral
+      minify: true
+      NewAccounts: false
+      localSessionRecording: true
+      allowedOrigin: true
+    openframe_public:
+      share: /opt/mesh/public
+
+service:
+  type: ClusterIP
+  port: 443
+
+resources: {}

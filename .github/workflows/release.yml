@@ -1,25 +1,185 @@
-name: Release
+name: MeshCentral Release
+
+# =============================================================================
+# WORKFLOW CONFIGURATION
+# =============================================================================
+
+permissions:
+  contents: write
+  packages: write
+  actions: write
+  pull-requests: write
+  attestations: write
+  id-token: write
+
 on:
   push:
-    branches:
-      - master
+    branches: [master]
     paths:
+      - 'docker/**'
+      - 'charts/**'
       - 'package.json'
+      - 'translate/**'
+      - '.github/**'
+      - '*.js'
+      - 'views/**'
+      - 'public/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release (e.g., 1.1.57)"
+        required: true
+        type: string
+
+env:
+  REGISTRY: "ghcr.io"
+  ORGANISATION: ${{ github.repository_owner }}
+  REPOSITORY: ${{ github.event.repository.name }}
+
+# =============================================================================
+# JOBS
+# =============================================================================
 
 jobs:
+  changes:
+    name: Detect Changes
+    uses: ./.github/workflows/changes.yml
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'push'
+
+
   build:
-    name: Release
+    name: "Build: meshcentral"
+    needs: [changes]
     runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.server == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.version != '')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
-          fetch-depth: 0
-      - name: Release
-        uses: justincy/github-action-npm-release@2.0.2
-        id: release
-        with: 
-          token: ${{ secrets.MY_TOKEN }}
-      - name: Print release output
-        if: ${{ steps.release.outputs.released == 'true' }}
-        run: echo Release ID ${{ steps.release.outputs.release_id }}
+          node-version: "24.x"
+
+      - name: Run translations
+        working-directory: translate
+        run: |
+          node translate.js || true
+          node translate extractall
+          node translate.js minifyall
+          node translate.js translateall
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/meshcentral
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+          labels: |
+            org.opencontainers.image.vendor=${{ env.ORGANISATION }}
+            org.opencontainers.image.description=MeshCentral - full computer management web site
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+      - name: Build and push image
+        id: docker_build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          provenance: false
+          sbom: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Cleanup old container versions
+        if: steps.docker_build.outcome == 'success'
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        continue-on-error: true
+        with:
+          package: ${{ env.REPOSITORY }}/meshcentral
+          delete-ghost-images: true
+          delete-tags: '.*'
+          exclude-tags: '^(?:[0-9]+\.[0-9]+\.[0-9]+|latest|test-.*)$'
+          use-regex: true
+
+
+  build_helm:
+    name: "Build Helm Chart"
+    needs: [changes]
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.helm == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.version != '')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Push Chart
+        uses: appany/helm-oci-chart-releaser@v0.5.0
+        with:
+          name: meshcentral
+          repository: ${{ github.repository }}/helm-charts
+          tag: ${{ inputs.version || '9.9.9' }}
+          path: ./charts/meshcentral
+          registry: ${{ env.REGISTRY }}
+          registry_username: ${{ github.actor }}
+          registry_password: ${{ secrets.GITHUB_TOKEN }}
+
+
+  release:
+    name: "Create Release"
+    needs: [build, build_helm]
+    runs-on: ubuntu-latest
+    if: ${{ !failure() && !cancelled() }} 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate release header
+        run: |
+          VERSION="${{ inputs.version || 'latest' }}"
+          cat > RELEASE_HEADER.md <<EOF
+          ## Images
+          - \`${{ env.REGISTRY }}/${{ github.repository }}/meshcentral:${VERSION}\`
+
+          ## Helm Chart
+          - \`oci://${{ env.REGISTRY }}/${{ github.repository }}/helm-charts/meshcentral:${VERSION}\`
+          ---
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version || 'latest' }}
+          name: "🦩 ${{ inputs.version || 'latest' }}"
+          draft: false
+          prerelease: ${{ github.event_name == 'push' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body_path: RELEASE_HEADER.md
