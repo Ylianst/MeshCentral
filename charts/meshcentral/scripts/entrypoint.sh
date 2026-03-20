@@ -18,7 +18,7 @@ cp ${MESH_TEMP_DIR}/plugins/openframe/openframe.js ${MESH_DIR}/meshcentral-data/
 mkdir -p ${MESH_DIR}/public
 
 echo "Copying config.json from mounted secret"
-cp /tmp/config/config.json ${MESH_DIR}/config.json
+cp /tmp/config/config.json ${MESH_DIR}/meshcentral-data/config.json
 
 # Setup mesh components
 setup_mesh_user
@@ -36,7 +36,7 @@ node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
   --dbpushconfigfiles \
   --configkey "${MESH_CONFIG_KEY}" \
   --datapath ${MESH_DIR}/meshcentral-data \
-  --configfile ${MESH_DIR}/config.json || echo "[meshcentral] Warning: dbpushconfigfiles failed, continuing..."
+  --configfile ${MESH_DIR}/meshcentral-data/config.json || echo "[meshcentral] Warning: dbpushconfigfiles failed, continuing..."
 
 stop_meshcentral
 wait_for_meshcentral_to_stop

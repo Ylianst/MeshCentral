@@ -4,7 +4,7 @@ start_meshcentral() {
   echo "[meshcentral] Starting MeshCentral"
   node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
     --datapath ${MESH_DIR}/meshcentral-data \
-    --configfile ${MESH_DIR}/config.json \
+    --configfile ${MESH_DIR}/meshcentral-data/config.json \
     --loadconfigfromdb "${MESH_CONFIG_KEY}"
 }
 

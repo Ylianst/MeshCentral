@@ -14,7 +14,7 @@ credentials:
 env:
   MESH_PROTOCOL: "ws"
   MESH_NGINX_HOST: "localhost"
-  MESH_EXTERNAL_PORT: "4430"
+  MESH_EXTERNAL_PORT: "8383"
   MESH_DEVICE_GROUP: "OpenFrame"
   MESH_NGINX_NAT_HOST: ""
   OPENFRAME_MODE: "true"
@@ -32,7 +32,7 @@ config:
     dbExpire:
       events: 157680000
     certUrl: []
-    port: 4430
+    port: 8383
     aliasPort: 443
     alias: []
     agentAliasUrl: ""
