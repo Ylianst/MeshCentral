@@ -40,7 +40,7 @@ jobs:
 
 
   test:
-    name: "Build: meshcentral"
+    name: "Test meshcentral"
     needs: [changes]
     runs-on: ubuntu-latest
     if: |
@@ -85,7 +85,7 @@ jobs:
             org.opencontainers.image.description=MeshCentral - full computer management web site
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
-      - name: Build and push image
+      - name: Build image
         id: docker_build
         uses: docker/build-push-action@v6
         with:

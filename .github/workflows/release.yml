@@ -50,7 +50,7 @@ jobs:
 
 
   build:
-    name: "Build: meshcentral"
+    name: "Build meshcentral"
     needs: [changes]
     runs-on: ubuntu-latest
     if: |
