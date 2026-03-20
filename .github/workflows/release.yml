@@ -54,7 +54,7 @@ jobs:
     needs: [changes]
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.server == 'true') ||
+      (github.event_name == 'push' && needs.changes.outputs.docker == 'true') ||
       (github.event_name == 'workflow_dispatch' && inputs.version != '')
     steps:
       - name: Checkout
