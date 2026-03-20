@@ -125,7 +125,7 @@ jobs:
 
   all-checks:
     name: "All Checks"
-    needs: [test, test_helm, cleanup]
+    needs: [changes, test, test_helm]
     runs-on: ubuntu-latest
     if: always()
     steps:
