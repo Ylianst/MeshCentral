@@ -15,7 +15,7 @@ permissions:
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [master]
+    branches: [master, feature/init-fork]
     paths:
       - 'docker/**'
       - 'charts/**'
