@@ -15,7 +15,7 @@ permissions:
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-    branches: [master, feature/init-fork]
+    branches: [master]
 
 concurrency:
   group: pr-${{ github.head_ref || github.ref }}
