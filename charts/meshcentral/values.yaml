@@ -1,5 +1,6 @@
 image:
-  repository: ghcr.io/flamingo-stack/meshcentral/meshcentral
+  registry: ghcr.io/flamingo-stack/meshcentral
+  repository: meshcentral
   tag: ""  # defaults to appVersion
   pullPolicy: IfNotPresent
 

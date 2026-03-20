@@ -23,7 +23,7 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
       containers:
         - name: meshcentral
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/scripts/entrypoint.sh"]
           ports:
