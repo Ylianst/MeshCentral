@@ -91,4 +91,3 @@ RUN chown -R node:node ${MESH_DIR} ${MESH_TEMP_DIR} ${MESH_INSTALL_DIR}
 USER node
 
 CMD ["node", "/opt/meshcentral/meshcentral/meshcentral.js", "--datapath", "/opt/mesh/meshcentral-data"]
-
