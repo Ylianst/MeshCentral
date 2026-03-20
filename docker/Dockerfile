@@ -77,13 +77,14 @@ ENV MESH_DIR=${MESH_DIR}
 ENV MESH_TEMP_DIR=${MESH_TEMP_DIR}
 
 RUN mkdir -p ${MESH_TEMP_DIR} ${MESH_DIR} ${MESH_INSTALL_DIR} \
-    && apk add --no-cache bash xxd nodejs mongodb-tools
+    && apk add --no-cache bash xxd nodejs mongodb-tools \
+    && addgroup -S node && adduser -S node -G node
 
 # Copy built MeshCentral source + deps (including mongodb driver) from dep-compiler
 COPY --from=dep-compiler /opt/meshcentral/meshcentral ${MESH_INSTALL_DIR}/meshcentral/
 
-# OpenFrame plugins
-COPY plugins/ ${MESH_TEMP_DIR}/plugins/
+# OpenFrame plugins (MeshCentral expects: {datapath}/plugins/{name}/{name}.js)
+COPY plugins/openframe.js ${MESH_DIR}/meshcentral-data/plugins/openframe/openframe.js
 
 RUN chown -R node:node ${MESH_DIR} ${MESH_TEMP_DIR} ${MESH_INSTALL_DIR}
 
