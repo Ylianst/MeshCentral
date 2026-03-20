@@ -1,0 +1,15 @@
+apiVersion: v2
+name: meshcentral
+description: MeshCentral - full computer management web site
+type: application
+version: 0.1.0
+appVersion: "1.1.32"
+keywords:
+  - meshcentral
+  - remote-management
+  - remote-desktop
+home: https://meshcentral.com
+sources:
+  - https://github.com/Ylianst/MeshCentral
+maintainers:
+  - name: flamingo
