@@ -35,8 +35,6 @@ env:
   REGISTRY: "ghcr.io"
   ORGANISATION: ${{ github.repository_owner }}
   REPOSITORY: ${{ github.event.repository.name }}
-  IMAGE_NAME: meshcentral
-
 
 # =============================================================================
 # JOBS
@@ -51,29 +49,23 @@ jobs:
       github.event_name == 'push'
 
 
-  build_image:
+  build:
     name: "Build: meshcentral"
     needs: [changes]
     runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.server == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.version != '')
     steps:
-      - name: Check if build should run
-        id: should_run
-        run: echo "run=${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.docker == 'true' }}" >> $GITHUB_OUTPUT
-
       - name: Checkout
         uses: actions/checkout@v4
-        if: steps.should_run.outputs.run == 'true'
-        with:
-          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
-        if: steps.should_run.outputs.run == 'true'
         with:
           node-version: "24.x"
 
       - name: Run translations
-        if: steps.should_run.outputs.run == 'true'
         working-directory: translate
         run: |
           node translate.js || true
@@ -83,7 +75,6 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
-        if: steps.should_run.outputs.run == 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -91,20 +82,17 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-        if: steps.should_run.outputs.run == 'true'
         with:
           platforms: linux/amd64,linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        if: steps.should_run.outputs.run == 'true'
 
       - name: Generate metadata
         id: meta
         uses: docker/metadata-action@v5
-        if: steps.should_run.outputs.run == 'true'
         with:
-          images: ${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/meshcentral
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
@@ -117,7 +105,6 @@ jobs:
       - name: Build and push image
         id: docker_build
         uses: docker/build-push-action@v6
-        if: steps.should_run.outputs.run == 'true'
         with:
           context: .
           file: ./docker/Dockerfile
@@ -133,7 +120,7 @@ jobs:
         uses: dataaxiom/ghcr-cleanup-action@v1
         continue-on-error: true
         with:
-          package: ${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}
+          package: ${{ env.REPOSITORY }}/meshcentral
           delete-ghost-images: true
           delete-tags: '.*'
           exclude-tags: '^(?:[0-9]+\.[0-9]+\.[0-9]+|latest|test-.*)$'
@@ -144,60 +131,55 @@ jobs:
     name: "Build Helm Chart"
     needs: [changes]
     runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && needs.changes.outputs.helm == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.version != '')
     steps:
-      - name: Check if build should run
-        id: should_run
-        run: echo "run=${{ github.event_name == 'workflow_dispatch' || contains(needs.changes.outputs.helm, 'true') }}" >> $GITHUB_OUTPUT
-
       - name: Checkout
         uses: actions/checkout@v4
-        if: steps.should_run.outputs.run == 'true'
 
-      - name: Install Helm
-        uses: azure/setup-helm@v4.3.0
-        if: steps.should_run.outputs.run == 'true'
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
 
       - name: Push Chart
         uses: appany/helm-oci-chart-releaser@v0.5.0
-        if: steps.should_run.outputs.run == 'true'
         with:
           name: meshcentral
-          tag: ${{ inputs.version || 'latest' }}
+          repository: ${{ github.repository }}/helm-charts
+          tag: ${{ inputs.version || '9.9.9' }}
           path: ./charts/meshcentral
           registry: ${{ env.REGISTRY }}
-          repository: ${{ env.ORGANISATION }}/${{ env.REPOSITORY }}
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
 
 
   release:
     name: "Create Release"
-    needs: [build_image]
+    needs: [build, build_helm]
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'workflow_dispatch'
+    if: ${{ !failure() && !cancelled() }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Generate release header
         run: |
+          VERSION="${{ inputs.version || 'latest' }}"
           cat > RELEASE_HEADER.md <<EOF
           ## Images
-          - \`${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ inputs.version }}\`
+          - \`${{ env.REGISTRY }}/${{ github.repository }}/meshcentral:${VERSION}\`
 
           ## Helm Chart
-          - \`oci://${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/meshcentral:${{ inputs.version }}\`
+          - \`oci://${{ env.REGISTRY }}/${{ github.repository }}/helm-charts/meshcentral:${VERSION}\`
           ---
           EOF
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.version }}
-          name: "MeshCentral ${{ inputs.version }}"
+          tag_name: ${{ inputs.version || 'latest' }}
+          name: "🦩 ${{ inputs.version || 'latest' }}"
           draft: false
-          prerelease: false
+          prerelease: ${{ github.event_name == 'push' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           body_path: RELEASE_HEADER.md
-
