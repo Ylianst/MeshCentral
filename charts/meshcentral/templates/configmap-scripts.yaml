@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-scripts
+  name: {{ include "meshcentral.fullname" . }}-scripts
   labels:
     {{- include "meshcentral.labels" . | nindent 4 }}
 data:

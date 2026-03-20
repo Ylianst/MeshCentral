@@ -1,6 +1,23 @@
 image:
-  repository: ghcr.io/ylianst/meshcentral
+  repository: ghcr.io/flamingo-stack/meshcentral/meshcentral
   tag: ""  # defaults to appVersion
+  pullPolicy: IfNotPresent
+
+# -- Sensitive credentials (stored in Secret)
+credentials:
+  meshUser: ""
+  meshPass: ""
+  meshConfigKey: ""
+
+# -- Non-sensitive environment variables (stored in ConfigMap)
+env:
+  MESH_PROTOCOL: "ws"
+  MESH_NGINX_HOST: ""
+  MESH_EXTERNAL_PORT: "8383"
+  MESH_DEVICE_GROUP: "OpenFrame"
+  MESH_NGINX_NAT_HOST: ""
+  OPENFRAME_MODE: "true"
+  OPENFRAME_GATEWAY_URL: ""
 
 # -- MeshCentral config.json contents
 # Ref: https://github.com/Ylianst/MeshCentral/blob/master/meshcentral-config-schema.json
@@ -50,4 +67,39 @@ service:
   type: ClusterIP
   port: 443
 
-resources: {}
+securityContext:
+  runAsUser: 0
+
+startupProbe:
+  httpGet:
+    path: /health.ashx
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+livenessProbe:
+  httpGet:
+    path: /health.ashx
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 15
+  failureThreshold: 6
+
+readinessProbe:
+  httpGet:
+    path: /health.ashx
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "300m"

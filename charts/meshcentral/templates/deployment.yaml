@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "meshcentral.fullname" . }}
   labels:
     {{- include "meshcentral.labels" . | nindent 4 }}
 spec:
@@ -14,37 +14,38 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
         checksum/scripts: {{ include (print $.Template.BasePath "/configmap-scripts.yaml") . | sha256sum }}
+        checksum/env: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/credentials: {{ include (print $.Template.BasePath "/secret-credentials.yaml") . | sha256sum }}
       labels:
         {{- include "meshcentral.selectorLabels" . | nindent 8 }}
     spec:
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
       containers:
         - name: meshcentral
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/scripts/entrypoint.sh"]
           ports:
             - name: http
               containerPort: {{ .Values.config.settings.port | default 4430 }}
               protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "meshcentral.fullname" . }}-env
+            - secretRef:
+                name: {{ include "meshcentral.fullname" . }}-credentials
+          startupProbe:
+            {{- toYaml .Values.startupProbe | nindent 12 }}
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            failureThreshold: 6
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            initialDelaySeconds: 10
-            periodSeconds: 5
-          {{- with .Values.resources }}
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
           resources:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             - name: data
-              mountPath: /opt/meshcentral/meshcentral-data
+              mountPath: /opt/mesh
             - name: config
               mountPath: /tmp/config
               readOnly: true
@@ -54,10 +55,10 @@ spec:
       volumes:
         - name: config
           secret:
-            secretName: {{ .Release.Name }}-config
+            secretName: {{ include "meshcentral.fullname" . }}-config
         - name: scripts
           configMap:
-            name: {{ .Release.Name }}-scripts
+            name: {{ include "meshcentral.fullname" . }}-scripts
             defaultMode: 0755
         - name: data
           emptyDir: {}

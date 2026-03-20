@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "meshcentral.fullname" . }}
   labels:
     {{- include "meshcentral.labels" . | nindent 4 }}
 spec:
