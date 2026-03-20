@@ -29,8 +29,7 @@ module.exports.openframe = function (pluginHandler) {
   // hook_setupHttpHandlers receives (webserver, parent) from callHook
   obj.hook_setupHttpHandlers = function (webserver, parent) {
     var app = webserver.app;
-    var bodyParser = require('body-parser');
-    var jsonParser = bodyParser.json();
+    var jsonParser = webserver.bodyParser.json();
     console.log('[openframe-plugin] Routes registered');
 
     // CORS preflight for all plugin routes
