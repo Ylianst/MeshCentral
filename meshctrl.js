@@ -2132,7 +2132,8 @@ function serverConnect() {
                 if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) {
                     var protocol = 1; // Terminal
                     if ((settings.cmd == 'upload') || (settings.cmd == 'download')) { protocol = 5; } // Files
-                    if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
+                    if (args.powershell) { protocol = 6; } // PowerShell
+                    if ((args.id.split('/').length != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
                     ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
                     connectTunnel(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + encodeURIComponent(args.id) + '&id=' + id + '&auth=' + data.cookie));
@@ -2756,7 +2757,7 @@ function connectTunnel(url) {
                 if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
                 if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'options', cols: termSize[0], rows: termSize[1] })); }
                 settings.tunnelwsstate = 1;
-                settings.tunnelws.send('1'); // Terminal
+                settings.tunnelws.send((args.powershell ? 6 : 1)); // Powershell or Terminal
                 process.stdin.setEncoding('utf8');
                 process.stdin.setRawMode(true);
                 process.stdout.setEncoding('utf8');
