@@ -2,7 +2,7 @@ image:
   registry: ghcr.io/flamingo-stack/meshcentral
   repository: meshcentral
   tag: ""  # defaults to appVersion
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 # -- Sensitive credentials (stored in Secret)
 credentials:
