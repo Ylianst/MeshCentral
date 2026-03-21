@@ -7920,7 +7920,15 @@
                 });
 
                 // Create a tile and use OSM source
-                xxmap.mapLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
+                xxmap.mapLayer = new ol.layer.Tile({
+                    source: new ol.source.OSM({
+                        tileLoadFunction: function(imageTile, src) {
+                            var img = imageTile.getImage();
+                            img.referrerPolicy = 'origin';
+                            img.src = src;
+                        }
+                    })
+                });
 
                 xxmap.mapView = new ol.View({ // Set the initial view
                     center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
