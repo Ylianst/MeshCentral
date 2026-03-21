@@ -16,7 +16,7 @@ setup_mesh_user() {
     --createaccount ${MESH_USER} \
     --email ${MESH_USER}"
 
-  eval "$cmd"
+  eval "$cmd" || echo "[meshcentral] createaccount failed (user may already exist)"
   sleep 2
 
   cmd="node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
@@ -26,7 +26,7 @@ setup_mesh_user() {
     --pass ${MESH_PASS} \
     --adminaccount ${MESH_USER}"
 
-  eval "$cmd"
+  eval "$cmd" || echo "[meshcentral] adminaccount failed (may already be admin)"
   sleep 2
 }
 
@@ -48,7 +48,7 @@ setup_mesh_device_group() {
 
     if [ "$GROUP_CHECK" -gt 0 ]; then
       echo "[meshcentral] MeshCentral device group ${MESH_DEVICE_GROUP} already exists"
-      DEVICE_GROUP_ID=$(eval "$cmd" 2>&1 | grep "${MESH_DEVICE_GROUP}" | head -n 1 | awk -F',' '{print $1}' | tr -d '"')
+      DEVICE_GROUP_ID=$(eval "$cmd" 2>&1 | grep "${MESH_DEVICE_GROUP}" | head -n 1 | awk -F',' '{print $1}' | tr -d '"' || true)
     else
       echo "[meshcentral] Creating device group: ${MESH_DEVICE_GROUP}"
       cmd="node ${MESH_INSTALL_DIR}/meshcentral/meshctrl.js \
@@ -58,7 +58,7 @@ setup_mesh_device_group() {
         AddDeviceGroup \
         --name ${MESH_DEVICE_GROUP}"
 
-      eval "$cmd"
+      eval "$cmd" || echo "[meshcentral] AddDeviceGroup attempt failed, will retry..."
       sleep 2
 
       cmd="node ${MESH_INSTALL_DIR}/meshcentral/meshctrl.js \
@@ -67,7 +67,7 @@ setup_mesh_device_group() {
         --loginpass ${MESH_PASS} \
         ListDeviceGroups"
 
-      DEVICE_GROUP_ID=$(eval "$cmd" 2>&1 | grep "${MESH_DEVICE_GROUP}" | head -n 1 | awk -F',' '{print $1}' | tr -d '"')
+      DEVICE_GROUP_ID=$(eval "$cmd" 2>&1 | grep "${MESH_DEVICE_GROUP}" | head -n 1 | awk -F',' '{print $1}' | tr -d '"' || true)
     fi
 
     if [ ! -z "$DEVICE_GROUP_ID" ]; then

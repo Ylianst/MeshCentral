@@ -69,6 +69,9 @@ initImage:
   repository: mongo
   tag: "8.0.9"
 
+deploymentAnnotations: {}
+podAnnotations: {}
+
 revisionHistoryLimit: 10
 
 service:

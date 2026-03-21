@@ -28,7 +28,7 @@ wait_for_meshcentral_to_start() {
       --loginpass ${MESH_PASS} \
       ServerInfo"
 
-    RESPONSE=$(eval "$cmd" 2>&1)
+    RESPONSE=$(eval "$cmd" 2>&1) || true
 
     # Extract and save ServerID from agentCertHash
     if echo "$RESPONSE" | grep -q "agentCertHash"; then
@@ -37,13 +37,9 @@ wait_for_meshcentral_to_start() {
         SERVER_ID=$(echo "$AGENT_CERT_HASH" | tr '@$' '+/' | base64 -d | xxd -p | tr -d '\n' | tr '[:lower:]' '[:upper:]')
         echo "[meshcentral] Server ID: $SERVER_ID"
         echo "$SERVER_ID" >"${MESH_DIR}/mesh_server_id"
+        echo "[meshcentral] Level 1 passed: MeshCentral API is responsive and server ID created!"
+        break
       fi
-    fi
-
-    # Check if mesh_server_id file was successfully created
-    if [ -f "${MESH_DIR}/mesh_server_id" ]; then
-      echo "[meshcentral] Level 1 passed: MeshCentral API is responsive and server ID created!"
-      break
     fi
 
     echo "[meshcentral] MeshCentral WebSocket not ready yet!"
