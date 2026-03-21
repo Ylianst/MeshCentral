@@ -9,6 +9,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   replicas: 1
   selector:
     matchLabels:
@@ -25,6 +26,20 @@ spec:
     spec:
       securityContext:
         runAsUser: {{ .Values.securityContext.runAsUser }}
+
+      initContainers:
+        - name: wait-mongodb
+          image: "{{ .Values.initImage.registry }}/{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              for i in $(seq 1 60); do
+                mongosh '{{ .Values.config.settings.mongodb }}' --eval 'rs.status()' --quiet 2>/dev/null && exit 0
+                sleep 5
+              done
+              echo "MongoDB not ready after 5 minutes" >&2
+              exit 1
+
       containers:
         - name: meshcentral
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"

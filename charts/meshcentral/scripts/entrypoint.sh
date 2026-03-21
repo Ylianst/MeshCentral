@@ -20,6 +20,19 @@ mkdir -p ${MESH_DIR}/public
 echo "Copying config.json from mounted secret"
 cp /tmp/config/config.json ${MESH_DIR}/meshcentral-data/config.json
 
+# Pull existing certs from MongoDB (if any) to preserve server identity across restarts
+# On first run: no certs in DB, prints "File not found." — harmless
+# On subsequent runs: restores certs to disk so MeshCentral keeps the same identity
+echo "[meshcentral] Pulling config files from MongoDB..."
+node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
+  --dbpullconfigfiles ${MESH_DIR}/meshcentral-data \
+  --configkey "${MESH_CONFIG_KEY}" \
+  --datapath ${MESH_DIR}/meshcentral-data \
+  --configfile ${MESH_DIR}/meshcentral-data/config.json || echo "[meshcentral] Warning: dbpullconfigfiles failed (first run?), continuing..."
+
+# Restore config.json from mounted secret (dbpullconfigfiles may have overwritten it with stale DB version)
+cp /tmp/config/config.json ${MESH_DIR}/meshcentral-data/config.json
+
 # Setup mesh components
 setup_mesh_user
 
@@ -28,9 +41,7 @@ start_meshcentral &
 wait_for_meshcentral_to_start
 setup_mesh_device_group
 
-# Push certificate files to MongoDB for persistence across restarts
-# On first run: pushes newly generated certs to DB
-# On subsequent runs: certs loaded from DB are unchanged, push is idempotent
+# Push config + certs to MongoDB for persistence across restarts
 echo "[meshcentral] Pushing config files to MongoDB..."
 node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
   --dbpushconfigfiles \
@@ -41,5 +52,5 @@ node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
 stop_meshcentral
 wait_for_meshcentral_to_stop
 
-# Start MeshCentral in foreground
+# Start MeshCentral in foreground (loads certs/config from DB for persistence)
 start_meshcentral

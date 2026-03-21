@@ -64,6 +64,13 @@ config:
     openframe_public:
       share: /opt/mesh/public
 
+initImage:
+  registry: ghcr.io/flamingo-stack/registry
+  repository: mongo
+  tag: "8.0.9"
+
+revisionHistoryLimit: 10
+
 service:
   type: ClusterIP
   port: 443

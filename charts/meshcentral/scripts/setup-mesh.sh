@@ -11,7 +11,6 @@ setup_mesh_user() {
   local cmd="node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
     --datapath ${MESH_DIR}/meshcentral-data \
     --configfile ${MESH_DIR}/meshcentral-data/config.json \
-    --loadconfigfromdb '${MESH_CONFIG_KEY}' \
     --user ${MESH_USER} \
     --pass ${MESH_PASS} \
     --createaccount ${MESH_USER} \
@@ -23,7 +22,6 @@ setup_mesh_user() {
   cmd="node ${MESH_INSTALL_DIR}/meshcentral/meshcentral.js \
     --datapath ${MESH_DIR}/meshcentral-data \
     --configfile ${MESH_DIR}/meshcentral-data/config.json \
-    --loadconfigfromdb '${MESH_CONFIG_KEY}' \
     --user ${MESH_USER} \
     --pass ${MESH_PASS} \
     --adminaccount ${MESH_USER}"
