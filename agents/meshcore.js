@@ -367,7 +367,7 @@ function lockDesktop(uid) {
         case 'win32':
             {
                 var options = { type: 1, uid: uid };
-                var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], options);
+                var child = require('child_process').execFile('RunDll32.exe', ['user32.dll,LockWorkStation'], options);
                 child.waitExit();
             }
             break;
@@ -896,7 +896,6 @@ function guessRegistryValueType(value) {
 function getRegistryValueType(hiveName, path, valueName, fallbackValue) {
     try {
         var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
-        var regexe = ((process.env['windir'] != null) ? (process.env['windir'] + '\\System32\\reg.exe') : 'reg.exe');
         var args = ['query', fullPath];
         if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
         var output = runRegistryCommand(args, true);
@@ -943,18 +942,29 @@ function getRegistryFullPath(hiveName, path) {
     return hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
 }
 
-function quoteRegistryCmdArg(x) {
-    x = String(x);
-    if ((x.indexOf(' ') < 0) && (x.indexOf('\t') < 0) && (x.indexOf('"') < 0) && (x.indexOf('&') < 0)) { return x; }
-    return '"' + x.split('"').join('\\"') + '"';
+function getRegistryExecutableCandidates() {
+    return ['reg.exe', 'C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
 }
 
 function runRegistryCommand(args, returnOutput) {
-    var regexe = ((process.env['windir'] != null) ? (process.env['windir'] + '\\System32\\reg.exe') : 'reg.exe');
-    var cmdexe = ((process.env['windir'] != null) ? (process.env['windir'] + '\\System32\\cmd.exe') : 'cmd.exe');
-    var cmdline = 'chcp 65001 >nul & ' + quoteRegistryCmdArg(regexe);
-    for (var i = 0; i < args.length; i++) { cmdline += (' ' + quoteRegistryCmdArg(args[i])); }
-    var child = require('child_process').execFile(cmdexe, ['/c', cmdline]);
+    var fs = require('fs');
+    var child = null, childProcess = require('child_process'), lastExecError = null, executable = null, candidates = getRegistryExecutableCandidates(), execArgs = null;
+    for (var i = 0; i < candidates.length; i++) {
+        executable = candidates[i];
+        if ((executable.indexOf('\\') >= 0) && (fs.existsSync(executable) == false)) { continue; }
+        try {
+            execArgs = ['reg.exe'].concat(args);
+            child = childProcess.execFile(executable, execArgs);
+            break;
+        } catch (ex) {
+            lastExecError = ex;
+            child = null;
+        }
+    }
+    if (child == null) {
+        if (lastExecError != null) { throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + '] (' + lastExecError + ')'); }
+        throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + ']');
+    }
     child.stdout.str = '';
     child.stderr.str = '';
     child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
@@ -963,7 +973,7 @@ function runRegistryCommand(args, returnOutput) {
     if ((child.exitCode != null) && (child.exitCode !== 0)) {
         if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
         if ((child.stdout.str != null) && (child.stdout.str.trim() != '')) { throw (child.stdout.str.trim()); }
-        throw ('Registry command failed with exit code ' + child.exitCode + '.');
+        throw ('Registry command failed with exit code ' + child.exitCode + ' using ' + executable + '.');
     }
     if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
     if (returnOutput === true) { return child.stdout.str || ''; }
@@ -1038,7 +1048,9 @@ function renameRegistryEntry(item, newName) {
 function exportRegistryKey(hiveName, path) {
     if ((path == null) || (path === '')) { throw ('Select a registry key to export.'); }
     var fs = require('fs');
-    var tmpFile = (((process.env['temp'] != null) ? process.env['temp'] : process.cwd()) + '\\mesh-registry-export-' + Date.now() + '.reg');
+    var os = require('os');
+    var pathLib = require('path');
+    var tmpFile = pathLib.join(os.tmpdir(), 'mesh-registry-export-' + Date.now() + '.reg');
     try {
         runRegistryCommand(['export', getRegistryFullPath(hiveName, path), tmpFile, '/y']);
         return fs.readFileSync(tmpFile, { encoding: 'utf16le' });

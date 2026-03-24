@@ -4131,7 +4131,7 @@
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
-            if ((currentDevicePanel != 6) && (currentNode != null) && (currentNode.agent != null) && (meshrights & 8)) { menus.push({ n: "Registry", f: 'setupDeviceMenu(6)' }); }
+            if ((currentDevicePanel != 6) && (currentNode != null) && (currentNode.agent != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4194304) == 0))) { menus.push({ n: "Registry", f: 'setupDeviceMenu(6)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype < 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
@@ -7502,6 +7502,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noregistry style=margin-left:12px>' + "No Registry Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
@@ -7535,6 +7536,7 @@
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
+            QE('p20noregistry', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
@@ -7556,6 +7558,7 @@
                 if (Q('p20remoteview').checked == true) meshadmin += 256;
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noregistry').checked == true) meshadmin += 4194304;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
@@ -7585,6 +7588,7 @@
                 if ((meshrights & 256) != 0) r.push("Remote View Only");
                 if ((meshrights & 512) != 0) r.push("No Terminal");
                 if ((meshrights & 1024) != 0) r.push("No Files");
+                if ((meshrights & 4194304) != 0) r.push("No Registry");
                 if ((meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                 if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                 if ((meshrights & 8192) != 0) r.push("Self Events Only");
@@ -7897,6 +7901,7 @@
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
