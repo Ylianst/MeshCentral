@@ -605,8 +605,9 @@
                     // Accumulator is not active
                     var cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
                     if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = view[4] * 0x1000000 + (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
-                    if (cmdsize == view.byteLength || cmdsize + 8 == view.byteLength) {
-                        agentDesktop.ProcessBinaryCommand(cmd, cmdsize, view.slice(0, cmdsize));
+                    if (cmdsize + 8 == view.byteLength) { view = view.slice(8); } // drop injected duplicate header
+                    if (cmdsize == view.byteLength) {
+                        agentDesktop.ProcessBinaryCommand(cmd, cmdsize, view);
                     } else {
                         console.log('Bad command size', cmd, cmdsize, view.byteLength);
                     }
