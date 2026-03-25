@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Release
-        uses: justincy/github-action-npm-release@2.0.2
+        uses: SerenModz21/github-action-npm-release@master
         id: release
         with: 
           token: ${{ secrets.MY_TOKEN }}
