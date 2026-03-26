@@ -8427,7 +8427,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // If profile is null/undefined or roles are requested, extract user info from the tokenset
-                if ((!profile || (strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
+                if ((!profile || (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
                     try {
                         // Simple JWT decoder to extract user claims from id_token
                         const parts = tokenset.id_token.split('.');
