@@ -3174,7 +3174,7 @@
             } else {
                 // Device name search
                 try {
-                    var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
                     for (var d in nodes) {
                         if (features2 & 0x00008000) {
                             if(features2 & 0x10000000){

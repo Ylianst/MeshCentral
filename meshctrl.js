@@ -2706,7 +2706,7 @@ function getDevicesThatMatchFilter(nodes, x) {
     } else {
         // Device name search
         try {
-            var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+            var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
             for (var d in nodes) {
                 //if (showRealNames) {
                 //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
