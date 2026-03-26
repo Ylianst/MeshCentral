@@ -3996,15 +3996,13 @@
                         "description": "REQUIRED IF USING GROUPS: Customer ID from Google Workspace Admin Console (https://admin.google.com/ac/accountsettings/profile)"
                       },
                       "authorities": {
-                        "type": [
-                          "array"
-                        ],
-                        "description": "Default value is groups. Roles can be used in azure to assign app permissons",
-                        "enum": [
-                          "groups",
-                          "roles"
-                        ]
+                        "type": "array",
+                        "description": "Default value is groups. Roles can be used in azure to assign app permissions",
+                        "items": {
+                          "type": "string",
+                          "enum": ["groups", "roles"]
                         }
+                      }
                     }
                   },
                   "groups": {
