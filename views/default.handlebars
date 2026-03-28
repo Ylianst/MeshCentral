@@ -4708,7 +4708,11 @@
                         if (deviceViewSettings.devsCols.indexOf('lastbootuptime') >= 0) { colums += '<th style=color:gray;width:120px>' + "Last Boot Up Time"; }
                         if (deviceViewSettings.devsCols.indexOf('idletime') >= 0) { colums += '<th style=color:gray;width:100px title="' + "Updated every 5 Minutes" + '">' + "Idle Time"; }
                         if (deviceViewSettings.devsCols.indexOf('links') >= 0) { colums += '<th style=color:gray;width:120px>' + "Links"; }
-                        if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
+                        if(features3 & 0x00000002){
+                            if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:180px>' + "User"; }
+                        } else {
+                            if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
+                        }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:120px>' + "Address"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
                         if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
@@ -5259,7 +5263,11 @@
             if (i > 0) { su = u.substring(i + 1); }
             var upn = node.upnusers && node.upnusers[0];
 			su = EscapeHtml((features3 & 0x00000002) && upn != null ? upn : su);
-            if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
+            if(features3 & 0x00000002){
+                if (su.length > 29) { su = su.substring(0, 28) + '&#8230;'; }
+            } else {
+                if (su.length > 15) { su = su.substring(0, 14) + '&#8230;'; }
+            }
             if (node.lusers && node.lusers.length > 0) {
                 return addKeyLinkConditional(su, EscapeHtml(u) + ' (' + "Locked" + ')', (node.lusers && node.lusers.indexOf(u) >= 0));
             } else {
