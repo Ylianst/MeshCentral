@@ -3079,6 +3079,8 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             // BIOS
             if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
             if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
+            if (ident.bios_serial) { output["Serial"] = ident.bios_serial; outputCount++; }
+            if (ident.bios_mode) { output["Mode"] = ident.bios_mode; outputCount++; }
             if (outputCount > 0) { info["BIOS"] = output; }
             output = {}, outputCount = 0;
 
@@ -3091,6 +3093,28 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
             if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
             if (outputCount > 0) { info["Motherboard"] = output; }
+            output = {}, outputCount = 0;
+
+            // System
+            if (ident.chassis_manufacturer) { output["Manufacturer"] = ident.chassis_manufacturer; outputCount++; }
+            if (ident.product_name) { output["Product Name"] = ident.product_name; outputCount++; }
+            if (ident.chassis_serial) { output["Serial"] = ident.chassis_serial; outputCount++; }
+            if (ident.chassis_assettag) { output["Asset Tag"] = ident.chassis_assettag; outputCount++; }
+            if (outputCount > 0) { info["System"] = output; }
+            output = {}, outputCount = 0;
+        }
+
+        // TPM
+        if (hardware.tpm) {
+            var output = {}, outputCount = 0, tpm = hardware.tpm;
+            if (tpm.SpecVersion) { output["SpecVersion"] = parseFloat(tpm.SpecVersion).toFixed(1); outputCount++; }
+            if (tpm.ManufacturerId) { output["Identifier"] = tpm.ManufacturerId; outputCount++; }
+            if (tpm.ManufacturerVersion) { output["Version"] = tpm.ManufacturerVersion; outputCount++; }
+            if (tpm.IsActivated != null) { output["Activated"] = (tpm.IsActivated ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsEnabled != null) { output["Enabled"] = (tpm.IsEnabled ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsOwned != null) { output["Owned"] = (tpm.IsOwned ? "Yes" : "No"); outputCount++; }
+            if (outputCount > 0) { info["TPM"] = output; }
+            output = {}, outputCount = 0;
         }
 
         // Memory
@@ -3100,9 +3124,10 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
                 hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
                 for (var i in hardware.windows.memory) {
                     var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
-                    if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    if (m.Capacity && m.Speed) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    else if (m.Capacity) { moutput["Capacity"] = (m.Capacity / 1024 / 1024) + " Mb"; moutputCount++; }
                     if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
-                    if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+                    if (moutputCount > 0) { minfo[m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown')] = moutput; info["Memory"] = minfo; }
                 }
             }
         }
