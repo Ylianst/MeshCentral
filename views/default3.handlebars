@@ -5591,7 +5591,7 @@
                 }
 
                 // Sessions are active
-                if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
+                if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.registry != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                     if (view == 2) {
                         devNotifySub += '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDotSub src=images/icon-relay-notify10.png width=10 height=10>';
                     } else {
@@ -5868,6 +5868,13 @@
                         var trash = '';
                         if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.files[j]))) + trash);
+                    }
+                } else if (i == 'registry') {
+                    x += '<u>' + "Registry" + '</u>';
+                    for (var j in node.sessions.registry) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <i role=button onclick=\'return endDeviceSession("registry", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" class="fa-fw fa-solid fa-trash text-danger"></i>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.registry[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.registry[j]))) + trash);
                     }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
@@ -7440,7 +7447,7 @@
             // Check filter dropdown
             var devFilter = Q('DevFilterSelect').value;
             if (devFilter == 1) { for (var d in nodes) { if (((nodes[d].conn == null) || (nodes[d].conn == 0)) && (nodes[d].mtype != 3)) { nodes[d].v = false; } } } // Online, also include Local devices and relayed devices
-            if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
+            if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.registry == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
             if (devFilter == 5) { for (var d in nodes) { if ((nodes[d].conn != null) && (nodes[d].conn != 0)) { nodes[d].v = false; } } } // Offline
@@ -8480,7 +8487,7 @@
                 QV('deskPreConfigScriptContextMenu2', (currentNode.mtype == 2) && !isWindowsNode(currentNode)); // Other devices
 
                 // Device Notification
-                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.registry != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
                 QV('p10deviceHelp', (currentNode.sessions != null) && (currentNode.sessions.help != null))
                 if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
@@ -9217,6 +9224,7 @@
                 if (rights & 256) str1.push("No Input");
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
+                if (rights & 4194304) str1.push("No Registry");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -9250,6 +9258,7 @@
                 if (rights & 256) str1.push("No Input");
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
+                if (rights & 4194304) str1.push("No Registry");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -15766,6 +15775,7 @@
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20noregistry style=margin-left:12px>' + "No Registry Access" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
@@ -15878,6 +15888,7 @@
                     if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                     if (urights & 512) { Q('p20noterminal').checked = true; }
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
+                    if (urights & 4194304) { Q('p20noregistry').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
                     if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
                 }
@@ -15931,6 +15942,7 @@
                 Q('p20remoteview').checked = ((devrights & 256) != 0);
                 Q('p20noterminal').checked = ((devrights & 512) != 0);
                 Q('p20nofiles').checked = ((devrights & 1024) != 0);
+                Q('p20noregistry').checked = ((devrights & 4194304) != 0);
                 Q('p20noamt').checked = ((devrights & 2048) != 0);
                 Q('p20remotelimitedinput').checked = ((devrights & 4096) != 0);
                 Q('p20limitevents').checked = ((devrights & 8192) != 0);
@@ -16017,6 +16029,7 @@
             QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
+            QE('p20noregistry', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
@@ -16044,6 +16057,7 @@
                 if (Q('p20nodesktop').checked == true) meshadmin += 65536;
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noregistry').checked == true) meshadmin += 4194304;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
@@ -16058,10 +16072,11 @@
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
             if ((meshadmin & 8) == 0) {
-                // Remove 256, 512, 1024, 2048, 4096, 65536
+                // Remove 256, 512, 1024, 2048, 4096, 65536, 4194304
                 if (meshadmin & 256) { meshadmin -= 256; }
                 if (meshadmin & 512) { meshadmin -= 512; }
                 if (meshadmin & 1024) { meshadmin -= 1024; }
+                if (meshadmin & 4194304) { meshadmin -= 4194304; }
                 if (meshadmin & 2048) { meshadmin -= 2048; }
                 if (meshadmin & 4096) { meshadmin -= 4096; }
                 if (meshadmin & 65536) { meshadmin -= 65536; }
@@ -16130,6 +16145,7 @@
                     if (((meshrights & 8) != 0) && (meshrights & 65536) != 0) r.push("No Desktop");
                     if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r.push("No Terminal");
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
+                    if (((meshrights & 8) != 0) && (meshrights & 4194304) != 0) r.push("No Registry");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
@@ -18496,6 +18512,7 @@
                     else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
                     if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
                     if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
+                    if ((user.removeRights & 0x00400000) != 0) { userFeatures.push("No Registry"); }
                 }
                 if ((user.removeRights & 0x00000010) != 0) { userFeatures.push("No Console"); }
                 if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
@@ -18724,6 +18741,7 @@
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag12 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00400000) ? 'checked' : '') + '>' + "No Registry Access" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag6 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag8 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag9 class="form-check-input me-2" onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
@@ -18741,6 +18759,7 @@
             QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
             QE('d20flag4', !Q('d20flag7').checked);
             QE('d20flag5', !Q('d20flag7').checked);
+            QE('d20flag12', !Q('d20flag7').checked);
         }
 
         // Send to the server the new user's real name
@@ -18757,6 +18776,7 @@
                 else if (Q('d20flag3').checked) { r += 0x00000100; }
                 if (Q('d20flag4').checked) { r += 0x00000200; }
                 if (Q('d20flag5').checked) { r += 0x00000400; }
+                if (Q('d20flag12').checked) { r += 0x00400000; }
             }
             if (Q('d20flag6').checked) { r += 0x00000010; }
             if (Q('d20flag8').checked) { r += 0x00008000; }
@@ -21751,6 +21771,7 @@
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command

@@ -469,7 +469,7 @@ function windows_execve(name, agentfilename, sessionid) {
     var libc;
     try {
         libc = require('_GenericMarshal').CreateNativeProxy('msvcrt.dll');
-        libc.CreateMethod('_wexecve');
+        libc.CreateMethod('_wexecvp');
     }
     catch (xx) {
         sendConsoleText('Self Update failed because msvcrt.dll is missing', sessionid);
@@ -482,7 +482,7 @@ function windows_execve(name, agentfilename, sessionid) {
     {
         cwd += '\\';
     }
-    var cmd = require('_GenericMarshal').CreateVariable(process.env['windir'] + '\\system32\\cmd.exe', { wide: true });
+    var cmd = require('_GenericMarshal').CreateVariable('cmd.exe', { wide: true });
     var args = require('_GenericMarshal').CreateVariable(3 * require('_GenericMarshal').PointerSize);
     var arg1 = require('_GenericMarshal').CreateVariable('cmd.exe', { wide: true });
     var arg2 = require('_GenericMarshal').CreateVariable('/C net stop "' + name + '" & "' + cwd + agentfilename + '.update.exe" -b64exec ' + 'dHJ5CnsKICAgIHZhciBzZXJ2aWNlTG9jYXRpb24gPSBwcm9jZXNzLmFyZ3YucG9wKCkudG9Mb3dlckNhc2UoKTsKICAgIHJlcXVpcmUoJ3Byb2Nlc3MtbWFuYWdlcicpLmVudW1lcmF0ZVByb2Nlc3NlcygpLnRoZW4oZnVuY3Rpb24gKHByb2MpCiAgICB7CiAgICAgICAgZm9yICh2YXIgcCBpbiBwcm9jKQogICAgICAgIHsKICAgICAgICAgICAgaWYgKHByb2NbcF0ucGF0aCAmJiAocHJvY1twXS5wYXRoLnRvTG93ZXJDYXNlKCkgPT0gc2VydmljZUxvY2F0aW9uKSkKICAgICAgICAgICAgewogICAgICAgICAgICAgICAgcHJvY2Vzcy5raWxsKHByb2NbcF0ucGlkKTsKICAgICAgICAgICAgfQogICAgICAgIH0KICAgICAgICBwcm9jZXNzLmV4aXQoKTsKICAgIH0pOwp9CmNhdGNoIChlKQp7CiAgICBwcm9jZXNzLmV4aXQoKTsKfQ==' +
@@ -519,7 +519,7 @@ function windows_execve(name, agentfilename, sessionid) {
     arg1.pointerBuffer().copy(args.toBuffer());
     arg2.pointerBuffer().copy(args.toBuffer(), require('_GenericMarshal').PointerSize);
 
-    libc._wexecve(cmd, args, 0);
+    libc._wexecvp(cmd, args);
 }
 
 // Start a JavaScript based Agent Self-Update
@@ -870,7 +870,7 @@ function onTunnelControlData(data, ws) {
                     if (process.platform == 'win32') {
                         MeshServerLog("Locking remote user out of desktop", ws.httprequest);
                         var child = require('child_process');
-                        child.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], { type: 1 });
+                        child.execFile('RunDll32.exe', ['user32.dll,LockWorkStation'], { type: 1 });
                     }
                 } catch (e) { }
                 break;

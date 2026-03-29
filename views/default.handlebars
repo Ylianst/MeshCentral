@@ -231,10 +231,11 @@
                     <div id=MainSubMenuSpan style="display:none">
                         <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">Summary</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                <td tabindex=0 id=MainDevRegistry class="topbar_td style3x" onmouseup=go(18,event) onkeypress="if (event.key == 'Enter') go(18)">Registry</td>
                                 <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event) onkeypress="if (event.key == 'Enter') go(16)">Events</td>
                                 <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event) onkeypress="if (event.key == 'Enter') go(17)">Details</td>
                                 <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event) onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
@@ -630,7 +631,7 @@
             <div id=p10 style="display:none">
                 <div id=p10title>
                     <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>General - <span id=p10deviceName></span></h1>
+                    <h1>Summary - <span id=p10deviceName></span></h1>
                 </div>
                 <div id=p10info style="overflow-y:auto">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -669,6 +670,72 @@
                     <div id=p10html4></div>
                     <div id=p10html5></div>
                 </div>
+            </div>
+            <div id=p18 style="display:none">
+                <div id="p18title">
+                    <div id="p18BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                    <h1>Registry - <span id=p18deviceName></span></h1>
+                </div>
+                <table id="p18toolbar" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="areaHead" style="line-height:22px">
+                            <div class="toright2">
+                                <input id="registryActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
+                                <div id="registryRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
+                                <div id="registryCustomUpperRight" style="float:left;margin-right:6px"></div>
+                                <div id="registryCustomUiButtons" style="float:left"></div>
+                            </div>
+                            <div>
+                                <input id=p18AutoConnect value="AutoConnect" type="button" style="display:none" />
+                                <input id=p18Connect value="Connect" onclick=connectRegistry() type="button" />
+                                <input id=p18Disconnect value="Disconnect" onclick=connectRegistry() type="button" style="display:none" />
+                                <input id=p18Connects value="Registry Connect" type="button" style="display:none" />
+                                <span id=p18Status>Disconnected</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="p18toolbar2">
+                        <td class="areaHead2" valign=bottom>
+                            <div id="p18rightOfButtons" class="toright2"></div>
+                            <div>
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18FolderUp value="Up" onclick="p18folderup()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18SelectAllButton value="Select All" onclick="p18selectall()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18RenameButton value="Rename" onclick="p18renameRegistryItem()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18DeleteButton value="Delete" onclick="p18deleteRegistryItems()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18EditButton value="Edit" onclick="p18editRegistryValue()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18NewKeyButton value="New Key" onclick="p18createRegistryKey()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18NewValueButton value="New Value" onclick="p18createRegistryValue()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18DownloadButton value="Download" onclick="p18downloadRegistrySelection()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18ExportButton value="Export .reg" onclick="p18exportRegistrySelection()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18RefreshButton value="Refresh" onclick="p18refreshRegistry()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18GoToButton value="GoTo" onclick="p18openPathInput()" />
+                                <input type=button style="margin-right:2px" disabled="disabled" id=p18DetailsButton value="Details" onclick="p18showSelectedDetails()" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr id="p18subhead" style="display:none">
+                        <td class="areaHead3">
+                            <div class="toright2">
+                                <select id=p18sizedropdown style="display:none">
+                                    <option value=0 selected="selected">Human Readable</option>
+                                </select>
+                                <select id=p18sortdropdown style="display:none">
+                                    <option value=1 selected="selected">Sort by name</option>
+                                </select>
+                            </div>
+                            <div>&nbsp;&nbsp;<input id="p18currentpath" type="text" autocomplete="off" spellcheck="false" value="Root" style="width:calc(100% - 28px)" onkeydown="if (event.key == 'Enter') return p18openPathInput()" disabled="disabled" /></div>
+                        </td>
+                    </tr>
+                </table>
+                <div id=p18ConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:145px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p18clearConsoleMsg()></div>
+                <div id="p18filetable" style="">
+                    <div id="p18bigok" style="display:none"><b>&checkmark;</b></div>
+                    <div id="p18bigfail" style="display:none"><b>&#10007;</b></div>
+                    <span id="p18roots"></span>
+                </div>
+                <table id="p18toolbarBottom" cellpadding=0 cellspacing=0>
+                    <tr><td class=style6>&nbsp;<span id="p18bottomstatus"></span></td></tr>
+                </table>
             </div>
             <div id=p11 class="noselect" style="display:none">
                 <div id="p11title">
@@ -1624,6 +1691,7 @@
         var p11DeskConsoleMsgTimer = null;
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
+        var p18ConsoleMsgTimer = null;
 
         /*
         // Check browser dark mode preference
@@ -4894,7 +4962,7 @@
                 }
 
                 // Sessions are active
-                if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
+                if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.registry != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                     if (view == 2) {
                         devNotifySub += '<img onclick=showDeviceSessions(\'' + node._id + '\',null,event) class=deviceNotifySmallDotSub src=images/icon-relay-notify10.png width=10 height=10>';
                     } else {
@@ -5166,6 +5234,13 @@
                         var trash = '';
                         if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                         x += addHtmlValue2(getUserName(j), ((node.sessions.files[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.files[j]))) + trash);
+                    }
+                } else if (i == 'registry') {
+                    x += '<u>' + "Registry" + '</u>';
+                    for (var j in node.sessions.registry) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("registry", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue2(getUserName(j), ((node.sessions.registry[j] == 1)?"1 session":nobreak(format("{0} sessions", node.sessions.registry[j]))) + trash);
                     }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
@@ -6545,7 +6620,7 @@
             // Check filter dropdown
             var devFilter = Q('DevFilterSelect').value;
             if (devFilter == 1) { for (var d in nodes) { if (((nodes[d].conn == null) || (nodes[d].conn == 0)) && (nodes[d].mtype != 3)) { nodes[d].v = false; } } } // Online, also include Local devices and relayed devices
-            if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
+            if (devFilter == 2) { for (var d in nodes) { var n = nodes[d]; if ((n.sessions == null) || ((n.sessions.kvm == null) && (n.sessions.terminal == null) && (n.sessions.files == null) && (n.sessions.registry == null) && (n.sessions.tcp == null) && (n.sessions.udp == null))) { n.v = false; } } } // Sessions
             if (devFilter == 3) { for (var d in nodes) { if (stars[nodes[d]._id] != 1) { nodes[d].v = false; } } } // Starred
             if (devFilter == 4) { for (var d in nodes) { if (nodes[d].intelamt == null) { nodes[d].v = false; } } } // Intel AMT
             if (devFilter == 5) { for (var d in nodes) { if ((nodes[d].conn != null) && (nodes[d].conn != 0)) { nodes[d].v = false; } } } // Offline
@@ -7585,7 +7660,7 @@
                 QV('deskPreConfigScriptContextMenu2', (currentNode.mtype == 2) && !isWindowsNode(currentNode)); // Other devices
 
                 // Device Notification
-                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((currentNode.sessions.kvm != null) || (currentNode.sessions.terminal != null) || (currentNode.sessions.files != null) || (currentNode.sessions.registry != null) || (currentNode.sessions.tcp != null) || (currentNode.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
                 QV('p10deviceHelp', (currentNode.sessions != null) && (currentNode.sessions.help != null))
                 if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
@@ -7630,6 +7705,7 @@
                 QH('p15deviceName', "Console - " + nname);
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
+                QH('p18deviceName', nname);
                 QH('p19deviceName', nname);
 
                 // Node attributes
@@ -7812,8 +7888,9 @@
                     if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { meshFeatures.push("Desktop Toolbar"); } else if (consent & 0x0008) { meshFeatures.push("Desktop Prompt"); } else { if (consent & 0x0001) { meshFeatures.push("Desktop Notify"); } }
                     if (consent & 0x0010) { meshFeatures.push("Terminal Prompt"); } else { if (consent & 0x0002) { meshFeatures.push("Terminal Notify"); } }
                     if (consent & 0x0020) { meshFeatures.push("Files Prompt"); } else { if (consent & 0x0004) { meshFeatures.push("Files Notify"); } }
-                    if (consent == 7) { meshFeatures = ["Always Notify"]; }
-                    if ((consent & 56) == 56) { meshFeatures = ["Always Prompt"]; }
+                    if (consent & 0x0100) { meshFeatures.push("Registry Prompt"); } else { if (consent & 0x0080) { meshFeatures.push("Registry Notify"); } }
+                    if (consent == 0x0087) { meshFeatures = ["Always Notify"]; }
+                    if ((consent & 0x0138) == 0x0138) { meshFeatures = ["Always Prompt"]; }
 
                     meshFeatures = meshFeatures.join(', ');
                     if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
@@ -8061,6 +8138,7 @@
                 // Setup/Refresh the desktop tab
                 if (terminalAccess) { setupTerminal(); }
                 if (fileAccess) { setupFiles(); }
+                setupRegistry();
                 var consoleRights = ((meshrights & 16) != 0);
                 if (consoleRights) { setupConsole(); } else { if (panel == 15) { panel = 10; } }
 
@@ -8073,6 +8151,7 @@
                     );
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
+                QV('MainDevRegistry', (node.agent != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4194304) == 0)));
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
@@ -8317,6 +8396,7 @@
                 if (rights & 256) str1.push("No Input");
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
+                if (rights & 4194304) str1.push("No Registry");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -8350,6 +8430,7 @@
                 if (rights & 256) str1.push("No Input");
                 if (rights & 512) str1.push("No Terminal");
                 if (rights & 1024) str1.push("No Files");
+                if (rights & 4194304) str1.push("No Registry");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -9697,6 +9778,7 @@
         function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
         function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
         function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
+        function p18clearConsoleMsg() { QH('p18ConsoleMsg', ''); QV('p18ConsoleMsg', false); if (p18ConsoleMsgTimer) { clearTimeout(p18ConsoleMsgTimer); p18ConsoleMsgTimer = null; } }
 
         function p12setConsoleMsg(msg, timeout) {
             if (msg) {
@@ -9717,6 +9799,17 @@
                 if (timeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, timeout); }
             } else {
                 p13clearConsoleMsg();
+            }
+        }
+
+        function p18setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p18ConsoleMsg').innerHTML += msg;
+                QV('p18ConsoleMsg', true);
+                if (p18ConsoleMsgTimer != null) { clearTimeout(p18ConsoleMsgTimer); }
+                if (timeout) { p18ConsoleMsgTimer = setTimeout(p18clearConsoleMsg, timeout); }
+            } else {
+                p18clearConsoleMsg();
             }
         }
 
@@ -11325,6 +11418,606 @@
             p13clipboard = p13clipboardFolder = null;
             p13clipboardCut = 0;
             p13updateClipview();
+        }
+
+        //
+        // REGISTRY
+        //
+
+        var registry = null;
+        var registryNode = null;
+        var registryRoots = null;
+        var registryCurrentHive = null;
+        var registryCurrentPath = '';
+        var registryLastData = null;
+        var registrySelected = null;
+        var registryCheckedIds = {};
+        var registryRenderedItems = [];
+        var registryKnownHives = { 'HKEY_LOCAL_MACHINE': 1, 'HKLM': 'HKEY_LOCAL_MACHINE', 'HKEY_CURRENT_USER': 1, 'HKCU': 'HKEY_CURRENT_USER', 'HKEY_USERS': 1, 'HKU': 'HKEY_USERS', 'HKEY_CLASSES_ROOT': 1, 'HKCR': 'HKEY_CLASSES_ROOT', 'HKEY_CURRENT_CONFIG': 1, 'HKCC': 'HKEY_CURRENT_CONFIG' };
+
+        function p18setCurrentPath(path) {
+            Q('p18currentpath').value = path;
+        }
+
+        function p18setInfo(msg) {
+            if ((Q('p18bottomstatus') != null) && ((registrySelected == null) || (msg != null && msg != ''))) { Q('p18bottomstatus').textContent = msg || ''; }
+        }
+
+        function p18getDisplayPath(hive, path) {
+            if (hive == null) { return 'Root'; }
+            return hive + ((path != '') ? ('\\' + path) : '');
+        }
+
+        function p18normalizePath(path) {
+            path = (path || '').trim();
+            if ((path == '') || (path.toLowerCase() == 'root')) { return { hive: null, path: '' }; }
+            path = path.split('/').join('\\');
+            while (path.indexOf('\\\\') >= 0) { path = path.split('\\\\').join('\\'); }
+            var p = path.split('\\');
+            if (p.length == 0) { return null; }
+            var hive = p.shift();
+            var mappedHive = registryKnownHives[hive.toUpperCase()];
+            if (mappedHive == null) { mappedHive = hive.toUpperCase(); }
+            if (mappedHive === 1) { mappedHive = hive.toUpperCase(); }
+            if (registryKnownHives[mappedHive] == null) { return null; }
+            return { hive: mappedHive, path: p.join('\\') };
+        }
+
+        function p18selectionId(kind, hive, path, name) {
+            return kind + '|' + (hive || '') + '|' + (path || '') + '|' + (name || '');
+        }
+
+        function p18clearSelection() {
+            registrySelected = null;
+            registryCheckedIds = {};
+        }
+
+        function p18resetRenderedItems() {
+            registryRenderedItems = [];
+        }
+
+        function p18registerRenderedItem(item) {
+            registryRenderedItems.push(item);
+            return registryRenderedItems.length - 1;
+        }
+
+        function p18getSelectedItems() {
+            var r = [], checkboxes = document.getElementsByName('rd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked && (registryRenderedItems[checkboxes[i].value] != null)) { r.push(registryRenderedItems[checkboxes[i].value]); }
+            }
+            return r;
+        }
+
+        function p18getSelectedItem() {
+            var items = p18getSelectedItems();
+            return (items.length == 1) ? items[0] : null;
+        }
+
+        function p18getSelectedCount() { return p18getSelectedItems().length; }
+        function p18getItemCount() { return document.getElementsByName('rd').length; }
+
+        function p18syncSelectionFromCheckboxes() {
+            registryCheckedIds = {};
+            registrySelected = p18getSelectedItem();
+            var checkboxes = document.getElementsByName('rd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked && (registryRenderedItems[checkboxes[i].value] != null)) { registryCheckedIds[registryRenderedItems[checkboxes[i].value].id] = 1; }
+            }
+            if (Q('p18bottomstatus') != null) {
+                var count = p18getSelectedCount();
+                if ((count == 1) && (registrySelected != null)) { Q('p18bottomstatus').textContent = "Selected: " + registrySelected.displayName; }
+                else if (count > 1) { Q('p18bottomstatus').textContent = format("Selected {0} items", count); }
+                else { Q('p18bottomstatus').textContent = ''; }
+            }
+        }
+
+        function p18selectItem(kind, hive, path, rawName, displayName, type, value) {
+            try { hive = decodeURIComponent(hive); } catch (ex) { }
+            try { path = decodeURIComponent(path); } catch (ex) { }
+            try { rawName = decodeURIComponent(rawName); } catch (ex) { }
+            try { displayName = decodeURIComponent(displayName); } catch (ex) { }
+            try { type = decodeURIComponent(type); } catch (ex) { }
+            try { value = decodeURIComponent(value); } catch (ex) { }
+            registrySelected = { kind: kind, hive: hive, path: path, rawName: rawName, displayName: displayName, type: type, value: value, id: p18selectionId(kind, hive, path, rawName) };
+            registryCheckedIds = {};
+            registryCheckedIds[registrySelected.id] = 1;
+            if (Q('p18bottomstatus') != null) { Q('p18bottomstatus').textContent = "Selected: " + displayName; }
+            p18renderRegistryData();
+            setupRegistry();
+            return false;
+        }
+
+        function p18getRegistryItemDisplayType(item) {
+            if (item == null) return '';
+            if (item.kind == 'hive') return 'Hive';
+            if (item.kind == 'key') return 'Key';
+            return item.type || 'Value';
+        }
+
+        function p18canEditValue(item) {
+            if ((item == null) || (item.kind != 'value')) return false;
+            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
+        }
+
+        function p18canDeleteSelection(items) {
+            if ((items == null) || (items.length == 0)) return false;
+            for (var i = 0; i < items.length; i++) { if (items[i].kind == 'hive') return false; }
+            return true;
+        }
+
+        function p18makeReqId(action) {
+            return action + '-' + new Date().getTime() + '-' + Math.floor(Math.random() * 10000);
+        }
+
+        function p18getWritableRegistryTypes() {
+            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_DWORD', 'REG_QWORD'];
+        }
+
+        function p18renderRegistryTypeOptions(selectedType) {
+            var types = p18getWritableRegistryTypes(), x = '';
+            for (var i = 0; i < types.length; i++) { x += '<option value="' + types[i] + '"' + ((types[i] == selectedType) ? ' selected=selected' : '') + '>' + types[i] + '</option>'; }
+            return x;
+        }
+
+        function p18getSelectedFullPath() {
+            if (registrySelected == null) return 'Root';
+            if (registrySelected.kind == 'hive') { return registrySelected.hive; }
+            if (registrySelected.kind == 'key') {
+                var keyPath = (registrySelected.path != '') ? (registrySelected.path + '\\' + registrySelected.rawName) : registrySelected.rawName;
+                return p18getDisplayPath(registrySelected.hive, keyPath);
+            }
+            return p18getDisplayPath(registrySelected.hive, registrySelected.path);
+        }
+
+        function p18showSelectedDetails() {
+            if (registrySelected == null) return false;
+            var title = 'Registry Details';
+            var fullPath = p18getSelectedFullPath();
+            var x = '<div class=dialogText>';
+            x += '<div style=margin-bottom:8px><b>Kind:</b> ' + EscapeHtml(registrySelected.kind) + '</div>';
+            x += '<div style=margin-bottom:8px><b>Name:</b> ' + EscapeHtml(registrySelected.displayName) + '</div>';
+            x += '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(fullPath) + '</div>';
+            if (registrySelected.kind == 'key') {
+                title = 'Registry Key';
+                x += '<div style=margin-bottom:8px><b>Type:</b> Key</div>';
+                x += '<div style=color:#666>' + "Read-only mode is active. Use the Registry list to browse this key." + '</div>';
+            } else if (registrySelected.kind == 'hive') {
+                title = 'Registry Hive';
+                x += '<div style=margin-bottom:8px><b>Type:</b> Hive</div>';
+                x += '<div style=color:#666>' + "Read-only mode is active. Use the Registry list to browse this hive." + '</div>';
+            } else {
+                title = 'Registry Value';
+                x += '<div style=margin-bottom:8px><b>Type:</b> ' + EscapeHtml(registrySelected.type) + '</div>';
+                x += '<div><b>Data:</b></div><div class=selecttext style=margin-top:4px;padding:6px;background-color:#EEE;border-radius:4px;white-space:pre-wrap;word-break:break-word>' + EscapeHtml(registrySelected.value) + '</div>';
+            }
+            x += '</div>';
+            setDialogMode(2, title, 1, null, x);
+            return false;
+        }
+
+        function p18setItemChecked(item, state) {
+            var checkboxes = document.getElementsByName('rd');
+            for (var i = 0; i < checkboxes.length; i++) {
+                if ((registryRenderedItems[checkboxes[i].value] != null) && (registryRenderedItems[checkboxes[i].value].id == item.id)) { checkboxes[i].checked = state; }
+            }
+        }
+
+        function p18toggleCheckbox(index) {
+            var checkboxes = document.getElementsByName('rd');
+            if ((checkboxes[index] != null) && (registryRenderedItems[index] != null)) {
+                checkboxes[index].checked = !checkboxes[index].checked;
+                p18syncSelectionFromCheckboxes();
+                p18renderRegistryData();
+                setupRegistry();
+            }
+            return false;
+        }
+
+        function p18checkboxChanged() {
+            p18syncSelectionFromCheckboxes();
+            p18renderRegistryData();
+            setupRegistry();
+        }
+
+        function p18selectall() {
+            var nv = (p18getSelectedCount() == 0), checkboxes = document.getElementsByName('rd');
+            for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = nv; }
+            p18checkboxChanged();
+        }
+
+        function p18downloadTextFile(filename, content) {
+            var blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }
+
+        function p18downloadRegistrySelection() {
+            var items = p18getSelectedItems();
+            if (items.length == 0) return false;
+            var lines = [];
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                lines.push('Kind: ' + item.kind);
+                lines.push('Name: ' + item.displayName);
+                lines.push('Type: ' + p18getRegistryItemDisplayType(item));
+                lines.push('Path: ' + (item.kind == 'key' ? p18getDisplayPath(item.hive, ((item.path != '') ? (item.path + '\\' + item.rawName) : item.rawName)) : (item.kind == 'hive' ? item.hive : p18getDisplayPath(item.hive, item.path))));
+                if (item.kind == 'value') { lines.push('Data: ' + (item.value || '')); }
+                lines.push('');
+            }
+            p18downloadTextFile('registry-selection.txt', lines.join('\r\n'));
+            return false;
+        }
+
+        function p18exportRegistrySelection() {
+            var item = p18getSelectedItem();
+            if ((item == null) || (item.kind != 'key')) return false;
+            var exportPath = (item.path != '') ? (item.path + '\\' + item.rawName) : item.rawName;
+            registry.sendText({ action: 'export', reqid: p18makeReqId('export'), hive: item.hive, path: exportPath });
+            return false;
+        }
+
+        function p18registryTextInputKeyUp(e, validateFuncName) {
+            if (typeof window[validateFuncName] == 'function') { window[validateFuncName](e); }
+        }
+
+        function p18createRegistryKey() {
+            if ((registry == null) || (registryCurrentHive == null)) return false;
+            setDialogMode(2, 'New Registry Key', 3, p18createRegistryKeyEx, '<div style=margin-bottom:8px><b>Parent:</b> ' + EscapeHtml(p18getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div><div style=margin-bottom:4px><b>Name</b></div><input type=text id=p18registryKeyNameInput maxlength=255 onkeyup=p18registryTextInputKeyUp(event,"p18registryKeyNameCheck") style=width:100% /><div style="margin-top:8px;color:#666">Registry keys use only a name. Type and data apply to values, not to branches.</div>');
+            focusTextBox('p18registryKeyNameInput');
+            p18registryKeyNameCheck();
+            return false;
+        }
+
+        function p18createRegistryValue() {
+            if ((registry == null) || (registryCurrentHive == null)) return false;
+            var x = '<div style=margin-bottom:8px><b>Parent:</b> ' + EscapeHtml(p18getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div>';
+            x += '<div style=margin-bottom:4px><b>Name</b></div><input type=text id=p18registryValueNameInput maxlength=255 onkeyup=p18registryTextInputKeyUp(event,"p18registryValueCreateCheck") style=width:100% />';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Type</b></div><select id=p18registryValueTypeInput onchange=p18registryValueCreateCheck() style=width:100%>' + p18renderRegistryTypeOptions('REG_SZ') + '</select>';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Data</b></div><textarea id=p18registryValueCreateInput onkeyup=p18registryValueCreateCheck(event) style=width:100%;height:120px;resize:none></textarea>';
+            setDialogMode(2, 'New Registry Value', 3, p18createRegistryValueEx, x);
+            focusTextBox('p18registryValueNameInput');
+            p18registryValueCreateCheck();
+            return false;
+        }
+
+        function p18renameRegistryItem() {
+            var item = p18getSelectedItem();
+            if (item == null) return false;
+            if ((item.kind == 'value') && (item.rawName == '')) { messagebox('Registry', 'The default registry value cannot be renamed in this increment.'); return false; }
+            var x = '<div style=margin-bottom:8px><b>Current Name:</b> ' + EscapeHtml(item.displayName) + '</div>';
+            x += '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(p18getSelectedFullPath()) + '</div>';
+            x += '<div style=margin-bottom:4px><b>New Name</b></div><input type=text id=p18registryRenameInput maxlength=255 onkeyup=p18registryTextInputKeyUp(event,"p18registryRenameCheck") style=width:100% value="' + EscapeHtml(item.displayName) + '" />';
+            setDialogMode(2, 'Rename Registry Item', 3, p18renameRegistryItemEx, x, { item: { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName } });
+            focusTextBox('p18registryRenameInput');
+            p18registryRenameCheck();
+            return false;
+        }
+
+        function p18deleteRegistryItems() {
+            var items = p18getSelectedItems();
+            if (items.length == 0) return false;
+            if (p18canDeleteSelection(items) == false) { messagebox('Registry', 'Deleting root hives is not allowed.'); return false; }
+            var x = (items.length > 1) ? format('Delete {0} selected registry items?', items.length) : 'Delete selected registry item?';
+            setDialogMode(2, 'Delete Registry Item', 3, p18deleteRegistryItemsEx, x);
+            return false;
+        }
+
+        function p18editRegistryValue() {
+            var item = p18getSelectedItem();
+            if ((item == null) || (item.kind != 'value')) return false;
+            if (p18canEditValue(item) == false) { messagebox('Registry', 'Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD.'); return false; }
+            var x = '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(p18getSelectedFullPath()) + '</div>';
+            x += '<div style=margin-bottom:4px><b>Name</b></div><input type=text id=p18registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Type</b></div><select id=p18registryValueTypeEditInput onchange=p18registryValueEditCheck() style=width:100%>' + p18renderRegistryTypeOptions(item.type) + '</select>';
+            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">This type is currently shown as read-only.</div>'; }
+            x += '<textarea id=p18registryValueEditInput onkeyup=p18registryValueEditCheck(event) style=width:100%;height:140px;resize:none>' + EscapeHtml(item.value || '') + '</textarea>';
+            setDialogMode(2, 'Edit Registry Value', 3, p18editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
+            focusTextBox('p18registryValueEditInput');
+            p18registryValueEditCheck();
+            return false;
+        }
+
+        function p18registryKeyNameCheck(e) {
+            var name = Q('p18registryKeyNameInput').value.trim();
+            var ok = ((name.length > 0) && (name.indexOf('\\') < 0));
+            QE('idx_dlgOkButton', ok);
+            if ((ok == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function p18registryValueEditCheck(e) {
+            var type = Q('p18registryValueTypeEditInput').value;
+            var value = Q('p18registryValueEditInput').value.trim();
+            var ok = true;
+            if ((type == 'REG_DWORD') || (type == 'REG_QWORD')) { ok = (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(value)); }
+            QE('idx_dlgOkButton', ok);
+            if ((e != null) && (e.ctrlKey == true) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function p18registryValueCreateCheck(e) {
+            var name = Q('p18registryValueNameInput').value.trim();
+            var type = Q('p18registryValueTypeInput').value;
+            var value = Q('p18registryValueCreateInput').value.trim();
+            var ok = (name.length > 0);
+            if ((type == 'REG_DWORD') || (type == 'REG_QWORD')) { ok = ok && (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(value)); }
+            QE('idx_dlgOkButton', ok);
+            if ((ok == true) && (e != null) && (e.ctrlKey == true) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function p18registryRenameCheck(e) {
+            var name = Q('p18registryRenameInput').value.trim();
+            var ok = ((name.length > 0) && (name.indexOf('\\') < 0));
+            QE('idx_dlgOkButton', ok);
+            if ((ok == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function p18createRegistryKeyEx() {
+            registry.sendText({ action: 'createkey', reqid: p18makeReqId('createkey'), hive: registryCurrentHive, path: registryCurrentPath, name: Q('p18registryKeyNameInput').value.trim() });
+        }
+
+        function p18createRegistryValueEx() {
+            registry.sendText({ action: 'setvalue', reqid: p18makeReqId('setvalue'), hive: registryCurrentHive, path: registryCurrentPath, name: Q('p18registryValueNameInput').value.trim(), type: Q('p18registryValueTypeInput').value, value: Q('p18registryValueCreateInput').value });
+        }
+
+        function p18deleteRegistryItemsEx() {
+            var selected = p18getSelectedItems(), items = [];
+            for (var i = 0; i < selected.length; i++) {
+                items.push({ kind: selected[i].kind, hive: selected[i].hive, path: selected[i].path, name: selected[i].rawName });
+            }
+            registry.sendText({ action: 'delete', reqid: p18makeReqId('delete'), items: items });
+        }
+
+        function p18renameRegistryItemEx(b, tag) {
+            registry.sendText({ action: 'rename', reqid: p18makeReqId('rename'), item: tag.item, newName: Q('p18registryRenameInput').value.trim() });
+        }
+
+        function p18editRegistryValueEx(b, tag) {
+            tag.value = Q('p18registryValueEditInput').value;
+            tag.type = Q('p18registryValueTypeEditInput').value;
+            registry.sendText({ action: 'setvalue', reqid: p18makeReqId('setvalue'), hive: tag.hive, path: tag.path, name: tag.name, type: tag.type, value: tag.value });
+        }
+
+        function p18getRowSelectAction(kind, hive, path, rawName, displayName, type, value) {
+            return "return p18selectItem('" + kind + "','" + encodeURIComponentEx(hive || '') + "','" + encodeURIComponentEx(path || '') + "','" + encodeURIComponentEx(rawName || '') + "','" + encodeURIComponentEx(displayName || '') + "','" + encodeURIComponentEx(type || '') + "','" + encodeURIComponentEx(value || '') + "')";
+        }
+
+        function p18renderRegistryRow(kind, name, type, value, funcName, encodedName, rawName, hive, path) {
+            var item = { kind: kind, hive: hive, path: path, rawName: (rawName || name), displayName: name, type: type, value: value, id: p18selectionId(kind, hive, path, rawName || name) };
+            var rowIndex = p18registerRenderedItem(item);
+            var checked = (registryCheckedIds[item.id] != null) ? ' checked=checked' : '';
+            var icon = ((kind == 'value') ? '<img src="images/key12.png" style="float:left;margin-top:2px;margin-right:4px" width=12 height=12 />' : '<div class=fileIcon2' + ((funcName != null) ? (' onclick=' + funcName + '("' + encodedName + '")') : '') + '></div>');
+            var nameHtml = EscapeHtml(name);
+            if (funcName != null) { nameHtml = '<a href=# style=cursor:pointer onclick=\'return ' + funcName + '("' + encodedName + '")\'>' + nameHtml + '</a>'; }
+            var typeHtml = (type ? EscapeHtml(type) : '&nbsp;');
+            var valueHtml = (value ? EscapeHtml(value) : '&nbsp;');
+            var rowStyle = (registryCheckedIds[item.id] != null) ? 'background-color:#D9E8FB' : '';
+            var rowSelect = p18getRowSelectAction(kind, hive, path, rawName || name, name, type, value);
+            return '<div class=filelist file=999 style="' + rowStyle + '"><table style="width:100%;table-layout:fixed" cellpadding=0 cellspacing=0><tr><td style="width:28px"><input file=' + ((kind == 'value') ? 3 : 999) + ' style=float:left name=rd class=fcb type=checkbox onchange=p18checkboxChanged() value=\'' + rowIndex + '\'' + checked + '></td><td style="padding-right:8px" title="' + EscapeHtml(name) + '" onclick="' + rowSelect + '">' + icon + nameHtml + '</td><td style="width:140px;color:#666;white-space:nowrap" title="' + EscapeHtml(type || '') + '">' + typeHtml + '</td><td style="width:32%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + EscapeHtml(value || '') + '">' + valueHtml + '</td></tr></table></div>';
+        }
+
+        function p18renderRegistryHeader() {
+            return '<div class=filelist file=999 style="font-weight:bold;border-bottom:1px solid #DDD;padding-bottom:2px;margin-bottom:4px"><table style="width:100%;table-layout:fixed" cellpadding=0 cellspacing=0><tr><td style="width:28px"></td><td style="padding-right:8px">' + "Name" + '</td><td style="width:140px;color:#666;white-space:nowrap">' + "Type" + '</td><td style="width:32%;white-space:nowrap">' + "Data" + '</td></tr></table></div>';
+        }
+
+        function p18renderRegistryData() {
+            if (registryLastData == null) return;
+            p18resetRenderedItems();
+            var data = registryLastData;
+            if (data.action == 'listroots') {
+                registryRoots = data.roots || [];
+                var x = '', itemCount = 0;
+                for (var i = 0; i < registryRoots.length; i++) {
+                    if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                    x += p18renderRegistryRow('hive', registryRoots[i], 'Hive', '', 'p18openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
+                    itemCount++;
+                }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>No registry roots were returned.</i></div>'; }
+                QH('p18roots', x);
+                p18syncSelectionFromCheckboxes();
+                setupRegistry();
+                return;
+            }
+            if (data.action == 'list') {
+                registryCurrentHive = data.hive;
+                registryCurrentPath = data.path || '';
+                p18setCurrentPath(p18getDisplayPath(registryCurrentHive, registryCurrentPath));
+                var x = '', itemCount = 0;
+                if ((data.subkeys != null) && (data.subkeys.length > 0)) {
+                    for (var i = 0; i < data.subkeys.length; i++) {
+                        if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                        x += p18renderRegistryRow('key', data.subkeys[i], 'Key', '', 'p18openSubKey', encodeURIComponentEx(data.subkeys[i]), data.subkeys[i], registryCurrentHive, registryCurrentPath);
+                        itemCount++;
+                    }
+                }
+                if ((data.values != null) && (data.values.length > 0)) {
+                    for (var j = 0; j < data.values.length; j++) {
+                        if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                        x += p18renderRegistryRow('value', data.values[j].name, data.values[j].type, data.values[j].value, null, null, data.values[j].rawname, registryCurrentHive, registryCurrentPath);
+                        itemCount++;
+                    }
+                }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>Registry key is empty.</i></div>'; }
+                QH('p18roots', x);
+                p18syncSelectionFromCheckboxes();
+                setupRegistry();
+            }
+        }
+
+        function setupRegistry() {
+            if ((registryNode != currentNode) && (registry != null)) {
+                if (registryNode._id != currentNode._id) {
+                    registry.Stop(); registryNode = null; registry = null;
+                }
+            }
+            registryNode = currentNode;
+            var online = ((registryNode != null) && ((registryNode.conn & 1) != 0));
+            var selectedCount = p18getSelectedCount(), selectedItem = p18getSelectedItem();
+            QE('p18Connect', online);
+            QV('p18Connect', registry == null);
+            QV('p18Disconnect', registry != null);
+            QE('p18SelectAllButton', p18getItemCount() > 0);
+            Q('p18SelectAllButton').value = (selectedCount > 0 ? "Select None" : "Select All");
+            QE('p18RenameButton', (registry != null) && (selectedCount == 1) && (selectedItem != null) && (selectedItem.kind != 'hive'));
+            QE('p18DeleteButton', (registry != null) && p18canDeleteSelection(p18getSelectedItems()));
+            QE('p18EditButton', (registry != null) && (selectedCount == 1) && p18canEditValue(selectedItem));
+            QE('p18NewKeyButton', (registry != null) && (registryCurrentHive != null));
+            QE('p18NewValueButton', (registry != null) && (registryCurrentHive != null));
+            QE('p18DownloadButton', (registry != null) && (selectedCount > 0));
+            QE('p18ExportButton', (registry != null) && (selectedCount == 1) && (selectedItem != null) && (selectedItem.kind == 'key'));
+            QE('p18RefreshButton', registry != null);
+            QE('p18GoToButton', registry != null);
+            QE('p18FolderUp', (registry != null) && ((registryCurrentHive != null) || (registryCurrentPath != '')));
+            QE('p18DetailsButton', (registry != null) && (selectedCount == 1) && (selectedItem != null));
+            QV('p18toolbar2', true);
+            QV('p18subhead', registry != null);
+            QE('p18currentpath', registry != null);
+            p18syncSelectionFromCheckboxes();
+            if ((registryRoots == null) && (registry == null)) {
+                p18setInfo('Connect to load the first read-only Registry slice from the agent.');
+                QH('p18roots', '');
+                p18setCurrentPath('Root');
+            }
+        }
+
+        function CreateRemoteRegistry(onUpdate) {
+            var obj = { protocol: 4 };
+            obj.onUpdate = onUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessData = function (data) { obj.onUpdate(data); }
+            return obj;
+        }
+
+        function onRegistryStateChange(xregistry, state) {
+            QV('p18Connect', state == 0);
+            QV('p18Disconnect', state != 0);
+            Q('p18Status').textContent = StatusStrs[state];
+            switch (state) {
+                case 0:
+                    registryRoots = null;
+                    registryCurrentHive = null;
+                    registryCurrentPath = '';
+                    registryLastData = null;
+                    p18clearSelection();
+                    p18setInfo('Connect to load the first read-only Registry slice from the agent.');
+                    QH('p18roots', '');
+                    p18setCurrentPath('Root');
+                    if (registry != null) { registry.Stop(); registry = null; }
+                    break;
+                case 3:
+                    p18requestRoots();
+                    break;
+            }
+            setupRegistry();
+        }
+
+        function connectRegistry() {
+            p18clearConsoleMsg();
+            if (!registry) {
+                registry = CreateAgentRedirect(meshserver, CreateRemoteRegistry(p18gotRegistry), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                registry.attemptWebRTC = false;
+                registry.onStateChanged = onRegistryStateChange;
+                registry.onConsoleMessageChange = function () {
+                    if (registry.consoleMessage) {
+                        p18setConsoleMsg(formatAgentConsoleMessage(registry.consoleMessage, registry.consoleMessageId, registry.consoleMessageArgs), registry.consoleMessageTimeout ? registry.consoleMessageTimeout * 1000 : 5000);
+                    } else {
+                        p18clearConsoleMsg();
+                    }
+                }
+                registry.Start(registryNode._id);
+            } else {
+                registry.Stop();
+                registry = null;
+            }
+        }
+
+        function p18requestRoots() {
+            registryCurrentHive = null;
+            registryCurrentPath = '';
+            p18clearSelection();
+            p18setCurrentPath('Root');
+            p18setInfo('Loading root hives...');
+            if (registry != null) { registry.sendText({ action: 'listroots', reqid: 1 }); }
+            setupRegistry();
+        }
+
+        function p18requestKey(hive, path) {
+            registryCurrentHive = hive;
+            registryCurrentPath = path || '';
+            p18clearSelection();
+            p18setCurrentPath(p18getDisplayPath(hive, registryCurrentPath));
+            p18setInfo('Loading registry key...');
+            if (registry != null) { registry.sendText({ action: 'list', reqid: 2, hive: hive, path: registryCurrentPath }); }
+            setupRegistry();
+        }
+
+        function p18openRoot(hive) {
+            try { hive = decodeURIComponent(hive); } catch (ex) { }
+            p18requestKey(hive, '');
+            return false;
+        }
+
+        function p18openSubKey(name) {
+            try { name = decodeURIComponent(name); } catch (ex) { }
+            var nextPath = (registryCurrentPath != '') ? (registryCurrentPath + '\\' + name) : name;
+            p18requestKey(registryCurrentHive, nextPath);
+            return false;
+        }
+
+        function p18refreshRegistry() {
+            if (registry == null) return;
+            if (registryCurrentHive == null) { p18requestRoots(); } else { p18requestKey(registryCurrentHive, registryCurrentPath); }
+        }
+
+        function p18openPathInput() {
+            if (registry == null) return false;
+            var target = p18normalizePath(Q('p18currentpath').value);
+            if (target == null) {
+                p18setInfo('Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.');
+                return false;
+            }
+            if (target.hive == null) { p18requestRoots(); } else { p18requestKey(target.hive, target.path); }
+            return false;
+        }
+
+        function p18folderup() {
+            if (registry == null) return;
+            if (registryCurrentHive == null) { p18requestRoots(); return; }
+            if (registryCurrentPath == '') {
+                p18requestRoots();
+                return;
+            }
+            var p = registryCurrentPath.split('\\');
+            p.pop();
+            p18requestKey(registryCurrentHive, p.join('\\'));
+        }
+
+        function p18gotRegistry(data) {
+            try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
+                try { data = JSON.parse(data); } catch (ex2) { console.log('Unable to parse registry payload: ' + data); return; }
+            }
+            if (data.error) {
+                registryLastData = null;
+                p18clearSelection();
+                p18setInfo(data.error);
+                QH('p18roots', '');
+                return;
+            }
+            if (data.action == 'createkey') { p18setInfo('Registry key created.'); p18refreshRegistry(); return; }
+            if (data.action == 'delete') { p18clearSelection(); p18setInfo('Registry item deleted.'); p18refreshRegistry(); return; }
+            if (data.action == 'setvalue') { p18setInfo('Registry value updated.'); p18refreshRegistry(); return; }
+            if (data.action == 'rename') { p18clearSelection(); p18setInfo('Registry item renamed.'); p18refreshRegistry(); return; }
+            if (data.action == 'export') {
+                p18downloadTextFile(((registrySelected != null) ? registrySelected.displayName : 'registry-export') + '.reg', data.content || '');
+                p18setInfo('Registry key exported.');
+                return;
+            }
+            if ((data.action == 'listroots') || (data.action == 'list')) { registryLastData = data; p18renderRegistryData(); }
         }
 
         var p13filetree = null;
@@ -13854,8 +14547,9 @@
                 if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { meshFeatures.push("Desktop Toolbar"); } else if (consent & 0x0008) { meshFeatures.push("Desktop Prompt"); } else { if (consent & 0x0001) { meshFeatures.push("Desktop Notify"); } }
                 if (consent & 0x0010) { meshFeatures.push("Terminal Prompt"); } else { if (consent & 0x0002) { meshFeatures.push("Terminal Notify"); } }
                 if (consent & 0x0020) { meshFeatures.push("Files Prompt"); } else { if (consent & 0x0004) { meshFeatures.push("Files Notify"); } }
-                if (consent == 7) { meshFeatures = ["Always Notify"]; }
-                if ((consent & 56) == 56) { meshFeatures = ["Always Prompt"]; }
+                if (consent & 0x0100) { meshFeatures.push("Registry Prompt"); } else { if (consent & 0x0080) { meshFeatures.push("Registry Notify"); } }
+                if (consent == 0x0087) { meshFeatures = ["Always Notify"]; }
+                if ((consent & 0x0138) == 0x0138) { meshFeatures = ["Always Prompt"]; }
 
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
@@ -14275,6 +14969,9 @@
             x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Files" + '</b></div>';
             x += '<div><label><input type=checkbox id=d20flag5 ' + ((consent & 0x0004) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
             x += '<div><label><input type=checkbox id=d20flag6 ' + ((consent & 0x0020) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
+            x += '<div style="width:100%;border-bottom:1px solid gray;margin-bottom:5px;margin-top:8px"><b>' + "Registry" + '</b></div>';
+            x += '<div><label><input type=checkbox id=d20flag8 ' + ((consent & 0x0080) ? 'checked' : '') + '>' + "Notify user" + '</label></div>';
+            x += '<div><label><input type=checkbox id=d20flag9 ' + ((consent & 0x0100) ? 'checked' : '') + '>' + "Prompt for user consent" + '</label></div>';
             setDialogMode(2, title, 3, p20editmeshconsentEx, x, editType);
             if (serverinfo.consent) {
                 if (serverinfo.consent & 0x0001) { Q('d20flag1').checked = true; }
@@ -14284,6 +14981,8 @@
                 if (serverinfo.consent & 0x0004) { Q('d20flag5').checked = true; }
                 if (serverinfo.consent & 0x0020) { Q('d20flag6').checked = true; }
                 if (serverinfo.consent & 0x0040) { Q('d20flag7').checked = true; }
+                if (serverinfo.consent & 0x0080) { Q('d20flag8').checked = true; }
+                if (serverinfo.consent & 0x0100) { Q('d20flag9').checked = true; }
                 QE('d20flag1', !(serverinfo.consent & 0x0001));
                 QE('d20flag2', !(serverinfo.consent & 0x0008));
                 QE('d20flag3', !(serverinfo.consent & 0x0002));
@@ -14291,6 +14990,8 @@
                 QE('d20flag5', !(serverinfo.consent & 0x0004));
                 QE('d20flag6', !(serverinfo.consent & 0x0020));
                 QE('d20flag7', !(serverinfo.consent & 0x0040));
+                QE('d20flag8', !(serverinfo.consent & 0x0080));
+                QE('d20flag9', !(serverinfo.consent & 0x0100));
             }
         }
 
@@ -14303,6 +15004,8 @@
             if (Q('d20flag5').checked) { consent += 0x0004; }
             if (Q('d20flag6').checked) { consent += 0x0020; }
             if (Q('d20flag7').checked) { consent += 0x0040; }
+            if (Q('d20flag8').checked) { consent += 0x0080; }
+            if (Q('d20flag9').checked) { consent += 0x0100; }
             if (editType == 1) { meshserver.send({ action: 'editmesh', meshid: currentMesh._id, consent: consent }); }
             if (editType == 2) { meshserver.send({ action: 'edituser', id: currentUser._id, consent: consent }); }
             if (editType == 3) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, consent: consent }); }
@@ -14466,6 +15169,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nodesktop style=margin-left:12px>' + "No Desktop Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noregistry style=margin-left:12px>' + "No Registry Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
@@ -14541,6 +15245,7 @@
                     if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                     if (urights & 512) { Q('p20noterminal').checked = true; }
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
+                    if (urights & 4194304) { Q('p20noregistry').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
                     if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
                 }
@@ -14594,6 +15299,7 @@
                 Q('p20remoteview').checked = ((devrights & 256) != 0);
                 Q('p20noterminal').checked = ((devrights & 512) != 0);
                 Q('p20nofiles').checked = ((devrights & 1024) != 0);
+                Q('p20noregistry').checked = ((devrights & 4194304) != 0);
                 Q('p20noamt').checked = ((devrights & 2048) != 0);
                 Q('p20remotelimitedinput').checked = ((devrights & 4096) != 0);
                 Q('p20limitevents').checked = ((devrights & 8192) != 0);
@@ -14680,6 +15386,7 @@
             QE('p20nodesktop', nc && Q('p20remotecontrol').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
+            QE('p20noregistry', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
@@ -14707,6 +15414,7 @@
                 if (Q('p20nodesktop').checked == true) meshadmin += 65536;
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noregistry').checked == true) meshadmin += 4194304;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
@@ -14721,10 +15429,11 @@
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
             if ((meshadmin & 8) == 0) {
-                // Remove 256, 512, 1024, 2048, 4096, 65536
+                // Remove 256, 512, 1024, 2048, 4096, 65536, 4194304
                 if (meshadmin & 256) { meshadmin -= 256; }
                 if (meshadmin & 512) { meshadmin -= 512; }
                 if (meshadmin & 1024) { meshadmin -= 1024; }
+                if (meshadmin & 4194304) { meshadmin -= 4194304; }
                 if (meshadmin & 2048) { meshadmin -= 2048; }
                 if (meshadmin & 4096) { meshadmin -= 4096; }
                 if (meshadmin & 65536) { meshadmin -= 65536; }
@@ -14793,6 +15502,7 @@
                     if (((meshrights & 8) != 0) && (meshrights & 65536) != 0) r.push("No Desktop");
                     if (((meshrights & 8) != 0) && (meshrights & 512) != 0) r.push("No Terminal");
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
+                    if (((meshrights & 8) != 0) && (meshrights & 4194304) != 0) r.push("No Registry");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
@@ -15498,6 +16208,10 @@
             41: "Failed to start remote files after local user rejected",
             42: "Started remote files with toast notification",
             43: "Started remote files without notification",
+            163: "Starting remote registry after local user accepted",
+            164: "Failed to start remote registry after local user rejected",
+            165: "Started remote registry with toast notification",
+            166: "Started remote registry without notification",
             44: "Create folder: \"{0}\"",
             45: "Delete: \"{0}\"",
             46: "Delete recursive: \"{0}\", {1} element(s) removed",
@@ -16672,8 +17386,9 @@
                 if ((consent & 0x0040) && (consent & 0x0008)) { consentOptionsStr.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { consentOptionsStr.push("Desktop Toolbar"); } else if (consent & 0x0008) { consentOptionsStr.push("Desktop Prompt"); } else { if (consent & 0x0001) { consentOptionsStr.push("Desktop Notify"); } }
                 if (consent & 0x0010) { consentOptionsStr.push("Terminal Prompt"); } else { if (consent & 0x0002) { consentOptionsStr.push("Terminal Notify"); } }
                 if (consent & 0x0020) { consentOptionsStr.push("Files Prompt"); } else { if (consent & 0x0004) { consentOptionsStr.push("Files Notify"); } }
-                if (consent == 7) { consentOptionsStr = ["Always Notify"]; }
-                if ((consent & 56) == 56) { consentOptionsStr = ["Always Prompt"]; }
+                if (consent & 0x0100) { consentOptionsStr.push("Registry Prompt"); } else { if (consent & 0x0080) { consentOptionsStr.push("Registry Notify"); } }
+                if (consent == 0x0087) { consentOptionsStr = ["Always Notify"]; }
+                if ((consent & 0x0138) == 0x0138) { consentOptionsStr = ["Always Prompt"]; }
 
                 consentOptionsStr = consentOptionsStr.join(', ');
                 if (consentOptionsStr == '') { consentOptionsStr = '<i>' + "None" + '</i>'; }
@@ -17043,6 +17758,7 @@
                     else if ((user.removeRights & 0x00000100) != 0) { userFeatures.push("Desktop View Only"); }
                     if ((user.removeRights & 0x00000200) != 0) { userFeatures.push("No Terminal"); }
                     if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
+                    if ((user.removeRights & 0x00400000) != 0) { userFeatures.push("No Registry"); }
                 }
                 if ((user.removeRights & 0x00000010) != 0) { userFeatures.push("No Console"); }
                 if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
@@ -17084,8 +17800,9 @@
                 if ((consent & 0x0040) && (consent & 0x0008)) { meshFeatures.push("Desktop Prompt+Toolbar"); } else if (consent & 0x0040) { meshFeatures.push("Desktop Toolbar"); } else if (consent & 0x0008) { meshFeatures.push("Desktop Prompt"); } else { if (consent & 0x0001) { meshFeatures.push("Desktop Notify"); } }
                 if (consent & 0x0010) { meshFeatures.push("Terminal Prompt"); } else { if (consent & 0x0002) { meshFeatures.push("Terminal Notify"); } }
                 if (consent & 0x0020) { meshFeatures.push("Files Prompt"); } else { if (consent & 0x0004) { meshFeatures.push("Files Notify"); } }
-                if (consent == 7) { meshFeatures = ["Always Notify"]; }
-                if ((consent & 56) == 56) { meshFeatures = ["Always Prompt"]; }
+                if (consent & 0x0100) { meshFeatures.push("Registry Prompt"); } else { if (consent & 0x0080) { meshFeatures.push("Registry Notify"); } }
+                if (consent == 0x0087) { meshFeatures = ["Always Notify"]; }
+                if ((consent & 0x0138) == 0x0138) { meshFeatures = ["Always Prompt"]; }
 
                 meshFeatures = meshFeatures.join(', ');
                 if (meshFeatures == '') { meshFeatures = '<i>' + "None" + '</i>'; }
@@ -17267,6 +17984,7 @@
             x += '<div style=margin-left:16px><label><input type=checkbox id=d20flag3 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000100) ? 'checked' : '') + '>' + "Remote View Only" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag4 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000200) ? 'checked' : '') + '>' + "No Terminal Access" + '</label><br></div>';
             x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag5 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000400) ? 'checked' : '') + '>' + "No File Access" + '</label><br></div>';
+            x += '<div style=margin-left:8px><label><input type=checkbox id=d20flag12 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00400000) ? 'checked' : '') + '>' + "No Registry Access" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag6 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00000010) ? 'checked' : '') + '>' + "No Agent Console" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag8 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00008000) ? 'checked' : '') + '>' + "No Uninstall" + '</label><br></div>';
             x += '<div><label><input type=checkbox id=d20flag9 onchange=p20edituserfeaturesValidate() ' + ((removeRights & 0x00020000) ? 'checked' : '') + '>' + "No Remote Command" + '</label><br></div>';
@@ -17281,6 +17999,7 @@
             QE('d20flag3', !Q('d20flag7').checked && !Q('d20flag2').checked);
             QE('d20flag4', !Q('d20flag7').checked);
             QE('d20flag5', !Q('d20flag7').checked);
+            QE('d20flag12', !Q('d20flag7').checked);
         }
 
         // Send to the server the new user's real name
@@ -17297,6 +18016,7 @@
                 else if (Q('d20flag3').checked) { r += 0x00000100; }
                 if (Q('d20flag4').checked) { r += 0x00000200; }
                 if (Q('d20flag5').checked) { r += 0x00000400; }
+                if (Q('d20flag12').checked) { r += 0x00400000; }
             }
             if (Q('d20flag6').checked) { r += 0x00000010; }
             if (Q('d20flag8').checked) { r += 0x00008000; }
@@ -19108,7 +19828,7 @@
             QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
-            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
+            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevRegistry', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');
@@ -19143,6 +19863,7 @@
 
             // Update terminal size
             if ((x == 12) && (xtermfit != null)) { xtermfit.fit(); xterm.focus(); }
+            if (x == 18) { setupRegistry(); }
 
             // Update the web page title
             if ((currentNode) && (x >= 10) && (x < 20)) {
@@ -19965,6 +20686,7 @@
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command

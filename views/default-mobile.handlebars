@@ -909,6 +909,20 @@
                         <div id=p10html2></div>
                         <div id=p10html3 style="margin-left:8px"></div>
                     </div>
+                    <div id=p10registry style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
+                        <div style="padding:8px;background:#C0C0C0">
+                            <input id=p18Connect value="Connect" onclick=connectRegistry() type="button" style="height:28px" />
+                            <input id=p18Disconnect value="Disconnect" onclick=connectRegistry() type="button" style="height:28px;display:none" />
+                            <input id=p18RefreshButton value="Refresh" onclick=p18refreshRegistry() type="button" style="height:28px" disabled="disabled" />
+                            <input id=p18FolderUp value="Up" onclick=p18folderup() type="button" style="height:28px" disabled="disabled" />
+                            <input id=p18GoToButton value="GoTo" onclick=p18openPathInput() type="button" style="height:28px" disabled="disabled" />
+                            <span class=textOverGray id=p18Status>Disconnected</span>
+                        </div>
+                        <div id=p18ConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:95px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p18clearConsoleMsg()></div>
+                        <div id=p18subhead style="background-color:#E4E9E7;height:32px;line-height:28px;padding:2px 8px;display:none"><input id="p18currentpath" type="text" autocomplete="off" spellcheck="false" value="Root" style="width:100%;height:24px" onkeydown="if (event.key == 'Enter') return p18openPathInput()" /></div>
+                        <div id=p18RootsInfo style="padding:8px;color:#444">Connect to load the first read-only Registry slice from the agent.</div>
+                        <div id=p18roots style="margin:8px"></div>
+                    </div>
                     <img id="deskkeybutton1" src="images/mobile-desk-exit.png" class="deskButton" style="top:10px;display:none" onclick="exitButton()" />
                     <img id="deskkeybutton3a" src="images/mobile-desk-menu-open.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(false)" />
                     <img id="deskkeybutton3b" src="images/mobile-desk-menu-close.png" class="deskButton" style="top:60px;display:none" onclick="toggleMenu(true)" />
@@ -1370,6 +1384,7 @@
         var p11DeskConsoleMsgTimer = null;
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
+        var p18ConsoleMsgTimer = null;
 
         // Check if WebP is supported
         var webpSupport = false;
@@ -2345,7 +2360,12 @@
         function updateFooterMenu(options) {
             while (options != null && options.length < 3) { options.push({ n: '' }); }
             var x = '', prev = '';
-            if (options != null) { for (var i in options) { x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + '" onclick="' + options[i].f + '">' + options[i].n; prev = options[i].n; } }
+            if (options != null) {
+                for (var i in options) {
+                    x += '<td style="cursor:pointer' + ((prev == '') ? '' : ';border-left:solid 1px white') + '" onclick="' + options[i].f + '"><div title="' + EscapeHtml(options[i].n) + '" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px">' + options[i].n + '</div>';
+                    prev = options[i].n;
+                }
+            }
             QH('footerMenu', '<tr>' + x);
         }
 
@@ -3508,7 +3528,7 @@
                     }
 
                     // Sessions are active
-                    if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
+                    if ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.registry != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)) {
                         devNotifySub += '<img class=deviceNotifyDotSub src=images/icon-relay-notify.png width=16 height=16>';
                     }
 
@@ -3598,6 +3618,13 @@
                         var trash = '';
                         if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("files", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
                         x += addHtmlValue4(getUserName(j), ((node.sessions.files[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.files[j]))) + trash);
+                    }
+                } else if (i == 'registry') {
+                    x += '<u>' + "Registry" + '</u>';
+                    for (var j in node.sessions.registry) {
+                        var trash = '';
+                        if ((j == userinfo._id) || (GetNodeRights(node) == 0xFFFFFFFF)) { trash = ' <a href=# onclick=\'return endDeviceSession("registry", "' + encodeURIComponentEx(node._id) + '", "' + encodeURIComponentEx(j) + '")\' title="' + "Disconnect this session" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>'; }
+                        x += addHtmlValue4(getUserName(j), ((node.sessions.registry[j] == 1) ? "1 session" : nobreak(format("{0} sessions", node.sessions.registry[j]))) + trash);
                     }
                 } else if (i == 'tcp') {
                     x += '<u>' + "TCP Routing" + '</u>';
@@ -3747,7 +3774,7 @@
                 currentNode = node;
 
                 // Setup session notification
-                QV('p10deviceNotify', (currentNode.sessions != null) && ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)));
+                QV('p10deviceNotify', (currentNode.sessions != null) && ((node.sessions.kvm != null) || (node.sessions.terminal != null) || (node.sessions.files != null) || (node.sessions.registry != null) || (node.sessions.tcp != null) || (node.sessions.udp != null)));
                 QV('p10deviceStar', stars[currentNode._id] == 1);
                 QV('p10deviceHelp', (currentNode.sessions != null) && (currentNode.sessions.help != null))
                 if ((currentNode.sessions != null) && (currentNode.sessions.msg != null)) { QV('p10deviceMsg', true); QH('p10deviceMsg', Object.keys(currentNode.sessions.msg).length); } else { QV('p10deviceMsg', false); }
@@ -3977,6 +4004,7 @@
                 //drawDeviceTimeline();
                 setupTerminal();
                 setupFiles();
+                setupRegistry();
                 if (meshrights & 16) { setupConsole(); }
 
                 // Show bottom buttons
@@ -4083,11 +4111,12 @@
             QV('p10general', currentDevicePanel == 0);
             QV('p10desktop', currentDevicePanel == 1); // Show if we have remote control rights or desktop view only rights
             QV('p10files', currentDevicePanel == 2);
+            QV('p10registry', currentDevicePanel == 6);
             QV('p10details', currentDevicePanel == 3);
             QV('p10console', currentDevicePanel == 4);
             QV('p10terminal', currentDevicePanel == 5);
             var menus = [];
-            if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
+            if (currentDevicePanel != 0) { menus.push({ n: "Summary", f: 'setupDeviceMenu(0)' }); }
 
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
@@ -4102,10 +4131,12 @@
             ) { menus.push({ n: "Terminal", f: 'setupDeviceMenu(5)' }); }
 
             if ((currentDevicePanel != 2) && (currentNode != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 1024) == 0)) && ((currentNode.mtype != 1) && (currentNode.agent) && (currentNode.agent.caps & 4))) { menus.push({ n: "Files", f: 'setupDeviceMenu(2)' }); }
+            if ((currentDevicePanel != 6) && (currentNode != null) && (currentNode.agent != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4194304) == 0))) { menus.push({ n: "Registry", f: 'setupDeviceMenu(6)' }); }
             if ((currentDevicePanel != 3) && (currentNode != null) && (currentNode.mtype < 3) && ((meshrights & 1048576) != 0)) { menus.push({ n: "Details", f: 'setupDeviceMenu(3)' }); }
             if ((currentDevicePanel != 4) && (currentNode != null) && (meshrights & 0x00000010) && (currentNode.mtype == 2)) { menus.push({ n: "Console", f: 'setupDeviceMenu(4)' }); }
             updateFooterMenu(menus);
             updateCurrentUrl();
+            if (currentDevicePanel == 6) { setupRegistry(); }
             if (currentDevicePanel == 1) { deskAdjust(); }
         }
 
@@ -4730,6 +4761,7 @@
         function p11clearConsoleMsg() { QH('p11DeskConsoleMsg', ''); QV('p11DeskConsoleMsg', false); if (p11DeskConsoleMsgTimer) { clearTimeout(p11DeskConsoleMsgTimer); p11DeskConsoleMsgTimer = null; } }
         function p12clearConsoleMsg() { QH('p12TermConsoleMsg', ''); QV('p12TermConsoleMsg', false); if (p12TermConsoleMsgTimer) { clearTimeout(p12TermConsoleMsgTimer); p12TermConsoleMsgTimer = null; } }
         function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
+        function p18clearConsoleMsg() { QH('p18ConsoleMsg', ''); QV('p18ConsoleMsg', false); if (p18ConsoleMsgTimer) { clearTimeout(p18ConsoleMsgTimer); p18ConsoleMsgTimer = null; } }
 
         function p12setConsoleMsg(msg, timeout) {
             if (msg) {
@@ -4750,6 +4782,17 @@
                 if (timeout) { p13FilesConsoleMsgTimer = setTimeout(p13clearConsoleMsg, timeout); }
             } else {
                 p13clearConsoleMsg();
+            }
+        }
+
+        function p18setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p18ConsoleMsg').innerHTML += msg;
+                QV('p18ConsoleMsg', true);
+                if (p18ConsoleMsgTimer != null) { clearTimeout(p18ConsoleMsgTimer); }
+                if (timeout) { p18ConsoleMsgTimer = setTimeout(p18clearConsoleMsg, timeout); }
+            } else {
+                p18clearConsoleMsg();
             }
         }
 
@@ -5739,6 +5782,232 @@
             p13clipboard = p13clipboardFolder = null;
             p13clipboardCut = 0;
             p13updateClipview();
+        }
+
+        //
+        // REGISTRY
+        //
+
+        var registry = null;
+        var registryNode = null;
+        var registryRoots = null;
+        var registryCurrentHive = null;
+        var registryCurrentPath = '';
+        var registryKnownHives = { 'HKEY_LOCAL_MACHINE': 1, 'HKLM': 'HKEY_LOCAL_MACHINE', 'HKEY_CURRENT_USER': 1, 'HKCU': 'HKEY_CURRENT_USER', 'HKEY_USERS': 1, 'HKU': 'HKEY_USERS', 'HKEY_CLASSES_ROOT': 1, 'HKCR': 'HKEY_CLASSES_ROOT', 'HKEY_CURRENT_CONFIG': 1, 'HKCC': 'HKEY_CURRENT_CONFIG' };
+
+        function p18setCurrentPath(path) {
+            Q('p18currentpath').value = path;
+        }
+
+        function p18getDisplayPath(hive, path) {
+            if (hive == null) { return 'Root'; }
+            return hive + ((path != '') ? ('\\' + path) : '');
+        }
+
+        function p18normalizePath(path) {
+            path = (path || '').trim();
+            if ((path == '') || (path.toLowerCase() == 'root')) { return { hive: null, path: '' }; }
+            path = path.split('/').join('\\');
+            while (path.indexOf('\\\\') >= 0) { path = path.split('\\\\').join('\\'); }
+            var p = path.split('\\');
+            if (p.length == 0) { return null; }
+            var hive = p.shift();
+            var mappedHive = registryKnownHives[hive.toUpperCase()];
+            if (mappedHive == null) { mappedHive = hive.toUpperCase(); }
+            if (mappedHive === 1) { mappedHive = hive.toUpperCase(); }
+            if (registryKnownHives[mappedHive] == null) { return null; }
+            return { hive: mappedHive, path: p.join('\\') };
+        }
+
+        function p18renderRegistryRow(kind, name, type, value, funcName, encodedName) {
+            var icon = ((kind == 'value') ? '<img src="images/key12.png" style="float:left;margin-top:2px;margin-right:4px" width=12 height=12 />' : '<div class=fileIcon2' + ((funcName != null) ? (' onclick=' + funcName + '("' + encodedName + '")') : '') + '></div>');
+            var nameHtml = EscapeHtml(name);
+            if (funcName != null) { nameHtml = '<a href=# style=cursor:pointer onclick=\'return ' + funcName + '("' + encodedName + '")\'>' + nameHtml + '</a>'; }
+            var typeHtml = (type ? EscapeHtml(type) : '&nbsp;');
+            var valueHtml = (value ? EscapeHtml(value) : '&nbsp;');
+            return '<div class=filelist file=999><table style="width:100%;table-layout:fixed" cellpadding=0 cellspacing=0><tr><td style="padding-right:6px" title="' + EscapeHtml(name) + '">' + icon + nameHtml + '</td><td style="width:110px;color:#666;white-space:nowrap" title="' + EscapeHtml(type || '') + '">' + typeHtml + '</td><td style="width:34%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + EscapeHtml(value || '') + '">' + valueHtml + '</td></tr></table></div>';
+        }
+
+        function p18renderRegistryHeader() {
+            return '<div class=filelist file=999 style="font-weight:bold;border-bottom:1px solid #DDD;padding-bottom:2px;margin-bottom:4px"><table style="width:100%;table-layout:fixed" cellpadding=0 cellspacing=0><tr><td style="padding-right:6px">' + "Name" + '</td><td style="width:110px;color:#666;white-space:nowrap">' + "Type" + '</td><td style="width:34%;white-space:nowrap">' + "Data" + '</td></tr></table></div>';
+        }
+
+        function setupRegistry() {
+            if ((registryNode != currentNode) && (registry != null)) {
+                if (registryNode._id != currentNode._id) {
+                    registry.Stop(); registryNode = null; registry = null;
+                }
+            }
+            registryNode = currentNode;
+            var online = ((registryNode != null) && ((registryNode.conn & 1) != 0));
+            QE('p18Connect', online);
+            QV('p18Connect', registry == null);
+            QV('p18Disconnect', registry != null);
+            QE('p18RefreshButton', registry != null);
+            QE('p18GoToButton', registry != null);
+            QE('p18FolderUp', (registry != null) && ((registryCurrentHive != null) || (registryCurrentPath != '')));
+            QV('p18subhead', registry != null);
+            if ((registryRoots == null) && (registry == null)) {
+                QH('p18RootsInfo', 'Connect to load the first read-only Registry slice from the agent.');
+                QH('p18roots', '');
+                p18setCurrentPath('Root');
+            }
+        }
+
+        function CreateRemoteRegistry(onUpdate) {
+            var obj = { protocol: 4 };
+            obj.onUpdate = onUpdate;
+            obj.xxStateChange = function (state) { }
+            obj.ProcessData = function (data) { obj.onUpdate(data); }
+            return obj;
+        }
+
+        function onRegistryStateChange(xregistry, state) {
+            QV('p18Connect', state == 0);
+            QV('p18Disconnect', state != 0);
+            Q('p18Status').textContent = StatusStrs[state];
+            switch (state) {
+                case 0:
+                    registryRoots = null;
+                    registryCurrentHive = null;
+                    registryCurrentPath = '';
+                    QH('p18RootsInfo', 'Connect to load the first read-only Registry slice from the agent.');
+                    QH('p18roots', '');
+                    p18setCurrentPath('Root');
+                    if (registry != null) { registry.Stop(); registry = null; }
+                    break;
+                case 3:
+                    p18requestRoots();
+                    break;
+            }
+            setupRegistry();
+        }
+
+        function connectRegistry() {
+            p18clearConsoleMsg();
+            if (!registry) {
+                registry = CreateAgentRedirect(meshserver, CreateRemoteRegistry(p18gotRegistry), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                registry.attemptWebRTC = false;
+                registry.onStateChanged = onRegistryStateChange;
+                registry.onConsoleMessageChange = function () {
+                    if (registry.consoleMessage) {
+                        p18setConsoleMsg(formatAgentConsoleMessage(registry.consoleMessage, registry.consoleMessageId, registry.consoleMessageArgs), registry.consoleMessageTimeout ? registry.consoleMessageTimeout * 1000 : 5000);
+                    } else {
+                        p18clearConsoleMsg();
+                    }
+                }
+                registry.Start(registryNode._id);
+            } else {
+                registry.Stop();
+                registry = null;
+            }
+        }
+
+        function p18requestRoots() {
+            registryCurrentHive = null;
+            registryCurrentPath = '';
+            p18setCurrentPath('Root');
+            QH('p18RootsInfo', 'Loading root hives...');
+            if (registry != null) { registry.sendText({ action: 'listroots', reqid: 1 }); }
+            setupRegistry();
+        }
+
+        function p18requestKey(hive, path) {
+            registryCurrentHive = hive;
+            registryCurrentPath = path || '';
+            p18setCurrentPath(p18getDisplayPath(hive, registryCurrentPath));
+            QH('p18RootsInfo', 'Loading registry key...');
+            if (registry != null) { registry.sendText({ action: 'list', reqid: 2, hive: hive, path: registryCurrentPath }); }
+            setupRegistry();
+        }
+
+        function p18openRoot(hive) {
+            try { hive = decodeURIComponent(hive); } catch (ex) { }
+            p18requestKey(hive, '');
+            return false;
+        }
+
+        function p18openSubKey(name) {
+            try { name = decodeURIComponent(name); } catch (ex) { }
+            var nextPath = (registryCurrentPath != '') ? (registryCurrentPath + '\\' + name) : name;
+            p18requestKey(registryCurrentHive, nextPath);
+            return false;
+        }
+
+        function p18refreshRegistry() {
+            if (registry == null) return;
+            if (registryCurrentHive == null) { p18requestRoots(); } else { p18requestKey(registryCurrentHive, registryCurrentPath); }
+        }
+
+        function p18openPathInput() {
+            if (registry == null) return false;
+            var target = p18normalizePath(Q('p18currentpath').value);
+            if (target == null) {
+                QH('p18RootsInfo', 'Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.');
+                return false;
+            }
+            if (target.hive == null) { p18requestRoots(); } else { p18requestKey(target.hive, target.path); }
+            return false;
+        }
+
+        function p18folderup() {
+            if (registry == null) return;
+            if (registryCurrentHive == null) { p18requestRoots(); return; }
+            if (registryCurrentPath == '') {
+                p18requestRoots();
+                return;
+            }
+            var p = registryCurrentPath.split('\\');
+            p.pop();
+            p18requestKey(registryCurrentHive, p.join('\\'));
+        }
+
+        function p18gotRegistry(data) {
+            try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
+                try { data = JSON.parse(data); } catch (ex2) { console.log('Unable to parse registry payload: ' + data); return; }
+            }
+            if (data.error) {
+                QH('p18RootsInfo', EscapeHtml(data.error));
+                QH('p18roots', '');
+                return;
+            }
+            if (data.action == 'listroots') {
+                registryRoots = data.roots || [];
+                QH('p18RootsInfo', (registryRoots.length > 0) ? 'Read-only root hives returned by the agent:' : 'No registry roots were returned.');
+                var x = '', itemCount = 0;
+                for (var i = 0; i < registryRoots.length; i++) {
+                    if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                    x += p18renderRegistryRow('hive', registryRoots[i], 'Hive', '', 'p18openRoot', encodeURIComponentEx(registryRoots[i]));
+                    itemCount++;
+                }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>No registry roots were returned.</i></div>'; }
+                QH('p18roots', x);
+                setupRegistry();
+            }
+            if (data.action == 'list') {
+                registryCurrentHive = data.hive;
+                registryCurrentPath = data.path || '';
+                p18setCurrentPath(p18getDisplayPath(registryCurrentHive, registryCurrentPath));
+                var x = '', itemCount = 0;
+                if ((data.subkeys != null) && (data.subkeys.length > 0)) {
+                    for (var i = 0; i < data.subkeys.length; i++) {
+                        if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                        x += p18renderRegistryRow('key', data.subkeys[i], 'Key', '', 'p18openSubKey', encodeURIComponentEx(data.subkeys[i]));
+                        itemCount++;
+                    }
+                }
+                if ((data.values != null) && (data.values.length > 0)) {
+                    for (var j = 0; j < data.values.length; j++) {
+                        if (itemCount == 0) { x = p18renderRegistryHeader(); }
+                        x += p18renderRegistryRow('value', data.values[j].name, data.values[j].type, data.values[j].value, null, null);
+                        itemCount++;
+                    }
+                }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>Registry key is empty.</i></div>'; }
+                QH('p18RootsInfo', 'Read-only registry view.');
+                QH('p18roots', x);
+                setupRegistry();
+            }
         }
 
         var p13filetree = null;
@@ -7233,6 +7502,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20remotelimitedinput style=margin-left:12px>' + "Limited Input Only" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noterminal style=margin-left:12px>' + "No Terminal Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noregistry style=margin-left:12px>' + "No Registry Access" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
@@ -7266,6 +7536,7 @@
             QE('p20remotelimitedinput', nc && Q('p20remotecontrol').checked && !Q('p20remoteview').checked);
             QE('p20noterminal', nc && Q('p20remotecontrol').checked);
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
+            QE('p20noregistry', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
@@ -7287,6 +7558,7 @@
                 if (Q('p20remoteview').checked == true) meshadmin += 256;
                 if (Q('p20noterminal').checked == true) meshadmin += 512;
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
+                if (Q('p20noregistry').checked == true) meshadmin += 4194304;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if (Q('p20remotelimitedinput').checked == true) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;
@@ -7316,6 +7588,7 @@
                 if ((meshrights & 256) != 0) r.push("Remote View Only");
                 if ((meshrights & 512) != 0) r.push("No Terminal");
                 if ((meshrights & 1024) != 0) r.push("No Files");
+                if ((meshrights & 4194304) != 0) r.push("No Registry");
                 if ((meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                 if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                 if ((meshrights & 8192) != 0) r.push("Self Events Only");
@@ -7628,6 +7901,7 @@
             if ((userinfo.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
             if ((userinfo.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+            if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
