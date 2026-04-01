@@ -422,8 +422,7 @@ module.exports.pluginHandler = function (parent) {
                 var dl_url = plugin.downloadUrl;
                 if (version_only != null && version_only != false) dl_url = version_only.url;
                 if (force_url != null) dl_url = force_url;
-                var url = require('url');
-                var q = url.parse(dl_url, true);
+                var q = new URL(dl_url);
                 var http = (q.protocol == "http:") ? require('http') : require('https');
                 var opts = {
                     path: q.pathname,
@@ -436,7 +435,7 @@ module.exports.pluginHandler = function (parent) {
                     method: 'GET'
                 };
                 if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
-                    opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+                    opts.agent = new (require('https-proxy-agent').HttpsProxyAgent)(new URL(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
                 }
                 var done = false;
                 var request = http.get(opts, function (response) {
@@ -522,8 +521,7 @@ module.exports.pluginHandler = function (parent) {
             parent.db.getPlugin(id, function (err, docs) {
                 var plugin = docs[0];
                 if (plugin.versionHistoryUrl == null) reject("No version history available for this plugin.");
-                var url = require('url');
-                var q = url.parse(plugin.versionHistoryUrl, true);
+                var q = new URL(plugin.versionHistoryUrl);
                 var http = (q.protocol == 'http:') ? require('http') : require('https');
                 var opts = {
                     path: q.pathname,
@@ -535,7 +533,7 @@ module.exports.pluginHandler = function (parent) {
                     }
                 };
                 if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
-                    options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(require('url').parse(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
+                    options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(new URL(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
                 }
                 http.get(opts, function (res) {
                     var versStr = '';
