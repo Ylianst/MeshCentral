@@ -994,16 +994,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.type == 'tunnel') {
                         if ((typeof command.value != 'string') || (typeof command.nodeid != 'string')) break;
                         var url = null;
-                        try { url = require('url').parse(command.value, true); } catch (ex) { }
+                        try { url = new URL(command.value); } catch (ex) { }
                         if (url == null) break; // Bad URL
-                        if (url.query && url.query.nodeid && (url.query.nodeid != command.nodeid)) break; // Bad NodeID in URL query string
+                        if (url.searchParams.get('nodeid') && (url.searchParams.get('nodeid') != command.nodeid)) break; // Bad NodeID in URL query string
 
                         // Check rights
-                        if (url.query.p == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
-                        else if ((url.query.p == '4') || (url.query.p == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
+                        if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
+                        else if ((url.searchParams.get('p') == '4') || (url.searchParams.get('p') == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
 
                         // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
-                        if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.query.p == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }
+                        if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.searchParams.get('p') == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }
 
                         // Add server TLS cert hash
                         var tlsCertHash = null;

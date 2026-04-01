@@ -1326,7 +1326,7 @@ function serverConnect() {
     // Setup the HTTP proxy if needed
     if (args.proxy != null) {
         const HttpsProxyAgent = require('https-proxy-agent');
-        options.agent = new HttpsProxyAgent(require('url').parse(args.proxy));
+        options.agent = new HttpsProxyAgent(new URL(args.proxy));
     }
 
     // Password authentication
@@ -2727,7 +2727,7 @@ function connectTunnel(url) {
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
     // Setup the HTTP proxy if needed
-    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(require('url').parse(args.proxy)); }
+    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(new URL(args.proxy)); }
 
     // Connect the WebSocket
     console.log('Connecting...');

@@ -1237,7 +1237,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
-                                const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
+                                const getme = new URL(obj.agentExeInfo.url);
+                                const url = '*' + getme.pathname + getme.search;
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
                                 parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
 
@@ -1584,7 +1585,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                             // Agent is requesting an agent update
                             obj.agentCoreUpdateTaskId = taskid;
-                            const url = '*' + require('url').parse(obj.agentExeInfo.url).path;
+                            const getme = new URL(obj.agentExeInfo.url);
+                            const url = '*' + getme.pathname + getme.search;
                             var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
                             parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
 
@@ -1630,11 +1632,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // parse the URL
                     var url = null;
-                    try { url = require('url').parse(command.url); } catch (ex) { }
+                    try { url = new URL(command.url); } catch (ex) { }
                     if (url == null) return;
 
                     // Decode the cookie
-                    var urlSplit = url.query.split('&c=');
+                    var urlSplit = url.search.slice(1).split('&c=');
                     if (urlSplit.length != 2) return;
                     const authCookie = parent.parent.decodeCookie(urlSplit[1], null, 1);
                     if ((authCookie == null) || (typeof authCookie.c != 'string') || (('code=' + authCookie.c) != urlSplit[0])) return;

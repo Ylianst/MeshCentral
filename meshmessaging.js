@@ -378,18 +378,18 @@ module.exports.CreateServer = function (parent) {
     // Convert a CallMeBot URL into a handle
     obj.callmebotUrlToHandle = function (xurl) {
         var url = null;
-        try { url = require('url').parse(xurl); } catch (ex) { return; }
-        if ((url == null) || (url.host != 'api.callmebot.com') || (url.query == null)) return;
-        var urlArgs = {}, urlArgs2 = url.query.split('&');
+        try { url = new URL(xurl); } catch (ex) { return; }
+        if ((url == null) || (url.host != 'api.callmebot.com') || !url.search) return;
+        var urlArgs = {}, urlArgs2 = url.search.slice(1).split('&');
         for (var i in urlArgs2) { var j = urlArgs2[i].indexOf('='); if (j > 0) { urlArgs[urlArgs2[i].substring(0, j)] = urlArgs2[i].substring(j + 1); } }
         if ((urlArgs['phone'] != null) && (urlArgs['phone'].indexOf('|') >= 0)) return;
         if ((urlArgs['apikey'] != null) && (urlArgs['apikey'].indexOf('|') >= 0)) return;
         if ((urlArgs['user'] != null) && (urlArgs['user'].indexOf('|') >= 0)) return;
         // Signal Messenger, Whatapp, Facebook and Telegram
-        if (url.path.startsWith('/signal') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:signal|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
-        if (url.path.startsWith('/whatsapp') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:whatsapp|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
-        if (url.path.startsWith('/facebook') && (urlArgs['apikey'] != null)) { return 'callmebot:facebook|' + urlArgs['apikey']; }
-        if (url.path.startsWith('/text') && (urlArgs['user'] != null)) { return 'callmebot:telegram|' + urlArgs['user']; }
+        if (url.pathname.startsWith('/signal') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:signal|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
+        if (url.pathname.startsWith('/whatsapp') && (urlArgs['phone'] != null) && (urlArgs['apikey'] != null)) { return 'callmebot:whatsapp|' + urlArgs['phone'] + '|' + urlArgs['apikey']; }
+        if (url.pathname.startsWith('/facebook') && (urlArgs['apikey'] != null)) { return 'callmebot:facebook|' + urlArgs['apikey']; }
+        if (url.pathname.startsWith('/text') && (urlArgs['user'] != null)) { return 'callmebot:telegram|' + urlArgs['user']; }
         return null;
     }
 

@@ -518,7 +518,7 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return a text file from a remote HTTPS server
     obj.loadTextFile = function (url, tag, func) {
-        const u = require('url').parse(url);
+        const u = new URL(url);
         if (u.protocol == 'https:') {
             // Read from HTTPS
             const https = require('https');
@@ -538,7 +538,7 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, hostname, tag, func) {
-        const u = require('url').parse(url);
+        const u = new URL(url);
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
             if (hostname == null) { hostname = u.hostname; }
