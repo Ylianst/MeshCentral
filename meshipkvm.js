@@ -262,7 +262,7 @@ function CreateIPKVMManager(parent) {
 
     // Parse an incoming HTTP request URL
     function parseIpKvmUrl(domain, url) {
-        const q = new URL(url);
+        const q = new URL(url, 'http://localhost');
         const i = q.pathname.indexOf('/ipkvm.ashx/');
         if (i == -1) return null;
         const urlargs = q.pathname.substring(i + 12).split('/');

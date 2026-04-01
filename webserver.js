@@ -6439,8 +6439,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.CheckWebServerOriginName = function (domain, req) {
         if (domain.allowedorigin === true) return true; // Ignore origin
         if (typeof req.headers.origin != 'string') return true; // No origin in the header, this is a desktop app
-        const originUrl = new URL(req.headers.origin);
-        if (typeof originUrl.hostname != 'string') return false; // Origin hostname is not valid
+        let originUrl; try { originUrl = new URL(req.headers.origin); } catch (ex) { return false; }
+        if (!originUrl.hostname) return false; // Origin hostname is not valid
         if (Array.isArray(domain.allowedorigin)) return (domain.allowedorigin.indexOf(originUrl.hostname) >= 0); // Check if this is an allowed origin from an explicit list
         if (obj.isTrustedCert(domain) === false) return true; // This server does not have a trusted certificate.
         if (domain.dns != null) return (domain.dns == originUrl.hostname); // Match the domain DNS

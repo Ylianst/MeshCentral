@@ -994,7 +994,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.type == 'tunnel') {
                         if ((typeof command.value != 'string') || (typeof command.nodeid != 'string')) break;
                         var url = null;
-                        try { url = new URL(command.value); } catch (ex) { }
+                        try { url = new URL(command.value, 'http://localhost'); } catch (ex) { }
                         if (url == null) break; // Bad URL
                         if (url.searchParams.get('nodeid') && (url.searchParams.get('nodeid') != command.nodeid)) break; // Bad NodeID in URL query string
 

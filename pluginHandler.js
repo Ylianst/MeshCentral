@@ -251,7 +251,8 @@ module.exports.pluginHandler = function (parent) {
         return new Promise(function (resolve, reject) {
             var http = (configUrl.indexOf('https://') >= 0) ? require('https') : require('http');
             if (configUrl.indexOf('://') === -1) reject("Unable to fetch the config: Bad URL (" + configUrl + ")");
-            var options = new URL(configUrl);
+            const getme = new URL(configUrl);
+            var options = { protocol: getme.protocol, hostname: getme.hostname, port: getme.port || undefined, path: getme.pathname + getme.search };
             if (typeof parent.config.settings.plugins.proxy == 'string' || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) { // Proxy support
                 options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(new URL(parent.config.settings.plugins.proxy) || process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
             }
