@@ -69,7 +69,7 @@ WORKDIR /opt/meshcentral/meshcentral
 
 RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
     && npm i --package-lock-only \
-    && npm ci --omit=dev \
+    && npm ci --omit=dev --omit=optional \
     && npm cache clean --force
 
 ### STAGE 3 fun. building from source...
