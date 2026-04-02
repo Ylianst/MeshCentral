@@ -2148,6 +2148,15 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: -1}; } //block all autobackup functions
                     else {
                         if (typeof obj.config.settings.autobackup != 'object') { obj.config.settings.autobackup = {}; };
+                        if (Object.hasOwn(obj.config.settings.autobackup, "zippassword")) {
+                            if ((obj.config.settings.autobackup.zippassword).length == 0) {
+                                delete obj.config.settings.autobackup.zippassword;
+                                obj.addServerWarning('Empty zip password in config.json', true);
+                            } else {
+                                // convert to string regardless of type
+                                obj.config.settings.autobackup.zippassword = String(obj.config.settings.autobackup.zippassword);
+                            }
+                        }
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
@@ -2380,6 +2389,8 @@ function CreateMeshCentralServer(config, args) {
                             zipfile.openReadStream(entry, function (err, readStream) {
                                 if (err) throw err;
                                 readStream.on('end', function () { zipfile.readEntry(); });
+                                // new backupmethode includes 'meshcentral-data' subdir, needs to be stripped
+                                entry.fileName = entry.fileName.replace('meshcentral-data\/', '');
                                 var directory = obj.path.dirname(entry.fileName);
                                 if (directory != '.') {
                                     directory = obj.getConfigFilePath(directory)
