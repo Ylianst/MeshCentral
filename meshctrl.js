@@ -865,6 +865,8 @@ if (args['_'].length == 0) {
                     case 'editdevice': {
                         console.log("Change information about a device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --name 'device1'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --addtag 'newtag'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --removetag 'oldtag'"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
@@ -873,13 +875,17 @@ if (args['_'].length == 0) {
                         }
                         console.log("\r\nOptional arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --name [name]          - Change device name.");
-                            console.log("  --desc [description]   - Change device description.");
-                            console.log("  --tags [tag1,tags2]    - Change device tags.");
+                            console.log("  --name [name]           - Change device name.");
+                            console.log("  --desc [description]    - Change device description.");
+                            console.log("  --tags [tag1,tag2]      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag [tag1,tag2]    - Add tags to existing tags.");
+                            console.log("  --removetag [tag1,tag2] - Remove tags from existing tags.");
                         } else {
-                            console.log("  --name '[name]'        - Change device name.");
-                            console.log("  --desc '[description]' - Change device description.");
-                            console.log("  --tags '[tag1,tags2]'  - Change device tags.");
+                            console.log("  --name '[name]'           - Change device name.");
+                            console.log("  --desc '[description]'    - Change device description.");
+                            console.log("  --tags '[tag1,tag2]'      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag '[tag1,tag2]'    - Add tags to existing tags.");
+                            console.log("  --removetag '[tag1,tag2]' - Remove tags from existing tags.");
                         }
                         console.log("  --icon [number]        - Change the device icon (1 to 8).");
                         console.log("  --consent [flags]      - Sum of the following numbers:");
@@ -1728,14 +1734,20 @@ function serverConnect() {
                 break;
             }
             case 'editdevice': {
-                var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
-                if (typeof args.name == 'string') { op.name = args.name; }
-                if (typeof args.name == 'number') { op.name = '' + args.name; }
-                if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
-                if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
-                if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
-                if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
-                ws.send(JSON.stringify(op));
+                if (args.addtag || args.removetag) {
+                    // we need to fetch the node data first to then modify the tags
+                    var nodeid = args.id;
+                    ws.send(JSON.stringify({ action: 'nodes', id: args.id, responseid: 'meshctrl' }));
+                } else {
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    ws.send(JSON.stringify(op));
+                }
                 break;
             }
             case 'runcommand': {
@@ -2472,6 +2484,43 @@ function serverConnect() {
                             ws.send(JSON.stringify({ action: 'toast', nodeids: nodes, title: args.title ? args.title : "MeshCentral", msg: args.msg, responseid: 'meshctrl' }));
                         }
                     }
+                }
+                if ((settings.cmd == 'editdevice') && (data.responseid == 'meshctrl')) {
+                    // Find the node to get its current tags
+                    var targetNode = null;
+                    for (var i in data.nodes) {
+                        for (var j in data.nodes[i]) {
+                            if (data.nodes[i][j]._id == args.id) { targetNode = data.nodes[i][j]; break; }
+                        }
+                        if (targetNode != null) { break; }
+                    }
+                    if (targetNode == null) {
+                        console.log('Node not found.');
+                        process.exit();
+                        return;
+                    }
+                    // Start with current tags or empty array
+                    var tags = (Array.isArray(targetNode.tags)) ? targetNode.tags.slice() : [];
+                    // Add tags: --addtag tag1,tag2
+                    if (args.addtag) {
+                        var addtags = (typeof args.addtag == 'string') ? args.addtag.split(',') : ['' + args.addtag];
+                        for (var i in addtags) { var t = addtags[i].trim(); if (t && (tags.indexOf(t) < 0)) { tags.push(t); } }
+                    }
+                    // Remove tags: --removetag tag1,tag2
+                    if (args.removetag) {
+                        var removetags = (typeof args.removetag == 'string') ? args.removetag.split(',') : ['' + args.removetag];
+                        var removetrimmed = removetags.map(function(r) { return r.trim(); });
+                        tags = tags.filter(function(t) { return removetrimmed.indexOf(t) < 0; });
+                    }
+                    // Build and send the changedevice op
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    op.tags = tags;
+                    ws.send(JSON.stringify(op));
                 }
                 break;
             }

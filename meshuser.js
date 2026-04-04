@@ -729,6 +729,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (command.meshid == null) { err = 'Invalid group id'; }
                     }
 
+                    // Check if command.id is set with a domain id, if not, add the domain id to it.
+                    if (typeof command.id == 'string' && command.id !== '') {
+                        if (common.validateString(command.id, 1, 1024) == false) { err = 'Invalid device identifier'; }
+                        else if (command.id.indexOf('/') == -1) { command.id = 'node/' + domain.id + '/' + command.id; }
+                    }  
+
                     if (err == null) {
                         try {
                             if (command.meshid == null) {
