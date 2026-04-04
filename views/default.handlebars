@@ -324,8 +324,8 @@
                     <tr>
                         <td class=h1></td>
                         <td id=devListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
+                            <button type="button" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)"><img src="images/icon-collapse.png" width="10" height="10"></button>
+                            <button type="button" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)"><img src="images/icon-expand.png" width="10" height="10"></button>
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
@@ -347,8 +347,8 @@
                             <span id="devsCustomUIBar"></span>
                         </td>
                         <td id=kvmListToolbar class=style14 style="display:none">
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Collapse All" id="CollapseAllButton2" src="images/icon-collapse.png" width=9 height=11 onclick="cmexpandaction(2)" />
-                            <img style="cursor:pointer;margin-top:4px;display:none" title="Expand All" id="ExpandAllButton2" src="images/icon-expand.png" width=9 height=11 onclick="cmexpandaction(1)" />
+                            <button type="button" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)"><img src="images/icon-collapse.png" width="10" height="10"></button>
+                            <button type="button" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)"><img src="images/icon-expand.png" width="10" height="10"></button>
                             <span id=KvmDesktopButtons>
                                 <input type="button" onclick="connectAllKvmFunction()" value="Connect All" />&nbsp;
                                 <input type="button" onclick="disconnectAllKvmFunction()" value="Disconnect All" />&nbsp;
