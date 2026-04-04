@@ -4,6 +4,11 @@ const caps = require('./caps');
 const log = require('../../core').log;
 const data = require('./data');
 
+// RDP virtual channel constants (MS-RDPBCGR 3.1.5.2)
+const CHANNEL_CHUNK_LENGTH   = 1600;
+const CHANNEL_FLAG_FIRST         = 0x0001;
+const CHANNEL_FLAG_LAST          = 0x0002;
+const CHANNEL_FLAG_SHOW_PROTOCOL = 0x0010;
 
 
 /**
@@ -54,48 +59,107 @@ class Client extends Cliprdr {
         this.gccCore = gccCore;
         this.userId = userId;
         this.channelId = channelId;
+        this._fragmentBuffer = null;
+        this._fragmentMsgType = null;
         this.transport.once('cliprdr', (s) => {
             this.recv(s);
         });
     }
 
 
+    /**
+     * Send a CLIPRDR message, fragmenting into channel chunks if necessary.
+     * Per MS-RDPBCGR 3.1.5.2, each virtual channel chunk must be <= CHANNEL_CHUNK_LENGTH bytes,
+     * and the Channel PDU Header flags must reflect fragment position.
+     */
     send(message) {
-        this.transport.send('cliprdr', new type.Component([
-            // Channel PDU Header
-            new type.UInt32Le(message.size()),
-            // CHANNEL_FLAG_FIRST | CHANNEL_FLAG_LAST | CHANNEL_FLAG_SHOW_PROTOCOL
-            new type.UInt32Le(0x13),
-            message
-        ]));
-    };
+        const msgBuf = message.toStream().buffer;
+        const totalLength = msgBuf.length;
 
+        let offset = 0;
+        while (offset < totalLength) {
+            const chunkSize = Math.min(CHANNEL_CHUNK_LENGTH, totalLength - offset);
+            const chunk = msgBuf.slice(offset, offset + chunkSize);
+
+            let flags = CHANNEL_FLAG_SHOW_PROTOCOL;
+            if (offset === 0)                      flags |= CHANNEL_FLAG_FIRST;
+            if (offset + chunkSize >= totalLength) flags |= CHANNEL_FLAG_LAST;
+
+            // Channel PDU Header: totalLength field is always the uncompressed total across all fragments
+            this.transport.send('cliprdr', new type.Component([
+                new type.UInt32Le(totalLength),
+                new type.UInt32Le(flags),
+                new type.BinaryString(chunk),
+            ]));
+
+            offset += chunkSize;
+        }
+    }
+
+    /**
+     * Receive a virtual channel PDU.
+     * Reads the Channel PDU Header at the current stream offset (not a hardcoded position),
+     * handles multi-fragment reassembly, then dispatches to the appropriate handler.
+     */
     recv(s) {
-        s.offset = 18;
-        const pdu = data.clipPDU().read(s), type = data.ClipPDUMsgType;
+        // Read Channel PDU Header at the current stream position.
+        // Do NOT hardcode s.offset — the MCS per.readLength encoding is 1 byte for payloads
+        // < 128 bytes and 2 bytes for larger ones, so the stream offset varies by packet size.
+        const channelTotalLen = new type.UInt32Le().read(s).value;  // eslint-disable-line no-unused-vars
+        const channelFlags    = new type.UInt32Le().read(s).value;
 
-        switch (pdu.obj.header.obj.msgType.value) {
-            case type.CB_MONITOR_READY:
+        const isFirst = !!(channelFlags & CHANNEL_FLAG_FIRST);
+        const isLast  = !!(channelFlags & CHANNEL_FLAG_LAST);
+
+        if (!isFirst) {
+            // Middle or last fragment — accumulate payload data
+            if (this._fragmentBuffer) {
+                this._fragmentBuffer = Buffer.concat([this._fragmentBuffer, s.buffer.slice(s.offset)]);
+            }
+            if (isLast) {
+                this._dispatchFragment();
+            }
+            this.transport.once('cliprdr', (s) => { this.recv(s); });
+            return;
+        }
+
+        // First (or only) fragment — parse the CLIPRDR PDU header
+        const pdu = data.clipPDU().read(s);
+        const clipType = data.ClipPDUMsgType;
+        const msgType = pdu.obj.header.obj.msgType.value;
+
+        if (!isLast) {
+            // First of multiple fragments — begin reassembly; payload starts at current s.offset
+            this._fragmentMsgType = msgType;
+            this._fragmentBuffer = s.buffer.slice(s.offset);
+            this.transport.once('cliprdr', (s) => { this.recv(s); });
+            return;
+        }
+
+        // Single complete packet — dispatch directly
+        switch (msgType) {
+            case clipType.CB_MONITOR_READY:
                 this.recvMonitorReadyPDU(s);
                 break;
-            case type.CB_FORMAT_LIST:
+            case clipType.CB_FORMAT_LIST:
                 this.recvFormatListPDU(s);
                 break;
-            case type.CB_FORMAT_LIST_RESPONSE:
+            case clipType.CB_FORMAT_LIST_RESPONSE:
                 this.recvFormatListResponsePDU(s);
                 break;
-            case type.CB_FORMAT_DATA_REQUEST:
+            case clipType.CB_FORMAT_DATA_REQUEST:
                 this.recvFormatDataRequestPDU(s);
                 break;
-            case type.CB_FORMAT_DATA_RESPONSE:
+            case clipType.CB_FORMAT_DATA_RESPONSE:
                 this.recvFormatDataResponsePDU(s);
                 break;
-            case type.CB_TEMP_DIRECTORY:
+            case clipType.CB_TEMP_DIRECTORY:
                 break;
-            case type.CB_CLIP_CAPS:
+            case clipType.CB_CLIP_CAPS:
                 this.recvClipboardCapsPDU(s);
                 break;
-            case type.CB_FILECONTENTS_REQUEST:
+            case clipType.CB_FILECONTENTS_REQUEST:
+                break;
         }
 
         this.transport.once('cliprdr', (s) => {
@@ -104,12 +168,29 @@ class Client extends Cliprdr {
     }
 
     /**
+     * Dispatch a fully reassembled multi-fragment CLIPRDR message.
+     * this._fragmentBuffer contains the raw payload bytes (no CLIPRDR header).
+     */
+    _dispatchFragment() {
+        const buf = this._fragmentBuffer;
+        const clipType = data.ClipPDUMsgType;
+        this._fragmentBuffer = null;
+
+        if (this._fragmentMsgType === clipType.CB_FORMAT_DATA_RESPONSE) {
+            // buf is the UCS-2 encoded text with a null terminator; strip the terminator
+            const str = buf.toString('ucs2', 0, buf.length - 2);
+            this.content = str;
+            this.emit('clipboard', str);
+        }
+
+        this._fragmentMsgType = null;
+    }
+
+    /**
      * Receive capabilities from server
      * @param s {type.Stream}
      */
     recvClipboardCapsPDU(s) {
-        // Start at 18
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
         // console.log('recvClipboardCapsPDU', s);
     }
@@ -120,7 +201,6 @@ class Client extends Cliprdr {
      * @param s {type.Stream}
      */
     recvMonitorReadyPDU(s) {
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
         // console.log('recvMonitorReadyPDU', s);
 
@@ -224,7 +304,6 @@ class Client extends Cliprdr {
      * @param {type.Stream} s 
      */
     recvFormatListPDU(s) {
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
         // console.log('recvFormatListPDU', s);
         this.sendFormatListResponsePDU();
@@ -250,7 +329,6 @@ class Client extends Cliprdr {
      * @param s {type.Stream}
      */
     recvFormatListResponsePDU(s) {
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
         // console.log('recvFormatListResponsePDU', s);
         // this.sendFormatDataRequestPDU();
@@ -275,7 +353,6 @@ class Client extends Cliprdr {
      * @param s {type.Stream}
      */
     recvFormatDataRequestPDU(s) {
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
         // console.log('recvFormatDataRequestPDU', s);
         this.sendFormatDataResponsePDU();
@@ -300,13 +377,15 @@ class Client extends Cliprdr {
 
 
     /**
-     * Receive format data response PDU from server
+     * Receive format data response PDU from server.
+     * s.offset is positioned immediately after the CLIPRDR header (channel PDU header and
+     * CLIPRDR msgType/msgFlags/dataLen were already consumed in recv()), so the UCS-2
+     * text data starts exactly at s.offset.
      * @param s {type.Stream}
      */
     recvFormatDataResponsePDU(s) {
-        s.offset = 18;
         // const pdu = data.clipPDU().read(s);
-        const str = s.buffer.toString('ucs2', 26, s.buffer.length - 2);
+        const str = s.buffer.toString('ucs2', s.offset, s.buffer.length - 2);
         // console.log('recvFormatDataResponsePDU', str);
         this.content = str;
         this.emit('clipboard', str)
