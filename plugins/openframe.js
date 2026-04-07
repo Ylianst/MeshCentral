@@ -79,13 +79,14 @@ module.exports.openframe = function (pluginHandler) {
       res.send(mshContent);
     });
 
-    // Route 2: /api/:command (with JSON body parsing for POST)
-    app.all('/api/:command', jsonParser, function (req, res) {
+
+    // Route 2: GET /api/deviceInfo/:id - Get device info by ID
+    app.get('/api/deviceInfo/:id', function (req, res) {
       corsHeaders(res);
 
-      var command = req.params.command;
-      if (!command) {
-        return res.status(400).json({ error: 'No command specified' });
+      var deviceId = req.params.id;
+      if (!deviceId) {
+        return res.status(400).json({ error: 'Missing required parameter: device id' });
       }
 
       var args = [
@@ -93,29 +94,14 @@ module.exports.openframe = function (pluginHandler) {
         '--url', MESHCTRL_URL,
         '--loginuser', MESH_USER,
         '--loginpass', MESH_PASS,
-        command
+        'DeviceInfo',
+        '--id', deviceId,
+        '--json'
       ];
 
-      // Add query parameters as --key value args
-      if (req.query) {
-        for (var key in req.query) {
-          if (req.query[key]) {
-            args.push('--' + key, String(req.query[key]));
-          }
-        }
+      if (req.query.raw === 'true') {
+        args.push('--raw');
       }
-
-      // Add POST body fields as --key value args
-      if (req.method === 'POST' && req.body && typeof req.body === 'object') {
-        for (var key in req.body) {
-          if (req.body[key] !== undefined && req.body[key] !== null) {
-            args.push('--' + key, String(req.body[key]));
-          }
-        }
-      }
-
-      // Always output as JSON
-      args.push('--json');
 
       execFile('node', args, { timeout: 30000 }, function (err, stdout, stderr) {
         if (err) {
