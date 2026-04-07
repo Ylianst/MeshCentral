@@ -247,3 +247,5 @@ If you want to disable both HTML/JS minification and translation during the buil
 ```sh
 docker build -f docker/Dockerfile --build-arg DISABLE_MINIFY=no --build-arg DISABLE_TRANSLATE=no -t meshcentral .
 ```
+
+## Parameters
