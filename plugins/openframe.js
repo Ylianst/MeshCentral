@@ -80,13 +80,13 @@ module.exports.openframe = function (pluginHandler) {
     });
 
 
-    // Route 2: GET /api/deviceInfo/:id - Get device info by ID
-    app.get('/api/deviceInfo/:id', function (req, res) {
+    // Route 2: GET /api/deviceInfo?id=node//domain//hash - Get device info by ID
+    app.get('/api/deviceInfo', function (req, res) {
       corsHeaders(res);
 
-      var deviceId = req.params.id;
+      var deviceId = req.query.id;
       if (!deviceId) {
-        return res.status(400).json({ error: 'Missing required parameter: device id' });
+        return res.status(400).json({ error: 'Missing required parameter: id' });
       }
 
       var args = [
