@@ -2,19 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
 
 const MESH_DIR = process.env.MESH_DIR || '/opt/mesh';
-const MESH_INSTALL_DIR = process.env.MESH_INSTALL_DIR || '/opt/meshcentral';
-const MESH_USER = process.env.MESH_USER || '';
-const MESH_PASS = process.env.MESH_PASS || '';
-const MESH_PROTOCOL = process.env.MESH_PROTOCOL || 'wss';
-const MESH_NGINX_HOST = process.env.MESH_NGINX_HOST || 'localhost';
-const MESH_EXTERNAL_PORT = process.env.MESH_EXTERNAL_PORT || '8383';
 const MESH_DEVICE_GROUP = process.env.MESH_DEVICE_GROUP || '';
 
-const MESHCTRL_PATH = path.join(MESH_INSTALL_DIR, 'meshcentral', 'meshctrl.js');
-const MESHCTRL_URL = `${MESH_PROTOCOL}://${MESH_NGINX_HOST}:${MESH_EXTERNAL_PORT}`;
+// --- Helpers ---
 
 function corsHeaders(res) {
   res.set('Access-Control-Allow-Origin', '*');
@@ -22,46 +14,50 @@ function corsHeaders(res) {
   res.set('Access-Control-Allow-Headers', 'Content-Type, X-MeshAuth');
 }
 
+function sendError(res, status, message) {
+  res.status(status).json({ error: message });
+}
+
+function log(msg) {
+  console.log('[openframe-plugin] ' + msg);
+}
+
+// --- Plugin ---
+
 module.exports.openframe = function (pluginHandler) {
-  const obj = {};
+  var obj = {};
   obj.exports = [];
 
-  // hook_setupHttpHandlers receives (webserver, parent) from callHook
   obj.hook_setupHttpHandlers = function (webserver, parent) {
     var app = webserver.app;
-    var jsonParser = webserver.bodyParser.json();
-    console.log('[openframe-plugin] Routes registered');
+    var db = parent.db;
 
-    // CORS preflight for all plugin routes
+    log('Routes registered');
+
+    // CORS preflight
     app.options(['/generate-msh', '/api/*'], function (req, res) {
       corsHeaders(res);
       res.sendStatus(204);
     });
 
-    // Route 1: /generate-msh?host=X
+    // Route 1: GET /generate-msh?host=X - Generate custom MSH agent config
     app.get('/generate-msh', function (req, res) {
       corsHeaders(res);
 
       var host = req.query.host;
-      if (!host) {
-        return res.status(400).json({ error: 'Missing required parameter: host' });
-      }
+      if (!host) return sendError(res, 400, 'Missing required parameter: host');
 
       var meshId, serverId;
       try {
         meshId = fs.readFileSync(path.join(MESH_DIR, 'mesh_id'), 'utf8').trim();
         serverId = fs.readFileSync(path.join(MESH_DIR, 'mesh_server_id'), 'utf8').trim();
       } catch (e) {
-        return res.status(500).json({ error: 'Mesh configuration not initialized' });
+        return sendError(res, 500, 'Mesh configuration not initialized');
       }
 
-      if (!meshId || !serverId) {
-        return res.status(500).json({ error: 'Invalid mesh configuration' });
-      }
+      if (!meshId || !serverId) return sendError(res, 500, 'Invalid mesh configuration');
 
-      // Determine protocol
-      var protocol = 'wss';
-      if (host.startsWith('http://')) { protocol = 'ws'; }
+      var protocol = host.startsWith('http://') ? 'ws' : 'wss';
       var cleanHost = host.replace(/^https?:\/\//, '').replace(/^wss?:\/\//, '');
       var meshServerUrl = protocol + '://' + cleanHost + '/ws/tools/agent/meshcentral-server/agent.ashx';
 
@@ -74,55 +70,45 @@ module.exports.openframe = function (pluginHandler) {
         'MeshServer=' + meshServerUrl
       ].join('\n');
 
+      log('Generated MSH for host: ' + cleanHost);
+
       res.set('Content-Type', 'application/octet-stream');
       res.set('Content-Disposition', 'attachment; filename=meshagent.msh');
       res.send(mshContent);
     });
 
-    // Route 2: /api/:command (with JSON body parsing for POST)
-    app.all('/api/:command', jsonParser, function (req, res) {
+    // Route 2: GET /api/deviceStatus?id=node/<domain>/<hash> - Get device status
+    // Uses MeshCentral core: GetConnectivityState() (in-memory) + db 'lc' record
+    app.get('/api/deviceStatus', function (req, res) {
       corsHeaders(res);
 
-      var command = req.params.command;
-      if (!command) {
-        return res.status(400).json({ error: 'No command specified' });
+      var nodeId = req.query.id;
+      if (!nodeId) return sendError(res, 400, 'Missing required parameter: id');
+
+      var parts = nodeId.split('/');
+      if (parts.length !== 3 || parts[0] !== 'node') {
+        return sendError(res, 400, 'Invalid device id format. Expected: node/<domain>/<id>');
       }
 
-      var args = [
-        MESHCTRL_PATH,
-        '--url', MESHCTRL_URL,
-        '--loginuser', MESH_USER,
-        '--loginpass', MESH_PASS,
-        command
-      ];
+      // 1. Verify device exists in DB
+      db.Get(nodeId, function (err, docs) {
+        if (docs == null || docs.length !== 1) return sendError(res, 404, 'Device not found');
 
-      // Add query parameters as --key value args
-      if (req.query) {
-        for (var key in req.query) {
-          if (req.query[key]) {
-            args.push('--' + key, String(req.query[key]));
-          }
-        }
-      }
+        // 2. Live connectivity state from MeshCentral in-memory store
+        var state = parent.GetConnectivityState(nodeId);
+        var online = (state != null) && ((state.connectivity & 1) !== 0);
 
-      // Add POST body fields as --key value args
-      if (req.method === 'POST' && req.body && typeof req.body === 'object') {
-        for (var key in req.body) {
-          if (req.body[key] !== undefined && req.body[key] !== null) {
-            args.push('--' + key, String(req.body[key]));
-          }
-        }
-      }
+        // 3. Last connection record from DB
+        db.Get('lc' + nodeId, function (err, docs) {
+          var lc = (docs != null && docs.length === 1) ? docs[0] : null;
 
-      // Always output as JSON
-      args.push('--json');
-
-      execFile('node', args, { timeout: 30000 }, function (err, stdout, stderr) {
-        if (err) {
-          return res.status(500).json({ error: stderr || stdout || err.message });
-        }
-        res.set('Content-Type', 'application/json');
-        res.send(stdout);
+          res.json({
+            nodeId: nodeId,
+            online: online,
+            lastConnectTime: lc ? lc.time : null,
+            lastConnectAddr: lc ? lc.addr : null
+          });
+        });
       });
     });
   };
