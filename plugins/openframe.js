@@ -90,19 +90,24 @@ module.exports.openframe = function (pluginHandler) {
         return sendError(res, 400, 'Invalid device id format. Expected: node/<domain>/<id>');
       }
 
-      // 1. Live connectivity state from MeshCentral in-memory store
-      var state = parent.GetConnectivityState(nodeId);
-      var online = (state != null) && ((state.connectivity & 1) !== 0);
+      // 1. Verify device exists in DB
+      db.Get(nodeId, function (err, docs) {
+        if (docs == null || docs.length !== 1) return sendError(res, 404, 'Device not found');
 
-      // 2. Last connection record from DB
-      db.Get('lc' + nodeId, function (err, docs) {
-        var lc = (docs != null && docs.length === 1) ? docs[0] : null;
+        // 2. Live connectivity state from MeshCentral in-memory store
+        var state = parent.GetConnectivityState(nodeId);
+        var online = (state != null) && ((state.connectivity & 1) !== 0);
 
-        res.json({
-          nodeId: nodeId,
-          online: online,
-          lastConnectTime: lc ? lc.time : null,
-          lastConnectAddr: lc ? lc.addr : null
+        // 3. Last connection record from DB
+        db.Get('lc' + nodeId, function (err, docs) {
+          var lc = (docs != null && docs.length === 1) ? docs[0] : null;
+
+          res.json({
+            nodeId: nodeId,
+            online: online,
+            lastConnectTime: lc ? lc.time : null,
+            lastConnectAddr: lc ? lc.addr : null
+          });
         });
       });
     });
