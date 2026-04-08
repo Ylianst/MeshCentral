@@ -3610,8 +3610,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.performBackup = function (func) {
         parent.debug('backup','Entering performBackup');
         try {
-            if (obj.performingBackup) return 'Backup alreay in progress.';
-            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Backup disabled.'); return 'Backup disabled.' }};
+            if (obj.performingBackup) { return 'Backup already in progress.' };
+            if (parent.config.settings.autobackup.backupintervalhours == -1) { return 'Backup disabled.' };
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
@@ -3707,12 +3707,13 @@ module.exports.CreateDB = function (parent, func) {
         let archive = null;
         let zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5),1),9);
 
-        //if password defined, create encrypted zip
-        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
+        //if password defined, or a password entered for the manual backup, create encrypted zip
+        if ((parent.config.settings.autobackup.zippasswordrequest != '') && ((typeof parent.config.settings.autobackup.zippassword == 'string') || (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')))  {
             try {
                 //Only register format once, otherwise it triggers an error
                 if (archiver.isRegisteredFormat('zip-encrypted') == false) { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); }
-                archive = archiver.create('zip-encrypted', { zlib: { level: zipLevel }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                archive = archiver.create('zip-encrypted', { zlib: { level: zipLevel }, encryptionMethod: 'aes256',
+                    password: (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')?parent.config.settings.autobackup.zippasswordrequest:parent.config.settings.autobackup.zippassword });
                 if (func) { func('Creating encrypted ZIP'); }
             } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
                 obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
@@ -3723,6 +3724,7 @@ module.exports.CreateDB = function (parent, func) {
             if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
             archive = archiver('zip', { zlib: { level: zipLevel } });
         }
+        delete parent.config.settings.autobackup.zippasswordrequest;
 
         //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
         if (obj.backupStatus == 0) {
