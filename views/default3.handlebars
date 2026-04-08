@@ -442,14 +442,14 @@
                 </div>
                 <div id="devListToolbarSpan" class="noselect d-flex align-items-center p-1">
                     <div id=devListToolbar class="d-flex align-items-center visually-hidden"></td>
-                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
+                        <button class="btn btn-secondary btn-sm fa-layers fa-fw me-1" style="width: 30px; height: 31px; display:none" title="Collapse All" id="CollapseAllButton" onclick="cmexpandaction(2)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
-                        </span>
-                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
+                        </button>
+                        <button class="btn btn-secondary btn-sm fa-layers fa-fw me-1" style="width: 30px; height: 31px; display:none" title="Expand All" id="ExpandAllButton" onclick="cmexpandaction(1)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
-                        </span>
+                        </button>
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
                         <input type=button class="btn btn-primary me-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
@@ -476,14 +476,14 @@
                         <span id="devsCustomUIBar"></span>
                     </div>
                     <div id=kvmListToolbar class="d-flex align-items-center style14 visually-hidden">
-                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
+                        <button class="btn btn-secondary btn-sm fa-layers fa-fw me-1" style="width: 30px; height: 31px; display:none" title="Collapse All" id="CollapseAllButton2" onclick="cmexpandaction(2)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="down-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="up-6"></i>
-                        </span>
-                        <span class="fa-layers fa-fw me-1" role="button" style="display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
+                        </button>
+                        <button class="btn btn-secondary btn-sm fa-layers fa-fw me-1" style="width: 30px; height: 31px; display:none" title="Expand All" id="ExpandAllButton2" onclick="cmexpandaction(1)">
                             <i class="fa-solid fa-chevron-up" data-fa-transform="up-6"></i>
                             <i class="fa-solid fa-chevron-down" data-fa-transform="down-6"></i>
-                        </span>
+                        </button>
                         <span id="KvmDesktopButtons">
                             <input type="button" class="btn btn-success me-1 btn-sm" onclick="connectAllKvmFunction()" value="Connect All" />
                             <input type="button" class="btn btn-danger me-1 btn-sm" onclick="disconnectAllKvmFunction()" value="Disconnect All" />
