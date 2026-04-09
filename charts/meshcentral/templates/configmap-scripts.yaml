@@ -7,7 +7,3 @@ metadata:
 data:
   entrypoint.sh: |
     {{- .Files.Get "scripts/entrypoint.sh" | nindent 4 }}
-  setup-mesh.sh: |
-    {{- .Files.Get "scripts/setup-mesh.sh" | nindent 4 }}
-  manage-service.sh: |
-    {{- .Files.Get "scripts/manage-service.sh" | nindent 4 }}
