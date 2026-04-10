@@ -115,6 +115,10 @@
         var readState = 0;
         var waitTimer = null;
         var waitTimerArgs = null;
+        var waitTickTimer = null;
+        var waitTickStartWall = 0;
+        var waitTickStartRec = 0;
+        var waitTickTargetRec = 0;
         var deskAspectRatio = 0;
         var currentDeltaTimeTotalSec = 0;
         var videoWriter = null;
@@ -504,14 +508,41 @@
             QS('progressbar').width = '0px';
         }
 
+        function updateWaitTick() {
+            var elapsed = Date.now() - waitTickStartWall;
+            var speed = parseFloat(Q('PlaySpeed').value);
+            var recNow = waitTickStartRec + (elapsed / speed);
+            if (recNow > waitTickTargetRec) recNow = waitTickTargetRec;
+            var deltaTimeTotalSec = Math.floor((recNow - recFileStartTime) / 1000);
+            if (currentDeltaTimeTotalSec != deltaTimeTotalSec) {
+                currentDeltaTimeTotalSec = deltaTimeTotalSec;
+                var hrs = Math.floor(deltaTimeTotalSec / 3600);
+                var mins = Math.floor((deltaTimeTotalSec % 3600) / 60);
+                var secs = Math.floor(deltaTimeTotalSec % 60);
+                QH('timespan', pad2(hrs) + ':' + pad2(mins) + ':' + pad2(secs));
+            }
+            if (recFileEndTime > recFileStartTime) {
+                QS('progressbar').width = Math.floor(((recNow - recFileStartTime) / (recFileEndTime - recFileStartTime)) * 100) + '%';
+            }
+        }
+
         function processBlock(type, flags, time, data) {
             if (type < 0) { pause(); return; }
             var waitTime = Math.round((time - recFileLastTime) * parseFloat(Q('PlaySpeed').value));
             if ((waitTime < 5) || (videoWriter != null)) {
                 processBlockEx(type, flags, time, data);
             } else {
-                waitTimerArgs = [type, flags, time, data]
-                waitTimer = setTimeout(function () { waitTimer = null; if (waitTimerArgs) { processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]); } }, waitTime);
+                waitTimerArgs = [type, flags, time, data];
+                waitTickStartWall = Date.now();
+                waitTickStartRec = recFileLastTime;
+                waitTickTargetRec = time;
+                if (waitTickTimer) { clearInterval(waitTickTimer); }
+                waitTickTimer = setInterval(updateWaitTick, 250);
+                waitTimer = setTimeout(function () {
+                    if (waitTickTimer) { clearInterval(waitTickTimer); waitTickTimer = null; }
+                    waitTimer = null;
+                    if (waitTimerArgs) { processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]); }
+                }, waitTime);
             }
         }
 
@@ -573,11 +604,12 @@
 
                     // Accumulator is not active
                     var cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
-                    if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
-                    if (cmdsize != view.byteLength) {
-                        console.log('Bad command size', cmd, cmdsize, view.byteLength);
+                    if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = view[4] * 0x1000000 + (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
+                    if (cmdsize + 8 == view.byteLength) { view = view.slice(8); } // drop injected duplicate header
+                    if (cmdsize == view.byteLength) {
+                        agentDesktop.ProcessBinaryCommand(cmd, cmdsize, view);
                     } else {
-                        agentDesktop.ProcessBinaryCommand(cmd, cmdsize, view.slice(0, cmdsize));
+                        console.log('Bad command size', cmd, cmdsize, view.byteLength);
                     }
                 } else if (recFileProtocol == 101) {
                     // Intel AMT KVM
@@ -631,6 +663,7 @@
             currentDeltaTimeTotalSec = 0;
             recFileEndTime = 0;
             agentTerminal = null;
+            if (waitTickTimer != null) { clearInterval(waitTickTimer); waitTickTimer = null; }
             if (waitTimer != null) { clearTimeout(waitTimer); waitTimer = null; }
             QH('deskstatus', '');
             QE('PlayButton', false);
@@ -800,7 +833,14 @@
                 //agentTerminal = CreateAmtRemoteTerminal('Term', {});
                 //agentTerminal.State = 3;
             }
-            readNextBlock(processBlock);
+            if (waitTimerArgs != null) {
+                // Resuming mid-gap: restart timer for remaining time from current position
+                var resumeArgs = waitTimerArgs;
+                waitTimerArgs = null;
+                processBlock(resumeArgs[0], resumeArgs[1], resumeArgs[2], resumeArgs[3]);
+            } else {
+                readNextBlock(processBlock);
+            }
         }
 
         function pause() {
@@ -811,11 +851,15 @@
             QE('PlayButton', recFilePtr != recFile.size);
             QE('PauseButton', false);
             QE('RestartButton', recFilePtr != 0);
+            if (waitTickTimer != null) { clearInterval(waitTickTimer); waitTickTimer = null; }
             if (waitTimer != null) {
                 clearTimeout(waitTimer);
                 waitTimer = null;
-                processBlockEx(waitTimerArgs[0], waitTimerArgs[1], waitTimerArgs[2], waitTimerArgs[3]);
-                waitTimerArgs = null;
+                // Save current virtual time so resume starts from here, not from the pre-gap time
+                var elapsed = Date.now() - waitTickStartWall;
+                var speed = parseFloat(Q('PlaySpeed').value);
+                recFileLastTime = Math.min(waitTickStartRec + (elapsed / speed), waitTickTargetRec);
+                // Keep waitTimerArgs so play() can resume the gap from this point
             }
         }
 
@@ -825,6 +869,7 @@
             if (playing == true) return;
             recFilePtr = 0;
             readState = 0;
+            waitTimerArgs = null;
             currentDeltaTimeTotalSec = 0;
             QV('metadatadiv', true);
             QE('PlayButton', true);
@@ -836,8 +881,14 @@
             QV('TermParent', false);
             QV('XTermParent', false);
             clearXTerm();
+            recFileLastTime = recFileStartTime;
             if (agentDesktop) {
                 agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
+                agentDesktop = CreateAgentRemoteDesktop('Desk');
+                agentDesktop.onScreenSizeChange = deskAdjust;
+                agentDesktop.onPreDrawImage = preCanvasDraw;
+                agentDesktop.State = 3;
+                deskAdjust();
             } else if (amtDesktop) {
                 amtDesktop.canvas.clearRect(0, 0, amtDesktop.CanvasId.width, amtDesktop.CanvasId.height);
                 amtDesktop = CreateAmtRemoteDesktop('Desk');

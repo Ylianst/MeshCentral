@@ -865,6 +865,8 @@ if (args['_'].length == 0) {
                     case 'editdevice': {
                         console.log("Change information about a device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --name 'device1'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --addtag 'newtag'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --removetag 'oldtag'"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
@@ -873,13 +875,17 @@ if (args['_'].length == 0) {
                         }
                         console.log("\r\nOptional arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --name [name]          - Change device name.");
-                            console.log("  --desc [description]   - Change device description.");
-                            console.log("  --tags [tag1,tags2]    - Change device tags.");
+                            console.log("  --name [name]           - Change device name.");
+                            console.log("  --desc [description]    - Change device description.");
+                            console.log("  --tags [tag1,tag2]      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag [tag1,tag2]    - Add tags to existing tags.");
+                            console.log("  --removetag [tag1,tag2] - Remove tags from existing tags.");
                         } else {
-                            console.log("  --name '[name]'        - Change device name.");
-                            console.log("  --desc '[description]' - Change device description.");
-                            console.log("  --tags '[tag1,tags2]'  - Change device tags.");
+                            console.log("  --name '[name]'           - Change device name.");
+                            console.log("  --desc '[description]'    - Change device description.");
+                            console.log("  --tags '[tag1,tag2]'      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag '[tag1,tag2]'    - Add tags to existing tags.");
+                            console.log("  --removetag '[tag1,tag2]' - Remove tags from existing tags.");
                         }
                         console.log("  --icon [number]        - Change the device icon (1 to 8).");
                         console.log("  --consent [flags]      - Sum of the following numbers:");
@@ -1326,7 +1332,7 @@ function serverConnect() {
     // Setup the HTTP proxy if needed
     if (args.proxy != null) {
         const HttpsProxyAgent = require('https-proxy-agent');
-        options.agent = new HttpsProxyAgent(require('url').parse(args.proxy));
+        options.agent = new HttpsProxyAgent(new URL(args.proxy));
     }
 
     // Password authentication
@@ -1653,7 +1659,7 @@ function serverConnect() {
                 if (args.limitedevents) { meshrights |= 8192; }
                 if (args.chatnotify) { meshrights |= 16384; }
                 if (args.uninstall) { meshrights |= 32768; }
-                var op = { action: 'addmeshuser', usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                var op = { action: 'addmeshuser', userids: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
@@ -1728,14 +1734,20 @@ function serverConnect() {
                 break;
             }
             case 'editdevice': {
-                var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
-                if (typeof args.name == 'string') { op.name = args.name; }
-                if (typeof args.name == 'number') { op.name = '' + args.name; }
-                if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
-                if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
-                if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
-                if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
-                ws.send(JSON.stringify(op));
+                if (args.addtag || args.removetag) {
+                    // we need to fetch the node data first to then modify the tags
+                    var nodeid = args.id;
+                    ws.send(JSON.stringify({ action: 'nodes', id: args.id, responseid: 'meshctrl' }));
+                } else {
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    ws.send(JSON.stringify(op));
+                }
                 break;
             }
             case 'runcommand': {
@@ -2132,7 +2144,8 @@ function serverConnect() {
                 if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) {
                     var protocol = 1; // Terminal
                     if ((settings.cmd == 'upload') || (settings.cmd == 'download')) { protocol = 5; } // Files
-                    if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
+                    if (args.powershell) { protocol = 6; } // PowerShell
+                    if ((args.id.split('/').length != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
                     ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
                     connectTunnel(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + encodeURIComponent(args.id) + '&id=' + id + '&auth=' + data.cookie));
@@ -2472,6 +2485,43 @@ function serverConnect() {
                         }
                     }
                 }
+                if ((settings.cmd == 'editdevice') && (data.responseid == 'meshctrl')) {
+                    // Find the node to get its current tags
+                    var targetNode = null;
+                    for (var i in data.nodes) {
+                        for (var j in data.nodes[i]) {
+                            if (data.nodes[i][j]._id == args.id) { targetNode = data.nodes[i][j]; break; }
+                        }
+                        if (targetNode != null) { break; }
+                    }
+                    if (targetNode == null) {
+                        console.log('Node not found.');
+                        process.exit();
+                        return;
+                    }
+                    // Start with current tags or empty array
+                    var tags = (Array.isArray(targetNode.tags)) ? targetNode.tags.slice() : [];
+                    // Add tags: --addtag tag1,tag2
+                    if (args.addtag) {
+                        var addtags = (typeof args.addtag == 'string') ? args.addtag.split(',') : ['' + args.addtag];
+                        for (var i in addtags) { var t = addtags[i].trim(); if (t && (tags.indexOf(t) < 0)) { tags.push(t); } }
+                    }
+                    // Remove tags: --removetag tag1,tag2
+                    if (args.removetag) {
+                        var removetags = (typeof args.removetag == 'string') ? args.removetag.split(',') : ['' + args.removetag];
+                        var removetrimmed = removetags.map(function(r) { return r.trim(); });
+                        tags = tags.filter(function(t) { return removetrimmed.indexOf(t) < 0; });
+                    }
+                    // Build and send the changedevice op
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    op.tags = tags;
+                    ws.send(JSON.stringify(op));
+                }
                 break;
             }
             case 'meshes': { // LISTDEVICEGROUPS
@@ -2705,7 +2755,7 @@ function getDevicesThatMatchFilter(nodes, x) {
     } else {
         // Device name search
         try {
-            var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+            var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
             for (var d in nodes) {
                 //if (showRealNames) {
                 //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
@@ -2726,7 +2776,7 @@ function connectTunnel(url) {
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
     // Setup the HTTP proxy if needed
-    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(require('url').parse(args.proxy)); }
+    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(new URL(args.proxy)); }
 
     // Connect the WebSocket
     console.log('Connecting...');
@@ -2756,7 +2806,7 @@ function connectTunnel(url) {
                 if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
                 if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'options', cols: termSize[0], rows: termSize[1] })); }
                 settings.tunnelwsstate = 1;
-                settings.tunnelws.send('1'); // Terminal
+                settings.tunnelws.send((args.powershell ? 6 : 1)); // Powershell or Terminal
                 process.stdin.setEncoding('utf8');
                 process.stdin.setRawMode(true);
                 process.stdout.setEncoding('utf8');
@@ -3078,6 +3128,8 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             // BIOS
             if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
             if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
+            if (ident.bios_serial) { output["Serial"] = ident.bios_serial; outputCount++; }
+            if (ident.bios_mode) { output["Mode"] = ident.bios_mode; outputCount++; }
             if (outputCount > 0) { info["BIOS"] = output; }
             output = {}, outputCount = 0;
 
@@ -3090,6 +3142,28 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
             if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
             if (outputCount > 0) { info["Motherboard"] = output; }
+            output = {}, outputCount = 0;
+
+            // System
+            if (ident.chassis_manufacturer) { output["Manufacturer"] = ident.chassis_manufacturer; outputCount++; }
+            if (ident.product_name) { output["Product Name"] = ident.product_name; outputCount++; }
+            if (ident.chassis_serial) { output["Serial"] = ident.chassis_serial; outputCount++; }
+            if (ident.chassis_assettag) { output["Asset Tag"] = ident.chassis_assettag; outputCount++; }
+            if (outputCount > 0) { info["System"] = output; }
+            output = {}, outputCount = 0;
+        }
+
+        // TPM
+        if (hardware.tpm) {
+            var output = {}, outputCount = 0, tpm = hardware.tpm;
+            if (tpm.SpecVersion) { output["SpecVersion"] = parseFloat(tpm.SpecVersion).toFixed(1); outputCount++; }
+            if (tpm.ManufacturerId) { output["Identifier"] = tpm.ManufacturerId; outputCount++; }
+            if (tpm.ManufacturerVersion) { output["Version"] = tpm.ManufacturerVersion; outputCount++; }
+            if (tpm.IsActivated != null) { output["Activated"] = (tpm.IsActivated ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsEnabled != null) { output["Enabled"] = (tpm.IsEnabled ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsOwned != null) { output["Owned"] = (tpm.IsOwned ? "Yes" : "No"); outputCount++; }
+            if (outputCount > 0) { info["TPM"] = output; }
+            output = {}, outputCount = 0;
         }
 
         // Memory
@@ -3099,9 +3173,10 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
                 hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
                 for (var i in hardware.windows.memory) {
                     var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
-                    if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    if (m.Capacity && m.Speed) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    else if (m.Capacity) { moutput["Capacity"] = (m.Capacity / 1024 / 1024) + " Mb"; moutputCount++; }
                     if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
-                    if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+                    if (moutputCount > 0) { minfo[m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown')] = moutput; info["Memory"] = minfo; }
                 }
             }
         }

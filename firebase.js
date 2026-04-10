@@ -166,7 +166,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
     const WebSocket = require('ws');
     const https = require('https');
     const querystring = require('querystring');
-    const relayUrl = require('url').parse(url);
+    const relayUrl = new URL(url);
     parent.debug('email', 'CreateFirebaseRelay-Setup');
     
     // Setup logging
@@ -294,7 +294,7 @@ module.exports.CreateFirebaseRelay = function (parent, url, key) {
             const httpOptions = {
                 hostname: relayUrl.hostname,
                 port: relayUrl.port ? relayUrl.port : 443,
-                path: relayUrl.path + (key ? ('?key=' + key) : ''),
+                path: relayUrl.pathname + (key ? ('?key=' + key) : ''),
                 method: 'POST',
                 //rejectUnauthorized: false, // DEBUG
                 headers: {

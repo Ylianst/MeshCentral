@@ -1616,6 +1616,7 @@
         var deskKeyboardShortcuts = [];
         var deskKeyboardStrings = [];
         var deskLastClipboardSent = null;
+        var deskLastClipboardReceived = null;
         var requestedLastConnects = false;
         var devicePagingState = null;
 
@@ -2781,8 +2782,13 @@
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
-                                } else if (message.tag === 2) {
-                                    if (navigator.clipboard != null) { navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { console.log(err); }) } // Put remote clipboard data into our clipboard
+                                } else if ((message.tag === 2) || (message.tag === 3)) {
+                                    // tag 2 = manual clipboard-in button, tag 3 = auto-clipboard poll
+                                    if ((navigator.clipboard != null) && (message.data != deskLastClipboardReceived) && document.hasFocus()) {
+                                        deskLastClipboardReceived = message.data;
+                                        deskLastClipboardSent = message.data; // prevent echo back to remote
+                                        navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { });
+                                    }
                                 }
                             } else if ((message.type === 'setclip') && (xxdialogTag === 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
@@ -6496,7 +6502,7 @@
             } else {
                 // Device name search
                 try {
-                    var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
                       for (var d in nodes) {
                         if (features2 & 0x00008000) { // Both server and client names must match
                             if(features2 & 0x10000000){
@@ -7034,7 +7040,15 @@
                 });
 
                 // Create a tile and use OSM source
-                xxmap.mapLayer = new ol.layer.Tile({ source: new ol.source.OSM() });
+                xxmap.mapLayer = new ol.layer.Tile({
+                    source: new ol.source.OSM({
+                        tileLoadFunction: function(imageTile, src) {
+                            var img = imageTile.getImage();
+                            img.referrerPolicy = 'origin';
+                            img.src = src;
+                        }
+                    })
+                });
 
                 xxmap.mapView = new ol.View({ // Set the initial view
                     center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
@@ -9761,7 +9775,15 @@
                 case 3:
                     if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
                     desktop.startTime = new Date();
-                    deskLastClipboardSent = null;
+                    deskLastClipboardReceived = null;
+                    // Pre-seed sent value with current local clipboard so we don't blast it to the remote on connect
+                    if ((navigator.clipboard != null) && (navigator.clipboard.readText != null) && (Mstsc.browser() != 'firefox')) {
+                        try {
+                            navigator.clipboard.readText().then(function(text) { deskLastClipboardSent = text; }).catch(function(err) { deskLastClipboardSent = null; });
+                        } catch (ex) { deskLastClipboardSent = null; }
+                    } else {
+                        deskLastClipboardSent = null;
+                    }
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
                     break;
                 default:
@@ -9783,17 +9805,28 @@
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
                 // Auto-clipboard
-                if ((((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true))) && (navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
-                    if (Mstsc.browser() == 'firefox') return; // this is needed because firefox pops up a PASTE option every second which is annoying
-                    try {
-                        navigator.clipboard.readText().then(function(text) {
-                            if (desktop == null) return;
-                            if ((text != null) && (deskLastClipboardSent != text)) {
-                                if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { console.log('s3'); meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
-                                deskLastClipboardSent = text;
-                            }
-                        }).catch(function(err) { });
-                    } catch (ex) { console.log(ex); }
+                var autoClipEnabled = ((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true));
+                if (autoClipEnabled && (navigator.clipboard != null)) {
+                    // Local -> Remote: skip on Firefox as readText triggers an annoying paste popup every second
+                    if ((Mstsc.browser() != 'firefox') && (navigator.clipboard.readText != null)) {
+                        try {
+                            navigator.clipboard.readText().then(function(text) {
+                                if (desktop == null) return;
+                                if ((text != null) && (deskLastClipboardSent != text)) {
+                                    if (desktop.m.setClipboard) {
+                                        desktop.m.setClipboard(text);
+                                    } else {
+                                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                                    }
+                                    deskLastClipboardSent = text;
+                                }
+                            }).catch(function(err) { });
+                        } catch (ex) { console.log(ex); }
+                    }
+                    // Remote -> Local: poll remote clipboard every second (non-RDP only; RDP uses onClipboardChanged callback)
+                    if ((desktop.contype != 4) && (currentNode != null) && (navigator.clipboard.writeText != null)) {
+                        meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 3 });
+                    }
                 }
             } else {
                 QH('DeskTimer', '');

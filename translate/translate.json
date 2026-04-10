@@ -29553,7 +29553,7 @@
       "zh-cht": "儲存權限時發生錯誤：",
       "xloc": [
         "default.handlebars->121->294",
-        "default3.handlebars->121->289"
+        "default3.handlebars->121->290"
       ]
     },
     {
@@ -56701,7 +56701,7 @@
     {
       "en": "Permissions saved successfully",
       "xloc": [
-        "default3.handlebars->121->288"
+        "default3.handlebars->121->289"
       ]
     },
     {
@@ -57225,7 +57225,7 @@
       "zh-cht": "PluginHandler無法事件消息：",
       "xloc": [
         "default.handlebars->121->293",
-        "default3.handlebars->121->290"
+        "default3.handlebars->121->288"
       ]
     },
     {

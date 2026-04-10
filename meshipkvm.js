@@ -262,10 +262,10 @@ function CreateIPKVMManager(parent) {
 
     // Parse an incoming HTTP request URL
     function parseIpKvmUrl(domain, url) {
-        const q = require('url').parse(url, true);
-        const i = q.path.indexOf('/ipkvm.ashx/');
+        const q = new URL(url, 'http://localhost');
+        const i = q.pathname.indexOf('/ipkvm.ashx/');
         if (i == -1) return null;
-        const urlargs = q.path.substring(i + 12).split('/');
+        const urlargs = q.pathname.substring(i + 12).split('/');
         if (urlargs[0].length != 64) return null;
         const nodeid = 'node/' + domain.id + '/' + urlargs[0];
         const nid = urlargs[0];
