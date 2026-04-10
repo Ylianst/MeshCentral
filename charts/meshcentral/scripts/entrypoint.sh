@@ -2,14 +2,10 @@
 set -euo pipefail
 
 echo "[entrypoint] Creating directories"
-mkdir -p ${MESH_DIR}/meshcentral-data
-mkdir -p ${MESH_DIR}/logs
-mkdir -p ${MESH_DIR}/public
-mkdir -p ${MESH_DIR}/meshcentral-data/plugins/openframe
+mkdir -p ${MESH_DIR}/{meshcentral-data/plugins/openframe,logs,public}
 
-echo "[entrypoint] Installing OpenFrame plugin and migration script"
-cp ${MESH_TEMP_DIR}/plugins/openframe/openframe.js ${MESH_DIR}/meshcentral-data/plugins/openframe/
-cp ${MESH_TEMP_DIR}/plugins/openframe/migrate.js ${MESH_DIR}/meshcentral-data/plugins/openframe/
+echo "[entrypoint] Installing OpenFrame plugins"
+cp ${MESH_TEMP_DIR}/plugins/openframe/* ${MESH_DIR}/meshcentral-data/plugins/openframe/
 
 echo "[entrypoint] Copying config.json from mounted secret"
 cp /tmp/config/config.json ${MESH_DIR}/meshcentral-data/config.json
@@ -42,6 +38,10 @@ if [ ! -f "${MESH_DIR}/meshcentral-data/agentserver-cert-public.crt" ]; then
     if [ -f "${MESH_DIR}/meshcentral-data/agentserver-cert-public.crt" ]; then
       echo "[entrypoint] Certificates generated"
       break
+    fi
+    if [ "$i" -eq 60 ]; then
+      echo "[entrypoint] ERROR: Certificate generation timed out after 60s" >&2
+      exit 1
     fi
     sleep 1
   done

@@ -35,8 +35,7 @@ RUN mkdir -p ${MESH_TEMP_DIR} ${MESH_DIR} ${MESH_INSTALL_DIR} \
 COPY --from=dep-compiler /opt/meshcentral/meshcentral ${MESH_INSTALL_DIR}/meshcentral/
 
 # OpenFrame plugins (entrypoint.sh copies from here into the datapath volume at runtime)
-COPY plugins/openframe.js ${MESH_TEMP_DIR}/plugins/openframe/openframe.js
-COPY plugins/migrate.js ${MESH_TEMP_DIR}/plugins/openframe/migrate.js
+COPY plugins/ ${MESH_TEMP_DIR}/plugins/openframe/
 
 RUN chown -R node:node ${MESH_DIR} ${MESH_TEMP_DIR} ${MESH_INSTALL_DIR}
 

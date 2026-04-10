@@ -156,7 +156,7 @@ function CreateMeshCentralServer(config, args) {
             'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin',
             'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore',
             'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt',
-            'dbpullconfigfiles', 'dbdeleteconfigfiles', 'vaultpushconfigfiles',
+            'dbpullconfigfiles', 'dbdeleteconfigfiles', 'autosyncconfigfiles', 'vaultpushconfigfiles',
             'vaultpullconfigfiles', 'vaultdeleteconfigfiles', 'configkey',
             'loadconfigfromdb', 'npmpath', 'serverid', 'recordencryptionrecode', 'vault',
             'token', 'unsealkey', 'name', 'log', 'dbstats', 'translate', 'createaccount',
