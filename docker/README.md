@@ -61,6 +61,8 @@ Below is a breakdown of environment variables used in this setup.
 | REVERSE_PROXY | "" | Configures reverse proxy support through `certUrl`. |
 | REVERSE_PROXY_TLS_PORT | "443" | Configures reverse proxy TLS port, will be combined with: `REVERSE_PROXY`. |
 | WEBRTC | false | Enables/disables WebRTC support. |
+| TRUSTED_PROXY | "" | Trust forwarded headers from these IPs or domains. |
+| TLS_OFFLOAD | false | When set to true, indicate that TLS is being performed by a device in front of MeshCentral. |
 
 ### Database Configuration
 
