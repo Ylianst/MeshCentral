@@ -245,15 +245,15 @@ function dynamic_config() {
 
     # tlsOffload
     if [[ -n "$TLS_OFFLOAD" ]]; then
-        echo "Setting TLSOffload... - $TLS_OFFLOAD"
+        echo "Setting tlsOffload... - $TLS_OFFLOAD"
 
-        sed -i 's/"_TLSOffload"/"TLSOffload"/' "$CONFIG_FILE"
+        sed -i 's/"_tlsOffload"/"tlsOffload"/' "$CONFIG_FILE"
         jq --arg tls_offload "$TLS_OFFLOAD" \
-            '.settings.TLSOffload = $tls_offload' \
+            '.settings.tlsOffload = $tls_offload' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Invalid or no TLS_OFFLOAD value given, commenting out so default applies... Value(s) given: ${TLS_OFFLOAD:-empty}"
-        sed -i 's/"TLSOffload":/"_TLSOffload":/g' "$CONFIG_FILE"
+        sed -i 's/"tlsOffload":/"_tlsOffload":/g' "$CONFIG_FILE"
     fi
 
     # ALLOW_NEW_ACCOUNTS
