@@ -8501,26 +8501,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
                         getGroups(user.preset, tokenset).then((groups) => {
                             user = Object.assign(user, { 'groups': groups });
-                            //done(null, user);
+							
+							if(strategy.custom.authorities.includes('roles')){
+		                        if(user.roles){
+		                            if(!strategy.custom.authorities.includes('groups')){
+		                                user.groups = user.roles;
+		                            } else {
+		                                user.groups = (user.groups || []).concat(user.roles);
+		                            }
+		                        }
+		                    }
+		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
+		                    done(null, user);
                         }).catch((err) => {
                             let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                             parent.debug('error', `${JSON.stringify(error)}`);
                             parent.authLog('oidcCallback', error.message);
                             user.groups = [];
-                            //done(null, user);
+                            done(null, user);
                         });
                     }
-                    if(strategy.custom.authorities.includes('roles')){
-                        if(user.roles){
-                            if(!strategy.custom.authorities.includes('groups')){
-                                user.groups = user.roles;
-                            } else {
-                                user.groups = (user.groups || []).concat(user.roles);
-                            }
-                        }
-                    }
-                    parent.authLog('OIDC: USER GROUPS/ROLES:', user);
-                    done(null, user);
                 } else {
                     done(null, user);
                 }
