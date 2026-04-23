@@ -14,8 +14,7 @@ function graceful_shutdown() {
 trap graceful_shutdown SIGTERM
 
 function test_url() {
-    wget --spider "$1" &> /dev/null
-    if "$?"; then
+    if wget --spider "$1" &> /dev/null; then
         echo "is ok."
         return 0
     else
