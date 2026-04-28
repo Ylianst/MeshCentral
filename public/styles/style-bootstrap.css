@@ -2568,7 +2568,7 @@ body:not(.fullscreen) .notifiyBox {
     .notification:hover {
         background-color: #EFE8B6;
     }
-      
+
 #notificationBadge {
     box-shadow: -0.1px 1px 2px #000000;
     -webkit-box-shadow: -0.1px 1px 2px #000000;
@@ -3467,14 +3467,14 @@ body:not(.fullscreen) .notifiyBox {
 
 .sidebar .nav-link {
     font-size: xx-large;
-    
+
 }
 
 .nav-link {
     width: unset !important;
 }
 
-.nav { 
+.nav {
     --bs-nav-link-padding-x: 19px !important;
 }
 
@@ -3625,7 +3625,7 @@ body:not(.fullscreen) .notifiyBox {
         padding: 0 !important;
         border-radius: 0 !important;
     }
-    
+
     .userDropdownMenuItem:hover {
         border-radius: unset !important;
     }
@@ -3835,6 +3835,17 @@ body:not(.fullscreen) .notifiyBox {
 
 .userDropdownUISettings .fa-chevron-right.rotated {
     transform: rotate(90deg);
+}
+
+/* Icon customization modal preview */
+.icon-preview-container {
+    align-items: center;
+}
+
+.icon-preview-item {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
 }
 
 @media (min-width: 769px) {
