@@ -56,11 +56,11 @@ function dynamic_config() {
             --arg psql_user "$PSQL_USER" \
             --arg psql_pass "$PSQL_PASS" \
             --arg psql_db "$PSQL_DATABASE" \
-            '.settings.postgres.host = "$psql_host" |
-            .settings.postgres.port = "$psql_port" |
-            .settings.postgres.user = "$psql_user" |
-            .settings.postgres.password = "$psql_pass" |
-            .settings.postgres.database = "$psql_db"' \
+            '.settings.postgres.host = $psql_host |
+            .settings.postgres.port = $psql_port |
+            .settings.postgres.user = $psql_user |
+            .settings.postgres.password = $psql_pass |
+            .settings.postgres.database = $psql_db' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Disabling PostgreSQL-connector..."
@@ -76,11 +76,11 @@ function dynamic_config() {
             --arg mariadb_user "$MARIADB_USER" \
             --arg mariadb_pass "$MARIADB_PASS" \
             --arg mariadb_db "$MARIADB_DATABASE" \
-            '.settings.mariaDB.host = "$mariadb_host" |
-            .settings.mariaDB.port = "$mariadb_port" |
-            .settings.mariaDB.user = "$mariadb_user" |
-            .settings.mariaDB.password = "$mariadb_pass" |
-            .settings.mariaDB.database = "$mariadb_db"' \
+            '.settings.mariaDB.host = $mariadb_host |
+            .settings.mariaDB.port = $mariadb_port |
+            .settings.mariaDB.user = $mariadb_user |
+            .settings.mariaDB.password = $mariadb_pass |
+            .settings.mariaDB.database = $mariadb_db' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Disabling MariaDB-connector..."
