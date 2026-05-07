@@ -168,7 +168,7 @@ WORKDIR /opt/meshcentral
 RUN apt-get update && \
     echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash ca-certificates curl jq nodejs npm tzdata && \
+        bash ca-certificates curl jq nodejs npm tzdata wget && \
     npm install -g npm@latest && \    
     rm -rfv \
         /var/cache/* \
