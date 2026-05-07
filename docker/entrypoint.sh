@@ -292,10 +292,23 @@ function dynamic_config() {
         jq --argjson minify "$MINIFY" \
             '.domains[""].minify = $minify' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
-        #sed -i "s/\"minify\": *[a-z]*/\"minify\": $MINIFY/" "$CONFIG_FILE"
     else
         echo "Invalid or no MINIFY value given, commenting out so default applies... Value(s) given: ${MINIFY:-empty}"
         sed -i 's/"minify":/"_minify":/g' "$CONFIG_FILE"
+    fi
+
+    # FORCE CLASSIC UI
+    FORCE_CLASSIC_UI=${FORCE_CLASSIC_UI,,}
+    if [[ "$FORCE_CLASSIC_UI" =~ ^(true|false)$ ]]; then
+        echo "Setting siteStyle to classic (2)"
+
+        sed -i 's/"_siteStyle"/"siteStyle"/' "$CONFIG_FILE"
+        jq --argjson force_classic_ui "$FORCE_CLASSIC_UI" \
+            '.domains[""].siteStyle = $force_classic_ui' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    else
+        echo "Invalid or no FORCE_CLASSIC_UI value given, commenting out so default applies... Value(s) given: ${FORCE_CLASSIC_UI:-empty}"
+        sed -i 's/"siteStyle":/"_siteStyle":/g' "$CONFIG_FILE"
     fi
 
     cat "$CONFIG_FILE"

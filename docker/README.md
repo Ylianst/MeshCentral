@@ -44,61 +44,68 @@ Below is a breakdown of environment variables used in this setup.
 ### General MeshCentral Configuration
 | Variable | Default Value | Description |
 |----------|--------------|-------------|
-| NODE_ENV | production | Specifies the Node.js environment. |
-| CONFIG_FILE | /opt/meshcentral/meshcentral-data/config.json | Path to the configuration file. |
-| DYNAMIC_CONFIG | false | Enables/disables dynamic configuration. This means config is being rechecked every container restart. False if you want to use your own `config.json` |
-| ALLOW_PLUGINS | false | Enables/disables plugins. |
-| ALLOW_NEW_ACCOUNTS | false | Enables/disables new account creation. |
-| ALLOWED_ORIGIN | false | Enables/disables allowed origin policy. |
-| ARGS | "" | Additional arguments for MeshCentral. |
-| HOSTNAME | localhost | Specifies the hostname. |
-| PORT | 443 | Specifies the port. |
-| REDIR_PORT | 80 | Specifies the redirection port. |
-| IFRAME | false | Enables/disables embedding in an iframe. |
-| LOCAL_SESSION_RECORDING | true | Enables session recording. |
-| MINIFY | true | Minifies the JavaScript and HTML output. |
-| REGEN_SESSIONKEY | false | Regenerates the session key on each restart of the container. |
-| REVERSE_PROXY | "" | Configures reverse proxy support through `certUrl`. |
-| REVERSE_PROXY_TLS_PORT | "443" | Configures reverse proxy TLS port, will be combined with: `REVERSE_PROXY`. |
-| WEBRTC | false | Enables/disables WebRTC support. |
-| TRUSTED_PROXY | "" | Trust forwarded headers from these IPs or domains. |
-| TLS_OFFLOAD | false | When set to true, indicate that TLS is being performed by a device in front of MeshCentral. |
+| `NODE_ENV`| `production` | Specifies the Node.js environment. |
+| `CONFIG_FILE` | `/opt/meshcentral/meshcentral-data/config.json` | Path to the configuration file. |
+| `DYNAMIC_CONFIG` | `false` | Enables/disables dynamic configuration. This means config is being rechecked every container restart. False if you want to use your own `config.json` |
+| `ALLOW_PLUGINS` | `false` | Enables/disables plugins. |
+| `ALLOW_NEW_ACCOUNTS` | `false` | Enables/disables new account creation. |
+| `ALLOWED_ORIGIN` | `false` | Enables/disables allowed origin policy. |
+| `ARGS` | `""` | Additional arguments for MeshCentral. |
+| `HOSTNAME` | `localhost` | Specifies the hostname. |
+| `PORT` | `443` | Specifies the port. |
+| `REDIR_PORT` | `80` | Specifies the redirection port. |
+| `IFRAME` | `false` | Enables/disables embedding in an iframe. |
+| `LOCAL_SESSION_RECORDING` | `true` | Enables session recording. |
+| `MINIFY` | `true` | Minifies the JavaScript and HTML output. |
+| `REGEN_SESSIONKEY` | `false` | Regenerates the session key on each restart of the container. |
+| `REVERSE_PROXY` | `""` | Configures reverse proxy support through `certUrl`. |
+| `REVERSE_PROXY_TLS_PORT` | `443` | Configures reverse proxy TLS port, will be combined with: `REVERSE_PROXY`. |
+| `WEBRTC` | `false` | Enables/disables WebRTC support. |
+| `TRUSTED_PROXY` | `""` | Trust forwarded headers from these IPs or domains. |
+| `TLS_OFFLOAD` | `false` | When set to true, indicate that TLS is being performed by a device in front of MeshCentral. |
+
+### MeshCentral User Interface Configuration Options
+
+| Variable | Default Value | Description |
+| -------- | ------------- | ----------- |
+| `INSTALL_STYLISHUI` | `false` | Wether or not to install the StylishUI reskin of the modern layout (made by Melo). |
+| `FORCE_CLASSIC_UI` | `false` | By default we set the UI to modern, but the classic UI can be forced on. |
 
 ### Database Configuration
 
 #### MeshCentral Database Settings
 | Variable | Default Value | Description |
 |----------|--------------|-------------|
-| USE_MONGODB | false | Enables MongoDB usage. |
-| USE_POSTGRESQL | false | Enables PostgreSQL usage. |
-| USE_MARIADB | false | Enables MariaDB usage. |
+| `USE_MONGODB` | `false` | Enables MongoDB usage. |
+| `USE_POSTGRESQL` | `false` | Enables PostgreSQL usage. |
+| `USE_MARIADB` | `false` | Enables MariaDB usage. |
 
 #### MongoDB Configuration
 | Variable | Default Value | Description |
 |----------|--------------|-------------|
-| MONGO_HOST | "" | MongoDB server hostname. |
-| MONGO_PORT | 27017 | MongoDB server port. |
-| MONGO_USERNAME | "" | MongoDB username. |
-| MONGO_PASS | "" | MongoDB password. |
-| MONGO_URL | "" | Overrides other MongoDB connection settings. |
+| `MONGO_HOST` | `""` | MongoDB server hostname. |
+| `MONGO_PORT` | `27017` | MongoDB server port. |
+| `MONGO_USERNAME` | `""` | MongoDB username. |
+| `MONGO_PASS` | `""` | MongoDB password. |
+| `MONGO_URL` | `""` | Overrides other MongoDB connection settings. |
 
 #### PostgreSQL Configuration
 | Variable | Default Value | Description |
 |----------|--------------|-------------|
-| PSQL_HOST | "" | PostgreSQL server hostname. |
-| PSQL_PORT | 5432 | PostgreSQL server port. |
-| PSQL_USER | "" | PostgreSQL username. |
-| PSQL_PASS | "" | PostgreSQL password. |
-| PSQL_DATABASE | "" | PostgreSQL database name. |
+| `PSQL_HOST` | `""` | PostgreSQL server hostname. |
+| `PSQL_PORT` | `5432` | PostgreSQL server port. |
+| `PSQL_USER` | `""` | PostgreSQL username. |
+| `PSQL_PASS` | `""` | PostgreSQL password. |
+| `PSQL_DATABASE` | `""` | PostgreSQL database name. |
 
 #### MariaDB Configuration
 | Variable | Default Value | Description |
 |----------|--------------|-------------|
-| MARIADB_HOST | "" | MariaDB server hostname. |
-| MARIADB_PORT | 3306 | MariaDB server port. |
-| MARIADB_USER | "" | MariaDB username. |
-| MARIADB_PASS | "" | MariaDB password. |
-| MARIADB_DATABASE | "" | MariaDB database name. |
+| `MARIADB_HOST` | `""` | MariaDB server hostname. |
+| `MARIADB_PORT` | `3306` | MariaDB server port. |
+| `MARIADB_USER` | `""` | MariaDB username. |
+| `MARIADB_PASS` | `""` | MariaDB password. |
+| `MARIADB_DATABASE` | `""` | MariaDB database name. |
 
 ## Deployment Instructions
 

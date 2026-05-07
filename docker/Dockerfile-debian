@@ -118,6 +118,7 @@ ENV ALLOW_PLUGINS="false" \
     PORT="443" \
     REDIR_PORT="80" \
     INSTALL_STYLISHUI="false" \
+    FORCE_CLASSIC_UI="false" \
     IFRAME="false" \
     LOCAL_SESSION_RECORDING="true" \
     MINIFY="true" \
