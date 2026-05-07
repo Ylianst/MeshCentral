@@ -16,7 +16,7 @@ If you want to target versions, you can also target individual versions; such as
 | Variant | Image tag | Full path |
 |---------|-----------|-----------|
 | All database backends | `""` (empty) | `ghcr.io/ylianst/meshcentral:<version>` |
-| No database backens (local only) | `slim` | `ghcr.io/ylianst/meshcentral:<version>-slim` |
+| No database backends (local only) | `slim` | `ghcr.io/ylianst/meshcentral:<version>-slim` |
 | [MongoDB](https://www.mongodb.com/) backend included | `mongodb` | `ghcr.io/ylianst/meshcentral:<version>-mongodb` |
 | [PostgreSQL](https://www.postgresql.org/) backend included | `postgresql` | `ghcr.io/ylianst/meshcentral:<version>-postgresql` |
 | [Mysql](https://www.mysql.com/)/[MariaDB](https://mariadb.org/) backend(s) included | `mysql` | `ghcr.io/ylianst/meshcentral:<version>-mysql` |
