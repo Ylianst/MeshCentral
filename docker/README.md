@@ -15,11 +15,11 @@ If you want to target versions, you can also target individual versions; such as
 
 | Variant | Image tag | Full path |
 |---------|-----------|-----------|
-| All database backends | "" (empty) | ghcr.io/ylianst/meshcentral:\<version\> |
-| No database backens (local only) | slim | ghcr.io/ylianst/meshcentral:\<version\>-slim |
-| [MongoDB](https://www.mongodb.com/) backend included | mongodb | ghcr.io/ylianst/meshcentral:\<version\>-mongodb |
-| [PostgreSQL](https://www.postgresql.org/) backend included | postgresql | ghcr.io/ylianst/meshcentral:\<version\>-postgresql |
-| [Mysql](https://www.mysql.com/)/[MariaDB](https://mariadb.org/) backend(s) included | mysql | ghcr.io/ylianst/meshcentral:\<version\>-mysql |
+| All database backends | `""` (empty) | `ghcr.io/ylianst/meshcentral:\<version\>` |
+| No database backens (local only) | `slim` | `ghcr.io/ylianst/meshcentral:\<version\>-slim` |
+| [MongoDB](https://www.mongodb.com/) backend included | `mongodb` | `ghcr.io/ylianst/meshcentral:\<version\>-mongodb` |
+| [PostgreSQL](https://www.postgresql.org/) backend included | `postgresql` | `ghcr.io/ylianst/meshcentral:\<version\>-postgresql` |
+| [Mysql](https://www.mysql.com/)/[MariaDB](https://mariadb.org/) backend(s) included | `mysql` | `ghcr.io/ylianst/meshcentral:\<version\>-mysql` |
 
 So for a quick example: if you want to get the bleeding edge code with a PostgreSQL backend: `ghcr.io/ylianst/meshcentral:master-postgresql`<br>
 So for another quick example: if you want to get a complete image at the latest released version: `ghcr.io/ylianst/meshcentral:latest`<br>
@@ -69,6 +69,7 @@ Below is a breakdown of environment variables used in this setup.
 | Variable | Default Value | Description |
 | -------- | ------------- | ----------- |
 | `INSTALL_STYLISHUI` | `false` | Wether or not to install the StylishUI reskin of the modern layout (made by Melo). |
+| `STYLISHUI_FORCE_LATEST` | `false` | Option to enable the targeting of the latest possible code from StylishUI. |
 | `FORCE_CLASSIC_UI` | `false` | By default we set the UI to modern, but the classic UI can be forced on. |
 
 ### Database Configuration
@@ -113,6 +114,7 @@ Below is a breakdown of environment variables used in this setup.
 ```sh
 docker run -d \
   -e HOSTNAME=myserver.domain.com \
+  -e PORT=443 \
   -e ALLOW_NEW_ACCOUNTS=true \
   -e USE_MONGODB=true \
   -e MONGO_URL=mongodb://username:password@mongodb:27017/meshcentral \
@@ -158,17 +160,22 @@ DYNAMIC_CONFIG=true
 ALLOW_PLUGINS=false
 ALLOW_NEW_ACCOUNTS=false
 ALLOWED_ORIGIN=false
-ARGS=
 HOSTNAME=localhost
 PORT=443
 REDIR_PORT=80
+INSTALL_STYLISHUI=false
+STYLISHUI_FORCE_LATEST=false
+FORCE_CLASSIC_UI=false
 IFRAME=false
 LOCAL_SESSION_RECORDING=true
 MINIFY=true
-REGEN_SESSIONKEY=false
 REVERSE_PROXY=
 REVERSE_PROXY_TLS_PORT=
+REGEN_SESSIONKEY=false
 WEBRTC=false
+TRUSTED_PROXY=
+TLS_OFFLOAD=false
+ARGS=
 
 # MongoDB Configuration
 USE_MONGODB=false
