@@ -8500,8 +8500,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (strategy.groups && typeof user.preset == 'string') {
                     if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
                         getGroups(user.preset, tokenset).then((groups) => {
-                            //user = Object.assign(user, { 'groups': groups });
-							user.groups = user.groups || [];
+                            user = Object.assign(user, { 'groups': groups });
 							if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
                                 // Check also for roles
 		                        user.groups = (user.groups || []).concat(user.roles);
