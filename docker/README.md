@@ -1,45 +1,47 @@
 # MeshCentral Docker Configuration Guide
 
 > [!NOTE]
-> Out of precaution, DYNAMIC_CONFIG has been disabled by default.<br>
-> The reason why is because when its enabled and a working config without corresponding environment variables gives,<br>
-> Then the container will overwrite it to a incorrect, but working state - perhaps non-working for your environment.
+> Out of precaution, DYNAMIC_CONFIG has been disabled by default.  
+> The reason why is because when its enabled and a working config without corresponding environment variables gives,  
+> Then the container will overwrite it to a incorrect, but working state - perhaps non-working for your environment.  
 
 ## Overview
-This document provides a comprehensive guide to setting up and configuring MeshCentral in a Docker environment.<br>
-It includes available options, security measures, and deployment instructions.
+This document provides a comprehensive guide to setting up and configuring MeshCentral in a Docker environment.  
+It includes available options, security measures, and deployment instructions.  
 
-MeshCentral provides a couple different Docker container variants:<br>
-These variants are pulled through 3 main channels: `master` and `latest`.<br>
-If you want to target versions, you can also target individual versions; such as `1.1.53`.
+MeshCentral provides a couple different Docker container variants:  
+These variants are pulled through 3 main channels: `master` and `latest`.  
+If you want to target versions, you can also target individual versions; such as `1.1.53`.  
 
 | Variant | Image tag | Full path |
 |---------|-----------|-----------|
-| All database backends | `""` (empty) | `ghcr.io/ylianst/meshcentral:\<version\>` |
-| No database backens (local only) | `slim` | `ghcr.io/ylianst/meshcentral:\<version\>-slim` |
-| [MongoDB](https://www.mongodb.com/) backend included | `mongodb` | `ghcr.io/ylianst/meshcentral:\<version\>-mongodb` |
-| [PostgreSQL](https://www.postgresql.org/) backend included | `postgresql` | `ghcr.io/ylianst/meshcentral:\<version\>-postgresql` |
-| [Mysql](https://www.mysql.com/)/[MariaDB](https://mariadb.org/) backend(s) included | `mysql` | `ghcr.io/ylianst/meshcentral:\<version\>-mysql` |
+| All database backends | `""` (empty) | `ghcr.io/ylianst/meshcentral:<version>` |
+| No database backens (local only) | `slim` | `ghcr.io/ylianst/meshcentral:<version>-slim` |
+| [MongoDB](https://www.mongodb.com/) backend included | `mongodb` | `ghcr.io/ylianst/meshcentral:<version>-mongodb` |
+| [PostgreSQL](https://www.postgresql.org/) backend included | `postgresql` | `ghcr.io/ylianst/meshcentral:<version>-postgresql` |
+| [Mysql](https://www.mysql.com/)/[MariaDB](https://mariadb.org/) backend(s) included | `mysql` | `ghcr.io/ylianst/meshcentral:<version>-mysql` |
 
-So for a quick example: if you want to get the bleeding edge code with a PostgreSQL backend: `ghcr.io/ylianst/meshcentral:master-postgresql`<br>
-So for another quick example: if you want to get a complete image at the latest released version: `ghcr.io/ylianst/meshcentral:latest`<br>
-So for another quick example: if you want to get a released version with a MongoDB backend: `ghcr.io/ylianst/meshcentral:latest-mongodb`<br>
-So for another quick example: if you want a very slim image with the latest code and only a local database: `ghcr.io/ylianst/meshcentral:master-slim`<br>
-So as a last example: if you want to get a MariaDB/MySQL backend with MeshCentral version 1.1.53: `ghcr.io/ylianst/meshcentral:1.1.53-mysql`
+Example A: if you want to get the bleeding edge code with a PostgreSQL backend: `ghcr.io/ylianst/meshcentral:master-postgresql`  
+Example B: if you want to get a complete image at the latest released version: `ghcr.io/ylianst/meshcentral:latest`  
+Example C: if you want to get a released version with a MongoDB backend: `ghcr.io/ylianst/meshcentral:latest-mongodb`  
+Example D: if you want a very slim image with the latest code and only a local database: `ghcr.io/ylianst/meshcentral:master-slim`  
+Example E: if you want to get a MariaDB/MySQL backend with MeshCentral version 1.1.53: `ghcr.io/ylianst/meshcentral:1.1.53-mysql`  
 
 ## Persistency
 
-The Docker image has since recently removed its default creation of volumes. It might not be what you want.<br>
-If you still want to use volumes to make data persist across containers use Docker volumes (or Kubernetes PVCs).<br>
-For examples of how to use these volumes, see the examples below. Most data resides inside:
+The Docker image has since recently removed its default creation of volumes. It might not be what you want.  
+If you still want to use volumes to make data persist across containers use Docker volumes (or Kubernetes PVCs).  
+For examples of how to use these volumes, see the examples below. Most data resides inside:  
 
+```yaml
 - /opt/meshcentral/meshcentral-backups
 - /opt/meshcentral/meshcentral-data (most important! Server configurations, certificates, etc... reside here.)
 - /opt/meshcentral/meshcentral-files
 - /opt/meshcentral/meshcentral-web (relevant if you use a custom theme, such as [Stylish-UI](https://github.com/melo-professional/Meshcentral-Stylish-UI))
+```
 
 ## Environment Variables
-Below is a breakdown of environment variables used in this setup.
+Below is a breakdown of environment variables used in this setup.  
 
 ### General MeshCentral Configuration
 | Variable | Default Value | Description |
@@ -214,10 +216,10 @@ docker compose -f ./docker/compose.yaml --env-file .env up -d
 
 # Custom healthchecks at runtime
 
-If you want to add a custom healthcheck post-compilation/with precompiled images, then do the following:<br>
-This all is based on [Docker documentation](https://docs.docker.com/reference/compose-file/services/).
+If you want to add a custom healthcheck post-compilation/with precompiled images, then do the following:  
+This all is based on [Docker documentation](https://docs.docker.com/reference/compose-file/services/).  
 
-Add the following lines to your compose.yaml:
+Add the following lines to your compose.yaml:  
 ```yaml
 services:
   meshcentral:
@@ -234,32 +236,33 @@ services:
       retries: 3
 ```
 
-And if you ever change the port on which MeshCentral *INTERNALLY* runs on please also change the healthcheck either in your compose or self-compiled Dockerfile.<br>
-Also relevant if you change scheme, such as HTTP to HTTPS or vice versa.
+And if you ever change the port on which MeshCentral *INTERNALLY* runs on please also change the healthcheck either in your compose or self-compiled Dockerfile.  
+Also relevant if you change scheme, such as HTTP to HTTPS or vice versa.  
 
 # MeshCentral Docker Build Process
 
-This document explains the build process for the MeshCentral Docker image, along with details on various build arguments and how to use them.
+This document explains the build process for the MeshCentral Docker image, along with details on various build arguments and how to use them.  
 
 ## Build Arguments
 
-The following build arguments are available for customizing the build process:
+The following build arguments are available for customizing the build process:  
 
-- **DISABLE_MINIFY**: Disable HTML/JS minification during the build.
-- **DISABLE_TRANSLATE**: Disable translation of strings in MeshCentral.
-- **INCLUDE_MONGODB_TOOLS**: Include MongoDB client and related tools.
-- **INCLUDE_POSTGRESQL_TOOLS**: Include PostgreSQL client tools.
-- **INCLUDE_MARIADB_TOOLS**: Include MariaDB/MySQL client tools.
-- **PREINSTALL_LIBS**: Pre-install specific libraries like `ssh2`, `nodemailer`, etc.
+- **DISABLE_EXTRACT**: Disable the extraction of the translate.js files.  
+- **DISABLE_MINIFY**: Disable HTML/JS minification during the build.  
+- **DISABLE_TRANSLATE**: Disable translation of strings in MeshCentral.  
+- **INCLUDE_MONGODB_TOOLS**: Include MongoDB client and related tools.  
+- **INCLUDE_POSTGRESQL_TOOLS**: Include PostgreSQL client tools.  
+- **INCLUDE_MARIADB_TOOLS**: Include MariaDB/MySQL client tools.  
+- **PREINSTALL_LIBS**: Pre-install specific libraries like `ssh2`, `nodemailer`, etc.  
 
 ### Build Commands with Arguments
 
-Here are the shell commands to build the Docker image with different configurations.
+Here are the shell commands to build the Docker image with different configurations.  
 
 #### 1. Build with Minify and Translate Disabled
-If you want to disable both HTML/JS minification and translation during the build process, use the following command:
+If you want to disable both HTML/JS minification and translation during the build process, use the following command:  
 > While in the root git location.
 
 ```sh
-docker build -f docker/Dockerfile --build-arg DISABLE_MINIFY=no --build-arg DISABLE_TRANSLATE=no -t meshcentral .
+docker build -f docker/Dockerfile  --build-arg DISABLE_EXTRACT=no --build-arg DISABLE_MINIFY=no --build-arg DISABLE_TRANSLATE=no -t meshcentral .
 ```
