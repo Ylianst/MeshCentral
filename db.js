@@ -768,6 +768,7 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+					sqlDbExec('CREATE INDEX ndxeventidsfkid ON eventids(fkid)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
