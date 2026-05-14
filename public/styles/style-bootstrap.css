@@ -3746,13 +3746,21 @@ body.is-mobile #p13filetable {
     #container,
     .fullscreen #container,
     #column_l,
-    .fullscreen #column_l,
-    #masthead {
+    .fullscreen #column_l {
         width: 100% !important;
         min-width: 0 !important;
         max-width: 100% !important;
         box-sizing: border-box;
         overflow-x: hidden;
+    }
+
+    /* masthead needs overflow:visible so its dropdown menu can extend below it */
+    #masthead {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        overflow: visible;
     }
 
     .fullscreen #container {
