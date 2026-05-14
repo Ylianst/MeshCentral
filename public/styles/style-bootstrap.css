@@ -3526,20 +3526,229 @@ body:not(.fullscreen) .notifiyBox {
     display: none !important;
 }
 
-/* hide .sidebar when on mobile */
+body.is-mobile #page_leftbar { display: none !important; }
+
+body.is-mobile #MainSubMenuSpan,
+body.is-mobile #MeshSubMenuSpan,
+body.is-mobile #EventsSubMenuSpan,
+body.is-mobile #UserSubMenuSpan,
+body.is-mobile #UsersSubMenuSpan,
+body.is-mobile #ServerSubMenuSpan {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    height: 44px !important;
+    z-index: 500 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    background: #113962 !important;
+    border-top: 1px solid #000 !important;
+    display: flex;
+    align-items: stretch;
+}
+
+body.is-mobile #MainSubMenu,
+body.is-mobile #MeshSubMenu,
+body.is-mobile #EventsSubMenu,
+body.is-mobile #UserSubMenu,
+body.is-mobile #UsersSubMenu,
+body.is-mobile #ServerSubMenu {
+    display: inline-flex !important;
+    width: 100% !important;
+    min-width: max-content;
+    height: 44px !important;
+    background: transparent !important;
+}
+
+body.is-mobile .topbar_td {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 44px !important;
+    min-width: 70px !important;
+    width: auto !important;
+    padding: 0 12px !important;
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 13px;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+}
+
+body.is-mobile .topbar_td.style3x {
+    color: rgba(255,255,255,0.7) !important;
+    background: transparent !important;
+}
+
+body.is-mobile .topbar_td.style3x:hover,
+body.is-mobile .topbar_td.style3x:active {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+
+body.is-mobile .topbar_td.style3sel {
+    color: #fff !important;
+    background: rgba(255,255,255,0.18) !important;
+    border-bottom: 3px solid #fff !important;
+}
+
+/* Collapse #topbar to 0 height on mobile */
+body.is-mobile #topbar {
+    height: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide the main navigation row — accessible via the hamburger menu on mobile */
+body.is-mobile #MainMenuSpan { display: none !important; }
+
+/* Footer sits at bottom:0 z-index:1000 and covers the bottom tab bar */
+body.is-mobile #footer { display: none !important; }
+
+/* Content area: pad bottom so the fixed 44px tab bar doesn't overlap */
+body.is-mobile #column_l { padding-bottom: 44px; }
+
+/* Prevent window-level scroll on mobile */
+html.is-mobile,
+body.is-mobile { overflow: hidden !important; }
+
+/* Center the remote desktop canvas inside its container on mobile. */
+body.is-mobile #DeskParent {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+body.is-mobile #Desk {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+/* Canvas area: 66px masthead + ~35px deskarea1 + ~35px deskarea4 + 44px tab-bar padding = 180px.
+   This makes total document height exactly 100vh with no page scroll needed. */
+body.is-mobile #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile .room4submenu #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile.fulldesk #deskarea3x {
+    max-height: 100% !important;
+    height: 100% !important;
+}
+
+/* Top desktop toolbar: compact single row, horizontal scroll for overflow */
+body.is-mobile #deskarea1 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide secondary/non-mobile-friendly items from the top desktop toolbar */
+body.is-mobile #autoconnectbutton1,
+body.is-mobile #connectbutton1rspan,
+body.is-mobile #connectbutton1hspan,
+body.is-mobile #desktopCustomUiButtons,
+body.is-mobile #desktopCustomUpperRight,
+body.is-mobile #deskFocusBtn,
+body.is-mobile .deskareaicon,
+body.is-mobile #idx_deskFullBtn2 { display: none !important; }
+
+/* Bottom desktop toolbar: compact single row, horizontal scroll for overflow */
+body.is-mobile #deskarea4 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    font-size: 12px;
+}
+
+body.is-mobile #deskarea4 .ms-auto { flex-shrink: 0; }
+
+/* Hide keyboard-shortcut selector and secondary icon buttons — not useful on mobile */
+body.is-mobile #deskkeys,
+body.is-mobile #DeskWD,
+body.is-mobile #DeskToolsButton,
+body.is-mobile #DeskLatency,
+body.is-mobile #DeskTimer,
+body.is-mobile #DeskMonitorSelectionSpan,
+body.is-mobile #DeskRecordButton,
+body.is-mobile #DeskSaveImageButton,
+body.is-mobile #DeskBackgroundButton,
+body.is-mobile #DeskGuestShareButton,
+body.is-mobile #DeskInputUnLockedButton,
+body.is-mobile #DeskInputLockedButton { display: none !important; }
+
+
+body.is-mobile.fullscreen #container {
+    width: 100vw !important;
+    min-width: 100vw !important;
+    padding-left: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* In the mobile flex layout, column_l must grow to fill space between
+   masthead and the bottom tab bar; min-height:0 prevents overflow. */
+body.is-mobile.fullscreen #column_l {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* Mobile terminal */
+
+/* deskAdjust() sets termarea3x height via inline style based on desktop layout.
+   On mobile the offsets are different: 66px masthead + ~50px p12title +
+   ~44px areaHead + ~44px areaFoot + 44px bottom-tab-bar = 248px.
+   !important beats the inline style set by JS. */
+body.is-mobile #termarea3x {
+    height: calc(100vh - 252px) !important;
+}
+body.is-mobile #termarea3xdiv {
+    height: calc(100vh - 252px) !important;
+}
+
+/* Terminal toolbar and footer: scroll horizontally instead of wrapping rows */
+body.is-mobile #termTable .areaHead,
+body.is-mobile #termTable .areaFoot {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Tab key button: hidden everywhere except mobile */
+body.is-mobile #tabbutton { display: inline-flex !important; }
+
+/*  Mobile files panel */
+
+/* adjustPanels() sets p13filetable height via inline style for desktop layout.
+   On mobile: 66px masthead + ~52px p13title + ~46px areaHead +
+   ~36px areaHead2 + ~28px areaHead3 + 44px bottom-tab-bar = 272px.
+   !important beats the JS inline style. */
+body.is-mobile #p13filetable {
+    height: calc(100vh - 280px) !important;
+}
+
+/* File action button rows: scroll horizontally instead of wrapping */
+body.is-mobile #p13toolbar .areaHead,
+body.is-mobile #p13toolbar .areaHead2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* These apply on any narrow viewport (desktop narrow window, tablet, phone).
+   Safe to keep as @media because they only adjust visuals, not layout logic. */
 @media (max-width: 768px) {
-    #page_leftbar {
-        display: none !important;
-    }
-
-    .fullscreen #container {
-        width: 100vw !important;
-        min-width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-
     #masthead .title {
         font-size: 22px;
         padding-top: 4px;
@@ -3554,12 +3763,6 @@ body:not(.fullscreen) .notifiyBox {
     .masthead-left {
         gap: 0.5rem;
         max-width: calc(100% - 120px);
-    }
-
-    .masthead-titles-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0;
     }
 
     .masthead-titles-container {
@@ -3585,6 +3788,7 @@ body:not(.fullscreen) .notifiyBox {
         float: none !important;
         text-align: left;
     }
+
     #userDropdown {
         display: flex !important;
     }
@@ -3602,17 +3806,6 @@ body:not(.fullscreen) .notifiyBox {
     }
 
     .userDropdownSubmenu {
-        right: 100%;
-        left: auto;
-        top: 13rem !important;
-        margin-left: 0;
-        margin-right: 4px;
-    }
-    .userDropdownUISettings {
-        position: relative;
-    }
-
-    .userDropdownSubmenu {
         position: static !important;
         right: auto !important;
         left: auto !important;
@@ -3624,6 +3817,10 @@ body:not(.fullscreen) .notifiyBox {
         background-color: transparent !important;
         padding: 0 !important;
         border-radius: 0 !important;
+    }
+
+    .userDropdownUISettings {
+        position: relative;
     }
 
     .userDropdownMenuItem:hover {
@@ -3638,10 +3835,6 @@ body:not(.fullscreen) .notifiyBox {
         margin-right: 40px;
     }
 
-    .notifiyBox:after {
-        margin-right: 40px;
-    }
-
     .notifiyBox:before {
         content: none;
     }
@@ -3649,14 +3842,6 @@ body:not(.fullscreen) .notifiyBox {
     body {
         min-width: 100vw !important;
     }
-
-
-    /* #container {
-        width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    } */
 }
 /* css fixes for select2 */
 /* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {

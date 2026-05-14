@@ -67,6 +67,7 @@
 
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px"
     onload="if (typeof(startup) !== 'undefined') startup();">
+    <script>if ('ontouchstart' in window || navigator.maxTouchPoints > 0) { document.body.classList.add('is-mobile'); document.documentElement.classList.add('is-mobile'); }</script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -973,7 +974,8 @@
                         <div id=DeskParent>
                             <canvas id=Desk width=640 height=480 oncontextmenu="return false"
                                 onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)
-                                onmousewheel=dmousewheel(event)></canvas>
+                                onmousewheel=dmousewheel(event)
+                                ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event)></canvas>
                         </div>
                         <div id=DeskTools>
                             <div id=deskToolsAreaTop>
@@ -1166,6 +1168,9 @@
                                     <input type=button onkeypress="return false" onkeydown="return false"
                                         class="btn btn-primary me-1 btn-sm" id="escbutton"
                                         value="ESC" onclick="termSendKey(27,'escbutton')" />
+                                    <input type=button onkeypress="return false" onkeydown="return false"
+                                        class="btn btn-primary me-1 btn-sm" id="tabbutton"
+                                        value="Tab" onclick="termSendKey(9,'tabbutton')" style="display:none" />
                                     <input type=button onkeypress="return false" onkeydown="return false"
                                         class="btn btn-primary me-1 btn-sm" id="bsbutton"
                                         value="Backspace" onclick="termSendKey(8,'bsbutton')" style="display:none" />
@@ -10356,7 +10361,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    if (desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>'); }
+                    if (desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -10367,6 +10372,7 @@
             if (desktop) { desktop.m.onDisplayinfo = deskDisplayInfo; deskDisplayInfo(desktop.m, desktop.m.displays, desktop.m.selectedDisplay); }
             updateDesktopButtons();
             deskAdjust();
+
             updateMetadata(desktop, 'deskmetadata');
         }
 
@@ -10621,6 +10627,31 @@
                     if (desktopsettings.remotekeymap == true) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
                     //desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
+                    if (document.body.classList.contains('is-mobile')) {
+                        desktop.m.GetPositionOfControl = function(canvas) {
+                            var r = canvas.getBoundingClientRect();
+                            return [r.left + window.scrollX, r.top + window.scrollY];
+                        };
+                        var _origGrab = desktop.m.GrabMouseInput;
+                        var _origUngrab = desktop.m.UnGrabMouseInput;
+                        desktop.m.GrabMouseInput = function() {
+                            _origGrab.call(desktop.m);
+                            var c = desktop.m.CanvasId;
+                            c.ontouchstart = null;
+                            c.ontouchmove = null;
+                            c.ontouchend = null;
+                            c.addEventListener('touchstart', dtouchstart, { passive: false });
+                            c.addEventListener('touchmove', dtouchmove, { passive: false });
+                            c.addEventListener('touchend', dtouchend, { passive: false });
+                        };
+                        desktop.m.UnGrabMouseInput = function() {
+                            var c = desktop.m.CanvasId;
+                            c.removeEventListener('touchstart', dtouchstart);
+                            c.removeEventListener('touchmove', dtouchmove);
+                            c.removeEventListener('touchend', dtouchend);
+                            _origUngrab.call(desktop.m);
+                        };
+                    }
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function (ms) { /* console.log('latency', ms); */ updateSessionTime(); };
                     desktop.contype = 1;
@@ -10838,6 +10869,10 @@
                         deskLastClipboardSent = null;
                     }
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
+                    // On mobile, explicitly request the first screen frame from the agent.
+                    if (document.body.classList.contains('is-mobile')) {
+                        setTimeout(function() { if (desktop && desktop.State === 3) { desktop.m.SendRefresh(); } }, 300);
+                    }
                     break;
                 default:
                     //console.log('Unknown onDesktopStateChange state', state);
@@ -11052,8 +11087,8 @@
                     QS('termTable')['max-height'] = '100%';
                 }
 
-                // If shift is pressed, enter browser full screen.
-                if (e.shiftKey == true) {
+                // On mobile or when shift is pressed, enter browser full screen.
+                if (e.shiftKey == true || document.body.classList.contains('is-mobile')) {
                     enterBrowserFullscreen(Q('body'));
                     browserfullscreen = true;
                 }
@@ -11821,6 +11856,77 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
+
+        // Mobile touch input for remote desktop.
+        // Tap = left click. Long press (500ms, no movement) = right click.
+        var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
+        var dtouchMoved = false;
+        var dtouchLongPressTimer = null;
+
+        function dtouchMakeEvent(clientX, clientY, button) {
+            // GetPositionOfControl is overridden on mobile to use getBoundingClientRect(),
+            // so pageX/pageY built from clientX/Y + scrollX/Y cancel correctly with no addx/addy needed.
+            return {
+                pageX: clientX + window.scrollX,
+                pageY: clientY + window.scrollY,
+                button: button || 0,
+                buttons: 0,
+                which: (button === 2) ? 3 : 1
+            };
+        }
+
+        function dtouchSendClick(clientX, clientY, button) {
+            var ev = dtouchMakeEvent(clientX, clientY, button);
+            if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) {
+                webRtcDesktop.softdesktop.m.mousedown(ev);
+                webRtcDesktop.softdesktop.m.mouseup(ev);
+            } else {
+                desktop.m.mousedown(ev);
+                desktop.m.mouseup(ev);
+            }
+        }
+
+        function dtouchstart(e) {
+            setSessionActivity();
+            dtouchMoved = false;
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchStartX = dtouchLastX = t.clientX;
+            dtouchStartY = dtouchLastY = t.clientY;
+            dtouchLongPressTimer = setTimeout(function() {
+                dtouchLongPressTimer = null;
+                if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                dtouchMoved = true;
+            }, 500);
+        }
+
+        function dtouchmove(e) {
+            setSessionActivity();
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchLastX = t.clientX;
+            dtouchLastY = t.clientY;
+            if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
+                dtouchMoved = true;
+                if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            }
+        }
+
+        function dtouchend(e) {
+            setSessionActivity();
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+            e.preventDefault();
+            if (dtouchMoved || e.changedTouches.length !== 1) return;
+            var t = e.changedTouches[0];
+            dtouchSendClick(t.clientX, t.clientY, 0);
+        }
         function stopProcess(id, name) {
             setModalContent('xxAddAgent', "Process Control", format("Stop process #{0} \"{1}\"?", id, name));
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => stopProcessEx(3, (id + '|' + name)));
@@ -12170,6 +12276,9 @@
                         xterm.loadAddon(xtermimage);
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
+                        if (document.body.classList.contains('is-mobile')) {
+                            Q('termarea3xdiv').addEventListener('touchend', function() { xterm.focus(); });
+                        }
                         if (xtermfit) { xtermfit.fit(); }
                         xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
                         xterm.onResize(function (size) {
