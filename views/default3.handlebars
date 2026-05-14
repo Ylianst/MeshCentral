@@ -1263,19 +1263,37 @@
                                 <input type=button disabled="disabled" id=p13RenameFileButton class="btn btn-primary me-1 btn-sm" value="Rename" onclick="p13renamefile()" />
                                 <input type=button disabled="disabled" id=p13DeleteFileButton class="btn btn-primary me-1 btn-sm" value="Delete" onclick="p13deletefile()" />
                                 <input type=button disabled="disabled" id=p13ViewFileButton class="btn btn-primary me-1 btn-sm" value="Edit" onclick="p13viewfile()" />
-                                <input type=button disabled="disabled" id=p13NewFolderButton class="btn btn-primary me-1 btn-sm" value="New Folder" onclick="p13createfolder()" />
-                                <input type=button disabled="disabled" id=p13NewFileButton class="btn btn-primary me-1 btn-sm" value="New File" onclick="p13createfile()" />
-                                <input type=button disabled="disabled" id=p13UploadButton class="btn btn-primary me-1 btn-sm" value="Upload" onclick="p13uploadFile()" />
-                                <input type=button disabled="disabled" id=p13DownloadButton class="btn btn-primary me-1 btn-sm" value="Download" onclick="p13downloadButton()" />
-                                <input type=button disabled="disabled" id=p13CutButton class="btn btn-primary me-1 btn-sm" value="Cut" onclick="p13copyFile(1)" />
-                                <input type=button disabled="disabled" id=p13CopyButton class="btn btn-primary me-1 btn-sm" value="Copy" onclick="p13copyFile(0)" />
-                                <input type=button disabled="disabled" id=p13PasteButton class="btn btn-primary me-1 btn-sm" value="Paste" onclick="p13pasteFile()" />
-                                <input type=button disabled="disabled" id=p13ZipButton class="btn btn-primary me-1 btn-sm" value="Zip" onclick="p13zipFiles()" />
-                                <input type=button disabled="disabled" id=p13UnzipButton class="btn btn-primary me-1 btn-sm" value="Unzip" onclick="p13unzipFile()" />
-                                <input type=button disabled="disabled" id=p13RefreshButton class="btn btn-primary me-1 btn-sm" value="Refresh" onclick="p13folderup(9999)" />
-                                <input type=button disabled="disabled" id=p13FindButton class="btn btn-primary me-1 btn-sm" value="Find" onclick="p13findfile()" />
-                                <input type=button disabled="disabled" id=p13GoToFolderButton class="btn btn-primary me-1 btn-sm" value="GoTo" onclick="p13gotofolder()" />
-                                <input type=button disabled="disabled" id=p13OpenButton class="btn btn-primary me-1 btn-sm" value="Open" onclick="p13openfilefolder()" />
+                                <input type=button disabled="disabled" id=p13NewFolderButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="New Folder" onclick="p13createfolder()" />
+                                <input type=button disabled="disabled" id=p13NewFileButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="New File" onclick="p13createfile()" />
+                                <input type=button disabled="disabled" id=p13UploadButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Upload" onclick="p13uploadFile()" />
+                                <input type=button disabled="disabled" id=p13DownloadButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Download" onclick="p13downloadButton()" />
+                                <input type=button disabled="disabled" id=p13CutButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Cut" onclick="p13copyFile(1)" />
+                                <input type=button disabled="disabled" id=p13CopyButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Copy" onclick="p13copyFile(0)" />
+                                <input type=button disabled="disabled" id=p13PasteButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Paste" onclick="p13pasteFile()" />
+                                <input type=button disabled="disabled" id=p13ZipButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Zip" onclick="p13zipFiles()" />
+                                <input type=button disabled="disabled" id=p13UnzipButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Unzip" onclick="p13unzipFile()" />
+                                <input type=button disabled="disabled" id=p13RefreshButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Refresh" onclick="p13folderup(9999)" />
+                                <input type=button disabled="disabled" id=p13FindButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Find" onclick="p13findfile()" />
+                                <input type=button disabled="disabled" id=p13GoToFolderButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="GoTo" onclick="p13gotofolder()" />
+                                <input type=button disabled="disabled" id=p13OpenButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Open" onclick="p13openfilefolder()" />
+                                <div class="btn-group me-1 mobileFileActionDropdown">
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <div class="dropdown-menu">
+                                        <button type="button" disabled="disabled" id=p13MobileNewFolderButton class="dropdown-item" onclick="p13createfolder()">New Folder</button>
+                                        <button type="button" disabled="disabled" id=p13MobileNewFileButton class="dropdown-item" onclick="p13createfile()">New File</button>
+                                        <button type="button" disabled="disabled" id=p13MobileUploadButton class="dropdown-item" onclick="p13uploadFile()">Upload</button>
+                                        <button type="button" disabled="disabled" id=p13MobileDownloadButton class="dropdown-item" onclick="p13downloadButton()">Download</button>
+                                        <button type="button" disabled="disabled" id=p13MobileCutButton class="dropdown-item" onclick="p13copyFile(1)">Cut</button>
+                                        <button type="button" disabled="disabled" id=p13MobileCopyButton class="dropdown-item" onclick="p13copyFile(0)">Copy</button>
+                                        <button type="button" disabled="disabled" id=p13MobilePasteButton class="dropdown-item" onclick="p13pasteFile()">Paste</button>
+                                        <button type="button" disabled="disabled" id=p13MobileZipButton class="dropdown-item" onclick="p13zipFiles()">Zip</button>
+                                        <button type="button" disabled="disabled" id=p13MobileUnzipButton class="dropdown-item" onclick="p13unzipFile()">Unzip</button>
+                                        <button type="button" disabled="disabled" id=p13MobileRefreshButton class="dropdown-item" onclick="p13folderup(9999)">Refresh</button>
+                                        <button type="button" disabled="disabled" id=p13MobileFindButton class="dropdown-item" onclick="p13findfile()">Find</button>
+                                        <button type="button" disabled="disabled" id=p13MobileGoToFolderButton class="dropdown-item" onclick="p13gotofolder()">GoTo</button>
+                                        <button type="button" disabled="disabled" id=p13MobileOpenButton class="dropdown-item" onclick="p13openfilefolder()">Open</button>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -12957,6 +12975,21 @@
             QV('p13ZipButton', filesNode.mtype != 3);
             QV('p13UnzipButton', filesNode.mtype != 3);
             QV('p13PasteButton', filesNode.mtype != 3);
+            [
+                ['p13NewFolderButton', 'p13MobileNewFolderButton'],
+                ['p13NewFileButton', 'p13MobileNewFileButton'],
+                ['p13UploadButton', 'p13MobileUploadButton'],
+                ['p13DownloadButton', 'p13MobileDownloadButton'],
+                ['p13CutButton', 'p13MobileCutButton'],
+                ['p13CopyButton', 'p13MobileCopyButton'],
+                ['p13PasteButton', 'p13MobilePasteButton'],
+                ['p13ZipButton', 'p13MobileZipButton'],
+                ['p13UnzipButton', 'p13MobileUnzipButton'],
+                ['p13RefreshButton', 'p13MobileRefreshButton'],
+                ['p13FindButton', 'p13MobileFindButton'],
+                ['p13GoToFolderButton', 'p13MobileGoToFolderButton'],
+                ['p13OpenButton', 'p13MobileOpenButton']
+            ].forEach(function (x) { QE(x[1], !Q(x[0]).disabled); });
         }
 
         function p13getFileSelCount(includeDirs) { var cc = 0; var checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }

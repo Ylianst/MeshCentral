@@ -1411,6 +1411,10 @@ NoMeshesPanel img {
     background-color: #DDD;
 }
 
+.mobileFileActionDropdown {
+    display: none !important;
+}
+
 .pwState {
     display: table-cell;
     height: 16px;
@@ -3738,14 +3742,6 @@ body.is-mobile #p13filetable {
     height: calc(100vh - 280px) !important;
 }
 
-/* File action button rows: scroll horizontally instead of wrapping */
-body.is-mobile #p13toolbar .areaHead,
-body.is-mobile #p13toolbar .areaHead2 {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
 /* These apply on any narrow viewport (desktop narrow window, tablet, phone). */
 @media (max-width: 768px) {
     #container,
@@ -3817,6 +3813,41 @@ body.is-mobile #p13toolbar .areaHead2 {
     #p10info #MainComputerImage {
         width: 120px;
         height: 120px;
+    }
+
+    #p13toolbar,
+    #p13toolbar tbody,
+    #p13toolbar tr,
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2 {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2,
+    #p13toolbar .areaHead > .d-flex,
+    #p13toolbar .areaHead2 > .d-flex {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        min-width: 0;
+    }
+
+    #p13toolbar .areaHead input,
+    #p13toolbar .areaHead button,
+    #p13toolbar .areaHead2 input,
+    #p13toolbar .areaHead2 button {
+        margin-bottom: 4px;
+    }
+
+    .desktopFileAction {
+        display: none !important;
+    }
+
+    .mobileFileActionDropdown {
+        display: inline-flex !important;
     }
 
     #MainMeshImage /*, #p2AccountImageFrame */ {
