@@ -3689,8 +3689,8 @@ body.is-mobile #DeskInputLockedButton { display: none !important; }
 
 
 body.is-mobile.fullscreen #container {
-    width: 100vw !important;
-    min-width: 100vw !important;
+    width: 100% !important;
+    min-width: 0 !important;
     padding-left: 0 !important;
     display: flex !important;
     flex-direction: column !important;
@@ -3746,9 +3746,24 @@ body.is-mobile #p13toolbar .areaHead2 {
     -webkit-overflow-scrolling: touch;
 }
 
-/* These apply on any narrow viewport (desktop narrow window, tablet, phone).
-   Safe to keep as @media because they only adjust visuals, not layout logic. */
+/* These apply on any narrow viewport (desktop narrow window, tablet, phone). */
 @media (max-width: 768px) {
+    #container,
+    .fullscreen #container,
+    #column_l,
+    .fullscreen #column_l,
+    #masthead {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .fullscreen #container {
+        grid-template-columns: 70px minmax(0, 1fr);
+    }
+
     #masthead .title {
         font-size: 22px;
         padding-top: 4px;
@@ -3777,6 +3792,33 @@ body.is-mobile #p13toolbar .areaHead2 {
         background-repeat: no-repeat !important;
         padding-right: 20px !important;
     }
+
+    #p10info {
+        overflow-x: hidden !important;
+    }
+
+    #p10info > table {
+        table-layout: fixed;
+    }
+
+    #p10info > table > tbody > tr > td:first-child {
+        width: calc(100% - 140px) !important;
+    }
+
+    #p10info > table > tbody > tr > td:nth-child(2),
+    #p10info > table > tbody > tr > td:nth-child(3) {
+        width: 0 !important;
+    }
+
+    #p10info > table > tbody > tr > td:nth-child(4) {
+        width: 140px !important;
+    }
+
+    #p10info #MainComputerImage {
+        width: 120px;
+        height: 120px;
+    }
+
     #MainMeshImage /*, #p2AccountImageFrame */ {
         /* text-align: center !important; */
         float: none !important;
@@ -3840,7 +3882,7 @@ body.is-mobile #p13toolbar .areaHead2 {
     }
 
     body {
-        min-width: 100vw !important;
+        min-width: 0 !important;
     }
 }
 /* css fixes for select2 */

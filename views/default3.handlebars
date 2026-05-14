@@ -8856,9 +8856,9 @@
 
                 x += '</table><br />';
                 // Show action button, only show if we have permissions 4, 8, 64
-                if (((meshrights & (4 + 8 + 64 + 262144)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
-                x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
-                x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
+                if (((meshrights & (4 + 8 + 64 + 262144)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
+                x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
+                x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
                 if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button class="btn btn-primary btn-sm me-2" cmenu=deskPreConfigScriptContextMenu value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
                 if (node.mtype != 4) {
                     if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />'; }
