@@ -3657,17 +3657,20 @@ body.is-mobile #deskarea1 {
     -webkit-overflow-scrolling: touch;
 }
 
-/* Hide secondary/non-mobile-friendly items from the top desktop toolbar */
+/* Hide secondary/non-mobile-friendly items from the top desktop toolbar.
+   .deskareaicon (rotate L/R, view mode toggle) are kept — useful on mobile.
+   #idx_deskFullBtn2 (exit fullscreen ✖) shown only when actually in fullscreen. */
 body.is-mobile #autoconnectbutton1,
 body.is-mobile #connectbutton1rspan,
 body.is-mobile #connectbutton1hspan,
 body.is-mobile #desktopCustomUiButtons,
 body.is-mobile #desktopCustomUpperRight,
-body.is-mobile #deskFocusBtn,
-body.is-mobile .deskareaicon,
-body.is-mobile #idx_deskFullBtn2 { display: none !important; }
+body.is-mobile #deskFocusBtn { display: none !important; }
 
-/* Bottom desktop toolbar: compact single row, horizontal scroll for overflow */
+body.is-mobile #idx_deskFullBtn2 { display: none !important; }
+body.is-mobile.fulldesk #idx_deskFullBtn2 { display: block !important; }
+
+/* Bottom desktop toolbar: compact single row */
 body.is-mobile #deskarea4 {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
@@ -3675,21 +3678,17 @@ body.is-mobile #deskarea4 {
     font-size: 12px;
 }
 
-body.is-mobile #deskarea4 .ms-auto { flex-shrink: 0; }
-
-/* Hide keyboard-shortcut selector and secondary icon buttons — not useful on mobile */
+/* Hide keyboard-shortcut selector — not useful on mobile */
 body.is-mobile #deskkeys,
-body.is-mobile #DeskWD,
-body.is-mobile #DeskToolsButton,
-body.is-mobile #DeskLatency,
-body.is-mobile #DeskTimer,
-body.is-mobile #DeskMonitorSelectionSpan,
-body.is-mobile #DeskRecordButton,
-body.is-mobile #DeskSaveImageButton,
-body.is-mobile #DeskBackgroundButton,
-body.is-mobile #DeskGuestShareButton,
-body.is-mobile #DeskInputUnLockedButton,
-body.is-mobile #DeskInputLockedButton { display: none !important; }
+body.is-mobile #DeskWD { display: none !important; }
+
+/* Move Actions + Settings into the "ellipsis-vertical" panel on mobile */
+body.is-mobile #deskActionsBtn,
+body.is-mobile #deskActionsSettings { display: none !important; }
+
+/* Replace the desktop icon spray with the "ellipsis-vertical" dropdown on mobile */
+body.is-mobile #deskarea4Icons { display: none !important; }
+body.is-mobile #deskMobileActions { display: flex !important; }
 
 
 body.is-mobile.fullscreen #container {

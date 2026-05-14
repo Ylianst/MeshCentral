@@ -1019,7 +1019,13 @@
                             <input id="DeskType" class="btn btn-secondary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
                             <div id="DeskControlSpan" title="Toggle mouse and keyboard input" class="form-check"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()"><label class="form-check-label" for="DeskControl">Input</label></div>&nbsp;
                         </div>
-                        <div class="d-flex ms-auto align-items-center">
+                        <!-- Mobile-only "ellipsis-vertical" button — opens a fixed-position action panel -->
+                        <div id="deskMobileActions" class="ms-2" style="display:none">
+                            <button class="btn btn-secondary btn-sm" type="button" onclick="deskToggleMobileActions()" title="More actions">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+                        <div id="deskarea4Icons" class="d-flex ms-auto align-items-center">
                             <span id=DeskMonitorSelectionSpan></span>
                             <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
                             <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
@@ -1066,7 +1072,20 @@
                             <span id=DeskRunButton cmenu="deskPreConfigScriptContextMenu" class="deskarea" title="Run a script on this computer" role="button">
                                 <i class="fa-solid fa-fw fa-play" onclick=runDeviceCmd()></i>
                             </span>
-                        </div>
+                        </div><!-- /deskarea4Icons -->
+                    </div>
+                    <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
+                    <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
+                    <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskRefreshFunction();deskCloseMobileActions()"><i class="fa-solid fa-rotate fa-fw me-2 text-primary"></i>Refresh Desktop</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskClipboardOutFunction();deskCloseMobileActions()"><i class="fa-solid fa-clipboard fa-fw me-2 text-primary"></i>Upload Clipboard</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceUrlFunction();deskCloseMobileActions()"><i class="fa-solid fa-globe fa-fw me-2 text-primary"></i>Open URL on Remote</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceLockFunction();deskCloseMobileActions()"><i class="fa-solid fa-lock fa-fw me-2 text-primary"></i>Lock Remote</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceToastFunction();deskCloseMobileActions()"><i class="fa-solid fa-bell fa-fw me-2 text-primary"></i>Send Notification</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceChat(event);deskCloseMobileActions()"><i class="fa-solid fa-message fa-fw me-2 text-primary"></i>Chat</a>
+                        <a class="d-block px-3 py-2 text-decoration-none" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="runDeviceCmd();deskCloseMobileActions()"><i class="fa-solid fa-play fa-fw me-2 text-primary"></i>Run Script</a>
                     </div>
                 </div>
             </div>
@@ -9529,6 +9548,18 @@
             desktop.m.SendRefresh();
         }
 
+        function deskToggleMobileActions() {
+            var panel = Q('deskMobileActionsPanel'), backdrop = Q('deskMobileActionsBackdrop');
+            if (!panel) return;
+            var show = (panel.style.display === 'none');
+            QV('deskMobileActionsPanel', show);
+            QV('deskMobileActionsBackdrop', show);
+        }
+        function deskCloseMobileActions() {
+            QV('deskMobileActionsPanel', false);
+            QV('deskMobileActionsBackdrop', false);
+        }
+
         function deviceToastFunction() {
             if (xxdialogMode) return;
             var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px class=form-select><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
@@ -10887,9 +10918,23 @@
                         deskLastClipboardSent = null;
                     }
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
-                    // On mobile, explicitly request the first screen frame from the agent.
+                    // On mobile, wake the agent to start streaming.
+                    // SendRefresh alone is sometimes ignored before the first mouse event.
+                    // Synthetic mousedown+mouseup guarantees the agent starts sending frames.
                     if (document.body.classList.contains('is-mobile')) {
-                        setTimeout(function() { if (desktop && desktop.State === 3) { desktop.m.SendRefresh(); } }, 300);
+                        setTimeout(function() {
+                            if (!desktop || desktop.State !== 3) return;
+                            desktop.m.SendRefresh();
+                            var dm = desktop.m;
+                            if (dm && dm.CanvasId) {
+                                var r = dm.CanvasId.getBoundingClientRect();
+                                if (r.width > 0) {
+                                    var ev = { pageX: r.left + window.scrollX + r.width / 2, pageY: r.top + window.scrollY + r.height / 2, button: 0, buttons: 0, which: 1 };
+                                    dm.mousedown(ev);
+                                    dm.mouseup(ev);
+                                }
+                            }
+                        }, 500);
                     }
                     break;
                 default:
@@ -11876,40 +11921,57 @@
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
 
         // Mobile touch input for remote desktop.
-        // Tap = left click. Long press (500ms, no movement) = right click.
+        // 1-finger tap          = left click on remote
+        // 1-finger long press   = right click on remote
+        // 1-finger drag         = move remote cursor (when Input enabled)
+        // 2-finger scroll       = mouse wheel on remote (natural scroll direction)
         var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
         var dtouchMoved = false;
         var dtouchLongPressTimer = null;
+        var dtouchTwoFingerLastY = 0;
 
         function dtouchMakeEvent(clientX, clientY, button) {
-            // GetPositionOfControl is overridden on mobile to use getBoundingClientRect(),
-            // so pageX/pageY built from clientX/Y + scrollX/Y cancel correctly with no addx/addy needed.
-            return {
-                pageX: clientX + window.scrollX,
-                pageY: clientY + window.scrollY,
-                button: button || 0,
-                buttons: 0,
-                which: (button === 2) ? 3 : 1
-            };
+            // When the canvas is rotated, crotX/crotY (agent-desktop-0.0.2.js) convert
+            // canvas-pixel space -> remote-desktop space. We apply that correction here by
+            // computing adjusted clientX/Y that will produce the correct remote coords after
+            // SendMouseMsg's (pageX - offset) * scale calculation.
+            var adjX = clientX, adjY = clientY;
+            var dm = dtouchGetModule();
+            if (dm && dm.rotation && dm.CanvasId && dm.Canvas && dm.crotX && dm.crotY) {
+                var r = dm.CanvasId.getBoundingClientRect();
+                if (r.width > 0 && r.height > 0) {
+                    var cw = dm.Canvas.canvas.width, ch = dm.Canvas.canvas.height;
+                    var px = (clientX - r.left) * cw / r.width;
+                    var py = (clientY - r.top)  * ch / r.height;
+                    var rx = dm.crotX(px, py), ry = dm.crotY(px, py);
+                    adjX = r.left + rx * r.width  / cw;
+                    adjY = r.top  + ry * r.height / ch;
+                }
+            }
+            return { pageX: adjX + window.scrollX, pageY: adjY + window.scrollY, button: button || 0, buttons: 0, which: (button === 2) ? 3 : 1 };
+        }
+
+        function dtouchGetModule() {
+            return (webRtcDesktop && webRtcDesktop.softdesktop) ? webRtcDesktop.softdesktop.m : (desktop ? desktop.m : null);
         }
 
         function dtouchSendClick(clientX, clientY, button) {
             var ev = dtouchMakeEvent(clientX, clientY, button);
-            if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) {
-                webRtcDesktop.softdesktop.m.mousedown(ev);
-                webRtcDesktop.softdesktop.m.mouseup(ev);
-            } else {
-                desktop.m.mousedown(ev);
-                desktop.m.mouseup(ev);
-            }
+            var dm = dtouchGetModule();
+            if (dm) { dm.mousedown(ev); dm.mouseup(ev); }
         }
 
         function dtouchstart(e) {
             setSessionActivity();
+            deskCloseMobileActions();
             dtouchMoved = false;
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
+            if (e.touches.length === 2) {
+                dtouchTwoFingerLastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                return;
+            }
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
             dtouchStartX = dtouchLastX = t.clientX;
@@ -11926,6 +11988,22 @@
             setSessionActivity();
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
+            if (e.touches.length === 2) {
+                // Two-finger: send mouse-wheel to remote (natural scroll: swipe up = scroll down)
+                var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                var dy = dtouchTwoFingerLastY - midY; // positive = fingers moved up
+                dtouchTwoFingerLastY = midY;
+                if (Math.abs(dy) > 1 && Q('DeskControl').checked) {
+                    var dm = dtouchGetModule();
+                    if (dm && dm.SendMouseMsg && dm.KeyAction) {
+                        var wev = dtouchMakeEvent(midX, midY, 0);
+                        wev.wheelDelta = -dy * 4; // negative: swipe up -> scroll down
+                        dm.SendMouseMsg(dm.KeyAction.SCROLL, wev);
+                    }
+                }
+                return;
+            }
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
             dtouchLastX = t.clientX;
@@ -11933,6 +12011,11 @@
             if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            }
+            // One-finger drag: move remote cursor when Input is enabled
+            if (dtouchMoved && Q('DeskControl').checked) {
+                var dm = dtouchGetModule();
+                if (dm) { dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
             }
         }
 
