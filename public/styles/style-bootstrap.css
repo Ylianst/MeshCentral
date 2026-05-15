@@ -3848,6 +3848,14 @@ body.is-mobile #p13filetable {
         row-gap: 4px;
     }
 
+    #p13toolbar .areaHead {
+        column-gap: 4px;
+    }
+
+    #p13toolbar .areaHead > .d-flex.ms-auto {
+        margin-left: 0 !important;
+    }
+
     #p13toolbar .areaHead input,
     #p13toolbar .areaHead button,
     #p13toolbar .areaHead2 input,
