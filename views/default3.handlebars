@@ -867,7 +867,7 @@
                     <div id="p10BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>General - <span id=p10deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-circle-info fa-sm me-2 text-secondary"></i>General - <span id=p10deviceName></span></div>
                 </div>
                 <div id=p10info style="overflow-y:auto" class="pt-3">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -914,7 +914,7 @@
                     <div id="p11BackButton" class="pe-2">
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Desktop - <span id=p11deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-display fa-sm me-2 text-secondary"></i>Desktop - <span id=p11deviceName></span></div>
                     <div id="p11KeyboardLights" style="font-size:x-small;color:black" class="ms-auto pe-2">
                         <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                         <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
@@ -1115,7 +1115,7 @@
                     <div id="p12BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Terminal - <span id=p12deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-terminal fa-sm me-2 text-secondary"></i>Terminal - <span id=p12deviceName></span></div>
                     <div id="devListToolbarViewIcons2" class="ms-auto">
                         <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
@@ -1256,7 +1256,7 @@
                     <div id="p13BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Files - <span id=p13deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-folder-open fa-sm me-2 text-secondary"></i>Files - <span id=p13deviceName></span></div>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -1445,7 +1445,7 @@
                     <div id="p16BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Events - <span id=p16deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-calendar fa-sm me-2 text-secondary"></i>Events - <span id=p16deviceName></span></div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1482,7 +1482,7 @@
                     <div id="p17BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Details - <span id=p17deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-list fa-sm me-2 text-secondary"></i>Details - <span id=p17deviceName></span></div>
                     <div id="devListToolbarViewIcons3" class="ms-auto">
                         <i class="fa-solid fa-rotate-right fa-xl fa-border" role="button" onclick=refreshDetails(event) title="Refresh details information."></i>
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
@@ -8646,7 +8646,7 @@
                 if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
                 nnameEx = nname;
-                if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
+                if (mesh) { nname += '<span class="deviceGroupName" style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
                 QH('p10deviceName', nname);
                 QH('p11deviceName', nname);
                 QH('p12deviceName', nname);

@@ -3569,7 +3569,10 @@ body.is-mobile #ServerSubMenu {
 }
 
 body.is-mobile .topbar_td {
-    display: inline-flex !important;
+    /* No display override here — the parent #MainSubMenu is display:flex so children
+       are already flex items. Crucially, we must NOT set display:inline-flex !important
+       or it would override QV()'s inline display:none, making hidden tabs (Intel AMT,
+       Plugins, etc.) visible regardless of permissions/feature flags. */
     align-items: center !important;
     justify-content: center !important;
     height: 44px !important;
@@ -3613,12 +3616,350 @@ body.is-mobile #MainMenuSpan { display: none !important; }
 /* Footer sits at bottom:0 z-index:1000 and covers the bottom tab bar */
 body.is-mobile #footer { display: none !important; }
 
-/* Content area: pad bottom so the fixed 44px tab bar doesn't overlap */
-body.is-mobile #column_l { padding-bottom: 44px; }
+/* Container: full width, no side borders/margins. */
+body.is-mobile #container {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    padding-left: 0 !important;
+    grid-template-columns: 0 1fr !important;
+    grid-template-rows: 66px 0 auto 0 !important;
+}
 
-/* Prevent window-level scroll on mobile */
+/* Content area: pad bottom so the fixed 44px tab bar doesn't overlap content */
+/* column_l: zero horizontal padding so structural bars (toolbars, title bars,
+   canvas, terminal) stretch edge-to-edge like a native app. Bottom padding
+   reserves space for the fixed 44px tab bar. */
+body.is-mobile #column_l {
+    padding: 0 0 44px 0 !important;
+}
+
+/* Content areas: 10px breathing room so text/cards/tables don't press against
+   screen edges. Structural bars, canvas, terminal stay full-width (not listed). */
+body.is-mobile #p10info,
+body.is-mobile #p2info,
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap,
+body.is-mobile #p3events,
+body.is-mobile #p3users,
+body.is-mobile #p50groups,
+body.is-mobile #serverMainStats,
+body.is-mobile #p5filetable,
+body.is-mobile #p13filetable,
+body.is-mobile #p16events,
+body.is-mobile #p17info,
+body.is-mobile #p15agentConsole,
+body.is-mobile #p15agentConsoleText {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+/* Details tab: section header icons are 64px — too large on a phone.
+   The JS renders each section as <img src=details/xxx64.png width=64> in a
+   <td style=width:64px> table cell. Shrink to 32px on mobile. */
+body.is-mobile #p17info img[src*="details/"] {
+    width: 32px !important;
+    height: 32px !important;
+}
+body.is-mobile #p17info td[style*="width:64px"] {
+    width: 36px !important;
+}
+
+/* Panel title bar: full-width, masthead-integrated
+   #column_l has padding: 0 15px which makes everything 30px narrower than the
+   screen. Negative margins break the title bars out to true full width.
+   Back button: flush to left screen edge, masthead blue (#036), rounded on
+   the right only — visually "attached" to the masthead above. */
+
+body.is-mobile #p10title,
+body.is-mobile #p11title,
+body.is-mobile #p12title,
+body.is-mobile #p13title,
+body.is-mobile #p14title,
+body.is-mobile #p15title,
+body.is-mobile #p16title,
+body.is-mobile #p17title,
+body.is-mobile #p19title {
+    padding: 0 12px 0 0 !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
+    align-items: stretch !important;
+    gap: 0;
+}
+
+/* Option bars (areaHead) below the title bar: slightly tinted so they're
+   visually distinct from the pure-white title bar. Overrides --sub-menu-bg
+   (the white gradient) for a consistent look on all device panels. */
+body.is-mobile { --sub-menu-bg: #f0f2f5; }
+
+/* Night mode: keep the white title bar (it reads well as a card against the
+   dark column_l background). Only adjust the separator line colour. */
+body.night.is-mobile #p10title, body.night.is-mobile #p11title,
+body.night.is-mobile #p12title, body.night.is-mobile #p13title,
+body.night.is-mobile #p14title, body.night.is-mobile #p15title,
+body.night.is-mobile #p16title, body.night.is-mobile #p17title,
+body.night.is-mobile #p19title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* Back button: flush to screen left edge, masthead colour, pill-shaped right side */
+body.is-mobile #p10BackButton,
+body.is-mobile #p11BackButton,
+body.is-mobile #p12BackButton,
+body.is-mobile #p13BackButton,
+body.is-mobile #p14BackButton,
+body.is-mobile #p15BackButton,
+body.is-mobile #p16BackButton,
+body.is-mobile #p17BackButton,
+body.is-mobile #p19BackButton {
+    background: #036;
+    border-radius: 0 0 12px 0;
+    padding: 0 14px !important;
+    margin: 0 12px 0 0;
+    display: flex !important;
+    align-items: center;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+body.is-mobile #p10BackButton .fa-square-caret-left,
+body.is-mobile #p11BackButton .fa-square-caret-left,
+body.is-mobile #p12BackButton .fa-square-caret-left,
+body.is-mobile #p13BackButton .fa-square-caret-left,
+body.is-mobile #p14BackButton .fa-square-caret-left,
+body.is-mobile #p15BackButton .fa-square-caret-left,
+body.is-mobile #p16BackButton .fa-square-caret-left,
+body.is-mobile #p17BackButton .fa-square-caret-left,
+body.is-mobile #p19BackButton .fa-square-caret-left {
+    color: #fff !important;
+    font-size: 1.2rem !important;
+}
+
+/* Title text: 1rem, dark, vertically centred, truncates with … when too long.
+   flex:1 + min-width:0 allows the text to shrink in the flex row. */
+body.is-mobile #p10title .fs-4,
+body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4,
+body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4,
+body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4,
+body.is-mobile #p17title .fs-4,
+body.is-mobile #p19title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Right-side icon containers in title bars: always a single horizontal row, never shrink. */
+body.is-mobile #devListToolbarViewIcons,
+body.is-mobile #devListToolbarViewIcons2,
+body.is-mobile #devListToolbarViewIcons3 {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Hide group/mesh name: JS appends <span class="deviceGroupName"> - GroupName </span> */
+body.is-mobile .deviceGroupName { display: none !important; }
+
+/* adjustPanels() computes panel heights from 100vh without knowing about the
+   44px fixed tab bar on mobile. Override each panel to add 44px to the offset
+   so content stops above the tab bar. !important beats the JS inline style. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap     { max-height: calc(100vh - 90px)  !important; }
+/* adjustPanels() sizes panels using calc(100vh - N). These overrides keep the
+   same N but use 100dvh so the browser URL bar is accounted for. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap     { max-height: calc(100dvh - 241px) !important; }
+body.is-mobile #p2info          { height:     calc(100dvh - 215px) !important;
+                                  max-height: calc(100dvh - 215px) !important; }
+body.is-mobile #p3events        { height:     calc(100dvh - 245px) !important; }
+body.is-mobile #p3users,
+body.is-mobile #p50groups       { max-height: calc(100dvh - 245px) !important; }
+body.is-mobile #serverMainStats { height:     calc(100dvh - 245px) !important;
+                                  max-height: calc(100dvh - 245px) !important; }
+body.is-mobile #p5filetable     { height:     calc(100dvh - 294px) !important; }
+
+/* All device panels: flex column that fills column_l's content height.
+   IMPORTANT: display and flex-direction must NOT have !important here.
+   QV() hides panels with element.style.display='none' (inline style).
+   CSS !important beats inline styles, so display:flex !important would
+   make panels impossible to hide and break tab navigation. Without
+   !important, inline style.display='none' correctly overrides the CSS. */
+body.is-mobile #p10,
+body.is-mobile #p11,
+body.is-mobile #p12,
+body.is-mobile #p13,
+body.is-mobile #p15,
+body.is-mobile #p16,
+body.is-mobile #p17 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Title bars: never collapse */
+body.is-mobile #p10title, body.is-mobile #p11title, body.is-mobile #p12title,
+body.is-mobile #p13title, body.is-mobile #p15title,
+body.is-mobile #p16title, body.is-mobile #p17title { flex-shrink: 0 !important; }
+
+/* p10 General: p10info fills remaining space and scrolls internally */
+body.is-mobile #p10info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p11 Desktop: same flex-column pattern as Console.
+   deskarea0 fills p11's remaining height as a flex column:
+     deskarea1 (connect bar)  -> flex-shrink:0, natural height
+     deskarea3x (canvas)      -> flex:1, fills all remaining space
+     deskarea4 (controls bar) -> flex-shrink:0, always visible at bottom
+   No !important on display/flex-direction so QV() can still hide deskarea0
+   if ever needed, but !important is fine for the structural properties. */
+body.is-mobile #deskarea0 {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+}
+body.is-mobile #deskarea1 { flex-shrink: 0 !important; }
+body.is-mobile #deskarea4 { flex-shrink: 0 !important; }
+body.is-mobile #deskarea3x,
+body.is-mobile .room4submenu #deskarea3x {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+
+/* p12 Terminal: termTable (div) fills remaining space; inner <table> is
+   absolutely positioned to span 100% so CSS table sizing distributes rows:
+   areaHead row -> min-height; termarea3x row -> fills remainder; areaFoot -> min-height */
+body.is-mobile #termTable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+body.is-mobile #termTable > table {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+body.is-mobile #termarea3x {
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+body.is-mobile #termarea3xdiv { height: 100% !important; }
+
+/* p15 Console: override CSS table display to flex-column so row heights
+   distribute correctly. display:flex on <table>/<tbody> is well-supported
+   and gives us proper flex semantics (no table-height-distribution quirks).
+   Row order: areaHead(shrink) | areaProgress(shrink) | output(flex:1) | input(shrink) */
+body.is-mobile #consoleTable {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+}
+body.is-mobile #consoleTable > tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+}
+/* All rows: block, don't grow (single-td rows so display:block is fine) */
+body.is-mobile #consoleTable > tbody > tr {
+    display: block !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+}
+/* td cells: when tr is display:block, td loses automatic table-cell width.
+   Make all td elements full-width block elements. */
+body.is-mobile #consoleTable > tbody > tr > td {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* Output row (3rd): fills all remaining space */
+body.is-mobile #consoleTable > tbody > tr:nth-child(3) {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+}
+/* p15agentConsole td: fills the flex output row, scrolls its content */
+body.is-mobile #p15agentConsole {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    display: block !important;
+}
+body.is-mobile #p15agentConsoleText {
+    height: auto !important;
+    max-height: none !important;
+    /* Base CSS hardcodes width:930px - overrides to full viewport width */
+    width: 100% !important;
+    max-width: 100% !important;
+    /* pre defaults to white-space:pre which never wraps, causing horizontal scroll.
+       pre-wrap preserves spacing/newlines but wraps at the container edge. */
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* p16 Events: events list fills remaining space after title + filter bar */
+body.is-mobile #p16events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p17 Details: details content fills remaining space */
+body.is-mobile #p17info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Prevent window-level scroll on mobile. */
 html.is-mobile,
-body.is-mobile { overflow: hidden !important; }
+body.is-mobile {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
 
 /* Center the remote desktop canvas inside its container on mobile. */
 body.is-mobile #DeskParent {
@@ -3652,15 +3993,19 @@ body.is-mobile.fulldesk #deskarea3x {
 }
 
 /* Top desktop toolbar: compact single row, horizontal scroll for overflow */
+/* deskarea1 (connect/disconnect bar): compact single row */
 body.is-mobile #deskarea1 {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
 }
 
 /* Hide secondary/non-mobile-friendly items from the top desktop toolbar.
    .deskareaicon (rotate L/R, view mode toggle) are kept — useful on mobile.
-   #idx_deskFullBtn2 (exit fullscreen ✖) shown only when actually in fullscreen. */
+   #idx_deskFullBtn2 (exit fullscreen ✖) shown only when actually in fullscreen,
+   vertically centred (float:right conflicts with flex parent). */
 body.is-mobile #autoconnectbutton1,
 body.is-mobile #connectbutton1rspan,
 body.is-mobile #connectbutton1hspan,
@@ -3669,7 +4014,12 @@ body.is-mobile #desktopCustomUpperRight,
 body.is-mobile #deskFocusBtn { display: none !important; }
 
 body.is-mobile #idx_deskFullBtn2 { display: none !important; }
-body.is-mobile.fulldesk #idx_deskFullBtn2 { display: block !important; }
+body.is-mobile.fulldesk #idx_deskFullBtn2 {
+    display: flex !important;
+    align-items: center !important;
+    float: none !important;
+    align-self: center !important;
+}
 
 /* Bottom desktop toolbar: compact single row */
 body.is-mobile #deskarea4 {
@@ -3692,7 +4042,11 @@ body.is-mobile #deskarea4Icons { display: none !important; }
 body.is-mobile #deskMobileActions { display: flex !important; }
 
 
-body.is-mobile.fullscreen #container {
+/* fulldesk = remote-desktop fullscreen mode (body class added by deskToggleFull()).
+   NOT 'fullscreen' - that class is always on body in the Modern UI (it is the
+   normal grid layout mode) and would apply these rules to every mobile page view,
+   making column_l overflow-y:auto and creating a double scrollbar on all views. */
+body.is-mobile.fulldesk #container {
     width: 100% !important;
     min-width: 0 !important;
     padding-left: 0 !important;
@@ -3700,9 +4054,7 @@ body.is-mobile.fullscreen #container {
     flex-direction: column !important;
 }
 
-/* In the mobile flex layout, column_l must grow to fill space between
-   masthead and the bottom tab bar; min-height:0 prevents overflow. */
-body.is-mobile.fullscreen #column_l {
+body.is-mobile.fulldesk #column_l {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     overflow-y: auto !important;
@@ -3734,12 +4086,22 @@ body.is-mobile #tabbutton { display: inline-flex !important; }
 
 /*  Mobile files panel */
 
-/* adjustPanels() sets p13filetable height via inline style for desktop layout.
-   On mobile: 66px masthead + ~52px p13title + ~46px areaHead +
-   ~36px areaHead2 + ~28px areaHead3 + 44px bottom-tab-bar = 272px.
-   !important beats the JS inline style. */
+/* p13filetable: flex:1 fills all remaining space in the p13 flex column,
+   replacing the fragile fixed-height calc. adjustPanels() inline style is
+   cancelled by height:auto !important. */
 body.is-mobile #p13filetable {
-    height: calc(100vh - 280px) !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p13toolbarBottom: the status bar below the file list (shows "3 files: 0 bytes").
+   style6 uses a white gradient background that appears as a visible bar in dark mode
+   on both desktop and mobile. Transparent inherits the panel background,
+   matching both light and dark themes. */
+#p13toolbarBottom .style6 {
+    background: transparent !important;
 }
 
 /* These apply on any narrow viewport (desktop narrow window, tablet, phone). */
@@ -3752,7 +4114,9 @@ body.is-mobile #p13filetable {
         min-width: 0 !important;
         max-width: 100% !important;
         box-sizing: border-box;
-        overflow-x: hidden;
+        /* overflow: hidden (not overflow-x: hidden) — setting only one axis
+           forces the other to 'auto' per CSS spec, creating an unwanted scrollbar */
+        overflow: hidden;
     }
 
     /* masthead needs overflow:visible so its dropdown menu can extend below it */
