@@ -2418,8 +2418,8 @@ function CreateMeshCentralServer(config, args) {
                         delete obj.eventsDispatch[id];
                     } else {
                         const newList = []; // We create a new list so not to modify the original list. Allows this function to be called during an event dispatch.
-                        for (var k in obj.eventsDispatch[i]) { if (obj.eventsDispatch[i][k] != target) { newList.push(obj.eventsDispatch[i][k]); } }
-                        obj.eventsDispatch[i] = newList;
+                        for (var k in obj.eventsDispatch[id]) { if (obj.eventsDispatch[id][k] != target) { newList.push(obj.eventsDispatch[id][k]); } }
+                        obj.eventsDispatch[id] = newList;
                     }
                 }
             }
