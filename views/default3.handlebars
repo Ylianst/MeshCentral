@@ -699,16 +699,25 @@
                 </div>
                 <table class="pTable">
                     <tr>
-                        <td class="style14 d-flex align-items-center flex-wrap p-1">
+                        <td id="p4toolbarActions" class="style14 d-flex align-items-center flex-wrap p-1">
                             <div  class="d-flex align-items-center">
                                 <input type=button id=UsersSelectAllButton class="btn btn-secondary btn-sm me-1" onclick="p3usersSelectallButtonFunction()" value="Select All" />
                                 <input type=button id=UsersGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
                                 <input id=UserNewAccountButton class="btn btn-success btn-sm me-1" type=button onclick=showCreateNewAccountDialog() value="New Account..." />
+                                <div class="btn-group me-1 mobileActionDropdown">
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <div class="dropdown-menu">
+                                        <button type="button" class="dropdown-item" onclick="showUserBroadcastDialog()">Broadcast</button>
+                                        <button type="button" class="dropdown-item" onclick="p4downloadUserInfo()">Download user information</button>
+                                        <button type="button" id=p4MobileUserBatchCreate class="dropdown-item" style="display:none" onclick="p4batchAccountCreate()">Batch create accounts</button>
+                                        <button type="button" class="dropdown-item" onclick="onUsersViewSettings()">Settings</button>
+                                    </div>
+                                </div>
                                 <div class="d-inline-flex align-items-center">
                                     <input id=UserSearchInput type=search class="form-control-sm me-1" placeholder=Filter onchange=onUserSearchInputChanged() onkeyup=onUserSearchInputChanged() autocomplete=off onfocus=onUserSearchFocus(1) onblur=onUserSearchFocus(0) />
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center ms-auto">
+                            <div class="d-flex align-items-center ms-auto desktopAction">
                                 <input type=button class="btn btn-primary btn-sm me-2"onclick=showUserBroadcastDialog() style=margin-right:6px value="Broadcast" />
                                 <a href=# onclick=p4downloadUserInfo()><i role=button class="fa-solid fa-download me-2" title="Download user information"></i></a>
                                 <a href=# onclick=p4batchAccountCreate()><i role=button id=p4UserBatchCreate style="display:none" title="Batch create many user accounts" class="fa-solid fa-upload me-1"></i></a>
@@ -733,12 +742,24 @@
                                 <input type=button id=p5RenameFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Rename" onclick="p5renamefile();" />
                                 <input type=button id=p5DeleteFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Delete" onclick="p5deletefile();" />
                                 <input type=button id=p5ViewFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Edit" onclick="p5viewfile()" />
-                                <input type=button id=p5NewFolderButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="New Folder" onclick="p5createfolder();" />
-                                <input type=button id=p5UploadButton class="btn btn-primary btn-sm me-1"  disabled="disabled" value="Upload" onclick="p5uploadFile()" />
-                                <input type=button id=p5DownloadButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Download" onclick="p5downloadButton()" />
-                                <input type=button id=p5CutButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Cut" onclick="p5copyFile(1)" />
-                                <input type=button id=p5CopyButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Copy" onclick="p5copyFile(0)" />
-                                <input type=button id=p5PasteButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Paste" onclick="p5pasteFile()" />
+                                <input type=button id=p5NewFolderButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="New Folder" onclick="p5createfolder();" />
+                                <input type=button id=p5UploadButton class="btn btn-primary btn-sm me-1 desktopAction"  disabled="disabled" value="Upload" onclick="p5uploadFile()" />
+                                <input type=button id=p5DownloadButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Download" onclick="p5downloadButton()" />
+                                <input type=button id=p5CutButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Cut" onclick="p5copyFile(1)" />
+                                <input type=button id=p5CopyButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Copy" onclick="p5copyFile(0)" />
+                                <input type=button id=p5PasteButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Paste" onclick="p5pasteFile()" />
+                                <div class="btn-group me-1 mobileActionDropdown">
+                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <div class="dropdown-menu">
+                                        <button type="button" disabled="disabled" id=p5MobileNewFolderButton class="dropdown-item" onclick="p5createfolder()">New Folder</button>
+                                        <button type="button" disabled="disabled" id=p5MobileUploadButton class="dropdown-item" onclick="p5uploadFile()">Upload</button>
+                                        <button type="button" disabled="disabled" id=p5MobileDownloadButton class="dropdown-item" onclick="p5downloadButton()">Download</button>
+                                        <button type="button" disabled="disabled" id=p5MobileCutButton class="dropdown-item" onclick="p5copyFile(1)">Cut</button>
+                                        <button type="button" disabled="disabled" id=p5MobileCopyButton class="dropdown-item" onclick="p5copyFile(0)">Copy</button>
+                                        <button type="button" disabled="disabled" id=p5MobilePasteButton class="dropdown-item" onclick="p5pasteFile()">Paste</button>
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -2415,6 +2436,7 @@
 
             // If SSPI or LDAP authentication not used, allow batch account creation.
             QV('p4UserBatchCreate', (features & 0x00080000) == 0);
+            QV('p4MobileUserBatchCreate', (features & 0x00080000) == 0);
 
             // Set the file editor
             d4EditWrapVal = Number(getstore('editorWrap', 0));
@@ -17267,6 +17289,14 @@
             QE('p5CutButton', (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
             QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
+            [
+                ['p5NewFolderButton', 'p5MobileNewFolderButton'],
+                ['p5UploadButton', 'p5MobileUploadButton'],
+                ['p5DownloadButton', 'p5MobileDownloadButton'],
+                ['p5CutButton', 'p5MobileCutButton'],
+                ['p5CopyButton', 'p5MobileCopyButton'],
+                ['p5PasteButton', 'p5MobilePasteButton']
+            ].forEach(function (x) { QE(x[1], !Q(x[0]).disabled); });
         }
 
         function getFileSelCount(includeDirs) { var cc = 0, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }

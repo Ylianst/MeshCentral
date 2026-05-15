@@ -1411,7 +1411,8 @@ NoMeshesPanel img {
     background-color: #DDD;
 }
 
-.mobileFileActionDropdown {
+.mobileFileActionDropdown,
+.mobileActionDropdown {
     display: none !important;
 }
 
@@ -3836,24 +3837,50 @@ body.is-mobile #p13filetable {
     #p13toolbar .areaHead,
     #p13toolbar .areaHead2,
     #p13toolbar .areaHead > .d-flex,
-    #p13toolbar .areaHead2 > .d-flex {
+    #p13toolbar .areaHead2 > .d-flex,
+    #p4toolbarActions,
+    #p4toolbarActions > .d-flex,
+    #p5filehead,
+    #p5filehead > .d-flex {
         display: flex !important;
         flex-wrap: wrap !important;
         min-width: 0;
+        row-gap: 4px;
     }
 
     #p13toolbar .areaHead input,
     #p13toolbar .areaHead button,
     #p13toolbar .areaHead2 input,
-    #p13toolbar .areaHead2 button {
+    #p13toolbar .areaHead2 button,
+    #p4toolbarActions input,
+    #p4toolbarActions button,
+    #p5filehead input,
+    #p5filehead button {
         margin-bottom: 4px;
     }
 
-    .desktopFileAction {
+    #p5toolbar,
+    #p5toolbar tbody,
+    #p5toolbar tr,
+    #p5filehead,
+    #p5filesubhead {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #UserSearchInput {
+        max-width: 150px;
+    }
+
+    .desktopFileAction,
+    .desktopAction {
         display: none !important;
     }
 
-    .mobileFileActionDropdown {
+    .mobileFileActionDropdown,
+    .mobileActionDropdown {
         display: inline-flex !important;
     }
 
