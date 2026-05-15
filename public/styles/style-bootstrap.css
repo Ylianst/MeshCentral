@@ -4033,11 +4033,11 @@ body.is-mobile #deskarea4 {
 body.is-mobile #deskkeys,
 body.is-mobile #DeskWD { display: none !important; }
 
-/* Move Actions + Settings into the "ellipsis-vertical" panel on mobile */
+/* Move Actions + Settings into the "More button" panel on mobile */
 body.is-mobile #deskActionsBtn,
 body.is-mobile #deskActionsSettings { display: none !important; }
 
-/* Replace the desktop icon spray with the "ellipsis-vertical" dropdown on mobile */
+/* Replace the desktop icon spray with the "More button" dropdown on mobile */
 body.is-mobile #deskarea4Icons { display: none !important; }
 body.is-mobile #deskMobileActions { display: flex !important; }
 
