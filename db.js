@@ -454,7 +454,7 @@ module.exports.CreateDB = function (parent, func) {
 
                         } else if (obj.databaseType == DB_POSTGRESQL) {
                             // Postgres
-                            sqlDbQuery('DELETE FROM Main WHERE ((extra != NULL) AND (extra LIKE (\'mesh/%\')) AND (extra != ANY ($1)))', [meshlist], function (err, response) { });
+                            sqlDbQuery('DELETE FROM main WHERE extra LIKE \'mesh/%\' AND extra <> ALL ($1)', [meshlist], function (err, response) { });
                         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                             // MariaDB
                             sqlDbQuery('DELETE FROM Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], function (err, response) { });
