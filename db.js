@@ -241,7 +241,7 @@ module.exports.CreateDB = function (parent, func) {
                                     obj.Remove('si' + node._id);                          // Remove system information
                                     obj.Remove('al' + node._id);                          // Remove error log last time
                                     if (obj.RemoveSMBIOS) { obj.RemoveSMBIOS(node._id); } // Remove SMBios data
-                                    obj.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                                    obj.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node
                                     obj.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
                                     if (typeof node.pmt == 'string') { obj.Remove('pmt_' + node.pmt); } // Remove Push Messaging Token
                                     obj.Get('ra' + node._id, function (err, nodes) {
