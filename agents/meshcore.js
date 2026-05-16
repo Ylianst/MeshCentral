@@ -4237,12 +4237,12 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
                 availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
-                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo';
+                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,';
                 availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo,printers';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
@@ -4324,7 +4324,15 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         {
                             response = 'Proper usage: taskbar HIDE|SHOW [TSID]';
                             break;
-                        }
+            case 'printers':
+                if (process.platform != 'win32') {
+                    response = 'Unknown command "printers", type "help" for list of available commands.';
+                } else {
+                    var printers = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
+                    trimResults(printers);
+                    for (var i = 0; i < printers.length; ++i) {
+                        sendConsoleText(printers[i].Name + ' - ' + printers[i].PortName, sessionid);
+                    }
                 }
                 break;
             case 'privacybar':
