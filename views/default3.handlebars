@@ -67,7 +67,116 @@
 
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px"
     onload="if (typeof(startup) !== 'undefined') startup();">
-    <script>if ('ontouchstart' in window || navigator.maxTouchPoints > 0) { document.body.classList.add('is-mobile'); document.documentElement.classList.add('is-mobile'); }</script>
+    <script>
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.body.classList.add('is-mobile');
+            document.documentElement.classList.add('is-mobile');
+        }
+        // Auto-fullscreen on landscape: when in the desktop view and connected,
+        // rotating to landscape triggers deskToggleFull() so the existing fulldesk
+        // CSS maximises the canvas without any new layout code.
+        // A flag tracks whether WE triggered fullscreen so we can auto-exit on
+        // rotating back to portrait (but not if the user exited fullscreen manually).
+        var _mobileAutoFullscreen = false;
+        var _mobileSavedAspectRatio = 0;
+        var _mobileZoomMode = 'fit'; // 'native' = 1:1 scrollable  |  'fit' = fill viewport
+        var _nativePinchStartDist = 0, _nativePinchStartW = 0, _nativePinchStartH = 0;
+        var _nativePinchMidX = 0, _nativePinchMidY = 0;
+        var _prevHadFulldesk  = false;
+
+        // Switch between native 1:1 (scrollable, full precision) and fit-to-viewport.
+        // In native mode we suspend desktop.m.onScreenSizeChange (= deskAdjust) so
+        // it can't override the explicit pixel dimensions we set on the canvas.
+        function _mobileSetZoom(mode) {
+            _mobileZoomMode = mode;
+            var desk = document.getElementById('Desk');
+            var dp   = document.getElementById('DeskParent');
+            if (!desk || !dp) return;
+            var dm = (typeof desktop !== 'undefined') && desktop && desktop.m;
+            if (mode === 'native') {
+                // CSS custom properties lock canvas at native resolution.
+                // Panning is handled by dtouchmove JS (scrollLeft/Top on deskarea3x).
+                // Touch listeners stay active so trackpad mode keeps working.
+                var w = (dm && dm.ScreenWidth)  || desk.width  || 640;
+                var h = (dm && dm.ScreenHeight) || desk.height || 480;
+                document.documentElement.style.setProperty('--native-desk-w', w + 'px');
+                document.documentElement.style.setProperty('--native-desk-h', h + 'px');
+                document.body.classList.add('native-zoom');
+                if (dm && !dm._savedOnScreenSizeChange) {
+                    dm._savedOnScreenSizeChange = dm.onScreenSizeChange;
+                    dm.onScreenSizeChange = function(obj, sw, sh) {
+                        document.documentElement.style.setProperty('--native-desk-w', sw + 'px');
+                        document.documentElement.style.setProperty('--native-desk-h', sh + 'px');
+                    };
+                }
+            } else {
+                document.body.classList.remove('native-zoom');
+                if (dm && dm._savedOnScreenSizeChange) {
+                    dm.onScreenSizeChange = dm._savedOnScreenSizeChange;
+                    delete dm._savedOnScreenSizeChange;
+                }
+                desk.style.width  = '100%';
+                desk.style.height = '100%';
+                if (typeof deskAdjust === 'function') deskAdjust();
+            }
+        }
+
+        // Watch body class for fulldesk being added/removed and apply the right zoom
+        if (document.body.classList.contains('is-mobile')) {
+            new MutationObserver(function(muts) {
+                muts.forEach(function(m) {
+                    if (m.attributeName !== 'class') return;
+                    var inFull = document.body.classList.contains('fulldesk');
+                    if (inFull && !_prevHadFulldesk) {
+                        // Just entered fullscreen: portrait->native, landscape->fit
+                        setTimeout(function() {
+                            var landscape = window.matchMedia('(orientation: landscape)').matches;
+                            _mobileSetZoom(landscape ? 'fit' : 'native');
+                        }, 200);
+                    } else if (!inFull && _prevHadFulldesk) {
+                        _mobileSetZoom('fit'); // always reset to fit on exit
+                    }
+                    _prevHadFulldesk = inFull;
+                });
+            }).observe(document.body, { attributes: true });
+        }
+        function _doOrientationUpdate() {
+            if (!document.body.classList.contains('is-mobile')) return;
+            var landscape = window.matchMedia('(orientation: landscape)').matches;
+            document.body.classList.toggle('is-landscape', landscape);
+            // Check DOM state — JS variables like xxcurrentView / fullscreen are
+            // in a later function scope and not accessible from this early script.
+            var p11 = document.getElementById('p11');
+            var inDesktop = p11 && p11.style.display !== 'none';
+            var alreadyFullscreen = document.body.classList.contains('fulldesk');
+            if (landscape && inDesktop && !alreadyFullscreen) {
+                // Auto-enter fullscreen in landscape using the global function
+                if (typeof deskToggleFull === 'function') {
+                    _mobileAutoFullscreen = true;
+                    _mobileSavedAspectRatio = (typeof deskAspectRatio !== 'undefined') ? deskAspectRatio : 0;
+                    deskToggleFull();
+                }
+                // CSS rule body.is-mobile.is-landscape.fulldesk #Desk { width/height: 100% !important }
+                // handles the canvas fill automatically — no JS override needed here.
+            } else if (!landscape && alreadyFullscreen && _mobileAutoFullscreen) {
+                _mobileAutoFullscreen = false;
+                if (typeof deskToggleFull === 'function') deskToggleFull();
+                // Let deskAdjust() recalculate naturally for portrait (no forced CSS override)
+                setTimeout(function() { if (typeof deskAdjust === 'function') deskAdjust(); }, 400);
+            } else {
+                // Not entering/exiting fullscreen but still call deskAdjust so the
+                // canvas recalculates for the new viewport dimensions
+                if (typeof deskAdjust === 'function') {
+                    requestAnimationFrame(function() { deskAdjust(); });
+                }
+            }
+        }
+        function _updateOrientation() {
+            setTimeout(_doOrientationUpdate, 300);
+        }
+        window.addEventListener('orientationchange', _updateOrientation);
+        window.addEventListener('resize', _updateOrientation);
+    </script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
         <div id="cxinfo" class="cmtext" onclick="cmaction(1,event)"><b>Information</b></div>
@@ -908,8 +1017,20 @@
                 </div>
             </div>
             <div id=p11 class="noselect" style="display:none">
+                <!-- softKeyboard: lives at p11 level (outside deskarea4) so it stays
+                     focusable even when the toolbar is hidden in fullscreen/landscape.
+                     position:fixed keeps it off-screen while remaining a valid focus target. -->
+                <input id="softKeyboard" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
+                    type="text" inputmode="text"
+                    style="position:fixed;opacity:0;width:1px;height:1px;left:-9999px;top:-9999px"
+                    oninput="onSoftKeyboardInput(this)"
+                    onblur="onSoftKeyboardFocusChange(false)"
+                    onfocus="onSoftKeyboardFocusChange(true)" />
                 <!-- Trackpad cursor -->
-                <img id="trackpadCursor" src="images/mobile-pointer.png" style="display:none;position:fixed;pointer-events:none;z-index:9999;width:24px;height:24px;filter:invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.9));transform-origin:0 0" />
+                <svg id="trackpadCursor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 20" width="18" height="30"
+                    style="display:none;position:fixed;pointer-events:none;z-index:9999;transform-origin:0 0;filter:drop-shadow(1px 1px 2px rgba(0,0,0,0.8))">
+                    <path d="M0,0 L0,16 L4,12 L6.5,18 L8.5,17 L6,11 L11,11 Z" fill="white" stroke="black" stroke-width="1.2" stroke-linejoin="round"/>
+                </svg>
                 <div id="p11title" class="d-flex align-items-center">
                     <div id="p11BackButton" class="pe-2">
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
@@ -1034,17 +1155,10 @@
                     <div id=deskarea4 class="areaFoot d-flex flex-wrap">
                         <div class="d-flex align-items-center">
                             <select id="deskkeys" class="form-select-sm me-1" cmenu=deskKeyShortcutContextMenu></select>
-                            <input id="DeskWD" type=button class="btn btn-primary btn-sm me-1" value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
+                            <button id="DeskWD" class="btn btn-primary btn-sm me-1" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()">Send</button>
                             <input id="DeskESC" style="display:none" type="button" class="btn btn-secondary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
                             <input id="DeskClip" type="button" class="btn btn-secondary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
                             <input id="DeskType" class="btn btn-secondary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
-                            <!-- Mobile-only: hidden input that triggers the OS soft keyboard when focused -->
-                            <input id="softKeyboard" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
-                                type="text" inputmode="text"
-                                style="position:absolute;opacity:0;width:1px;height:1px;left:-9999px"
-                                oninput="onSoftKeyboardInput(this)"
-                                onblur="onSoftKeyboardFocusChange(false)"
-                                onfocus="onSoftKeyboardFocusChange(true)" />
                             <!-- Mobile-only: toggle button for the soft keyboard -->
                             <button id="DeskSoftKbdBtn" class="btn btn-secondary btn-sm me-1" type="button"
                                 onclick="toggleMobileKeyboard()" title="Show/hide on-screen keyboard"
@@ -1110,7 +1224,9 @@
                     </div>
                     <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
                     <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
-                    <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                    <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow-y:auto;overflow-x:hidden;max-height:calc(100dvh - 100px);box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleTrackpad();deskCloseMobileActions()"><i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>Toggle Trackpad Mode</a>
@@ -1124,6 +1240,10 @@
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceToastFunction();deskCloseMobileActions()"><i class="fa-solid fa-bell fa-fw me-2 text-primary"></i>Send Notification</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceChat(event);deskCloseMobileActions()"><i class="fa-solid fa-message fa-fw me-2 text-primary"></i>Chat</a>
                         <a class="d-block px-3 py-2 text-decoration-none" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="runDeviceCmd();deskCloseMobileActions()"><i class="fa-solid fa-play fa-fw me-2 text-primary"></i>Run Script</a>
+                    </div>
+                    <!-- Fullscreen floating button - replaces all toolbars when in fulldesk mode -->
+                    <div id="deskFsBtn" onclick="deskToggleMobileActions()" style="display:none;position:fixed;bottom:54px;right:12px;z-index:2000;width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1.5px solid rgba(255,255,255,0.22);font-size:20px">
+                        <i class="fa-solid fa-bars"></i>
                     </div>
                 </div>
             </div>
@@ -9593,6 +9713,10 @@
         }
 
         // Adapted from Classic Mobile's deskChangeMouseButton()
+        function deskMobileToggleZoom() {
+            _mobileSetZoom(_mobileZoomMode === 'native' ? 'fit' : 'native');
+        }
+
         function deskToggleRightClickMode() {
             if (xxdialogMode || desktop == null) return;
             desktop.m.SwapMouse = !desktop.m.SwapMouse;
@@ -9603,20 +9727,63 @@
             if (!panel) return;
             var show = (panel.style.display === 'none');
             if (show) {
-                // Update right-click label to reflect current state before showing
-                var rc = Q('deskRightClickItem');
-                if (rc) {
-                    var active = desktop && desktop.m && desktop.m.SwapMouse;
-                    rc.innerHTML = '<i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>'
-                        + (active ? 'Disable Right-click Mode' : 'Enable Right-click Mode');
+                if (document.body.classList.contains('fulldesk')) {
+                    // Fullscreen mode: rebuild panel with all controls
+                    _buildFullscreenPanel(panel);
+                } else {
+                    // Normal mode: just update the right-click label
+                    var rc = Q('deskRightClickItem');
+                    if (rc) {
+                        var active = desktop && desktop.m && desktop.m.SwapMouse;
+                        rc.innerHTML = '<i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>'
+                            + (active ? 'Disable Right-click Mode' : 'Enable Right-click Mode');
+                    }
                 }
             }
             QV('deskMobileActionsPanel', show);
             QV('deskMobileActionsBackdrop', show);
+            // Toggle floating button icon: when closed -> ✕ when open
+            var fsBtn = Q('deskFsBtn');
+            if (fsBtn) fsBtn.innerHTML = show ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+        }
+
+        function _buildFullscreenPanel(panel) {
+            var inputOn  = Q('DeskControl') && Q('DeskControl').checked;
+            var swap     = desktop && desktop.m && desktop.m.SwapMouse;
+            var trackpad = (typeof trackpadMode !== 'undefined') && trackpadMode;
+            var s   = 'font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)';
+            var cls = 'd-block px-3 py-2 text-decoration-none border-bottom';
+            var end = 'd-block px-3 py-2 text-decoration-none'; // last item, no border
+            function row(c, icon, label, action, extra) {
+                return '<a class="' + c + '" style="' + s + '" onclick="' + action + '">'
+                     + '<i class="fa-solid ' + icon + ' fa-fw me-2 ' + (extra || 'text-primary') + '"></i>'
+                     + label + '</a>';
+            }
+            panel.innerHTML =
+                row(cls, 'fa-compress',         'Exit Fullscreen',                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
+                row(cls, (_mobileZoomMode==='native'?'fa-compress-arrows-alt':'fa-expand-arrows-alt'),
+                    (_mobileZoomMode==='native'?'Scale to Fit':'Native Size (Scrollable)'),  'deskMobileToggleZoom();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', "Q('DeskControl').click();deskCloseMobileActions()") +
+                row(cls, 'fa-keyboard',          'On-screen Keyboard',                       'toggleMobileKeyboard();deskCloseMobileActions()') +
+                row(cls, 'fa-computer-mouse',    (trackpad?'Disable':'Enable')+' Trackpad',  'deskToggleTrackpad();deskCloseMobileActions()') +
+                row(cls, 'fa-hand-pointer',      (swap?'Disable':'Enable')+' Right-click',   'deskToggleRightClickMode();deskCloseMobileActions()') +
+                row(cls, 'fa-font',              'Type Text',                                'showDeskType();deskCloseMobileActions()') +
+                row(cls, 'fa-terminal',          'Ctrl + Alt + Del',                        'if(desktop&&desktop.m)desktop.m.sendcad();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          'Send ESC',                                 'sendDeskEsc();deskCloseMobileActions()') +
+                row(cls, 'fa-sliders',           'Keyboard Shortcuts',                       'deskCustomizeKeys();deskCloseMobileActions()') +
+                row(cls, 'fa-paste',             'Clipboard',                               'showDeskClip();deskCloseMobileActions()') +
+                row(cls, 'fa-clipboard',         'Upload Clipboard',                         'deskClipboardOutFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-right',      'Rotate Right',                             'drotate(1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-left',       'Rotate Left',                              'drotate(-1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate',            'Refresh Desktop',                          'deskRefreshFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-gear',              'Desktop Settings',                         'showDesktopSettings();deskCloseMobileActions()') +
+                row(end, 'fa-plug-circle-xmark', 'Disconnect',                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
         }
         function deskCloseMobileActions() {
             QV('deskMobileActionsPanel', false);
             QV('deskMobileActionsBackdrop', false);
+            var fsBtn = Q('deskFsBtn');
+            if (fsBtn) fsBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
         }
 
         function deviceToastFunction() {
@@ -10791,7 +10958,7 @@
                                 }
                                 if (this.SwapMouse) { if(Button===this.MouseButton.LEFT){Button=this.MouseButton.RIGHT;}else if(Button===this.MouseButton.RIGHT){Button=this.MouseButton.LEFT;} }
                                 var msg = String.fromCharCode(0x00,this.InputType.MOUSE,0x00,0x0A,0x00,
-                                    (Action===this.KeyAction.DOWN?Button:(Button*2)&0xFF),
+                                    (Action===this.KeyAction.DBLCLICK?0x88:Action===this.KeyAction.DOWN?Button:(Button*2)&0xFF),
                                     ((X/256)&0xFF),(X&0xFF),((Y/256)&0xFF),(Y&0xFF));
                                 if (this.State===3) {
                                     if (Action===this.KeyAction.NONE) { if(this.Alternate===0||this.ipad){this.send(msg);this.Alternate=1;}else{this.Alternate=0;} }
@@ -10999,6 +11166,7 @@
                     QV('DeskInputUnLockedButton', false);
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
+                    _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
                     webRtcDesktopReset();
                     deskPreferedStickyDisplay = 0;
                     break;
@@ -11021,6 +11189,9 @@
                     // SendRefresh alone is sometimes ignored before the first mouse event.
                     // Synthetic mousedown+mouseup guarantees the agent starts sending frames.
                     if (document.body.classList.contains('is-mobile')) {
+                        // Re-trigger landscape fullscreen if phone is already in landscape
+                        // when reconnecting (no orientationchange event fires in this case)
+                        setTimeout(function() { if (typeof _doOrientationUpdate === 'function') _doOrientationUpdate(); }, 600);
                         setTimeout(function() {
                             if (!desktop || desktop.State !== 3) return;
                             desktop.m.SendRefresh();
@@ -12055,6 +12226,7 @@
         // Both modes    — 2-finger scroll = mouse wheel on remote
         var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
         var dtouchMoved = false;
+        var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
         var dtouchLongPressTimer = null;
         var dtouchTwoFingerLastY = 0;
         // Trackpad state (mirrors Classic Mobile)
@@ -12220,9 +12392,20 @@
                 trackpadDown = false;
                 return;
             }
-            // Direct mode
+            // Direct mode — 2 fingers
             if (e.touches.length === 2) {
+                var fdx = e.touches[0].clientX - e.touches[1].clientX;
+                var fdy = e.touches[0].clientY - e.touches[1].clientY;
                 dtouchTwoFingerLastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                if (_mobileZoomMode === 'native') {
+                    // Record pinch start for zoom gesture
+                    _nativePinchStartDist = Math.sqrt(fdx*fdx + fdy*fdy);
+                    var sc = Q('deskarea3x');
+                    _nativePinchStartW = sc ? sc.scrollWidth  : 640;
+                    _nativePinchStartH = sc ? sc.scrollHeight : 480;
+                    _nativePinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                    _nativePinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                }
                 return;
             }
             if (e.touches.length !== 1) return;
@@ -12255,6 +12438,52 @@
                 trackpadCheckEdge();
                 return;
             }
+            // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
+            if (_mobileZoomMode === 'native' && e.touches.length === 1) {
+                var t = e.touches[0];
+                var dx = t.clientX - dtouchLastX, dy = t.clientY - dtouchLastY;
+                dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                    dtouchMoved = true;
+                    var sc = Q('deskarea3x');
+                    if (sc) { sc.scrollLeft -= dx; sc.scrollTop -= dy; }
+                }
+                return;
+            }
+            // Native zoom mode — 2 fingers: pinch to resize canvas (zoom in/out)
+            if (_mobileZoomMode === 'native' && e.touches.length === 2 && _nativePinchStartDist > 0) {
+                var fdx = e.touches[0].clientX - e.touches[1].clientX;
+                var fdy = e.touches[0].clientY - e.touches[1].clientY;
+                var newDist = Math.sqrt(fdx*fdx + fdy*fdy);
+                var ratio = newDist / _nativePinchStartDist;
+                var newW = Math.round(_nativePinchStartW * ratio);
+                var newH = Math.round(_nativePinchStartH * ratio);
+                // Clamp between 25% and 400% of the native remote resolution
+                var dm = dtouchGetModule();
+                var minW = Math.round((dm ? dm.ScreenWidth  : 640) * 0.25);
+                var maxW = Math.round((dm ? dm.ScreenWidth  : 640) * 4);
+                var minH = Math.round((dm ? dm.ScreenHeight : 480) * 0.25);
+                var maxH = Math.round((dm ? dm.ScreenHeight : 480) * 4);
+                newW = Math.max(minW, Math.min(maxW, newW));
+                newH = Math.max(minH, Math.min(maxH, newH));
+                document.documentElement.style.setProperty('--native-desk-w', newW + 'px');
+                document.documentElement.style.setProperty('--native-desk-h', newH + 'px');
+                // Keep pinch midpoint fixed on screen by adjusting scroll
+                var sc = Q('deskarea3x');
+                if (sc) {
+                    var scRect = sc.getBoundingClientRect();
+                    var midViewX = _nativePinchMidX - scRect.left;
+                    var midViewY = _nativePinchMidY - scRect.top;
+                    sc.scrollLeft = (sc.scrollLeft + midViewX) * ratio - midViewX;
+                    sc.scrollTop  = (sc.scrollTop  + midViewY) * ratio - midViewY;
+                    // Update start values for incremental updates each frame
+                    _nativePinchStartDist = newDist;
+                    _nativePinchStartW = newW;
+                    _nativePinchStartH = newH;
+                }
+                dtouchMoved = true;
+                return;
+            }
             // Direct mode
             if (e.touches.length === 2) {
                 var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -12278,10 +12507,6 @@
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             }
-            if (dtouchMoved && Q('DeskControl').checked) {
-                var dm = dtouchGetModule();
-                if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0));
-            }
         }
 
         function dtouchend(e) {
@@ -12301,9 +12526,26 @@
             }
             // Direct mode
             if (!Q('DeskControl').checked) return;
-            if (dtouchMoved || e.changedTouches.length !== 1) return;
+            if (e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
-            dtouchSendClick(t.clientX, t.clientY, 0);
+            // 30px threshold (not dtouchMoved's 8px) — finger pressure causes micro-movement
+            // that would block taps; only real drags exceed 30px.
+            var totalDx = Math.abs(t.clientX - dtouchStartX);
+            var totalDy = Math.abs(t.clientY - dtouchStartY);
+            if (totalDx > 30 || totalDy > 30) return; // real drag — no click
+            var now = Date.now();
+            var dx = Math.abs(t.clientX - dtouchLastTapX), dy = Math.abs(t.clientY - dtouchLastTapY);
+            if ((now - dtouchLastTapTime) < 400 && dx < 30 && dy < 30) {
+                // Use first tap's position: Windows requires both clicks within 4 remote px;
+                // a 2px finger shift × ~5x scale = 10 remote px, breaking detection.
+                dtouchSendClick(dtouchLastTapX, dtouchLastTapY, 0);
+                dtouchLastTapTime = 0; // reset so a 3rd tap doesn't re-trigger
+            } else {
+                dtouchSendClick(t.clientX, t.clientY, 0);
+                dtouchLastTapTime = now;
+                dtouchLastTapX = t.clientX;
+                dtouchLastTapY = t.clientY;
+            }
         }
         function stopProcess(id, name) {
             setModalContent('xxAddAgent', "Process Control", format("Stop process #{0} \"{1}\"?", id, name));
@@ -21757,6 +21999,21 @@
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
             var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
+
+            // Classic Mobile tab shuffle: on mobile, hide the active device sub-tab from
+            // the bottom bar so all remaining tabs fit without scrolling.
+            if (document.body.classList.contains('is-mobile')) {
+                var _devTabIds = ['MainDev','MainDevDesktop','MainDevTerminal','MainDevFiles','MainDevAmt','MainDevConsole','MainDevEvents','MainDevInfo','MainDevPlugins'];
+                for (var _dti = 0; _dti < _devTabIds.length; _dti++) {
+                    var _dtEl = document.getElementById(_devTabIds[_dti]);
+                    if (_dtEl) _dtEl.classList.remove('mob-active-tab');
+                }
+                if (x >= 10 && x < 20 && panels[x]) {
+                    var _dtActive = document.getElementById(panels[x]);
+                    if (_dtActive) _dtActive.classList.add('mob-active-tab');
+                }
+            }
+
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
                 QC(panels[i]).remove('style3sel');

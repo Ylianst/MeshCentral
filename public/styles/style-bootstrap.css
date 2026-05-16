@@ -3759,9 +3759,7 @@ body.is-mobile #ServerSubMenuSpan {
     top: auto !important;
     height: 44px !important;
     z-index: 500 !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden !important;
     background: #113962 !important;
     border-top: 1px solid #000 !important;
     display: flex;
@@ -3774,28 +3772,53 @@ body.is-mobile #EventsSubMenu,
 body.is-mobile #UserSubMenu,
 body.is-mobile #UsersSubMenu,
 body.is-mobile #ServerSubMenu {
-    display: inline-flex !important;
+    /* Become a flex item that fills the span, and a flex container for the tr row */
+    display: flex !important;
+    flex: 1 1 auto !important;
     width: 100% !important;
-    min-width: max-content;
     height: 44px !important;
     background: transparent !important;
 }
 
+/* tbody is an auto-inserted anonymous box — make it layout-transparent */
+body.is-mobile #MainSubMenu tbody,
+body.is-mobile #MeshSubMenu tbody,
+body.is-mobile #EventsSubMenu tbody,
+body.is-mobile #UserSubMenu tbody,
+body.is-mobile #UsersSubMenu tbody,
+body.is-mobile #ServerSubMenu tbody { display: contents !important; }
+
+/* tr becomes the flex item filling the table, and a flex container for the tds */
+body.is-mobile #MainSubMenu tr,
+body.is-mobile #MeshSubMenu tr,
+body.is-mobile #EventsSubMenu tr,
+body.is-mobile #UserSubMenu tr,
+body.is-mobile #UsersSubMenu tr,
+body.is-mobile #ServerSubMenu tr {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
 body.is-mobile .topbar_td {
-    /* No display override here — the parent #MainSubMenu is display:flex so children
-       are already flex items. Crucially, we must NOT set display:inline-flex !important
-       or it would override QV()'s inline display:none, making hidden tabs (Intel AMT,
-       Plugins, etc.) visible regardless of permissions/feature flags. */
+    /* display:flex WITHOUT !important — makes the td a flex container so
+       align-items/justify-content center text, while still letting
+       QV()'s inline display:none override it for permission-hidden tabs. */
+    display: flex;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
     align-items: center !important;
     justify-content: center !important;
     height: 44px !important;
-    min-width: 70px !important;
-    width: auto !important;
-    padding: 0 12px !important;
+    padding: 0 4px !important;
     color: rgba(255,255,255,0.75) !important;
-    font-size: 13px;
+    font-size: 11px !important;
     border-right: 1px solid rgba(255,255,255,0.15);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 body.is-mobile .topbar_td.style3x {
@@ -3814,6 +3837,11 @@ body.is-mobile .topbar_td.style3sel {
     background: rgba(255,255,255,0.18) !important;
     border-bottom: 3px solid #fff !important;
 }
+
+/* Classic Mobile tab shuffle: the active device sub-tab is hidden from the bottom bar.
+   Hiding it frees up space so all other tabs remain visible without horizontal scroll.
+   Using display:none !important to beat QV()'s inline style. */
+body.is-mobile .mob-active-tab { display: none !important; }
 
 /* Collapse #topbar to 0 height on mobile */
 body.is-mobile #topbar {
@@ -4255,6 +4283,15 @@ body.is-mobile.fulldesk #deskarea3x {
     height: 100% !important;
 }
 
+/* Fullscreen mode: hide both toolbars so the canvas fills the entire viewport.
+   All controls move into the floating button panel. */
+body.is-mobile.fulldesk #p11title,
+body.is-mobile.fulldesk #deskarea1,
+body.is-mobile.fulldesk #deskarea4 { display: none !important; }
+
+/* Floating button: hidden normally, only shown in fullscreen on mobile */
+body.is-mobile.fulldesk #deskFsBtn { display: flex !important; }
+
 /* Top desktop toolbar: compact single row, horizontal scroll for overflow */
 /* deskarea1 (connect/disconnect bar): compact single row */
 body.is-mobile #deskarea1 {
@@ -4294,23 +4331,28 @@ body.is-mobile #deskarea4 {
 
 /* Keyboard shortcut selector: constrain width on mobile so it doesn't
    crowd the other buttons in the scrollable deskarea4 bar. */
+/* Keyboard shortcut selector: compact Bootstrap look on mobile */
 body.is-mobile #deskkeys {
-    max-width: 130px;
-    font-size: 12px;
+    max-width: 110px !important;
+    font-size: 11px !important;
+    /* ensure Bootstrap form-select styling is applied */
+    appearance: auto;
 }
 
-/* Move Actions + Settings into the "More button" panel on mobile */
+/* Type and keyboard toggle moved into More panel - free toolbar space */
+body.is-mobile #DeskType     { display: none !important; }
+body.is-mobile #DeskSoftKbdBtn { display: none !important; }
+
+/* Move Actions + Settings into the More panel on mobile */
 body.is-mobile #deskActionsBtn,
 body.is-mobile #deskActionsSettings { display: none !important; }
 
-/* Replace the desktop icon spray with the "More button" dropdown on mobile */
+/* Replace the desktop icon spray with the More button on mobile */
 body.is-mobile #deskarea4Icons { display: none !important; }
 body.is-mobile #deskMobileActions { display: flex !important; flex-shrink: 0 !important; }
 body.is-mobile #deskMobileActions .btn { white-space: nowrap !important; }
 /* Clipboard dialog button moved into the More panel on mobile */
 body.is-mobile #DeskClip { display: none !important; }
-/* Soft-keyboard toggle button: hidden on desktop, visible on mobile */
-body.is-mobile #DeskSoftKbdBtn { display: inline-flex !important; align-items: center; }
 
 
 
@@ -4330,6 +4372,50 @@ body.is-mobile.fulldesk #column_l {
     flex: 1 1 0 !important;
     min-height: 0 !important;
     overflow-y: auto !important;
+}
+
+/* Mobile landscape: reclaim vertical space 
+   'is-landscape' is toggled by JS on resize so deskAdjust() is also called,
+   ensuring the canvas recalculates dimensions immediately on rotation. */
+
+/* Hide panel title bars in landscape — saves ~50px; back nav still works
+   via the browser gesture or rotating back to portrait. */
+body.is-mobile.is-landscape #p11title,
+body.is-mobile.is-landscape #p12title,
+body.is-mobile.is-landscape #p13title { display: none !important; }
+
+/* Compact the connect/disconnect toolbar to save a few more pixels */
+body.is-mobile.is-landscape #deskarea1 {
+    min-height: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+/* Canvas scale-fill in landscape fullscreen.
+   deskAdjust() and onScreenSizeChange set portrait-sized pixel values via
+   inline styles. !important in CSS always beats inline styles, so the canvas
+   is permanently 100%x100% of DeskParent whenever both classes are present —
+   regardless of how many times deskAdjust() fires. */
+body.is-mobile.is-landscape.fulldesk #Desk {
+    width:  100% !important;
+    height: 100% !important;
+}
+body.is-mobile.is-landscape.fulldesk #DeskParent {
+    overflow: hidden !important;
+}
+
+/* Native 1:1 zoom: DeskParent becomes content-sized (native resolution) inside
+   deskarea3x. JS in dtouchmove manually sets deskarea3x.scrollLeft/Top to pan.
+   overflow:hidden on deskarea3x is kept (base CSS) — JS can still scroll it. */
+body.is-mobile.native-zoom #DeskParent {
+    position: relative !important;
+    display:  block !important;
+    width:    var(--native-desk-w, 100%) !important;
+    height:   var(--native-desk-h, 100%) !important;
+}
+body.is-mobile.native-zoom #Desk {
+    width:  100% !important;
+    height: 100% !important;
 }
 
 /* Mobile terminal */
