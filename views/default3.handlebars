@@ -909,7 +909,7 @@
             </div>
             <div id=p11 class="noselect" style="display:none">
                 <!-- Trackpad cursor -->
-                <img id="trackpadCursor" src="images/mobile-pointer.png" style="display:none;position:fixed;pointer-events:none;z-index:9999;width:24px;height:24px;filter:invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.9))" />
+                <img id="trackpadCursor" src="images/mobile-pointer.png" style="display:none;position:fixed;pointer-events:none;z-index:9999;width:24px;height:24px;filter:invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.9));transform-origin:0 0" />
                 <div id="p11title" class="d-flex align-items-center">
                     <div id="p11BackButton" class="pe-2">
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
@@ -12114,6 +12114,9 @@
             // position:fixed -> coordinates are viewport-relative (never clipped by overflow:hidden)
             cursor.style.left = (deskRect.left + cx) + 'px';
             cursor.style.top  = (deskRect.top  + cy) + 'px';
+            // Rotate cursor to match canvas rotation so it always points "up" in the current view
+            var dm = dtouchGetModule();
+            cursor.style.transform = 'rotate(' + ((dm ? (dm.rotation || 0) : 0) * 90) + 'deg)';
             cursor.style.display = 'block';
             trackpadCurX = cx; trackpadCurY = cy;
         }
