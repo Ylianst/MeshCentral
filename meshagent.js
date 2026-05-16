@@ -208,7 +208,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 // Clear the core
                                 obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // MeshCommand_CoreModule, ask mesh agent to clear the core
                                 parent.agentStats.clearingCoreCount++;
-                                parent.parent.debug('agent', "Clearing core");
+                                parent.parent.debug('agent', "Clearing core for agent " + obj.nodeid);
                             } else {
                                 // Setup task limiter options, this system limits how many tasks can run at the same time to spread the server load.
                                 var taskLimiterOptions = { hash: meshcorehash, core: parent.parent.defaultMeshCores[corename], name: corename };
@@ -226,7 +226,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                         delete obj.agentCoreUpdatePending;
                                         obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core.toString('binary'), function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
                                         parent.agentStats.updatingCoreCount++;
-                                        parent.parent.debug('agent', "Updating core " + argument.name);
+                                        parent.parent.debug('agent', "Updating core " + argument.name + " for agent " + obj.nodeid);
                                     } else {
                                         // This agent is probably disconnected, nothing to do.
                                         parent.parent.taskLimiter.completed(taskid);
