@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <meta name="viewport" content="user-scalable=1.0,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0" />
+    <meta name="viewport" content="user-scalable=yes,initial-scale=1.0,minimum-scale=1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="noindex,nofollow">
@@ -1036,6 +1036,19 @@
                             <input id="DeskESC" style="display:none" type="button" class="btn btn-secondary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
                             <input id="DeskClip" type="button" class="btn btn-secondary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
                             <input id="DeskType" class="btn btn-secondary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <!-- Mobile-only: hidden input that triggers the OS soft keyboard when focused -->
+                            <input id="softKeyboard" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
+                                type="text" inputmode="text"
+                                style="position:absolute;opacity:0;width:1px;height:1px;left:-9999px"
+                                oninput="onSoftKeyboardInput(this)"
+                                onblur="onSoftKeyboardFocusChange(false)"
+                                onfocus="onSoftKeyboardFocusChange(true)" />
+                            <!-- Mobile-only: toggle button for the soft keyboard -->
+                            <button id="DeskSoftKbdBtn" class="btn btn-secondary btn-sm me-1" type="button"
+                                onclick="toggleMobileKeyboard()" title="Show/hide on-screen keyboard"
+                                style="display:none">
+                                <i class="fa-solid fa-keyboard"></i>
+                            </button>
                             <div id="DeskControlSpan" title="Toggle mouse and keyboard input" class="form-check"><input id="DeskControl" type="checkbox" class="form-check-input" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()"><label class="form-check-label" for="DeskControl">Input</label></div>&nbsp;
                         </div>
                         <!-- Mobile-only "More" button — opens a fixed-position action panel -->
@@ -5082,6 +5095,7 @@
             if (document.querySelector('.modal.show')) {
                 return;
             }
+            mobileKbdGotKeypress = true; // tells onSoftKeyboardInput not to double-send
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -5175,6 +5189,8 @@
         }
 
         function ondockeyup(e) {
+            mobileKbdGotKeypress = false;
+            var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; }
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -10502,6 +10518,7 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
+            QE('DeskSoftKbdBtn', deskState == 3);
             QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
@@ -12045,6 +12062,41 @@
 
         function dtouchGetModule() {
             return (webRtcDesktop && webRtcDesktop.softdesktop) ? webRtcDesktop.softdesktop.m : (desktop ? desktop.m : null);
+        }
+
+        // Mobile soft-keyboard: focusing #softKeyboard shows the OS keyboard.
+        // Key events bubble to document handlers (backspace, enter, etc.).
+        // Mobile keyboards fire 'input' instead of keypress -> SendKeyUnicode.
+        var mobileKbdGotKeypress = false;
+
+        function onSoftKeyboardInput(el) {
+            if (!desktop || !desktop.m || !Q('DeskControl').checked) { el.value = ''; return; }
+            if (mobileKbdGotKeypress) { el.value = ''; return; } // desktop keyboard — already handled by keypress
+            var str = el.value; el.value = '';
+            if (str && desktop.m.SendKeyUnicode) {
+                for (var i = 0; i < str.length; i++) {
+                    var c = str.charCodeAt(i);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, c);
+                    desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, c);
+                }
+            }
+        }
+
+        function onSoftKeyboardFocusChange(focused) {
+            // Update the toggle button icon: solid keyboard = open, regular = closed
+            var btn = Q('DeskSoftKbdBtn');
+            if (btn) {
+                var icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = focused ? 'fa-solid fa-keyboard text-warning' : 'fa-solid fa-keyboard';
+                }
+            }
+        }
+
+        function toggleMobileKeyboard() {
+            var kb = Q('softKeyboard');
+            if (!kb) return;
+            if (document.activeElement === kb) { kb.blur(); } else { kb.focus(); }
         }
 
         function dtouchSendClick(clientX, clientY, button) {

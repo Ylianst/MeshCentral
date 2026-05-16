@@ -4309,6 +4309,8 @@ body.is-mobile #deskMobileActions { display: flex !important; flex-shrink: 0 !im
 body.is-mobile #deskMobileActions .btn { white-space: nowrap !important; }
 /* Clipboard dialog button moved into the More panel on mobile */
 body.is-mobile #DeskClip { display: none !important; }
+/* Soft-keyboard toggle button: hidden on desktop, visible on mobile */
+body.is-mobile #DeskSoftKbdBtn { display: inline-flex !important; align-items: center; }
 
 
 
