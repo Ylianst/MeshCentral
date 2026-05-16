@@ -4309,6 +4309,7 @@
                                     if (message.event.node.intelamt.warn != null) { node.intelamt.warn = message.event.node.intelamt.warn; } else { delete node.intelamt.warn; }
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
+                                if (message.event.node.lsc != null) { node.lsc = message.event.node.lsc; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
                                 if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
@@ -7077,7 +7078,8 @@
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname ? (n.rname.split(',').join('')) : '') + '","' + (n.host ? (n.host.split(',').join('')) : '') + '","' + n.icon + '","' + (n.ip ? n.ip : '') + '","' + (n.osdesc ? (n.osdesc.split(',').join('')) : '') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn ? n.conn : '') + '","' + (n.pwr ? n.pwr : '') + '"';
-                    if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; } else { csv += ',,,'; }
+                    if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; }
+                    else if (typeof n.lsc == 'object') { csv += ',"' + csvClean(n.lsc.antiVirus) + '",,"' + csvClean(n.lsc.firewall) + '"'; } else { csv += ',,,'; }
                     if (typeof n.volumes == 'object') {
                         var bitlockerdetails = '', firstbitlocker = true;
                         for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
@@ -8670,6 +8672,14 @@
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
+                }
+
+                // Linux Security Central
+                if (node.lsc) {
+                    var y = [];
+                    if (node.lsc.antiVirus != null) { if (node.lsc.antiVirus == 'OK') { y.push("AV" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("AV" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                    if (node.lsc.firewall != null) { if (node.lsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                    if (y.length > 0) x += addDeviceAttribute("Linux Security", y.join(', '));
                 }
 
                 // Antivirus

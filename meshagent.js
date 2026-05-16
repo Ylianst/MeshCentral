@@ -1927,6 +1927,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.wsc) { device.wsc = {}; }
                     if (JSON.stringify(device.wsc) != JSON.stringify(command.wsc)) { /*changes.push('Windows Security Center status');*/ device.wsc = command.wsc; change = 1; log = 1; }
                 }
+                if (command.lsc != null) { // Linux Security Center
+                    if (!device.lsc) { device.lsc = {}; }
+                    if (JSON.stringify(device.lsc) != JSON.stringify(command.lsc)) { /*changes.push('Linux Security Center status');*/ device.lsc = command.lsc; change = 1; log = 1; }
+                }
                 if (command.defender != null) { // Defender For Windows Server
                     if (!device.defender) { device.defender = {}; }
                     if (JSON.stringify(device.defender) != JSON.stringify(command.defender)) { /*changes.push('Defender status');*/ device.defender = command.defender; change = 1; log = 1; }

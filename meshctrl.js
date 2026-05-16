@@ -2976,7 +2976,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     if (node.desc != null) { output["Description"] = node.desc; outputCount++; }
     if (node.icon != null) { output["Icon"] = node.icon; outputCount++; }
     if (node.tags) { output["Tags"] = node.tags; outputCount++; }
-    if (node.av) {
+    if (node.av && node.av.length > 0) {
         var av = [];
         for (var i in node.av) {
             if (typeof node.av[i]['product'] == 'string') {
@@ -2992,6 +2992,9 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     }
     if (typeof node.wsc == 'object') {
         output["WindowsSecurityCenter"] = node.wsc; outputCount++;
+    }
+    if (typeof node.lsc == 'object') {
+        output["LinuxSecurityCenter"] = node.lsc; outputCount++;
     }
     if (outputCount > 0) { info["General"] = output; }
 

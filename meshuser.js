@@ -2139,6 +2139,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.wanonly == true) && (typeof command.relayid != 'string')) { err = 'Invalid group type'; } // Local device group type wihtout relay is not allowed in WAN mode
                         else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
+                        else if ((command.parent != null) && (typeof command.parent !== 'string' || !parent.meshes[command.parent] || parent.meshes[command.parent].domain !== domain.id)) { err = 'Invalid parent group'; }
                         if ((err == null) && (command.meshtype == 4)) {
                             if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
                             else if (common.validateString(command.kvmhost, 1, 128) == false) { err = 'Invalid KVM hostname'; }
@@ -2162,6 +2163,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var links = {};
                         links[user._id] = { name: user.name, rights: 4294967295 };
                         mesh = { type: 'mesh', _id: meshid, name: command.meshname, mtype: command.meshtype, desc: command.desc, domain: domain.id, links: links, creation: Date.now(), creatorid: user._id, creatorname: user.name };
+
+                        // Set parent mesh if provided
+                        if (command.parent && parent.meshes[command.parent]) { mesh.parent = command.parent; }
 
                         // Add flags and consent if present
                         if (typeof command.flags == 'number') { mesh.flags = command.flags; }
@@ -4336,7 +4340,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
-                                if (doc.userid != user._id) { delete doc.url; } // If this is not the user who created this link, don't give the link.
+                                if ((user.siteadmin !== SITERIGHT_ADMIN) && (doc.userid != user._id)) { delete doc.url; } // If this is not the user who created this link AND the user is not a site admin, don't give the link.
                                 okDocs.push(doc);
                             }
                         }
@@ -5281,6 +5285,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + (n.icon ? n.icon : 1) + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
                                             if (typeof n.wsc == 'object') {
                                                 output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
+                                            } else if (typeof n.lsc == 'object') {
+                                                output += ',' + csvClean(n.lsc.antiVirus ? n.lsc.antiVirus : '') + ',,' + csvClean(n.lsc.firewall ? n.lsc.firewall : '')
                                             } else { output += ',,,'; }
                                             if (typeof n.volumes == 'object') {
                                                 var bitlockerdetails = '', firstbitlocker = true;

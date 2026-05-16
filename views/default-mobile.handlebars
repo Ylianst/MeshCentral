@@ -2099,6 +2099,7 @@
                                     if (message.event.node.intelamt.warn != null) { node.intelamt.warn = message.event.node.intelamt.warn; } else { delete node.intelamt.warn; }
                                 }
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
+                                if (message.event.node.lsc != null) { node.lsc = message.event.node.lsc; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
                                 if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 node.namel = node.name.toLowerCase();
@@ -6544,6 +6545,14 @@
                 if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                 if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                 if (y.length > 0) x += addDetailItem("Windows Defender", y.join(', '));
+            }
+
+            // Linux Security Central
+            if (node.lsc) {
+                var y = [];
+                if (node.lsc.antiVirus != null) { if (node.lsc.antiVirus == 'OK') { y.push("AV" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("AV" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                if (node.lsc.firewall != null) { if (node.lsc.firewall == 'OK') { y.push("Firewall" + ' - <span style=color:green>' + "OK" + '</span>'); } else { y.push("Firewall" + ' - <span style=color:red>' + "BAD" + '</span>'); } }
+                if (y.length > 0) x += addDetailItem("Linux Security", y.join(', '));
             }
 
             // Antivirus

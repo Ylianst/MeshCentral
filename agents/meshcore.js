@@ -5125,6 +5125,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
                     response = JSON.stringify(require('win-info').av(), null, 1);
+                } if (process.platform == 'linux') {
+                    response = JSON.stringify(require('linux-info').av(), null, 1);
                 } else {
                     response = 'Not supported on the platform';
                 }
@@ -6376,6 +6378,18 @@ function sendPeriodicServerUpdate(flags, force) {
         try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
         //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
     }
+    // Update Linux AV/Firewall information
+    if ((flags & 4) && (process.platform == 'linux')) {
+        try {
+            var lsc = {};
+            var avResult = require('linux-info').av();
+            if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
+            var fwResult = require('linux-info').firewall();
+            if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
+            if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
+        } catch (ex) { }
+    }
+
     if (process.platform == 'win32') {
         if (require('MeshAgent')._securitycenter == null) {
             try {
