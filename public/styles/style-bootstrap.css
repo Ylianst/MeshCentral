@@ -4292,9 +4292,12 @@ body.is-mobile #deskarea4 {
     font-size: 12px;
 }
 
-/* Hide keyboard-shortcut selector — not useful on mobile */
-body.is-mobile #deskkeys,
-body.is-mobile #DeskWD { display: none !important; }
+/* Keyboard shortcut selector: constrain width on mobile so it doesn't
+   crowd the other buttons in the scrollable deskarea4 bar. */
+body.is-mobile #deskkeys {
+    max-width: 130px;
+    font-size: 12px;
+}
 
 /* Move Actions + Settings into the "More button" panel on mobile */
 body.is-mobile #deskActionsBtn,
@@ -4302,7 +4305,11 @@ body.is-mobile #deskActionsSettings { display: none !important; }
 
 /* Replace the desktop icon spray with the "More button" dropdown on mobile */
 body.is-mobile #deskarea4Icons { display: none !important; }
-body.is-mobile #deskMobileActions { display: flex !important; }
+body.is-mobile #deskMobileActions { display: flex !important; flex-shrink: 0 !important; }
+body.is-mobile #deskMobileActions .btn { white-space: nowrap !important; }
+/* Clipboard dialog button moved into the More panel on mobile */
+body.is-mobile #DeskClip { display: none !important; }
+
 
 
 /* fulldesk = remote-desktop fullscreen mode (body class added by deskToggleFull()).

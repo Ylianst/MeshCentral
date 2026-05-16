@@ -1098,7 +1098,9 @@
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.28)">
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskCustomizeKeys();deskCloseMobileActions()"><i class="fa-solid fa-sliders fa-fw me-2 text-primary"></i>Customize Shortcuts</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskRefreshFunction();deskCloseMobileActions()"><i class="fa-solid fa-rotate fa-fw me-2 text-primary"></i>Refresh Desktop</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskClip();deskCloseMobileActions()"><i class="fa-solid fa-paste fa-fw me-2 text-primary"></i>Clipboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskClipboardOutFunction();deskCloseMobileActions()"><i class="fa-solid fa-clipboard fa-fw me-2 text-primary"></i>Upload Clipboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceUrlFunction();deskCloseMobileActions()"><i class="fa-solid fa-globe fa-fw me-2 text-primary"></i>Open URL on Remote</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceLockFunction();deskCloseMobileActions()"><i class="fa-solid fa-lock fa-fw me-2 text-primary"></i>Lock Remote</a>
@@ -11383,16 +11385,28 @@
         // Customize keyboard shortcuts
         function deskCustomizeKeys() {
             if (xxdialogMode) return;
-            var x = '<div id=d2shortcuts style="width:100%;height:180px;padding:4px;overflow-y:auto;border:1px solid gray"></div><div style=width:100%;padding:5px>';
-            x += '<label><input id=d1kshift type=checkbox class="form-check-input me-2" /> ' + "Shift" + '</label><label> <input id=d1kalt type=checkbox class="form-check-input me-2" /> ' + "Alt" + '</label><label> <input id=d1kctrl type=checkbox class="form-check-input me-2" /> ' + "Ctrl" + '</label> <input id=d1kwin type=checkbox class="form-check-input me-2" /> ' + "Win" + '</label>';
-            x += ' <select id=d2keySelect>';
+            // Shortcut list
+            var x = '<div id="d2shortcuts" class="list-group mb-3" style="max-height:200px;overflow-y:auto"></div>';
+            // Modifier checkboxes
+            x += '<div class="d-flex flex-wrap gap-3 mb-2">';
+            x += '<div class="form-check"><input id="d1kshift" type="checkbox" class="form-check-input"><label class="form-check-label" for="d1kshift">Shift</label></div>';
+            x += '<div class="form-check"><input id="d1kalt"   type="checkbox" class="form-check-input"><label class="form-check-label" for="d1kalt">Alt</label></div>';
+            x += '<div class="form-check"><input id="d1kctrl"  type="checkbox" class="form-check-input"><label class="form-check-label" for="d1kctrl">Ctrl</label></div>';
+            x += '<div class="form-check"><input id="d1kwin"   type="checkbox" class="form-check-input"><label class="form-check-label" for="d1kwin">Win</label></div>';
+            x += '</div>';
+            // Key select + Add button
+            x += '<div class="d-flex gap-2 mb-3">';
+            x += '<select id="d2keySelect" class="form-select form-select-sm">';
             for (var i in keyStrings) { x += '<option value=' + i + '>' + keyStrings[i] + '</option>'; }
             for (var i = 1; i <= 12; i++) { x += '<option value=' + (i + 111) + '>F' + i + '</option>'; }
             for (var i = 0; i < 10; i++) { x += '<option value=' + (i + 48) + '>' + i + '</option>'; }
             for (var i = 0; i < 26; i++) { x += '<option value=' + (i + 65) + '>' + String.fromCharCode(i + 65) + '</option>'; }
-            x += '</select> <input type=button value=' + "Add" + ' onclick=addDeskCustomizeKey() /></div>';
-            x += '<div style=width:100%;padding:2px;text-align:center><input type=button value="' + "Restore Default Keyboard Shortcuts" + '" onclick=restoreDeskCustomizeKey() /></div>';
-            setModalContent('xxAddAgent', "Keyboard Shortcuts Customization", x);
+            x += '</select>';
+            x += '<button type="button" class="btn btn-primary btn-sm flex-shrink-0" onclick="addDeskCustomizeKey()">Add</button>';
+            x += '</div>';
+            // Restore defaults
+            x += '<button type="button" class="btn btn-outline-secondary btn-sm w-100" onclick="restoreDeskCustomizeKey()">Restore Default Shortcuts</button>';
+            setModalContent('xxAddAgent', "Keyboard Shortcuts", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => deskCustomizeKeysEx());
             deskUpdateShortcutList();
         }
@@ -11403,14 +11417,22 @@
         }
 
         function deskUpdateShortcutList() {
-            var x = '';
+            var x = '', last = deskKeyboardShortcuts.length - 1;
             for (var i in deskKeyboardShortcuts) {
-                var kt = keyShortcutTotext(deskKeyboardShortcuts[i]), orderButtons = '';
-                if (i != (deskKeyboardShortcuts.length - 1)) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c2.png" onclick=deskCustomizeKeyDown(' + deskKeyboardShortcuts[i] + ')>'; }
-                if (i != 0) { orderButtons += '<img width=8 height=8 style=float:right;cursor:pointer;padding:3px src="images/c3.png" onclick=deskCustomizeKeyUp(' + deskKeyboardShortcuts[i] + ')>'; }
-                x += '<div style="width:100%;background-color:#AAA;border-radius:4px;margin-bottom:4px;padding:4px;text-align:left;box-sizing:border-box" value=' + deskKeyboardShortcuts[i] + '>' + kt + '<img width=10 height=10 style=float:right;cursor:pointer;padding:2px;margin-left:8px src="images/trash.png" onclick=removeDeskCustomizeKey(' + deskKeyboardShortcuts[i] + ')>' + orderButtons + '</div>';
+                var k = deskKeyboardShortcuts[i];
+                x += '<div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 gap-2">';
+                x += '<span class="flex-grow-1">' + keyShortcutTotext(k) + '</span>';
+                x += '<div class="d-flex gap-1 flex-shrink-0">';
+                if (parseInt(i) > 0) {
+                    x += '<button type="button" class="btn btn-outline-secondary btn-sm" onclick="deskCustomizeKeyUp(' + k + ')" title="Move up"><i class="fa-solid fa-arrow-up fa-xs"></i></button>';
+                }
+                if (parseInt(i) < last) {
+                    x += '<button type="button" class="btn btn-outline-secondary btn-sm" onclick="deskCustomizeKeyDown(' + k + ')" title="Move down"><i class="fa-solid fa-arrow-down fa-xs"></i></button>';
+                }
+                x += '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDeskCustomizeKey(' + k + ')" title="Remove"><i class="fa-solid fa-trash fa-xs"></i></button>';
+                x += '</div></div>';
             }
-            if (x == '') { x = '<i>' + "No keyboard shortcuts defined" + '</i>'; }
+            if (x == '') { x = '<div class="list-group-item text-muted fst-italic">No keyboard shortcuts defined</div>'; }
             QH('d2shortcuts', x);
         }
 
@@ -11450,7 +11472,16 @@
             if (Q('d1kalt').checked) { k |= 0x020000; }
             if (Q('d1kctrl').checked) { k |= 0x080000; }
             if (Q('d1kwin').checked) { k |= 0x100000; }
-            if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) { deskKeyboardShortcuts.push(k); deskUpdateShortcutList(); }
+            if ((k > 0) && (deskKeyboardShortcuts.indexOf(k) == -1)) {
+                deskKeyboardShortcuts.push(k);
+                deskUpdateShortcutList();
+                // Reset form so the next shortcut starts fresh
+                Q('d1kshift').checked = false;
+                Q('d1kalt').checked = false;
+                Q('d1kctrl').checked = false;
+                Q('d1kwin').checked = false;
+                Q('d2keySelect').selectedIndex = 0;
+            }
         }
 
         // Customize keyboard strings
