@@ -4324,6 +4324,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         {
                             response = 'Proper usage: taskbar HIDE|SHOW [TSID]';
                             break;
+                        }
+                }
+                break;
             case 'printers':
                 if (process.platform != 'win32') {
                     response = 'Unknown command "printers", type "help" for list of available commands.';
