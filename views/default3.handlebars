@@ -10722,6 +10722,45 @@
                             c.removeEventListener('touchend', dtouchend);
                             _origUngrab.call(desktop.m);
                         };
+                        // Override SendMouseMsg to fix the bounds check for rotated canvas.
+                        // After setRotation(1), canvas.width=1080 & canvas.height=1920 (swapped).
+                        // The original check is X<=canvas.width (1080), but our rotation-corrected
+                        // X (= remote.x) can be up to 1920 — clicks in the lower half of the
+                        // rotated view are silently dropped. We replace the check with the correct
+                        // unrotated remote dimensions.
+                        (function() {
+                            var dm = desktop.m, _origSMM = dm.SendMouseMsg;
+                            dm.SendMouseMsg = function(Action, event) {
+                                var rot = this.rotation;
+                                if (!rot) return _origSMM.call(this, Action, event);
+                                if (Action == null || !this.Canvas) return;
+                                var cw = this.Canvas.canvas.width, ch = this.Canvas.canvas.height;
+                                var ScaleW = cw / this.CanvasId.clientWidth;
+                                var ScaleH = ch / this.CanvasId.clientHeight;
+                                var off = this.GetPositionOfControl(this.Canvas.canvas);
+                                var X = (event.pageX - off[0]) * ScaleW;
+                                var Y = (event.pageY - off[1]) * ScaleH;
+                                if (event.addx) X += event.addx;
+                                if (event.addy) Y += event.addy;
+                                // Correct max: for rot=1,3 remote.x<=ch and remote.y<=cw (unrotated dims)
+                                var maxX = (rot===1||rot===3) ? ch : cw;
+                                var maxY = (rot===1||rot===3) ? cw : ch;
+                                if (X<0||X>maxX||Y<0||Y>maxY) return;
+                                var Button = 0;
+                                if (Action===this.KeyAction.UP||Action===this.KeyAction.DOWN) {
+                                    if (event.which) { Button=(event.which===1)?this.MouseButton.LEFT:((event.which===2)?this.MouseButton.MIDDLE:this.MouseButton.RIGHT); }
+                                    else if (typeof event.button==='number') { Button=(event.button===0)?this.MouseButton.LEFT:((event.button===1)?this.MouseButton.MIDDLE:this.MouseButton.RIGHT); }
+                                }
+                                if (this.SwapMouse) { if(Button===this.MouseButton.LEFT){Button=this.MouseButton.RIGHT;}else if(Button===this.MouseButton.RIGHT){Button=this.MouseButton.LEFT;} }
+                                var msg = String.fromCharCode(0x00,this.InputType.MOUSE,0x00,0x0A,0x00,
+                                    (Action===this.KeyAction.DOWN?Button:(Button*2)&0xFF),
+                                    ((X/256)&0xFF),(X&0xFF),((Y/256)&0xFF),(Y&0xFF));
+                                if (this.State===3) {
+                                    if (Action===this.KeyAction.NONE) { if(this.Alternate===0||this.ipad){this.send(msg);this.Alternate=1;}else{this.Alternate=0;} }
+                                    else { this.send(msg); }
+                                }
+                            };
+                        })();
                     }
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function (ms) { /* console.log('latency', ms); */ updateSessionTime(); };
