@@ -13409,6 +13409,12 @@
                 const date = printDateTime(lastBootUpTime);
                 x += addDetailItem("Last Boot Up Time", date);
             }
+            if (hardware.linux && hardware.linux.arch) {
+                var arch = hardware.linux.arch;
+                x += addDetailItem("Architecture", (['x86_64','amd64'].includes(arch) ? "64-bit" : ['i686','x86','i586'].includes(arch) ? "32-bit" : EscapeHtml(arch)), s);
+            }
+            if (hardware.linux && hardware.linux.kernel_release) { x += addDetailItem("Kernel Release", EscapeHtml(hardware.linux.kernel_release), s); }
+            if (hardware.linux && hardware.linux.kernel_build) { x += addDetailItem("Kernel Build", EscapeHtml(hardware.linux.kernel_build), s); }
             if (hardware.darwin && hardware.darwin.LastBootUpTime) {
                 var lastBootUpTime = new Date(hardware.darwin.LastBootUpTime * 1000); // must times by 1000 even tho timestamp is correct?
                 const date = printDateTime(lastBootUpTime);

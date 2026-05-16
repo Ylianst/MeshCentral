@@ -2998,11 +2998,16 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     // Operating System
     var hardware = null;
     if ((sysinfo != null) && (sysinfo.hardware != null)) { hardware = sysinfo.hardware; }
-    if ((hardware && hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+    if ((hardware && hardware.windows && hardware.windows.osinfo) || (hardware && hardware.linux) || node.osdesc) {
         var output = {}, outputCount = 0;
         if (node.rname) { output["Name"] = node.rname; outputCount++; }
         if (node.osdesc) { output["Version"] = node.osdesc; outputCount++; }
         if (hardware && hardware.windows && hardware.windows.osinfo) { var m = hardware.windows.osinfo; if (m.OSArchitecture) { output["Architecture"] = m.OSArchitecture; outputCount++; } }
+        if (hardware && hardware.linux) {
+            if (hardware.linux.arch) { output["Architecture"] = hardware.linux.arch; outputCount++; }
+            if (hardware.linux.kernel_release) { output["Kernel Release"] = hardware.linux.kernel_release; outputCount++; }
+            if (hardware.linux.kernel_build) { output["Kernel Build"] = hardware.linux.kernel_build; outputCount++; }
+        }
         if (outputCount > 0) { info["Operating System"] = output; }
     }
 

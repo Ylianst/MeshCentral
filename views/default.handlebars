@@ -12361,6 +12361,16 @@
                 const date = printDateTime(lastBootUpTime);
                 x += addDetailItem("Last Boot Up Time", date);
             }
+            if(hardware.linux && hardware.linux.kernel_release){
+                x += addDetailItem("Kernel Release", EscapeHtml(hardware.linux.kernel_release), s);
+            }
+            if(hardware.linux && hardware.linux.kernel_build){
+                x += addDetailItem("Kernel Build", EscapeHtml(hardware.linux.kernel_build), s);
+            }
+            if (hardware.linux && hardware.linux.arch) {
+                var arch = hardware.linux.arch;
+                x += addDetailItem("Architecture", (['x86_64','amd64'].includes(arch) ? "64-bit" : ['i686','x86','i586'].includes(arch) ? "32-bit" : EscapeHtml(arch)), s);
+            }
             if (x != '') { sections.push({ name: "Operating System", html: x, img: 'software64.png'}); }    
 
             // MeshAgent

@@ -161,6 +161,25 @@ function linux_identifiers()
         }
     } catch (xx) { }
 
+    // Kernel info
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('uname -r\nexit\n');
+    child.waitExit();
+    try { ret['kernel_release'] = child.stdout.str.trim(); } catch (xx) { }
+
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('uname -v\nexit\n');
+    child.waitExit();
+    try { ret['kernel_build'] = child.stdout.str.trim(); } catch (xx) { }
+
+    child = require('child_process').execFile('/bin/sh', ['sh']);
+    child.stdout.str = ''; child.stdout.on('data', dataHandler);
+    child.stdin.write('uname -m\nexit\n');
+    child.waitExit();
+    try { ret['arch'] = child.stdout.str.trim(); } catch (xx) { }
+
     // Fetch GPU info
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
