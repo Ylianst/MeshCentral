@@ -1114,6 +1114,7 @@
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleTrackpad();deskCloseMobileActions()"><i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>Toggle Trackpad Mode</a>
+                        <a id="deskRightClickItem" class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleRightClickMode();deskCloseMobileActions()"><i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>Enable Right-click Mode</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskCustomizeKeys();deskCloseMobileActions()"><i class="fa-solid fa-sliders fa-fw me-2 text-primary"></i>Customize Shortcuts</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskRefreshFunction();deskCloseMobileActions()"><i class="fa-solid fa-rotate fa-fw me-2 text-primary"></i>Refresh Desktop</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskClip();deskCloseMobileActions()"><i class="fa-solid fa-paste fa-fw me-2 text-primary"></i>Clipboard</a>
@@ -9591,10 +9592,25 @@
             desktop.m.SendRefresh();
         }
 
+        // Adapted from Classic Mobile's deskChangeMouseButton()
+        function deskToggleRightClickMode() {
+            if (xxdialogMode || desktop == null) return;
+            desktop.m.SwapMouse = !desktop.m.SwapMouse;
+        }
+
         function deskToggleMobileActions() {
             var panel = Q('deskMobileActionsPanel'), backdrop = Q('deskMobileActionsBackdrop');
             if (!panel) return;
             var show = (panel.style.display === 'none');
+            if (show) {
+                // Update right-click label to reflect current state before showing
+                var rc = Q('deskRightClickItem');
+                if (rc) {
+                    var active = desktop && desktop.m && desktop.m.SwapMouse;
+                    rc.innerHTML = '<i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>'
+                        + (active ? 'Disable Right-click Mode' : 'Enable Right-click Mode');
+                }
+            }
             QV('deskMobileActionsPanel', show);
             QV('deskMobileActionsBackdrop', show);
         }
