@@ -5662,10 +5662,10 @@
             if (features & 64) {
                 QV('urlInviteDiv', Q('d2InviteType').value == 0);
                 QV('d2agentexpirediv', Q('agentInviteNameOs').value == 4);
-                QV('d2agentInstallTypeDiv2', Q('agentInviteNameOs').value < 2);
+                QV('d2agentInstallTypeDiv2', [0,1,2,3].indexOf(parseInt(Q('agentInviteNameOs').value)) > -1);
                 QV('emailInviteDiv', Q('d2InviteType').value == 1);
             }
-            QV('d2agentInstallTypeDiv', parseInt(Q('d2agentType').value) < 2);
+            QV('d2agentInstallTypeDiv', [0,1,2,4].indexOf(parseInt(Q('d2agentType').value)) > -1);
             validateAgentInvite();
             d2RequestInvitationLink();
         }
@@ -14887,7 +14887,7 @@
             QE('agentType', Q('agentJoinCheck').checked);
             QE('agentInviteType', Q('agentJoinCheck').checked);
             QE('idx_dlgOkButton', (Q('agentJoinCheck').checked == false) || (ok));
-            QV('d2agentInstallTypeDiv', parseInt(Q('agentType').value) < 2);
+            QV('d2agentInstallTypeDiv', [0,1,2,4].indexOf(parseInt(Q('agentType').value)) > -1);
         }
 
         function p20editmeshInviteCodeEx() {
