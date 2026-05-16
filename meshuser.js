@@ -2852,7 +2852,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Remove('si' + node._id);                          // Remove system information
                             db.Remove('al' + node._id);                          // Remove error log last time
                             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
-                            db.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                            db.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node
                             db.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
                             if (typeof node.pmt == 'string') { db.Remove('pmt_' + node.pmt); } // Remove Push Messaging Token
                             db.Get('ra' + node._id, function (err, nodes) {

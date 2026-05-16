@@ -98,7 +98,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             db.Remove('si' + obj.dbNodeKey);                          // Remove system information
             db.Remove('al' + obj.dbNodeKey);                          // Remove error log last time
             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(obj.dbNodeKey); }  // Remove SMBios data
-            db.RemoveAllNodeEvents(obj.dbNodeKey);                    // Remove all events for this node
+            db.RemoveAllNodeEvents(domain.id, obj.dbNodeKey);         // Remove all events for this node
             db.removeAllPowerEventsForNode(obj.dbNodeKey);            // Remove all power events for this node
 
             // Event node deletion
