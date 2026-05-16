@@ -390,9 +390,7 @@
             </div>
             <div id=p1 style="display:none">
                 <div id="p1title" class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h1>My Devices</h1>
-                    </div>
+                    <div class="fs-4 fw-bold">My Devices</div>
                     <div style="display:none" id="devListToolbarViewIcons">
                         <div id=devViewPageState style="float:left;line-height:32px;height:32px;font-size:16px;display:none"></div>
                         <div tabindex=0 id=devViewPageButton1 class=viewSelector onclick=onDeviceViewPageChange(1)
@@ -659,8 +657,8 @@
                 </div>
             </div>
             <div id=p3 style="display:none">
-                <div id="p3title">
-                    <h1>My Events</h1>
+                <div id="p3title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Events</div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -694,8 +692,8 @@
                 <div id=p3events></div>
             </div>
             <div id=p4 style="display:none">
-                <div id="p4title">
-                    <h1>My Users</h1>
+                <div id="p4title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Users</div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -705,7 +703,7 @@
                                 <input type=button id=UsersGroupActionButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Group Action" onclick=p3usersGroupActionFunction() />
                                 <input id=UserNewAccountButton class="btn btn-success btn-sm me-1" type=button onclick=showCreateNewAccountDialog() value="New Account..." />
                                 <div class="btn-group me-1 mobileActionDropdown">
-                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">More&nbsp;<i class="fa-solid fa-chevron-down fa-xs"></i></button>
                                     <div class="dropdown-menu">
                                         <button type="button" class="dropdown-item" onclick="showUserBroadcastDialog()">Broadcast</button>
                                         <button type="button" class="dropdown-item" onclick="p4downloadUserInfo()">Download user information</button>
@@ -729,8 +727,8 @@
                 <div id="p3users"></div>
             </div>
             <div id=p5 style="display:none">
-                <div id="p5title">
-                    <h1>My Files</h1>
+                <div id="p5title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Files</div>
                 </div>
                 <table id="p5toolbar" class="table" cellpadding="0" cellspacing="0">
                     <tr>
@@ -749,7 +747,7 @@
                                 <input type=button id=p5CopyButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Copy" onclick="p5copyFile(0)" />
                                 <input type=button id=p5PasteButton class="btn btn-primary btn-sm me-1 desktopAction" disabled="disabled" value="Paste" onclick="p5pasteFile()" />
                                 <div class="btn-group me-1 mobileActionDropdown">
-                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">More&nbsp;<i class="fa-solid fa-chevron-down fa-xs"></i></button>
                                     <div class="dropdown-menu">
                                         <button type="button" disabled="disabled" id=p5MobileNewFolderButton class="dropdown-item" onclick="p5createfolder()">New Folder</button>
                                         <button type="button" disabled="disabled" id=p5MobileUploadButton class="dropdown-item" onclick="p5uploadFile()">Upload</button>
@@ -801,9 +799,9 @@
             </div>
             <div id=p6 style="display:none">
                 <div id="p6info" style="overflow-y:auto">
-                    <div id="p6title">
-                        <img id=MainMeshImage src="serverpic.ashx">
-                        <h1>My Server</h1>
+                    <div id="p6title" class="d-flex align-items-center">
+                        <div class="fs-4 fw-bold">My Server</div>
+                        <img id=MainMeshImage src="serverpic.ashx" class="ms-auto">
                     </div>
                     <div id="p2ServerActions">
                         <p><strong>Server actions</strong></p>
@@ -1317,7 +1315,7 @@
                                 <input type=button disabled="disabled" id=p13GoToFolderButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="GoTo" onclick="p13gotofolder()" />
                                 <input type=button disabled="disabled" id=p13OpenButton class="btn btn-primary me-1 btn-sm desktopFileAction" value="Open" onclick="p13openfilefolder()" />
                                 <div class="btn-group me-1 mobileFileActionDropdown">
-                                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">More</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">More&nbsp;<i class="fa-solid fa-chevron-down fa-xs"></i></button>
                                     <div class="dropdown-menu">
                                         <button type="button" disabled="disabled" id=p13MobileNewFolderButton class="dropdown-item" onclick="p13createfolder()">New Folder</button>
                                         <button type="button" disabled="disabled" id=p13MobileNewFileButton class="dropdown-item" onclick="p13createfile()">New File</button>
@@ -1676,8 +1674,8 @@
                 <div id=p31events style=""></div>
             </div>
             <div id=p40 style="display:none">
-                <div id="p40title">
-                    <h1>My Server Stats</h1>
+                <div id="p40title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Server Stats</div>
                 </div>
                 <div class="areaHead d-flex align-items-center flex-wrap p-1">
                     <div class="d-flex align-items-center">
@@ -1706,8 +1704,8 @@
                 <canvas id=serverMainStats style=""></canvas>
             </div>
             <div id=p41 style="display:none">
-                <div id="p41title">
-                    <h1>My Server Tracing</h1>
+                <div id="p41title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Server Tracing</div>
                 </div>
                 <div class="areaHead d-flex align-items-center flex-wrap p-1">
                     <div class="d-flex align-items-center">
@@ -1729,7 +1727,9 @@
                 <div id=p41events style=""></div>
             </div>
             <div id=p42 style="display:none">
-                <h1>My Server Plugins</h1>
+                <div id="p42title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Server Plugins</div>
+                </div>
                 <div class="areaHead">
                     <div class="toright2">
                     </div>
@@ -1773,8 +1773,8 @@
                     style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
             </div>
             <div id=p50 style="display:none">
-                <div id="p50title">
-                    <h1>My User Groups</h1>
+                <div id="p50title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My User Groups</div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1819,8 +1819,8 @@
                 </div>
             </div>
             <div id=p52 style="display:none">
-                <div id="p52title">
-                    <h1>My User Recordings</h1>
+                <div id="p52title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My User Recordings</div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1837,8 +1837,8 @@
                 <div id=p52recordings style="overflow-y:auto"></div>
             </div>
             <div id=p60 style="display:none">
-                <div id="p60title">
-                    <h1>My Reports</h1>
+                <div id="p60title" class="d-flex align-items-center">
+                    <div class="fs-4 fw-bold">My Reports</div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -14584,13 +14584,15 @@
                 QH('p15statetext', '');
                 QH('p15coreName', '');
                 QV('p15outputselecttd', false);
+                QV('p15BackButton', false); // no "back" navigation from server console
+                QC('p15title').add('no-back-btn'); // add left-padding since no back button
 
                 if (samenode == false) {
                     QH('p15agentConsoleText', consoleServerText);
                     Q('p15agentConsoleText').scrollTop = Q('p15agentConsoleText').scrollHeight;
                 }
             } else {
-                // Setup the console
+                // Setup device console
                 var samenode = (consoleNode == currentNode);
                 consoleNode = currentNode;
 

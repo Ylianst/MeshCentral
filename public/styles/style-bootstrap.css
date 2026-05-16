@@ -3533,6 +3533,219 @@ body:not(.fullscreen) .notifiyBox {
 
 body.is-mobile #page_leftbar { display: none !important; }
 
+/* Device list: separator between items */
+/* List view (xxdevice2) rows — add padding and a subtle divider line */
+body.is-mobile #xdevices tr[name="xxdevice2"] > td:first-child {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+/* Group-header divs that are direct children of xdevices */
+body.is-mobile #xdevices > div { margin-top: 10px !important; }
+
+/* p5toolbarBottom: same transparent fix as p13toolbarBottom */
+#p5toolbarBottom .style6 { background: transparent !important; }
+
+/* All nav title bars (no back button): same style as device sub-panels
+   but with left padding instead of the blue back button.
+   Covers: My Devices(1) | My Events(3) | My Users(4) | My Files(5) |
+           My Server(6) | Stats(40) | Trace(41) | Plugins(42) |
+           User Groups(50) | Recordings(52) | My Reports(60) */
+body.is-mobile #p1title,
+body.is-mobile #p3title,  body.is-mobile #p4title,
+body.is-mobile #p5title,  body.is-mobile #p6title,
+body.is-mobile #p40title, body.is-mobile #p41title,
+body.is-mobile #p42title, body.is-mobile #p50title,
+body.is-mobile #p52title, body.is-mobile #p60title {
+    padding: 0 12px 0 15px !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
+    align-items: center !important;
+    display: flex !important;
+}
+body.night.is-mobile #p1title,
+body.night.is-mobile #p3title,  body.night.is-mobile #p4title,
+body.night.is-mobile #p5title,  body.night.is-mobile #p6title,
+body.night.is-mobile #p40title, body.night.is-mobile #p41title,
+body.night.is-mobile #p42title, body.night.is-mobile #p50title,
+body.night.is-mobile #p52title, body.night.is-mobile #p60title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* My Server: server icon small, right-aligned */
+body.is-mobile #MainMeshImage {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* "More" dropdowns: mobileActionDropdown (My Users/Files) +
+   mobileFileActionDropdown (Device Files tab) — shared styling 
+   Pill shape, item dividers, proper light/dark colours. */
+.mobileActionDropdown .dropdown-menu,
+.mobileFileActionDropdown .dropdown-menu {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.28) !important;
+    padding: 0 !important;
+    min-width: 200px !important;
+}
+.mobileActionDropdown .dropdown-item,
+.mobileFileActionDropdown .dropdown-item {
+    padding: 10px 16px !important;
+    font-size: 15px !important;
+    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+.mobileActionDropdown .dropdown-item:last-child,
+.mobileFileActionDropdown .dropdown-item:last-child { border-bottom: none !important; }
+/* Dark mode */
+.night .mobileActionDropdown .dropdown-menu,
+.night .mobileFileActionDropdown .dropdown-menu {
+    background: #1c1c1e !important;
+    border-color: #3a3a3c !important;
+}
+.night .mobileActionDropdown .dropdown-item,
+.night .mobileFileActionDropdown .dropdown-item {
+    color: #e5e5e7 !important;
+    border-bottom-color: rgba(255,255,255,0.1) !important;
+    background: transparent !important;
+}
+.night .mobileActionDropdown .dropdown-item:hover,
+.night .mobileActionDropdown .dropdown-item:focus,
+.night .mobileFileActionDropdown .dropdown-item:hover,
+.night .mobileFileActionDropdown .dropdown-item:focus {
+    background: rgba(255,255,255,0.08) !important;
+    color: #fff !important;
+}
+
+/* Title bar text: consistent 1rem across ALL panel titles
+   One rule covers both device sub-panels (p10–p19) and main-nav panels
+   (p3–p6) so font size, colour and line-height are identical everywhere. */
+body.is-mobile #p3title .fs-4,  body.is-mobile #p4title .fs-4,
+body.is-mobile #p5title .fs-4,  body.is-mobile #p6title .fs-4,
+body.is-mobile #p10title .fs-4, body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4, body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4, body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4, body.is-mobile #p17title .fs-4,
+body.is-mobile #p19title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
+/* All main-nav panels: flex-column so content fills height
+   Covers My Events(3), My Users(4), My Files(5), My Server(6),
+   Server Stats(40)/Trace(41)/Plugins(42),
+   User Groups(50)/Recordings(52), My Reports(60) */
+body.is-mobile #p1,
+body.is-mobile #p3,  body.is-mobile #p4,
+body.is-mobile #p5,  body.is-mobile #p6,
+body.is-mobile #p20, body.is-mobile #p21,
+body.is-mobile #p30, body.is-mobile #p31,
+body.is-mobile #p40, body.is-mobile #p41,
+body.is-mobile #p42, body.is-mobile #p50,
+body.is-mobile #p51, body.is-mobile #p52,
+body.is-mobile #p60 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+body.is-mobile #p1title,  body.is-mobile #p3title,
+body.is-mobile #p4title,  body.is-mobile #p5title,
+body.is-mobile #p40title, body.is-mobile #p41title,
+body.is-mobile #p42title, body.is-mobile #p50title,
+body.is-mobile #p52title, body.is-mobile #p60title { flex-shrink: 0 !important; }
+/* Events list fills remaining space */
+body.is-mobile #p3events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Users list fills remaining space */
+body.is-mobile #p3users {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Files table fills remaining space */
+body.is-mobile #p5filetable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* My Server: p6info fills remaining space. Also handles xdevices for p1. */
+body.is-mobile #p6info,
+body.is-mobile #xdevices {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Content areas that fill remaining flex height */
+body.is-mobile #p50groups,
+body.is-mobile #p52recordings,
+body.is-mobile #p41events,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+body.is-mobile #serverMainStats {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* User profile image: <picture> wraps a <img width="200" height="200">.
+   Must target the inner img since the HTML attribute beats CSS on the picture. */
+body.is-mobile #MainUserImage img,
+body.is-mobile #MainUserImageEx {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50%;
+    object-fit: cover;
+}
+/* Group/mesh image in p20 (group detail): same issue — target inner img */
+body.is-mobile #p20main #MainMeshImage img,
+body.is-mobile #p20main #MainMeshImage {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+/* Title text consistency: also cover the user/group detail panels */
+body.is-mobile #p40title .fs-4, body.is-mobile #p41title .fs-4,
+body.is-mobile #p42title .fs-4, body.is-mobile #p50title .fs-4,
+body.is-mobile #p51title .fs-4, body.is-mobile #p52title .fs-4,
+body.is-mobile #p60title .fs-4, body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
 body.is-mobile #MainSubMenuSpan,
 body.is-mobile #MeshSubMenuSpan,
 body.is-mobile #EventsSubMenuSpan,
@@ -3640,6 +3853,12 @@ body.is-mobile #column_l {
    screen edges. Structural bars, canvas, terminal stay full-width (not listed). */
 body.is-mobile #p10info,
 body.is-mobile #p2info,
+body.is-mobile #p6info,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info,
 body.is-mobile #xdevices,
 body.is-mobile #xdevicesmap,
 body.is-mobile #p3events,
@@ -3681,7 +3900,12 @@ body.is-mobile #p14title,
 body.is-mobile #p15title,
 body.is-mobile #p16title,
 body.is-mobile #p17title,
-body.is-mobile #p19title {
+body.is-mobile #p19title,
+body.is-mobile #p20title,
+body.is-mobile #p21title,
+body.is-mobile #p30title,
+body.is-mobile #p31title,
+body.is-mobile #p51title {
     padding: 0 12px 0 0 !important;
     background: #fff;
     min-height: 50px;
@@ -3690,6 +3914,23 @@ body.is-mobile #p19title {
     box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
     align-items: stretch !important;
     gap: 0;
+}
+
+/* p20title is nested inside p20main which has padding-left/right: 10px.
+   Negative margins cancel that padding so the title bar spans full width. */
+/* p20title and p6title live inside their scrollable parent (p20main / p6info)
+   which has padding: 0 10px. Negative margins cancel that so they span full width. */
+body.is-mobile #p20title,
+body.is-mobile #p6title {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+/* Server console (p15) without the back button: add left indent to match
+   other title bars that DO have the back button providing the indent.
+   The JS adds class 'no-back-btn' to p15title when view is 115. */
+body.is-mobile #p15title.no-back-btn {
+    padding-left: 15px !important;
 }
 
 /* Option bars (areaHead) below the title bar: slightly tinted so they're
@@ -3703,11 +3944,18 @@ body.night.is-mobile #p10title, body.night.is-mobile #p11title,
 body.night.is-mobile #p12title, body.night.is-mobile #p13title,
 body.night.is-mobile #p14title, body.night.is-mobile #p15title,
 body.night.is-mobile #p16title, body.night.is-mobile #p17title,
-body.night.is-mobile #p19title {
+body.night.is-mobile #p19title,
+body.night.is-mobile #p20title, body.night.is-mobile #p21title,
+body.night.is-mobile #p30title, body.night.is-mobile #p31title,
+body.night.is-mobile #p51title {
     box-shadow: 0 1px 0 0 #444 !important;
 }
 
 /* Back button: flush to screen left edge, masthead colour, pill-shaped right side */
+/* Back buttons: NO display:flex !important — QV() hides them with
+   element.style.display='none' (inline style). CSS !important would
+   override that, keeping the button visible even when it should hide
+   (e.g. server console reuses p15 but shouldn't show p15BackButton). */
 body.is-mobile #p10BackButton,
 body.is-mobile #p11BackButton,
 body.is-mobile #p12BackButton,
@@ -3716,12 +3964,17 @@ body.is-mobile #p14BackButton,
 body.is-mobile #p15BackButton,
 body.is-mobile #p16BackButton,
 body.is-mobile #p17BackButton,
-body.is-mobile #p19BackButton {
+body.is-mobile #p19BackButton,
+body.is-mobile #p20BackButton,
+body.is-mobile #p21BackButton,
+body.is-mobile #p30BackButton,
+body.is-mobile #p31BackButton,
+body.is-mobile #p51BackButton {
     background: #036;
     border-radius: 0 0 12px 0;
     padding: 0 14px !important;
     margin: 0 12px 0 0;
-    display: flex !important;
+    display: flex;     /* no !important — allows QV() to override with display:none */
     align-items: center;
     align-self: stretch;
     flex-shrink: 0;
@@ -3735,7 +3988,12 @@ body.is-mobile #p14BackButton .fa-square-caret-left,
 body.is-mobile #p15BackButton .fa-square-caret-left,
 body.is-mobile #p16BackButton .fa-square-caret-left,
 body.is-mobile #p17BackButton .fa-square-caret-left,
-body.is-mobile #p19BackButton .fa-square-caret-left {
+body.is-mobile #p19BackButton .fa-square-caret-left,
+body.is-mobile #p20BackButton .fa-square-caret-left,
+body.is-mobile #p21BackButton .fa-square-caret-left,
+body.is-mobile #p30BackButton .fa-square-caret-left,
+body.is-mobile #p31BackButton .fa-square-caret-left,
+body.is-mobile #p51BackButton .fa-square-caret-left {
     color: #fff !important;
     font-size: 1.2rem !important;
 }
@@ -3750,7 +4008,12 @@ body.is-mobile #p14title .fs-4,
 body.is-mobile #p15title .fs-4,
 body.is-mobile #p16title .fs-4,
 body.is-mobile #p17title .fs-4,
-body.is-mobile #p19title .fs-4 {
+body.is-mobile #p19title .fs-4,
+body.is-mobile #p20title .fs-4,
+body.is-mobile #p21title .fs-4,
+body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4,
+body.is-mobile #p51title .fs-4 {
     font-size: 1rem !important;
     color: #212529 !important;
     line-height: 1.25;
