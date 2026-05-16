@@ -908,6 +908,8 @@
                 </div>
             </div>
             <div id=p11 class="noselect" style="display:none">
+                <!-- Trackpad cursor -->
+                <img id="trackpadCursor" src="images/mobile-pointer.png" style="display:none;position:fixed;pointer-events:none;z-index:9999;width:24px;height:24px;filter:invert(1) drop-shadow(0 0 2px rgba(0,0,0,0.9))" />
                 <div id="p11title" class="d-flex align-items-center">
                     <div id="p11BackButton" class="pe-2">
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
@@ -1111,6 +1113,7 @@
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.28)">
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
+                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleTrackpad();deskCloseMobileActions()"><i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>Toggle Trackpad Mode</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskCustomizeKeys();deskCloseMobileActions()"><i class="fa-solid fa-sliders fa-fw me-2 text-primary"></i>Customize Shortcuts</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskRefreshFunction();deskCloseMobileActions()"><i class="fa-solid fa-rotate fa-fw me-2 text-primary"></i>Refresh Desktop</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskClip();deskCloseMobileActions()"><i class="fa-solid fa-paste fa-fw me-2 text-primary"></i>Clipboard</a>
@@ -12031,13 +12034,22 @@
 
         // Mobile touch input for remote desktop.
         // 1-finger tap          = left click on remote
-        // 1-finger long press   = right click on remote
-        // 1-finger drag         = move remote cursor (when Input enabled)
-        // 2-finger scroll       = mouse wheel on remote (natural scroll direction)
+        // Direct mode  — 1-finger tap=click, long-press=right-click, drag=cursor move
+        // Trackpad mode — 1-finger drag moves visible cursor; tap clicks at cursor position
+        // Both modes    — 2-finger scroll = mouse wheel on remote
         var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
         var dtouchMoved = false;
         var dtouchLongPressTimer = null;
         var dtouchTwoFingerLastY = 0;
+        // Trackpad state (mirrors Classic Mobile)
+        var trackpadMode      = false;
+        var trackpadLastX     = null, trackpadLastY = null;
+        var trackpadCurX      = 0, trackpadCurY  = 0;
+        var trackpadDown      = false;
+        var trackpadTapTimer  = null;
+        var trackpadTapMoved  = false;
+        var trackpadEdgeTimer = null;
+        var trackpadEdgeDX    = 0, trackpadEdgeDY = 0;
 
         function dtouchMakeEvent(clientX, clientY, button) {
             // When the canvas is rotated, crotX/crotY (agent-desktop-0.0.2.js) convert
@@ -12062,6 +12074,72 @@
 
         function dtouchGetModule() {
             return (webRtcDesktop && webRtcDesktop.softdesktop) ? webRtcDesktop.softdesktop.m : (desktop ? desktop.m : null);
+        }
+
+        // Trackpad mode (ported from Classic Mobile)
+        function deskToggleTrackpad() {
+            trackpadMode = !trackpadMode;
+            if (trackpadMode) {
+                var dp = Q('DeskParent'), r = dp.getBoundingClientRect();
+                trackpadMoveCursor(r.left + r.width / 2, r.top + r.height / 2);
+            } else {
+                trackpadStopEdgeScroll();
+                Q('trackpadCursor').style.display = 'none';
+                trackpadCurX = 0; trackpadCurY = 0;
+            }
+        }
+
+        function trackpadMoveCursor(clientX, clientY) {
+            var deskRect = Q('Desk').getBoundingClientRect();
+            // Clamp cursor within canvas bounds
+            var cx = Math.max(0, Math.min(deskRect.width,  clientX - deskRect.left));
+            var cy = Math.max(0, Math.min(deskRect.height, clientY - deskRect.top));
+            var cursor = Q('trackpadCursor');
+            // position:fixed -> coordinates are viewport-relative (never clipped by overflow:hidden)
+            cursor.style.left = (deskRect.left + cx) + 'px';
+            cursor.style.top  = (deskRect.top  + cy) + 'px';
+            cursor.style.display = 'block';
+            trackpadCurX = cx; trackpadCurY = cy;
+        }
+
+        function trackpadMakeEvent(button) {
+            // Build event at cursor position (not finger position); dtouchMakeEvent handles rotation
+            var rect = Q('Desk').getBoundingClientRect();
+            return dtouchMakeEvent(rect.left + trackpadCurX, rect.top + trackpadCurY, button);
+        }
+
+        function trackpadSendMove() {
+            var dm = dtouchGetModule();
+            if (!xxdialogMode && dm) dm.mousemove(trackpadMakeEvent(0));
+        }
+
+        function trackpadSendClick(button) {
+            var dm = dtouchGetModule();
+            if (!xxdialogMode && dm) { dm.mousedown(trackpadMakeEvent(button)); dm.mouseup(trackpadMakeEvent(button)); }
+        }
+
+        function trackpadStopEdgeScroll() {
+            if (trackpadEdgeTimer) { clearInterval(trackpadEdgeTimer); trackpadEdgeTimer = null; }
+            trackpadEdgeDX = 0; trackpadEdgeDY = 0;
+        }
+
+        function trackpadStartEdgeScroll() {
+            if (trackpadEdgeTimer) return;
+            trackpadEdgeTimer = setInterval(function() {
+                if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
+                var dp = Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+            }, 16);
+        }
+
+        function trackpadCheckEdge() {
+            var deskRect = Q('Desk').getBoundingClientRect();
+            // Use cursor position relative to canvas for edge detection
+            var cx = deskRect.left + trackpadCurX, cy = deskRect.top + trackpadCurY, zone = 60;
+            trackpadEdgeDX = cx < deskRect.left  + zone ? -Math.round((zone-(cx-deskRect.left))/4) :
+                             cx > deskRect.right  - zone ?  Math.round((zone-(deskRect.right-cx))/4) : 0;
+            trackpadEdgeDY = cy < deskRect.top   + zone ? -Math.round((zone-(cy-deskRect.top))/4) :
+                             cy > deskRect.bottom - zone ?  Math.round((zone-(deskRect.bottom-cy))/4) : 0;
+            if (trackpadEdgeDX || trackpadEdgeDY) trackpadStartEdgeScroll(); else trackpadStopEdgeScroll();
         }
 
         // Mobile soft-keyboard: focusing #softKeyboard shows the OS keyboard.
@@ -12112,6 +12190,18 @@
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
+            // Trackpad mode
+            if (trackpadMode) {
+                trackpadStopEdgeScroll();
+                if (e.touches.length !== 1) return;
+                var t = e.touches[0];
+                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                trackpadTapMoved = false;
+                trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
+                trackpadDown = false;
+                return;
+            }
+            // Direct mode
             if (e.touches.length === 2) {
                 dtouchTwoFingerLastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 return;
@@ -12132,17 +12222,31 @@
             setSessionActivity();
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
+            // Trackpad mode
+            if (trackpadMode) {
+                if (e.touches.length !== 1) return;
+                var t = e.touches[0];
+                if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
+                var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
+                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) trackpadTapMoved = true;
+                var rect = Q('Desk').getBoundingClientRect();
+                trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
+                trackpadSendMove();
+                trackpadCheckEdge();
+                return;
+            }
+            // Direct mode
             if (e.touches.length === 2) {
-                // Two-finger: send mouse-wheel to remote (natural scroll: swipe up = scroll down)
                 var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                var dy = dtouchTwoFingerLastY - midY; // positive = fingers moved up
+                var dy = dtouchTwoFingerLastY - midY;
                 dtouchTwoFingerLastY = midY;
                 if (Math.abs(dy) > 1 && Q('DeskControl').checked) {
                     var dm = dtouchGetModule();
                     if (dm && dm.SendMouseMsg && dm.KeyAction) {
                         var wev = dtouchMakeEvent(midX, midY, 0);
-                        wev.wheelDelta = -dy * 4; // negative: swipe up -> scroll down
+                        wev.wheelDelta = -dy * 4;
                         dm.SendMouseMsg(dm.KeyAction.SCROLL, wev);
                     }
                 }
@@ -12150,24 +12254,34 @@
             }
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
-            dtouchLastX = t.clientX;
-            dtouchLastY = t.clientY;
+            dtouchLastX = t.clientX; dtouchLastY = t.clientY;
             if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             }
-            // One-finger drag: move remote cursor when Input is enabled
             if (dtouchMoved && Q('DeskControl').checked) {
                 var dm = dtouchGetModule();
-                if (dm) { dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0));
             }
         }
 
         function dtouchend(e) {
             setSessionActivity();
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
-            if (xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+            if (xxdialogMode || desktop == null) return;
             e.preventDefault();
+            // Trackpad mode
+            if (trackpadMode) {
+                trackpadStopEdgeScroll();
+                trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
+                if (trackpadTapTimer !== null && !trackpadTapMoved) {
+                    clearTimeout(trackpadTapTimer); trackpadTapTimer = null;
+                    if (Q('DeskControl').checked) trackpadSendClick(0);
+                }
+                return;
+            }
+            // Direct mode
+            if (!Q('DeskControl').checked) return;
             if (dtouchMoved || e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
             dtouchSendClick(t.clientX, t.clientY, 0);
