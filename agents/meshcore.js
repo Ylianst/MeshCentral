@@ -1323,7 +1323,10 @@ function handleServerCommand(data) {
                             if (!uninstallCmd || uninstallCmd.trim() === '' || uninstallCmd.trim() === '\\') {
                                 sendSoftwareResponse({ success: false, error: 'No valid uninstall command available' });
                             } else {
-                                var logFile = 'C:\\ProgramData\\MeshAgent_Uninstall.log';
+                                var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
+                                try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
+                                var logFile = logDir + '\\MeshAgent_Uninstall.log';
+
                                 var child_process = require('child_process');
                                 var cmdPath = process.env['windir'] + '\\system32\\cmd.exe';
                                 
@@ -1379,7 +1382,9 @@ function handleServerCommand(data) {
                             var rawName = data.value.substring(18).trim();
                             var packageName = rawName.replace(/"/g, "").replace(/'/g, ""); 
                             
-                            var logFile = 'C:\\ProgramData\\MeshAgent_StoreUninstall.log';
+                            var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
+                            try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
+                            var logFile = logDir + '\\MeshAgent_StoreUninstall.log';
             
                             try {
                                 var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -6048,7 +6053,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             break;
         }
         
-        var logFile = 'C:\\ProgramData\\MeshAgent_Uninstall.log';
+        var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
+        try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
+        var logFile = logDir + '\\MeshAgent_Uninstall.log';
+        
         var child_process = require('child_process');
         var cmdPath = process.env['windir'] + '\\system32\\cmd.exe';
         
@@ -6134,7 +6142,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         response = "Usage: uninstallstoreapp <PackageName>";
                     } else {
                         var packageName = args['_'][0];
-                        var logFile = 'C:\\ProgramData\\MeshAgent_StoreUninstall.log';
+                        
+                        var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
+                        try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
+                        var logFile = logDir + '\\MeshAgent_StoreUninstall.log';
         
                         try {
                             var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
@@ -6935,4 +6946,3 @@ function onWebSocketUpgrade(response, s, head) {
 
 mesh.AddCommandHandler(handleServerCommand);
 mesh.AddConnectHandler(handleServerConnection);
-
