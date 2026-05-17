@@ -646,6 +646,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
+            serverinfo.softwareinventory = (domain.softwareinventory === true);
             if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
@@ -1065,6 +1066,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.value.indexOf('uninstallstoreapp ') === 0)));
 
                     if (isSoftwareCmd) {
+                        if (domain.softwareinventory !== true) { if (func) { func(false); } break; }
                         // Wir prüfen auf MESHRIGHT_DEVICEDETAILS (0x100000)
                         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                             var mesh = parent.meshes[node.meshid];
