@@ -14244,12 +14244,13 @@
             dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px;max-height:80px;overflow-y:auto">' + EscapeHtml(cmd) + '</div>';
             dialogContent += '<p style="margin-top:10px"><i>' + "Silent uninstall will be performed" + '</i></p>';
             dialogContent += '</div>';
-            setDialogMode(2, "Uninstall Software", 3, function() {
+            setModalContent('xxAddAgent', "Uninstall Software", dialogContent);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
                 QH('p18Status', '<span style="color:blue">' + "Uninstalling..." + '</span>');
                 var base64Cmd = btoa(unescape(encodeURIComponent(cmd))); //Use Base64 encoding to avoid special character problems.
                 meshserver.send({ action: 'msg', type: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
                 setTimeout(function() { QH('p18Status', "Uninstall started. Click Refresh to update"); }, 2000);
-            }, dialogContent);
+            });
         }
 
         function uninstallStoreApp(encodedCmd) {
@@ -14260,11 +14261,12 @@
 			dialogContent += '<p><b>' + "Remove this Store app?" + '</b></p>';
 			dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px">' + EscapeHtml(cmd) + '</div>';
 			dialogContent += '</div>';
-			setDialogMode(2, "Remove Store App", 3, function() {
+            setModalContent('xxAddAgent', "Remove Store App", dialogContent);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
 				QH('p18Status', '<span style="color:blue">' + "Removing..." + '</span>');
 				meshserver.send({ action: 'msg', type: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
 				setTimeout(function() { QH('p18Status', "Remove command sent. Click Refresh to update"); }, 2000);
-			}, dialogContent);
+			});
 		}
 
         function handleUninstallResponse(data) {
