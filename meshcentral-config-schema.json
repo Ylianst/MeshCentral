@@ -1453,6 +1453,11 @@
               }
             }
           },
+          "softwareInventory": {
+              "type": "boolean",
+              "default": false,
+              "description": "When set to true, the Software Inventory feature is enabled."
+            },
           "autoRemoveInactiveDevices": {
             "type": "integer",
             "default": 0,
