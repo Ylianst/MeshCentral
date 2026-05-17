@@ -646,7 +646,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
-            serverinfo.softwareinventory = (domain.softwareinventory === true);
+            serverinfo.softwareinventory = domain?.softwareinventory === true;
             if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
