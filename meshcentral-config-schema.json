@@ -2157,6 +2157,12 @@
                 "default": false,
                 "description": "If true, user consents for desktop, terminal, and file are accepted if device is locked."
               },
+              "autoAcceptUsers": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": [],
+                "description": "List of logged-in Windows account names (case-insensitive, without domain). If all users on the device are in this list, user consent is auto-accepted."
+              },
               "autoAcceptIfDesktopLocked": {
                 "type": "boolean",
                 "default": false,
