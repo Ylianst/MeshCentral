@@ -20,8 +20,8 @@ metadata:
   labels:
     {{- include "meshcentral.labels" . | nindent 4 }}
 data:
-  MC_MONGO_HOST: {{ .Values.mongodb.hostValue | quote }}
-  MC_MONGO_PORT: {{ .Values.mongodb.portValue | quote }}
+  MC_MONGO_HOSTS: {{ .Values.mongodb.hostsValue | quote }}
   MC_MONGO_DATABASE: {{ .Values.mongodb.databaseValue | quote }}
   MC_MONGO_AUTH_SOURCE: {{ .Values.mongodb.authSourceValue | quote }}
+  MC_MONGO_REPLICA_SET: {{ .Values.mongodb.replicaSetValue | quote }}
 {{- end }}

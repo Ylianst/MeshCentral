@@ -32,23 +32,28 @@ credentials:
 # loadConfig() substitute placeholders at startup; the password never appears in
 # any rendered manifest when sourced via existingSecret.
 #
+# MC_MONGO_HOSTS is a comma-separated host:port list so a single shape works for
+# standalone (one entry) and replica sets (N entries). Combined with replicaSet
+# in the URI, the driver discovers the primary regardless of which member it
+# connects to first.
+#
 # Each ref has two modes:
 #   1. existingX: ""           → chart creates "{Chart.Name}-mongodb-creds" / "-config"
 #                                 from the *Value fields below. Dev/test only.
 #   2. existingX: "<name>"     → chart references that resource. Required keys:
 #                                 Secret    → MC_MONGO_USER, MC_MONGO_PASSWORD
-#                                 ConfigMap → MC_MONGO_HOST, MC_MONGO_PORT,
-#                                             MC_MONGO_DATABASE, MC_MONGO_AUTH_SOURCE
+#                                 ConfigMap → MC_MONGO_HOSTS, MC_MONGO_DATABASE,
+#                                             MC_MONGO_AUTH_SOURCE, MC_MONGO_REPLICA_SET
 mongodb:
   existingSecret: ""
   userValue: ""
   passwordValue: ""
 
   existingConfigMap: ""
-  hostValue: ""
-  portValue: "27017"
+  hostsValue: ""
   databaseValue: "meshcentral"
   authSourceValue: "admin"
+  replicaSetValue: "rs0"
 
 
 # -- MeshCentral config.json contents
@@ -65,7 +70,7 @@ config:
         - openframe
     # ${VAR} placeholders are substituted at startup from container env (see mongodb block above).
     # Override only to change query options or auth strategy; do not paste a literal URI.
-    mongodb: "mongodb://${MC_MONGO_USER}:${MC_MONGO_PASSWORD}@${MC_MONGO_HOST}:${MC_MONGO_PORT}/${MC_MONGO_DATABASE}?authSource=${MC_MONGO_AUTH_SOURCE}"
+    mongodb: "mongodb://${MC_MONGO_USER}:${MC_MONGO_PASSWORD}@${MC_MONGO_HOSTS}/${MC_MONGO_DATABASE}?replicaSet=${MC_MONGO_REPLICA_SET}&authSource=${MC_MONGO_AUTH_SOURCE}"
     dbExpire:
       events: 157680000
     port: 8383

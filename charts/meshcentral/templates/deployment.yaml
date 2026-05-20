@@ -46,7 +46,7 @@ spec:
                 name: {{ .Values.mongodb.existingConfigMap | default (printf "%s-mongodb-config" .Chart.Name) }}
           env:
             - name: MC_MONGO_URI
-              value: "mongodb://$(MC_MONGO_USER):$(MC_MONGO_PASSWORD)@$(MC_MONGO_HOST):$(MC_MONGO_PORT)/$(MC_MONGO_DATABASE)?authSource=$(MC_MONGO_AUTH_SOURCE)"
+              value: "mongodb://$(MC_MONGO_USER):$(MC_MONGO_PASSWORD)@$(MC_MONGO_HOSTS)/$(MC_MONGO_DATABASE)?replicaSet=$(MC_MONGO_REPLICA_SET)&authSource=$(MC_MONGO_AUTH_SOURCE)"
 
         - name: meshcentral-init
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
