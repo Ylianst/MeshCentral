@@ -54,6 +54,9 @@ mongodb:
   databaseValue: "meshcentral"
   authSourceValue: "admin"
   replicaSetValue: "rs0"
+  # Extra URI options appended to MC_MONGO_URI verbatim (must start with '&', or
+  # leave empty). Use for cross-cluster TLS ("&tls=true"), read preference, etc.
+  uriOptionsValue: ""
 
 
 # -- MeshCentral config.json contents
@@ -70,7 +73,7 @@ config:
         - openframe
     # ${VAR} placeholders are substituted at startup from container env (see mongodb block above).
     # Override only to change query options or auth strategy; do not paste a literal URI.
-    mongodb: "mongodb://${MC_MONGO_USER}:${MC_MONGO_PASSWORD}@${MC_MONGO_HOSTS}/${MC_MONGO_DATABASE}?replicaSet=${MC_MONGO_REPLICA_SET}&authSource=${MC_MONGO_AUTH_SOURCE}"
+    mongodb: "mongodb://${MC_MONGO_USER}:${MC_MONGO_PASSWORD}@${MC_MONGO_HOSTS}/${MC_MONGO_DATABASE}?replicaSet=${MC_MONGO_REPLICA_SET}&authSource=${MC_MONGO_AUTH_SOURCE}${MC_MONGO_URI_OPTIONS}"
     dbExpire:
       events: 157680000
     port: 8383

@@ -24,4 +24,5 @@ data:
   MC_MONGO_DATABASE: {{ .Values.mongodb.databaseValue | quote }}
   MC_MONGO_AUTH_SOURCE: {{ .Values.mongodb.authSourceValue | quote }}
   MC_MONGO_REPLICA_SET: {{ .Values.mongodb.replicaSetValue | quote }}
+  MC_MONGO_URI_OPTIONS: {{ .Values.mongodb.uriOptionsValue | quote }}
 {{- end }}
