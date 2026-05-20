@@ -10,3 +10,18 @@ data:
   MESH_DEVICE_GROUP: "OpenFrame"
   MESH_EXTERNAL_PORT: {{ .Values.config.settings.port | default 4430 | quote }}
  
+---
+
+{{- if not .Values.mongodb.existingConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Chart.Name }}-mongodb-config
+  labels:
+    {{- include "meshcentral.labels" . | nindent 4 }}
+data:
+  MC_MONGO_HOST: {{ .Values.mongodb.hostValue | quote }}
+  MC_MONGO_PORT: {{ .Values.mongodb.portValue | quote }}
+  MC_MONGO_DATABASE: {{ .Values.mongodb.databaseValue | quote }}
+  MC_MONGO_AUTH_SOURCE: {{ .Values.mongodb.authSourceValue | quote }}
+{{- end }}

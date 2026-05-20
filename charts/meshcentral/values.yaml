@@ -26,22 +26,25 @@ credentials:
 
 
 # -- MongoDB connection settings.
-# All 6 parts are envFrom'd into every container so config.settings.mongodb below
-# can reference them via ${VAR} placeholders. meshcentral.js getConfig() and
-# plugins/migrate.js loadConfig() substitute placeholders at startup — the password
-# never appears in any rendered manifest when sourced via existingSecret.
+# Split across a Secret (sensitive) and a ConfigMap (non-sensitive) — both are
+# envFrom'd into every container so config.settings.mongodb below can reference
+# them via ${VAR} placeholders. meshcentral.js getConfig() and plugins/migrate.js
+# loadConfig() substitute placeholders at startup; the password never appears in
+# any rendered manifest when sourced via existingSecret.
 #
-# Two modes:
-#   1. existingSecret: ""  → chart creates a Secret named "{Chart.Name}-mongodb"
-#      from the *Value fields below. Useful for dev/test; password lives in values.yaml.
-#   2. existingSecret: "<name>"  → chart references that Secret. It must contain all
-#      6 keys: MC_MONGO_USER, MC_MONGO_PASSWORD, MC_MONGO_HOST, MC_MONGO_PORT,
-#      MC_MONGO_DATABASE, MC_MONGO_AUTH_SOURCE. Recommended for prod (ExternalSecret).
+# Each ref has two modes:
+#   1. existingX: ""           → chart creates "{Chart.Name}-mongodb-creds" / "-config"
+#                                 from the *Value fields below. Dev/test only.
+#   2. existingX: "<name>"     → chart references that resource. Required keys:
+#                                 Secret    → MC_MONGO_USER, MC_MONGO_PASSWORD
+#                                 ConfigMap → MC_MONGO_HOST, MC_MONGO_PORT,
+#                                             MC_MONGO_DATABASE, MC_MONGO_AUTH_SOURCE
 mongodb:
   existingSecret: ""
-
   userValue: ""
   passwordValue: ""
+
+  existingConfigMap: ""
   hostValue: ""
   portValue: "27017"
   databaseValue: "meshcentral"

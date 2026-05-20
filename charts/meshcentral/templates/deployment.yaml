@@ -42,6 +42,8 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.mongodb.existingSecret | default (printf "%s-mongodb-creds" .Chart.Name) }}
+            - configMapRef:
+                name: {{ .Values.mongodb.existingConfigMap | default (printf "%s-mongodb-config" .Chart.Name) }}
           env:
             - name: MC_MONGO_URI
               value: "mongodb://$(MC_MONGO_USER):$(MC_MONGO_PASSWORD)@$(MC_MONGO_HOST):$(MC_MONGO_PORT)/$(MC_MONGO_DATABASE)?authSource=$(MC_MONGO_AUTH_SOURCE)"
@@ -70,6 +72,8 @@ spec:
                 name: {{ .Chart.Name }}-default
             - secretRef:
                 name: {{ .Values.mongodb.existingSecret | default (printf "%s-mongodb-creds" .Chart.Name) }}
+            - configMapRef:
+                name: {{ .Values.mongodb.existingConfigMap | default (printf "%s-mongodb-config" .Chart.Name) }}
           env:
             - name: MESH_USER
               valueFrom:
@@ -115,6 +119,8 @@ spec:
                 name: {{ .Chart.Name }}-default
             - secretRef:
                 name: {{ .Values.mongodb.existingSecret | default (printf "%s-mongodb-creds" .Chart.Name) }}
+            - configMapRef:
+                name: {{ .Values.mongodb.existingConfigMap | default (printf "%s-mongodb-config" .Chart.Name) }}
           env:
             - name: MESH_USER
               valueFrom:
