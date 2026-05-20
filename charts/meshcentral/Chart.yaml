@@ -2,8 +2,8 @@ apiVersion: v2
 name: meshcentral
 description: MeshCentral - full computer management web site
 type: application
-version: 0.0.1
-appVersion: "0.0.1"
+version: 0.0.16
+appVersion: "0.0.16"
 keywords:
   - meshcentral
   - remote-management

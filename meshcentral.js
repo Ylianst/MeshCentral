@@ -4215,8 +4215,13 @@ function getConfig(createSampleConfig) {
     var config = {}, configFilePath = path.join(datapath, 'config.json');
     if (args.configfile) { configFilePath = common.joinPath(datapath, args.configfile); }
     if (fs.existsSync(configFilePath)) {
-        // Load and validate the configuration file
-        try { config = require(configFilePath); } catch (ex) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
+        // Load and validate the configuration file. ${VAR} placeholders are substituted from
+        // process.env so secrets can be supplied via Kubernetes Secret refs without baking them
+        // into config.json. Mirrors plugins/migrate.js so both binaries handle placeholders.
+        try {
+            var raw = fs.readFileSync(configFilePath, 'utf8').replace(/\$\{([A-Z_][A-Z0-9_]*)\}/g, function (_, n) { return process.env[n] || ''; });
+            config = JSON.parse(raw);
+        } catch (ex) { console.log('ERROR: Unable to parse ' + configFilePath + '.'); return null; }
         if (config.domains == null) { config.domains = {}; }
         for (i in config.domains) { if ((i.split('/').length > 1) || (i.split(' ').length > 1)) { console.log("ERROR: Error in config.json, domain names can't have spaces or /."); return null; } }
     } else {
