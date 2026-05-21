@@ -104,15 +104,23 @@ config:
     openframe_public:
       share: /opt/mesh/public
 
-# Per-tenant Helm releases declare their tenant by adding a key to config.domains, e.g.:
+# One Helm release per tenant. All releases point to the same MongoDB
+# (config.settings.mongodb) — data is isolated by the `domain` field that
+# MeshCentral already embeds in every _id and document.
+#
+# Each release declares its tenant by adding a single non-default, non-share
+# key to config.domains, e.g.:
 #   config:
 #     domains:
 #       tenant-1:
 #         dns: tenant-1.example.com
 #         title: "Tenant 1"
 #         NewAccounts: false
-# The single non-empty, non-share key in config.domains is auto-detected by db.js and
-# plugins/migrate.js as the tenant for this pod (deriveTenantDomain in db.js).
+# That key is auto-detected by db.js and plugins/migrate.js as the tenant for
+# this pod (deriveTenantDomain in db.js). Per-pod state is scoped via
+# DatabaseIdentifier_<tenant> / SchemaVersion_<tenant> documents and the
+# ChangeStream is filtered to [<tenant>, ""]. The init container's migrate.js
+# bootstraps the admin user, device group, and meshagent.msh under that tenant.
 
 deploymentAnnotations: {}
 podAnnotations: {}
