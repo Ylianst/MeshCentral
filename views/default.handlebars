@@ -4007,7 +4007,7 @@
                     if (xxdialogTag) break;
                     var node = getNodeFromId(message.nodeid), x = '';
                     if (node == null) break;
-                    x += addHtmlValue("Device", node.name);
+                    x += addHtmlValue("Device", EscapeHtml(node.name));
                     x += addHtmlValue("Guest Name", message.guestname);
                     x += addHtmlValue("User Input", message.viewOnly ? "Not allowed, view only" : "Allowed");
                     if (message.start && message.expire) {
@@ -7817,7 +7817,7 @@
                 //if (node.intelamt && node.intelamt.user) { x += addDeviceAttribute('Intel&reg; AMT', node.intelamt.user); }
 
                 // Operating system description
-                if (node.osdesc) { x += addDeviceAttribute("Operating System", node.osdesc); }
+                if (node.osdesc) { x += addDeviceAttribute("Operating System", EscapeHtml(node.osdesc)); }
 
                 // Windows Security Central
                 if (node.wsc) {
@@ -11574,7 +11574,7 @@
                     h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
                     h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += currentNode.volumes[shortname.charAt(0).toUpperCase()].name + ' (' + shortname + ')';
+                        h += EscapeHtml(currentNode.volumes[shortname.charAt(0).toUpperCase()].name) + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
@@ -12369,7 +12369,7 @@
             if (message != null) {
                 if (Array.isArray(message.thermals) && (message.thermals.length > 0)) {
                     var x = '&nbsp;';
-                    for (var i in message.thermals) { x += '<div class=thermalSensor title="'+message.thermals[i].InstanceName+'">' +  parseFloat(message.thermals[i].CurrentTemperature).toFixed(2) + '&deg;C / ' + parseFloat((message.thermals[i].CurrentTemperature * 1.8) + 32).toFixed(2) + '&deg;F' + '</div>'; }
+                    for (var i in message.thermals) { x += '<div class=thermalSensor title="'+EscapeHtml(message.thermals[i].InstanceName)+'">' +  parseFloat(message.thermals[i].CurrentTemperature).toFixed(2) + '&deg;C / ' + parseFloat((message.thermals[i].CurrentTemperature * 1.8) + 32).toFixed(2) + '&deg;F' + '</div>'; }
                     QV('extraGraphValues', true);
                     QH('extraGraphValues', x);
                 }
@@ -17087,7 +17087,7 @@
                     var cr = 0, mesh = omeshes[i], r = currentUserGroup.links[mesh._id].rights, trash = '', rights = makeDeviceGroupRightsString(r);
                     if ((userinfo.links) && (userinfo.links[mesh._id] != null) && (userinfo.links[mesh._id].rights != null)) { cr = userinfo.links[mesh._id].rights; }
                     var meshname = '<i>' + "Unknown Device Group" + '</i>';
-                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + mesh.name + '</a>'; } else {}
+                    if (mesh) { meshname = '<a href=# onclick=\'gotoMesh("' + mesh._id + '");haltEvent(event);\'>' + EscapeHtml(mesh.name) + '</a>'; } else {}
                     if ((cr & 2) != 0) {
                         trash = '<a href=# onclick=\'return p51removeMeshFromUserGroup(event,"' + encodeURIComponentEx(mesh._id) + '")\' title="' + "Remove user group rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(3,"' + encodeURIComponentEx(mesh._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
@@ -17110,7 +17110,7 @@
                 for (var i in onodes) {
                     var node = onodes[i], r = currentUserGroup.links[node._id].rights, trash = '', rights = makeUserDeviceRightsString(r), cr = GetNodeRights(node);
                     var nodename = '<i>' + "Unknown Device" + '</i>';
-                    if (node) { nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '");haltEvent(event);\'>' + node.name + '</a>'; } else {}
+                    if (node) { nodename = '<a href=# onclick=\'gotoDevice("' + node._id + '");haltEvent(event);\'>' + EscapeHtml(node.name) + '</a>'; } else {}
                     if ((cr & 2) != 0) {
                         trash = '<a href=# onclick=\'return p51removeDeviceFromUserGroup(event,"' + encodeURIComponentEx(node._id) + '")\' title="' + "Remove user group rights to this device" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                         rights = '<span style=cursor:pointer onclick=p20showAddMeshUserDialog(7,"' + encodeURIComponentEx(node._id) + '")>' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
@@ -17158,7 +17158,7 @@
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
             if (node == null) return;
-            setDialogMode(2, "Remove Device Permissions", 3, p51removeDeviceFromUserGroupEx, format("Confirm removal of access rights for device \"{0}\"?", node.name), node._id);
+            setDialogMode(2, "Remove Device Permissions", 3, p51removeDeviceFromUserGroupEx, format("Confirm removal of access rights for device \"{0}\"?", EscapeHtml(node.name)), node._id);
         }
 
         function p51removeDeviceFromUserGroupEx(b, nodeid) {
@@ -17169,7 +17169,7 @@
             if (xxdialogMode) return;
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
-            setDialogMode(2, "Remove Device Group Permissions", 3, p51removeMeshFromUserGroupEx, format("Confirm removal of access rights for device group \"{0}\"?", mesh.name), mesh._id);
+            setDialogMode(2, "Remove Device Group Permissions", 3, p51removeMeshFromUserGroupEx, format("Confirm removal of access rights for device group \"{0}\"?", EscapeHtml(mesh.name)), mesh._id);
         }
 
         function p51removeMeshFromUserGroupEx(b, meshid) {
@@ -17865,7 +17865,7 @@
         function p30removeNodeFromUser(event, nodeid) {
             if (xxdialogMode) return;
             var node = getNodeFromId(decodeURIComponent(nodeid));
-            setDialogMode(2, "Remove Device Permissions", 3, function(b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for device \"{0}\"?", node.name), node);
+            setDialogMode(2, "Remove Device Permissions", 3, function(b, node) { meshserver.send({ action: 'adddeviceuser', nodeid: node._id, nodename: node.name, userids: [ currentUser._id ], rights: 0, remove: true }); }, format("Confirm removal of access rights for device \"{0}\"?", EscapeHtml(node.name)), node);
         }
 
         function p30removeUserFromNode(event, userid) {
@@ -17913,7 +17913,7 @@
             if (xxdialogMode) return;
             var mesh = meshes[decodeURIComponent(meshid)];
             if (mesh == null) return;
-            setDialogMode(2, "Remove Device Group Permissions", 3, p30removeMeshFromUserEx, format("Confirm removal of access rights for device group \"{0}\"?", mesh.name), mesh._id);
+            setDialogMode(2, "Remove Device Group Permissions", 3, p30removeMeshFromUserEx, format("Confirm removal of access rights for device group \"{0}\"?", EscapeHtml(mesh.name)), mesh._id);
         }
 
         function p30removeMeshFromUserEx(b, meshid) {
