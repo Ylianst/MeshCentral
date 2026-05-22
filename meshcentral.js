@@ -1819,23 +1819,25 @@ function CreateMeshCentralServer(config, args) {
         }
 
         // Load CloudFlare trusted proxies list if needed
-        if ((obj.config.settings.trustedproxy != null) && (typeof obj.config.settings.trustedproxy == 'string') && (obj.config.settings.trustedproxy.toLowerCase() == 'cloudflare')) {
+        const trustedproxyIsCloudflareString = (obj.args.trustedproxy != null) && (typeof obj.args.trustedproxy == 'string') && (obj.args.trustedproxy.toLowerCase() == 'cloudflare');
+        const trustedproxyIsCloudflareArray = Array.isArray(obj.args.trustedproxy) && obj.args.trustedproxy.some(function (x) { return (typeof x == 'string') && (x.toLowerCase() == 'cloudflare'); });
+        if (trustedproxyIsCloudflareString || trustedproxyIsCloudflareArray) {
             obj.config.settings.extrascriptsrc = 'ajax.cloudflare.com'; // Add CloudFlare as a trusted script source. This allows for CloudFlare's RocketLoader feature.
-            delete obj.args.trustedproxy;
-            delete obj.config.settings.trustedproxy;
+            // Preserve any non-'cloudflare' entries already in the array
+            const existingProxies = trustedproxyIsCloudflareArray ? obj.args.trustedproxy.filter(function (x) { return !(typeof x == 'string' && x.toLowerCase() == 'cloudflare'); }) : [];
             obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v4', null, function (url, data, tag) {
                 if (data != null) {
-                    if (Array.isArray(obj.args.trustedproxy) == false) { obj.args.trustedproxy = []; }
+                    const newProxies = existingProxies.slice();
                     const ipranges = data.split('\n');
-                    for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
+                    for (var i in ipranges) { if (ipranges[i] != '') { newProxies.push(ipranges[i]); } }
                     obj.certificateOperations.loadTextFile('https://www.cloudflare.com/ips-v6', null, function (url, data, tag) {
                         if (data != null) {
                             var ipranges = data.split('\n');
-                            for (var i in ipranges) { if (ipranges[i] != '') { obj.args.trustedproxy.push(ipranges[i]); } }
-                            obj.config.settings.trustedproxy = obj.args.trustedproxy;
+                            for (var i in ipranges) { if (ipranges[i] != '') { newProxies.push(ipranges[i]); } }
                         } else {
                             addServerWarning("Unable to load CloudFlare trusted proxy IPv6 address list.", 16);
                         }
+                        obj.args.trustedproxy = newProxies;
                         obj.StartEx4(); // Keep going
                     });
                 } else {
