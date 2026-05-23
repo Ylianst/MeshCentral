@@ -224,10 +224,18 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                         }
                     }
                 } else {
-                    var unpause = function unpauseFunc(err) { try { unpauseFunc.s.resume(); } catch (ex) { } }
-                    unpause.s = this._socket;
-                    this._socket.pause();
-                    try { this.res.write(data, unpause); } catch (ex) { }
+                    // Only apply backpressure when the HTTP write buffer actually fills,
+                    // instead of pausing/resuming the source socket on every chunk.
+                    // The previous unconditional pause+resume per chunk forced stop-and-wait
+                    // on every frame, capping device file download throughput around 2 Mbit/s
+                    // for any client whose RTT to the server is non-trivial.
+                    try {
+                        if (this.res.write(data) === false) {
+                            var sock = this._socket;
+                            sock.pause();
+                            this.res.once('drain', function () { try { sock.resume(); } catch (ex) { } });
+                        }
+                    } catch (ex) { }
                 }
             });
 
