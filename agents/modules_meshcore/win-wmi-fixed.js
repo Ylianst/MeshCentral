@@ -206,7 +206,7 @@ const QueryAsyncHandler =
 
                 var ret = GM.CreateVariable(4);
                 ret.increment(0, true);
-
+                delete wmi_handlers[this._hashCode()];
                 if (hResult.Val == 0)
                 {
                     this.p.resolve(this.results);
@@ -443,7 +443,7 @@ function query(resourceString, queryString, fields)
     results.funcs.Release(results.Deref());
     services.funcs.Release(services.Deref());
     locator.funcs.Release(locator);
-    console.log( '  queryres: ' + JSON.stringify(ret).substring(0,200));
+
     return (ret);
 }
 
