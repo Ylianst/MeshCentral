@@ -408,10 +408,11 @@ function queryAsync(resourceString, queryString, fields)
 }
 function query(resourceString, queryString, fields)
 {
-    var resource = GM.CreateVariable(resourceString, { wide: true });
-    var language = GM.CreateVariable("WQL", { wide: true });
-    var query = GM.CreateVariable(queryString, { wide: true });
-    var results = GM.CreatePointer();
+    try {
+        var resource = GM.CreateVariable(resourceString, { wide: true });
+        var language = GM.CreateVariable("WQL", { wide: true });
+        var query = GM.CreateVariable(queryString, { wide: true });
+        var results = GM.CreatePointer();
 
     // Connect the locator connection for WMI
     var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
@@ -425,25 +426,28 @@ function query(resourceString, queryString, fields)
 		throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
 	}
 
-    // Execute the Query
-    services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
-    if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw ('Error in Query'); }
+        // Execute the Query
+        services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
+        if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw new Error('Error in Query'); }
 
-    results.funcs = require('win-com').marshalFunctions(results.Deref(), ResultsFunctions);
-    var returnedCount = GM.CreateVariable(8);
-    var result = GM.CreatePointer();
-    var ret = [];
+        results.funcs = require('win-com').marshalFunctions(results.Deref(), ResultsFunctions);
+        var returnedCount = GM.CreateVariable(8);
+        var result = GM.CreatePointer();
+        var ret = [];
 
-    // Enumerate the results
-    while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
-    {
-        ret.push(enumerateProperties(result, fields));
+        // Enumerate the results
+        while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
+        {
+            ret.push(enumerateProperties(result, fields));
+        }
+    } catch (e) {
+        console.log('win-wmi query error: ' + e.message);
+        throw (e);
+    } finally {
+        if (results && 'funcs' in results) { results.funcs.Release(results.Deref()); results = null; }
+        if (services && 'funcs' in services) { services.funcs.Release(services.Deref()); services = null; }
+        if (locator && 'funcs' in locator) { locator.funcs.Release(locator); locator = null; }
     }
-
-    results.funcs.Release(results.Deref());
-    services.funcs.Release(services.Deref());
-    locator.funcs.Release(locator);
-
     return (ret);
 }
 
