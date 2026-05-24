@@ -16,6 +16,7 @@ limitations under the License.
 
 var promise = require('promise');
 var GM = require('_GenericMarshal');
+var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
@@ -369,6 +370,8 @@ function queryAsync(resourceString, queryString, fields)
 {
     var queryStarted = false;
     try {
+        var s = sm.manager.getService('winmgmt');
+        if (!s.isRunning()) { throw new Error ('WMI service not running')};
         var p = new promise(require('promise').defaultInit);
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
@@ -421,6 +424,8 @@ function queryAsync(resourceString, queryString, fields)
 function query(resourceString, queryString, fields)
 {
     try {
+        var s = sm.manager.getService('winmgmt');
+        if (!s.isRunning()) { throw new Error ('WMI service not running')};
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
