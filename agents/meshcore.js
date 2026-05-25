@@ -4432,7 +4432,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
-                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo,printers';
+                    availcommands += ',bitlocker,cs,wpfhwacceleration,uac,volumes,rdpport,domaininfo,printers,wmi';
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
@@ -4602,6 +4602,32 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     });
                     break;
                 }
+            case 'wmi':
+                if (process.platform != 'win32') {
+                    response = 'Unknown command "wmi", type "help" for list of available commands.';
+                    break;
+                }
+                if (args['_'].length < 2 || args['_'].length > 3) {
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty]\r\n' +
+                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ap\r\n';
+                    break;
+                }
+                var opt = (args['_'][2]|| '').toLowerCase();
+                var ns = args['_'][0].trim();
+                if (!/^root\\\w/i.test(ns)) { ns = 'ROOT\\' + ns; }
+                var q = (args['_'][1]).trim();
+                var wmi = require('win-wmi-fixed');
+                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') !== -1) ? 2 : 0)) : 'No results', sessionid); };
+                var error = function (e) { var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e)); sendConsoleText('Error: ' + msg, sessionid);};
+                sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
+                if (opt.indexOf('a') !== -1) {
+                    wmi.queryAsync(ns, q)
+                    .then( output )
+                    .catch( error );
+                } else {
+                    try { output(wmi.query(ns, q)); } catch (e) { error(e); }
+                }
+                break;
             case 'translations': {
                 response = JSON.stringify(coretranslations, null, 2);
                 break;
