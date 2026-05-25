@@ -4426,7 +4426,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
         switch (cmd) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
-                availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
+                availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbdelete,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
                 availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,';
                 availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
@@ -5643,6 +5643,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 } else {
                     var r = db.Put(args['_'][0], args['_'][1]);
                     response = 'Key set: ' + r;
+                }
+                break;
+            }
+            case 'dbdelete': { // Delete a data store key
+                if (db == null) { response = 'Database not accessible.'; break; }
+                if (args['_'].length != 1) {
+                    response = 'Proper usage: dbdelete (key)'; // Delete a database key
+                } else {
+                    var r = db.Delete(args['_'][0]);
+                    response = 'Key deleted: ' + r;
                 }
                 break;
             }
