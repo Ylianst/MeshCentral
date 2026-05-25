@@ -54,6 +54,33 @@ const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 // 101 = Intel AMT Redirection
 // 200 = Messenger
 
+function isTerminalProtocolAllowed(domain, protocol) {
+    // Admin/User terminal protocols only.
+    if ((protocol != 1) && (protocol != 6) && (protocol != 8) && (protocol != 9)) return true;
+
+    var menu = null;
+    if ((domain != null) && (typeof domain.terminal == 'object')) {
+        menu = domain.terminal.contextmenu;
+        if (menu == null) { menu = domain.terminal.contextMenu; }
+    }
+    if (menu == null) return true;
+    if (typeof menu == 'string') { menu = [menu]; }
+    if (Array.isArray(menu) == false) return true;
+
+    var mask = 0;
+    for (var i = 0; i < menu.length; i++) {
+        if (typeof menu[i] != 'string') continue;
+        var v = menu[i].toLowerCase().trim();
+        if (v == 'all') return true;
+        if (v == 'admin') { mask |= 1; }
+        if (v == 'user') { mask |= 2; }
+        if (v == 'ask') { mask |= 4; }
+    }
+    if (mask == 0) mask = 7;
+    if ((protocol == 1) || (protocol == 6)) return ((mask & 1) != 0);
+    return ((mask & 2) != 0);
+}
+
 function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, extraKey, func) {
     // Check the public id
     parent.db.GetAllTypeNodeFiltered([nodeid], domain.id, 'deviceshare', null, function (err, docs) {
@@ -194,6 +221,17 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Patch Messenger protocol to 200
     if ((obj.id != null) && (obj.id.startsWith('meshmessenger/') == true)) { obj.req.query.p = 200; }
+
+    // Server-side enforcement of terminal mode restrictions.
+    var requestedProtocol = parseInt(obj.req.query.p);
+    if (Number.isNaN(requestedProtocol) == false) {
+        console.log('Requested protocol: ' + requestedProtocol);
+        if (isTerminalProtocolAllowed(domain, requestedProtocol) == false) {
+            parent.parent.debug('relay', 'Relay: Terminal mode denied by domain terminal.contextMenu (' + obj.req.clientIp + ')');
+            try { ws.close(); } catch (e) { }
+            return;
+        }
+    }
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;
@@ -898,7 +936,6 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 if (obj.id == null) { obj.id = parent.crypto.randomBytes(9).toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?' + (obj.req.query.p != null ? ('p=' + obj.req.query.p + '&') : '') + 'id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (user) { command.userid = user._id; }
-                if (typeof domain.terminaluservariable == 'string') { command.soptions.terminalUserVariable = domain.terminaluservariable; }
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                     if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -909,7 +946,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                     if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                     if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                     if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -955,7 +992,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                         if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -981,7 +1018,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                         if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -1041,7 +1078,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                     if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                     if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                     if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
