@@ -225,7 +225,6 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
     // Server-side enforcement of terminal mode restrictions.
     var requestedProtocol = parseInt(obj.req.query.p);
     if (Number.isNaN(requestedProtocol) == false) {
-        console.log('Requested protocol: ' + requestedProtocol);
         if (isTerminalProtocolAllowed(domain, requestedProtocol) == false) {
             parent.parent.debug('relay', 'Relay: Terminal mode denied by domain terminal.contextMenu (' + obj.req.clientIp + ')');
             try { ws.close(); } catch (e) { }
