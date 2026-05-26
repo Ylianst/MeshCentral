@@ -5624,15 +5624,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'dbkeys': { // Return all data store keys
+                if (db == null) { response = 'Database not accessible.'; break; }
                 response = JSON.stringify(db.Keys);
                 break;
             }
             case 'dbget': { // Return the data store value for a given key
                 if (db == null) { response = 'Database not accessible.'; break; }
                 if (args['_'].length != 1) {
-                    response = 'Proper usage: dbget (key)'; // Display the value for a given database key
+                    response = 'Proper usage: dbget (key)';
                 } else {
-                    response = db.Get(args['_'][0]);
+                    response = (db.Get(args['_'][0]) != null ? db.Get(args['_'][0]) : 'Key not found');
                 }
                 break;
             }
@@ -5642,7 +5643,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     response = 'Proper usage: dbset (key) (value)'; // Set a database key
                 } else {
                     var r = db.Put(args['_'][0], args['_'][1]);
-                    response = 'Key set: ' + r;
+                    response = r == 0 ? 'Key set' : 'Failed to set key';
                 }
                 break;
             }
@@ -5651,15 +5652,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length != 1) {
                     response = 'Proper usage: dbdelete (key)'; // Delete a database key
                 } else {
-                    var r = db.Delete(args['_'][0]);
-                    response = 'Key deleted: ' + r;
+                    var existed = db.Get(args['_'][0]) != null;
+                    db.Delete(args['_'][0]); // new agent with Delete fix
+                    db.Delete('0/' + args['_'][0]); // old agent without Delete fix
+                    response = existed ? 'Key deleted' : 'Key not found';
                 }
                 break;
             }
             case 'dbcompact': { // Compact the data store
                 if (db == null) { response = 'Database not accessible.'; break; }
                 var r = db.Compact();
-                response = 'Database compacted: ' + r;
+                response = r == 0 ? 'Database compacted' : 'Compact failed';
                 break;
             }
             case 'httpget': {
