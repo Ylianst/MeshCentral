@@ -22,6 +22,7 @@ const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
+const WBEM_S_NO_ERROR = 0;
 const E_NOINTERFACE = 0x80004002;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
@@ -123,70 +124,46 @@ const QueryAsyncHandler =
             cx: 10, parms: 3, name: 'QueryInterface', func: function (j, riid, ppv)
             {
                 var ret = GM.CreateVariable(4);
-                console.info1('QueryInterface', riid.Deref(0, 16).toBuffer().toString('hex'));
+                // console.log('QueryInterface', riid.Deref(0, 16).toBuffer().toString('hex'));
                 switch (riid.Deref(0, 16).toBuffer().toString('hex'))
                 {
                     case '0000000000000000C000000000000046': // IID_IUnknown
-                        j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
-                        ret.increment(0, true);
-                        //++this.p.refcount;
-                        console.info1('QueryInterface (IID_IUnknown)', this.refcount);
-                        break;
                     case '0178857C8173CF11884D00AA004B2E24': // IID_IWmiObjectSink
                         j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
                         ret.increment(0, true);
-                        //++this.p.refcount;
-                        console.info1('QueryInterface (IID_IWmiObjectSink)', this.refcount);
+                        ++this.refcount;
+                        //console.log('QueryInterface ' +  riid.Deref(0, 16).toBuffer().toString('hex') + ' refcount: ' + this.refcount);
                         break;
                     default:
                         ret.increment(E_NOINTERFACE, true);
-                        console.info1(riid.Deref(0, 16).toBuffer().toString('hex'), 'returning E_NOINTERFACE');
+                        //console.log(riid.Deref(0, 16).toBuffer().toString('hex'), 'returning E_NOINTERFACE');
                         break;
                 }
 
-                return (ret);
+                return ret;
             }
         },
         {
             cx: 11, parms: 1, name: 'AddRef', func: function ()
             {
-                ++this.refcount;
-                console.info1('AddRef', this.refcount);
-                return (GM.CreateVariable(4));
+                //console.log('AddRef: ' + this.refcount);
+                return (GM.CreateVariable(4).increment(++this.refcount, true));
             }
         },
         {
             cx: 12, parms: 1, name: 'Release', func: function ()
             {
-                --this.refcount;
-                if (this.refcount == 0)
-                {
-                    this.cleanup();     // remove callbacks
-                    this.p = null;
-                    if (this.services && 'funcs' in this.services) {
-                        this.services.funcs.Release(this.services.Deref());
-                        this.services = null;
-                    }
-                    if (this.callbackDispatched) {  // inline or dispatched
-                        setImmediate(function (j) {
-                            if (j.locator && 'funcs' in j.locator) { j.locator.funcs.Release(j.locator); }
-                            j.locator = null;
-                        }, this);
-                    } else {
-                        if (this.locator && 'funcs' in this.locator) {
-                            this.locator.funcs.Release(this.locator);
-                            this.locator = null;
-                        }
-                    }
-                }
-                return (GM.CreateVariable(4));
+                //console.log('Release: ' + this.refcount);
+                //--this.refcount;
+                if (--this.refcount === 0) { destroy(this); }
+                return GM.CreateVariable(4).increment(this.refcount >>> 0, true);
             }
         },
         {
             cx: 13, parms: 3, name: 'Indicate', func: function (j, count, arr)
             {
-                console.info1('Indicate', count.Val);
-                var j, nme, len, nn;
+                //console.log('Indicate: ' + count.Val);
+                if (!this.results) return GM.CreateVariable(4).increment(0, true);
 
                 for (var i = 0; i < count.Val; ++i)
                 {
@@ -194,17 +171,13 @@ const QueryAsyncHandler =
                     this.results.push(enumerateProperties(j, this.fields));
                 }
 
-                var ret = GM.CreateVariable(4);
-                ret.increment(0, true);
-                return (ret);
+                return GM.CreateVariable(4).increment(0, true);
             }
         },
         {
             cx: 14, parms: 5, name: 'SetStatus', func: function (j, lFlags, hResult, strParam, pObjParam)
             {
-                var ret = GM.CreateVariable(4);
-                ret.increment(0, true);
-                delete wmi_handlers[this._hashCode()];
+                //console.log('SetStatus');
                 if (hResult.Val == 0)
                 {
                     this.p.resolve(this.results);
@@ -213,11 +186,33 @@ const QueryAsyncHandler =
                 {
                     this.p.reject(new Error('WMI async query error: 0x' + (hResult.Val >>> 0).toString(16)));
                 }
-                return (ret);
+                var self = this;
+                setImmediate(function () {
+                    // console.log('SetStatus refcount: ' + self.refcount);
+                    if (--self.refcount === 0) { destroy(self); }
+                });
+                return GM.CreateVariable(4).increment(0, true);
             }
         }
     ];
 
+function destroy(h) {
+    if (h.cleanup) { h.cleanup(); }
+    h.p = null;
+    
+    if (h.services && 'funcs' in h.services) {
+        h.services.funcs.Release(h.services.Deref());
+        h.services = null;
+    }
+    var releaseLocator = function () {
+        if (h.locator && 'funcs' in h.locator) {
+            h.locator.funcs.Release(h.locator);
+        }
+        h.locator = null;
+    };
+    delete wmi_handlers[h._hashCode()];
+    if (h.callbackDispatched) { setImmediate(releaseLocator); } else { releaseLocator(); }
+}
 
 function enumerateProperties(j, fields)
 {
@@ -376,7 +371,6 @@ function queryAsync(resourceString, queryString, fields)
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
-        var results = GM.CreatePointer();
 
         // Setup the Async COM handler for QueryAsync() 
         var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
@@ -386,7 +380,7 @@ function queryAsync(resourceString, queryString, fields)
         handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
         handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
 
-        handlers.services = require('_GenericMarshal').CreatePointer();
+        handlers.services = GM.CreatePointer();
         if (handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val != 0) { throw ('Error calling ConnectToService'); }
 
         handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
@@ -399,17 +393,8 @@ function queryAsync(resourceString, queryString, fields)
     } catch (e) {
         console.log('win-wmi queryAsync error: ' + e.message);
         if (!queryStarted && handlers) {
-            // only release if callbacks didn't start, otherwise Release callback handles it
-            handlers.p = null;
-            if (handlers.services && 'funcs' in handlers.services) {
-                handlers.services.funcs.Release(handlers.services.Deref());
-                handlers.services = null;
-            }
-            if (handlers.locator && 'funcs' in handlers.locator) {
-                handlers.locator.funcs.Release(handlers.locator);
-                handlers.locator = null;
-            }
-            handlers.cleanup(); // remove callbacks
+            handlers.refcount = 0;
+            destroy(handlers);
         }
         throw (e);    
     }
