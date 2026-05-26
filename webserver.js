@@ -4660,6 +4660,148 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return obj.path.join(obj.parent.datapath, 'icons', 'custom', userKey);
     }
 
+    // Maximum accepted custom icon upload size, in bytes.
+    const customIconMaxFileSize = 10485760;
+    // Maximum accepted width or height for uploaded PNG/JPEG sidebar icons, in pixels.
+    const customIconMaxDimension = 64;
+    // Image extensions accepted for uploaded custom sidebar icons.
+    const customIconAllowedExtensions = new Set(['.svg', '.png', '.jpg', '.jpeg']);
+
+    /**
+     * Return the HTTP response MIME type for a stored custom icon filename.
+     *
+     * @param {string} iconName Filename or path segment for the stored custom icon.
+     * @returns {string|null} MIME type for supported icons, or null for unsupported extensions.
+     */
+    function getCustomIconMimeType(iconName) {
+        const lower = iconName.toLowerCase();
+        if (lower.endsWith('.svg')) { return 'image/svg+xml'; }
+        if (lower.endsWith('.png')) { return 'image/png'; }
+        if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) { return 'image/jpeg'; }
+        return null;
+    }
+
+    /**
+     * Reject SVG content that can execute script or load external content.
+     *
+     * @param {string} svgContent Raw UTF-8 SVG content from the uploaded file.
+     * @returns {string|null} SVG content safe to store, or null if it is invalid or unsafe.
+     */
+    function cleanSvg(svgContent) {
+        if (typeof svgContent !== 'string') { return null; }
+        const cleaned = (svgContent.charCodeAt(0) === 0xFEFF) ? svgContent.substring(1) : svgContent;
+        if (cleaned.search(/<svg[\s>]/i) < 0) { return null; }
+        if (cleaned.search(/<\s*(script|foreignObject|iframe|object|embed|applet|link|meta)\b/i) >= 0) { return null; }
+        if (cleaned.search(/\s+on[a-z0-9_-]+\s*=/i) >= 0) { return null; }
+        if (cleaned.search(/\s+(href|xlink:href|src)\s*=\s*(['"]?)\s*(?!#)/i) >= 0) { return null; }
+        return cleaned;
+    }
+
+    /**
+     * Check if a JPEG marker is a Start Of Frame marker that contains image dimensions.
+     *
+     * @param {number} marker JPEG marker byte after the 0xFF prefix.
+     * @returns {boolean} True when the marker segment contains width and height fields.
+     */
+    function isJpegStartOfFrameMarker(marker) {
+        return ((marker >= 0xC0) && (marker <= 0xC3)) || ((marker >= 0xC5) && (marker <= 0xC7)) || ((marker >= 0xC9) && (marker <= 0xCB)) || ((marker >= 0xCD) && (marker <= 0xCF));
+    }
+
+    /**
+     * Read JPEG dimensions from header bytes without fully decoding the image.
+     *
+     * @param {Buffer} data Initial bytes from the uploaded JPEG file.
+     * @returns {{width:number,height:number}|null} Parsed dimensions, or null if the JPEG header is invalid or incomplete.
+     */
+    function getJpegDimensions(data) {
+        // JPEG files must start with the SOI marker.
+        if ((data.length < 4) || (data[0] !== 0xFF) || (data[1] !== 0xD8)) { return null; }
+        // Start scanning after the SOI marker.
+        var offset = 2;
+        while (offset + 9 < data.length) {
+            // Each JPEG segment starts with a marker prefix.
+            if (data[offset] !== 0xFF) { return null; }
+            // Skip fill bytes before the marker value.
+            while ((offset < data.length) && (data[offset] === 0xFF)) { offset++; }
+            const marker = data[offset++];
+            // SOI/EOI and restart markers do not carry segment lengths.
+            if ((marker === 0xD8) || (marker === 0xD9)) { continue; }
+            if ((marker >= 0xD0) && (marker <= 0xD7)) { continue; }
+            // Remaining markers should include a two-byte segment length.
+            if (offset + 2 > data.length) { return null; }
+            const segmentLength = data.readUInt16BE(offset);
+            if (segmentLength < 2) { return null; }
+            if (isJpegStartOfFrameMarker(marker)) {
+                // SOF payload layout: precision, height, width.
+                if (offset + 7 > data.length) { return null; }
+                return { width: data.readUInt16BE(offset + 5), height: data.readUInt16BE(offset + 3) };
+            }
+            // Move to the next marker segment.
+            offset += segmentLength;
+        }
+        return null;
+    }
+
+    /**
+     * Validate the raster image signature and extract dimensions for supported custom icon formats.
+     *
+     * @param {Buffer} data Initial bytes from the uploaded icon file.
+     * @param {string} extension Lowercase extension from the original uploaded filename.
+     * @returns {{width:number,height:number}|null} Parsed raster dimensions, or null if the signature/type is invalid.
+     */
+    function getCustomIconDimensions(data, extension) {
+        // PNG dimensions are fixed in the IHDR chunk at byte offsets 16 and 20.
+        if ((extension === '.png') && (data.length >= 24) && (data[0] === 0x89) && (data[1] === 0x50) && (data[2] === 0x4E) && (data[3] === 0x47) && (data[4] === 0x0D) && (data[5] === 0x0A) && (data[6] === 0x1A) && (data[7] === 0x0A)) {
+            return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
+        }
+        // JPEG dimensions are stored in the first SOF marker segment.
+        if (((extension === '.jpg') || (extension === '.jpeg')) && (data.length >= 3) && (data[0] === 0xFF) && (data[1] === 0xD8) && (data[2] === 0xFF)) {
+            return getJpegDimensions(data);
+        }
+        return null;
+    }
+
+    /**
+     * Enforce custom icon upload policy before moving the temp file into persistent storage.
+     * SVG files are checked for active content; PNG/JPEG files are signature and dimension checked.
+     *
+     * @param {string} iconTempPath Safe resolved path to the uploaded temp file.
+     * @param {string} extension Lowercase extension from the original uploaded filename.
+     * @param {function(string|null):void} callback Called with null on success, or a user-safe error message on failure.
+     */
+    function validateCustomIconFile(iconTempPath, extension, callback) {
+        obj.fs.stat(iconTempPath, function (statErr, stats) {
+            if (statErr) { callback('Unable to read uploaded icon.'); return; }
+            if ((stats == null) || (stats.isFile() !== true)) { callback('Invalid icon file.'); return; }
+            // Reject empty and oversized uploads before reading any file content.
+            if ((stats.size < 4) || (stats.size > customIconMaxFileSize)) { callback('Icon files must be non-empty and ' + (customIconMaxFileSize / 1048576) + ' MB or smaller.'); return; }
+            if (extension === '.svg') {
+                obj.fs.readFile(iconTempPath, 'utf8', function (readErr, svgContent) {
+                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
+                    const cleanedSvg = cleanSvg(svgContent);
+                    if (cleanedSvg == null) { callback('Invalid SVG icon file.'); return; }
+                    obj.fs.writeFile(iconTempPath, cleanedSvg, 'utf8', function (writeErr) {
+                        callback(writeErr ? 'Unable to clean uploaded SVG icon.' : null);
+                    });
+                });
+                return;
+            }
+            obj.fs.open(iconTempPath, 'r', function (openErr, fd) {
+                if (openErr) { callback('Unable to read uploaded icon.'); return; }
+                // Reading the first 64 KB is enough for normal PNG headers and JPEG SOF markers.
+                const header = Buffer.alloc(Math.min(stats.size, 65536));
+                obj.fs.read(fd, header, 0, header.length, 0, function (readErr, bytesRead) {
+                    obj.fs.close(fd, function () { });
+                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
+                    const dimensions = getCustomIconDimensions(header.slice(0, bytesRead), extension);
+                    if (dimensions == null) { callback('The uploaded icon does not match its file type.'); return; }
+                    if ((dimensions.width < 1) || (dimensions.height < 1) || (dimensions.width > customIconMaxDimension) || (dimensions.height > customIconMaxDimension)) { callback('Icon images must be ' + customIconMaxDimension + ' x ' + customIconMaxDimension + ' pixels or smaller.'); return; }
+                    callback(null);
+                });
+            });
+        });
+    }
+
     function handleCustomIconUpload(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -4668,9 +4810,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { res.sendStatus(401); return; }
 
         const multiparty = require('multiparty');
-        const form = new multiparty.Form();
+        const form = new multiparty.Form({ maxFilesSize: customIconMaxFileSize });
         form.parse(req, function (err, fields, files) {
-            if (err) { res.status(400).json({ success: false, error: 'Invalid form submission.' }); return; }
+            if (err) { res.status(400).json({ success: false, error: (err.status === 413) ? 'Icon files must be non-empty and ' + (customIconMaxFileSize / 1048576) + ' MB or smaller.' : 'Invalid form submission.' }); return; }
 
             const allowedTypes = { myDevices: 1, myAccount: 1, myEvents: 1, myFiles: 1, myUsers: 1, myServer: 1 };
             const iconType = (fields && fields.iconType && fields.iconType[0]) ? fields.iconType[0] : null;
@@ -4684,7 +4826,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
 
             const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
-            if ((extension !== '.svg') && (extension !== '.png')) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG and PNG files are supported.' }); return; }
+            if (customIconAllowedExtensions.has(extension) === false) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG, PNG and JPEG icon files are supported.' }); return; }
 
             const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
             const customDir = obj.path.join(iconsRoot, 'custom');
@@ -4697,27 +4839,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
             const previousInfo = resolveCustomIconPath(previousIcon, user);
-            if ((previousInfo != null) && (previousInfo.isOwned === true)) {
-                try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
-            }
 
             const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + extension;
             const destinationPath = obj.path.join(userCustomDir, newFilename);
 
-            const respondSuccess = function () { res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename }); };
-
-            obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
-                if (renameErr == null) { respondSuccess(); return; }
-                if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
-                    obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
-                        cleanupTempFile();
-                        if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
-                        respondSuccess();
-                    });
-                } else {
-                    cleanupTempFile();
-                    res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+            const respondSuccess = function () {
+                if ((previousInfo != null) && (previousInfo.isOwned === true)) {
+                    try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
                 }
+                res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename });
+            };
+
+            validateCustomIconFile(iconTempPath, extension, function (validationError) {
+                if (validationError != null) { cleanupTempFile(); res.status(400).json({ success: false, error: validationError }); return; }
+                obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
+                    if (renameErr == null) { respondSuccess(); return; }
+                    if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
+                        obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
+                            cleanupTempFile();
+                            if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
+                            respondSuccess();
+                        });
+                    } else {
+                        cleanupTempFile();
+                        res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+                    }
+                });
             });
         });
     }
@@ -4751,7 +4898,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         const lower = iconName.toLowerCase();
-        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false)) { return null; }
+        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false) && (lower.endsWith('.jpg') === false) && (lower.endsWith('.jpeg') === false)) { return null; }
         return { ownerKey: ownerKey, iconName: iconName, diskPath: diskPath, isOwned: isOwned, isLegacy: (pathParts.length === 1) };
     }
 
@@ -4783,11 +4930,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const iconInfo = resolveCustomIconPath('/icons/custom/' + req.params[0], user);
         if (iconInfo == null) { res.sendStatus(404); return; }
         if ((iconInfo.isLegacy !== true) && (iconInfo.isOwned !== true)) { res.sendStatus(404); return; }
-        const iconNameLower = iconInfo.iconName.toLowerCase();
+        const contentType = getCustomIconMimeType(iconInfo.iconName);
+        if (contentType == null) { res.sendStatus(404); return; }
 
         obj.fs.readFile(iconInfo.diskPath, function (err, data) {
             if (err) { res.sendStatus(404); return; }
-            res.set({ 'Content-Type': iconNameLower.endsWith('.png') ? 'image/png' : 'image/svg+xml' });
+            const headers = { 'Content-Type': contentType, 'X-Content-Type-Options': 'nosniff' };
+            if (contentType === 'image/svg+xml') { headers['Content-Security-Policy'] = "default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; object-src 'none'; base-uri 'none'"; }
+            res.set(headers);
             res.send(data);
         });
     }

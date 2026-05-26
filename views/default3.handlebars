@@ -22595,7 +22595,7 @@
             x += '</div>';
             x += '<div>';
             x += '<h5 class="mb-1 fw-semibold">Customize Your Sidebar Icons</h5>';
-            x += '<p class="text-muted mb-0">Upload custom SVG/PNG icons or provide URLs to personalize your sidebar interface experience</p>';
+            x += '<p class="text-muted mb-0">Upload custom SVG, PNG or JPEG icons up to 10 MB, or provide URLs to personalize your sidebar interface experience</p>';
             x += '</div>';
             x += '</div>';
             x += '</div>';
@@ -22797,7 +22797,7 @@
             if (xxModal) { xxModal.hide(); }
         }
 
-        // Supports both SVG menu icons and the modern FontAwesome <i> icons.
+        // Supports existing SVG menu elements and modern FontAwesome <i> icons.
         function applyIconCustomization(icons) {
             var state = sanitizeCustomIconState(icons);
             for (var i = 0; i < customIconConfig.length; i++) {
