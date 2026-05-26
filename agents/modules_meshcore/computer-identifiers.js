@@ -516,7 +516,7 @@ function windows_identifiers()
 
     ret['identifiers'] = {};
 
-    var values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['ReleaseDate', 'Manufacturer', 'SMBIOSBIOSVersion', 'SerialNumber']);
+    var values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_Bios", ['ReleaseDate', 'Manufacturer', 'SMBIOSBIOSVersion', 'SerialNumber']);
     if(values[0]){
         ret['identifiers']['bios_date'] = values[0]['ReleaseDate'];
         ret['identifiers']['bios_vendor'] = values[0]['Manufacturer'];
@@ -525,7 +525,7 @@ function windows_identifiers()
     }
     ret['identifiers']['bios_mode'] = 'Legacy';
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_BaseBoard", ['Product', 'SerialNumber', 'Manufacturer', 'Version']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_BaseBoard", ['Product', 'SerialNumber', 'Manufacturer', 'Version']);
     if(values[0]){
         ret['identifiers']['board_name'] = values[0]['Product'];
         ret['identifiers']['board_serial'] = values[0]['SerialNumber'];
@@ -533,13 +533,13 @@ function windows_identifiers()
         ret['identifiers']['board_version'] = values[0]['Version'];
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_ComputerSystemProduct", ['UUID', 'Name']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_ComputerSystemProduct", ['UUID', 'Name']);
     if(values[0]){
         ret['identifiers']['product_uuid'] = values[0]['UUID'];
         ret['identifiers']['product_name'] = values[0]['Name'];
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_SystemEnclosure", ['SerialNumber', 'SMBIOSAssetTag', 'Manufacturer']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_SystemEnclosure", ['SerialNumber', 'SMBIOSAssetTag', 'Manufacturer']);
     if(values[0]){
         ret['identifiers']['chassis_serial'] = values[0]['SerialNumber'];
         ret['identifiers']['chassis_assettag'] = values[0]['SMBIOSAssetTag'];
@@ -548,13 +548,13 @@ function windows_identifiers()
 
     trimIdentifiers(ret.identifiers);
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_PhysicalMemory");
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_PhysicalMemory");
     if(values[0]){
         trimResults(values);
         ret.windows.memory = values;
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_OperatingSystem");
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_OperatingSystem");
     if(values[0]){
         trimResults(values);
         ret.windows.osinfo = values[0];
@@ -579,17 +579,17 @@ function windows_identifiers()
         }
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_Processor", ['Caption', 'DeviceID', 'Manufacturer', 'MaxClockSpeed', 'Name', 'SocketDesignation']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_Processor", ['Caption', 'DeviceID', 'Manufacturer', 'MaxClockSpeed', 'Name', 'SocketDesignation']);
     if(values[0]){
         ret.windows.cpu = values;
     }
     
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_VideoController", ['Name', 'CurrentHorizontalResolution', 'CurrentVerticalResolution']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_VideoController", ['Name', 'CurrentHorizontalResolution', 'CurrentVerticalResolution']);
     if(values[0]){
         ret.windows.gpu = values;
     }
 
-    values = require('win-wmi').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskDrive", ['Caption', 'DeviceID', 'Model', 'Partitions', 'Size', 'Status']);
+    values = require('win-wmi-fixed').query('ROOT\\CIMV2', "SELECT * FROM Win32_DiskDrive", ['Caption', 'DeviceID', 'Model', 'Partitions', 'Size', 'Status']);
     if(values[0]){
         ret.windows.drives = values;
     }
@@ -613,7 +613,7 @@ function windows_identifiers()
     // Windows TPM
     IntToStr = function (v) { return String.fromCharCode((v >> 24) & 0xFF, (v >> 16) & 0xFF, (v >> 8) & 0xFF, v & 0xFF); };
     try {
-        values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
+        values = require('win-wmi-fixed').query('ROOT\\CIMV2\\Security\\MicrosoftTpm', "SELECT * FROM Win32_Tpm", ['IsActivated_InitialValue','IsEnabled_InitialValue','IsOwned_InitialValue','ManufacturerId','ManufacturerVersion','SpecVersion']);
         if(values[0]) {
             ret.tpm = {
                 SpecVersion: values[0].SpecVersion.split(",")[0],
@@ -662,15 +662,15 @@ function windows_identifiers()
             }
             return result;
         }
-        values = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
-        var values2 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
-        var values3 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
-        var values4 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
+        values = require('win-wmi-fixed').query('ROOT\\WMI', "SELECT * FROM BatteryCycleCount",['InstanceName','CycleCount']);
+        var values2 = require('win-wmi-fixed').query('ROOT\\WMI', "SELECT * FROM BatteryFullChargedCapacity",['InstanceName','FullChargedCapacity']);
+        var values3 = require('win-wmi-fixed').query('ROOT\\WMI', "SELECT * FROM BatteryRuntime",['InstanceName','EstimatedRuntime']);
+        var values4 = require('win-wmi-fixed').query('ROOT\\WMI', "SELECT * FROM BatteryStaticData",['InstanceName','Chemistry','DesignedCapacity','DeviceName','ManufactureDate','ManufactureName','SerialNumber']);
         for (i = 0; i < values4.length; ++i) {
             if (values4[i].Chemistry) { values4[i].Chemistry = IntToStrLE(parseInt(values4[i].Chemistry)); }
             if (values4[i].ManufactureDate) { if (values4[i].ManufactureDate.indexOf('*****') != -1) delete values4[i].ManufactureDate; }
         }
-        var values5 = require('win-wmi').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
+        var values5 = require('win-wmi-fixed').query('ROOT\\WMI', "SELECT * FROM BatteryStatus",['InstanceName','ChargeRate','Charging','DischargeRate','Discharging','RemainingCapacity','Voltage']);
         var values6 = [];
         if (values2.length > 0 && values4.length > 0) {
             for (i = 0; i < values2.length; ++i) {
@@ -904,7 +904,7 @@ function win_chassisType()
 function win_systemType()
 {
     try {
-        var tokens = require('win-wmi').query('ROOT\\CIMV2', 'SELECT PCSystemType FROM Win32_ComputerSystem', ['PCSystemType']);
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT PCSystemType FROM Win32_ComputerSystem', ['PCSystemType']);
         if (tokens[0]) {
             return (parseInt(tokens[0]['PCSystemType']));
         } else {
