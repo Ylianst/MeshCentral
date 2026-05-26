@@ -22823,17 +22823,20 @@
                     }
                 } else {
                     anchor.classList.remove('custom-icon');
-                    iconElement.style.removeProperty('background-image');
-                    iconElement.style.removeProperty('background-repeat');
-                    iconElement.style.removeProperty('background-position');
-                    iconElement.style.removeProperty('background-size');
-                    if (iconElement.tagName.toLowerCase() === 'i') {
-                        iconElement.style.removeProperty('font-size');
-                        iconElement.style.removeProperty('color');
-                        iconElement.style.removeProperty('width');
-                        iconElement.style.removeProperty('height');
-                        iconElement.style.removeProperty('display');
-                        iconElement.style.removeProperty('vertical-align');
+                    var iconElements = anchor.querySelectorAll('i,svg');
+                    for (var j = 0; j < iconElements.length; j++) {
+                        iconElements[j].style.removeProperty('background-image');
+                        iconElements[j].style.removeProperty('background-repeat');
+                        iconElements[j].style.removeProperty('background-position');
+                        iconElements[j].style.removeProperty('background-size');
+                        if (iconElements[j].tagName.toLowerCase() === 'i') {
+                            iconElements[j].style.removeProperty('font-size');
+                            iconElements[j].style.removeProperty('color');
+                            iconElements[j].style.removeProperty('width');
+                            iconElements[j].style.removeProperty('height');
+                            iconElements[j].style.removeProperty('display');
+                            iconElements[j].style.removeProperty('vertical-align');
+                        }
                     }
                 }
             }

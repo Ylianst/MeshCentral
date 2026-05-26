@@ -311,12 +311,20 @@ class IconUploadComponent {
         try {
             if (!(/^image\/(svg\+xml|png|jpeg)$/i.test(file.type)) && !(/\.(svg|png|jpg|jpeg)$/i.test(file.name || ''))) { throw new Error('Only SVG, PNG and JPEG icon files are supported.'); }
             if ((file.size < 4) || (file.size > CUSTOM_ICON_MAX_FILE_SIZE)) { throw new Error('Icon files must be non-empty and ' + (CUSTOM_ICON_MAX_FILE_SIZE / 1048576) + ' MB or smaller.'); }
-            if (!(/\.(svg)$/i.test(file.name || '') || /^image\/svg\+xml$/i.test(file.type))) {
+            var uploadFile = file;
+            if (/\.(svg)$/i.test(file.name || '') || /^image\/svg\+xml$/i.test(file.type || '')) {
+                // Ensure DOMPurify is loaded
+                if ((typeof DOMPurify === 'undefined') || (typeof DOMPurify.sanitize !== 'function')) { throw new Error('Unable to clean SVG icon in this browser.'); }
+                // Clean SVG file
+                const cleanedSvg = DOMPurify.sanitize(await file.text(), { USE_PROFILES: { svg: true, svgFilters: true } });
+                if ((typeof cleanedSvg !== 'string') || (cleanedSvg.search(/<svg[\s>]/i) < 0)) { throw new Error('Invalid SVG icon file.'); }
+                uploadFile = new File([cleanedSvg], file.name, { type: 'image/svg+xml', lastModified: file.lastModified });
+            } else {
                 const dimensions = await this.getImageDimensions(file);
                 if ((dimensions.width < 1) || (dimensions.height < 1) || (dimensions.width > CUSTOM_ICON_MAX_DIMENSION) || (dimensions.height > CUSTOM_ICON_MAX_DIMENSION)) { throw new Error('PNG/JPEG icon images must be ' + CUSTOM_ICON_MAX_DIMENSION + ' x ' + CUSTOM_ICON_MAX_DIMENSION + ' pixels or smaller.'); }
             }
             if (this.options.onUpload) {
-                const result = await this.options.onUpload(this.iconKey, file);
+                const result = await this.options.onUpload(this.iconKey, uploadFile);
 
                 // Show success state
                 button.innerHTML = '<i class="fas fa-check me-2"></i>Success!';
