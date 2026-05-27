@@ -158,26 +158,25 @@ const QueryAsyncHandler =
             cx: 12, parms: 1, name: 'Release', func: function ()
             {
                 --this.refcount;
-                console.info1('Release', this.refcount);
                 if (this.refcount == 0)
                 {
-                    console.info1('No More References');
-
-                    this.cleanup();
-                    this.services.funcs.Release(this.services.Deref());
-
-                    this.services = null;
+                    this.cleanup();     // remove callbacks
                     this.p = null;
-                    if (this.callbackDispatched)
-                    {
-                        setImmediate(function (j) { j.locator = null; }, this);
+                    if (this.services && 'funcs' in this.services) {
+                        this.services.funcs.Release(this.services.Deref());
+                        this.services = null;
                     }
-                    else
-                    {
-                        this.locator = null;
+                    if (this.callbackDispatched) {  // inline or dispatched
+                        setImmediate(function (j) {
+                            if (j.locator && 'funcs' in j.locator) { j.locator.funcs.Release(j.locator); }
+                            j.locator = null;
+                        }, this);
+                    } else {
+                        if (this.locator && 'funcs' in this.locator) {
+                            this.locator.funcs.Release(this.locator);
+                            this.locator = null;
+                        }
                     }
-                    
-                    console.info1('No More References [END]');
                 }
                 return (GM.CreateVariable(4));
             }
@@ -213,7 +212,7 @@ const QueryAsyncHandler =
                 }
                 else
                 {
-                    this.p.reject(hResult.Val);
+                    this.p.reject(new Error('WMI async query error: 0x' + (hResult.Val >>> 0).toString(16)));
                 }
                 return (ret);
             }
@@ -370,42 +369,59 @@ function enumerateProperties(j, fields)
 
 function queryAsync(resourceString, queryString, fields)
 {
-    var p = new promise(require('promise').defaultInit);
-    var resource = GM.CreateVariable(resourceString, { wide: true });
-    var language = GM.CreateVariable("WQL", { wide: true });
-    var query = GM.CreateVariable(queryString, { wide: true });
-    var results = GM.CreatePointer();
+    var queryStarted = false;
+    try {
+        var p = new promise(require('promise').defaultInit);
+        var resource = GM.CreateVariable(resourceString, { wide: true });
+        var language = GM.CreateVariable("WQL", { wide: true });
+        var query = GM.CreateVariable(queryString, { wide: true });
+        var results = GM.CreatePointer();
 
-    // Setup the Async COM handler for QueryAsync() 
-    var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
-    handlers.refcount = 1;
-    handlers.results = [];
-    handlers.fields = fields;
-    handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-    handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
+        // Setup the Async COM handler for QueryAsync() 
+        var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
+        handlers.refcount = 1;
+        handlers.results = [];
+        handlers.fields = fields;
+        handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
+        handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
 
-    handlers.services = require('_GenericMarshal').CreatePointer();
+        handlers.services = require('_GenericMarshal').CreatePointer();
 
-	// For easier debugging in case a certain WMI component is not available
-	var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
-	if (hr != 0) {
-		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-		throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-	}
+        // For easier debugging in case a certain WMI component is not available
+        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
+        if (hr != 0) {
+            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+            throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+        }
 
-    handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
-    handlers.p = p;
-    
-    // Make the COM call
-    if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0)
-    {
-        throw ('Error in Query');
+        handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
+        handlers.p = p;
+        
+        // Make the COM call
+        if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0)  { throw new Error('Error in Query'); }
+        queryStarted = true;
+        // Hold a reference to the callback object
+        wmi_handlers[handlers._hashCode()] = handlers;
+    } catch (e) {
+        console.log('win-wmi queryAsync error: ' + e.message);
+        if (!queryStarted && handlers) {
+            // only release if callbacks didn't start, otherwise Release callback handles it
+            handlers.p = null;
+            if (handlers.services && 'funcs' in handlers.services) {
+                handlers.services.funcs.Release(handlers.services.Deref());
+                handlers.services = null;
+            }
+            if (handlers.locator && 'funcs' in handlers.locator) {
+                handlers.locator.funcs.Release(handlers.locator);
+                handlers.locator = null;
+            }
+            handlers.cleanup(); // remove callbacks
+        }
+        throw (e);    
     }
-
-    // Hold a reference to the callback object
-    wmi_handlers[handlers._hashCode()] = handlers;
     return (p);
 }
+
 function query(resourceString, queryString, fields)
 {
     try {
