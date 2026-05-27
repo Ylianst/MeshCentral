@@ -210,7 +210,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
             apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
-            npm install pg@8.14.1;; \
+            npm install pg@8.16.3;; \
         false|no|FALSE|NO) \
             echo "Not including PostgreSQL Tools.";; \
         *) \

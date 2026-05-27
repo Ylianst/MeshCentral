@@ -174,7 +174,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
             apk add --no-cache postgresql-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
-            npm install pg@8.14.1;; \
+            npm install pg@8.16.3;; \
         false|no|FALSE|NO) \
             echo "Not including PostgreSQL Tools.";; \
         *) \
