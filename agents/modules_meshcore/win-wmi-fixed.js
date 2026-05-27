@@ -375,7 +375,7 @@ function queryAsync(resourceString, queryString, fields)
         //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
             throw new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows'); }
-        var p = new promise(require('promise').defaultInit);
+        var p = new promise(promise.defaultInit);
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
@@ -388,7 +388,7 @@ function queryAsync(resourceString, queryString, fields)
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
-        handlers.services = require('_GenericMarshal').CreatePointer();
+        handlers.services = GM.CreatePointer();
 
         // For easier debugging in case a certain WMI component is not available
         var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
@@ -429,7 +429,7 @@ function query(resourceString, queryString, fields)
         // Connect the locator connection for WMI
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
-        var services = require('_GenericMarshal').CreatePointer();
+        var services = GM.CreatePointer();
         
         // For easier debugging in case a certain WMI component is not available
         var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
