@@ -4334,7 +4334,6 @@ body.is-mobile #deskarea4 {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
-    font-size: 12px;
 }
 
 /* Keyboard shortcut selector: constrain width on mobile so it doesn't

@@ -9072,21 +9072,21 @@
                 if (((meshrights & (4 + 8 + 64 + 262144)) != 0) && (node.mtype < 3) && ((node.agent == null) || (node.agent.id != 34))) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Actions" + '" title="' + "Perform power actions on the device" + '" onclick=deviceActionFunction() />'; }
                 x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Notes" + '" title="' + "View notes about this device" + '" onclick=showNotes(' + ((meshrights & 128) == 0) + ',"' + encodeURIComponentEx(node._id) + '") />';
                 x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Log Event" + '" title="' + "Write an event for this device" + '" onclick=writeDeviceEvent("' + encodeURIComponentEx(node._id) + '") />';
-                if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button class="btn btn-primary btn-sm me-2" cmenu=deskPreConfigScriptContextMenu value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
+                if ((node.mtype == 2) && (connectivity & 1) && ((meshrights & 131072) != 0)) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" cmenu=deskPreConfigScriptContextMenu value="' + "Run" + '" title="' + "Run commands on this device" + '" onclick=runDeviceCmd("' + encodeURIComponentEx(node._id) + '") />'; }
                 if (node.mtype != 4) {
-                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />'; }
+                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Message" + '" title="' + "Display a text message on the remote device" + '" onclick=deviceMessageFunction() />'; }
                     //if ((connectivity & 1) && (meshrights & 8) && (node.agent.id < 5)) { x += '<input type=button value=Toast title="' + "Display a text message of the remote device" + '" onclick=deviceToastFunction() />';  }
-                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
+                    if ((meshrights & 8) && (connectivity & 1) && ((meshrights & 16384) != 0) || ((node.pmt == 1) && ((features2 & 2) != 0))) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Chat" + '" title="' + "Open chat window to this computer" + '" onclick=deviceChat(event) />'; }
                     if ((serverinfo != null) && (serverinfo.altmessenging != null) && (meshrights & 8) && (connectivity & 1)) {
                         for (var i in serverinfo.altmessenging) {
                             var am = serverinfo.altmessenging[i];
                             if ((am.type == null) || (am.type == 'device')) {
-                                x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />';
+                                x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + EscapeHtml(serverinfo.altmessenging[i].name) + '" onclick=altDeviceChat(event,' + i + ') />';
                             }
                         }
                     }
                     if ((serverinfo.guestdevicesharing !== false) && (node.agent != null) && (node.agent.caps & 3) && (connectivity & 1) && ((meshrights & 0x80008) == 0x80008) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 0x1000) == 0))) {
-                        x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
+                        x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Share" + '" title="' + "Create a link to share this device with a guest" + '" onclick=showShareDevice() />';
                         QV('DeskGuestShareButton', true);
                     } else {
                         QV('DeskGuestShareButton', false);
@@ -9095,12 +9095,12 @@
                 if ((node.mtype == 4) && (connectivity & 1)) {
                     if (node.porttype == 'PDU') {
                         if (node.pwr == 1) {
-                            if (meshrights & 0x40000) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Turn off" + '" title="' + "Turn off" + '" onclick=setIpPduState(0) />'; }
+                            if (meshrights & 0x40000) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Turn off" + '" title="' + "Turn off" + '" onclick=setIpPduState(0) />'; }
                         } else if (node.pwr == 8) {
-                            if (meshrights & 0x40) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Turn on" + '" title="' + "Turn on" + '" onclick=setIpPduState(1) />'; }
+                            if (meshrights & 0x40) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Turn on" + '" title="' + "Turn on" + '" onclick=setIpPduState(1) />'; }
                         }
                     } else {
-                        if (meshrights & 8) { x += '<input type=button class="btn btn-primary btn-sm me-2" value="' + "Remote Control" + '" title="' + "Remote Control" + '" onclick=openIpKvmRemoteControl("' + encodeURIComponentEx(node._id) + '") />'; }
+                        if (meshrights & 8) { x += '<input type=button class="btn btn-primary btn-sm me-2 mb-2" value="' + "Remote Control" + '" title="' + "Remote Control" + '" onclick=openIpKvmRemoteControl("' + encodeURIComponentEx(node._id) + '") />'; }
                     }
                 }
 
@@ -9108,7 +9108,7 @@
                 if ((customui != null) && (customui.devicebuttons != null)) {
                     for (var i in customui.devicebuttons) {
                         if ((customui.devicebuttons[i].showif == null) || ((mesh != null) && (customui.devicebuttons[i].showif == mesh._id)) || (customui.devicebuttons[i].showif == currentNode._id)) {
-                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />&nbsp;';
+                            x += '<input id="cui:' + i + '" type="button" class="btn btn-primary btn-sm me-2 mb-2" value="' + customui.devicebuttons[i].name + '" onclick=customUIAction(event,"devicebuttons") />&nbsp;';
                         }
                     }
                 }
@@ -9335,7 +9335,7 @@
                 // Show user device permissions
                 x = '';
                 if (meshrights & 7) {
-                    x += '<button class="btn btn-primary btn-sm me-2" onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><i class="fa-solid fa-circle-plus"></i> ' + "Add User" + '</button>';
+                    x += '<button class="btn btn-primary btn-sm me-2 mb-2" onclick="return p20showAddMeshUserDialog(5)" style=cursor:pointer;margin-right:10px><i class="fa-solid fa-circle-plus"></i> ' + "Add User" + '</button>';
                     if (usergroups != null) {
                         var userGroupCount = 0, newUserGroup = false;
                         for (var i in usergroups) {
