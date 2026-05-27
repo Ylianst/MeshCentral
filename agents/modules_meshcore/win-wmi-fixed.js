@@ -200,19 +200,22 @@ const QueryAsyncHandler =
 function destroy(h) {
     if (h.cleanup) { h.cleanup(); }
     h.p = null;
-    
-    if (h.services && 'funcs' in h.services) {
-        h.services.funcs.Release(h.services.Deref());
-        h.services = null;
-    }
-    var releaseLocator = function () {
-        if (h.locator && 'funcs' in h.locator) {
-            h.locator.funcs.Release(h.locator);
-        }
-        h.locator = null;
-    };
     delete wmi_handlers[h._hashCode()];
-    if (h.callbackDispatched) { setImmediate(releaseLocator); } else { releaseLocator(); }
+    h.services = releaseCOM(h.services, true);
+    
+    if (h.callbackDispatched) {
+        setImmediate(function () { h.locator = releaseCOM(h.locator, false); });
+    } else {
+        h.locator = releaseCOM(h.locator, false);
+    }
+}
+
+function releaseCOM(obj, deref) {
+    if (obj && obj.funcs) {
+        try { obj.funcs.Release(deref ? obj.Deref() : obj); }
+        catch (e) { console.log('releaseCOM error: ' + (e && e.message ? e.message : e)); }
+    }
+    return null;
 }
 
 
@@ -450,9 +453,9 @@ function query(resourceString, queryString, fields)
         console.log('win-wmi query error: ' + e.message);
         throw (e);
     } finally {
-        if (results && 'funcs' in results) { results.funcs.Release(results.Deref()); results = null; }
-        if (services && 'funcs' in services) { services.funcs.Release(services.Deref()); services = null; }
-        if (locator && 'funcs' in locator) { locator.funcs.Release(locator); locator = null; }
+        results = releaseCOM(results, true);
+        services = releaseCOM(services, true);
+        locator = releaseCOM(locator, false);
     }
     return (ret);
 }
