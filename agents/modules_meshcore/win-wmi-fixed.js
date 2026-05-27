@@ -17,6 +17,8 @@ limitations under the License.
 var promise = require('promise');
 var GM = require('_GenericMarshal');
 var sm = require('service-manager');
+var COM = require('win-com');
+
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
@@ -225,7 +227,7 @@ function enumerateProperties(j, fields)
     var properties = [];
     var values = {};
 
-    j.funcs = require('win-com').marshalFunctions(j.Deref(), ResultFunctions);
+    j.funcs = COM.marshalFunctions(j.Deref(), ResultFunctions);
 
     // First we need to enumerate the COM Array
     if (fields != null && Array.isArray(fields))
@@ -367,23 +369,23 @@ function queryAsync(resourceString, queryString, fields)
     try {
         var s = sm.manager.getService('winmgmt');
         if (!s.isRunning()) { throw new Error ('WMI service not running')};
-        var p = new promise(require('promise').defaultInit);
+        var p = new promise(promise.defaultInit);
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
 
         // Setup the Async COM handler for QueryAsync() 
-        var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
+        var handlers = COM.marshalInterface(QueryAsyncHandler);
         handlers.refcount = 1;
         handlers.results = [];
         handlers.fields = fields;
-        handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-        handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
+        handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
         handlers.services = GM.CreatePointer();
         if (handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val != 0) { throw ('Error calling ConnectToService'); }
 
-        handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
+        handlers.services.funcs = COM.marshalFunctions(handlers.services.Deref(), ServiceFunctions);
         handlers.p = p;
         // Make the COM call
         if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0) { throw new Error('Error in Query'); }
@@ -411,16 +413,16 @@ function query(resourceString, queryString, fields)
         var results = GM.CreatePointer();
 
         // Connect the locator connection for WMI
-        var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-        locator.funcs = require('win-com').marshalFunctions(locator, LocatorFunctions);
-        var services = require('_GenericMarshal').CreatePointer();
+        var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
+        var services = GM.CreatePointer();
         if (locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val != 0) { throw new Error ('Error calling ConnectToService'); }
 
         // Execute the Query
-        services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
+        services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
         if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw new Error('Error in Query'); }
 
-        results.funcs = require('win-com').marshalFunctions(results.Deref(), ResultsFunctions);
+        results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
         var ret = [];
