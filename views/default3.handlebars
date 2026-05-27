@@ -68,7 +68,7 @@
 <body id="body" oncontextmenu="handleContextMenu(event)" style="display:none;min-width:495px"
     onload="if (typeof(startup) !== 'undefined') startup();">
     <script>
-        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        if (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.matchMedia('(pointer: coarse)').matches) {
             document.body.classList.add('is-mobile');
             document.documentElement.classList.add('is-mobile');
         }
