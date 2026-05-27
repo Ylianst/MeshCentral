@@ -176,6 +176,18 @@
         }
         window.addEventListener('orientationchange', _updateOrientation);
         window.addEventListener('resize', _updateOrientation);
+
+        // Use Popper strategy:'fixed' so dropdown menus escape overflow:hidden parents and canvas layers.
+        window.addEventListener('load', function() {
+            if (typeof bootstrap === 'undefined') return;
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function(el) {
+                var ex = bootstrap.Dropdown.getInstance(el);
+                if (ex) ex.dispose();
+                new bootstrap.Dropdown(el, {
+                    popperConfig: function(cfg) { cfg.strategy = 'fixed'; return cfg; }
+                });
+            });
+        });
     </script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
@@ -1229,7 +1241,7 @@
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
-                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleTrackpad();deskCloseMobileActions()"><i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>Toggle Trackpad Mode</a>
+                        <a id="deskTrackpadItem" class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleTrackpad();deskCloseMobileActions()"><i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>Enable Trackpad Mode</a>
                         <a id="deskRightClickItem" class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskToggleRightClickMode();deskCloseMobileActions()"><i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>Enable Right-click Mode</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskCustomizeKeys();deskCloseMobileActions()"><i class="fa-solid fa-sliders fa-fw me-2 text-primary"></i>Customize Shortcuts</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deskRefreshFunction();deskCloseMobileActions()"><i class="fa-solid fa-rotate fa-fw me-2 text-primary"></i>Refresh Desktop</a>
@@ -9731,12 +9743,17 @@
                     // Fullscreen mode: rebuild panel with all controls
                     _buildFullscreenPanel(panel);
                 } else {
-                    // Normal mode: just update the right-click label
+                    // Normal mode: update dynamic labels to reflect current state
                     var rc = Q('deskRightClickItem');
                     if (rc) {
                         var active = desktop && desktop.m && desktop.m.SwapMouse;
                         rc.innerHTML = '<i class="fa-solid fa-hand-pointer fa-fw me-2 text-primary"></i>'
                             + (active ? 'Disable Right-click Mode' : 'Enable Right-click Mode');
+                    }
+                    var tp = Q('deskTrackpadItem');
+                    if (tp) {
+                        tp.innerHTML = '<i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>'
+                            + (trackpadMode ? 'Disable Trackpad Mode' : 'Enable Trackpad Mode');
                     }
                 }
             }
@@ -11167,6 +11184,12 @@
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
                     _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
+                    // Hide trackpad cursor and reset trackpad state on disconnect
+                    if (typeof trackpadMode !== 'undefined') {
+                        trackpadMode = false;
+                        var _tpc = document.getElementById('trackpadCursor');
+                        if (_tpc) _tpc.style.display = 'none';
+                    }
                     webRtcDesktopReset();
                     deskPreferedStickyDisplay = 0;
                     break;

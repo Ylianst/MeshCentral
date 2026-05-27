@@ -3757,7 +3757,7 @@ body.is-mobile #ServerSubMenuSpan {
     left: 0 !important;
     right: 0 !important;
     top: auto !important;
-    height: 44px !important;
+    height: clamp(44px, 13vw, 54px) !important;
     z-index: 500 !important;
     overflow: hidden !important;
     background: #113962 !important;
@@ -3776,7 +3776,7 @@ body.is-mobile #ServerSubMenu {
     display: flex !important;
     flex: 1 1 auto !important;
     width: 100% !important;
-    height: 44px !important;
+    height: clamp(44px, 13vw, 54px) !important;
     background: transparent !important;
 }
 
@@ -3811,14 +3811,21 @@ body.is-mobile .topbar_td {
     width: auto !important;
     align-items: center !important;
     justify-content: center !important;
-    height: 44px !important;
-    padding: 0 4px !important;
+    /* Adaptive height and font: scales with viewport width.
+       clamp(min, preferred, max) — preferred grows with screen size via vw units. */
+    height: clamp(44px, 13vw, 54px) !important;
+    padding: 0 clamp(4px, 1.5vw, 10px) !important;
     color: rgba(255,255,255,0.75) !important;
-    font-size: 11px !important;
+    font-size: clamp(12px, 3.5vw, 15px) !important;
     border-right: 1px solid rgba(255,255,255,0.15);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Trailing spacer td — hide it on mobile so it doesn't eat space from the right */
+body.is-mobile .topbar_td_end {
+    display: none !important;
 }
 
 body.is-mobile .topbar_td.style3x {
@@ -3874,7 +3881,8 @@ body.is-mobile #container {
    canvas, terminal) stretch edge-to-edge like a native app. Bottom padding
    reserves space for the fixed 44px tab bar. */
 body.is-mobile #column_l {
-    padding: 0 0 44px 0 !important;
+    /* Match padding-bottom to the tab bar height so nothing is hidden behind it */
+    padding: 0 0 clamp(44px, 13vw, 54px) 0 !important;
 }
 
 /* Content areas: 10px breathing room so text/cards/tables don't press against
@@ -4435,9 +4443,31 @@ body.is-mobile #termarea3xdiv {
 body.is-mobile #termTable .areaHead,
 body.is-mobile #termTable .areaFoot {
     flex-wrap: nowrap !important;
-    overflow-x: auto;
+    overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
+    align-items: center !important;
 }
+
+/* Files panel toolbar: same no-wrap treatment as Terminal (both rows) */
+body.is-mobile #p13toolbar .areaHead,
+body.is-mobile #p13toolbar .areaHead2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    align-items: center !important;
+}
+
+/* Files "More" dropdown: scrollable list so all items are reachable */
+body.is-mobile .mobileFileActionDropdown .dropdown-menu {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* On mobile, hide the Actions button from Terminal/Files toolbars — it wraps
+   on small screens and is accessible via device actions elsewhere. */
+body.is-mobile #termActionsBtn,
+body.is-mobile #filesActionsBtn { display: none !important; }
 
 /* Tab key button: hidden everywhere except mobile */
 body.is-mobile #tabbutton { display: inline-flex !important; }
