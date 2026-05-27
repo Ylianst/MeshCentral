@@ -16,14 +16,18 @@ limitations under the License.
 
 var promise = require('promise');
 var GM = require('_GenericMarshal');
+var COM = require('win-com');
+var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
 const E_NOINTERFACE = 0x80004002;
+const WBEM_S_NO_ERROR = 0;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
+OleAut32.CreateMethod('SafeArrayUnaccessData');
 
 var wmi_handlers = {};
 
@@ -121,71 +125,46 @@ const QueryAsyncHandler =
             cx: 10, parms: 3, name: 'QueryInterface', func: function (j, riid, ppv)
             {
                 var ret = GM.CreateVariable(4);
-                console.info1('QueryInterface', riid.Deref(0, 16).toBuffer().toString('hex'));
+                // console.log('QueryInterface', riid.Deref(0, 16).toBuffer().toString('hex'));
                 switch (riid.Deref(0, 16).toBuffer().toString('hex'))
                 {
                     case '0000000000000000C000000000000046': // IID_IUnknown
-                        j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
-                        ret.increment(0, true);
-                        //++this.p.refcount;
-                        console.info1('QueryInterface (IID_IUnknown)', this.refcount);
-                        break;
                     case '0178857C8173CF11884D00AA004B2E24': // IID_IWmiObjectSink
                         j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
                         ret.increment(0, true);
-                        //++this.p.refcount;
-                        console.info1('QueryInterface (IID_IWmiObjectSink)', this.refcount);
+                        ++this.refcount;
+                        //console.log('QueryInterface ' +  riid.Deref(0, 16).toBuffer().toString('hex') + ' refcount: ' + this.refcount);
                         break;
                     default:
                         ret.increment(E_NOINTERFACE, true);
-                        console.info1(riid.Deref(0, 16).toBuffer().toString('hex'), 'returning E_NOINTERFACE');
+                        //console.log(riid.Deref(0, 16).toBuffer().toString('hex'), 'returning E_NOINTERFACE');
                         break;
                 }
 
-                return (ret);
+                return ret;
             }
         },
         {
             cx: 11, parms: 1, name: 'AddRef', func: function ()
             {
-                ++this.refcount;
-                console.info1('AddRef', this.refcount);
-                return (GM.CreateVariable(4));
+                //console.log('AddRef: ' + this.refcount);
+                return (GM.CreateVariable(4).increment(++this.refcount, true));
             }
         },
         {
             cx: 12, parms: 1, name: 'Release', func: function ()
             {
-                --this.refcount;
-                console.info1('Release', this.refcount);
-                if (this.refcount == 0)
-                {
-                    console.info1('No More References');
-
-                    this.cleanup();
-                    this.services.funcs.Release(this.services.Deref());
-
-                    this.services = null;
-                    this.p = null;
-                    if (this.callbackDispatched)
-                    {
-                        setImmediate(function (j) { j.locator = null; }, this);
-                    }
-                    else
-                    {
-                        this.locator = null;
-                    }
-                    
-                    console.info1('No More References [END]');
-                }
-                return (GM.CreateVariable(4));
+                //console.log('Release: ' + this.refcount);
+                //--this.refcount;
+                if (--this.refcount === 0) { destroy(this); }
+                return GM.CreateVariable(4).increment(this.refcount >>> 0, true);
             }
         },
         {
             cx: 13, parms: 3, name: 'Indicate', func: function (j, count, arr)
             {
-                console.info1('Indicate', count.Val);
-                var j, nme, len, nn;
+                //console.log('Indicate: ' + count.Val);
+                if (!this.results) return GM.CreateVariable(4).increment(0, true);
 
                 for (var i = 0; i < count.Val; ++i)
                 {
@@ -193,31 +172,51 @@ const QueryAsyncHandler =
                     this.results.push(enumerateProperties(j, this.fields));
                 }
 
-                var ret = GM.CreateVariable(4);
-                ret.increment(0, true);
-                return (ret);
+                return GM.CreateVariable(4).increment(0, true);
             }
         },
         {
             cx: 14, parms: 5, name: 'SetStatus', func: function (j, lFlags, hResult, strParam, pObjParam)
             {
-                console.info1('SetStatus', hResult.Val);
-
-                var ret = GM.CreateVariable(4);
-                ret.increment(0, true);
-
+                //console.log('SetStatus');
                 if (hResult.Val == 0)
                 {
                     this.p.resolve(this.results);
                 }
                 else
                 {
-                    this.p.reject(hResult.Val);
+                    this.p.reject(new Error('WMI async query error: 0x' + (hResult.Val >>> 0).toString(16)));
                 }
-                return (ret);
+                var self = this;
+                setImmediate(function () {
+                    // console.log('SetStatus refcount: ' + self.refcount);
+                    if (--self.refcount === 0) { destroy(self); }
+                });
+                return GM.CreateVariable(4).increment(0, true);
             }
         }
     ];
+
+function destroy(h) {
+    if (h.cleanup) { h.cleanup(); }
+    h.p = null;
+    delete wmi_handlers[h._hashCode()];
+    h.services = releaseCOM(h.services, true);
+    
+    if (h.callbackDispatched) {
+        setImmediate(function () { h.locator = releaseCOM(h.locator, false); });
+    } else {
+        h.locator = releaseCOM(h.locator, false);
+    }
+}
+
+function releaseCOM(obj, deref) {
+    if (obj && obj.funcs) {
+        try { obj.funcs.Release(deref ? obj.Deref() : obj); }
+        catch (e) { console.log('releaseCOM error: ' + (e && e.message ? e.message : e)); }
+    }
+    return null;
+}
 
 
 function enumerateProperties(j, fields)
@@ -231,7 +230,7 @@ function enumerateProperties(j, fields)
     var properties = [];
     var values = {};
 
-    j.funcs = require('win-com').marshalFunctions(j.Deref(), ResultFunctions);
+    j.funcs = COM.marshalFunctions(j.Deref(), ResultFunctions);
 
     // First we need to enumerate the COM Array
     if (fields != null && Array.isArray(fields))
@@ -253,6 +252,7 @@ function enumerateProperties(j, fields)
             if (propName.length === 0) { continue; }
             properties.push(propName);
         }
+        OleAut32.SafeArrayUnaccessData(nme.Deref());
     }
 
     // Now we need to introspect the Array Fields
@@ -311,6 +311,7 @@ function enumerateProperties(j, fields)
                             break;
                     }
                 }
+                OleAut32.SafeArrayUnaccessData(safeArray);
                 values[properties[i]] = arrayValues;
             }
             else
@@ -367,80 +368,98 @@ function enumerateProperties(j, fields)
 
 function queryAsync(resourceString, queryString, fields)
 {
-    var p = new promise(require('promise').defaultInit);
-    var resource = GM.CreateVariable(resourceString, { wide: true });
-    var language = GM.CreateVariable("WQL", { wide: true });
-    var query = GM.CreateVariable(queryString, { wide: true });
-    var results = GM.CreatePointer();
+    var queryStarted = false;
+    try {
+        var s = sm.manager.getService('winmgmt');
+        if (!s.isRunning()) { throw new Error ('WMI service not running')};
+        //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
+        if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
+            throw new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows'); }
+        var p = new promise(promise.defaultInit);
+        var resource = GM.CreateVariable(resourceString, { wide: true });
+        var language = GM.CreateVariable("WQL", { wide: true });
+        var query = GM.CreateVariable(queryString, { wide: true });
 
-    // Setup the Async COM handler for QueryAsync() 
-    var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
-    handlers.refcount = 1;
-    handlers.results = [];
-    handlers.fields = fields;
-    handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-    handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
+        // Setup the Async COM handler for QueryAsync() 
+        var handlers = COM.marshalInterface(QueryAsyncHandler);
+        handlers.refcount = 1;
+        handlers.results = [];
+        handlers.fields = fields;
+        handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
-    handlers.services = require('_GenericMarshal').CreatePointer();
+        handlers.services = GM.CreatePointer();
 
-	// For easier debugging in case a certain WMI component is not available
-	var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
-	if (hr != 0) {
-		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-		throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-	}
+        // For easier debugging in case a certain WMI component is not available
+        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
+        if (hr != 0) {
+            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+            throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+        }
 
-    handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
-    handlers.p = p;
-    
-    // Make the COM call
-    if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0)
-    {
-        throw ('Error in Query');
+        handlers.services.funcs = COM.marshalFunctions(handlers.services.Deref(), ServiceFunctions);
+        handlers.p = p;
+        
+        // Make the COM call
+        if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0)  { throw new Error('Error in Query'); }
+        queryStarted = true;
+        // Hold a reference to the callback object
+        wmi_handlers[handlers._hashCode()] = handlers;
+    } catch (e) {
+        console.log('win-wmi queryAsync error: ' + e.message);
+        if (!queryStarted && handlers) {
+            handlers.refcount = 0;
+            destroy(handlers);
+        }
+        throw (e);    
     }
-
-    // Hold a reference to the callback object
-    wmi_handlers[handlers._hashCode()] = handlers;
     return (p);
 }
+
 function query(resourceString, queryString, fields)
 {
-    var resource = GM.CreateVariable(resourceString, { wide: true });
-    var language = GM.CreateVariable("WQL", { wide: true });
-    var query = GM.CreateVariable(queryString, { wide: true });
-    var results = GM.CreatePointer();
+    try {
+        var s = sm.manager.getService('winmgmt');
+        if (!s.isRunning()) { throw new Error ('WMI service not running')};
+        var resource = GM.CreateVariable(resourceString, { wide: true });
+        var language = GM.CreateVariable("WQL", { wide: true });
+        var query = GM.CreateVariable(queryString, { wide: true });
+        var results = GM.CreatePointer();
 
-    // Connect the locator connection for WMI
-    var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-    locator.funcs = require('win-com').marshalFunctions(locator, LocatorFunctions);
-    var services = require('_GenericMarshal').CreatePointer();
-    
-	// For easier debugging in case a certain WMI component is not available
-	var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
-	if (hr != 0) {
-		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-		throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-	}
+        // Connect the locator connection for WMI
+        var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
+        var services = GM.CreatePointer();
+        
+        // For easier debugging in case a certain WMI component is not available
+        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
+        if (hr != 0) {
+            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+            throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+        }
 
-    // Execute the Query
-    services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
-    if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw ('Error in Query'); }
+        // Execute the Query
+        services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
+        if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw ('Error in Query'); }
 
-    results.funcs = require('win-com').marshalFunctions(results.Deref(), ResultsFunctions);
-    var returnedCount = GM.CreateVariable(8);
-    var result = GM.CreatePointer();
-    var ret = [];
+        results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
+        var returnedCount = GM.CreateVariable(8);
+        var result = GM.CreatePointer();
+        var ret = [];
 
-    // Enumerate the results
-    while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
-    {
-        ret.push(enumerateProperties(result, fields));
+        // Enumerate the results
+        while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
+        {
+            ret.push(enumerateProperties(result, fields));
+        }
+    } catch (e) {
+        console.log('win-wmi query error: ' + e.message);
+        throw (e);
+    } finally {
+        results = releaseCOM(results, true);
+        services = releaseCOM(services, true);
+        locator = releaseCOM(locator, false);
     }
-
-    results.funcs.Release(results.Deref());
-    services.funcs.Release(services.Deref());
-    locator.funcs.Release(locator);
-
     return (ret);
 }
 
