@@ -24,6 +24,7 @@ const WBEM_FLAG_ALWAYS = 0;
 const E_NOINTERFACE = 0x80004002;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
+OleAut32.CreateMethod('SafeArrayUnaccessData');
 
 var wmi_handlers = {};
 
@@ -253,6 +254,7 @@ function enumerateProperties(j, fields)
             if (propName.length === 0) { continue; }
             properties.push(propName);
         }
+        OleAut32.SafeArrayUnaccessData(nme.Deref());
     }
 
     // Now we need to introspect the Array Fields
@@ -311,6 +313,7 @@ function enumerateProperties(j, fields)
                             break;
                     }
                 }
+                OleAut32.SafeArrayUnaccessData(safeArray);
                 values[properties[i]] = arrayValues;
             }
             else
