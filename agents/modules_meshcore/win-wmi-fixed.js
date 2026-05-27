@@ -385,14 +385,14 @@ function queryAsync(resourceString, queryString, fields)
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
-    handlers.services = require('_GenericMarshal').CreatePointer();
+        handlers.services = require('_GenericMarshal').CreatePointer();
 
-	// For easier debugging in case a certain WMI component is not available
-	var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
-	if (hr != 0) {
-		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-		throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-	}
+        // For easier debugging in case a certain WMI component is not available
+        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
+        if (hr != 0) {
+            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+            throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+        }
 
         handlers.services.funcs = COM.marshalFunctions(handlers.services.Deref(), ServiceFunctions);
         handlers.p = p;
@@ -421,17 +421,17 @@ function query(resourceString, queryString, fields)
         var query = GM.CreateVariable(queryString, { wide: true });
         var results = GM.CreatePointer();
 
-    // Connect the locator connection for WMI
-    var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-    locator.funcs = require('win-com').marshalFunctions(locator, LocatorFunctions);
-    var services = require('_GenericMarshal').CreatePointer();
+        // Connect the locator connection for WMI
+        var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
+        var services = require('_GenericMarshal').CreatePointer();
     
-	// For easier debugging in case a certain WMI component is not available
-	var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
-	if (hr != 0) {
-		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-		throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-	}
+        // For easier debugging in case a certain WMI component is not available
+        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
+        if (hr != 0) {
+            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+            throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+        }
 
         // Execute the Query
         services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
