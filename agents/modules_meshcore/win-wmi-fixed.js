@@ -382,7 +382,13 @@ function queryAsync(resourceString, queryString, fields)
     handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
 
     handlers.services = require('_GenericMarshal').CreatePointer();
-    if (handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val != 0) { throw ('Error calling ConnectToService'); }
+
+	// For easier debugging in case a certain WMI component is not available
+	var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
+	if (hr != 0) {
+		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+		throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+	}
 
     handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
     handlers.p = p;
@@ -408,7 +414,13 @@ function query(resourceString, queryString, fields)
     var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
     locator.funcs = require('win-com').marshalFunctions(locator, LocatorFunctions);
     var services = require('_GenericMarshal').CreatePointer();
-    if (locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val != 0) { throw ('Error calling ConnectToService'); }
+    
+	// For easier debugging in case a certain WMI component is not available
+	var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
+	if (hr != 0) {
+		var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
+		throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+	}
 
     // Execute the Query
     services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
