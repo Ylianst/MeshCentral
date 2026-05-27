@@ -372,6 +372,9 @@ function queryAsync(resourceString, queryString, fields)
     try {
         var s = sm.manager.getService('winmgmt');
         if (!s.isRunning()) { throw new Error ('WMI service not running')};
+        //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
+        if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
+            throw new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows'); }
         var p = new promise(require('promise').defaultInit);
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
