@@ -16,6 +16,7 @@ limitations under the License.
 
 var promise = require('promise');
 var GM = require('_GenericMarshal');
+var COM = require('win-com');
 var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
@@ -226,7 +227,7 @@ function enumerateProperties(j, fields)
     var properties = [];
     var values = {};
 
-    j.funcs = require('win-com').marshalFunctions(j.Deref(), ResultFunctions);
+    j.funcs = COM.marshalFunctions(j.Deref(), ResultFunctions);
 
     // First we need to enumerate the COM Array
     if (fields != null && Array.isArray(fields))
@@ -374,12 +375,12 @@ function queryAsync(resourceString, queryString, fields)
         var query = GM.CreateVariable(queryString, { wide: true });
 
         // Setup the Async COM handler for QueryAsync() 
-        var handlers = require('win-com').marshalInterface(QueryAsyncHandler);
+        var handlers = COM.marshalInterface(QueryAsyncHandler);
         handlers.refcount = 1;
         handlers.results = [];
         handlers.fields = fields;
-        handlers.locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-        handlers.locator.funcs = require('win-com').marshalFunctions(handlers.locator, LocatorFunctions);
+        handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
         handlers.services = require('_GenericMarshal').CreatePointer();
 
@@ -390,7 +391,7 @@ function queryAsync(resourceString, queryString, fields)
             throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
         }
 
-        handlers.services.funcs = require('win-com').marshalFunctions(handlers.services.Deref(), ServiceFunctions);
+        handlers.services.funcs = COM.marshalFunctions(handlers.services.Deref(), ServiceFunctions);
         handlers.p = p;
         
         // Make the COM call
@@ -420,8 +421,8 @@ function query(resourceString, queryString, fields)
         var results = GM.CreatePointer();
 
         // Connect the locator connection for WMI
-        var locator = require('win-com').createInstance(require('win-com').CLSIDFromString(CLSID_WbemAdministrativeLocator), require('win-com').IID_IUnknown);
-        locator.funcs = require('win-com').marshalFunctions(locator, LocatorFunctions);
+        var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+        locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
         var services = require('_GenericMarshal').CreatePointer();
         
         // For easier debugging in case a certain WMI component is not available
@@ -432,10 +433,10 @@ function query(resourceString, queryString, fields)
         }
 
         // Execute the Query
-        services.funcs = require('win-com').marshalFunctions(services.Deref(), ServiceFunctions);
+        services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
         if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw ('Error in Query'); }
 
-        results.funcs = require('win-com').marshalFunctions(results.Deref(), ResultsFunctions);
+        results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
         var ret = [];
