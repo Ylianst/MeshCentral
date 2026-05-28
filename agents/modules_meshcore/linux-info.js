@@ -85,7 +85,7 @@ function firewall()
     return ({
         product: 'UFW',
         installed: true,
-        enabled: output.toLowerCase().indexOf('active') !== -1
+        enabled: /^status:\s+active$/i.test(output)
     });
 }
 
