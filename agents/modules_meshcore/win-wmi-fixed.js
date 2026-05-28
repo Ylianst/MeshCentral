@@ -21,8 +21,11 @@ var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
+const WBEM_FLAG_RETURN_IMMEDIATELY = 0x10;
+const WBEM_FLAG_FORWARD_ONLY = 0x20;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
+const WBEM_FLAG_CONNECT_USE_MAX_WAIT = 0x80;
 const E_NOINTERFACE = 0x80004002;
 const WBEM_S_NO_ERROR = 0;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
@@ -431,24 +434,27 @@ function query(resourceString, queryString, fields)
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
         var services = GM.CreatePointer();
         
-        // For easier debugging in case a certain WMI component is not available
-        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemlocator-connectserver
+        // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
+        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val;
         if (hr != 0) {
             var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
             throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
         }
 
         // Execute the Query
+        // FORWARD_ONLY & RETURN_IMMEDIATELY instead of BIDIRECTIONAL, faster and less memory. https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-execquery
         services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
-        if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, results).Val != 0) { throw ('Error in Query'); }
+        if (services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 0, results).Val != 0) { throw new Error('Error in Query'); }
 
         results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
         var ret = [];
-
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-ienumwbemclassobject-next
+        var rowTimeout = 10*1000; // was WBEM_INFINITE. in ms. Prevents blocking.
         // Enumerate the results
-        while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
+        while (results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val == 0)
         {
             ret.push(enumerateProperties(result, fields));
         }
