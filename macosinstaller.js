@@ -145,6 +145,12 @@ function pad4(buffer) {
     return (pad === 0) ? buffer : Buffer.concat([buffer, Buffer.alloc(pad)]);
 }
 
+function octal(value, width) {
+    const max = Math.pow(8, width) - 1;
+    const n = Math.max(0, Math.min(Number(value) || 0, max));
+    return Math.floor(n).toString(8).padStart(width, '0').slice(-width);
+}
+
 async function collectPayloadEntries(root, relativePath) {
     const fullPath = path.join(root, relativePath);
     const stat = await fsp.stat(fullPath);
@@ -159,23 +165,23 @@ async function collectPayloadEntries(root, relativePath) {
     return entries;
 }
 
-function cpioNewcRecord(name, mode, data, ino) {
+function cpioOdcRecord(name, mode, data, ino, mtime) {
     data = data || Buffer.alloc(0);
     const nameBuffer = Buffer.from(name + '\0', 'utf8');
-    const fields = [
-        '070701',
-        ino.toString(16).padStart(8, '0'),
-        mode.toString(16).padStart(8, '0'),
-        '00000000', // uid
-        '00000000', // gid
-        '00000001', // nlink
-        Math.floor(Date.now() / 1000).toString(16).padStart(8, '0'),
-        data.length.toString(16).padStart(8, '0'),
-        '00000000', '00000000', '00000000', '00000000',
-        nameBuffer.length.toString(16).padStart(8, '0'),
-        '00000000'
-    ];
-    return Buffer.concat([pad4(Buffer.concat([Buffer.from(fields.join(''), 'ascii'), nameBuffer])), pad4(data)]);
+    const header = [
+        '070707',
+        octal(0, 6), // dev
+        octal(ino, 6),
+        octal(mode, 6),
+        octal(0, 6), // uid
+        octal(0, 6), // gid
+        octal(1, 6), // nlink
+        octal(0, 6), // rdev
+        octal(mtime || Math.floor(Date.now() / 1000), 11),
+        octal(nameBuffer.length, 6),
+        octal(data.length, 11)
+    ].join('');
+    return Buffer.concat([Buffer.from(header, 'ascii'), nameBuffer, data]);
 }
 
 async function createPayload(payloadRoot, targetFile) {
@@ -183,9 +189,9 @@ async function createPayload(payloadRoot, targetFile) {
     const records = [];
     let ino = 1;
     for (const entry of entries) {
-        records.push(cpioNewcRecord(entry.name, entry.stat.mode, entry.data, ino++));
+        records.push(cpioOdcRecord(entry.name, entry.stat.mode, entry.data, ino++, Math.floor(entry.stat.mtimeMs / 1000)));
     }
-    records.push(cpioNewcRecord('TRAILER!!!', 0, Buffer.alloc(0), ino));
+    records.push(cpioOdcRecord('TRAILER!!!', 0, Buffer.alloc(0), ino));
     await fsp.writeFile(targetFile, zlib.gzipSync(Buffer.concat(records)));
 }
 
