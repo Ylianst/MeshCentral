@@ -28,6 +28,22 @@ const WBEM_FLAG_ALWAYS = 0;
 const WBEM_FLAG_CONNECT_USE_MAX_WAIT = 0x80;
 const E_NOINTERFACE = 0x80004002;
 const WBEM_S_NO_ERROR = 0;
+const WBEM_S_FALSE = 1;
+const WBEM_S_TIMEDOUT = 0x40004;
+const WBEM_ERRORS = {
+    0x80041010: 'Invalid class',
+    0x80041017: 'Invalid query',
+    0x8004100E: 'Invalid namespace',
+    0x80041003: 'Access denied',
+    0x80041001: 'Generic failure',
+    0x80041004: 'Provider failure',
+    0x80041002: 'Object not found',
+    0x80041006: 'Out of memory',
+    0x80041008: 'Invalid parameter',
+    0x80041009: 'Resource not available',
+    0x80041021: 'Invalid syntax',
+    0x80070422: 'Service unavailable'
+};
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
 OleAut32.CreateMethod('SafeArrayUnaccessData');
@@ -421,6 +437,7 @@ function queryAsync(resourceString, queryString, fields)
 
 function query(resourceString, queryString, fields)
 {
+    var ret = [];
     try {
         var s = sm.manager.getService('winmgmt');
         if (!s.isRunning()) { throw new Error ('WMI service not running')};
@@ -436,10 +453,9 @@ function query(resourceString, queryString, fields)
         
         // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemlocator-connectserver
         // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
-        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val;
+        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val >>> 0;
         if (hr != 0) {
-            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-            throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+            throw new Error('ConnectToServer() failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')')
         }
 
         // Execute the Query
@@ -450,13 +466,16 @@ function query(resourceString, queryString, fields)
         results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
-        var ret = [];
+        
         // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-ienumwbemclassobject-next
         var rowTimeout = 10*1000; // was WBEM_INFINITE. in ms. Prevents blocking.
         // Enumerate the results
-        while (results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val == 0)
-        {
-            ret.push(enumerateProperties(result, fields));
+        while (true) {
+            var  nextRes= results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val >>> 0;
+            if (nextRes === WBEM_S_NO_ERROR) { ret.push(enumerateProperties(result, fields)); continue; }
+            if (nextRes === WBEM_S_FALSE) break; // normal exit
+            if (nextRes === WBEM_S_TIMEDOUT) continue;
+            throw new Error('Next() failed: ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ')');
         }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);
