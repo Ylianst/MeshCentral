@@ -455,8 +455,7 @@ function query(resourceString, queryString, fields)
         // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
         var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val >>> 0;
         if (hr != 0) {
-            throw new Error('ConnectToServer() failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')')
-        }
+            throw new Error('ConnectToServer(' + resourceString + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
 
         // Execute the Query
         // FORWARD_ONLY & RETURN_IMMEDIATELY instead of BIDIRECTIONAL, faster and less memory. https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-execquery
@@ -471,7 +470,7 @@ function query(resourceString, queryString, fields)
         var rowTimeout = 10*1000; // was WBEM_INFINITE. in ms. Prevents blocking.
         // Enumerate the results
         while (true) {
-            var  nextRes= results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val >>> 0;
+            var nextRes= results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val >>> 0;
             if (nextRes === WBEM_S_NO_ERROR) { ret.push(enumerateProperties(result, fields)); continue; }
             if (nextRes === WBEM_S_FALSE) break; // normal exit
             if (nextRes === WBEM_S_TIMEDOUT) continue;
