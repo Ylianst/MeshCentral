@@ -213,7 +213,7 @@ const QueryAsyncHandler =
                 this.results = null;
 
                 if (hVal === 0) { p.resolve(results); }
-                else { p.reject(new Error('WMI SetStatus error: 0x' + hVal.toString(16))); }
+                else { p.reject(new Error('queryAsync(' + this.query + ') failed: ' + (WBEM_ERRORS[hVal] || 'unknown') + ' (0x' + hVal.toString(16) + ')')); }
                 return (ret);
 
             }
@@ -395,9 +395,9 @@ function queryAsync(resourceString, queryString, fields, timeout)
     var queryStarted = false;
     var handlers = null;
     try {
+        var p = new promise(promise.defaultInit);
         var s = sm.manager.getService('winmgmt');
         if (!s.isRunning()) { throw new Error ('WMI service not running')};
-        var p = new promise(promise.defaultInit);
         //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
             setImmediate(function(){ p.reject(new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows')); }); return (p); }
@@ -411,6 +411,7 @@ function queryAsync(resourceString, queryString, fields, timeout)
         handlers.refcount = 1;
         handlers.results = [];
         handlers.fields = fields;
+        handlers.query = resourceString + ':' + queryString;
         handlers._timer = null;
         handlers._abandoned = false;
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
@@ -420,17 +421,18 @@ function queryAsync(resourceString, queryString, fields, timeout)
 
         // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemlocator-connectserver
         // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
-        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, handlers.services).Val;
+        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, handlers.services).Val >>> 0;
         if (hr != 0) {
-            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-            throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
+            throw (new Error('ConnectToServer(' + resourceString + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'));
         }
 
         handlers.services.funcs = COM.marshalFunctions(handlers.services.Deref(), ServiceFunctions);
         handlers.p = p;
         
         // Make the COM call
-        if (handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val != 0)  { throw new Error('Error in Query'); }
+        var execRes = handlers.services.funcs.ExecQueryAsync(handlers.services.Deref(), language, query, WBEM_FLAG_BIDIRECTIONAL, 0, handlers).Val >>> 0;
+        if (execRes !== 0) {
+            throw new Error('ExecQueryAsync(' + handlers.query + ') failed: ' + (WBEM_ERRORS[execRes] || 'unknown') + ' (0x' + execRes.toString(16) + ')'); }
         queryStarted = true;
         // Hold a reference to the callback object
         wmi_handlers[handlers._hashCode()] = handlers;
@@ -451,7 +453,8 @@ function queryAsync(resourceString, queryString, fields, timeout)
             handlers.refcount = 0;
             destroy(handlers);
         }
-        throw (e);    
+        p.reject(e);
+        // throw (e);
     }
     return (p);
 }
