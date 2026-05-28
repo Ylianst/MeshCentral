@@ -6667,11 +6667,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
         var meshexecutablename = 'meshagent';
-        var meshmpkgname = 'MeshAgent.mpkg';
+        var meshpkgname = 'MeshAgent.pkg';
         if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
             meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
             meshexecutablename = meshexecutablename.split('meshagent').join(domain.agentcustomization.filename);
-            meshmpkgname = meshmpkgname.split('MeshAgent').join(domain.agentcustomization.filename);
+            meshpkgname = meshpkgname.split('MeshAgent').join(domain.agentcustomization.filename);
         }
 
         // Customise the mesh agent display name
@@ -6696,62 +6696,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
         archive.pipe(res);
 
-        // Opens the "MeshAgentOSXPackager.zip"
-        var yauzl = require('yauzl');
-        yauzl.open(obj.path.join(__dirname, 'agents', 'MeshAgentOSXPackager.zip'), { lazyEntries: true }, function (err, zipfile) {
-            if (err) { res.sendStatus(500); return; }
-            zipfile.readEntry();
-            zipfile.on('entry', function (entry) {
-                if (/\/$/.test(entry.fileName)) {
-                    // Skip all folder entries
-                    zipfile.readEntry();
-                } else {
-                    if (entry.fileName == 'MeshAgent.mpkg/Contents/distribution.dist') {
-                        // This is a special file entry, we need to fix it.
-                        zipfile.openReadStream(entry, function (err, readStream) {
-                            readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
-                            readStream.on('end', function () {
-                                var meshname = mesh.name.split(']').join('').split('[').join(''); // We can't have ']]' in the string since it will terminate the CDATA.
-                                var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://meshcentral.com.\n\nThis software is provided under Apache 2.0 license.\n';
-                                var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
-                                archive.append(readStream.xxdata.toString().split('###DISPLAYNAME###').join(meshdisplayname).split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) });
-                                zipfile.readEntry();
-                            });
-                        });
-                    } else if (entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchAgent.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchDaemon.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Info.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/postflight' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/Postflight.sh' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Uninstall.command' ||
-                        entry.fileName == 'MeshAgent.mpkg/Uninstall.command') {
-                            // This is a special file entry, we need to fix it.
-                            zipfile.openReadStream(entry, function (err, readStream) {
-                                readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
-                                readStream.on('end', function () {
-                                    var options = { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) };
-                                    if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
-                                    archive.append(readStream.xxdata.toString().split('###SERVICENAME###').join(meshservicename).split('###COMPANYNAME###').join(meshcompanyname).split('###EXECUTABLENAME###').join(meshexecutablename), options);
-                                    zipfile.readEntry();
-                                });
-                            });
-                    } else {
-                        // Normal file entry
-                        zipfile.openReadStream(entry, function (err, readStream) {
-                            if (err) { throw err; }
-                            var options = { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) };
-                            if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
-                            archive.append(readStream, options);
-                            readStream.on('end', function () { zipfile.readEntry(); });
-                        });
-                    }
-                }
-            });
-            zipfile.on('end', function () {
-                archive.file(argentInfo.path, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.bin'.replace('MeshAgent.mpkg',meshmpkgname) });
-                archive.append(meshsettings, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.msh'.replace('MeshAgent.mpkg',meshmpkgname) });
-                archive.finalize();
-            });
+        // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
+        require('./macosinstaller').createMacOSInstaller({
+            agentPath: argentInfo.path,
+            meshSettings: meshsettings,
+            meshName: mesh.name.split(']').join('').split('[').join(''), // We can't have ']]' in the string since it will terminate the CDATA.
+            executableName: meshexecutablename,
+            packageName: meshpkgname,
+            displayName: meshdisplayname,
+            serviceName: meshservicename,
+            companyName: meshcompanyname
+        }).then(function (installer) {
+            archive.append(installer.pkg, { name: meshpkgname });
+            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
+            archive.finalize();
+        }).catch(function (err) {
+            parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
+            try { res.sendStatus(500); } catch (ex) { }
         });
     }
 
