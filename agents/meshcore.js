@@ -535,6 +535,18 @@ function addAmtEvent(msg) {
     if (obj.showamtevent) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: e }); }
 }
 function zeroPad(num, size) { var s = '000000000' + num; return s.substr(s.length - size); }
+function trimResults(val) {
+    var i, x;
+    for (i = 0; i < val.length; ++i) {
+        for (x in val[i]) {
+            if (x.startsWith('_')) {
+                delete val[i][x];
+            } else {
+                if (val[i][x] == null || val[i][x] == 0) { delete val[i][x]; }
+            }
+        }
+    }
+}
 
 
 // Create Secure IPC for Diagnostic Agent Communications
