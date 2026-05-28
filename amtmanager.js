@@ -2892,7 +2892,7 @@ module.exports.CreateAmtManager = function (parent) {
 
         // See what admin password to use
         dev.aquired.user = 'admin';
-        dev.aquired.pass = dev.temp.password;
+        dev.aquired.pass = dev.temp.pass;
 
         // Set the account password
         if (typeof dev.temp.mebxpass == 'string') {
