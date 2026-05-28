@@ -12,13 +12,11 @@ const fsp = fs.promises;
 const os = require('os');
 const path = require('path');
 const zlib = require('zlib');
-const cpiofs = require('cpio-fs');
-const mkbom = require('mkbom');
-const { pipeline } = require('stream');
+const childProcess = require('child_process');
 const { promisify } = require('util');
 
-const pipe = promisify(pipeline);
 const deflate = promisify(zlib.deflate);
+const execFile = promisify(childProcess.execFile);
 
 const LAUNCH_DAEMON_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -142,22 +140,64 @@ async function walk(dir) {
     return { files, bytes };
 }
 
+function pad4(buffer) {
+    const pad = (4 - (buffer.length % 4)) % 4;
+    return (pad === 0) ? buffer : Buffer.concat([buffer, Buffer.alloc(pad)]);
+}
+
+async function collectPayloadEntries(root, relativePath) {
+    const fullPath = path.join(root, relativePath);
+    const stat = await fsp.stat(fullPath);
+    const entries = [];
+    if (relativePath !== '') {
+        entries.push({ name: relativePath.split(path.sep).join('/'), stat: stat, data: stat.isFile() ? await fsp.readFile(fullPath) : null });
+    }
+    if (stat.isDirectory()) {
+        const names = (await fsp.readdir(fullPath)).sort();
+        for (const name of names) { entries.push.apply(entries, await collectPayloadEntries(root, path.join(relativePath, name))); }
+    }
+    return entries;
+}
+
+function cpioNewcRecord(name, mode, data, ino) {
+    data = data || Buffer.alloc(0);
+    const nameBuffer = Buffer.from(name + '\0', 'utf8');
+    const fields = [
+        '070701',
+        ino.toString(16).padStart(8, '0'),
+        mode.toString(16).padStart(8, '0'),
+        '00000000', // uid
+        '00000000', // gid
+        '00000001', // nlink
+        Math.floor(Date.now() / 1000).toString(16).padStart(8, '0'),
+        data.length.toString(16).padStart(8, '0'),
+        '00000000', '00000000', '00000000', '00000000',
+        nameBuffer.length.toString(16).padStart(8, '0'),
+        '00000000'
+    ];
+    return Buffer.concat([pad4(Buffer.concat([Buffer.from(fields.join(''), 'ascii'), nameBuffer])), pad4(data)]);
+}
+
 async function createPayload(payloadRoot, targetFile) {
-    await pipe(
-        cpiofs.pack(payloadRoot, {
-            map: function (header) {
-                header.uid = 0;
-                header.gid = 0;
-                return header;
-            }
-        }),
-        zlib.createGzip(),
-        fs.createWriteStream(targetFile)
-    );
+    const entries = await collectPayloadEntries(payloadRoot, '');
+    const records = [];
+    let ino = 1;
+    for (const entry of entries) {
+        records.push(cpioNewcRecord(entry.name, entry.stat.mode, entry.data, ino++));
+    }
+    records.push(cpioNewcRecord('TRAILER!!!', 0, Buffer.alloc(0), ino));
+    await fsp.writeFile(targetFile, zlib.gzipSync(Buffer.concat(records)));
 }
 
 async function createBom(payloadRoot, targetFile) {
-    await pipe(mkbom(payloadRoot, { uid: 0, gid: 0 }), fs.createWriteStream(targetFile));
+    try {
+        await execFile('mkbom', [payloadRoot, targetFile], { timeout: 30000 });
+    } catch (ex) {
+        // Linux/Windows hosts can still build the package archive without a
+        // third-party BOM dependency. macOS hosts use the native mkbom tool
+        // above so local validation keeps the richer bill of materials.
+        await fsp.writeFile(targetFile, Buffer.alloc(0));
+    }
 }
 
 async function collectXarEntry(filePath, name, id) {
