@@ -23,8 +23,26 @@ const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
+const WBEM_FLAG_CONNECT_USE_MAX_WAIT = 0x80;
 const E_NOINTERFACE = 0x80004002;
 const WBEM_S_NO_ERROR = 0;
+const WBEM_S_FALSE = 1;
+const WBEM_S_TIMEDOUT = 0x40004;
+const WBEM_ERRORS = {
+    0x80041010: 'Invalid class',
+    0x80041017: 'Invalid query',
+    0x8004100E: 'Invalid namespace',
+    0x80041003: 'Access denied',
+    0x80041001: 'Generic failure',
+    0x80041004: 'Provider failure',
+    0x80041002: 'Object not found',
+    0x80041006: 'Out of memory',
+    0x80041008: 'Invalid parameter',
+    0x80041009: 'Resource not available',
+    0x80041021: 'Invalid syntax',
+    0x80070422: 'Service unavailable'
+};
+const WBEM_STATUS_COMPLETE = 0;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
 OleAut32.CreateMethod('SafeArrayUnaccessData');
@@ -131,7 +149,7 @@ const QueryAsyncHandler =
                     case '0000000000000000C000000000000046': // IID_IUnknown
                     case '0178857C8173CF11884D00AA004B2E24': // IID_IWmiObjectSink
                         j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
-                        ret.increment(0, true);
+                        ret.increment(WBEM_S_NO_ERROR, true);
                         ++this.refcount;
                         //console.log('QueryInterface ' +  riid.Deref(0, 16).toBuffer().toString('hex') + ' refcount: ' + this.refcount);
                         break;
@@ -164,7 +182,7 @@ const QueryAsyncHandler =
             cx: 13, parms: 3, name: 'Indicate', func: function (j, count, arr)
             {
                 //console.log('Indicate: ' + count.Val);
-                if (!this.results) return GM.CreateVariable(4).increment(0, true);
+                if (this._abandoned || this.results === null) { return (GM.CreateVariable(4).increment(WBEM_S_NO_ERROR, true)); }   // discard
 
                 for (var i = 0; i < count.Val; ++i)
                 {
@@ -172,27 +190,32 @@ const QueryAsyncHandler =
                     this.results.push(enumerateProperties(j, this.fields));
                 }
 
-                return GM.CreateVariable(4).increment(0, true);
+                return GM.CreateVariable(4).increment(WBEM_S_NO_ERROR, true);
             }
         },
         {
             cx: 14, parms: 5, name: 'SetStatus', func: function (j, lFlags, hResult, strParam, pObjParam)
             {
                 //console.log('SetStatus');
-                if (hResult.Val == 0)
-                {
-                    this.p.resolve(this.results);
-                }
-                else
-                {
-                    this.p.reject(new Error('WMI async query error: 0x' + (hResult.Val >>> 0).toString(16)));
-                }
+                var ret = GM.CreateVariable(4).increment(WBEM_S_NO_ERROR, true);
+                if (lFlags.Val !== WBEM_STATUS_COMPLETE) { return (ret); }
+
+                if (this._timer) { clearTimeout(this._timer); this._timer = null; }
                 var self = this;
                 setImmediate(function () {
-                    // console.log('SetStatus refcount: ' + self.refcount);
                     if (--self.refcount === 0) { destroy(self); }
-                });
-                return GM.CreateVariable(4).increment(0, true);
+                });                
+                if (this.p === null) { this.results = null; return (ret); }
+                var hVal     = hResult.Val >>> 0;
+                var p        = this.p;
+                var results = this.results;
+                this.p       = null;
+                this.results = null;
+
+                if (hVal === 0) { p.resolve(results); }
+                else { p.reject(new Error('WMI SetStatus error: 0x' + hVal.toString(16))); }
+                return (ret);
+
             }
         }
     ];
@@ -366,32 +389,38 @@ function enumerateProperties(j, fields)
     return (values);
 }
 
-function queryAsync(resourceString, queryString, fields)
+//optional field 'timeout', defaults to 120s
+function queryAsync(resourceString, queryString, fields, timeout)
 {
     var queryStarted = false;
+    var handlers = null;
     try {
         var s = sm.manager.getService('winmgmt');
         if (!s.isRunning()) { throw new Error ('WMI service not running')};
+        var p = new promise(promise.defaultInit);
         //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
-            throw new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows'); }
-        var p = new promise(promise.defaultInit);
+            setImmediate(function(){ p.reject(new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows')); }); return (p); }
+        if (!timeout || typeof timeout !== 'number') { timeout = 120* 1000 };       //Default timeout set to 2m
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
 
         // Setup the Async COM handler for QueryAsync() 
-        var handlers = COM.marshalInterface(QueryAsyncHandler);
+        handlers = COM.marshalInterface(QueryAsyncHandler);
         handlers.refcount = 1;
         handlers.results = [];
         handlers.fields = fields;
+        handlers._timer = null;
+        handlers._abandoned = false;
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
         handlers.services = GM.CreatePointer();
 
-        // For easier debugging in case a certain WMI component is not available
-        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, 0, 0, 0, handlers.services).Val;
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemlocator-connectserver
+        // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
+        var hr = handlers.locator.funcs.ConnectToServer(handlers.locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, handlers.services).Val;
         if (hr != 0) {
             var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
             throw ('queryAsync: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
@@ -405,6 +434,17 @@ function queryAsync(resourceString, queryString, fields)
         queryStarted = true;
         // Hold a reference to the callback object
         wmi_handlers[handlers._hashCode()] = handlers;
+        handlers._timer = setTimeout(function () {
+            handlers._timer = null;
+            if (handlers.p === null) { return; }    //
+            // WMI CancelAsyncCall causes a fatal exception. Only way to cancel is through abandonment.
+            // Reject the promise and clean that part up, hoping the wmi query resolves eventually and cleans itself up through SetStatus
+            handlers._abandoned = true;
+            var p = handlers.p;
+            handlers.p = null;
+            handlers.results = null;
+            p.reject(new Error('WMI query timed out'));
+        }, timeout);
     } catch (e) {
         console.log('win-wmi queryAsync error: ' + e.message);
         if (!queryStarted && handlers) {
