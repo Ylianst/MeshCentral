@@ -1066,7 +1066,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.value.indexOf('uninstallstoreapp ') === 0)));
 
                     if (isSoftwareCmd) {
-                        // Check user access rights for software inventory
+                        // Check for MESHRIGHT_SOFTWAREINVENTORY (0x00400000)
                         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                             var mesh = parent.meshes[node.meshid];
                             if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
