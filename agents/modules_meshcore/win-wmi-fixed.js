@@ -464,6 +464,7 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
             if (sessionid && (++progress % 200) == 0) { 
                 MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
             ret.push(enumerateProperties(result, fields, includeSysProp));
+            result.funcs.Release(result.Deref());
         }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);
