@@ -53,6 +53,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
+    const MESHRIGHT_SOFTWAREINVENTORY   = 0x00400000; // 4194304
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -646,7 +647,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
-            serverinfo.softwareinventory = domain?.softwareinventory === true;
             if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
@@ -1066,11 +1066,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.value.indexOf('uninstallstoreapp ') === 0)));
 
                     if (isSoftwareCmd) {
-                        if (domain.softwareinventory !== true) { if (func) { func(false); } break; }
-                        // Wir prüfen auf MESHRIGHT_DEVICEDETAILS (0x100000)
+                        // Check user access rights for software inventory
                         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                             var mesh = parent.meshes[node.meshid];
-                            if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
+                            if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
                                 var agent = parent.wsagents[command.nodeid];
                                 if (agent != null) {
                                     // Wir bauen das Command um
