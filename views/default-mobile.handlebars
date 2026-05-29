@@ -7423,6 +7423,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20softwareinventory>' + "Software Inventory" + '</label><br>';
             x += '</div>';
             setDialogMode(2, "Add User to Device Group", 3, p20showAddMeshUserDialogEx, x);
             p20validateAddMeshUserDialog();
@@ -7451,6 +7452,7 @@
             QE('p20uninstall', nc);
             QE('p20commands', nc);
             QE('p20resetoff', nc);
+            QE('p20softwareinventory', nc);
         }
 
         function p20showAddMeshUserDialogEx() {
@@ -7474,6 +7476,7 @@
                 if (Q('p20uninstall').checked == true) meshadmin += 32768;
                 if (Q('p20commands').checked == true) meshadmin += 131072;
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
+                if (Q('p20softwareinventory').checked == true) meshadmin += 4194304;
             }
             var users = Q('dp20username').value.split(','), users2 = [];
             for (var i in users) { users2.push(users[i].trim()); }
@@ -7503,6 +7506,7 @@
                 if ((meshrights & 32768) != 0) r.push("Uninstall");
                 if ((meshrights & 131072) != 0) r.push("Commands");
                 if ((meshrights & 262144) != 0) r.push("Reset/Off");
+                if ((meshrights & 4194304) != 0) r.push("Software Inventory");
             }
             if (r.length == 0) { r.push("No Rights"); }
             var buttons = 1, uname = userid.split('/')[2];
@@ -7819,7 +7823,7 @@
                 rights &= (0xFFFFFFFF - substract);
             } else {
                 // If administrator for a device group, start with permissions and add and subsctract restrictions
-                rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576;
+                rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576 + 4194304;
                 rights |= add;
                 rights &= (0xFFFFFFFF - substract);
             }
