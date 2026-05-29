@@ -1058,7 +1058,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
 					
 					// BEGIN SOFTWARE
-                    var isSoftwareCmd = (command.type === 'console') &&
+                    var isSoftwareCmd = ((command.type === 'console') || (command.type === 'software')) &&
                         (command.value === 'installedapps' ||
                         command.value === 'installedstoreapps' ||
                         (typeof command.value === 'string' &&
