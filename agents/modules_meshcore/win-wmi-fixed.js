@@ -20,6 +20,7 @@ var COM = require('win-com');
 var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
+const WMI_FIELD = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const WBEM_FLAG_BIDIRECTIONAL = 0;
 const WBEM_FLAG_NONSYSTEM_ONLY = 0x40;
 const WBEM_INFINITE = -1;
@@ -168,7 +169,10 @@ const QueryAsyncHandler =
                 if (!this.results) return GM.CreateVariable(4).increment(0, true);
                 if (this.sessionid) {
                     this.progress += count.Val;
-                    MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + this.progress +  ' results', sessionid: this.sessionid });
+                    var now = Date.now();
+                    if ((now - this.lastProg) > 2000) {     //max 1 msg/2s, otherwise it gets throttled and possibly lose the result msg
+                        this.lastProg = now;
+                        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + this.progress +  ' results', sessionid: this.sessionid }); }
                 }
                 for (var i = 0; i < count.Val; ++i)
                 {
@@ -222,6 +226,54 @@ function releaseCOM(obj, deref) {
     return null;
 }
 
+function extractFields(queryString) {
+    if (typeof queryString !== 'string') { return null; }
+
+    // get between 'select' and 'from'
+    var props = /^\s*SELECT\s+(.+?)\s+FROM\s/i.exec(queryString);
+    if (props == null) { return null; }
+
+    var list = props[1].trim();
+    if (list === '*') { return null; }
+
+    var parts = list.split(',');
+    var fields = [];
+    for (var i = 0; i < parts.length; ++i) {
+        var name = parts[i].trim();
+        // check if wmi field, otherwise exit, fallback to GetNames in enum
+        if (!WMI_FIELD.test(name)) { return null; }
+        fields.push(name);
+    }
+    return (fields.length > 0 ? fields : null);
+}
+
+// Optimze query: If a 'select * from' query has the 'fields' argument, rewrite query to replace the * with fields argument
+// Except for event/notification queries (WITHIN or FROM __)
+// This gives a significant perfomance boost as enumerateProperties is very costly if it needs to get all properties every row
+// Always try to do:  queryString='select [field1][,field2][...] from [class]', fields=['field1','field2',...]
+// Keeping the fields argument filled helps with the enumerateProperties function not getting all the names every row.
+// And the reverse, if there are fields between 'select' and 'from', extract them and return it as the fields argument
+function prepareQuery (queryString, fields) {
+    if (typeof(queryString) !=='string' || queryString.trim().length === 0) { throw new Error('No querystring'); }
+    // Always check if wmi service is running
+    var s = sm.manager.getService('winmgmt');
+    if (!s.isRunning()) { throw new Error('WMI service not running'); }
+    if (!Array.isArray(fields) || fields.length === 0) {
+        fields = extractFields(queryString); }
+    else {
+        for (var i = 0; i < fields.length; ++i) {
+            if (typeof fields[i] !== 'string' || !WMI_FIELD.test(fields[i])) {
+                throw new Error('win-wmi: invalid field name: ' + fields[i]);
+            }
+        }
+        //skip 'within' clause and system event queries
+        if ( !(/\bWITHIN\b/i.test(queryString) || /\bFROM\s+__/i.test(queryString)) ) {
+            queryString = queryString.replace(/^(\s*SELECT\s+)\*(\s+FROM\s)/i, '$1' + fields.join(',') + '$2');// queryString.replace(/SELECT\s+\*/i, 'SELECT ' + fields.join(','));
+        }    
+    }
+    //console.log('   optiquery: ' + queryString + ' fields: ' + fields);
+    return { q: queryString, f: fields };
+}
 
 function enumerateProperties(j, fields, includeSysProp)
 {
@@ -377,12 +429,12 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, session
 {
     var queryStarted = false;
     try {
-        var s = sm.manager.getService('winmgmt');
-        if (!s.isRunning()) { throw new Error ('WMI service not running')};
         //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
             throw new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows'); }
-        var p = new promise(promise.defaultInit);
+        var pq = prepareQuery(queryString, fields);
+        queryString = pq.q;
+        fields = pq.f;        var p = new promise(promise.defaultInit);
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
@@ -393,7 +445,7 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, session
         handlers.results = [];
         handlers.fields = fields;
         handlers.incSysProp = includeSysProp;
-        if (sessionid) { handlers.sessionid = sessionid; handlers.progress = 0; MA = require('MeshAgent') }
+        if (sessionid) { handlers.sessionid = sessionid; handlers.progress = 0; handlers.lastProg = 0; }
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
@@ -430,13 +482,15 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, session
 function query(resourceString, queryString, fields, includeSysProp, sessionid)
 {
     try {
-        var s = sm.manager.getService('winmgmt');
-        if (!s.isRunning()) { throw new Error ('WMI service not running')};
+        var pq = prepareQuery(queryString, fields);
+        queryString = pq.q;
+        fields = pq.f;
         var resource = GM.CreateVariable(resourceString, { wide: true });
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
         var results = GM.CreatePointer();
         var progress = 0;
+        var lastProg =  0;
         if (sessionid) { MA = require('MeshAgent'); }
         // Connect the locator connection for WMI
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
@@ -461,10 +515,15 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         // Enumerate the results
         while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
         {
-            if (sessionid && (++progress % 200) == 0) { 
-                MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
-            ret.push(enumerateProperties(result, fields, includeSysProp));
-            result.funcs.Release(result.Deref());
+            if (sessionid) {
+                ++progress;
+                var now = Date.now();
+                if ((now - lastProg) > 2000) {  //max 1 msg/2s, otherwise it gets throttled and possibly lose the result msg
+                    lastProg = now;
+                    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
+                ret.push(enumerateProperties(result, fields, includeSysProp));
+                result.funcs.Release(result.Deref());
+            }
         }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);
