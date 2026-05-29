@@ -15445,11 +15445,11 @@
             QV('d2slackinfo', Q('d2serviceselect').value == 256);
             if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
-            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = 'https://api.callmebot.com/...'; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
             else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
-            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = "https://hooks.slack.com/..."; }
+            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = 'https://hooks.slack.com/...'; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
@@ -19865,7 +19865,7 @@
                 if (currentUser.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
                     Q('d2serviceselect').value = 16;
                     var toData = currentUser.msghandle.substring(10).split('|');
-                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://signal.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'whatsapp') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/whatsapp.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
                 }
@@ -19887,11 +19887,11 @@
             if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
             else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
-            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = 'https://api.callmebot.com/...'; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
             else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
-            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = "https://hooks.slack.com/..."; }
+            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = 'https://hooks.slack.com/...'; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             if (x == 1) { dialogclose(1); }
         }
