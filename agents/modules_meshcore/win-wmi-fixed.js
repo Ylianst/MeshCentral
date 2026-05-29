@@ -21,6 +21,7 @@ var sm = require('service-manager');
 const CLSID_WbemAdministrativeLocator = '{CB8555CC-9128-11D1-AD9B-00C04FD8FDFF}';
 const IID_WbemLocator = '{dc12a687-737f-11cf-884d-00aa004b2e24}';
 const WBEM_FLAG_BIDIRECTIONAL = 0;
+const WBEM_FLAG_NONSYSTEM_ONLY = 0x40;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
 const E_NOINTERFACE = 0x80004002;
@@ -165,11 +166,14 @@ const QueryAsyncHandler =
             {
                 //console.log('Indicate: ' + count.Val);
                 if (!this.results) return GM.CreateVariable(4).increment(0, true);
-
+                if (this.sessionid) {
+                    this.progress += count.Val;
+                    MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + this.progress +  ' results', sessionid: this.sessionid });
+                }
                 for (var i = 0; i < count.Val; ++i)
                 {
                     j = arr.Deref((i * GM.PointerSize) + 0, GM.PointerSize);
-                    this.results.push(enumerateProperties(j, this.fields));
+                    this.results.push(enumerateProperties(j, this.fields, this.incSysProp));
                 }
 
                 return GM.CreateVariable(4).increment(0, true);
@@ -219,7 +223,7 @@ function releaseCOM(obj, deref) {
 }
 
 
-function enumerateProperties(j, fields)
+function enumerateProperties(j, fields, includeSysProp)
 {
     //
     // Reference to SafeArrayAccessData() can be found at:
@@ -229,7 +233,7 @@ function enumerateProperties(j, fields)
     var nme, len, nn;
     var properties = [];
     var values = {};
-
+    if (typeof(includeSysProp) != 'boolean') {includeSysProp = false};
     j.funcs = COM.marshalFunctions(j.Deref(), ResultFunctions);
 
     // First we need to enumerate the COM Array
@@ -240,7 +244,7 @@ function enumerateProperties(j, fields)
     else
     {
         nme = GM.CreatePointer();
-        j.funcs.GetNames(j.Deref(), 0, WBEM_FLAG_ALWAYS, 0, nme);
+        j.funcs.GetNames(j.Deref(), 0, (includeSysProp ? WBEM_FLAG_ALWAYS: WBEM_FLAG_NONSYSTEM_ONLY), 0, nme);
         len = nme.Deref().Deref(GM.PointerSize == 8 ? 24 : 16, 4).toBuffer().readUInt32LE();
         nn = GM.CreatePointer();
         OleAut32.SafeArrayAccessData(nme.Deref(), nn);
@@ -366,7 +370,10 @@ function enumerateProperties(j, fields)
     return (values);
 }
 
-function queryAsync(resourceString, queryString, fields)
+
+// (optional) includeSysProp, default=false. Include system properties (__CLASS, etc.)
+// (optional) sessionid, default=null. Report progress back to the given sessionid.
+function queryAsync(resourceString, queryString, fields, includeSysProp, sessionid)
 {
     var queryStarted = false;
     try {
@@ -385,6 +392,8 @@ function queryAsync(resourceString, queryString, fields)
         handlers.refcount = 1;
         handlers.results = [];
         handlers.fields = fields;
+        handlers.incSysProp = includeSysProp;
+        if (sessionid) { handlers.sessionid = sessionid; handlers.progress = 0; MA = require('MeshAgent') }
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
@@ -416,7 +425,9 @@ function queryAsync(resourceString, queryString, fields)
     return (p);
 }
 
-function query(resourceString, queryString, fields)
+// (optional) includeSysProp, default=false. Include system properties (__CLASS, etc.)
+// (optional) sessionid, default=null. Report progress back to the given sessionid.
+function query(resourceString, queryString, fields, includeSysProp, sessionid)
 {
     try {
         var s = sm.manager.getService('winmgmt');
@@ -425,7 +436,8 @@ function query(resourceString, queryString, fields)
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
         var results = GM.CreatePointer();
-
+        var progress = 0;
+        if (sessionid) { MA = require('MeshAgent'); }
         // Connect the locator connection for WMI
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
@@ -446,11 +458,12 @@ function query(resourceString, queryString, fields)
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
         var ret = [];
-
         // Enumerate the results
         while (results.funcs.Next(results.Deref(), WBEM_INFINITE, 1, result, returnedCount).Val == 0)
         {
-            ret.push(enumerateProperties(result, fields));
+            if (sessionid && (++progress % 200) == 0) { 
+                MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
+            ret.push(enumerateProperties(result, fields, includeSysProp));
         }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);

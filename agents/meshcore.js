@@ -4620,8 +4620,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
                 if (args['_'].length < 2 || args['_'].length > 3) {
-                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty]\r\n' +
-                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ap\r\n';
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty][(s)showprogress][(i)ncludesystemproperties]\r\n' +
+                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" aps\r\n';
                     break;
                 }
                 var opt = (args['_'][2]|| '').toLowerCase();
@@ -4633,11 +4633,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var error = function (e) { var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e)); sendConsoleText('Error: ' + msg, sessionid);};
                 sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
                 if (opt.indexOf('a') !== -1) {
-                    wmi.queryAsync(ns, q)
+                    wmi.queryAsync(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') !== -1) ? sessionid : null))
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q)); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') !== -1) ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {
