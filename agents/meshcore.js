@@ -1729,6 +1729,12 @@ function handleServerCommand(data) {
                                 require('linux-info').packages().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
                             } else { sendSoftwareResponse({ error: "Not supported" }); }
                         } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                    } else if (process.platform == 'darwin') {
+                        try {
+                            if (require('mac-info').apps) {
+                                require('mac-info').apps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
+                            } else { sendSoftwareResponse({ error: "Not supported" }); }
+                        } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
                     } else {
                         sendSoftwareResponse({ success: false, error: "Not supported" });
                     }
@@ -6051,6 +6057,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         });
                     } catch (ex) {
                         sendConsoleText("Module linux-info error: " + ex, sessionid);
+                    }
+                } else if (process.platform == 'darwin') {
+                    try {
+                        require('mac-info').apps().then(function (apps) { 
+                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
+                        }).catch(function(e) {
+                            sendConsoleText("Error: " + e, sessionid);
+                        });
+                    } catch (ex) {
+                        sendConsoleText("Module mac-info error: " + ex, sessionid);
                     }
                 } else {
                     sendConsoleText("Installed apps not supported on this platform.", sessionid);
