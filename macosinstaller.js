@@ -33,10 +33,7 @@ const LAUNCH_DAEMON_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
-    <dict>
-      <key>Crashed</key>
-      <true/>
-    </dict>
+    <true/>
     <key>ThrottleInterval</key>
     <integer>5</integer>
   </dict>
