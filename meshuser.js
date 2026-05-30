@@ -978,6 +978,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
                     break;
                 }
+            case 'software': {
+                if (domain.softwareinventory !== true) { 
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                    break;
+                }
+                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    var mesh = parent.meshes[node.meshid];
+                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
+                        var agent = parent.wsagents[command.nodeid];
+                        if (agent != null) {
+                            console.log(command);
+                            routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
+                        } else {
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
+                        }
+                    } else {
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                    }
+                });
+                break;
+            }
             case 'msg':
                 {
                     // Check the nodeid
@@ -1057,48 +1078,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var func = null;
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
 					
-					// BEGIN SOFTWARE
-                    var isSoftwareCmd = (command.type === 'console') &&
-                        (command.value === 'installedapps' ||
-                        command.value === 'installedstoreapps' ||
-                        (typeof command.value === 'string' &&
-                        (command.value.indexOf('uninstallapp ') === 0 ||
-                        command.value.indexOf('uninstallstoreapp ') === 0)));
-
-                    if (isSoftwareCmd) {
-                        if (domain.softwareinventory !== true) { if (func) { func(false); } break; }
-                        // Wir prüfen auf MESHRIGHT_DEVICEDETAILS (0x100000)
-                        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                            var mesh = parent.meshes[node.meshid];
-                            if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
-                                var agent = parent.wsagents[command.nodeid];
-                                if (agent != null) {
-                                    // Wir bauen das Command um
-                                    // WICHTIG: type='software' und sessionid muss gesetzt sein
-                                    var newCommand = {
-                                        action: 'msg',
-                                        type: 'software', // Neuer Typ!
-                                        value: command.value,
-                                        sessionid: ws.sessionId, // Essenziell für den Rückweg
-                                        rights: rights,
-                                        username: user.name,
-                                        remoteaddr: req.clientIp
-                                    };
-                                    
-                                    try { agent.send(JSON.stringify(newCommand)); } catch (ex) { }
-                                    if (func) { func(true); }
-                                } else {
-                                    if (func) { func(false); } // Agent offline
-                                }
-                            } else {
-                                if (func) { func(false); } // Keine Rechte
-                            }
-                        });
-                    } else {
-                        // Standard Routing für Console etc.
-                        routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-                    }
-                    // END SOFTWARE
+                    // Route this command to a target node
+                    routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
                     break;
                 }
             case 'events':

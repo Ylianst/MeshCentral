@@ -183,55 +183,40 @@ function pendingReboot()
 }
 
 function installedApps() {
+    var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     var registry = require('win-registry');
     var HKEY = registry.HKEY;
     var results = [];
-    
     var registryPaths = [
         'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
         'SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'
     ];
-
     try {
         for (var i in registryPaths) {
             var path = registryPaths[i];
-            
-            // Wir nutzen direkt die Registry-Komponente für die Unterschlüssel
             var keyInfo = registry.QueryKey(HKEY.LocalMachine, path);
-            
-            // Falls QueryKey fehlschlägt oder keine Subkeys hat, überspringen
             if (!keyInfo || !keyInfo.subkeys) continue;
-
             for (var j = 0; j < keyInfo.subkeys.length; j++) {
                 var subPath = path + '\\' + keyInfo.subkeys[j];
-                
-                // Wir nutzen deine im Modul definierte regQuery Funktion!
-                // Diese ist sicher, da sie try-catch bereits enthält.
                 var name = regQuery(HKEY.LocalMachine, subPath, 'DisplayName');
-                
                 if (name && name != '') {
                     results.push({
                         name: name,
                         version: regQuery(HKEY.LocalMachine, subPath, 'DisplayVersion') || '',
                         publisher: regQuery(HKEY.LocalMachine, subPath, 'Publisher') || '',
-                        uninstall: regQuery(HKEY.LocalMachine, subPath, 'QuietUninstallString') || 
-                                   regQuery(HKEY.LocalMachine, subPath, 'UninstallString') || ''
+                        uninstall: regQuery(HKEY.LocalMachine, subPath, 'QuietUninstallString') || regQuery(HKEY.LocalMachine, subPath, 'UninstallString') || '',
+                        location: regQuery(HKEY.LocalMachine, subPath, 'InstallLocation') || '',
+                        date: regQuery(HKEY.LocalMachine, subPath, 'InstallDate') || ''
                     });
                 }
             }
         }
     } catch (e) {
-        // Stille Fehlerbehandlung für maximale Stabilität im Agenten
+        ret._rej(e);
+        return (ret);
     }
-
-    // Das Promise-Mirror Objekt für MeshCentral Kompatibilität
-    return {
-        data: results,
-        then: function(cb) { if (typeof cb === 'function') cb(this.data); return this; },
-        catch: function(cb) { return this; },
-        finally: function(cb) { if (typeof cb === 'function') cb(); return this; },
-        on: function(ev, cb) { if (ev === 'exit' && typeof cb === 'function') cb(0); return this; }
-    };
+    ret._res(results);
+    return (ret);
 }
 
 function installedStoreApps() {

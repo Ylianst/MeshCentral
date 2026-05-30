@@ -1224,6 +1224,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
                     }
+                case 'software':
+                    {
+                        // Todo - save software into database for offline access but send to web clients for now
+                        parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
+                        break;
+                    }
                 case 'coreinfo':
                     {
                         // Sent by the agent to update agent information
