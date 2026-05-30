@@ -13011,7 +13011,7 @@
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Publisher" + '</th>';
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:100px">' + "Install Date" + '</th>';
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Location" + '</th>';
-            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:180px">' + "Actions" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Actions" + '</th>';
             x += '</tr></thead><tbody>';
             if (desktopApps.length === 0) {
                 x += '<tr><td colspan="6" style="text-align:center;color:gray;padding:20px">';
@@ -13028,7 +13028,7 @@
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.version || '-') + '</td>';
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.publisher || '-') + '</td>';
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.date || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.location || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
                     var userRights = GetNodeRights(currentNode);						
 					if (hasUninstall && (userRights == 0xFFFFFFFF)) {

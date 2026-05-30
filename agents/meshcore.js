@@ -1718,11 +1718,11 @@ function handleServerCommand(data) {
                 };
                 if (data.value == 'installedapps') {
                     if (process.platform == 'win32') {
-                    try {
-                        if (require('win-info').installedApps) {
-                            require('win-info').installedApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
-                        } else { sendSoftwareResponse({ error: "Not supported" }); }
-                    } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                        try {
+                            if (require('win-info').installedApps) {
+                                require('win-info').installedApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
+                            } else { sendSoftwareResponse({ error: "Not supported" }); }
+                        } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
                     } else if (process.platform == 'linux') {
                         try {
                             if (require('linux-info').packages) {
