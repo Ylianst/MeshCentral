@@ -1717,18 +1717,36 @@ function handleServerCommand(data) {
                     });
                 };
                 if (data.value == 'installedapps') {
+                    if (process.platform == 'win32') {
                     try {
                         if (require('win-info').installedApps) {
                             require('win-info').installedApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
                         } else { sendSoftwareResponse({ error: "Not supported" }); }
                     } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                    } else if (process.platform == 'linux') {
+                        try {
+                            if (require('linux-info').packages) {
+                                require('linux-info').packages().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
+                            } else { sendSoftwareResponse({ error: "Not supported" }); }
+                        } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
+                    } else {
+                        sendSoftwareResponse({ success: false, error: "Not supported" });
+                    }
                 } else if (data.value == 'installedstoreapps') {
+                    if (process.platform != 'win32') {
+                        sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });
+                        return;
+                    }
                     try {
                         if (require('win-info').installedStoreApps) {
                             require('win-info').installedStoreApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
                         }
                     } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
                 } else if (typeof data.value === 'string' && data.value.indexOf('uninstallapp ') === 0) {
+                    if (process.platform != 'win32') {
+                        sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
+                        return;
+                    }
                     var base64Cmd = data.value.substring(13).trim();
                     var uninstallCmd = '';
                     try {
@@ -1784,6 +1802,10 @@ function handleServerCommand(data) {
                         }
                     }
                 } else if (typeof data.value === 'string' && data.value.indexOf('uninstallstoreapp ') === 0) {
+                    if (process.platform != 'win32') {
+                        sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
+                        return;
+                    }
                     var rawName = data.value.substring(18).trim();
                     var packageName = rawName.replace(/"/g, "").replace(/'/g, ""); 
                     var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
@@ -4406,7 +4428,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
                 availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbdelete,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
                 availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,';
-                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile';
+                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4414,7 +4436,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (bcdOK()) { availcommands += ',safemode'; }
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
-                    try { require('win-info'); availcommands += ',installedapps,qfe,defender,av,installedstoreapps'; } catch (ex) { }
+                    try { require('win-info'); availcommands += ',qfe,defender,av,installedstoreapps'; } catch (ex) { }
                     try { require('win-deskutils'); availcommands += ',mousetrails,idletime,deskbackground'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
@@ -6020,6 +6042,18 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     } catch (ex) { 
                         sendConsoleText("Module win-info error: " + ex, sessionid); 
                     }
+                } else if (process.platform == 'linux') {
+                    try {
+                        require('linux-info').packages().then(function (apps) { 
+                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
+                        }).catch(function(e) {
+                            sendConsoleText("Error: " + e, sessionid);
+                        });
+                    } catch (ex) {
+                        sendConsoleText("Module linux-info error: " + ex, sessionid);
+                    }
+                } else {
+                    sendConsoleText("Installed apps not supported on this platform.", sessionid);
                 }
                 break;
             }
@@ -6038,6 +6072,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     } catch (ex) { 
                         sendConsoleText("Module win-info error: " + ex, sessionid); 
                     }
+                } else {
+                    sendConsoleText("Installed Store Apps not supported on this platform.", sessionid);
                 }
                 break;
             }

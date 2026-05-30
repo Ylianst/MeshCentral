@@ -3669,6 +3669,10 @@
                             handleInstalledAppsResponse(softwareData);
                         } else if (typeof softwareData === 'string' && (softwareData.indexOf('"success"') >= 0 || softwareData.indexOf('"status"') >= 0 || softwareData.indexOf('"error"') >= 0)) {
                             handleUninstallResponse(softwareData);
+                        } else {
+                            installedAppsLoading = false;
+                            installedAppsLoadingType = 0;
+                            displayInstalledApps();
                         }
                     } catch (xx) { }
                     break;
@@ -9264,7 +9268,7 @@
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
-                QV('MainDevApps', (serverinfo.softwareinventory === true && isWindowsNode(node) && (meshrights & 1048576) != 0));
+                QV('MainDevApps', (node.mtype == 2) && (serverinfo.softwareinventory === true && (meshrights & 1048576) != 0));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
