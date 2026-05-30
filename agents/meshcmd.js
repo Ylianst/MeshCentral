@@ -311,10 +311,10 @@ function run(argv) {
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('\r\nOptional arguments:\r\n');
             console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
-            console.log('  --user [username]                                    The Intel AMT login username, admin is default.');
-            console.log('  --tls                                                Specifies that TLS must be used.');
+            console.log('  --user [username]                                      The Intel AMT login username, admin is default.');
+            console.log('  --tls                                                  Specifies that TLS must be used.');
             console.log('  --bootdevice [pxe|hdd|cd|bios|ider-floppy|ider-cdrom]  Specifies the boot device to use after reset, poweron or powercycle.');
-            console.log('  --bootindex [number]                                 Specifies the index of boot device to use.');
+            console.log('  --bootindex [number]                                   Specifies the index of boot device to use.');
         } else if (action == 'amtnetwork') {
             console.log('AmtNetwork is used to get/set Intel AMT network interface configuration. Example usage:\r\n\r\n  meshcmd amtnetwork --host 1.2.3.4 --user admin --pass mypassword --dhcp');
             console.log('\r\nRequired arguments:\r\n');
