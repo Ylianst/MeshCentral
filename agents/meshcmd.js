@@ -305,7 +305,7 @@ function run(argv) {
             console.log('  --pass [password]      The Intel AMT login password.');
             console.log('  --agent [uuid]         The unique identifier of the watchdog agent.');
         } else if (action == 'amtpower') {
-            console.log('AmtPower will get current pwoer state or send a reboot command to a remote Intel AMT device. Example usage:\r\n\r\n  meshcmd amtpower --reset --host 1.2.3.4 --user admin --pass mypassword --tls');
+            console.log('AmtPower will get current power state or send a reboot command to a remote Intel AMT device. Example usage:\r\n\r\n  meshcmd amtpower --reset --host 1.2.3.4 --user admin --pass mypassword --tls');
             console.log('\r\nRequired arguments:\r\n');
             console.log('  --host [hostname]      The IP address or DNS name of Intel AMT.');
             console.log('  --pass [password]      The Intel AMT login password.');
@@ -313,7 +313,7 @@ function run(argv) {
             console.log('  --reset, --poweron, --poweroff, --powercycle, --sleep, --hibernate');
             console.log('  --user [username]                                    The Intel AMT login username, admin is default.');
             console.log('  --tls                                                Specifies that TLS must be used.');
-            console.log('  --bootdevice [pxe|hdd|cd|ider-floppy|ider-cdrom]     Specifies the boot device to use after reset, poweron or powercycle.');
+            console.log('  --bootdevice [pxe|hdd|cd|bios|ider-floppy|ider-cdrom]  Specifies the boot device to use after reset, poweron or powercycle.');
             console.log('  --bootindex [number]                                 Specifies the index of boot device to use.');
         } else if (action == 'amtnetwork') {
             console.log('AmtNetwork is used to get/set Intel AMT network interface configuration. Example usage:\r\n\r\n  meshcmd amtnetwork --host 1.2.3.4 --user admin --pass mypassword --dhcp');
@@ -873,7 +873,7 @@ function run(argv) {
         if (args.reset) { settings.poweraction = 10; }
         //if (settings.poweraction == 0) { console.log('No power action, specify --poweron, --sleep, --powercycle, --poweroff, --hibernate, --reset.'); exit(1); return; }
         // Accepted option for boot device are: pxe, hdd, cd 
-        var bootdevices = ['pxe','hdd','cd'];       
+        var bootdevices = ['pxe','hdd','cd','bios'];
         var ider_bootdevices = ['ider-floppy', 'ider-cdrom']
         if (args.bootdevice) {
             if (bootdevices.indexOf(args.bootdevice.toLowerCase())>=0) {
@@ -887,7 +887,7 @@ function run(argv) {
                 settings.ider_bootindex = ider_bootdevices.indexOf(args.bootdevice.toLowerCase());
                 settings.ider_boot = true;
             } else {
-                console.log('Supported boot devices are pxe, hdd, cd, ider-floppy, ider-cdrom'); exit(1); return; 
+                console.log('Supported boot devices are pxe, hdd, cd, bios, ider-floppy, ider-cdrom'); exit(1); return;
             }
         }
         // boot index for cd and hdd
@@ -3165,8 +3165,8 @@ function powerActionResponse1(stack, name, response, status) {
     r['ConfigurationDataReset'] = false;
     r['BIOSPause'] = false;
     r['EnforceSecureBoot'] = false;
-    r['BIOSSetup'] = false;
-    if (settings.bootdevice && settings.bootdevice!='pxe') {
+    r['BIOSSetup'] = (settings.bootdevice === 'bios');
+    if (settings.bootdevice && settings.bootdevice!='pxe' && settings.bootdevice!='bios') {
         r['BootMediaIndex'] = settings.bootindex;
     } else {
         r['BootMediaIndex'] = 0;
