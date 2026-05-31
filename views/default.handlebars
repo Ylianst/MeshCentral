@@ -12925,7 +12925,7 @@
                 installedAppsLoadingType = 0;
                 return;
             }
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedapps' });
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedapps' });
         }
 
         function handleInstalledAppsResponse(data) {
@@ -12965,7 +12965,7 @@
             installedAppsLoading = true;
             installedAppsLoadingType = 2;  // Store Apps laden
             QH('p18Status', '<span style="color:blue">' + "Loading store apps..." + '</span>');
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedstoreapps' });
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedstoreapps' });
         }
 
         function toggleStoreApps() {
@@ -13131,7 +13131,7 @@
             setDialogMode(2, "Uninstall Software", 3, function() {
                 QH('p18Status', '<span style="color:blue">' + "Uninstalling..." + '</span>');
                 var base64Cmd = btoa(unescape(encodeURIComponent(cmd))); //Use Base64 encoding to avoid special character problems.
-                meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
+                meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallapp', value: base64Cmd });
                 setTimeout(function() { QH('p18Status', "Uninstall started. Click Refresh to update"); }, 2000);
             }, dialogContent);
         }
@@ -13146,7 +13146,7 @@
 			dialogContent += '</div>';
 			setDialogMode(2, "Remove Store App", 3, function() {
 				QH('p18Status', '<span style="color:blue">' + "Removing..." + '</span>');        
-				meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
+				meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallstoreapp', value: '"' + cmd.replace(/"/g, '\\"') + '"' });
 				setTimeout(function() { QH('p18Status', "Remove command sent. Click Refresh to update"); }, 2000);
 			}, dialogContent);
 		}

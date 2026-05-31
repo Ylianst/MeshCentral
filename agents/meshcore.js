@@ -1716,7 +1716,7 @@ function handleServerCommand(data) {
                         sessionid: data.sessionid 
                     });
                 };
-                if (data.value == 'installedapps') {
+                if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
                             if (require('win-info').installedApps) {
@@ -1738,7 +1738,7 @@ function handleServerCommand(data) {
                     } else {
                         sendSoftwareResponse({ success: false, error: "Not supported" });
                     }
-                } else if (data.value == 'installedstoreapps') {
+                } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });
                         return;
@@ -1748,17 +1748,18 @@ function handleServerCommand(data) {
                             require('win-info').installedStoreApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
                         }
                     } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
-                } else if (typeof data.value === 'string' && data.value.indexOf('uninstallapp ') === 0) {
+                } else if (data.type == 'uninstallapp' && (typeof data.value == 'string' && data.value != '')) {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
                         return;
                     }
-                    var base64Cmd = data.value.substring(13).trim();
+                    var base64Cmd = data.value.trim();
                     var uninstallCmd = '';
                     try {
                         var b = Buffer.from(base64Cmd, 'base64');
                         var decoded = b.toString();
-                        if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) { uninstallCmd = decoded; } else { uninstallCmd = base64Cmd; }
+                        var lc = decoded ? decoded.toLowerCase() : '';
+                        if (decoded && decoded.length > 0 && (lc.indexOf('msiexec') >= 0 || lc.indexOf('.exe') >= 0)) { uninstallCmd = decoded; } else { uninstallCmd = base64Cmd; }
                     } catch (e) { uninstallCmd = base64Cmd; }
                     if (!uninstallCmd || uninstallCmd.trim() === '' || uninstallCmd.trim() === '\\') {
                         sendSoftwareResponse({ success: false, error: 'No valid uninstall command available' });
@@ -1781,6 +1782,7 @@ function handleServerCommand(data) {
                             writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
                             var originalCmd = uninstallCmd;
                             if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                                uninstallCmd = uninstallCmd.replace(/\/I\s*(\{[^}]+\})/gi, '/X $1'); // change /I to /X  for uninstall, fixes 7zip example
                                 uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
                                 if (uninstallCmd.indexOf('/QN') < 0) { uninstallCmd = uninstallCmd + ' /QN /norestart'; }
                             } else {
@@ -1807,12 +1809,12 @@ function handleServerCommand(data) {
                             sendSoftwareResponse({ error: ex.toString() });
                         }
                     }
-                } else if (typeof data.value === 'string' && data.value.indexOf('uninstallstoreapp ') === 0) {
+                } else if (data.type == 'uninstallstoreapp' && (typeof data.value === 'string' && data.value != '')) {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
                         return;
                     }
-                    var rawName = data.value.substring(18).trim();
+                    var rawName = data.value.trim();
                     var packageName = rawName.replace(/"/g, "").replace(/'/g, ""); 
                     var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
                     try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
@@ -6102,7 +6104,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     try {
                         var b = Buffer.from(base64Cmd, 'base64');
                         var decoded = b.toString();
-                        if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) {
+                        var lc = decoded ? decoded.toLowerCase() : '';
+                        if (decoded && decoded.length > 0 && (lc.indexOf('msiexec') >= 0 || lc.indexOf('.exe') >= 0)) {
                             uninstallCmd = decoded;
                         } else {
                             uninstallCmd = base64Cmd;
@@ -6136,6 +6139,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
                         var originalCmd = uninstallCmd;
                         if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                            uninstallCmd = uninstallCmd.replace(/\/I\s*(\{[^}]+\})/gi, '/X $1');
                             uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
                             if (uninstallCmd.indexOf('/QN') < 0) {
                                 uninstallCmd = uninstallCmd + ' /QN /norestart';
