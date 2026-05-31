@@ -8154,7 +8154,7 @@
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
-                QV('MainDevApps', (node.mtype == 2) && serverinfo.softwareinventory === true && (meshrights & 1048576) != 0);
+                QV('MainDevApps', ((node.mtype == 2) && (meshrights & 4194304) != 0));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -20341,7 +20341,7 @@
                 rights &= (0xFFFFFFFF - substract);
             } else {
                 // If administrator for a device group, start with permissions and add and subsctract restrictions
-                rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576;
+                rights = 1 + 2 + 4 + 8 + 32 + 64 + 128 + 16384 + 32768 + 131072 + 262144 + 524288 + 1048576 + 4194304;
                 rights |= add;
                 rights &= (0xFFFFFFFF - substract);
             }
