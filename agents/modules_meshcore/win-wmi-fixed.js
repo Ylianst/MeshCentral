@@ -172,7 +172,7 @@ const QueryAsyncHandler =
                     var now = Date.now();
                     if ((now - this.lastProg) > 2000) {     //max 1 msg/2s, otherwise it gets throttled and possibly lose the result msg
                         this.lastProg = now;
-                        require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + this.progress +  ' results', sessionid: this.sessionid }); }
+                        this.MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + this.progress +  ' results', sessionid: this.sessionid }); }
                 }
                 for (var i = 0; i < count.Val; ++i)
                 {
@@ -445,7 +445,7 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, session
         handlers.results = [];
         handlers.fields = fields;
         handlers.incSysProp = includeSysProp;
-        if (sessionid) { handlers.sessionid = sessionid; handlers.progress = 0; handlers.lastProg = 0; }
+        if (sessionid) { handlers.sessionid = sessionid; handlers.progress = 0; handlers.lastProg = 0; handlers.MA = require('MeshAgent'); }
         handlers.locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         handlers.locator.funcs = COM.marshalFunctions(handlers.locator, LocatorFunctions);
 
@@ -491,7 +491,7 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         var results = GM.CreatePointer();
         var progress = 0;
         var lastProg =  0;
-        if (sessionid) { MA = require('MeshAgent'); }
+        if (sessionid) { var MA = require('MeshAgent'); }
         // Connect the locator connection for WMI
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
@@ -520,10 +520,11 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
                 var now = Date.now();
                 if ((now - lastProg) > 2000) {  //max 1 msg/2s, otherwise it gets throttled and possibly lose the result msg
                     lastProg = now;
-                    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
-                ret.push(enumerateProperties(result, fields, includeSysProp));
-                result.funcs.Release(result.Deref());
-            }
+                    MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
+                }
+            result.funcs = COM.marshalFunctions(result.Deref(), ResultFunctions);
+            try { ret.push(enumerateProperties(result, fields, includeSysProp)); }
+            finally { result.funcs.Release(result.Deref()); }
         }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);
