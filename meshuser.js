@@ -277,7 +277,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Check if we have permission to send a message to that node
                 parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
                     var mesh = parent.meshes[agent.dbMeshKey];
-                    if ((node != null) && (mesh != null) && (((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY)) || ((requiredRights != null) && ((rights & requiredRights) != 0)))) { // 8 is remote control permission, 256 is desktop read only
+                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
                         if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
                         if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
 
@@ -323,7 +323,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
 
                         var mesh = parent.meshes[routing.meshid];
-                        if ((node != null) && (mesh != null) && (((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY)) || ((requiredRights != null) && ((rights & requiredRights) != 0)))) { // 8 is remote control permission
+                        if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
                             command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
                             command.rights = rights;                // Add user rights flags to the message
                             if ((options != null) && (options.removeViewOnlyLimitation === true) && (command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
@@ -980,20 +980,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                var requiredRights = MESHRIGHT_SOFTWAREINVENTORY, requiredNonRights = null, routingOptions = null;
-                var func = null;
-                if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: r ? 'OK' : 'Denied' })); } catch (ex) { } } }
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    var mesh = (node != null) ? parent.meshes[node.meshid] : null;
+                    var mesh = parent.meshes[node.meshid];
                     if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
                         var agent = parent.wsagents[command.nodeid];
                         if (agent != null) {
+                            //console.log(command);
                             routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
                         } else {
-                            try { ws.send(JSON.stringify({ action: 'software', value: JSON.stringify({ error: 'Agent offline' }) })); } catch (ex) { }
+                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
                         }
                     } else {
-                        try { ws.send(JSON.stringify({ action: 'software', value: JSON.stringify({ error: 'Denied' }) })); } catch (ex) { }
+                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
                     }
                 });
                 break;
