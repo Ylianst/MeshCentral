@@ -3655,6 +3655,28 @@
                     }
                     break;
                 }
+                case 'software': {
+                    try {
+                        var softwareData = message.value;
+                        if (JSON.parse(message.value).error) {
+                            QH('p18Status', '<span style=color:red>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
+                            QH('p18html', '<div style="text-align:center;padding:50px;color:gray"><i>' + "Click Refresh to load installed software..." + '</i></div>');
+                            installedAppsLoading = false;
+                            installedAppsLoadingType = 0;
+                            return;
+                        }
+                        if (typeof softwareData === 'string' && softwareData.trim().charAt(0) === '[' && softwareData.indexOf('"name"') >= 0) {
+                            handleInstalledAppsResponse(softwareData);
+                        } else if (typeof softwareData === 'string' && (softwareData.indexOf('"success"') >= 0 || softwareData.indexOf('"status"') >= 0 || softwareData.indexOf('"error"') >= 0)) {
+                            handleUninstallResponse(softwareData);
+                        } else {
+                            installedAppsLoading = false;
+                            installedAppsLoadingType = 0;
+                            displayInstalledApps();
+                        }
+                    } catch (xx) { }
+                    break;
+                }
                 case 'lastconnect': {
                     var node = getNodeFromId(message.nodeid);
                     if (node != null) {
@@ -3689,21 +3711,6 @@
                                 if (typeof message.memory.percentConsumed == 'number') { memory = message.memory.percentConsumed; }
                                 deviceDetailsStatsData.push([now, cpu, memory]);
                                 deviceDetailsStatsDraw(message);
-                            } else if (message.type === 'software') {
-                                var softwareData = message.value;
-
-                                if (typeof softwareData === 'string' && softwareData.trim().charAt(0) === '[' && softwareData.indexOf('"name"') >= 0) {
-                                    if (typeof handleInstalledAppsResponse === 'function') {
-                                        handleInstalledAppsResponse(softwareData);
-                                    }
-                                }
-
-                                else if (typeof softwareData === 'string' && (softwareData.indexOf('"success"') >= 0 || softwareData.indexOf('"status"') >= 0 || softwareData.indexOf('"error"') >= 0)) {
-                                    if (typeof handleUninstallResponse === 'function') {
-                                        handleUninstallResponse(softwareData);
-                                    }
-                                }
-								
 							} else if (message.type === 'console') { p15consoleReceive(nodes[index], message.value, message.source); } // This is a console message.
                             else if (message.type === 'notify') { // This is a notification message.
                                 var n = getstore('notifications', 0);
@@ -6806,7 +6813,7 @@
             x += '<a style=text-decoration:none title="' + "Copy to clipboard" + '" onclick=copyAgentIdValue("agins_linux_area_un")>Copy <i class="fa-regular fa-clipboard" style=cursor:pointer></i></a></div>';
 
             // macOS agent uninstall
-            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, right-click the \".mpkg\" file and select \"Show Package Contents\", then right-click \"Uninstall.command\" and select \"Open\"." + '<br /><br />';
+            x += '<div id=agins_osx_un style=display:none>' + "To remove a mesh agent, download the file below, extract the ZIP archive, then right-click \"Uninstall.command\" and select \"Open\"." + '<br /><br />';
             x += addHtmlValue("Mesh Agent", '<a class=text-decoration-underline onclick=downloadFile("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + (urlargs.key ? ('&key=' + urlargs.key) : '') + '") title="' + "Universal version of macOS Mesh Agent" + '">macOS Agent (Universal)</a> <i class="fa-regular fa-clipboard" title="' + "Copy macOS agent URL to clipboard" + '" style=cursor:pointer onclick=copyAgentUrl("meshosxagent?id=10005&meshid=' + meshid.split('/')[2] + '",0)></i>', ['col-md-4', 'col-md-8']);
             x += '</div>';
 
@@ -9261,7 +9268,8 @@
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
-                QV('MainDevApps', (isWindowsNode(node) && (meshrights & 4194304) != 0));
+                //QV('MainDevApps', (node.mtype == 2) && (serverinfo.softwareinventory === true && (meshrights & 1048576) != 0));
+                QV('MainDevApps', ((node.mtype == 2)&& (meshrights & 4194304) != 0));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -14814,7 +14822,7 @@
                 installedAppsLoadingType = 0;
                 return;
             }
-            meshserver.send({ action: 'msg', type: 'software', nodeid: currentNode._id, value: 'installedapps'});
+            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedapps'});
         }
 
         function handleInstalledAppsResponse(data) {
@@ -14854,7 +14862,7 @@
             installedAppsLoading = true;
             installedAppsLoadingType = 2;
             QH('p18Status', '<span style="color:blue">' + "Loading store apps..." + '</span>');
-            meshserver.send({ action: 'msg', type: 'console', nodeid: currentNode._id, value: 'installedstoreapps' });
+            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedstoreapps' });
         }
 
         function toggleStoreApps() {
@@ -14898,10 +14906,12 @@
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Name" + '</th>';
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:120px">' + "Version" + '</th>';
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Publisher" + '</th>';
-            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:180px">' + "Actions" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:100px">' + "Install Date" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Location" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Actions" + '</th>';
             x += '</tr></thead><tbody>';
             if (desktopApps.length === 0) {
-                x += '<tr><td colspan="4" style="text-align:center;color:gray;padding:20px">';
+                x += '<tr><td colspan="6" style="text-align:center;color:gray;padding:20px">';
                 x += searchTerm ? "No applications matching" + '"' + EscapeHtml(searchTerm) + '"' : "No desktop applications found";
                 x += '</td></tr>';
             } else {
@@ -14914,6 +14924,8 @@
                     x += '<td style="padding:6px 8px;border:1px solid #eee" title="' + EscapeHtml(app.name || '') + '">' + EscapeHtml(app.name || '-') + '</td>';
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.version || '-') + '</td>';
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.publisher || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.date || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
                     var userRights = GetNodeRights(currentNode);				
 					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
@@ -15017,7 +15029,7 @@
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
                 QH('p18Status', '<span style="color:blue">' + "Uninstalling..." + '</span>');
                 var base64Cmd = btoa(unescape(encodeURIComponent(cmd))); //Use Base64 encoding to avoid special character problems.
-                meshserver.send({ action: 'msg', type: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
+                meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
                 setTimeout(function() { QH('p18Status', "Uninstall started. Click Refresh to update"); }, 2000);
             });
         }
@@ -15033,7 +15045,7 @@
             setModalContent('xxAddAgent', "Remove Store App", dialogContent);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
 				QH('p18Status', '<span style="color:blue">' + "Removing..." + '</span>');
-				meshserver.send({ action: 'msg', type: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
+				meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
 				setTimeout(function() { QH('p18Status', "Remove command sent. Click Refresh to update"); }, 2000);
 			});
 		}
@@ -15447,11 +15459,11 @@
             QV('d2slackinfo', Q('d2serviceselect').value == 256);
             if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
-            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = 'https://api.callmebot.com/...'; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
             else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
-            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = "https://hooks.slack.com/..."; }
+            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = 'https://hooks.slack.com/...'; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             var ok = (Q('d2handleinput').value.length > 0); QE('idx_dlgOkButton', ok); if ((x == 1) && ok) { dialogclose(1); }
         }
@@ -19871,7 +19883,7 @@
                 if (currentUser.msghandle.startsWith('callmebot:') && ((serverinfo.userMsgProviders & 16) != 0)) {
                     Q('d2serviceselect').value = 16;
                     var toData = currentUser.msghandle.substring(10).split('|');
-                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
+                    if ((toData[0] == 'signal') && (toData.length == 3)) { Q('d2handleinput').value = 'https://signal.callmebot.com/signal/send.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'whatsapp') && (toData.length == 3)) { Q('d2handleinput').value = 'https://api.callmebot.com/whatsapp.php?phone=' + decodeURIComponent(toData[1]) + '&apikey=' + decodeURIComponent(toData[2]); }
                     if ((toData[0] == 'facebook') && (toData.length == 2)) { Q('d2handleinput').value = 'https://api.callmebot.com/facebook/send.php?apikey=' + decodeURIComponent(toData[1]); }
                 }
@@ -19893,11 +19905,11 @@
             if (Q('d2serviceselect').value == 0) { Q('d2handleinput')['placeholder'] = ''; }
             else if (Q('d2serviceselect').value == 4) { Q('d2handleinput')['placeholder'] = "Username:0000"; }
             else if (Q('d2serviceselect').value == 8) { Q('d2handleinput')['placeholder'] = "username@server.com"; }
-            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = "https://api.callmebot.com/..."; }
+            else if (Q('d2serviceselect').value == 16) { Q('d2handleinput')['placeholder'] = 'https://api.callmebot.com/...'; }
             else if (Q('d2serviceselect').value == 32) { Q('d2handleinput')['placeholder'] = "User key"; }
             else if (Q('d2serviceselect').value == 64) { Q('d2handleinput')['placeholder'] = "Topic"; }
             else if (Q('d2serviceselect').value == 128) { Q('d2handleinput')['placeholder'] = "username@sample.com"; }
-            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = "https://hooks.slack.com/..."; }
+            else if (Q('d2serviceselect').value == 256) { Q('d2handleinput')['placeholder'] = 'https://hooks.slack.com/...'; }
             else { Q('d2handleinput')['placeholder'] = "Username"; }
             if (x == 1) { dialogclose(1); }
         }
