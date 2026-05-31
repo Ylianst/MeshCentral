@@ -28,6 +28,8 @@ const WBEM_S_NO_ERROR = 0;
 var OleAut32 = GM.CreateNativeProxy('OleAut32.dll');
 OleAut32.CreateMethod('SafeArrayAccessData');
 OleAut32.CreateMethod('SafeArrayUnaccessData');
+OleAut32.CreateMethod('SafeArrayDestroy');
+OleAut32.CreateMethod('VariantClear');
 
 var wmi_handlers = {};
 
@@ -253,12 +255,13 @@ function enumerateProperties(j, fields)
             properties.push(propName);
         }
         OleAut32.SafeArrayUnaccessData(nme.Deref());
+        OleAut32.SafeArrayDestroy(nme.Deref());     // we own the array, so we must free it 
     }
 
     // Now we need to introspect the Array Fields
+    var tmp1 = GM.CreateVariable(24);      // can re-use because VariantClear resets it, saves on GCing
     for (var i = 0; i < properties.length; ++i)
     {
-        var tmp1 = GM.CreateVariable(24);
         if (j.funcs.Get(j.Deref(), GM.CreateVariable(properties[i], { wide: true }), 0, tmp1, 0, 0).Val == 0)
         {
             //
@@ -277,7 +280,7 @@ function enumerateProperties(j, fields)
                 var arrayLength = safeArray.Deref(GM.PointerSize == 8 ? 24 : 16, 4).toBuffer().readUInt32LE();
                 var arrayData = GM.CreatePointer();
                 OleAut32.SafeArrayAccessData(safeArray, arrayData);
-                
+
                 var arrayValues = [];
                 for (var k = 0; k < arrayLength; ++k)
                 {
@@ -311,7 +314,7 @@ function enumerateProperties(j, fields)
                             break;
                     }
                 }
-                OleAut32.SafeArrayUnaccessData(safeArray);
+                OleAut32.SafeArrayUnaccessData(safeArray);  // tmp1 owns safeArray. VariantClear(tmp1) at the end of the loop, no SafeArrayDestroy() needed here
                 values[properties[i]] = arrayValues;
             }
             else
@@ -360,6 +363,7 @@ function enumerateProperties(j, fields)
                         break;
                 }
             }
+            OleAut32.VariantClear(tmp1);    // must free buffer for next Get and automatically also when finished 
         }
     }
 
