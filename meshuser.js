@@ -982,14 +982,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'software': {
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
-                        var agent = parent.wsagents[command.nodeid];
-                        if (agent != null) {
-                            //console.log(command);
-                            routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-                        } else {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
-                        }
+                            if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
+                                // Ensure nodeid is fully qualified: node/<domainid>/<id>
+                                if ((typeof command.nodeid === 'string') && (command.nodeid.indexOf('/') == -1)) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                                var agent = parent.wsagents[command.nodeid];
+                                // Prepare a callback to reply to the web client when routing result is known
+                                var swFunc = null;
+                                if (command.responseid != null) {
+                                    swFunc = function (r) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: r ? 'OK' : 'Unable to route' })); } catch (ex) { } }
+                                }
+                                if (agent != null) {
+                                    // Minimal routing for software inventory: send only the necessary fields to the agent.
+                                    try {
+                                        var sendCmd = { action: 'software', value: command.value, sessionid: ws.sessionId };
+                                        agent.send(JSON.stringify(sendCmd));
+                                        if (swFunc) { swFunc(true); }
+                                    } catch (ex) {
+                                        if (swFunc) { swFunc(false); }
+                                    }
+                                } else {
+                                    // Agent not local: check if another server has a route to this agent and dispatch there.
+                                    var routing = parent.parent.GetRoutingServerIdNotSelf(command.nodeid, 1); // 1 = MeshAgent routing type
+                                    if (routing != null) {
+                                        var sendCmd = { action: 'software', value: command.value, fromSessionid: ws.sessionId, nodeid: command.nodeid };
+                                        parent.parent.multiServer.DispatchMessageSingleServer(sendCmd, routing.serverid);
+                                        if (swFunc) { swFunc(true); }
+                                    } else {
+                                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
+                                    }
+                                }
                     } else {
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
                     }
