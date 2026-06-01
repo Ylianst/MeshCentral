@@ -983,7 +983,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     var mesh = parent.meshes[node.meshid];
                             if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_SOFTWAREINVENTORY) != 0)) {
-                                // Ensure nodeid is fully qualified: node/<domainid>/<id>
                                 if ((typeof command.nodeid === 'string') && (command.nodeid.indexOf('/') == -1)) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                                 var agent = parent.wsagents[command.nodeid];
                                 // Prepare a callback to reply to the web client when routing result is known
