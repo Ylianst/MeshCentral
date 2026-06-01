@@ -4630,7 +4630,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var q = (args['_'][1]).trim();
                 var wmi = require('win-wmi-fixed');
                 var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') !== -1) ? 2 : 0)) : 'No results', sessionid); };
-                var error = function (e) { var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e)); sendConsoleText('Error: ' + msg, sessionid);};
+                var error = function (e) {
+                    var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
+                    sendConsoleText((e.results ? 'Partial result:\r\n' + JSON.stringify(e.results) + '\r\nPartial resultcount: ' + e.results.length : '') + '\r\nError: ' + msg, sessionid);};
                 sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
                 if (opt.indexOf('a') !== -1) {
                     wmi.queryAsync(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') !== -1) ? sessionid : null))
