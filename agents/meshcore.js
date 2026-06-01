@@ -4529,10 +4529,62 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform != 'win32') {
                     response = 'Unknown command "printers", type "help" for list of available commands.';
                 } else {
-                    var printers = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
+                    var wmi = require('win-wmi-fixed');
+                    var printers = wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
                     trimResults(printers);
+                    var tcpPorts = wmi.query('ROOT\\CIMV2', 'SELECT Name, HostAddress, PortNumber FROM Win32_TCPIPPrinterPort');
+                    trimResults(tcpPorts);
+                    var portMap = {};
+                    for (var j = 0; j < tcpPorts.length; ++j) { portMap[tcpPorts[j].Name] = tcpPorts[j].HostAddress + ':' + tcpPorts[j].PortNumber; }
+                    // For vendor ports not covered by Win32_TCPIPPrinterPort, walk the registry under Print\Monitors
+                    try {
+                        var reg = require('win-registry');
+                        var HKLM = reg.HKEY.LocalMachine;
+                        var monitorsKey = 'SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors';
+                        var monitors = reg.QueryKey(HKLM, monitorsKey);
+                        if (monitors && monitors.keys) {
+                            for (var m = 0; m < monitors.keys.length; ++m) {
+                                var portsKey = monitorsKey + '\\' + monitors.keys[m] + '\\Ports';
+                                try {
+                                    var portsNode = reg.QueryKey(HKLM, portsKey);
+                                    if (portsNode && portsNode.keys) {
+                                        for (var p = 0; p < portsNode.keys.length; ++p) {
+                                            var portName = portsNode.keys[p];
+                                            if (portMap[portName]) continue;
+                                            var portKey = portsKey + '\\' + portName;
+                                            var ip = null;
+                                            try { ip = reg.QueryKey(HKLM, portKey, 'IPAddress'); } catch (e) {}
+                                            if (!ip) { try { ip = reg.QueryKey(HKLM, portKey, 'HostName'); } catch (e) {} }
+                                            if (ip) { portMap[portName] = ip; }
+                                        }
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    } catch (e) {}
+                    var printJobs = wmi.query('ROOT\\CIMV2', 'SELECT Name FROM Win32_PrintJob');
+                    trimResults(printJobs);
+                    var jobCount = {};
+                    for (var j = 0; j < printJobs.length; ++j) {
+                        var jobPrinter = printJobs[j].Name.split(',')[0];
+                        jobCount[jobPrinter] = (jobCount[jobPrinter] || 0) + 1;
+                    }
+                    var printerStatusMap = { 1: 'Other', 2: 'Unknown', 3: 'Idle', 4: 'Printing', 5: 'Warmup', 6: 'Stopped', 7: 'Offline' };
+                    var errorStateMap = { 0: 'Unknown', 1: 'Other', 2: 'No Error', 3: 'Low Paper', 4: 'No Paper', 5: 'Low Toner', 6: 'No Toner', 7: 'Door Open', 8: 'Jammed', 9: 'Offline', 10: 'Service Requested', 11: 'Output Bin Full' };
                     for (var i = 0; i < printers.length; ++i) {
-                        sendConsoleText(printers[i].Name + ' - ' + printers[i].PortName, sessionid);
+                        var portDesc = portMap[printers[i].PortName];
+                        var jobs = jobCount[printers[i].Name] || 0;
+                        var status = printerStatusMap[printers[i].PrinterStatus] || 'Unknown';
+                        var errors = [];
+                        var err = parseInt(printers[i].DetectedErrorState) || 0;
+                        if (err > 2) { errors.push(errorStateMap[err] || ('Error ' + err)); }
+                        var line = printers[i].Name +
+                            ' - ' + printers[i].PortName +
+                            (portDesc ? ' (' + portDesc + ')' : '') +
+                            ' [' + status + ']' +
+                            (errors.length > 0 ? ' [' + errors.join(', ') + ']' : '') +
+                            (jobs > 0 ? ' [' + jobs + ' job' + (jobs > 1 ? 's' : '') + ' queued]' : '');
+                        sendConsoleText(line, sessionid);
                     }
                 }
                 break;
