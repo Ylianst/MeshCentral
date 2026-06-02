@@ -17149,6 +17149,7 @@
                 Q('p20resetoff').checked = ((devrights & 262144) != 0);
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
+                Q('p20software').checked = ((devrights & 4194304) != 0);
                 Q('p20relay').checked = ((devrights & 2097152) != 0);
                 ok = (nodeid != '');
             }
