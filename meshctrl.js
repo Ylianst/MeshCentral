@@ -2574,7 +2574,7 @@ function serverConnect() {
                                         if (rights & 1024) { rightsstr.push('NoFiles'); }
                                         if (rights & 2048) { rightsstr.push('NoAMT'); }
                                         if (rights & 4096) { rightsstr.push('DesktopLimitedInput'); }
-                                        if (rights & 4194304) { rightsstr.push('SoftwareInventory'); }
+                                        if (rights & 4194304) { rightsstr.push('Software'); }
                                     }
                                     console.log(l.split('/')[2] + ', ' + rightsstr.join(', '));
                                 }
