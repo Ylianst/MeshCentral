@@ -4562,6 +4562,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             }
                         }
                     } catch (e) {}
+                    // For Epson and other vendor ports still missing, query ROOT\StandardCimv2\MSFT_PrinterPort
+                    try {
+                        var msftPorts = wmi.query('ROOT\\StandardCimv2', 'SELECT Name, Description FROM MSFT_PrinterPort');
+                        trimResults(msftPorts);
+                        for (var j = 0; j < msftPorts.length; ++j) {
+                            if (!portMap[msftPorts[j].Name] && msftPorts[j].Description) {
+                                portMap[msftPorts[j].Name] = msftPorts[j].Description;
+                            }
+                        }
+                    } catch (e) {}
                     var printJobs = wmi.query('ROOT\\CIMV2', 'SELECT Name FROM Win32_PrintJob');
                     trimResults(printJobs);
                     var jobCount = {};
