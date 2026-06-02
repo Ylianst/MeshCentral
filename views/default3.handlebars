@@ -9268,7 +9268,7 @@
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
-                QV('MainDevApps', ((node.mtype == 2) && (meshrights & 4194304) != 0));
+                QV('MainDevApps', (node.mtype == 2) && (meshrights & 4194304) != 0);
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
@@ -9534,7 +9534,7 @@
             if (rights & 262144) str.push("Reset/Off");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
-            if (rights & 4194304) str.push("Software Inventory");
+            if (rights & 4194304) str.push("Software");
             if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
@@ -9568,7 +9568,7 @@
             if (rights & 262144) str.push("Reset/Off");
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
-            if (rights & 4194304) str.push("Software Inventory");
+            if (rights & 4194304) str.push("Software");
             if (rights & 2097152) str.push("Relay");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
@@ -16983,7 +16983,7 @@
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
-            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20softwareinventory>' + "Software Inventory" + '</label><br>';
+            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20software>' + "Software" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
             x += '</div>';
 
@@ -17099,7 +17099,7 @@
                 if (urights & 262144) { Q('p20resetoff').checked = true; }
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
-                if (urights & 4194304) { Q('p20softwareinventory').checked = true; }
+                if (urights & 4194304) { Q('p20software').checked = true; }
                 if (urights & 2097152) { Q('p20relay').checked = true; }
             }
 
@@ -17231,7 +17231,7 @@
             QE('p20commands', nc);
             QE('p20resetoff', nc);
             QE('p20details', nc);
-            QE('p20softwareinventory', nc);
+            QE('p20software', nc);
             QE('p20relay', nc);
         }
 
@@ -17262,7 +17262,7 @@
                 if (Q('p20resetoff').checked == true) meshadmin += 262144;
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
-                if (Q('p20softwareinventory').checked == true) meshadmin += 4194304;
+                if (Q('p20software').checked == true) meshadmin += 4194304;
                 if (Q('p20relay').checked == true) meshadmin += 2097152;
             }
 
