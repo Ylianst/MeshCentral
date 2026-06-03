@@ -4620,8 +4620,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
                 if (args['_'].length < 2 || args['_'].length > 3) {
-                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty][(s)showprogress][(i)ncludesystemproperties]\r\n' +
-                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" aps\r\n';
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)rettyless][(s)ilent][(i)ncludesystemproperties]\r\n' +
+                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ia\r\n';
                     break;
                 }
                 var opt = (args['_'][2]|| '').toLowerCase();
@@ -4629,17 +4629,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (!/^root\\\w/i.test(ns)) { ns = 'ROOT\\' + ns; }
                 var q = (args['_'][1]).trim();
                 var wmi = require('win-wmi-fixed');
-                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') !== -1) ? 2 : 0)) : 'No results', sessionid); };
+                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') === -1) ? 2 : 0)) : 'No results', sessionid); };
                 var error = function (e) {
                     var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
-                    sendConsoleText((e.results ? 'Partial result:\r\n' + JSON.stringify(e.results) + '\r\nPartial resultcount: ' + e.results.length : '') + '\r\nError: ' + msg, sessionid);};
-                sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
+                    sendConsoleText((e.results ? 'Partial result:\r\n' + JSON.stringify(e.results, null, ((opt.indexOf('p') === -1) ? 2 : 0)) + '\r\nPartial resultcount: ' + e.results.length : '') + '\r\nError: ' + msg, sessionid);};
+                if (opt.indexOf('s') === -1) { sendConsoleText('Performing query.', sessionid); }
                 if (opt.indexOf('a') !== -1) {
-                    wmi.queryAsync(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') !== -1) ? sessionid : null))
+                    wmi.queryAsync(ns, q, null, (opt.indexOf('i') !== -1), null, ((opt.indexOf('s') === -1) ? sessionid : null))
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') !== -1) ? sessionid : null) )); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') === -1) ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {
