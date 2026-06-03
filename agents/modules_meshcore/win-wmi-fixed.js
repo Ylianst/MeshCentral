@@ -376,9 +376,9 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
     if (!wmiResultObj.funcs) { wmiResultObj.funcs = COM.marshalFunctions(wmiResultObj.Deref(), ResultFunctions); }
 
     // Now we need to introspect the Array Fields
+    var propVal = GM.CreateVariable(24);
     for (var i = 0; i < propNames.length; ++i)
     {
-        var propVal = GM.CreateVariable(24);
         if (wmiResultObj.funcs.Get(wmiResultObj.Deref(), propNameVars[i], 0, propVal, 0, 0).Val == 0)
         {
             //
@@ -500,7 +500,7 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, timeout
         //32-bit windows cannot do more than 1 async query at a time because of the hardcoded vtable for the cx pre-compiled __stdcall custom handlers in iLibDuktape_GenericMarshal.c
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
             setImmediate(function(){ p.reject(new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows')); }); return (p); }
-        if (!timeout || typeof timeout !== 'number') { timeout = 2 * 1000 };       //Default timeout set to 2m
+        if (!timeout || typeof timeout !== 'number') { timeout = 120 * 1000 };       //Default timeout set to 2m
         if (timeout < 500) { timeout *= 1000 }  // assume timeout given in seconds, as quicker than 500ms timeouts are unrealistic
         var pq = prepareQuery(queryString, fields);
         queryString = pq.q;
@@ -627,14 +627,17 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
                     lastProg = now;
                     MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
                 }
-            result.funcs = COM.marshalFunctions(result.Deref(), ResultFunctions);
-            if (reqFields != null) {
-                ret.push(enumerateProperties(result, reqFields, fixedNameVars));
-            } else {
-                var e = cache.forRow(result);
-                ret.push(enumerateProperties(result, e.propNames, e.propNameVars));
+            //result.funcs = COM.marshalFunctions(result.Deref(), ResultFunctions);
+            try {
+                if (reqFields != null) {
+                    ret.push(enumerateProperties(result, reqFields, fixedNameVars));
+                } else {
+                    var e = cache.forRow(result);
+                    ret.push(enumerateProperties(result, e.propNames, e.propNameVars));
+                }
+            } finally {
+                result.funcs.Release(result.Deref());
             }
-            result.funcs.Release(result.Deref());
         }
         if (sessionid) { MA.SendCommand({ action: 'msg', type: 'console', value: 'Querytotal: ' + ret.length +  ' results, time take: ' + (Date.now()-progStart)/1000 + ' seconds', sessionid: sessionid }); }
     } catch (e) {
