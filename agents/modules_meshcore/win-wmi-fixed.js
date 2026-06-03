@@ -25,24 +25,25 @@ const WBEM_FLAG_BIDIRECTIONAL = 0;
 const WBEM_FLAG_RETURN_IMMEDIATELY = 0x10;
 const WBEM_FLAG_FORWARD_ONLY = 0x20;
 const WBEM_FLAG_NONSYSTEM_ONLY = 0x40;
+const WBEM_FLAG_CONNECT_USE_MAX_WAIT = 0x80;
 const WBEM_INFINITE = -1;
 const WBEM_FLAG_ALWAYS = 0;
 const E_NOINTERFACE = 0x80004002;
 const WBEM_S_NO_ERROR = 0;
 const WBEM_S_FALSE = 1;
 const WBEM_S_TIMEDOUT = 0x40004;
+const WBEM_STATUS_COMPLETE = 0;
 const WBEM_ERRORS = {
-    0x80041010: 'Invalid class',
-    0x80041017: 'Invalid query',
-    0x8004100E: 'Invalid namespace',
-    0x80041003: 'Access denied',
     0x80041001: 'Generic failure',
-    0x80041004: 'Provider failure',
     0x80041002: 'Object not found',
     0x80041003: 'Access denied',
+    0x80041004: 'Provider failure',
     0x80041006: 'Out of memory',
     0x80041008: 'Invalid parameter',
     0x80041009: 'Resource not available',
+    0x8004100E: 'Invalid namespace',
+    0x80041010: 'Invalid class',
+    0x80041017: 'Invalid query',
     0x80041013: 'Provider not found',
     0x80041021: 'Invalid syntax',
     0x80070422: 'Service unavailable'
@@ -139,8 +140,6 @@ const ResultFunctions = [
             'GetMethodOrigin'
 ];
 
-//
-// Reference to IWbemObjectSink can be found at:
 // https://learn.microsoft.com/en-us/windows/win32/wmisdk/iwbemobjectsink
 //
 const QueryAsyncHandler =
@@ -568,26 +567,25 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
         var services = GM.CreatePointer();
-        
-        // For easier debugging in case a certain WMI component is not available
-        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, 0, 0, 0, services).Val;
+
+       // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemlocator-connectserver
+        // WBEM_FLAG_CONNECT_USE_MAX_WAIT=wait max 2 minutes instead of infinite. Prevents blocking.
+        var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val >>> 0;
         if (hr != 0) {
-            var hex = (hr < 0 ? hr + 0x100000000 : hr).toString(16).toUpperCase();
-            throw ('query: Error calling ConnectToServer: HRESULT=0x' + hex + ' resource=' + resourceString);
-        }
+            throw new Error('ConnectToServer(' + resourceString + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
 
         // Execute the Query
+        // FORWARD_ONLY & RETURN_IMMEDIATELY instead of BIDIRECTIONAL, faster and less memory. https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-execquery
         services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
         if ((hr = services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 0, results).Val >>> 0) != 0) {
-            throw new Error('ExecQuery() failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')');
-        }
+            throw new Error('ExecQuery() failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
 
         results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
         var returnedCount = GM.CreateVariable(8);
         var result = GM.CreatePointer();
         var nextRes;
         // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-ienumwbemclassobject-next
-        var retries = 0, rowTimeout = 10*1000; // was WBEM_INFINITE. in ms. Prevents blocking.
+        var retries = 0, rowTimeout = 10*1000; // rowTimeout was WBEM_INFINITE. in ms. Prevents blocking.
         while (true) {
             nextRes = results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val >>> 0;
             if (nextRes === WBEM_S_FALSE) break; // normal exit
