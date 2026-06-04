@@ -4620,26 +4620,33 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
                 if (args['_'].length < 2 || args['_'].length > 3) {
-                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)rettyless][(s)ilent][(i)ncludesystemproperties]\r\n' +
-                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ia\r\n';
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(n)sync][(u)npretty][(s)ilence][(i)ncludesystemproperties]\r\n' +
+                            'Default: async, pretty and shows progress\r\n' +
+                            'Note: Sync queries block the agent for the duration of the query\r\n' +
+                            'Example: wmi CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" in\r\n';
                     break;
                 }
                 var opt = (args['_'][2]|| '').toLowerCase();
                 var ns = args['_'][0].trim();
                 if (!/^root\\\w/i.test(ns)) { ns = 'ROOT\\' + ns; }
                 var q = (args['_'][1]).trim();
+                var indent = (opt.indexOf('u') === -1); // unpretty, so default true
+                var showProgress = (opt.indexOf('s') === -1);   //s is now silence
+                var includeSysProp = (opt.indexOf('i') !== -1);
+                var async = opt.indexOf('n') === -1;
                 var wmi = require('win-wmi-fixed');
-                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') === -1) ? 2 : 0)) : 'No results', sessionid); };
+                var output = function (res) { sendConsoleText((res && res.length > 0) ? (JSON.stringify(res, null, (indent ? 2 : 0))) : 'No results', sessionid); };
                 var error = function (e) {
-                    var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e));
-                    sendConsoleText((e.results ? 'Partial result:\r\n' + JSON.stringify(e.results, null, ((opt.indexOf('p') === -1) ? 2 : 0)) + '\r\nPartial resultcount: ' + e.results.length : '') + '\r\nError: ' + msg, sessionid);};
-                if (opt.indexOf('s') === -1) { sendConsoleText('Performing query.', sessionid); }
-                if (opt.indexOf('a') !== -1) {
-                    wmi.queryAsync(ns, q, null, (opt.indexOf('i') !== -1), null, ((opt.indexOf('s') === -1) ? sessionid : null))
+                    e = e || {};
+                    sendConsoleText(((e.results && e.results.length) ? 'Partial result:\r\n' + JSON.stringify(e.results, null, (indent ? 2 : 0)) + '\r\nPartial resultcount: ' + e.results.length + '\r\n' : '') +
+                        'Error: ' + (e.message || JSON.stringify(e)), sessionid); };
+                if (showProgress) { sendConsoleText('Performing ' + (async ? 'asynchronous ': '') + 'query ' + (async ? '': 'synchronously (be careful with large queries as it blocks the agent for the duration)'), sessionid); }
+                if (async) {
+                    wmi.queryAsync(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null))
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), null, ((opt.indexOf('s') === -1) ? sessionid : null) )); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {
