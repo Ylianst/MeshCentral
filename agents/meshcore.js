@@ -2335,6 +2335,39 @@ function getSystemInformation(func) {
                 p.then(function (res)
                 {
                     results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res);
+					// >>> BẮT ĐẦU CODE LẤY NETWORK DRIVES <<<
+                    try {
+                        var u = require('user-sessions');
+                        var reg = require('win-registry');
+                        var activeUid = u.consoleUid();
+                        
+                        if (activeUid != null) {
+                            var uname = u.getUsername(activeUid);
+                            if (uname) {
+                                var sid = reg.usernameToUserKey(uname);
+                                if (sid) {
+                                    var networkPath = sid + '\\Network';
+                                    var netData = reg.QueryKey(reg.HKEY.Users, networkPath);
+                                    
+                                    if (netData && netData.subkeys && netData.subkeys.length > 0) {
+                                        for (var i = 0; i < netData.subkeys.length; i++) {
+                                            var letter = netData.subkeys[i]; 
+                                            var remotePath = reg.QueryKey(reg.HKEY.Users, networkPath + '\\' + letter, 'RemotePath');
+                                            
+                                            if (remotePath) {
+                                                // Ném thẳng ổ mạng vào chung danh sách với ổ C, D
+                                                results.hardware.windows.volumes[letter] = {
+                                                    name: remotePath,       // Hiện tên là đường dẫn share
+                                                    type: "Network Drive"   // Định dạng là Network Drive
+                                                };
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch(e) { }
+                    // >>> KẾT THÚC CODE LẤY NETWORK DRIVES <<<
                     results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
                     func(results);
                 });
