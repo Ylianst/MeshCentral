@@ -4639,7 +4639,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), ((opt.indexOf('s') === -1) ? sessionid : null) )); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, (opt.indexOf('i') !== -1), null, ((opt.indexOf('s') === -1) ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {

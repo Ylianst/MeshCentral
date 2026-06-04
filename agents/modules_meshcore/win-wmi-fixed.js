@@ -178,7 +178,7 @@ const QueryAsyncHandler =
             cx: 12, parms: 1, name: 'Release', func: function ()
             {
                 // console.log('Release: ' + this.refcount);
-                if (--this.refcount === 0) { console.log('Released');
+                if (--this.refcount === 0) { // console.log('Released');
                     destroy(this); }
                 return GM.CreateVariable(4).increment(this.refcount >>> 0, true);   // return new refCount
             }
@@ -187,7 +187,7 @@ const QueryAsyncHandler =
             cx: 13, parms: 3, name: 'Indicate', func: function (sink, count, arr)
             {
                 // console.log('Indicate: ' + count.Val);
-                if (this._abandoned || this.results === null) { return (GM.CreateVariable(4).increment(0, true)); }   // discard
+                if (this._abandoned) { return (GM.CreateVariable(4).increment(0, true)); }   // discard
                 if (this.sessionid) {
                     this.progress += count.Val;
                     var now = Date.now();
@@ -198,11 +198,16 @@ const QueryAsyncHandler =
                 for (var i = 0; i < count.Val; ++i)
                 {
                     var wmiResultObj  = arr.Deref((i * GM.PointerSize) + 0, GM.PointerSize);
-                    if (this.reqFields != null) {
-                        this.results.push(enumerateProperties(wmiResultObj , this.reqFields, this.fixedNameVars));
-                    } else {
-                        var e = this.cache.forRow(wmiResultObj );
-                        this.results.push(enumerateProperties(wmiResultObj , e.propNames, e.propNameVars));
+                    try {
+                        if (this.reqFields != null) {
+                            this.results.push(enumerateProperties(wmiResultObj, this.reqFields, this.fixedNameVars));
+                        } else {
+                            var c = this.cache.forRow(wmiResultObj);
+                            this.results.push(enumerateProperties(wmiResultObj, c.propNames, c.propNameVars));
+                        }
+                    } catch (e) {
+                        // only skip, not throw
+                        console.log('win-wmi Indicate row error: ' + (e && e.message ? e.message : e));
                     }
                 }
                 return GM.CreateVariable(4).increment(0, true); //Indicate must always return WBEM_S_NO_ERROR=0
@@ -483,7 +488,6 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
         }
         OleAut32.VariantClear(propVal);
     }
-
     return (values);
 }
 
@@ -501,7 +505,6 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, timeout
         if (GM.PointerSize == 4 && Object.keys(wmi_handlers).length != 0) {
             setImmediate(function(){ p.reject(new Error('Another AsyncQuery is already running, only one AsyncQuery possible at a time on 32-bit Windows')); }); return (p); }
         if (!timeout || typeof timeout !== 'number') { timeout = 120 * 1000 };       //Default timeout set to 2m
-        if (timeout < 500) { timeout *= 1000 }  // assume timeout given in seconds, as quicker than 500ms timeouts are unrealistic
         var pq = prepareQuery(queryString, fields);
         queryString = pq.q;
         var reqFields = pq.f;
@@ -551,8 +554,8 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, timeout
             // Reject the promise and clean that part up, hoping the wmi query resolves eventually and cleans itself up through SetStatus
             // There seems to be not other way to stop a hung/long query
             handlers._abandoned = true;     // Signal SetStatus we'll reject
-            var e = new Error('WMI query timed out');
-            if (handlers.sessionid && handlers.results.length > 0) { e.results = handlers.results; }
+            var e = new Error('WMI query timed out after ' + (timeout/1000) + ' seconds');
+            if (handlers.results.length > 0) { e.results = handlers.results; }
             handlers.p.reject(e);
         }, timeout);
     } catch (e) {
@@ -567,11 +570,14 @@ function queryAsync(resourceString, queryString, fields, includeSysProp, timeout
 }
 
 // (optional) includeSysProp, default=false. Include system properties (__CLASS, etc.)
+// (optional) timeout, default=120 seconds. Query duration timeout in ms
 // (optional) sessionid, default=null. Report progress back to the given sessionid.
-function query(resourceString, queryString, fields, includeSysProp, sessionid)
+function query(resourceString, queryString, fields, includeSysProp, timeout, sessionid)
 {
+    const uCount = 32;  // number of rows to retrieve per round
     var ret = [];
     try {
+        if (!timeout || typeof timeout !== 'number') { timeout = 120 * 1000 };       //Default timeout set to 2m
         var pq = prepareQuery(queryString, fields);
         queryString = pq.q;
         var reqFields = pq.f;
@@ -586,7 +592,7 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         var language = GM.CreateVariable("WQL", { wide: true });
         var query = GM.CreateVariable(queryString, { wide: true });
         var results = GM.CreatePointer();
-        if (sessionid) { var MA = require('MeshAgent'), progress = 0, lastProg =  0, progStart = Date.now(); }
+        if (sessionid) { var MA = require('MeshAgent'), progress = 0, lastProg =  0 }
         // Connect the locator connection for WMI
         var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
         locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
@@ -604,47 +610,56 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         if ((hr = services.funcs.ExecQuery(services.Deref(), language, query, WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 0, results).Val >>> 0) != 0) {
             throw new Error('ExecQuery() failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
 
-        results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
-        var returnedCount = GM.CreateVariable(8);
-        var result = GM.CreatePointer();
-        var nextRes;
         // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-ienumwbemclassobject-next
-        var retries = 0, rowTimeout = 10*1000; // rowTimeout was WBEM_INFINITE. in ms. Prevents blocking.
+        // Batch retrieve per round instead of the original 1. Improves speed on larger sets as it lowers COM calls, like the asyncHandler does
+        // nextRes=WBEM_S_FALSE: signals the last set. Check returnedCount if rows left to process
+        // nextRes=WBEM_S_NO_ERROR: returnedCount equal to requested number
+        results.funcs = COM.marshalFunctions(results.Deref(), ResultsFunctions);
+        var apObjects = GM.CreateVariable(uCount * GM.PointerSize);
+        var returnedCount = GM.CreateVariable(4);   // ULONG puReturned
+        var retries = 0, rowTimeout = 10 * 1000;    // rowTimeout was WBEM_INFINITE. in ms. Prevents blocking. Generates WBEM_S_TIMEDOUT on timeout
+        var progStart = Date.now();
         while (true) {
-            nextRes = results.funcs.Next(results.Deref(), rowTimeout, 1, result, returnedCount).Val >>> 0;
-            if (nextRes === WBEM_S_FALSE) break; // normal exit
-            if (nextRes >= 0x80000000 ) { throw new Error('Next() failed: ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ')'); }
-            if (nextRes !== WBEM_S_NO_ERROR) {
+            if ((Date.now()-progStart) > timeout) { throw new Error('WMI query timed out after ' + (timeout/1000) + ' seconds'); }
+            var nextRes = results.funcs.Next(results.Deref(), rowTimeout, uCount, apObjects, returnedCount).Val >>> 0;
+            if (nextRes >= 0x80000000) { throw new Error('Next() failed: ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ')'); }
+            var returnedRows = (nextRes === WBEM_S_NO_ERROR) ? uCount : returnedCount.toBuffer().readUInt32LE();   // Only use returnedCount on last set, as WBEM_S_NO_ERROR implies a full batch
+
+            if (returnedRows === 0) {  // handle special case, no rows returned
+                if (nextRes === WBEM_S_FALSE) { break; }    // Done. Exit.
                 if (++retries > 6) { throw new Error('Next() errored too many times: ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ')'); }
-                if (sessionid) { MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: issue ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ') on row: ' + (progress+1), sessionid: sessionid }); }
-                continue;
+                if (sessionid) { MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: issue ' + (WBEM_ERRORS[nextRes] || 'unknown') + ' (0x' + nextRes.toString(16) + ') after ' + progress + ' results', sessionid: sessionid }); }
+                continue; // timed out, retry
             }
             retries = 0;
-            if (sessionid) {
-                ++progress;
-                var now = Date.now();
-                if ((now - lastProg) > 2000) {  //max 1 msg/2s, otherwise it gets throttled and possibly lose the result msg
-                    lastProg = now;
-                    MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress +  ' results', sessionid: sessionid }); }
+
+            for (var row = 0; row < returnedRows; ++row) {
+                var rowObj = apObjects.Deref(row * GM.PointerSize, GM.PointerSize);
+                rowObj.funcs = COM.marshalFunctions(rowObj.Deref(), ResultFunctions);
+                try {
+                    if (reqFields != null) { ret.push(enumerateProperties(rowObj, reqFields, fixedNameVars)); }
+                    else { var c = cache.forRow(rowObj); ret.push(enumerateProperties(rowObj, c.propNames, c.propNameVars)); }
+                } catch (rowErr) {
+                    console.log('win-wmi query row error: ' + (rowErr && rowErr.message ? rowErr.message : rowErr));
+                } finally {
+                    rowObj.funcs.Release(rowObj.Deref());
                 }
-            //result.funcs = COM.marshalFunctions(result.Deref(), ResultFunctions);
-            try {
-                if (reqFields != null) {
-                    ret.push(enumerateProperties(result, reqFields, fixedNameVars));
-                } else {
-                    var e = cache.forRow(result);
-                    ret.push(enumerateProperties(result, e.propNames, e.propNameVars));
-                }
-            } finally {
-                result.funcs.Release(result.Deref());
             }
+
+            if (sessionid) {
+                progress += returnedRows;
+                var now = Date.now();
+                if ((now - lastProg) > 2000) {
+                    lastProg = now;
+                    MA.SendCommand({ action: 'msg', type: 'console', value: 'Queryprogress: ' + progress + ' results', sessionid: sessionid });
+                }
+            }
+
+            if (nextRes === WBEM_S_FALSE) { break; }   // last (partial) batch done. Exit
         }
-        if (sessionid) { MA.SendCommand({ action: 'msg', type: 'console', value: 'Querytotal: ' + ret.length +  ' results, time take: ' + (Date.now()-progStart)/1000 + ' seconds', sessionid: sessionid }); }
     } catch (e) {
         console.log('win-wmi query error: ' + e.message);
-        if (ret.length > 0) {
-            e.results = ret;
-        }
+        if (ret.length > 0) { e.results = ret; }
         throw (e);
     } finally {
         results = releaseCOM(results, true);
@@ -652,6 +667,8 @@ function query(resourceString, queryString, fields, includeSysProp, sessionid)
         locator = releaseCOM(locator, false);
     }
     // console.log(JSON.stringify(ret).substring(0,200));
+    if (sessionid) {
+        MA.SendCommand({ action: 'msg', type: 'console', value: 'Querytotal: ' + ret.length + ' results, time take: ' + (Date.now()-progStart)/1000 + ' seconds', sessionid: sessionid }); }
     return (ret);
 }
 
