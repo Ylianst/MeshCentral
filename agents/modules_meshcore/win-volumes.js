@@ -30,7 +30,7 @@ function trimObject(j)
 
 function getVolumes()
 {
-    var v = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_Volume');
+    var v = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_Volume');
     var i;
 
     var ret = {};
@@ -40,7 +40,7 @@ function getVolumes()
         ret[v[i].DeviceID] = trimObject(v[i]);
     }
     try {
-        v = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume');
+        v = require('win-wmi-fixed').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume');
         for (i in v)
         {
             var tmp = trimObject(v[i]);
@@ -58,7 +58,7 @@ function windows_volumes()
     var promise = require('promise');
     var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     var ret = {};
-    var values = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType']);
+    var values = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType']);
     if(values[0]){
         for (var i = 0; i < values.length; ++i) {
             if (!values[i]['DeviceID']) { continue; }   //always check for null to be sure
@@ -74,7 +74,7 @@ function windows_volumes()
         }
     }
     try {
-        values = require('win-wmi').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter','ConversionStatus','ProtectionStatus']);
+        values = require('win-wmi-fixed').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter','ConversionStatus','ProtectionStatus']);
         if(values[0]){
             // RegExps for the specific patterns in the manage-bde output, case-insensitive multiline
             var reID = new RegExp("{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}}", "mi");
