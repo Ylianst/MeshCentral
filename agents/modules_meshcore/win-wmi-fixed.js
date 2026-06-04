@@ -403,6 +403,9 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
                 var arrayData = GM.CreatePointer();
                 OleAut32.SafeArrayAccessData(safeArray, arrayData);
                 
+                // VT_I8 & VT_UI8 (64-bit types) aren't used (yet?) in wmi, added for completeness
+                // added float type VT_R4 and VT_R8, uncommon but used
+                // VT_DECIMAL not mapped in wmi
                 var arrayValues = [];
                 for (var k = 0; k < arrayLength; ++k)
                 {
@@ -415,9 +418,20 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
                         case 0x0016:    // VT_INT
                             arrayValues.push(arrayData.Deref().Deref(k * 4, 4).toBuffer().readInt32LE());
                             break;
+                        case 0x0004:    // VT_R4
+                            arrayValues.push(arrayData.Deref().Deref(k * 4, 4).toBuffer().readFloatLE(0));
+                            break;
+                        case 0x0005:    // VT_R8
+                            arrayValues.push(arrayData.Deref().Deref(k * 8, 8).toBuffer().readDoubleLE(0));
+                            break;
+                        case 0x0008:    // VT_BSTR
+                            arrayValues.push(arrayData.Deref().Deref(k * GM.PointerSize, GM.PointerSize).Deref().Wide2UTF8);
+                            break;
                         case 0x000B:    // VT_BOOL
                             arrayValues.push(arrayData.Deref().Deref(k * 2, 2).toBuffer().readInt16LE() != 0);
                             break;
+                        // case 0x000E:    //VT_DECIMAL
+                        //     break;
                         case 0x0010:    // VT_I1
                             arrayValues.push(arrayData.Deref().Deref(k, 1).toBuffer().readInt8());
                             break;
@@ -431,8 +445,19 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
                         case 0x0017:    // VT_UINT
                             arrayValues.push(arrayData.Deref().Deref(k * 4, 4).toBuffer().readUInt32LE());
                             break;
-                        case 0x0008:    // VT_BSTR
-                            arrayValues.push(arrayData.Deref().Deref(k * GM.PointerSize, GM.PointerSize).Deref().Wide2UTF8);
+/*
+                        case 0x0014:    // VT_I8 (signed 64-bit)
+                            var ai8 = arrayData.Deref().Deref(k * 8, 8).toBuffer();
+                            // recombine the two 32-bit halves; exact up to 2^53 (high word signed)
+                            arrayValues.push(ai8.readInt32LE(4) * 0x100000000 + ai8.readUInt32LE(0));
+                            break;
+                        case 0x0015:    // VT_UI8 (unsigned 64-bit)
+                            var aui8 = arrayData.Deref().Deref(k * 8, 8).toBuffer();
+                            arrayValues.push(aui8.readUInt32LE(4) * 0x100000000 + aui8.readUInt32LE(0));
+                            break;
+*/
+                        default:
+                            console.info1('VARTYPE (array element): 0x' + baseType.toString(16));
                             break;
                     }
                 }
@@ -455,11 +480,20 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
                     case 0x0016:    // VT_INT
                         values[propNames[i]] = propVal.Deref(8, GM.PointerSize).toBuffer().readInt32LE();
                         break;
+                    case 0x0004:    // VT_R4
+                        values[propNames[i]] = propVal.Deref(8, 4).toBuffer().readFloatLE(0);
+                        break;
+                    case 0x0005:    // VT_R8
+                        values[propNames[i]] = propVal.Deref(8, 8).toBuffer().readDoubleLE(0);
+                        break;
+                    case 0x0008:    // VT_BSTR
+                        values[propNames[i]] = propVal.Deref(8, GM.PointerSize).Deref().Wide2UTF8;
+                        break;
                     case 0x000B:    // VT_BOOL
                         values[propNames[i]] = propVal.Deref(8, GM.PointerSize).toBuffer().readInt32LE() != 0;
                         break;
-                    case 0x000E:    // VT_DECIMAL
-                        break;
+                    // case 0x000E:    // VT_DECIMAL
+                    //     break;
                     case 0x0010:    // VT_I1
                         values[propNames[i]] = propVal.Deref(8, GM.PointerSize).toBuffer().readInt8();
                         break;
@@ -473,15 +507,19 @@ function enumerateProperties(wmiResultObj, propNames, propNameVars)
                     case 0x0017:    // VT_UINT
                         values[propNames[i]] = propVal.Deref(8, GM.PointerSize).toBuffer().readUInt32LE();
                         break;
-                    //case 0x0014:    // VT_I8
-                    //    break;
-                    //case 0x0015:    // VT_UI8
-                    //    break;
-                    case 0x0008:    // VT_BSTR
-                        values[propNames[i]] = propVal.Deref(8, GM.PointerSize).Deref().Wide2UTF8;
+/*
+                    case 0x0014:    // VT_I8
+                        var i8 = propVal.Deref(8, 8).toBuffer();
+                        // recombine the two 32-bit halves; exact up to 2^53 (high word is signed)
+                        values[propNames[i]] = i8.readInt32LE(4) * 0x100000000 + i8.readUInt32LE(0);
                         break;
+                    case 0x0015:    // VT_UI8
+                        var ui8 = propVal.Deref(8, 8).toBuffer();
+                        values[propNames[i]] = ui8.readUInt32LE(4) * 0x100000000 + ui8.readUInt32LE(0);
+                        break;
+*/
                     default:
-                        console.info1('VARTYPE: ' + vartype);
+                        console.info1('VARTYPE: 0x' + vartype.toString(16));
                         break;
                 }
             }
