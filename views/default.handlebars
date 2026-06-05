@@ -9175,7 +9175,15 @@
             d2map = new ol.Map({
                 target: 'd2map',
                 interactions: ol.interaction.defaults({dragPan:false, mouseWheelZoom:false}),
-                layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer ],
+                layers: [ new ol.layer.Tile({ 
+                    source: new ol.source.OSM({ 
+                        tileLoadFunction: function(imageTile, src) { 
+                            var img = imageTile.getImage();
+                            img.referrerPolicy = 'origin';
+                            img.src = src;
+                        }
+                    })
+                }), vectorLayer ],
                 view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
             });
             return false;
