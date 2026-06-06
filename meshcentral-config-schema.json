@@ -2235,6 +2235,11 @@
                 "default": null,
                 "description": "The filename of a image file in .png format located in meshcentral-data to display in the MeshCentral Agent installation dialog, image should be square and from 64x64 to 200x200."
               },
+              "macosinstallerimage": {
+                "type": "string",
+                "default": null,
+                "description": "The filename of a background image file in .png format located in meshcentral-data to display in the macOS installer."
+              },
               "fileName": {
                 "type": "string",
                 "default": "meshagent",

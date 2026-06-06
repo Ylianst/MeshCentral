@@ -6697,7 +6697,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         archive.pipe(res);
 
         // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
-        require('./macosinstaller').createMacOSInstaller({
+        const macosInstallerOpts = {
             agentPath: argentInfo.path,
             meshSettings: meshsettings,
             meshName: mesh.name.split(']').join('').split('[').join(''), // We can't have ']]' in the string since it will terminate the CDATA.
@@ -6706,7 +6706,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             displayName: meshdisplayname,
             serviceName: meshservicename,
             companyName: meshcompanyname
-        }).then(function (installer) {
+        };
+
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.macosinstallerimage == 'string')) {
+            macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
+        }
+
+        require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
             archive.append(installer.pkg, { name: meshpkgname });
             archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
             archive.finalize();

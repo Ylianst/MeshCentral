@@ -333,6 +333,13 @@ async function createMacOSInstaller(opts) {
         await fsp.writeFile(path.join(launchAgents, opts.serviceName + '-launchagent.plist'), replaceTokens(LAUNCH_AGENT_PLIST, tokens));
         await fsp.writeFile(path.join(scriptsRoot, 'postinstall'), replaceTokens(POSTINSTALL, tokens));
 
+        if (opts.backgroundPath) {
+            await fsp.copyFile(opts.backgroundPath, path.join(resourcesDir, 'background'));
+        } else {
+            const backgroundPath = path.join(__dirname, 'agents', 'macosinstallerbackground.png');
+            await fsp.copyFile(backgroundPath, path.join(resourcesDir, 'background'));
+        }
+
         await chmodIfExists(path.join(installDir, opts.executableName), 0o755);
         await chmodIfExists(path.join(scriptsRoot, 'postinstall'), 0o755);
         await chmodIfExists(path.join(installDir, opts.executableName + '.msh'), 0o644);
@@ -357,7 +364,8 @@ async function createMacOSInstaller(opts) {
         const distribution = '<?xml version="1.0" encoding="utf-8"?>\n'
             + '<installer-script minSpecVersion="1.000000">\n'
             + '    <title>' + xmlEscape(opts.displayName) + '</title>\n'
-            + '    <options customize="never" allow-external-scripts="no" rootVolumeOnly="true"/>\n'
+            + '    <options customize="always" allow-external-scripts="no" rootVolumeOnly="true"/>\n'
+            + '    <background file="background" alignment="topleft" scaling="tofit"/>\n'
             + '    <welcome language="en-US" mime-type="text/plain"><![CDATA[' + welcome.split(']]>').join(']]]]><![CDATA[>') + ']]></welcome>\n'
             + '    <choices-outline>\n'
             + '        <line choice="choice65"/>\n'
