@@ -20017,7 +20017,7 @@
         function p30showUserEmailChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
+            x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=256 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
             if (serverinfo.emailcheck) { x += addHtmlFormFloating("Status", '<select id=dp30verified class="form-control" onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
 
             setModalContent('xxAddAgent', format("Change Email for {0}", EscapeHtml(currentUser.name)), x);
