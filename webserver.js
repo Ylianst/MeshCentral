@@ -6592,9 +6592,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         let originUrl; try { originUrl = new URL(req.headers.origin); } catch (ex) { return false; }
         if (!originUrl.hostname) return false; // Origin hostname is not valid
         if (Array.isArray(domain.allowedorigin)) return (domain.allowedorigin.indexOf(originUrl.hostname) >= 0); // Check if this is an allowed origin from an explicit list
-        if (obj.isTrustedCert(domain) === false) return true; // This server does not have a trusted certificate.
         if (domain.dns != null) return (domain.dns == originUrl.hostname); // Match the domain DNS
-        return (obj.certificates.CommonName == originUrl.hostname); // Match the default server name
+        return (obj.getWebServerName(domain, req) == originUrl.hostname); // Match the server hostname
     }
 
     // Create a OSX mesh agent installer
