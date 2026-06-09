@@ -1110,12 +1110,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Check Google Authenticator
-        const otplib = require('otplib')
-        otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
-        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) {
-            parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
-            func(true, { twoFactorType: 'otp' });
-            return;
+        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
+            const otplib = require('otplib');
+            const verified = otplib.verifySync({ 
+                epochTolerance: 60, 
+                token: token, 
+                secret: user.otpsecret,
+                guardrails: otplib.createGuardrails({
+                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                })
+            });
+            if (verified.valid === true) {
+                parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
+                func(true, { twoFactorType: 'otp' });
+                return;
+            }
         };
 
         // Check written down keys

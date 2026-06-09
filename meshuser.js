@@ -3763,7 +3763,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var otplib = null;
                         try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 6 })); return; }
-                        const secret = otplib.authenticator.generateSecret(); // TODO: Check the random source of this value.
+                        const secret = otplib.generateSecret(); // TODO: Check the random source of this value.
 
                         var domainName = parent.certificates.CommonName;
                         if (domain.dns != null) { 
@@ -3771,7 +3771,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else if (domain.dns == null && domain.id != '') {
                             domainName += "/" + domain.id;
                         }
-                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.authenticator.keyuri(user.name, domainName, secret) }));
+                        ws.send(JSON.stringify({ action: 'otpauth-request', secret: secret, url: otplib.generateURI({ issuer: domainName, label: user.name, secret: secret }) }));
                     }
                     break;
                 }
@@ -3795,8 +3795,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var otplib = null;
                         try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { break; }
-                        otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
-                        if (otplib.authenticator.check(command.token, command.secret) === true) {
+                        const verified = require('otplib').verifySync({ 
+                            epochTolerance: 60, 
+                            token: command.token, 
+                            secret: command.secret,
+                            guardrails: otplib.createGuardrails({
+                                MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                            })
+                        });
+                        if (verified.valid === true) {
                             // Token is valid, activate 2-step login on this account.
                             user.otpsecret = command.secret;
                             parent.db.SetUser(user);
