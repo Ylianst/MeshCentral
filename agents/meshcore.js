@@ -4719,19 +4719,23 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'bitlocker':
                 if (process.platform == 'win32') {
-                    if (require('win-volumes').volumes_promise != null) {
-                        var p = require('win-volumes').volumes_promise();
-                        p.sessionid = sessionid;
-                        p.then(function (res) {
-                            if (res && res.error) { sendConsoleText('bitlocker error: ' + (res.error.message ? res.error.message : res.error), this.sessionid); }
-                            try { sendConsoleText('(Partial) result: \r\n' + JSON.stringify(cleanGetBitLockerVolumeInfo(res ? res.drives : {}), null, 1), this.sessionid); }
-                            catch (ex) { sendConsoleText('Clean bitlockerinfo error: ' + (ex && ex.message ? ex.message : ex), this.sessionid); }
-                        });
+                    if (require('user-sessions').isRoot()) {
+                        if (require('win-volumes').volumes_promise != null) {
+                            var p = require('win-volumes').volumes_promise();
+                            p.sessionid = sessionid;
+                            p.then(function (res) {
+                                if (res && res.error) { sendConsoleText('Bitlocker error: ' + (res.error.message ? res.error.message : res.error), this.sessionid); }
+                                try { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res ? res.drives : {}), null, 1), this.sessionid); }
+                                catch (ex) { sendConsoleText('Clean BitlockerInfo error: ' + (ex && ex.message ? ex.message : ex), this.sessionid); }
+                            });
+                        } else {
+                            sendConsoleText('BitLocker info not available.', sessionid);
+                        }
                     } else {
-                        sendConsoleText('BitLocker info not available.', sessionid);
+                        sendConsoleText('Bitlocker info requires an elevated agent', sessionid);
                     }
                 } else {
-                    sendConsoleText('"bitLocker" is only supported on Windows.', sessionid);
+                    sendConsoleText('BitLocker is only supported on Windows.', sessionid);
                 }
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.

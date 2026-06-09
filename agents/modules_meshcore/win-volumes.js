@@ -63,7 +63,6 @@ function windows_volumes()
     var reID = new RegExp("{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}}", "mi");
     var rePass = new RegExp("[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}", "mi");
     try {
-        var child_process = require('child_process');
         var wmi = require('win-wmi-fixed');
 
         wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType'])
@@ -79,30 +78,37 @@ function windows_volumes()
                 };
             });
 
-        wmi.query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'])
-            .forEach(function (vol) {
-                if (!vol || !vol['DriveLetter']) { return; }   // there can be volumes without a DriveLetter(=null), which errors the slice
-                var drive = vol['DriveLetter'].slice(0, -1);
-                if (!drives[drive]) { return; }                // no matching logical disk, skip for now.
-                drives[drive].volumeStatus = vol['ConversionStatus'];
-                drives[drive].encryptionMethod = vol['EncryptionMethod'];
-                drives[drive].protectionStatus = vol['ProtectionStatus'];
-                var keychild = child_process.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
-                keychild.stdout.str = '';
-                keychild.stdout.on('data', function (c) { this.str += c.toString(); });
-                keychild.waitExit();
-                var id = keychild.stdout.str.match(reID);
-                var rp = keychild.stdout.str.match(rePass);
-                // a recovery password protector should always have an identifier
-                if (id) { drives[drive].identifier = id[0]; }
-                // recoveryPW can be empty if volume is locked
-                if (rp) { drives[drive].recoveryPassword = rp[0]; }
-            });
+        // The MicrosoftVolumeEncryption namespace is admin-only and manage-bde needs elevation; skip both entirely when not elevated, saves waiting unneccessary on time-out of wmi-query if run as user
+        if (require('user-sessions').isRoot()) {
+            var child_process = require('child_process');
+            wmi.query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'])
+                .forEach(function (vol) {
+                    if (!vol || !vol['DriveLetter']) { return; }   // there can be volumes without a DriveLetter(=null), which errors the slice
+                    var drive = vol['DriveLetter'].slice(0, -1);
+                    if (!drives[drive]) { return; }                // no matching logical disk, skip for now.
+                    drives[drive].volumeStatus = vol['ConversionStatus'];
+                    drives[drive].encryptionMethod = vol['EncryptionMethod'];
+                    drives[drive].protectionStatus = vol['ProtectionStatus'];
+                    // Only run manage-bde on encrypted drives (ConversionStatus/volumeStatus 0 = FullyDecrypted, otherwise some sort of encryption)
+                    if (drives[drive].volumeStatus != 0) {
+                        var keychild = child_process.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
+                        keychild.stdout.str = '';
+                        keychild.stdout.on('data', function (c) { this.str += c.toString(); });
+                        keychild.waitExit();
+                        var id = keychild.stdout.str.match(reID);
+                        var rp = keychild.stdout.str.match(rePass);
+                        // a recovery password protector should always have an identifier
+                        if (id) { drives[drive].identifier = id[0]; }
+                        // recoveryPW can be empty if volume is locked
+                        if (rp) { drives[drive].recoveryPassword = rp[0]; }
+                    }
+                });
+        }
     } catch (e) {
         console.log('windows_volumes error: ' + (e && e.message ? e.message : e));
-        error = e;    // add error, fall through to the single resolve below
+        error = e;    // add error, fall through to resolve below
     }
-    p1._res({ error: error, drives: drives });    // always resolve; error is null on success, partial drives kept on failure
+    p1._res({ error: error, drives: drives });    // always resolve; error is null on success, partial drives kept on failure.
     return (p1);
 }
 
