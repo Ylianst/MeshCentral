@@ -2325,6 +2325,12 @@ function getSystemInformation(func) {
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
 
+        var finalizeResults = function ()
+        {
+            results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+            func(results);
+        };
+
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
@@ -2334,21 +2340,19 @@ function getSystemInformation(func) {
                 var p = require('win-volumes').volumes_promise();
                 p.then(function (res)
                 {
-                    results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res);
-                    results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-                    func(results);
+                    // volumes_promise always resolves (with partial data on error); guard so a parse error can't swallow the callback and stall info collection
+                    try { results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res); } catch (ex) { }
+                    finalizeResults();
                 });
             }
             else
             {
-                results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-                func(results);
+                finalizeResults();
             }
         }
         else
         {
-            results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-            func(results);
+            finalizeResults();
         }
         
     } catch (ex) { func(null, ex); }
@@ -7119,16 +7123,26 @@ function sortObject(obj) { return Object.keys(obj).sort().reduce(function(a, v) 
 
 // Fix the incoming data and cut down how much data we use
 function cleanGetBitLockerVolumeInfo(volumes) {
+    // Convert the codes to strings. TODO: Do this serverside TODODO: preserve codes in database and convert in UI, which means a schema change and migration
+    // Win32_EncryptableVolume.ConversionStatus (0 = FullyDecrypted, omitted as it is used for the check)
+    var conversionStatuses = { 1: 'FullyEncrypted', 2: 'EncryptionInProgress', 3: 'DecryptionInProgress', 4: 'EncryptionPaused', 5: 'DecryptionPaused' };
+    // Win32_EncryptableVolume.EncryptionMethod (0 = None, omitted for the check)
+    var encryptionMethods = { 1: 'AES_128_WITH_DIFFUSER', 2: 'AES_256_WITH_DIFFUSER', 3: 'AES_128', 4: 'AES_256', 5: 'HARDWARE_ENCRYPTION', 6: 'XTS_AES_128', 7: 'XTS_AES_256' };
     for (var i in volumes) {
         const v = volumes[i];
         if (typeof v.size == 'string') { v.size = parseInt(v.size); }
         if (typeof v.sizeremaining == 'string') { v.sizeremaining = parseInt(v.sizeremaining); }
         if (v.identifier == '') { delete v.identifier; }
         if (v.name == '') { delete v.name; }
-        if (v.removable != true) { delete v.removable; }
-        if (v.cdrom != true) { delete v.cdrom; }
-        if (v.protectionStatus == 'On') { v.protectionStatus = true; } else { delete v.protectionStatus; }
-        if (v.volumeStatus == 'FullyDecrypted') { delete v.volumeStatus; }
+        // Win32_LogicalDisk.DriveType: 2 = Removable, 4 = Network, 5 = CD-ROM
+        if (v.dType == 2) { v.removable = true; }
+        else if (v.dType == 4) { v.network = true; }
+        else if (v.dType == 5) { v.cdrom = true; }
+        delete v.dType;
+        // ProtectionStatus: 0 = Off, 1 = On, 2 = Unknown
+        if (v.protectionStatus == 1) { v.protectionStatus = true; } else { delete v.protectionStatus; }
+        if (conversionStatuses[v.volumeStatus]) { v.volumeStatus = conversionStatuses[v.volumeStatus]; } else { delete v.volumeStatus; }
+        if (encryptionMethods[v.encryptionMethod]) { v.encryptionMethod = encryptionMethods[v.encryptionMethod]; } else { delete v.encryptionMethod; }
         if (v.recoveryPassword == '') { delete v.recoveryPassword; }
     }
     return sortObject(volumes);

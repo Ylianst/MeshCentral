@@ -12811,7 +12811,7 @@
                         x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
                     }
                     if (m.type) {
-                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : (m.network == true ? "Network" : '')));
                         x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
                     }
 
@@ -12821,6 +12821,10 @@
                         if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
                         if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
                         if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
+                        if (m.volumeStatus && m.volumeStatus == 'DecryptionInProgress') bitlockerState.push("Decryption In Progress");
+                        if (m.volumeStatus && m.volumeStatus == 'EncryptionPaused') bitlockerState.push("Encryption Paused");
+                        if (m.volumeStatus && m.volumeStatus == 'DecryptionPaused') bitlockerState.push("Decryption Paused");
+                        if (m.encryptionMethod) bitlockerState.push(m.encryptionMethod);
                         bitlockerState = bitlockerState.join(' - ');
                         if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
                         x += addDetailItem("BitLocker", bitlockerState, s);
