@@ -6861,6 +6861,217 @@ function handleServerConnection(state) {
     broadcastToRegisteredApps({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
 }
 
+function getProbableMainLanIp() {
+    if (process.platform != 'win32') return null;
+
+    function str(v) {
+        if (v == null) return '';
+        try { return String(v); } catch (ex) { return ''; }
+    }
+
+    function intVal(v, d) {
+        var x;
+        try { x = parseInt(str(v)); } catch (ex) { x = NaN; }
+        if (isNaN(x)) return d;
+        return x;
+    }
+
+    function isIPv4(ip) {
+        var p, i, n;
+
+        ip = str(ip);
+        if (ip == '') return false;
+        if (ip == '0.0.0.0') return false;
+        if (ip.indexOf(':') >= 0) return false;
+        if (ip.indexOf('169.254.') == 0) return false;
+        if (ip.indexOf('127.') == 0) return false;
+
+        p = ip.split('.');
+        if (p.length != 4) return false;
+
+        for (i = 0; i < 4; i++) {
+            if (p[i] == '') return false;
+            n = parseInt(p[i]);
+            if (isNaN(n)) return false;
+            if ((n < 0) || (n > 255)) return false;
+        }
+
+        return true;
+    }
+
+    function hasAnyValue(v) {
+        var i;
+
+        if (v == null) return false;
+
+        if (typeof v == 'string') {
+            return (v != '');
+        }
+
+        if (typeof v == 'number') {
+            return true;
+        }
+
+        // Duktape/WMI may expose arrays or array-like objects.
+        try {
+            if (v.length != null) {
+                for (i = 0; i < v.length; i++) {
+                    if (str(v[i]) != '') return true;
+                }
+                return false;
+            }
+        } catch (ex) { }
+
+        return (str(v) != '');
+    }
+
+    function firstIPv4(v) {
+        var i, s;
+
+        if (v == null) return null;
+
+        if (typeof v == 'string') {
+            return isIPv4(v) ? v : null;
+        }
+
+        try {
+            if (v.length != null) {
+                for (i = 0; i < v.length; i++) {
+                    s = str(v[i]);
+                    if (isIPv4(s)) return s;
+                }
+            }
+        } catch (ex) { }
+
+        s = str(v);
+        if (isIPv4(s)) return s;
+
+        return null;
+    }
+
+    function isUpAdapter(a) {
+        var op, media;
+
+        if (a == null) return true;
+
+        // InterfaceOperationalStatus commonly has 1 = Up.
+        // But do not hard-fail unknown values; WMI support varies.
+        op = intVal(a.InterfaceOperationalStatus, -1);
+        if ((op != -1) && (op != 1)) return false;
+
+        // MediaConnectState commonly has 1 = Connected.
+        media = intVal(a.MediaConnectState, -1);
+        if ((media != -1) && (media != 1)) return false;
+
+        return true;
+    }
+
+    function adapterPriority(a) {
+        var pm, medium, link, hardware, connector;
+
+        if (a == null) return 20;
+
+        pm = intVal(a.NdisPhysicalMedium, -1);
+        medium = intVal(a.NdisMedium, -1);
+        link = intVal(a.LinkTechnology, -1);
+
+        hardware = (str(a.HardwareInterface).toLowerCase() == 'true');
+        connector = (str(a.ConnectorPresent).toLowerCase() == 'true');
+
+        /*
+            MSFT_NetAdapter is documented in ROOT\StandardCimv2.
+            Useful physical media values include:
+              14 = 802.3 / Ethernet
+               1 = Wireless LAN
+               9 = Native 802.11
+
+            These numeric values avoid matching adapter names such as
+            "Wi-Fi", "WLAN", or "Wireless".
+        */
+
+        if (pm == 14) return 0;                         // wired Ethernet
+        if ((medium == 0) && connector) return 1;       // 802.3-style fallback
+        if ((link == 2) && hardware) return 2;          // Ethernet-ish fallback
+
+        if ((pm == 1) || (pm == 9)) return 10;          // Wi-Fi / WLAN
+        if (link == 11) return 11;                      // wireless fallback
+
+        return 20;                                      // VPN, virtual, tunnel, unknown
+    }
+
+    try {
+        var wmi = require('win-wmi-fixed');
+        var configs;
+        var adapters;
+        var adapterByIndex = {};
+        var candidates = [];
+        var i, cfg, a, ip, gw, idx, metric;
+
+        configs = wmi.query(
+            'ROOT\\CIMV2',
+            'SELECT InterfaceIndex,IPAddress,DefaultIPGateway,IPConnectionMetric FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True',
+            ['InterfaceIndex', 'IPAddress', 'DefaultIPGateway', 'IPConnectionMetric']
+        );
+
+        if ((configs == null) || (configs.length == null) || (configs.length == 0)) {
+            return null;
+        }
+
+        try {
+            adapters = wmi.query(
+                'ROOT\\StandardCimv2',
+                'SELECT InterfaceIndex,NdisPhysicalMedium,NdisMedium,LinkTechnology,HardwareInterface,ConnectorPresent,InterfaceOperationalStatus,MediaConnectState FROM MSFT_NetAdapter',
+                ['InterfaceIndex', 'NdisPhysicalMedium', 'NdisMedium', 'LinkTechnology', 'HardwareInterface', 'ConnectorPresent', 'InterfaceOperationalStatus', 'MediaConnectState']
+            );
+
+            if ((adapters != null) && (adapters.length != null)) {
+                for (i = 0; i < adapters.length; i++) {
+                    idx = intVal(adapters[i].InterfaceIndex, -1);
+                    if (idx >= 0) adapterByIndex['i' + idx] = adapters[i];
+                }
+            }
+        } catch (ex2) {
+            adapters = null;
+        }
+
+        for (i = 0; i < configs.length; i++) {
+            cfg = configs[i];
+
+            gw = cfg.DefaultIPGateway;
+            if (!hasAnyValue(gw)) continue;
+
+            ip = firstIPv4(cfg.IPAddress);
+            if (ip == null) continue;
+
+            idx = intVal(cfg.InterfaceIndex, -1);
+            a = adapterByIndex['i' + idx];
+
+            if (!isUpAdapter(a)) continue;
+
+            metric = intVal(cfg.IPConnectionMetric, 999999);
+
+            candidates[candidates.length] = {
+                ip: ip,
+                idx: idx,
+                pri: adapterPriority(a),
+                metric: metric
+            };
+        }
+
+        if (candidates.length == 0) return null;
+
+        candidates.sort(function (x, y) {
+            if (x.pri != y.pri) return x.pri - y.pri;
+            if (x.metric != y.metric) return x.metric - y.metric;
+            return x.idx - y.idx;
+        });
+
+        return candidates[0].ip;
+    } catch (ex) {
+        return null;
+    }
+}
+
 // Update the server with the latest network interface information
 var sendNetworkUpdateNagleTimer = null;
 function sendNetworkUpdateNagle() { if (sendNetworkUpdateNagleTimer != null) { clearTimeout(sendNetworkUpdateNagleTimer); sendNetworkUpdateNagleTimer = null; } sendNetworkUpdateNagleTimer = setTimeout(sendNetworkUpdate, 5000); }
@@ -6886,6 +7097,13 @@ function sendNetworkUpdate(force) {
                     }
                 }
             } catch(ex) { }
+            
+			try {
+                var probableMainLanIp = getProbableMainLanIp();
+                if (probableMainLanIp != null) {
+                    netInfo.probable_main_lan_ip = probableMainLanIp;
+                }
+            } catch (ex) { }
         } else if (process.platform == 'linux') {
             var adapterNames = Object.keys(netInfo.netif2);
             for (var i = 0; i < adapterNames.length; i++) {
