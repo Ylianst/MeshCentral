@@ -56,6 +56,7 @@ function getVolumes()
 function windows_volumes()
 {
     var drives = {};
+    var error = null;
     var promise = require('promise');
     var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     // RegExps for the specific patterns in the manage-bde output, case-insensitive multiline
@@ -99,8 +100,9 @@ function windows_volumes()
             });
     } catch (e) {
         console.log('windows_volumes error: ' + (e && e.message ? e.message : e));
+        error = e;    // add error, fall through to the single resolve below
     }
-    p1._res(drives);    // always resolve. Partial results if an error occurred
+    p1._res({ error: error, drives: drives });    // always resolve; error is null on success, partial drives kept on failure
     return (p1);
 }
 

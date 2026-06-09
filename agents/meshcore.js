@@ -2338,10 +2338,8 @@ function getSystemInformation(func) {
             if (require('win-volumes').volumes_promise != null)
             {
                 var p = require('win-volumes').volumes_promise();
-                p.then(function (res)
-                {
-                    // volumes_promise always resolves (with partial data on error); guard so a parse error can't swallow the callback and stall info collection
-                    try { results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res); } catch (ex) { }
+                p.then(function (res) {
+                    if (res && res.drives) { try { results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res.drives); } catch (ex) { } }
                     finalizeResults();
                 });
             }
@@ -4723,8 +4721,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     if (require('win-volumes').volumes_promise != null) {
                         var p = require('win-volumes').volumes_promise();
-                        p.then(function (res) { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res), null, 1), this.session); });
+                        p.sessionid = sessionid;
+                        p.then(function (res) {
+                            if (res && res.error) { sendConsoleText('bitlocker error: ' + (res.error.message ? res.error.message : res.error), this.sessionid); }
+                            try { sendConsoleText('(Partial) result: \r\n' + JSON.stringify(cleanGetBitLockerVolumeInfo(res ? res.drives : {}), null, 1), this.sessionid); }
+                            catch (ex) { sendConsoleText('Clean bitlockerinfo error: ' + (ex && ex.message ? ex.message : ex), this.sessionid); }
+                        });
+                    } else {
+                        sendConsoleText('BitLocker info not available.', sessionid);
                     }
+                } else {
+                    sendConsoleText('"bitLocker" is only supported on Windows.', sessionid);
                 }
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
