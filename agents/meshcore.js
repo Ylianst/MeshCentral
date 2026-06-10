@@ -5674,8 +5674,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (results == null) {
                         sendConsoleText(err, this.sessionid);
                     } else {
-                        sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
+                        // Send the full data to the server first
                         mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results });
+                        // Mask BitLocker recovery keys for non-admins in the console output only
+                        var replacer = (rights != MESHRIGHT_ADMIN) ? function (k, val) { return (k == 'recoveryPassword') ? '(Only admins)' : val; } : null;
+                        sendConsoleText(JSON.stringify(results, replacer, 1), this.sessionid);
                     }
                 });
                 break;
