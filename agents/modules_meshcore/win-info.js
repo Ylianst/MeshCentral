@@ -22,7 +22,7 @@ var psPath = (process.env['SystemRoot'] ? process.env['SystemRoot'] : 'C:\\Windo
 function qfe()
 {
     try {
-        var tokens = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_QuickFixEngineering');
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_QuickFixEngineering');
         if (tokens[0]){
             for (var index = 0; index < tokens.length; index++) {
                 for (var key in tokens[index]) {
@@ -301,7 +301,7 @@ function installedStoreApps() {
 
 function defender(){
     try {
-        var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
+        var tokens = require('win-wmi-fixed').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
         if (tokens[0]){
             var info = { RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected };
             if (tokens[0].AntivirusSignatureVersion) { info.AntivirusSignatureVersion = tokens[0].AntivirusSignatureVersion; }
