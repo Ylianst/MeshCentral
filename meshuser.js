@@ -6686,9 +6686,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
-                    // If this is not a device group admin users, don't send any BitLocker recovery passwords
-                    if ((rights != MESHRIGHT_ADMIN) && (doc.hardware) && (doc.hardware.windows) && (doc.hardware.windows.volumes)) {
-                        for (var i in doc.hardware.windows.volumes) { delete doc.hardware.windows.volumes[i].recoveryPassword; }
+                    // If this is not a device group admin users, don't send any BitLocker recovery info
+                    if ((rights != MESHRIGHT_ADMIN) && (doc.hardware) && (doc.hardware.windows)) {
+                        if (doc.hardware.windows.volumes) {
+                            for (var i in doc.hardware.windows.volumes) {
+                                delete doc.hardware.windows.volumes[i].recoveryPassword;    // previous single bitlocker schema
+                            }
+                        }
+                        delete doc.hardware.windows.bitlocker;  // new bitlocker driveletter independent cache
                     }
 
                     if (command.nodeinfo === true) {

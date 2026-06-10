@@ -44,6 +44,7 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
@@ -4725,8 +4726,22 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             p.sessionid = sessionid;
                             p.then(function (res) {
                                 if (res && res.error) { sendConsoleText('Bitlocker error: ' + (res.error.message ? res.error.message : res.error), this.sessionid); }
-                                try { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res ? res.drives : {}), null, 1), this.sessionid); }
-                                catch (ex) { sendConsoleText('Clean BitlockerInfo error: ' + (ex && ex.message ? ex.message : ex), this.sessionid); }
+                                var drives = (res && res.drives && (Object.keys(res.drives).length !== 0)) ? res.drives : null;     // win-volumes returns 'drives' as at least {}, so also check on empty object
+                                if (drives) {
+                                    var conversionStatuses = { 0: 'FullyDecrypted', 1: 'FullyEncrypted', 2: 'EncryptionInProgress', 3: 'DecryptionInProgress', 4: 'EncryptionPaused', 5: 'DecryptionPaused' };
+                                    var encryptionMethods = { 0: 'None', 1: 'AES_128_WITH_DIFFUSER', 2: 'AES_256_WITH_DIFFUSER', 3: 'AES_128', 4: 'AES_256', 5: 'HARDWARE_ENCRYPTION', 6: 'XTS_AES_128', 7: 'XTS_AES_256' };
+                                    var protectionStatuses = { 0: 'Off', 1: 'On', 2: 'Locked'};
+                                    var driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                                    for (var i in drives) {
+                                        const v = drives[i];
+                                        if (conversionStatuses[v.volumeStatus]) { v.volumeStatus = conversionStatuses[v.volumeStatus]; } else { v.volumeStatus = 'Unknown'; }
+                                        if (encryptionMethods[v.encryptionMethod]) { v.encryptionMethod = encryptionMethods[v.encryptionMethod]; } else { v.encryptionMethod = 'Unknown'; }
+                                        if (protectionStatuses[v.protectionStatus]) { v.protectionStatus = protectionStatuses[v.protectionStatus]; } else { v.protectionStatus = 'Unknown'; }
+                                        if (driveType[v.dType]) {v.dType = driveType[v.dType]; } else { v.dType = 'Unknown'; }
+                                        if (v.recoveryPassword && (rights != MESHRIGHT_ADMIN)) { v.recoveryPassword = '(Only admins)'; }
+                                    }
+                                }
+                                sendConsoleText(JSON.stringify((drives ? drives : 'No volume/bitlocker info'), null, 1), this.sessionid);
                             });
                         } else {
                             sendConsoleText('BitLocker info not available.', sessionid);
@@ -7134,27 +7149,17 @@ function sortObject(obj) { return Object.keys(obj).sort().reduce(function(a, v) 
 
 // Fix the incoming data and cut down how much data we use
 function cleanGetBitLockerVolumeInfo(volumes) {
-    // Convert the codes to strings. TODO: Do this serverside TODODO: preserve codes in database and convert in UI, which means a schema change and migration
-    // Win32_EncryptableVolume.ConversionStatus (0 = FullyDecrypted, omitted as it is used for the check)
-    var conversionStatuses = { 1: 'FullyEncrypted', 2: 'EncryptionInProgress', 3: 'DecryptionInProgress', 4: 'EncryptionPaused', 5: 'DecryptionPaused' };
-    // Win32_EncryptableVolume.EncryptionMethod (0 = None, omitted for the check)
-    var encryptionMethods = { 1: 'AES_128_WITH_DIFFUSER', 2: 'AES_256_WITH_DIFFUSER', 3: 'AES_128', 4: 'AES_256', 5: 'HARDWARE_ENCRYPTION', 6: 'XTS_AES_128', 7: 'XTS_AES_256' };
+    // Keep the raw codes info and let the view convert to strings
     for (var i in volumes) {
         const v = volumes[i];
         if (typeof v.size == 'string') { v.size = parseInt(v.size); }
         if (typeof v.sizeremaining == 'string') { v.sizeremaining = parseInt(v.sizeremaining); }
         if (v.identifier == '') { delete v.identifier; }
         if (v.name == '') { delete v.name; }
-        // Win32_LogicalDisk.DriveType: 2 = Removable, 4 = Network, 5 = CD-ROM
-        if (v.dType == 2) { v.removable = true; }
-        else if (v.dType == 4) { v.network = true; }
-        else if (v.dType == 5) { v.cdrom = true; }
-        delete v.dType;
-        // ProtectionStatus: 0 = Off, 1 = On, 2 = Unknown
-        if (v.protectionStatus == 1) { v.protectionStatus = true; } else { delete v.protectionStatus; }
-        if (conversionStatuses[v.volumeStatus]) { v.volumeStatus = conversionStatuses[v.volumeStatus]; } else { delete v.volumeStatus; }
-        if (encryptionMethods[v.encryptionMethod]) { v.encryptionMethod = encryptionMethods[v.encryptionMethod]; } else { delete v.encryptionMethod; }
         if (v.recoveryPassword == '') { delete v.recoveryPassword; }
+        if (v.volumeStatus === 0) { delete v.volumeStatus; }
+        if (v.encryptionMethod === 0) { delete v.encryptionMethod; }
+        if (v.protectionStatus === 0) { delete v.protectionStatus; }
     }
     return sortObject(volumes);
 }
