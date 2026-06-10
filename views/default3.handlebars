@@ -9789,24 +9789,24 @@
                      + label + '</a>';
             }
             panel.innerHTML =
-                row(cls, 'fa-compress',         'Exit Fullscreen',                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
-                row(cls, (_mobileZoomMode==='native'?'fa-compress-arrows-alt':'fa-expand-arrows-alt'),
-                    (_mobileZoomMode==='native'?'Scale to Fit':'Native Size (Scrollable)'),  'deskMobileToggleZoom();deskCloseMobileActions()') +
-                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', "Q('DeskControl').click();deskCloseMobileActions()") +
-                row(cls, 'fa-keyboard',          'On-screen Keyboard',                       'toggleMobileKeyboard();deskCloseMobileActions()') +
-                row(cls, 'fa-computer-mouse',    (trackpad?'Disable':'Enable')+' Trackpad',  'deskToggleTrackpad();deskCloseMobileActions()') +
-                row(cls, 'fa-hand-pointer',      (swap?'Disable':'Enable')+' Right-click',   'deskToggleRightClickMode();deskCloseMobileActions()') +
-                row(cls, 'fa-font',              'Type Text',                                'showDeskType();deskCloseMobileActions()') +
+                row(cls, 'fa-compress',         "Exit Fullscreen",                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
+                row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
+                    (_mobileZoomMode==='native' ? "Scale to Fit" : "Native Size (Scrollable)"),  'deskMobileToggleZoom();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'Q("DeskControl").click();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          "On-screen Keyboard",                       'toggleMobileKeyboard();deskCloseMobileActions()') +
+                row(cls, 'fa-computer-mouse',    (trackpad ? "Disable Trackpad Mode" : "Enable Trackpad Mode"),  'deskToggleTrackpad();deskCloseMobileActions()') +
+                row(cls, 'fa-hand-pointer',      (swap ? "Disable Right-click Mode" : "Enable Right-click Mode"),   'deskToggleRightClickMode();deskCloseMobileActions()') +
+                row(cls, 'fa-font',              "Type Text",                                'showDeskType();deskCloseMobileActions()') +
                 row(cls, 'fa-terminal',          'Ctrl + Alt + Del',                        'if(desktop&&desktop.m)desktop.m.sendcad();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Send ESC',                                 'sendDeskEsc();deskCloseMobileActions()') +
-                row(cls, 'fa-sliders',           'Keyboard Shortcuts',                       'deskCustomizeKeys();deskCloseMobileActions()') +
-                row(cls, 'fa-paste',             'Clipboard',                               'showDeskClip();deskCloseMobileActions()') +
-                row(cls, 'fa-clipboard',         'Upload Clipboard',                         'deskClipboardOutFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-right',      'Rotate Right',                             'drotate(1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-left',       'Rotate Left',                              'drotate(-1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate',            'Refresh Desktop',                          'deskRefreshFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-gear',              'Desktop Settings',                         'showDesktopSettings();deskCloseMobileActions()') +
-                row(end, 'fa-plug-circle-xmark', 'Disconnect',                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
+                row(cls, 'fa-sliders',           "Keyboard Shortcuts",                       'deskCustomizeKeys();deskCloseMobileActions()') +
+                row(cls, 'fa-paste',             "Clipboard",                               'showDeskClip();deskCloseMobileActions()') +
+                row(cls, 'fa-clipboard',         "Upload Clipboard",                         'deskClipboardOutFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-right',      "Rotate Right",                             'drotate(1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-left',       "Rotate Left",                              'drotate(-1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate',            "Refresh Desktop",                          'deskRefreshFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-gear',              "Desktop Settings",                         'showDesktopSettings();deskCloseMobileActions()') +
+                row(end, 'fa-plug-circle-xmark', "Disconnect",                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
         }
         function deskCloseMobileActions() {
             QV('deskMobileActionsPanel', false);
@@ -16226,7 +16226,7 @@
             var x = "Restore the server using a backup," + ' <span style=color:red>' + "this will delete the existing server data." + '</span> ' + "Only do this if you know what you are doing." + '<br /><br />';
             x += '<div>';
             x += '<input id=account_dlgFileInput type=file name=datafile class="form-control" accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
-            x += '<tr><br><td align=right>' + nobreak("Backup password: ") + '</td><td><input id=drestore_password style=width:256px maxlength=256 type=password name=restore_password autocomplete=off/> <b></b></td></tr>';
+            x += '<tr><br><td align=right>' + nobreak("Backup Password: ") + '</td><td><input id=drestore_password style=width:256px maxlength=256 type=password name=restore_password autocomplete=off/> <b></b></td></tr>';
             x += '</div>';
             x += '<div><label><input id=drestoreoverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
             setModalContent('xxAddAgent', "Restore Server", x);
@@ -16249,7 +16249,7 @@
             QE('idx_dlgOkButton', false);
             QE('idx_dlgCancelButton', false);
             fetch('{{{domainurl}}}restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : ''), {
-                method: "POST",
+                method: 'POST',
                 body: formData,
             })
                 .then((response) => {
