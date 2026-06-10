@@ -15,6 +15,7 @@
 "use strict";
 
 const common = require('./common.js');
+const { zipExtract } = require('./backup.js');
 
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (ex) { } }
@@ -2150,6 +2151,15 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.config.settings.autobackup == false || obj.config.settings.autobackup == 'false') { obj.config.settings.autobackup = {backupintervalhours: -1}; } //block all autobackup functions
                     else {
                         if (typeof obj.config.settings.autobackup != 'object') { obj.config.settings.autobackup = {}; };
+                        if (Object.hasOwn(obj.config.settings.autobackup, "zippassword")) {
+                            if ((obj.config.settings.autobackup.zippassword).length == 0) {
+                                delete obj.config.settings.autobackup.zippassword;
+                                obj.addServerWarning('Empty zip password in config.json', true);
+                            } else {
+                                // convert to string regardless of type
+                                obj.config.settings.autobackup.zippassword = String(obj.config.settings.autobackup.zippassword);
+                            }
+                        }
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
@@ -2357,49 +2367,25 @@ function CreateMeshCentralServer(config, args) {
     obj.Stop = function (restoreFile) {
         // If the database is not setup, exit now.
         if (!obj.db) return;
-
         // Dispatch an event saying the server is now stopping
         obj.DispatchEvent(['*'], obj, { etype: 'server', action: 'stopped', msg: "Server stopped" });
-
+        const restorePassword = obj.config.settings.autobackup.zippasswordrequest;
+        delete obj.config.settings.autobackup.zippasswordrequest;
         // Set all nodes to power state of unknown (0)
         obj.db.storePowerEvent({ time: new Date(), nodeid: '*', power: 0, s: 2 }, obj.multiServer, function () {  // s:2 indicates that the server is shutting down.
             if (restoreFile) {
                 obj.debug('main', obj.common.format("Server stopped, updating settings: {0}", restoreFile));
-                console.log("Updating settings folder...");
-
-                const yauzl = require('yauzl');
-                yauzl.open(restoreFile, { lazyEntries: true }, function (err, zipfile) {
-                    if (err) throw err;
-                    zipfile.readEntry();
-                    zipfile.on('entry', function (entry) {
-                        if (/\/$/.test(entry.fileName)) {
-                            // Directory file names end with '/'.
-                            // Note that entires for directories themselves are optional.
-                            // An entry's fileName implicitly requires its parent directories to exist.
-                            zipfile.readEntry();
-                        } else {
-                            // File entry
-                            zipfile.openReadStream(entry, function (err, readStream) {
-                                if (err) throw err;
-                                readStream.on('end', function () { zipfile.readEntry(); });
-                                var directory = obj.path.dirname(entry.fileName);
-                                if (directory != '.') {
-                                    directory = obj.getConfigFilePath(directory)
-                                    if (obj.fs.existsSync(directory) == false) { obj.fs.mkdirSync(directory); }
-                                }
-                                //console.log('Extracting:', obj.getConfigFilePath(entry.fileName));
-                                readStream.pipe(obj.fs.createWriteStream(obj.getConfigFilePath(entry.fileName)));
-                            });
-                        }
+                console.log("Updating settings folder...");     // do not alter. This specific log message, with the process.exit(123) further on, triggers a process restart. See obj.launchChildServer>childProcess.stdout.on function
+                zipExtract(restoreFile, obj.datapath, 'meshcentral-data/', restorePassword)
+                    .then((res) => {
+                        res['res'] ? console.log(res['mes']) : console.error(res['mes']);
+                        process.exit(123);      // this triggers the childserver process restart
                     });
-                    zipfile.on('end', function () { setTimeout(function () { obj.fs.unlinkSync(restoreFile); process.exit(123); }); });
-                });
             } else {
                 obj.debug('main', "Server stopped");
                 process.exit(0);
             }
         });
-
         // Update the server state
         obj.updateServerState('state', "stopped");
     };
