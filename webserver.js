@@ -1372,11 +1372,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             // Wait and redirect the user
                             setTimeout(function () {
                                 req.session.loginmode = 4;
-                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; }
-                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; }
-                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; }
-                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; }
-                                if ((user.otpduo != null)) { req.session.tduo = 1; }
+                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; } else { delete req.session.temail; }
+                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; } else { delete req.session.tsms; }
+                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; } else { delete req.session.tmsg; }
+                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; } else { delete req.session.tpush; }
+                                if ((user.otpduo != null)) { req.session.tduo = 1; } else { delete req.session.tduo; }
                                 req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
