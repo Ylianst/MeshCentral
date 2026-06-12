@@ -5584,7 +5584,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length < 1) {
                     response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
                 } else {
-                    response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
+                    var evalResult = mesh.eval(args['_'][0]); try { response = JSON.stringify(evalResult); } catch (ex) { response = null; } // This can only be run by trusted administrator.
                 }
                 break;
             }
@@ -6104,56 +6104,102 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'installedapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedApps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid); 
-                        }).catch(function(e) { 
-                            sendConsoleText("Error: " + e, sessionid); 
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaPr = require('win-info').installedApps();
+                        iaPr.sessionid = sessionid;
+                        iaPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += '\n       Location: ' + a.location;
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'linux') {
                     try {
-                        require('linux-info').packages().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaLPr = require('linux-info').packages();
+                        iaLPr.sessionid = sessionid;
+                        iaLPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module linux-info error: " + ex, sessionid);
+                        sendConsoleText('Module linux-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'darwin') {
                     try {
-                        require('mac-info').apps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaMPr = require('mac-info').apps();
+                        iaMPr.sessionid = sessionid;
+                        iaMPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module mac-info error: " + ex, sessionid);
+                        sendConsoleText('Module mac-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed apps not supported on this platform.', sessionid);
                 }
                 break;
             }
             case 'installedstoreapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedStoreApps().then(function (apps) {
-                            if (apps && apps.length > 0) {
-                                sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                            } else {
-                                sendConsoleText("No Store Apps found or PowerShell error.", sessionid);
+                        sendConsoleText('Fetching installed Store apps, please wait...', sessionid);
+                        var isaPr = require('win-info').installedStoreApps();
+                        isaPr.sessionid = sessionid;
+                        isaPr.then(function (apps) {
+                            if (!apps || apps.length === 0) { sendConsoleText('No Store apps found.', this.sessionid); return; }
+                            var lines = ['Installed Store Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.scope) line += ' [' + a.scope + ']';
+                                if (a.packageFullName) line += '\n       Package: ' + a.packageFullName;
+                                lines.push(line);
                             }
-                        }).catch(function(e) { 
-                            sendConsoleText("Promise Error: " + e, sessionid); 
-                        });
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed Store Apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed Store Apps not supported on this platform.', sessionid);
                 }
                 break;
             }
