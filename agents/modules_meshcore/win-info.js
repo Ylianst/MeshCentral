@@ -191,8 +191,8 @@ function installedApps() {
         'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
         'SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'
     ];
-    try {
-        for (var i in registryPaths) {
+    for (var i in registryPaths) {
+        try {
             var path = registryPaths[i];
             var keyInfo = registry.QueryKey(HKEY.LocalMachine, path);
             if (!keyInfo || !keyInfo.subkeys) continue;
@@ -210,10 +210,7 @@ function installedApps() {
                     });
                 }
             }
-        }
-    } catch (e) {
-        ret._rej(e);
-        return (ret);
+        } catch (e) { }
     }
     ret._res(results);
     return (ret);
