@@ -169,7 +169,7 @@ module.exports.CreateAmtScanner = function (parent) {
                         var scaninfo = obj.scanTable[doc._id];
                         if (scaninfo == null) {
                             var tag = obj.nextTag++;
-                            obj.scanTableTags[tag] = obj.scanTable[doc._id] = scaninfo = { nodeinfo: doc, present: true, tag: tag, state: 0 };
+                            obj.scanTableTags[tag] = obj.scanTable[doc._id] = scaninfo = { nodeinfo: doc, present: true, tag: tag, state: 0, lastpong: 0 };
                             //console.log('Scan ' + host + ', state=' + scaninfo.state + ', delta=' + delta);
                         } else {
                             scaninfo.present = true;
@@ -206,6 +206,15 @@ module.exports.CreateAmtScanner = function (parent) {
                     // Stop scanning this node
                     delete obj.scanTableTags[obj.scanTable[i].tag];
                     delete obj.scanTable[i];
+                }
+            }
+            // Close any UDP servers whose serverid is no longer referenced by any active tag
+            var activeServerIds = {};
+            for (var t in obj.scanTableTags) { activeServerIds[Math.floor(parseInt(t) / 255)] = true; }
+            for (var sid in obj.servers) {
+                if (activeServerIds[parseInt(sid)] !== true) {
+                    try { obj.servers[sid].close(); } catch (e) { }
+                    delete obj.servers[sid];
                 }
             }
         });
@@ -252,18 +261,19 @@ module.exports.CreateAmtScanner = function (parent) {
         }
     };
 
-    // Send a pending RMCP packet
+    // Send pending RMCP packets - process a batch per tick to avoid queue buildup with large device counts
     obj.sendPendingPacket = function () {
-        try {
+        var batchSize = 10;
+        var count = 0;
+        while (count++ < batchSize) {
             var p = obj.pendingSends.shift();
-            if (p != undefined) {
-                p[0].send(p[1], 623, p[2]);
-                p[0].send(p[1], 623, p[2]);
-            } else {
+            if (p == undefined) {
                 clearInterval(obj.pendingSendTimer);
                 obj.pendingSendTimer = null;
+                break;
             }
-        } catch (e) { }
+            try { p[0].send(p[1], 623, p[2]); p[0].send(p[1], 623, p[2]); } catch (e) { }
+        }
     };
 
     // Parse RMCP packet
