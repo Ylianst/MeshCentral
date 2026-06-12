@@ -988,7 +988,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
                         var agent = parent.wsagents[command.nodeid];
                         if (agent != null) {
-                            console.log(command);
                             routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
                         } else {
                             if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
