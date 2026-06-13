@@ -101,31 +101,109 @@ module.exports.CreateDB = function (parent, func) {
         obj.eventsFilePendingCbs = null;
     }
 
+    const DB_SCHEMA_VERSION  = 2;            // bump this when a migration is added
+    const DB_SCHEMA_BASELINE = 2;            // versions below this predate the migration framework
+    const LOCK_ID  = 'SchemaMigrationLock';
+    const LOCK_TTL = 1 * 60 * 1000;          // a lock older than this is considered abandoned
+    const POLL_MS  = 3000;                   // how often a waiting peer re-checks progress
+    obj.serverHashId = require('crypto').randomBytes(16).toString('hex');   // unique id for this server process
+
+    function firstDoc(docs) { return (docs && (docs.length == 1)) ? docs[0] : null; }
+
     obj.SetupDatabase = function (func) {
-        // Check if the database unique identifier is present
-        // This is used to check that in server peering mode, everyone is using the same database.
+        // Database unique identifier (peering check)
         obj.Get('DatabaseIdentifier', function (err, docs) {
             if (err != null) { parent.debug('db', 'ERROR (Get DatabaseIdentifier): ' + err); }
-            if ((err == null) && (docs.length == 1) && (docs[0].value != null)) {
-                obj.identifier = docs[0].value;
+            var doc = firstDoc(docs);
+            if (doc && (doc.value != null)) {
+                obj.identifier = doc.value;
             } else {
                 obj.identifier = Buffer.from(require('crypto').randomBytes(48), 'binary').toString('hex');
                 obj.Set({ _id: 'DatabaseIdentifier', value: obj.identifier });
             }
         });
 
-        // Load database schema version and check if we need to update
+        // Get schema version, run any pending migrations, then continue startup.
         obj.Get('SchemaVersion', function (err, docs) {
             if (err != null) { parent.debug('db', 'ERROR (Get SchemaVersion): ' + err); }
-            var ver = 0;
-            if ((err == null) && (docs.length == 1)) { ver = docs[0].value; }
+            var doc = firstDoc(docs);
+            var ver = doc ? doc.value : 0;
             if (ver == 1) { console.log('This is an unsupported beta 1 database, delete it to create a new one.'); process.exit(0); }
-
-            // TODO: Any schema upgrades here...
-            obj.Set({ _id: 'SchemaVersion', value: 2 });
-
-            func(ver);
+            if (ver > DB_SCHEMA_VERSION) { console.log('Database schema v' + ver + ' is newer than this server supports (v' + DB_SCHEMA_VERSION + '). Upgrade the server.'); process.exit(1); }
+            obj.runSchemaMigrations(ver, function () { func(ver); });
         });
+    };
+
+    obj.runSchemaMigrations = function (fromVer, done) {
+        // Fresh database: jump to baseline, no data to update.
+        if (fromVer < DB_SCHEMA_BASELINE) { obj.Set({ _id: 'SchemaVersion', value: DB_SCHEMA_VERSION }, function () { done(); }); return; }
+        // Already current
+        if (fromVer >= DB_SCHEMA_VERSION) { done(); return; }
+
+        var heartbeat = null;
+        tryAcquire();
+
+        // try to get a lock
+        function tryAcquire() {
+            obj.Get(LOCK_ID, function (err, docs) {
+                var lock = firstDoc(docs);
+                var heldByPeer = lock && (lock.owner !== obj.serverHashId) && ((Date.now() - lock.time) < LOCK_TTL);
+                if (heldByPeer) { waitForPeer(); return; }
+                // Free or timed out
+                obj.Set({ _id: LOCK_ID, owner: obj.serverHashId, time: Date.now() }, function () {
+                    obj.Get(LOCK_ID, function (err2, docs2) {
+                        var claim = firstDoc(docs2);
+                        if (!claim || (claim.owner !== obj.serverHashId)) { waitForPeer(); return; }   // lost
+                        runPending();   //won
+                    });
+                });
+            });
+        }
+
+        function runPending() {
+            var pending = require('./db-migrations.js').migrations
+                .filter(function (m) { return m.version > fromVer; })
+                .sort(function (a, b) { return a.version - b.version; });
+            // Refresh the lock to inform waiting servers the migrations are still running
+            heartbeat = setInterval(function () { obj.Set({ _id: LOCK_ID, owner: obj.serverHashId, time: Date.now() }); }, LOCK_TTL / 3);
+            runNext(pending, 0);
+        }
+
+        function runNext(pending, i) {
+            if (i >= pending.length) { finish(); return; }
+            var m = pending[i];
+            console.log('DB migration ' + m.version + ' (' + m.name + ') starting…');
+            m.run(obj, parent, function (err, summary) {
+                if (err != null) { clearInterval(heartbeat); console.error('DB migration ' + m.version + ' FAILED: ' + err + '. Aborting.'); process.exit(1); }
+                console.log('DB migration ' + m.version + ' done' + (summary ? (': ' + summary) : '') + '.');
+                obj.Set({ _id: 'SchemaVersion', value: m.version }, function () { runNext(pending, i + 1); });   // checkpoint per step
+            });
+        }
+
+        function finish() {
+            clearInterval(heartbeat);
+            obj.Set({ _id: 'SchemaVersion', value: DB_SCHEMA_VERSION }, function () {
+                obj.Remove(LOCK_ID, function () { done(); });
+            });
+        }
+
+        function waitForPeer() {
+            console.log('Another server is migrating the database, waiting…');
+            var timer = setInterval(function () {
+                obj.Get('SchemaVersion', function (err, docs) {
+                    var doc = firstDoc(docs);
+                    if (doc && (doc.value >= DB_SCHEMA_VERSION)) {
+                        // all done, continue
+                        clearInterval(timer); console.log('Migration completed by another server.'); done(); return; }
+                    // timed out, retry lock 
+                    obj.Get(LOCK_ID, function (err2, docs2) {
+                        var lock = firstDoc(docs2);
+                        if (!lock || ((Date.now() - lock.time) >= LOCK_TTL)) { clearInterval(timer); tryAcquire(); }
+                    });
+                });
+            }, POLL_MS);
+        }
+
     };
 
     // Perform database maintenance
