@@ -13348,11 +13348,11 @@
                 shortname = EscapeHtml(name);
 
                 // Figure out the date
-                var fdatestr = '';
+                var fdatestr = '&nbsp;';
                 if (f.d != null) {
                     var fdate = new Date(f.d);
                     if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); }
-                    var fdatestr = printDateTime(fdate) + '&nbsp;';
+                    fdatestr = printDateTime(fdate) + '&nbsp;';
                 }
 
                 // Figure out the size
@@ -13378,8 +13378,8 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' mt-1" onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
                     if (sysvol && sysvol.name) {
                         h += EscapeHtml(sysvol.name) + ' (' + shortname + ')';
@@ -13400,7 +13400,12 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + EscapeHtml(fsize) + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -17786,12 +17791,26 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999>';
+                    h += '<input file=999 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;';
+                    h += '<span style=float:right title="' + title + '">' + right + '</span>';
+                    h += '<span title="' + shortname + '">';
+                    h += '<div class="fileIcon' + f.t + ' mt-1" onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div>';
+                    h += '<a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a>';
+                    h += '</span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
-                    if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
+                    if (publicfolder) { 
+                        publiclink = '<i class="fa-regular fa-copy fa-fw" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i>';
+                        publiclink += '<i class="fa-solid fa-download fa-fw" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>';
+                    }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + fsize + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
