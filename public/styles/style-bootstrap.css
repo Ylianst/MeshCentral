@@ -3848,7 +3848,8 @@ body.is-mobile .topbar_td.style3sel {
 /* Classic Mobile tab shuffle: the active device sub-tab is hidden from the bottom bar.
    Hiding it frees up space so all other tabs remain visible without horizontal scroll.
    Using display:none !important to beat QV()'s inline style. */
-body.is-mobile .mob-active-tab { display: none !important; }
+/* mob-active-tab: replaced by scrollable submenu, no longer needed */
+/* body.is-mobile .mob-active-tab { display: none !important; } */
 
 /* Collapse #topbar to 0 height on mobile */
 body.is-mobile #topbar {
@@ -4913,4 +4914,95 @@ body.is-mobile #p13filetable {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Mobile scrollable submenu — desktop: wrapper divs are invisible pass-throughs */
+.mobile-submenu-scroll,
+.mobile-submenu-scroll-inner {
+    display: contents;
+}
+
+.mobile-submenu-arrow {
+    display: none;
+}
+
+/* Mobile: when MainSubMenuSpan is shown, make it a flex row for scrollable tabs.
+   No !important here so JS inline style="display:none" still hides it correctly. */
+body.is-mobile #MainSubMenuSpan {
+    align-items: center;
+    overflow: visible;
+    height: 24px;
+    position: relative;
+    z-index: 1;
+}
+body.is-mobile #MainSubMenuSpan:not([style*="display:none"]):not([style*="display: none"]) {
+    display: flex;
+}
+
+body.is-mobile .mobile-submenu-scroll {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner {
+    display: block;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+    min-width: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner::-webkit-scrollbar {
+    display: none;
+}
+
+body.is-mobile #MainSubMenu {
+    display: inline-table !important;
+    width: auto !important;
+    height: 24px;
+    table-layout: auto !important;
+}
+
+body.is-mobile #MainSubMenu .topbar_td {
+    width: auto !important;
+    min-width: unset !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    white-space: nowrap !important;
+}
+
+body.is-mobile .mobile-submenu-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 100%;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+}
+
+body.is-mobile .mobile-submenu-arrow:hover,
+body.is-mobile .mobile-submenu-arrow:active {
+    background: #505050;
+}
+
+body.is-mobile .mobile-submenu-arrow i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

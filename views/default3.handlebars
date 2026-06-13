@@ -188,6 +188,13 @@
                 });
             });
         });
+
+        function mobileSubMenuScroll(tableId, dir) {
+            if (!document.body.classList.contains('is-mobile')) return;
+            var inner = document.getElementById(tableId + 'ScrollInner');
+            if (!inner) return;
+            inner.scrollLeft += dir * 80;
+        }
     </script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
@@ -412,31 +419,37 @@
                         </tr>
                     </table>
                     <div id=MainSubMenuSpan style="display:none">
-                        <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
-                                    onkeypress="if (event.key == 'Enter') go(10)">General</td>
-                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
-                                    onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
-                                    onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
-                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
-                                    onkeypress="if (event.key == 'Enter') go(13)">Files</td>
-                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
-                                    onkeypress="if (event.key == 'Enter') go(16)">Events</td>
-                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
-                                    onkeypress="if (event.key == 'Enter') go(17)">Details</td>
-                                <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
-									onkeypress="if (event.key == 'Enter') go(18)">Software</td>
-                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
-                                    onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
-                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
-                                    onkeypress="if (event.key == 'Enter') go(15)">Console</td>
-                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
-                                    onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
-                                <td class="topbar_td_end style3">&nbsp;</td>
-                            </tr>
-                        </table>
+                        <div class="mobile-submenu-scroll">
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',-1)" aria-label="Scroll left"><i class="fa fa-caret-square-left"></i></button>
+                            <div class="mobile-submenu-scroll-inner" id="MainSubMenuScrollInner">
+                                <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
+                                            onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                        <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
+                                            onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                        <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
+                                            onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                        <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
+                                            onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                        <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
+                                            onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                        <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
+                                            onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                        <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
+                                            onkeypress="if (event.key == 'Enter') go(18)">Software</td>
+                                        <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
+                                            onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
+                                        <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
+                                            onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                        <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
+                                            onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',1)" aria-label="Scroll right"><i class="fa fa-caret-square-right"></i></button>
+                        </div>
                     </div>
                     <div id=MeshSubMenuSpan style="display:none">
                         <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -22123,19 +22136,6 @@
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
             var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
 
-            // Classic Mobile tab shuffle: on mobile, hide the active device sub-tab from
-            // the bottom bar so all remaining tabs fit without scrolling.
-            if (document.body.classList.contains('is-mobile')) {
-                var _devTabIds = ['MainDev','MainDevDesktop','MainDevTerminal','MainDevFiles','MainDevAmt','MainDevConsole','MainDevEvents','MainDevInfo','MainDevPlugins'];
-                for (var _dti = 0; _dti < _devTabIds.length; _dti++) {
-                    var _dtEl = document.getElementById(_devTabIds[_dti]);
-                    if (_dtEl) _dtEl.classList.remove('mob-active-tab');
-                }
-                if (x >= 10 && x < 20 && panels[x]) {
-                    var _dtActive = document.getElementById(panels[x]);
-                    if (_dtActive) _dtActive.classList.add('mob-active-tab');
-                }
-            }
 
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
