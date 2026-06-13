@@ -273,6 +273,26 @@
             margin-top: 1px;
         }
 
+        .fileIcon5 {
+            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABVklEQVQ4T42Ty22DUBBFzW9PB3EJpoKYDpwKIiQ+YpW4grSQHRIgESqIO3A6CB3YHYQlCz65F/Gslwe2gzTCwNwzd2aetdU/rqIo7KZp7DiOz2q6dk+fpulG1/XPYRhshBuGYSVrbgIkcQ0RY6NCFgEUappWIFiVwpJ3PD+rkBlAqrqerLoUIR6CINhnWXaUIX8AC2IyamEb4lfZSdu2zgVwRSzmNUIQOwyUrTzi95bvRkCSJGvLso54IWwvLYezeIL4heK+770oig4jIM9zrmk3qZjIfbPvRZAQ86PGQ4JefqbMyjRN1/O8etrEt0qAg7NhGA5zRgAGs8Wdk+X1DiclV4iJO/hGgOyklqvPHED44fu+RyicVHB2QpItWlPFI2CawUkMEJBD13Ulpv0mVZ9VFq2NAKUNte2r4osDAWHvyiq/8LxX/0ByhdlRntyseOJuCQXkFwkT7PS0vyFtAAAAAElFTkSuQmCC);
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .fileIcon6 {
+            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABCUlEQVQ4T6WT3Q2CMBSFLTAAbiAb4AhuIBvYBEJ40wkcQV/5SXAEN9ANdAPZwL5DwNOENm2xxoQmPLT3nq/3nAaymLnITP3CCqjr2m/bdkUI8ZMkudsumgC4sOu6IwQ7fL4iPAN0MEEaYBTf0BRabmSALNWaBijL8oTi/lcusHSN4zgSPSbgbYzNIGDDMKxUqOd5S0op42cSUBRFiOaHJBPSuK675o1VVb0MyEYEawUAJP3CGgfLXPq+j9I0vWoTjAFyC+p6jhstVLxSkGVZowH4BqPWGJU/n3XB5gUh0q8h/vOMCDAQAU4mEFTLJHeII1VsBQhQnudbx3EYhE9T+NXCL++22uy/8QNYGm0RH2Rb4gAAAABJRU5ErkJggg==);
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
         .filelist {
             -moz-user-select: none;
             -khtml-user-select: none;
@@ -281,6 +301,32 @@
             cursor: default;
             -khtml-user-drag: element;
             clear: both;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .filelistrow {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .filelistcontent {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .filelistname {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
+        }
+
+        .filelistmeta {
+            white-space: nowrap;
+            font-size: 0.85em;
+            color: #555;
         }
 
         .deviceNotifyDot {
@@ -5980,6 +6026,15 @@
             return checkedNames;
         }
 
+        function p13truncateName(name, maxlen) {
+            if (!maxlen) maxlen = 40;
+            if (name.length <= maxlen) return EscapeHtml(name);
+            var dot = name.lastIndexOf('.');
+            var ext = (dot > 0) ? name.substring(dot) : '';
+            var keep = maxlen - ext.length - 1;
+            return EscapeHtml(name.substring(0, keep)) + '…' + EscapeHtml(ext);
+        }
+
         function p13updateFiles(checkedNames) {
             var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer;color:black onclick=p13folderup(0)>' + "Root" + '</a>', fullPath = 'Root';
 
@@ -6005,14 +6060,20 @@
                 var fsize = '';
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
+                var fdatestr = '';
+                if (f.d != null) { var fdate = new Date(f.d); if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); } fdatestr = printDateTime(fdate) + '&nbsp;'; }
+
                 var h = '';
                 if (f.t < 3) {
                     var right = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                    var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
+                    var displayname = (sysvol && sysvol.name) ? (EscapeHtml(sysvol.name) + ' (' + shortname + ')') : shortname;
+                    h = '<div class=filelist file=999><div class=filelistrow><input file=999 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + displayname + '</a></div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 } else {
-                    var link = shortname;
-                    if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    var truncname = p13truncateName(name);
+                    var link = '<a style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + truncname + '</a>';
+                    if (f.s == 0) { link = truncname; }
+                    h = '<div class=filelist file=3><div class=filelistrow><input file=3 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<div class="fileIcon' + f.t + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname>' + link + '</div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
