@@ -15913,7 +15913,23 @@
             const selectedTheme = themeSwitcher.value;
             const safeTheme = ((selectedTheme != 'default') ? encodeURIComponent(selectedTheme) : encodeURIComponent('..'));
             var themeStylesheet = document.getElementById('theme-stylesheet');
-            themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
+            if (typeof applyMeshTheme === 'function') {
+                applyMeshTheme(`styles/themes/${safeTheme}/bootstrap-min.css`);
+            } else {
+                themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
+                var fontsLink = document.getElementById('theme-fonts');
+                if (selectedTheme != 'default') {
+                    if (!fontsLink) {
+                        fontsLink = document.createElement('link');
+                        fontsLink.id = 'theme-fonts';
+                        fontsLink.rel = 'stylesheet';
+                        fontsLink.href = 'styles/fonts/fonts.css';
+                        document.head.appendChild(fontsLink);
+                    }
+                } else if (fontsLink) {
+                    fontsLink.parentNode.removeChild(fontsLink);
+                }
+            }
             // Save selected theme
             putstore('theme', selectedTheme);
             // Update last 4 themes selected
