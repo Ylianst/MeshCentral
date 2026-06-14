@@ -8412,14 +8412,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
             }
             // Discover additional information if available, use endpoints from config if present
-            let issuer
-            try {
-                parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer}`);
-                issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
-            } catch (err) {
-                let error = new Error('OIDC: Discovery failed.', { cause: err });
-                parent.authLog('setupDomainAuthStrategy', `ERROR: ${JSON.stringify(error)} ISSUER_URI: ${strategy.issuer.issuer}`);
-                throw error
+            let issuer;
+            let attempts = 0;
+            const maxAttempts = 3;
+            while (attempts < maxAttempts) {
+                try {
+                    parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer} (Attempt ${attempts + 1}/${maxAttempts})`);
+                    issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
+                    break; // Success!
+                } catch (err) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        console.log(`OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    } else {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed after ${maxAttempts} attempts. OIDC will be disabled for this domain. Error: ${err.message} ISSUER_URI: ${strategy.issuer.issuer}`);
+                        parent.addServerWarning(`OIDC: Discovery failed. OIDC has been disabled for this domain. Error: ${err.message}`);
+                        return authStrategyFlags;
+                    }
+                }
             }
             if (Object.keys(strategy.issuer).length > 1) {
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
