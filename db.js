@@ -42,9 +42,9 @@ module.exports.CreateDB = function (parent, func) {
     const SQLITE_AUTOVACUUM = ['none', 'full', 'incremental'];
     const SQLITE_SYNCHRONOUS = ['off', 'normal', 'full', 'extra'];
     obj.sqliteConfig = {
-        maintenance: '',
+        maintenance: 'PRAGMA optimize;',
         startupVacuum: false,
-        autoVacuum: 'full',
+        autoVacuum: 'incremental',
         incrementalVacuum: 100,
         journalMode: 'delete',
         journalSize: 4096000,
@@ -784,23 +784,26 @@ module.exports.CreateDB = function (parent, func) {
         // SQLite3 database setup
         obj.databaseType = DB_SQLITE;
         const sqlite3 = require('sqlite3');
-        let configParams = parent.config.settings.sqlite3;
-        if (typeof configParams == 'string') {databaseName = configParams} else {databaseName = configParams.name ? configParams.name : 'meshcentral';};
-        obj.sqliteConfig.startupVacuum = configParams.startupvacuum ? configParams.startupvacuum : false;
-        obj.sqliteConfig.autoVacuum = configParams.autovacuum ? configParams.autovacuum.toLowerCase() : 'incremental';
-        obj.sqliteConfig.incrementalVacuum = configParams.incrementalvacuum ? configParams.incrementalvacuum : 100;
-        obj.sqliteConfig.journalMode = configParams.journalmode ? configParams.journalmode.toLowerCase() : 'delete';
+        let configParams = parent.config.settings.sqlite3 || {};
+        databaseName = (typeof configParams == 'string') ? configParams : (configParams.name || 'meshcentral');
+        obj.sqliteConfig.startupVacuum = (typeof configParams.startupvacuum == 'boolean') ? configParams.startupvacuum : false;
+        obj.sqliteConfig.autoVacuum = (typeof configParams.autovacuum == 'string') ? configParams.autovacuum.toLowerCase() : 'incremental';
+        if (!(['none','full','incremental'].includes(obj.sqliteConfig.autoVacuum))) { obj.sqliteConfig.autoVacuum = 'incremental'; }
+        const incrementalVacuum = Number(configParams.incrementalvacuum);
+        obj.sqliteConfig.incrementalVacuum = (Number.isInteger(incrementalVacuum) && incrementalVacuum >= 0) ? incrementalVacuum : 100;
+
         //allowed modes, 'none' excluded because not usefull for this app, maybe also remove 'memory'?
-        if (!(['delete', 'truncate', 'persist', 'memory', 'wal'].includes(obj.sqliteConfig.journalMode))) { obj.sqliteConfig.journalMode = 'delete'};
-        obj.sqliteConfig.journalSize = configParams.journalsize ? configParams.journalsize : 409600;
+        obj.sqliteConfig.journalMode = (typeof configParams.journalmode == 'string' && ['delete', 'truncate', 'persist', 'memory', 'wal'].includes(configParams.journalmode.toLowerCase())) ? configParams.journalmode.toLowerCase() : 'delete';
+        const journalSize = Number(configParams.journalsize);
+        obj.sqliteConfig.journalSize = Number.isInteger(journalSize) ? journalSize : 4096000;
+
         //wal can use the more performant 'normal' mode, see https://www.sqlite.org/pragma.html#pragma_synchronous
         obj.sqliteConfig.synchronous = (obj.sqliteConfig.journalMode == 'wal') ? 'normal' : 'full';
-        if (obj.sqliteConfig.journalMode == 'wal') {obj.sqliteConfig.maintenance += 'PRAGMA wal_checkpoint(PASSIVE);'};
-        if (obj.sqliteConfig.autoVacuum == 'incremental') {obj.sqliteConfig.maintenance += 'PRAGMA incremental_vacuum(' + obj.sqliteConfig.incrementalVacuum + ');'};
-        obj.sqliteConfig.maintenance += 'PRAGMA optimize;';
-        
+        if (obj.sqliteConfig.journalMode == 'wal') {obj.sqliteConfig.maintenance += 'PRAGMA wal_checkpoint(PASSIVE);'}
+        if (obj.sqliteConfig.autoVacuum == 'incremental') {obj.sqliteConfig.maintenance += 'PRAGMA incremental_vacuum(' + obj.sqliteConfig.incrementalVacuum + ');'}
+
         parent.debug('db', 'SQlite config options: ' + JSON.stringify(obj.sqliteConfig, null, 4));
-        if (obj.sqliteConfig.journalMode == 'memory') { console.log('[WARNING] journal_mode=memory: this can lead to database corruption if there is a crash during a transaction. See https://www.sqlite.org/pragma.html#pragma_journal_mode') };
+        if (obj.sqliteConfig.journalMode == 'memory') { console.log('[WARNING] journal_mode=memory: this can lead to database corruption if there is a crash during a transaction. See https://www.sqlite.org/pragma.html#pragma_journal_mode') }
         //.cached not usefull
         obj.file = new sqlite3.Database(path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
@@ -830,24 +833,20 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxsmbiosexpire ON smbios (expire);
                         `, function (err) {
                             // Completed DB creation of SQLite3
-                            sqliteSetOptions(func);
-                            //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-                            setupFunctions(func);
+                            sqliteSetOptions(function () { setupFunctions(func); }); 
                         }
                     );
                 });
                 return;
-            } else if (err) { console.log("SQLite Error: " + err); process.exit(0); }
+            } else if (err) { console.log("SQLite Error: " + err); process.exit(1); }
 
             //for existing db's
-            sqliteSetOptions();
             // Create any missing tables (e.g., pluginpermissions added in updates)
             obj.file.exec(`
                 CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
             `, function (err) {
                 if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
-                //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-                setupFunctions(func);
+                sqliteSetOptions(function () { setupFunctions(func); });
             });
         });
     } else if (parent.args.acebase) {
@@ -1361,41 +1360,42 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function sqliteSetOptions(func) {
-        //get current auto_vacuum mode for comparison
+        // Read current auto_vacuum mode; switching into or out of 'none' requires a VACUUM to take effect. See https://www.sqlite.org/pragma.html#pragma_auto_vacuum
         obj.file.get('PRAGMA auto_vacuum;', function(err, current){
-            let pragma = 'PRAGMA journal_mode=' + obj.sqliteConfig.journalMode + ';' + 
-                'PRAGMA synchronous='+ obj.sqliteConfig.synchronous + ';' +
-                'PRAGMA journal_size_limit=' + obj.sqliteConfig.journalSize + ';' +
-                'PRAGMA auto_vacuum=' + obj.sqliteConfig.autoVacuum + ';' +
-                'PRAGMA incremental_vacuum=' + obj.sqliteConfig.incrementalVacuum + ';' +
-                'PRAGMA optimize=0x10002;';
-            //check new autovacuum mode, if changing from or to 'none', a VACUUM needs to be done to activate it. See https://www.sqlite.org/pragma.html#pragma_auto_vacuum
-            if ( obj.sqliteConfig.startupVacuum
-                || (current.auto_vacuum == 0 && obj.sqliteConfig.autoVacuum !='none')
-                || (current.auto_vacuum != 0 && obj.sqliteConfig.autoVacuum =='none'))
-                {
-                    pragma += 'VACUUM;';
-                };
+            if (err || !current) { parent.debug('db', 'Could not read auto_vacuum: ' + (err ? err.message : 'no row')); current = { auto_vacuum: 0 }; }
+            let pragma = `PRAGMA journal_mode=${obj.sqliteConfig.journalMode}` +
+                `;PRAGMA synchronous=${obj.sqliteConfig.synchronous}` +
+                `;PRAGMA journal_size_limit=${obj.sqliteConfig.journalSize}` +
+                `;PRAGMA auto_vacuum=${obj.sqliteConfig.autoVacuum}` +
+                `;PRAGMA incremental_vacuum(${obj.sqliteConfig.incrementalVacuum})` +
+                `;PRAGMA optimize=0x10002;PRAGMA foreign_keys = ON;`;
+            // VACUUM needed only when crossing the 'none' boundary in either direction
+            if (obj.sqliteConfig.startupVacuum || ((current.auto_vacuum == 0) != (obj.sqliteConfig.autoVacuum == 'none'))) { pragma += 'VACUUM;'; }
             parent.debug ('db', 'Config statement: ' + pragma);
-            
+
             obj.file.exec( pragma,
                 function (err) {
                 if (err) { parent.debug('db', 'Config pragma error: ' + (err.message)) };
-                sqliteGetPragmas(['journal_mode', 'journal_size_limit', 'freelist_count', 'auto_vacuum', 'page_size', 'wal_autocheckpoint', 'synchronous'], function (pragma, pragmaValue) {
-                    parent.debug('db', 'PRAGMA: ' + pragma + '=' + pragmaValue);
-                });
+                // check if debug db is enabled to prevent unneccessary calls
+                if ((parent.debugSources != null) && ((parent.debugSources == '*') || (parent.debugSources.indexOf('db') >= 0))) {
+                    sqliteGetPragmas(['journal_mode', 'journal_size_limit', 'freelist_count', 'auto_vacuum', 'page_size', 'wal_autocheckpoint', 'synchronous'], function (pragma, pragmaValue) {
+                        parent.debug('db', 'PRAGMA: ' + pragma + '=' + pragmaValue);
+                    });
+                }
+                if (func) { func(); }
             });
         });
-        //setupFunctions(func);
     }
 
     function sqliteGetPragmas (pragmas, func){
-        //pragmas can only be gotting one by one
+        //pragmas can only be gotten one by one
         pragmas.forEach (function (pragma) {
             obj.file.get('PRAGMA ' + pragma + ';', function(err, res){
-                if (pragma == 'auto_vacuum') { res[pragma] = SQLITE_AUTOVACUUM[res[pragma]] };
-                if (pragma == 'synchronous') { res[pragma] = SQLITE_SYNCHRONOUS[res[pragma]] };
-                if (func) { func (pragma, res[pragma]); }
+                if (err || !res) { return; }
+                let value = res[pragma];
+                if (pragma == 'auto_vacuum') { value = SQLITE_AUTOVACUUM[value]; }
+                else if (pragma == 'synchronous') { value = SQLITE_SYNCHRONOUS[value]; }
+                if (func) { func (pragma, value); }
             });
         });
     }
