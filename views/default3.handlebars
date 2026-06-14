@@ -12506,13 +12506,22 @@
             // Trackpad mode
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                trackpadTapMoved = false;
-                trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
-                trackpadDown = false;
-                return;
+                if (e.touches.length === 2) {
+                    // Fall through to pinch-start recording below (same as direct mode)
+                } else if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    trackpadTapMoved = false;
+                    trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
+                    trackpadDown = false;
+                    dtouchLongPressTimer = setTimeout(function() {
+                        dtouchLongPressTimer = null;
+                        if (trackpadTapMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                        trackpadSendClick(2);
+                        trackpadTapMoved = true;
+                    }, 500);
+                    return;
+                } else { return; }
             }
             // Direct mode — 2 fingers
             if (e.touches.length === 2) {
@@ -12523,8 +12532,12 @@
                     // Record pinch start for zoom gesture
                     _nativePinchStartDist = Math.sqrt(fdx*fdx + fdy*fdy);
                     var sc = Q('deskarea3x');
-                    _nativePinchStartW = sc ? sc.scrollWidth  : 640;
-                    _nativePinchStartH = sc ? sc.scrollHeight : 480;
+                    // Use the CSS variable values as the authoritative current size so
+                    // subsequent pinches start from the exact same dimension that was set.
+                    var cssW = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-w'));
+                    var cssH = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-h'));
+                    _nativePinchStartW = (cssW > 0) ? cssW : (sc ? sc.scrollWidth  : 640);
+                    _nativePinchStartH = (cssH > 0) ? cssH : (sc ? sc.scrollHeight : 480);
                     _nativePinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                     _nativePinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 }
@@ -12548,17 +12561,24 @@
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
-                var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) trackpadTapMoved = true;
-                var rect = Q('Desk').getBoundingClientRect();
-                trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
-                trackpadSendMove();
-                trackpadCheckEdge();
-                return;
+                if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
+                    var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        trackpadTapMoved = true;
+                        if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                    }
+                    var rect = Q('Desk').getBoundingClientRect();
+                    trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
+                    trackpadSendMove();
+                    trackpadCheckEdge();
+                    return;
+                }
+                // 2-finger pinch: fall through to native/direct zoom handling below
+                if (e.touches.length !== 2) return;
+                trackpadTapMoved = true; // prevent spurious tap on finger lift
             }
             // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
             if (_mobileZoomMode === 'native' && e.touches.length === 1) {
@@ -12615,9 +12635,10 @@
                 if (Math.abs(dy) > 1 && Q('DeskControl').checked) {
                     var dm = dtouchGetModule();
                     if (dm && dm.SendMouseMsg && dm.KeyAction) {
-                        var wev = dtouchMakeEvent(midX, midY, 0);
-                        wev.wheelDelta = -dy * 4;
-                        dm.SendMouseMsg(dm.KeyAction.SCROLL, wev);
+                        // Use last known cursor position so scroll doesn't move the remote cursor
+                        var _scrollEv = trackpadMode ? trackpadMakeEvent(0) : dtouchMakeEvent(dtouchLastX, dtouchLastY, 0);
+                        _scrollEv.wheelDelta = -dy * 4;
+                        dm.SendMouseMsg(dm.KeyAction.SCROLL, _scrollEv);
                     }
                 }
                 return;
