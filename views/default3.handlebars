@@ -1250,6 +1250,9 @@
                     <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
                     <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow-y:auto;overflow-x:hidden;max-height:calc(100dvh - 100px);box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                        <div id="deskMobileMonitorRow" style="display:none;background:var(--bs-body-bg,#fff)">
+                            <div class="d-flex align-items-center px-3 py-2 border-bottom" style="font-size:15px;color:var(--bs-body-color,#212529)"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span id="deskMobileMonitorIcons" class="ms-auto d-flex gap-2" style="font-size:20px"></span></div>
+                        </div>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
@@ -9759,16 +9762,34 @@
             desktop.m.SwapMouse = !desktop.m.SwapMouse;
         }
 
+        var _deskMobilePanelStaticHTML = null;
         function deskToggleMobileActions() {
             var panel = Q('deskMobileActionsPanel'), backdrop = Q('deskMobileActionsBackdrop');
             if (!panel) return;
             var show = (panel.style.display === 'none');
             if (show) {
                 if (document.body.classList.contains('fulldesk')) {
-                    // Fullscreen mode: rebuild panel with all controls
+                    // Fullscreen mode: save static HTML if not yet saved, then rebuild
+                    if (_deskMobilePanelStaticHTML === null) _deskMobilePanelStaticHTML = panel.innerHTML;
                     _buildFullscreenPanel(panel);
                 } else {
-                    // Normal mode: update dynamic labels to reflect current state
+                    // Normal mode: restore static HTML if fullscreen had replaced it
+                    if (_deskMobilePanelStaticHTML !== null) {
+                        panel.innerHTML = _deskMobilePanelStaticHTML;
+                        _deskMobilePanelStaticHTML = null;
+                        // Re-apply current monitor selection since saved HTML may be stale
+                        if (_deskLastSelDisplay !== null) {
+                            ['deskMobileMonitorIcons', 'DeskMonitorSelectionSpan'].forEach(function(id) {
+                                var container = Q(id);
+                                if (!container) return;
+                                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                                    if (idx === _deskLastSelDisplay) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                                });
+                            });
+                        }
+                    }
+                    // Update dynamic labels to reflect current state
                     var rc = Q('deskRightClickItem');
                     if (rc) {
                         var active = desktop && desktop.m && desktop.m.SwapMouse;
@@ -9801,8 +9822,26 @@
                      + '<i class="fa-solid ' + icon + ' fa-fw me-2 ' + (extra || 'text-primary') + '"></i>'
                      + label + '</a>';
             }
+            var monitorRow = '';
+            if (_deskLastDisplays) {
+                var icons = '', count = 0;
+                for (var i in _deskLastDisplays) {
+                    count++;
+                    var str = _deskLastDisplays[i], allDisplays = 1;
+                    if (str == 'All Displays') { allDisplays = 2; }
+                    var mt = 'id=DeskMonitorSelectionX' + i + ' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') role=button';
+                    var gray = (_deskLastSelDisplay == i) ? '' : ' gray';
+                    if (allDisplays == 2) {
+                        icons += '<span ' + mt + ' class="fa-layers fa-fw' + gray + '"><i class="fa-solid fa-desktop"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 left-3 up-3"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 right-3 up-3"></i></span>';
+                    } else {
+                        icons += '<i ' + mt + ' class="fa-fw fa-solid fa-desktop' + gray + '"></i>';
+                    }
+                }
+                if (count > 1) monitorRow = '<div class="d-flex align-items-center px-3 py-2 border-bottom" style="' + s + '"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span class="ms-auto d-flex gap-2" style="font-size:20px">' + icons + '</span></div>';
+            }
             panel.innerHTML =
                 row(cls, 'fa-compress',         "Exit Fullscreen",                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
+                monitorRow +
                 row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
                     (_mobileZoomMode==='native' ? "Scale to Fit" : "Native Size (Scrollable)"),  'deskMobileToggleZoom();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'Q("DeskControl").click();deskCloseMobileActions()') +
@@ -11211,6 +11250,7 @@
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('DeskMonitorSelectionSpan', false);
+                    QV('deskMobileMonitorRow', false);
                     QV('deskRecordIcon', false);
                     QV('DeskInputLockedButton', false);
                     QV('DeskInputUnLockedButton', false);
@@ -12233,6 +12273,7 @@
         }
 
         function deskDisplayInfo(sender, displays, selDisplay) {
+            _deskLastDisplays = displays; _deskLastSelDisplay = selDisplay;
             var displayCount = 0, displaySelector = '';
             for (var i in displays) {
                 displayCount++;
@@ -12250,11 +12291,36 @@
             }
             QH('DeskMonitorSelectionSpan', displaySelector);
             QV('DeskMonitorSelectionSpan', displayCount > 1);
+            QH('deskMobileMonitorIcons', displaySelector);
+            QV('deskMobileMonitorRow', displayCount > 1);
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
         var deskPreferedStickyDisplay = -1;
-        function deskSetDisplay(v) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(v)); }
+        var _deskLastDisplays = null, _deskLastSelDisplay = null;
+        function deskSetDisplay(v) {
+            v = parseInt(v);
+            desktop.m.SetDisplay(deskPreferedStickyDisplay = v);
+            _deskLastSelDisplay = v;
+            // Update selected state on monitor icons immediately (no server roundtrip for this)
+            ['DeskMonitorSelectionSpan', 'deskMobileMonitorIcons'].forEach(function(id) {
+                var container = Q(id);
+                if (!container) return;
+                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                    if (idx === v) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                });
+            });
+            // Rebuild fullscreen panel if open so it reflects new selection
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
+        }
 
         // Double click detection. This is important for macOS.
         var dblClickDetectArgs = { t: 0, x: 0, y: 0 };
@@ -12374,18 +12440,18 @@
             if (trackpadEdgeTimer) return;
             trackpadEdgeTimer = setInterval(function() {
                 if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
-                var dp = Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                var dp = Q('deskarea3x') || Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
             }, 16);
         }
 
         function trackpadCheckEdge() {
-            var deskRect = Q('Desk').getBoundingClientRect();
-            // Use cursor position relative to canvas for edge detection
-            var cx = deskRect.left + trackpadCurX, cy = deskRect.top + trackpadCurY, zone = 60;
-            trackpadEdgeDX = cx < deskRect.left  + zone ? -Math.round((zone-(cx-deskRect.left))/4) :
-                             cx > deskRect.right  - zone ?  Math.round((zone-(deskRect.right-cx))/4) : 0;
-            trackpadEdgeDY = cy < deskRect.top   + zone ? -Math.round((zone-(cy-deskRect.top))/4) :
-                             cy > deskRect.bottom - zone ?  Math.round((zone-(deskRect.bottom-cy))/4) : 0;
+            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect();
+            var cursorRect = Q('trackpadCursor').getBoundingClientRect();
+            var cx = cursorRect.left + 9, cy = cursorRect.top + 15, zone = 60;
+            trackpadEdgeDX = cx < vpRect.left  + zone ? -Math.round((zone-(cx-vpRect.left))/4) :
+                             cx > vpRect.right  - zone ?  Math.round((zone-(vpRect.right-cx))/4) : 0;
+            trackpadEdgeDY = cy < vpRect.top   + zone ? -Math.round((zone-(cy-vpRect.top))/4) :
+                             cy > vpRect.bottom - zone ?  Math.round((zone-(vpRect.bottom-cy))/4) : 0;
             if (trackpadEdgeDX || trackpadEdgeDY) trackpadStartEdgeScroll(); else trackpadStopEdgeScroll();
         }
 

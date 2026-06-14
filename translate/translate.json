@@ -5738,7 +5738,7 @@
         "default3.handlebars->123->1026",
         "default3.handlebars->123->1830",
         "default3.handlebars->123->1839",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->5",
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->7",
         "default3.handlebars->container->column_l->p11->deskarea0->deskarea1->3",
         "default3.handlebars->container->column_l->p12->termTable->1->1->0->1->3",
         "default3.handlebars->container->column_l->p13->p13toolbar->1->0->1->3"
@@ -14740,7 +14740,7 @@
         "default3.handlebars->123->2873",
         "default3.handlebars->123->3150",
         "default3.handlebars->123->3151",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->27"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->29"
       ]
     },
     {
@@ -16293,7 +16293,7 @@
       "xloc": [
         "default.handlebars->container->column_l->p11->deskarea0->deskarea4->5",
         "default3.handlebars->123->1213",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->17",
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->19",
         "default3.handlebars->container->column_l->p11->deskarea0->deskarea4->1",
         "sharing.handlebars->p11->deskarea0->deskarea4->3"
       ]
@@ -18553,7 +18553,7 @@
         "default.handlebars->contextMenu->cxconsole",
         "default3.handlebars->123->1148",
         "default3.handlebars->123->1173",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevConsole",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevConsole",
         "default3.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerConsole",
         "default3.handlebars->contextMenu->cxconsole"
       ]
@@ -20424,7 +20424,7 @@
       "zh-cht": "自訂快速鍵",
       "en": "Customize Shortcuts",
       "xloc": [
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->13"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->15"
       ]
     },
     {
@@ -22028,7 +22028,7 @@
         "default3.handlebars->123->3396",
         "default3.handlebars->123->3502",
         "default3.handlebars->123->865",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevDesktop",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevDesktop",
         "default3.handlebars->contextMenu->cxdesktop",
         "sharing-mobile.handlebars->55->6",
         "sharing.handlebars->49->23",
@@ -22708,7 +22708,7 @@
         "default3.handlebars->123->1158",
         "default3.handlebars->123->1183",
         "default3.handlebars->123->2546",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevInfo",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevInfo",
         "default3.handlebars->contextMenu->cxdetails"
       ]
     },
@@ -30521,7 +30521,7 @@
         "default.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserEvents",
         "default.handlebars->contextMenu->cxevents",
         "default3.handlebars->container->topbar->1->1->EventsSubMenuSpan->EventsSubMenu->1->0->EventsLive",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevEvents",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevEvents",
         "default3.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserEvents",
         "default3.handlebars->contextMenu->cxevents"
       ]
@@ -31645,7 +31645,7 @@
         "default3.handlebars->123->3397",
         "default3.handlebars->123->3503",
         "default3.handlebars->123->490",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevFiles",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevFiles",
         "default3.handlebars->contextMenu->cxfiles",
         "sharing-mobile.handlebars->55->8",
         "sharing.handlebars->LeftSideToolBar"
@@ -33752,7 +33752,7 @@
         "default.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshGeneral",
         "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerGeneral",
         "default.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserGeneral",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDev",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDev",
         "default3.handlebars->container->topbar->1->1->MeshSubMenuSpan->MeshSubMenu->1->0->MeshGeneral",
         "default3.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerGeneral",
         "default3.handlebars->container->topbar->1->1->UserSubMenuSpan->UserSubMenu->1->0->UserGeneral"
@@ -40195,7 +40195,7 @@
       "zh-cht": "Intel®AMT",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevAmt"
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevAmt"
       ]
     },
     {
@@ -46037,7 +46037,7 @@
       "zh-cht": "鎖定遠端",
       "en": "Lock Remote",
       "xloc": [
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->23"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->25"
       ]
     },
     {
@@ -55800,7 +55800,7 @@
       "en": "On-screen Keyboard",
       "xloc": [
         "default3.handlebars->123->1206",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->1"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->3"
       ]
     },
     {
@@ -56226,7 +56226,7 @@
       "zh-cht": "在遠端開啟URL",
       "en": "Open URL on Remote",
       "xloc": [
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->21"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->23"
       ]
     },
     {
@@ -58829,7 +58829,7 @@
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevPlugins",
         "default.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerPlugins",
         "default.handlebars->contextMenu->cxplugins",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevPlugins",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevPlugins",
         "default3.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerPlugins",
         "default3.handlebars->contextMenu->cxplugins"
       ]
@@ -61813,7 +61813,7 @@
       "en": "Refresh Desktop",
       "xloc": [
         "default3.handlebars->123->1217",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->15"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->17"
       ]
     },
     {
@@ -65959,7 +65959,7 @@
       "zh-cht": "執行腳本",
       "en": "Run Script",
       "xloc": [
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->29"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->31"
       ]
     },
     {
@@ -68375,6 +68375,35 @@
       ]
     },
     {
+      "bs": "Odaberi Monitor",
+      "ca": "Selecciona el monitor",
+      "cs": "Vybrat monitor",
+      "da": "Vælg skærm",
+      "de": "Monitor auswählen",
+      "en": "Select Monitor",
+      "es": "Seleccionar monitor",
+      "fi": "Valitse näyttö",
+      "fr": "Sélectionner le moniteur",
+      "hi": "मॉनिटर चुनें",
+      "hu": "Monitor kiválasztása",
+      "it": "Seleziona monitor",
+      "ja": "モニターを選択",
+      "ko": "모니터 선택",
+      "nl": "Monitor selecteren",
+      "pl": "Wybierz monitor",
+      "pt": "Selecionar monitor",
+      "pt-br": "Selecionar monitor",
+      "ru": "Выбрать монитор",
+      "sv": "Välj skärm",
+      "tr": "Monitör seç",
+      "uk": "Вибрати монітор",
+      "zh-chs": "选择显示器",
+      "zh-cht": "選擇顯示器",
+      "xloc": [
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->deskMobileMonitorRow->1"
+      ]
+    },
+    {
       "bs": "Odaberite Ništa",
       "ca": "Seleccioneu Cap",
       "cs": "Nevybrat nic",
@@ -68914,7 +68943,7 @@
       "zh-cht": "傳送通知",
       "en": "Send Notification",
       "xloc": [
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->25"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->27"
       ]
     },
     {
@@ -71020,7 +71049,7 @@
         "default-mobile.handlebars->container->page_content->column_l->p10->p10desktop->deskarea4->1->3",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->kvmListToolbar",
         "default3.handlebars->container->column_l->p1->devListToolbarSpan->kvmListToolbar",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->7",
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->9",
         "default3.handlebars->container->column_l->p11->deskarea0->deskarea1->3",
         "default3.handlebars->container->column_l->p4->3->1->0->p4toolbarActions->1->7->3->7",
         "default3.handlebars->container->column_l->p4->3->1->0->p4toolbarActions->3",
@@ -73255,7 +73284,7 @@
       "zh-cht": "軟體",
       "xloc": [
         "default.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevApps",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevApps"
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevApps"
       ]
     },
     {
@@ -77016,7 +77045,7 @@
         "default3.handlebars->123->3501",
         "default3.handlebars->123->486",
         "default3.handlebars->123->866",
-        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->MainSubMenu->1->0->MainDevTerminal",
+        "default3.handlebars->container->topbar->1->1->MainSubMenuSpan->1->MainSubMenuScrollInner->MainSubMenu->1->0->MainDevTerminal",
         "default3.handlebars->contextMenu->cxterminal",
         "sharing-mobile.handlebars->55->7",
         "sharing.handlebars->LeftSideToolBar"
@@ -80351,7 +80380,7 @@
       "en": "Type Text",
       "xloc": [
         "default3.handlebars->123->1211",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->3"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->5"
       ]
     },
     {
@@ -82255,7 +82284,7 @@
       "en": "Upload Clipboard",
       "xloc": [
         "default3.handlebars->123->1214",
-        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->19"
+        "default3.handlebars->container->column_l->p11->deskarea0->deskMobileActionsPanel->21"
       ]
     },
     {
