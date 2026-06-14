@@ -1372,11 +1372,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             // Wait and redirect the user
                             setTimeout(function () {
                                 req.session.loginmode = 4;
-                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; }
-                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; }
-                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; }
-                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; }
-                                if ((user.otpduo != null)) { req.session.tduo = 1; }
+                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; } else { delete req.session.temail; }
+                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; } else { delete req.session.tsms; }
+                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; } else { delete req.session.tmsg; }
+                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; } else { delete req.session.tpush; }
+                                if ((user.otpduo != null)) { req.session.tduo = 1; } else { delete req.session.tduo; }
                                 req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
@@ -3268,7 +3268,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
                 }
                 if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
-                    if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
+                    // backup function changed to support all types, only NeDB can be restored through the webinterface
+                    // if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
                     if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
@@ -6029,7 +6030,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     };
 
     // Handle a server backup request
-    function handleBackupRequest(req, res) {
+    async function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
@@ -6039,23 +6040,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
-        // Require modules
-        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum.
-
-        // Good practice to catch this error explicitly
-        archive.on('error', function (err) { throw err; });
-
-        // Set the archive name
-        res.attachment((domain.title ? domain.title : 'MeshCentral') + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
-
-        // Pipe archive data to the file
-        archive.pipe(res);
-
-        // Append files from a glob pattern
-        archive.directory(obj.parent.datapath, false);
-
-        // Finalize the archive (ie we are done appending files but streams have to finish yet)
-        archive.finalize();
+        // start a new backup and async wait for it to finish with a timeout
+        if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
+        obj.db.performBackup();
+        const waitFor = ms => new Promise(res => setTimeout(res, ms));
+        var backupStart = Date.now();
+        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 120 * 1000)) {
+            await waitFor(2000);
+        }
+        if (obj.fs.existsSync(obj.db.newAutoBackupFile) && obj.db.performingBackup == false) {
+            res.setHeader('Content-Type', 'application/x-zip-compressed');
+            res.download(obj.db.newAutoBackupFile);
+        } else {
+            obj.parent.addServerWarning('handleBackupRequest: Backup error', true);
+            res.status(500).send("Backup error.");
+        }
     }
 
     // Handle a server restore request
@@ -6083,7 +6082,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
 
             res.set('Content-Type', 'text/html');
-            res.end('<html><body>Server must be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
+            const rootUrl = req.protocol + '://' + req.get('host') + (req.query.key ? '/?key=' + req.query.key : '/');
+            res.end('<html><body><script>setTimeout(function(){window.location.replace("' + rootUrl + '");}, 10000);</script>Server will be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
             parent.Stop(files.datafile[0].path);
         });
     }
@@ -8412,14 +8412,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
             }
             // Discover additional information if available, use endpoints from config if present
-            let issuer
-            try {
-                parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer}`);
-                issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
-            } catch (err) {
-                let error = new Error('OIDC: Discovery failed.', { cause: err });
-                parent.authLog('setupDomainAuthStrategy', `ERROR: ${JSON.stringify(error)} ISSUER_URI: ${strategy.issuer.issuer}`);
-                throw error
+            let issuer;
+            let attempts = 0;
+            const maxAttempts = 3;
+            while (attempts < maxAttempts) {
+                try {
+                    parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer} (Attempt ${attempts + 1}/${maxAttempts})`);
+                    issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
+                    break; // Success!
+                } catch (err) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        console.log(`OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    } else {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed after ${maxAttempts} attempts. OIDC will be disabled for this domain. Error: ${err.message} ISSUER_URI: ${strategy.issuer.issuer}`);
+                        parent.addServerWarning(`OIDC: Discovery failed. OIDC has been disabled for this domain. Error: ${err.message}`);
+                        return authStrategyFlags;
+                    }
+                }
             }
             if (Object.keys(strategy.issuer).length > 1) {
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);

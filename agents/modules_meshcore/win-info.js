@@ -22,7 +22,7 @@ var psPath = (process.env['SystemRoot'] ? process.env['SystemRoot'] : 'C:\\Windo
 function qfe()
 {
     try {
-        var tokens = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_QuickFixEngineering');
+        var tokens = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_QuickFixEngineering');
         if (tokens[0]){
             for (var index = 0; index < tokens.length; index++) {
                 for (var key in tokens[index]) {
@@ -191,8 +191,8 @@ function installedApps() {
         'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
         'SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall'
     ];
-    try {
-        for (var i in registryPaths) {
+    for (var i in registryPaths) {
+        try {
             var path = registryPaths[i];
             var keyInfo = registry.QueryKey(HKEY.LocalMachine, path);
             if (!keyInfo || !keyInfo.subkeys) continue;
@@ -210,10 +210,7 @@ function installedApps() {
                     });
                 }
             }
-        }
-    } catch (e) {
-        ret._rej(e);
-        return (ret);
+        } catch (e) { }
     }
     ret._res(results);
     return (ret);
@@ -301,7 +298,7 @@ function installedStoreApps() {
 
 function defender(){
     try {
-        var tokens = require('win-wmi').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
+        var tokens = require('win-wmi-fixed').query('ROOT\\Microsoft\\Windows\\Defender', 'SELECT * FROM MSFT_MpComputerStatus', ['RealTimeProtectionEnabled','IsTamperProtected','AntivirusSignatureVersion','AntivirusSignatureLastUpdated']);
         if (tokens[0]){
             var info = { RealTimeProtection: tokens[0].RealTimeProtectionEnabled, TamperProtected: tokens[0].IsTamperProtected };
             if (tokens[0].AntivirusSignatureVersion) { info.AntivirusSignatureVersion = tokens[0].AntivirusSignatureVersion; }

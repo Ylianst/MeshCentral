@@ -188,6 +188,13 @@
                 });
             });
         });
+
+        function mobileSubMenuScroll(tableId, dir) {
+            if (!document.body.classList.contains('is-mobile')) return;
+            var inner = document.getElementById(tableId + 'ScrollInner');
+            if (!inner) return;
+            inner.scrollLeft += dir * 80;
+        }
     </script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
@@ -412,31 +419,37 @@
                         </tr>
                     </table>
                     <div id=MainSubMenuSpan style="display:none">
-                        <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
-                                    onkeypress="if (event.key == 'Enter') go(10)">General</td>
-                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
-                                    onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
-                                    onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
-                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
-                                    onkeypress="if (event.key == 'Enter') go(13)">Files</td>
-                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
-                                    onkeypress="if (event.key == 'Enter') go(16)">Events</td>
-                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
-                                    onkeypress="if (event.key == 'Enter') go(17)">Details</td>
-                                <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
-									onkeypress="if (event.key == 'Enter') go(18)">Software</td>
-                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
-                                    onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
-                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
-                                    onkeypress="if (event.key == 'Enter') go(15)">Console</td>
-                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
-                                    onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
-                                <td class="topbar_td_end style3">&nbsp;</td>
-                            </tr>
-                        </table>
+                        <div class="mobile-submenu-scroll">
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',-1)" aria-label="Scroll left"><i class="fa fa-caret-square-left"></i></button>
+                            <div class="mobile-submenu-scroll-inner" id="MainSubMenuScrollInner">
+                                <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
+                                            onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                        <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
+                                            onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                        <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
+                                            onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                        <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
+                                            onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                        <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
+                                            onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                        <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
+                                            onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                        <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
+                                            onkeypress="if (event.key == 'Enter') go(18)">Software</td>
+                                        <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
+                                            onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
+                                        <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
+                                            onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                        <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
+                                            onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',1)" aria-label="Scroll right"><i class="fa fa-caret-square-right"></i></button>
+                        </div>
                     </div>
                     <div id=MeshSubMenuSpan style="display:none">
                         <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -929,8 +942,8 @@
                         <div style="margin-left:25px">
                             <div id="p2ServerActionsBackup">
                                 <div class="p2AccountActions"><span
-                                        style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink"
-                                    href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a>
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showBackupDlg()">Download server backup</a>
                             </div>
                             <div id="p2ServerActionsRestore">
                                 <div class="p2AccountActions"><span
@@ -1237,6 +1250,9 @@
                     <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
                     <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow-y:auto;overflow-x:hidden;max-height:calc(100dvh - 100px);box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                        <div id="deskMobileMonitorRow" style="display:none;background:var(--bs-body-bg,#fff)">
+                            <div class="d-flex align-items-center px-3 py-2 border-bottom" style="font-size:15px;color:var(--bs-body-color,#212529)"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span id="deskMobileMonitorIcons" class="ms-auto d-flex gap-2" style="font-size:20px"></span></div>
+                        </div>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
@@ -2651,9 +2667,6 @@
             // Make the dialog box movable
             dialogBoxDrag();
 
-            // Fix links
-            if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
-
             // Hide night mode button if needed
             QV('uiViewButton4', (features2 & 0x00300000) == 0);
 
@@ -3894,6 +3907,14 @@
                         }
                         x += '</div>';
                         QH('d2netinfo', x);
+                    }
+                    break;
+                }
+                case 'backuprestore': {
+                    if (message.dialog == 'backup') {
+                        server_showBackupDlgUpdate(message.data);
+                    } else {
+                        server_showRestoreDlgUpdate(message.data);
                     }
                     break;
                 }
@@ -9741,16 +9762,34 @@
             desktop.m.SwapMouse = !desktop.m.SwapMouse;
         }
 
+        var _deskMobilePanelStaticHTML = null;
         function deskToggleMobileActions() {
             var panel = Q('deskMobileActionsPanel'), backdrop = Q('deskMobileActionsBackdrop');
             if (!panel) return;
             var show = (panel.style.display === 'none');
             if (show) {
                 if (document.body.classList.contains('fulldesk')) {
-                    // Fullscreen mode: rebuild panel with all controls
+                    // Fullscreen mode: save static HTML if not yet saved, then rebuild
+                    if (_deskMobilePanelStaticHTML === null) _deskMobilePanelStaticHTML = panel.innerHTML;
                     _buildFullscreenPanel(panel);
                 } else {
-                    // Normal mode: update dynamic labels to reflect current state
+                    // Normal mode: restore static HTML if fullscreen had replaced it
+                    if (_deskMobilePanelStaticHTML !== null) {
+                        panel.innerHTML = _deskMobilePanelStaticHTML;
+                        _deskMobilePanelStaticHTML = null;
+                        // Re-apply current monitor selection since saved HTML may be stale
+                        if (_deskLastSelDisplay !== null) {
+                            ['deskMobileMonitorIcons', 'DeskMonitorSelectionSpan'].forEach(function(id) {
+                                var container = Q(id);
+                                if (!container) return;
+                                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                                    if (idx === _deskLastSelDisplay) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                                });
+                            });
+                        }
+                    }
+                    // Update dynamic labels to reflect current state
                     var rc = Q('deskRightClickItem');
                     if (rc) {
                         var active = desktop && desktop.m && desktop.m.SwapMouse;
@@ -9783,25 +9822,43 @@
                      + '<i class="fa-solid ' + icon + ' fa-fw me-2 ' + (extra || 'text-primary') + '"></i>'
                      + label + '</a>';
             }
+            var monitorRow = '';
+            if (_deskLastDisplays) {
+                var icons = '', count = 0;
+                for (var i in _deskLastDisplays) {
+                    count++;
+                    var str = _deskLastDisplays[i], allDisplays = 1;
+                    if (str == 'All Displays') { allDisplays = 2; }
+                    var mt = 'id=DeskMonitorSelectionX' + i + ' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') role=button';
+                    var gray = (_deskLastSelDisplay == i) ? '' : ' gray';
+                    if (allDisplays == 2) {
+                        icons += '<span ' + mt + ' class="fa-layers fa-fw' + gray + '"><i class="fa-solid fa-desktop"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 left-3 up-3"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 right-3 up-3"></i></span>';
+                    } else {
+                        icons += '<i ' + mt + ' class="fa-fw fa-solid fa-desktop' + gray + '"></i>';
+                    }
+                }
+                if (count > 1) monitorRow = '<div class="d-flex align-items-center px-3 py-2 border-bottom" style="' + s + '"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span class="ms-auto d-flex gap-2" style="font-size:20px">' + icons + '</span></div>';
+            }
             panel.innerHTML =
-                row(cls, 'fa-compress',         'Exit Fullscreen',                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
-                row(cls, (_mobileZoomMode==='native'?'fa-compress-arrows-alt':'fa-expand-arrows-alt'),
-                    (_mobileZoomMode==='native'?'Scale to Fit':'Native Size (Scrollable)'),  'deskMobileToggleZoom();deskCloseMobileActions()') +
-                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', "Q('DeskControl').click();deskCloseMobileActions()") +
-                row(cls, 'fa-keyboard',          'On-screen Keyboard',                       'toggleMobileKeyboard();deskCloseMobileActions()') +
-                row(cls, 'fa-computer-mouse',    (trackpad?'Disable':'Enable')+' Trackpad',  'deskToggleTrackpad();deskCloseMobileActions()') +
-                row(cls, 'fa-hand-pointer',      (swap?'Disable':'Enable')+' Right-click',   'deskToggleRightClickMode();deskCloseMobileActions()') +
-                row(cls, 'fa-font',              'Type Text',                                'showDeskType();deskCloseMobileActions()') +
+                row(cls, 'fa-compress',         "Exit Fullscreen",                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
+                monitorRow +
+                row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
+                    (_mobileZoomMode==='native' ? "Scale to Fit" : "Native Size (Scrollable)"),  'deskMobileToggleZoom();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'Q("DeskControl").click();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          "On-screen Keyboard",                       'toggleMobileKeyboard();deskCloseMobileActions()') +
+                row(cls, 'fa-computer-mouse',    (trackpad ? "Disable Trackpad Mode" : "Enable Trackpad Mode"),  'deskToggleTrackpad();deskCloseMobileActions()') +
+                row(cls, 'fa-hand-pointer',      (swap ? "Disable Right-click Mode" : "Enable Right-click Mode"),   'deskToggleRightClickMode();deskCloseMobileActions()') +
+                row(cls, 'fa-font',              "Type Text",                                'showDeskType();deskCloseMobileActions()') +
                 row(cls, 'fa-terminal',          'Ctrl + Alt + Del',                        'if(desktop&&desktop.m)desktop.m.sendcad();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Send ESC',                                 'sendDeskEsc();deskCloseMobileActions()') +
-                row(cls, 'fa-sliders',           'Keyboard Shortcuts',                       'deskCustomizeKeys();deskCloseMobileActions()') +
-                row(cls, 'fa-paste',             'Clipboard',                               'showDeskClip();deskCloseMobileActions()') +
-                row(cls, 'fa-clipboard',         'Upload Clipboard',                         'deskClipboardOutFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-right',      'Rotate Right',                             'drotate(1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-left',       'Rotate Left',                              'drotate(-1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate',            'Refresh Desktop',                          'deskRefreshFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-gear',              'Desktop Settings',                         'showDesktopSettings();deskCloseMobileActions()') +
-                row(end, 'fa-plug-circle-xmark', 'Disconnect',                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
+                row(cls, 'fa-sliders',           "Keyboard Shortcuts",                       'deskCustomizeKeys();deskCloseMobileActions()') +
+                row(cls, 'fa-paste',             "Clipboard",                               'showDeskClip();deskCloseMobileActions()') +
+                row(cls, 'fa-clipboard',         "Upload Clipboard",                         'deskClipboardOutFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-right',      "Rotate Right",                             'drotate(1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-left',       "Rotate Left",                              'drotate(-1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate',            "Refresh Desktop",                          'deskRefreshFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-gear',              "Desktop Settings",                         'showDesktopSettings();deskCloseMobileActions()') +
+                row(end, 'fa-plug-circle-xmark', "Disconnect",                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
         }
         function deskCloseMobileActions() {
             QV('deskMobileActionsPanel', false);
@@ -11193,6 +11250,7 @@
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('DeskMonitorSelectionSpan', false);
+                    QV('deskMobileMonitorRow', false);
                     QV('deskRecordIcon', false);
                     QV('DeskInputLockedButton', false);
                     QV('DeskInputUnLockedButton', false);
@@ -12215,6 +12273,7 @@
         }
 
         function deskDisplayInfo(sender, displays, selDisplay) {
+            _deskLastDisplays = displays; _deskLastSelDisplay = selDisplay;
             var displayCount = 0, displaySelector = '';
             for (var i in displays) {
                 displayCount++;
@@ -12232,11 +12291,36 @@
             }
             QH('DeskMonitorSelectionSpan', displaySelector);
             QV('DeskMonitorSelectionSpan', displayCount > 1);
+            QH('deskMobileMonitorIcons', displaySelector);
+            QV('deskMobileMonitorRow', displayCount > 1);
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
         var deskPreferedStickyDisplay = -1;
-        function deskSetDisplay(v) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(v)); }
+        var _deskLastDisplays = null, _deskLastSelDisplay = null;
+        function deskSetDisplay(v) {
+            v = parseInt(v);
+            desktop.m.SetDisplay(deskPreferedStickyDisplay = v);
+            _deskLastSelDisplay = v;
+            // Update selected state on monitor icons immediately (no server roundtrip for this)
+            ['DeskMonitorSelectionSpan', 'deskMobileMonitorIcons'].forEach(function(id) {
+                var container = Q(id);
+                if (!container) return;
+                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                    if (idx === v) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                });
+            });
+            // Rebuild fullscreen panel if open so it reflects new selection
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
+        }
 
         // Double click detection. This is important for macOS.
         var dblClickDetectArgs = { t: 0, x: 0, y: 0 };
@@ -12356,18 +12440,18 @@
             if (trackpadEdgeTimer) return;
             trackpadEdgeTimer = setInterval(function() {
                 if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
-                var dp = Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                var dp = Q('deskarea3x') || Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
             }, 16);
         }
 
         function trackpadCheckEdge() {
-            var deskRect = Q('Desk').getBoundingClientRect();
-            // Use cursor position relative to canvas for edge detection
-            var cx = deskRect.left + trackpadCurX, cy = deskRect.top + trackpadCurY, zone = 60;
-            trackpadEdgeDX = cx < deskRect.left  + zone ? -Math.round((zone-(cx-deskRect.left))/4) :
-                             cx > deskRect.right  - zone ?  Math.round((zone-(deskRect.right-cx))/4) : 0;
-            trackpadEdgeDY = cy < deskRect.top   + zone ? -Math.round((zone-(cy-deskRect.top))/4) :
-                             cy > deskRect.bottom - zone ?  Math.round((zone-(deskRect.bottom-cy))/4) : 0;
+            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect();
+            var cursorRect = Q('trackpadCursor').getBoundingClientRect();
+            var cx = cursorRect.left + 9, cy = cursorRect.top + 15, zone = 60;
+            trackpadEdgeDX = cx < vpRect.left  + zone ? -Math.round((zone-(cx-vpRect.left))/4) :
+                             cx > vpRect.right  - zone ?  Math.round((zone-(vpRect.right-cx))/4) : 0;
+            trackpadEdgeDY = cy < vpRect.top   + zone ? -Math.round((zone-(cy-vpRect.top))/4) :
+                             cy > vpRect.bottom - zone ?  Math.round((zone-(vpRect.bottom-cy))/4) : 0;
             if (trackpadEdgeDX || trackpadEdgeDY) trackpadStartEdgeScroll(); else trackpadStopEdgeScroll();
         }
 
@@ -12422,13 +12506,22 @@
             // Trackpad mode
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                trackpadTapMoved = false;
-                trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
-                trackpadDown = false;
-                return;
+                if (e.touches.length === 2) {
+                    // Fall through to pinch-start recording below (same as direct mode)
+                } else if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    trackpadTapMoved = false;
+                    trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
+                    trackpadDown = false;
+                    dtouchLongPressTimer = setTimeout(function() {
+                        dtouchLongPressTimer = null;
+                        if (trackpadTapMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                        trackpadSendClick(2);
+                        trackpadTapMoved = true;
+                    }, 500);
+                    return;
+                } else { return; }
             }
             // Direct mode — 2 fingers
             if (e.touches.length === 2) {
@@ -12439,8 +12532,12 @@
                     // Record pinch start for zoom gesture
                     _nativePinchStartDist = Math.sqrt(fdx*fdx + fdy*fdy);
                     var sc = Q('deskarea3x');
-                    _nativePinchStartW = sc ? sc.scrollWidth  : 640;
-                    _nativePinchStartH = sc ? sc.scrollHeight : 480;
+                    // Use the CSS variable values as the authoritative current size so
+                    // subsequent pinches start from the exact same dimension that was set.
+                    var cssW = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-w'));
+                    var cssH = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-h'));
+                    _nativePinchStartW = (cssW > 0) ? cssW : (sc ? sc.scrollWidth  : 640);
+                    _nativePinchStartH = (cssH > 0) ? cssH : (sc ? sc.scrollHeight : 480);
                     _nativePinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                     _nativePinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 }
@@ -12464,17 +12561,24 @@
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
-                var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) trackpadTapMoved = true;
-                var rect = Q('Desk').getBoundingClientRect();
-                trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
-                trackpadSendMove();
-                trackpadCheckEdge();
-                return;
+                if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
+                    var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        trackpadTapMoved = true;
+                        if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                    }
+                    var rect = Q('Desk').getBoundingClientRect();
+                    trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
+                    trackpadSendMove();
+                    trackpadCheckEdge();
+                    return;
+                }
+                // 2-finger pinch: fall through to native/direct zoom handling below
+                if (e.touches.length !== 2) return;
+                trackpadTapMoved = true; // prevent spurious tap on finger lift
             }
             // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
             if (_mobileZoomMode === 'native' && e.touches.length === 1) {
@@ -12531,9 +12635,10 @@
                 if (Math.abs(dy) > 1 && Q('DeskControl').checked) {
                     var dm = dtouchGetModule();
                     if (dm && dm.SendMouseMsg && dm.KeyAction) {
-                        var wev = dtouchMakeEvent(midX, midY, 0);
-                        wev.wheelDelta = -dy * 4;
-                        dm.SendMouseMsg(dm.KeyAction.SCROLL, wev);
+                        // Use last known cursor position so scroll doesn't move the remote cursor
+                        var _scrollEv = trackpadMode ? trackpadMakeEvent(0) : dtouchMakeEvent(dtouchLastX, dtouchLastY, 0);
+                        _scrollEv.wheelDelta = -dy * 4;
+                        dm.SendMouseMsg(dm.KeyAction.SCROLL, _scrollEv);
                     }
                 }
                 return;
@@ -13343,11 +13448,11 @@
                 shortname = EscapeHtml(name);
 
                 // Figure out the date
-                var fdatestr = '';
+                var fdatestr = '&nbsp;';
                 if (f.d != null) {
                     var fdate = new Date(f.d);
                     if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); }
-                    var fdatestr = printDateTime(fdate) + '&nbsp;';
+                    fdatestr = printDateTime(fdate) + '&nbsp;';
                 }
 
                 // Figure out the size
@@ -13373,10 +13478,11 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
-                    if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += EscapeHtml(currentNode.volumes[shortname.charAt(0).toUpperCase()].name) + ' (' + shortname + ')';
+                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' mt-1" onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
+                    if (sysvol && sysvol.name) {
+                        h += EscapeHtml(sysvol.name) + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
@@ -13394,7 +13500,12 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + EscapeHtml(fsize) + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -16190,22 +16301,76 @@
             if (t == 'gd2') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 2, code: Q('gdcode').value }); }
         }
 
+        function server_showBackupDlg() {
+            if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showBackupDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'backup' });
+            return false;
+        }
+        function server_showBackupDlgUpdate(configPassword) {
+            var x = "Enter optional password for the backup" + '<br /><br />';
+            x += '<tr><td align=right>' + nobreak("Password: ") + '</td><td><input id=dbackup_password style=width:256px maxlength=256 type=password name=backup_password autocomplete=off/> <b></b></td></tr>';
+            x += '<div><label><input id=doverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
+            setModalContent('xxAddAgent', "Download server backup", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => backup_enterPassword());
+            Q('dbackup_password').focus();
+            return false;
+        }
+        function backup_enterPassword() {
+            xxModal.hide();
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            window.location.href = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+        }
+
         function server_showRestoreDlg() {
             if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showRestoreDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'restore' });
+            return false;
+        }
+        function server_showRestoreDlgUpdate(configPassword) {
             var x = "Restore the server using a backup," + ' <span style=color:red>' + "this will delete the existing server data." + '</span> ' + "Only do this if you know what you are doing." + '<br /><br />';
-            x += '<form action="/restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : '') + '" enctype="multipart/form-data" method="post"><div>';
-            x += '<input type=hidden name=auth value=' + authCookie + '>';
+            x += '<div>';
             x += '<input id=account_dlgFileInput type=file name=datafile class="form-control" accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
-            x += '</div></form>';
-
+            x += '<tr><br><td align=right>' + nobreak("Backup Password: ") + '</td><td><input id=drestore_password style=width:256px maxlength=256 type=password name=restore_password autocomplete=off/> <b></b></td></tr>';
+            x += '</div>';
+            x += '<div><label><input id=drestoreoverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
             setModalContent('xxAddAgent', "Restore Server", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => server_uploadServerRestore());
             account_validateServerRestore();
             return false;
         }
 
         function account_validateServerRestore() {
             QE('idx_dlgOkButton', Q('account_dlgFileInput').files.length == 1);
+        }
+
+        function server_uploadServerRestore() {
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('drestore_password').value, override: Q('drestoreoverrulepw').checked });
+            let formData = new FormData();           
+            formData.append('datafile', Q('account_dlgFileInput').files[0]);
+            // formData.append('restore_password', Q('drestore_password').value);
+            formData.append('auth', authCookie);
+            setModalContent('xxAddAgent', "Restore Server", "Uploading backup");
+            QE('idx_dlgOkButton', false);
+            QE('idx_dlgCancelButton', false);
+            fetch('{{{domainurl}}}restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : ''), {
+                method: 'POST',
+                body: formData,
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        setModalContent('xxAddAgent', "Restore Server", "Network error: " + response.status);
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                        QE('idx_dlgOkButton', true);
+                    }
+                })
+                .catch((error) => {
+                    setModalContent('xxAddAgent', "Restore Server", "Error: " + error.message);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    QE('idx_dlgOkButton', true);
+                })
+            return false;
         }
 
         function server_showVersionDlg() {
@@ -17726,12 +17891,26 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999>';
+                    h += '<input file=999 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;';
+                    h += '<span style=float:right title="' + title + '">' + right + '</span>';
+                    h += '<span title="' + shortname + '">';
+                    h += '<div class="fileIcon' + f.t + ' mt-1" onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div>';
+                    h += '<a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a>';
+                    h += '</span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
-                    if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
+                    if (publicfolder) { 
+                        publiclink = '<i class="fa-regular fa-copy fa-fw" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i>';
+                        publiclink += '<i class="fa-solid fa-download fa-fw" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>';
+                    }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + fsize + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -22044,19 +22223,6 @@
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
             var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
 
-            // Classic Mobile tab shuffle: on mobile, hide the active device sub-tab from
-            // the bottom bar so all remaining tabs fit without scrolling.
-            if (document.body.classList.contains('is-mobile')) {
-                var _devTabIds = ['MainDev','MainDevDesktop','MainDevTerminal','MainDevFiles','MainDevAmt','MainDevConsole','MainDevEvents','MainDevInfo','MainDevPlugins'];
-                for (var _dti = 0; _dti < _devTabIds.length; _dti++) {
-                    var _dtEl = document.getElementById(_devTabIds[_dti]);
-                    if (_dtEl) _dtEl.classList.remove('mob-active-tab');
-                }
-                if (x >= 10 && x < 20 && panels[x]) {
-                    var _dtActive = document.getElementById(panels[x]);
-                    if (_dtActive) _dtActive.classList.add('mob-active-tab');
-                }
-            }
 
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');

@@ -88,7 +88,7 @@ function getDomainInfo() {
     switch (process.platform) {
         case 'win32':
             try {
-                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
+                ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
             }
             catch (x) {
             }
@@ -4445,6 +4445,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
                     try { require('win-info'); availcommands += ',qfe,defender,av,installedstoreapps'; } catch (ex) { }
+                    try { require('win-updates'); availcommands += ',winupdates,winupdatesinstalled,winupdateshistory,winupdatesdedup'; } catch (ex) { }
                     try { require('win-deskutils'); availcommands += ',mousetrails,idletime,deskbackground'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
@@ -4642,7 +4643,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     }
 
                     sendConsoleText('Querying Domain Controller... This can take up to 60 seconds. Please wait...', sessionid);
-                    global._domainQuery = require('win-wmi').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
+                    global._domainQuery = require('win-wmi-fixed').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
                     global._domainQuery.session = sessionid;
                     global._domainQuery.then(function (v) {
                         var results = [];
@@ -4678,24 +4679,33 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
                 if (args['_'].length < 2 || args['_'].length > 3) {
-                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty]\r\n' +
-                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ap\r\n';
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(n)sync][(u)npretty][(s)ilence][(i)ncludesystemproperties]\r\n' +
+                            'Default: async, pretty and shows progress\r\n' +
+                            'Note: Sync queries block the agent for the duration of the query\r\n' +
+                            'Example: wmi CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" in\r\n';
                     break;
                 }
                 var opt = (args['_'][2]|| '').toLowerCase();
                 var ns = args['_'][0].trim();
                 if (!/^root\\\w/i.test(ns)) { ns = 'ROOT\\' + ns; }
                 var q = (args['_'][1]).trim();
+                var indent = (opt.indexOf('u') === -1); // unpretty, so default true
+                var showProgress = (opt.indexOf('s') === -1);   //s is now silence
+                var includeSysProp = (opt.indexOf('i') !== -1);
+                var async = opt.indexOf('n') === -1;
                 var wmi = require('win-wmi-fixed');
-                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') !== -1) ? 2 : 0)) : 'No results', sessionid); };
-                var error = function (e) { var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e)); sendConsoleText('Error: ' + msg, sessionid);};
-                sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
-                if (opt.indexOf('a') !== -1) {
-                    wmi.queryAsync(ns, q)
+                var output = function (res) { sendConsoleText((res && res.length > 0) ? (JSON.stringify(res, null, (indent ? 2 : 0))) : 'No results', sessionid); };
+                var error = function (e) {
+                    e = e || {};
+                    sendConsoleText(((e.results && e.results.length) ? 'Partial result:\r\n' + JSON.stringify(e.results, null, (indent ? 2 : 0)) + '\r\nPartial resultcount: ' + e.results.length + '\r\n' : '') +
+                        'Error: ' + (e.message || JSON.stringify(e)), sessionid); };
+                if (showProgress) { sendConsoleText('Performing ' + (async ? 'asynchronous ': '') + 'query ' + (async ? '': 'synchronously (be careful with large queries as it blocks the agent for the duration)'), sessionid); }
+                if (async) {
+                    wmi.queryAsync(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null))
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q)); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {
@@ -5584,7 +5594,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length < 1) {
                     response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
                 } else {
-                    response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
+                    var evalResult = mesh.eval(args['_'][0]); try { response = JSON.stringify(evalResult); } catch (ex) { response = null; } // This can only be run by trusted administrator.
                 }
                 break;
             }
@@ -5878,7 +5888,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var interfaces = require('os').networkInterfaces();
                 if (process.platform == 'win32') {
                     try {
-                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                        var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
                         if (ret[0]) {
                             var speedMap = {};
                             for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
@@ -6104,57 +6114,175 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'installedapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedApps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid); 
-                        }).catch(function(e) { 
-                            sendConsoleText("Error: " + e, sessionid); 
-                        });
-                    } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaPr = require('win-info').installedApps();
+                        iaPr.sessionid = sessionid;
+                        iaPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += '\n       Location: ' + a.location;
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) {
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'linux') {
                     try {
-                        require('linux-info').packages().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaLPr = require('linux-info').packages();
+                        iaLPr.sessionid = sessionid;
+                        iaLPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module linux-info error: " + ex, sessionid);
+                        sendConsoleText('Module linux-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'darwin') {
                     try {
-                        require('mac-info').apps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaMPr = require('mac-info').apps();
+                        iaMPr.sessionid = sessionid;
+                        iaMPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module mac-info error: " + ex, sessionid);
+                        sendConsoleText('Module mac-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed apps not supported on this platform.', sessionid);
                 }
                 break;
             }
             case 'installedstoreapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedStoreApps().then(function (apps) {
-                            if (apps && apps.length > 0) {
-                                sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                            } else {
-                                sendConsoleText("No Store Apps found or PowerShell error.", sessionid);
+                        sendConsoleText('Fetching installed Store apps, please wait...', sessionid);
+                        var isaPr = require('win-info').installedStoreApps();
+                        isaPr.sessionid = sessionid;
+                        isaPr.then(function (apps) {
+                            if (!apps || apps.length === 0) { sendConsoleText('No Store apps found.', this.sessionid); return; }
+                            var lines = ['Installed Store Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.scope) line += ' [' + a.scope + ']';
+                                if (a.packageFullName) line += '\n       Package: ' + a.packageFullName;
+                                lines.push(line);
                             }
-                        }).catch(function(e) { 
-                            sendConsoleText("Promise Error: " + e, sessionid); 
-                        });
-                    } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) {
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed Store Apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed Store Apps not supported on this platform.', sessionid);
                 }
+                break;
+            }
+            case 'winupdates': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Checking for pending updates, this may take up to 60 seconds...', sessionid);
+                        var wuPr = require('win-updates').getAvailableUpdates();
+                        wuPr.sessionid = sessionid;
+                        wuPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No pending updates.', this.sessionid); return; }
+                            var lines = ['Pending Updates (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : '') + (updates[i].severity ? ' [' + updates[i].severity + ']' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdatesinstalled': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Checking installed updates, this may take up to 60 seconds...', sessionid);
+                        var wuiPr = require('win-updates').getInstalledUpdates();
+                        wuiPr.sessionid = sessionid;
+                        wuiPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No installed updates found.', this.sessionid); return; }
+                            var lines = ['Installed Updates (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdateshistory': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Fetching update history, this may take up to 60 seconds...', sessionid);
+                        var wuhPr = require('win-updates').getInstalledUpdateHistory();
+                        wuhPr.sessionid = sessionid;
+                        wuhPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No update history found.', this.sessionid); return; }
+                            var lines = ['Update History (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdatesdedup': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Fetching de-duplicated update history, this may take up to 60 seconds...', sessionid);
+                        var wudPr = require('win-updates').getInstalledUpdatesDeDuplicated();
+                        wudPr.sessionid = sessionid;
+                        wudPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No update history found.', this.sessionid); return; }
+                            var lines = ['Installed Updates De-duplicated (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
                 break;
             }
             case 'uninstallapp': {
@@ -7083,7 +7211,7 @@ function sendNetworkUpdate(force) {
         var netInfo = { netif2: require('os').networkInterfaces() };
         if (process.platform == 'win32') {
             try {
-                var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
                 if (ret[0]) {
                     var speedMap = {};
                     for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
