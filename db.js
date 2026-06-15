@@ -1028,6 +1028,23 @@ module.exports.CreateDB = function (parent, func) {
             Datastore = client;
             parent.debug('db', 'Connected to MongoDB database...');
 
+            // Log MongoDB SDAM monitoring events so transient member drops / replica-set
+            // degradation are VISIBLE before an operation bubbles up as the uncaught
+            // "MongoNetworkError ... Restarting in 5 seconds" crash. These are pure
+            // OBSERVER events; we deliberately do NOT attach an 'error' listener (which
+            // would change unhandled-error behavior) — strictly observational.
+            try {
+                client.on('serverHeartbeatFailed', function (e) { console.log(new Date().toISOString() + ' MongoDB heartbeat FAILED' + ((e && e.connectionId) ? (' to ' + e.connectionId) : '') + ((e && e.failure) ? (': ' + e.failure) : '')); });
+                client.on('serverClosed', function (e) { console.log(new Date().toISOString() + ' MongoDB server connection closed' + ((e && e.address) ? (': ' + e.address) : '')); });
+                client.on('topologyDescriptionChanged', function (e) {
+                    try {
+                        var sd = e && e.newDescription && e.newDescription.servers; var up = 0, total = 0;
+                        if (sd) { sd.forEach(function (s) { total++; if (s.type && s.type !== 'Unknown') up++; }); }
+                        console.log(new Date().toISOString() + ' MongoDB topology changed: reachableMembers=' + up + '/' + total + ((e && e.newDescription && e.newDescription.type) ? (' (' + e.newDescription.type + ')') : ''));
+                    } catch (te) { /* ignore */ }
+                });
+            } catch (listenerEx) { console.log(new Date().toISOString() + ' Unable to attach MongoDB event listeners: ' + listenerEx); }
+
             // Get the database name and setup the database client
             var dbname = 'meshcentral';
             if (parent.args.mongodbname) { dbname = parent.args.mongodbname; }

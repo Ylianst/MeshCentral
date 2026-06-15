@@ -850,7 +850,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.agentStats.invalidDomainMeshCount++;
             parent.setAgentIssue(obj, "invalidDomainMesh");
             parent.parent.debug('agent', 'Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
-            console.log('Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+            console.log(new Date().toISOString() + ' Agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+            // Diagnostic: record this orphaned node's presented group ONCE (deduped) so the
+            // orphaned-vs-working distribution across group ids is countable in the log.
+            // OK and ORPHANED use SEPARATE per-node flags so a node that later recovers
+            // (orphaned -> OK after re-enrollment) still logs the OK transition.
+            try {
+                if (parent.diagAgentSeen == null) { parent.diagAgentSeen = {}; }
+                var diagSeen = parent.diagAgentSeen[obj.nodeid] || (parent.diagAgentSeen[obj.nodeid] = {});
+                if (!diagSeen.orphaned) { diagSeen.orphaned = true; console.log(new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (ORPHANED, no such device group)'); }
+            } catch (diagEx) { }
             return;
         }
 
@@ -860,9 +869,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.agentStats.invalidMeshTypeCount++;
             parent.setAgentIssue(obj, "invalidMeshType");
             parent.parent.debug('agent', 'Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
-            console.log('Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
+            console.log(new Date().toISOString() + ' Agent connected with invalid mesh type, holding connection (' + obj.remoteaddrport + ').');
             return;
         }
+
+        // Diagnostic: record each VALID agent connection's device group ONCE (deduped per
+        // node) so the working cohort's group-id distribution is visible alongside the
+        // orphaned one. Together these two census lines give the full working-vs-orphaned
+        // split per group id without a database query.
+        try {
+            if (parent.diagAgentSeen == null) { parent.diagAgentSeen = {}; }
+            var diagSeen = parent.diagAgentSeen[obj.nodeid] || (parent.diagAgentSeen[obj.nodeid] = {});
+            if (!diagSeen.ok) { diagSeen.ok = true; console.log(new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (OK, name="' + (mesh.name || '') + '")'); }
+        } catch (diagEx) { }
 
         // Mark when this device connected
         obj.connectTime = Date.now();

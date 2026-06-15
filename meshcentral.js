@@ -4133,7 +4133,7 @@ function CreateMeshCentralServer(config, args) {
     function logErrorEvent(msg) { if (obj.servicelog != null) { obj.servicelog.error(msg); } console.error(msg); }
     obj.getServerWarnings = function () { return serverWarnings; }
     // TODO: migrate from other addServerWarning function and add timestamp
-    obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
+    obj.addServerWarning = function (msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log(new Date().toISOString() + " WARNING: " + msg); } }
 
     // auth.log functions
     obj.authLog = function (server, msg, args) {
@@ -4332,7 +4332,7 @@ process.on('SIGINT', function () { if (meshserver != null) { meshserver.Stop(); 
 // Add a server warning, warnings will be shown to the administrator on the web application
 // TODO: migrate to obj.addServerWarning?
 const serverWarnings = [];
-function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log("WARNING: " + msg); } }
+function addServerWarning(msg, id, args, print) { serverWarnings.push({ msg: msg, id: id, args: args }); if (print !== false) { console.log(new Date().toISOString() + " WARNING: " + msg); } }
 
 /*
 var ServerWarnings = {
