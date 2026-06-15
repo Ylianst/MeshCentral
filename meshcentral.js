@@ -190,25 +190,31 @@ function CreateMeshCentralServer(config, args) {
             console.log('Details at: https://www.meshcentral.com\r\n');
             if ((obj.platform == 'win32') || (obj.platform == 'linux')) {
                 console.log('Run as a background service');
-                console.log('   --install/uninstall               Install MeshCentral as a background service.');
-                console.log('   --start/stop/restart              Control MeshCentral background service.');
+                console.log('   --install/uninstall\t\t\t\t\tInstall MeshCentral as a background service.');
+                console.log('   --start/stop/restart\t\t\t\t\tControl MeshCentral background service.');
                 console.log('');
                 console.log('Run standalone, console application');
             }
-            console.log('   --user [username]                 Always login as [username] if account exists.');
-            console.log('   --port [number]                   Web server port number.');
-            console.log('   --redirport [number]              Creates an additional HTTP server to redirect users to the HTTPS server.');
-            console.log('   --exactports                      Server must run with correct ports or exit.');
-            console.log('   --noagentupdate                   Server will not update mesh agent native binaries.');
-            console.log('   --nedbtodb                        Transfer all NeDB records into current database.');
-            console.log('   --listuserids                     Show a list of a user identifiers in the database.');
-            console.log('   --cert [name], (country), (org)   Create a web server certificate with [name] server name.');
-            console.log('                                     country and organization can optionally be set.');
-            console.log('');
-            console.log('Server recovery commands, use only when MeshCentral is offline.');
-            console.log('   --createaccount [userid]          Create a new user account.');
-            console.log('   --resetaccount [userid]           Unlock an account, disable 2FA and set a new account password.');
-            console.log('   --adminaccount [userid]           Promote account to site administrator.');
+            console.log('   --user [username]\t\t\t\t\tAlways login as [username] if account exists.');
+            console.log('   --port [number]\t\t\t\t\tWeb server port number.');
+            console.log('   --redirport [number]\t\t\t\t\tCreates an additional HTTP server to redirect users to the HTTPS server.');
+            console.log('   --exactports\t\t\t\t\t\tServer must run with correct ports or exit.');
+            console.log('   --noagentupdate\t\t\t\t\tServer will not update mesh agent native binaries.');
+            console.log('   --nedbtodb\t\t\t\t\t\tTransfer all NeDB records into current database.');
+            console.log('   --listuserids\t\t\t\t\tShow a list of a user identifiers in the database.');
+            console.log('   --cert [name], (country), (org)\t\t\tCreate a web server certificate with [name] server name.');
+            console.log('\t\t\t\t\t\t\tcountry and organization can optionally be set.');
+            console.log('\r\nRun stateless, config files (config.json and certificates) are stored encrypted with [password] in the database.');
+            console.log('   --dblistconfigfile (password)\t\t\tShow the files in the db and optionally check the files against the password.');
+            console.log('   --dbpushconfigfiles (path) --configkey [password]\tThis will import the current configfiles or from (path) into the database.');
+            console.log('   --dbshowconfigfile [file] --configkey [password]\tShow contents of config [file].');
+            console.log('   --dbpullconfigfiles [path] --configkey [password]\tPull configfiles out of the database into [path].');
+            console.log('   --dbdeleteconfigfiles\t\t\t\tDelete config files from the database.');
+            console.log('   --loadconfigfromdb [password]\t\t\tRun meshcentral with configfiles found in the database.')
+            console.log('\r\nServer recovery commands, use only when MeshCentral is offline.');
+            console.log('   --createaccount [userid]\t\t\t\tCreate a new user account.');
+            console.log('   --resetaccount [userid]\t\t\t\tUnlock an account, disable 2FA and set a new account password.');
+            console.log('   --adminaccount [userid]\t\t\t\tPromote account to site administrator.');
             return;
         }
 
