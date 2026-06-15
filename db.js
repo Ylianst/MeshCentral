@@ -1878,9 +1878,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2161,13 +2158,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) {
-                obj.file.query('meshcentral').filter('type', '==', 'cfile').sort('_id').get(function (snapshots) {
-                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs);
-                });
-            }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
@@ -2434,9 +2424,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2686,9 +2673,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-            
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2988,9 +2972,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).toArray(func); }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 6 };
@@ -3206,9 +3187,6 @@ module.exports.CreateDB = function (parent, func) {
 
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
-
-            // List all configuration files
-            obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
 
             // Get database information
             obj.getDbStats = function (func) {
