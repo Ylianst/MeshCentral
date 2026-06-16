@@ -1258,7 +1258,7 @@
                         <div id="deskMobileMonitorRow" style="display:none;background:var(--bs-body-bg,#fff)">
                             <div class="d-flex align-items-center px-3 py-2 border-bottom" style="font-size:15px;color:var(--bs-body-color,#212529)"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span id="deskMobileMonitorIcons" class="ms-auto d-flex gap-2" style="font-size:20px"></span></div>
                         </div>
-                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
+                        <a id="deskKbdItem" class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
@@ -9798,6 +9798,11 @@
                         tp.innerHTML = '<i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>'
                             + (trackpadMode ? 'Disable Trackpad Mode' : 'Enable Trackpad Mode');
                     }
+                    var ki = Q('deskKbdItem');
+                    if (ki) {
+                        ki.innerHTML = '<i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>' + "On-screen Keyboard"
+                            + ' <i class="fa-solid ' + (_mobileKbdEnabled ? 'fa-toggle-on text-success' : 'fa-toggle-off text-secondary') + ' ms-1"></i>';
+                    }
                 }
             }
             QV('deskMobileActionsPanel', show);
@@ -9847,7 +9852,7 @@
                 row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
                     (_mobileZoomMode==='native' ? "Scale to Fit" : "Native Size (Scrollable)"),  'deskMobileToggleZoom();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'Q("DeskControl").click();deskCloseMobileActions()') +
-                row(cls, 'fa-keyboard',          "On-screen Keyboard",                       'toggleMobileKeyboard();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          "On-screen Keyboard" + ' <i class="fa-solid ' + (_mobileKbdEnabled?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'toggleMobileKeyboard();deskCloseMobileActions()') +
                 row(cls, 'fa-computer-mouse',    (trackpad ? "Disable Trackpad Mode" : "Enable Trackpad Mode"),  'deskToggleTrackpad();deskCloseMobileActions()') +
                 row(cls, 'fa-hand-pointer',      (swap ? "Disable Right-click Mode" : "Enable Right-click Mode"),   'deskToggleRightClickMode();deskCloseMobileActions()') +
                 row(cls, 'fa-font',              "Type Text",                                'showDeskType();deskCloseMobileActions()') +
@@ -11260,11 +11265,17 @@
                     if (fullscreen == true) { deskToggleFull(); }
                     _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
                     if (typeof _mobileModifiers !== 'undefined') { for (var _m in _mobileModifiers) _mobileModifiers[_m] = false; _updateMobileModifierUI(); }
-                    // Hide trackpad cursor and reset trackpad state on disconnect
+                    // Reset trackpad and soft keyboard state on disconnect
                     if (typeof trackpadMode !== 'undefined') {
                         trackpadMode = false;
                         var _tpc = document.getElementById('trackpadCursor');
                         if (_tpc) _tpc.style.display = 'none';
+                    }
+                    if (typeof _mobileKbdEnabled !== 'undefined') {
+                        _mobileKbdEnabled = false;
+                        var _sk = document.getElementById('softKeyboard');
+                        if (_sk) _sk.blur();
+                        _updateSoftKbdIcon();
                     }
                     webRtcDesktopReset();
                     deskPreferedStickyDisplay = 0;
@@ -12338,7 +12349,7 @@
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
+        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); var sk = Q('softKeyboard'); if (sk && !_mobileKbdEnabled && document.activeElement === sk) { sk.blur(); } }
         function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
@@ -12501,6 +12512,7 @@
         // Key events bubble to document handlers (backspace, enter, etc.).
         // Mobile keyboards fire 'input' instead of keypress -> SendKeyUnicode.
         var mobileKbdGotKeypress = false;
+        var _mobileKbdEnabled = false;
 
         function onSoftKeyboardInput(el) {
             if (!desktop || !desktop.m || !Q('DeskControl').checked) { el.value = ''; return; }
@@ -12524,21 +12536,29 @@
             _releaseMobileModifiers();
         }
 
-        function onSoftKeyboardFocusChange(focused) {
-            // Update the toggle button icon: solid keyboard = open, regular = closed
+        function _updateSoftKbdIcon() {
             var btn = Q('DeskSoftKbdBtn');
             if (btn) {
                 var icon = btn.querySelector('i');
-                if (icon) {
-                    icon.className = focused ? 'fa-solid fa-keyboard text-warning' : 'fa-solid fa-keyboard';
-                }
+                if (icon) icon.className = _mobileKbdEnabled ? 'fa-solid fa-keyboard text-warning' : 'fa-solid fa-keyboard';
             }
+            var ki = Q('deskKbdItem');
+            if (ki) {
+                ki.innerHTML = '<i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>' + "On-screen Keyboard"
+                    + ' <i class="fa-solid ' + (_mobileKbdEnabled ? 'fa-toggle-on text-success' : 'fa-toggle-off text-secondary') + ' ms-1"></i>';
+            }
+        }
+
+        function onSoftKeyboardFocusChange(focused) {
+            _updateSoftKbdIcon();
         }
 
         function toggleMobileKeyboard() {
             var kb = Q('softKeyboard');
             if (!kb) return;
-            if (document.activeElement === kb) { kb.blur(); } else { kb.focus(); }
+            _mobileKbdEnabled = !_mobileKbdEnabled;
+            if (_mobileKbdEnabled) { kb.focus(); } else { kb.blur(); }
+            _updateSoftKbdIcon();
         }
 
         function dtouchSendClick(clientX, clientY, button) {
