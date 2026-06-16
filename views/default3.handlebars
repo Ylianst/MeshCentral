@@ -12351,6 +12351,8 @@
         var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
         var dtouchLongPressTimer = null;
         var dtouchTwoFingerLastY = 0;
+        var dtouchLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var dtouchDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
         // Trackpad state (mirrors Classic Mobile)
         var trackpadMode      = false;
         var trackpadLastX     = null, trackpadLastY = null;
@@ -12360,6 +12362,8 @@
         var trackpadTapMoved  = false;
         var trackpadEdgeTimer = null;
         var trackpadEdgeDX    = 0, trackpadEdgeDY = 0;
+        var trackpadLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var trackpadDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
 
         function dtouchMakeEvent(clientX, clientY, button) {
             // When the canvas is rotated, crotX/crotY (agent-desktop-0.0.2.js) convert
@@ -12439,15 +12443,15 @@
         function trackpadStartEdgeScroll() {
             if (trackpadEdgeTimer) return;
             trackpadEdgeTimer = setInterval(function() {
-                if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
+                if ((!trackpadMode && !dtouchDragActive) || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
                 var dp = Q('deskarea3x') || Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                if (dtouchDragActive) { var dm = dtouchGetModule(); if (dm && Q('DeskControl').checked) dm.mousemove(dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
             }, 16);
         }
 
-        function trackpadCheckEdge() {
-            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect();
-            var cursorRect = Q('trackpadCursor').getBoundingClientRect();
-            var cx = cursorRect.left + 9, cy = cursorRect.top + 15, zone = 60;
+        function trackpadCheckEdge(cx, cy) {
+            if (cx === undefined) { var r = Q('trackpadCursor').getBoundingClientRect(); cx = r.left + 9; cy = r.top + 15; }
+            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect(), zone = 60;
             trackpadEdgeDX = cx < vpRect.left  + zone ? -Math.round((zone-(cx-vpRect.left))/4) :
                              cx > vpRect.right  - zone ?  Math.round((zone-(vpRect.right-cx))/4) : 0;
             trackpadEdgeDY = cy < vpRect.top   + zone ? -Math.round((zone-(cy-vpRect.top))/4) :
@@ -12500,12 +12504,14 @@
             setSessionActivity();
             deskCloseMobileActions();
             dtouchMoved = false;
+            dtouchLongPressed = false; dtouchDragActive = false; trackpadStopEdgeScroll();
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
+                trackpadLongPressed = false; trackpadDragActive = false;
                 if (e.touches.length === 2) {
                     // Fall through to pinch-start recording below (same as direct mode)
                 } else if (e.touches.length === 1) {
@@ -12517,7 +12523,7 @@
                     dtouchLongPressTimer = setTimeout(function() {
                         dtouchLongPressTimer = null;
                         if (trackpadTapMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
-                        trackpadSendClick(2);
+                        trackpadLongPressed = true; // armed: next move -> drag, lift -> right-click
                         trackpadTapMoved = true;
                     }, 500);
                     return;
@@ -12550,7 +12556,7 @@
             dtouchLongPressTimer = setTimeout(function() {
                 dtouchLongPressTimer = null;
                 if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
-                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                dtouchLongPressed = true; // armed: next move -> drag, lift -> right-click
                 dtouchMoved = true;
             }, 500);
         }
@@ -12569,6 +12575,11 @@
                     if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
                         trackpadTapMoved = true;
                         if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                        // First move after long press -> start drag
+                        if (trackpadLongPressed && !trackpadDragActive && Q('DeskControl').checked) {
+                            trackpadDragActive = true;
+                            var dm = dtouchGetModule(); if (dm) dm.mousedown(trackpadMakeEvent(0));
+                        }
                     }
                     var rect = Q('Desk').getBoundingClientRect();
                     trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
@@ -12580,8 +12591,8 @@
                 if (e.touches.length !== 2) return;
                 trackpadTapMoved = true; // prevent spurious tap on finger lift
             }
-            // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
-            if (_mobileZoomMode === 'native' && e.touches.length === 1) {
+            // Native zoom mode — 1 finger: pan (skipped when drag gesture is active)
+            if (_mobileZoomMode === 'native' && e.touches.length === 1 && !dtouchLongPressed && !dtouchDragActive) {
                 var t = e.touches[0];
                 var dx = t.clientX - dtouchLastX, dy = t.clientY - dtouchLastY;
                 dtouchLastX = t.clientX; dtouchLastY = t.clientY;
@@ -12646,9 +12657,28 @@
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
             dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+            // Stream active drag
+            if (dtouchDragActive) {
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                trackpadCheckEdge(t.clientX, t.clientY);
+                return;
+            }
+            // Finger moved after long press -> start drag
+            if (dtouchLongPressed) {
+                if (Math.abs(t.clientX - dtouchStartX) > 4 || Math.abs(t.clientY - dtouchStartY) > 4) {
+                    if (Q('DeskControl').checked) {
+                        dtouchDragActive = true;
+                        var dm = dtouchGetModule();
+                        if (dm) { dm.mousedown(dtouchMakeEvent(dtouchStartX, dtouchStartY, 0)); dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                    } else { dtouchLongPressed = false; }
+                }
+                return;
+            }
+            // Normal cursor move
             if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
             }
         }
 
@@ -12661,6 +12691,16 @@
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
                 trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
+                if (trackpadDragActive) {
+                    trackpadDragActive = false; trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mouseup(trackpadMakeEvent(0)); }
+                    return;
+                }
+                if (trackpadLongPressed) {
+                    trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) trackpadSendClick(2);
+                    return;
+                }
                 if (trackpadTapTimer !== null && !trackpadTapMoved) {
                     clearTimeout(trackpadTapTimer); trackpadTapTimer = null;
                     if (Q('DeskControl').checked) trackpadSendClick(0);
@@ -12671,6 +12711,19 @@
             if (!Q('DeskControl').checked) return;
             if (e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
+            // Drag end: send mouseup at final finger position
+            if (dtouchDragActive) {
+                dtouchDragActive = false; dtouchLongPressed = false;
+                trackpadStopEdgeScroll();
+                var dm = dtouchGetModule(); if (dm) dm.mouseup(dtouchMakeEvent(t.clientX, t.clientY, 0));
+                return;
+            }
+            // Long press without drag -> right-click
+            if (dtouchLongPressed) {
+                dtouchLongPressed = false;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                return;
+            }
             // 30px threshold (not dtouchMoved's 8px) — finger pressure causes micro-movement
             // that would block taps; only real drags exceed 30px.
             var totalDx = Math.abs(t.clientX - dtouchStartX);
