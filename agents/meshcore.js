@@ -5676,8 +5676,28 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     } else {
                         // Send the full data to the server first
                         mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results });
-                        // Mask BitLocker recovery keys for non-admins in the console output only
-                        var replacer = (rights != MESHRIGHT_ADMIN) ? function (k, val) { return (k == 'recoveryPassword') ? '(Only admins)' : val; } : null;
+                        // Mask BitLocker recovery keys for non-admins in the console output only and optionally replace codes with strings
+                        pretty = !(args['_'].length > 0 && args['_'][0] == 'raw');
+                        const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: 'AES-128', 4: 'AES-256', 5: "Hardware encryption", 6: 'XTS-AES-128', 7: 'XTS-AES-256' };
+                        const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                        const conversionStatus = { "-1": "Unknown", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
+                        const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
+                        var replacer = function (k, val) {
+                            if ( k === 'recoveryPassword' && rights != MESHRIGHT_ADMIN) { return '(Only admins)'; }
+                            else if (pretty && typeof val === 'number') {
+                                switch (k) {
+                                    case 'encryptionMethod':
+                                        return (val >= 1 && val <= 7)  ? encMethod[val] : val;
+                                    case 'protectionStatus':
+                                        return (val >= 0 && val <= 2) ? protectionStatus[val] : val;
+                                    case 'volumeStatus':
+                                        return (val >= -1 && val <= 5) ? conversionStatus[val] : val;
+                                    case 'dType':
+                                        return (val >= 1 && val <= 6) ? driveType[val]: val;
+                                }
+                            }
+                            return val;
+                        };
                         sendConsoleText(JSON.stringify(results, replacer, 1), this.sessionid);
                     }
                 });
