@@ -7040,88 +7040,101 @@ function sendNetworkUpdate(force) {
 }
 
 // Called periodically to check if we need to send updates to the server
+var sendPeriodicServerUpdateInProgress = false;
 function sendPeriodicServerUpdate(flags, force) {
     if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
-    if (!flags) { flags = 0xFFFFFFFF; }
-    if (!force) { force = false; }
 
-    // If we have a connected MEI, get Intel ME information
-    if ((flags & 1) && (amt != null) && (amt.state == 2)) {
-        delete meshCoreObj.intelamt;
-        amt.getMeiState(9, function (meinfo) {
-            meshCoreObj.intelamt = meinfo;
-            meshCoreObj.intelamt.microlms = amt.lmsstate;
-            meshCoreObjChanged();
-        });
-    }
+    // Defensive guard against re-entrancy. The info collectors below are currently
+    // non-blocking (Linux av()/firewall() are async; Windows uses native WMI), so
+    // nothing here pumps the event loop and this guard never actually fires. It's
+    // kept as a safety net: if a future collector re-introduces a blocking
+    // child.waitExit() (which runs a nested event loop), a timer firing inside it
+    // could re-enter and throw 'waitExit() already in progress'. Skipping the
+    // overlapping run avoids that.
+    if (sendPeriodicServerUpdateInProgress) return;
+    sendPeriodicServerUpdateInProgress = true;
+    try {
+        if (!flags) { flags = 0xFFFFFFFF; }
+        if (!force) { force = false; }
 
-    // Update network information
-    if (flags & 2) { sendNetworkUpdateNagle(false); }
-
-    // Update anti-virus information
-    if ((flags & 4) && (process.platform == 'win32')) {
-        // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
-        try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
-        //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
-    }
-    // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
-    // spawn child processes), so they don't block this periodic update with a nested
-    // waitExit() loop. Results are applied in the callbacks and flushed via
-    // meshCoreObjChanged().
-    if ((flags & 4) && (process.platform == 'linux')) {
-        try {
-            require('linux-info').av(function (avResult) {
-                try {
-                    var lsc = {};
-                    if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
-                    require('linux-info').firewall(function (fwResult) {
-                        try {
-                            if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
-                            if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
-                        } catch (ex) { }
-                    });
-                } catch (ex) { }
+        // If we have a connected MEI, get Intel ME information
+        if ((flags & 1) && (amt != null) && (amt.state == 2)) {
+            delete meshCoreObj.intelamt;
+            amt.getMeiState(9, function (meinfo) {
+                meshCoreObj.intelamt = meinfo;
+                meshCoreObj.intelamt.microlms = amt.lmsstate;
+                meshCoreObjChanged();
             });
-        } catch (ex) { }
-    }
+        }
 
-    if (process.platform == 'win32') {
-        if (require('MeshAgent')._securitycenter == null) {
+        // Update network information
+        if (flags & 2) { sendNetworkUpdateNagle(false); }
+
+        // Update anti-virus information
+        if ((flags & 4) && (process.platform == 'win32')) {
+            // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
+            try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
+            //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
+        }
+        // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
+        // spawn child processes), so they don't block this periodic update with a nested
+        // waitExit() loop. Results are applied in the callbacks and flushed via
+        // meshCoreObjChanged().
+        if ((flags & 4) && (process.platform == 'linux')) {
             try {
-                require('MeshAgent')._securitycenter = require('win-securitycenter').status();
-                meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
-                require('win-securitycenter').on('changed', function () {
-                    require('MeshAgent')._securitycenter = require('win-securitycenter').status();
-                    meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
-                    require('MeshAgent').SendCommand({ action: 'coreinfo', wsc: require('MeshAgent')._securitycenter });
+                require('linux-info').av(function (avResult) {
+                    try {
+                        var lsc = {};
+                        if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
+                        require('linux-info').firewall(function (fwResult) {
+                            try {
+                                if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
+                                if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
+                            } catch (ex) { }
+                        });
+                    } catch (ex) { }
                 });
             } catch (ex) { }
         }
 
-        // Get Defender Information
-        try {
-            meshCoreObj.defender = require('win-info').defender();
-            meshCoreObjChanged();
-        } catch (ex) { }
+        if (process.platform == 'win32') {
+            if (require('MeshAgent')._securitycenter == null) {
+                try {
+                    require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                    meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
+                    require('win-securitycenter').on('changed', function () {
+                        require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                        meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
+                        require('MeshAgent').SendCommand({ action: 'coreinfo', wsc: require('MeshAgent')._securitycenter });
+                    });
+                } catch (ex) { }
+            }
 
-        // Calculate Windows Idle Time
-        try {
-            require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
-                meshCoreObj.idletime = seconds;
+            // Get Defender Information
+            try {
+                meshCoreObj.defender = require('win-info').defender();
                 meshCoreObjChanged();
-            });
-        } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
-    }
+            } catch (ex) { }
 
-    // Send available data right now
-    if (force) {
-        meshCoreObj = sortObjRec(meshCoreObj);
-        var x = JSON.stringify(meshCoreObj);
-        if (x != LastPeriodicServerUpdate) {
-            LastPeriodicServerUpdate = x;
-            mesh.SendCommand(meshCoreObj);
+            // Calculate Windows Idle Time
+            try {
+                require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
+                    meshCoreObj.idletime = seconds;
+                    meshCoreObjChanged();
+                });
+            } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
         }
-    }
+
+        // Send available data right now
+        if (force) {
+            meshCoreObj = sortObjRec(meshCoreObj);
+            var x = JSON.stringify(meshCoreObj);
+            if (x != LastPeriodicServerUpdate) {
+                LastPeriodicServerUpdate = x;
+                mesh.SendCommand(meshCoreObj);
+            }
+        }
+    } finally { sendPeriodicServerUpdateInProgress = false; }
 }
 
 // Sort the names in an object
