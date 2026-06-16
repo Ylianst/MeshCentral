@@ -7063,15 +7063,24 @@ function sendPeriodicServerUpdate(flags, force) {
         try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
         //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
     }
-    // Update Linux AV/Firewall information
+    // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
+    // spawn child processes), so they don't block this periodic update with a nested
+    // waitExit() loop. Results are applied in the callbacks and flushed via
+    // meshCoreObjChanged().
     if ((flags & 4) && (process.platform == 'linux')) {
         try {
-            var lsc = {};
-            var avResult = require('linux-info').av();
-            if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
-            var fwResult = require('linux-info').firewall();
-            if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
-            if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
+            require('linux-info').av(function (avResult) {
+                try {
+                    var lsc = {};
+                    if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
+                    require('linux-info').firewall(function (fwResult) {
+                        try {
+                            if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
+                            if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
+                        } catch (ex) { }
+                    });
+                } catch (ex) { }
+            });
         } catch (ex) { }
     }
 
