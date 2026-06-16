@@ -2400,13 +2400,6 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
-        //
-		// INSTALLED SOFTWARE
-		//
-		var installedAppsData = null;       // Gespeicherte App-Daten
-		var installedAppsLoading = false;   // Ladestatus
-		var showStoreApps = false;          // Store Apps anzeigen?
-
         /*
         // Check browser dark mode preference
         var prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -8822,6 +8815,12 @@
                 } else {
                     QV('p10deviceBattery', false);
                 }
+
+                // Clear installedAppsData for Software tab
+                installedAppsData = { desktop: [], store: [] };
+                installedAppsLoading = false;
+                installedAppsLoadingType = 0;
+                showStoreApps = false;
 
                 // Add node name
                 var nname = '&nbsp;-&nbsp;' + EscapeHtml(node.name), nnameEx;
@@ -22269,12 +22268,10 @@
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11, 12].indexOf(x) >= 0) ? 'hidden' : null;
 
-            // Software Panel - Apps laden wenn Panel 18 aktiv wird
+            // Software Panel
 			if (x == 18) {
 				if (currentNode == null) { go(1); return; }
-					QH('p18deviceName', EscapeHtml(currentNode.name));
-				// Optional: Apps automatisch laden
-				loadInstalledApps();
+				if (installedAppsData.desktop.length == 0) loadInstalledApps();
 			}
         }
 
