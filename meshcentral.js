@@ -1182,7 +1182,7 @@ function CreateMeshCentralServer(config, args) {
                             if (err == null) {
                                 if (docs.length == 0) { console.log("File not found."); } else {
                                     const data = obj.db.decryptData(obj.args.configkey, docs[0].data);
-                                    if (data == null) { console.log("Invalid config key."); } else { console.log(data); }
+                                    if (data == null) { console.log("Invalid config key."); } else { console.log(data.toString()); }
                                 }
                             } else { console.log("Unable to read from database."); }
                             process.exit();
