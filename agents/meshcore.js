@@ -5421,8 +5421,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
                     response = JSON.stringify(require('win-info').av(), null, 1);
-                } if (process.platform == 'linux') {
-                    response = JSON.stringify(require('linux-info').av(), null, 1);
+                } else if (process.platform == 'linux') {
+                    require('linux-info').av(function (r) { sendConsoleText(JSON.stringify(r, null, 1), sessionid); });
+                    response = null;
                 } else {
                     response = 'Not supported on the platform';
                 }
