@@ -1063,22 +1063,41 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
 
+            // Ensure a (non-TTL) index exists. createIndex is idempotent server-side (a no-op,
+            // no rebuild, when a same-named index already exists), and the name guard means a
+            // steady-state startup issues ZERO index commands. We deliberately NEVER call
+            // dropIndexes(): when many servers share one database a wholesale drop aborts every
+            // other server's in-flight index build, causing a thundering-herd rebuild livelock
+            // that never converges. Without drops, builds are monotonic and all servers converge.
+            function ensureIndex(collection, existingIndexes, name, keySpec, options) {
+                if (existingIndexes[name] != null) return;
+                collection.createIndex(keySpec, Object.assign({ name: name }, options || {}));
+            }
+
+            // Ensure a TTL (expireAfterSeconds) index exists with the expected expiration. Missing
+            // -> create. Present with a different expiration -> change it IN PLACE via collMod (no
+            // drop, no rebuild, no window without the index), which is safe to run from many servers.
+            function ensureExpireIndex(collection, collName, existingIndexes, name, keySpec, expireAfterSeconds) {
+                var existing = existingIndexes[name];
+                if (existing == null) {
+                    collection.createIndex(keySpec, { expireAfterSeconds: expireAfterSeconds, name: name });
+                } else if (existing.expireAfterSeconds != expireAfterSeconds) {
+                    console.log('Updating ' + collName + ' ' + name + ' TTL (' + existing.expireAfterSeconds + ' -> ' + expireAfterSeconds + ')...');
+                    db.command({ collMod: collName, index: { name: name, expireAfterSeconds: expireAfterSeconds } }, function (err) {
+                        if (err != null) { console.log('Unable to update ' + collName + ' ' + name + ' TTL: ' + err); }
+                    });
+                }
+            }
+
             // Setup MongoDB main collection and indexes
             obj.file = db.collection(dbcollectionname);
             obj.file.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
-                    console.log('Resetting main indexes...');
-                    // DISABLED index drop/create
-                    // obj.file.dropIndexes(function (err) {
-                    //     obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                    //     obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                    //     obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                    //     obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
-                    // });
-                }
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                ensureIndex(obj.file, indexesByName, 'TypeDomainMesh1', { type: 1, domain: 1, meshid: 1 }, { sparse: 1 }); // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                ensureIndex(obj.file, indexesByName, 'Email1', { email: 1 }, { sparse: 1 });                              // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                ensureIndex(obj.file, indexesByName, 'Mesh1', { meshid: 1 }, { sparse: 1 });                              // Speeds up RemoveMesh()
+                ensureIndex(obj.file, indexesByName, 'AmtUuid1', { 'intelamt.uuid': 1 }, { sparse: 1 });                  // Speeds up getAmtUuidMeshNode()
             });
 
             // Setup the changeStream on the MongoDB main collection if possible
@@ -1146,53 +1165,21 @@ module.exports.CreateDB = function (parent, func) {
             // Setup MongoDB events collection and indexes
             obj.eventsfile = db.collection('events'); // Collection containing all events
             obj.eventsfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['UseridAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting events indexes...");
-                    // DISABLED index drop/create
-                    // obj.eventsfile.dropIndexes(function (err) {
-                    //     obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
-                    //     obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
-                    //     obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                    //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                    // });
-                } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
-                    // Reset the timeout index
-                    console.log("Resetting events expire index...");
-                    // DISABLED index drop/create
-                    // obj.eventsfile.dropIndex('ExpireTime1', function (err) {
-                    //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                    // });
-                }
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                ensureIndex(obj.eventsfile, indexesByName, 'UseridAction1', { userid: 1, action: 1 }, { sparse: 1 });
+                ensureIndex(obj.eventsfile, indexesByName, 'DomainNodeTime1', { domain: 1, nodeid: 1, time: -1 }, { sparse: 1 });
+                ensureIndex(obj.eventsfile, indexesByName, 'IdsAndTime1', { ids: 1, time: -1 }, { sparse: 1 });
+                ensureExpireIndex(obj.eventsfile, 'events', indexesByName, 'ExpireTime1', { time: 1 }, expireEventsSeconds);
             });
 
             // Setup MongoDB power events collection and indexes
             obj.powerfile = db.collection('power');                                 // Collection containing all power events
             obj.powerfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting power events indexes...");
-                    // DISABLED index drop/create
-                    // obj.powerfile.dropIndexes(function (err) {
-                    //     // Create all indexes
-                    //     obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
-                    //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                    // });
-                } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
-                    // Reset the timeout index
-                    console.log("Resetting power events expire index...");
-                    // DISABLED index drop/create
-                    // obj.powerfile.dropIndex('ExpireTime1', function (err) {
-                    //     // Reset the expire power events index
-                    //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                    // });
-                }
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                ensureIndex(obj.powerfile, indexesByName, 'NodeIdAndTime1', { nodeid: 1, time: 1 }, { sparse: 1 });
+                ensureExpireIndex(obj.powerfile, 'power', indexesByName, 'ExpireTime1', { time: 1 }, expirePowerEventsSeconds);
             });
 
             // Setup MongoDB smbios collection, no indexes needed
@@ -1201,27 +1188,10 @@ module.exports.CreateDB = function (parent, func) {
             // Setup MongoDB server stats collection
             obj.serverstatsfile = db.collection('serverstats');                     // Collection of server stats
             obj.serverstatsfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting server stats indexes...");
-                    // DISABLED index drop/create
-                    // obj.serverstatsfile.dropIndexes(function (err) {
-                    //     // Create all indexes
-                    //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                    //     obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
-                    // });
-                } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
-                    // Reset the timeout index
-                    console.log("Resetting server stats expire index...");
-                    // DISABLED index drop/create
-                    // obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
-                    //     // Reset the expire server stats index
-                    //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                    // });
-                }
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                ensureExpireIndex(obj.serverstatsfile, 'serverstats', indexesByName, 'ExpireTime1', { time: 1 }, expireServerStatsSeconds);
+                ensureExpireIndex(obj.serverstatsfile, 'serverstats', indexesByName, 'ExpireTime2', { expire: 1 }, 0);  // Auto-expire events
             });
 
         // Setup plugin info collection
