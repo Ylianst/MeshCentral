@@ -62,10 +62,14 @@ function windows_volumes()
     // RegExps for the specific patterns in the manage-bde output, case-insensitive multiline
     var reID = new RegExp("{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}}", "mi");
     var rePass = new RegExp("[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}", "mi");
+
+    var pending = 0, done = false;
+    function resolver() { if (done && (pending === 0)) { p1._res({ error: error, drives: drives }); } }
+
     try {
         var wmi = require('win-wmi-fixed');
 
-        wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType'])
+        wmi.query('ROOT\\CIMV2', 'SELECT DeviceID,VolumeName,FileSystem,Size,FreeSpace,DriveType FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType'], false, 5000)
             .forEach(function (disk) {
                 if (!disk || !disk['DeviceID']) { return; }   // skip rows without a DeviceID. Shouldn't be possible, but could in case of wmi funkyness
                 var drive = disk['DeviceID'].slice(0, -1);
@@ -81,7 +85,7 @@ function windows_volumes()
         // The MicrosoftVolumeEncryption namespace is admin-only and manage-bde needs elevation; skip both entirely when not elevated, saves waiting unneccessary on time-out of wmi-query if run as user
         if (require('user-sessions').isRoot()) {
             var child_process = require('child_process');
-            wmi.query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'])
+            wmi.query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT DriveLetter,ConversionStatus,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume', ['DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'], false, 5000)
                 .forEach(function (vol) {
                     if (!vol || !vol['DriveLetter']) { return; }   // there can be volumes without a DriveLetter(=null), which errors the slice
                     var drive = vol['DriveLetter'].slice(0, -1);
@@ -91,16 +95,24 @@ function windows_volumes()
                     drives[drive].protectionStatus = vol['ProtectionStatus'];
                     // Only run manage-bde on encrypted drives (ConversionStatus/volumeStatus 0 = FullyDecrypted, otherwise some sort of encryption)
                     if (drives[drive].volumeStatus != 0) {
-                        var keychild = child_process.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
+                        pending++;
+                        var keychild = child_process.execFile(process.env['windir'] + '\\system32\\manage-bde.exe', ['manage-bde', '-protectors', '-get', drive + ':', '-Type', 'recoverypassword'], {});
                         keychild.stdout.str = '';
                         keychild.stdout.on('data', function (c) { this.str += c.toString(); });
-                        keychild.waitExit(4000);
-                        var id = keychild.stdout.str.match(reID);
-                        var rp = keychild.stdout.str.match(rePass);
-                        // a recovery password protector should always have an identifier
-                        if (id) { drives[drive].identifier = id[0]; }
-                        // recoveryPW can be empty if volume is locked
-                        if (rp) { drives[drive].recoveryPassword = rp[0]; }
+                        keychild.target = drive;
+                        // Guard against a hung manage-bde
+                        keychild.timeout = setTimeout(function () { try { keychild.kill(); } catch (ex) { } }, 4000);
+                        keychild.on('exit', function () {
+                            clearTimeout(this.timeout);
+                            var id = this.stdout.str.match(reID);
+                            var rp = this.stdout.str.match(rePass);
+                            // a recovery password protector should always have an identifier
+                            if (id) { drives[this.target].identifier = id[0]; }
+                            // recoveryPW can be empty if volume is locked
+                            if (rp) { drives[this.target].recoveryPassword = rp[0]; }
+                            pending--;
+                            resolver();
+                        });
                     }
                 });
         }
@@ -108,7 +120,8 @@ function windows_volumes()
         console.log('windows_volumes error: ' + (e && e.message ? e.message : e));
         error = e;    // add error, fall through to resolve below
     }
-    p1._res({ error: error, drives: drives });    // always resolve; error is null on success, partial drives kept on failure.
+    done = true;
+    resolver();    // if not root, resolve with partial info, otherwise the last child process resolves
     return (p1);
 }
 
