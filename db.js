@@ -1071,12 +1071,13 @@ module.exports.CreateDB = function (parent, func) {
                 for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
                 if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
                     console.log('Resetting main indexes...');
-                    obj.file.dropIndexes(function (err) {
-                        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                        obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                        obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                        obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
-                    });
+                    // DISABLED index drop/create
+                    // obj.file.dropIndexes(function (err) {
+                    //     obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                    //     obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                    //     obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
+                    //     obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
+                    // });
                 }
             });
 
@@ -1151,18 +1152,20 @@ module.exports.CreateDB = function (parent, func) {
                 if ((indexCount != 5) || (indexesByName['UseridAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
                     // Reset all indexes
                     console.log("Resetting events indexes...");
-                    obj.eventsfile.dropIndexes(function (err) {
-                        obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
-                        obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
-                        obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                        obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                    });
+                    // DISABLED index drop/create
+                    // obj.eventsfile.dropIndexes(function (err) {
+                    //     obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
+                    //     obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
+                    //     obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
+                    //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                    // });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
                     // Reset the timeout index
                     console.log("Resetting events expire index...");
-                    obj.eventsfile.dropIndex('ExpireTime1', function (err) {
-                        obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                    });
+                    // DISABLED index drop/create
+                    // obj.eventsfile.dropIndex('ExpireTime1', function (err) {
+                    //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                    // });
                 }
             });
 
@@ -1175,18 +1178,20 @@ module.exports.CreateDB = function (parent, func) {
                 if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
                     // Reset all indexes
                     console.log("Resetting power events indexes...");
-                    obj.powerfile.dropIndexes(function (err) {
-                        // Create all indexes
-                        obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
-                        obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                    });
+                    // DISABLED index drop/create
+                    // obj.powerfile.dropIndexes(function (err) {
+                    //     // Create all indexes
+                    //     obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
+                    //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                    // });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
                     // Reset the timeout index
                     console.log("Resetting power events expire index...");
-                    obj.powerfile.dropIndex('ExpireTime1', function (err) {
-                        // Reset the expire power events index
-                        obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                    });
+                    // DISABLED index drop/create
+                    // obj.powerfile.dropIndex('ExpireTime1', function (err) {
+                    //     // Reset the expire power events index
+                    //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                    // });
                 }
             });
 
@@ -1202,18 +1207,20 @@ module.exports.CreateDB = function (parent, func) {
                 if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
                     // Reset all indexes
                     console.log("Resetting server stats indexes...");
-                    obj.serverstatsfile.dropIndexes(function (err) {
-                        // Create all indexes
-                        obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                        obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
-                    });
+                    // DISABLED index drop/create
+                    // obj.serverstatsfile.dropIndexes(function (err) {
+                    //     // Create all indexes
+                    //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                    //     obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
+                    // });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
                     // Reset the timeout index
                     console.log("Resetting server stats expire index...");
-                    obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
-                        // Reset the expire server stats index
-                        obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                    });
+                    // DISABLED index drop/create
+                    // obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
+                    //     // Reset the expire server stats index
+                    //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                    // });
                 }
             });
 
@@ -1238,12 +1245,13 @@ module.exports.CreateDB = function (parent, func) {
             for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
             if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
                 console.log("Resetting main indexes...");
-                obj.file.dropIndexes(function (err) {
-                    obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                    obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                    obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                    obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
-                });
+                // DISABLED index drop/create
+                // obj.file.dropIndexes(function (err) {
+                //     obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                //     obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                //     obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
+                //     obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
+                // });
             }
         });
 
@@ -1256,18 +1264,20 @@ module.exports.CreateDB = function (parent, func) {
             if ((indexCount != 5) || (indexesByName['UseridAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
                 // Reset all indexes
                 console.log("Resetting events indexes...");
-                obj.eventsfile.dropIndexes(function (err) {
-                    obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
-                    obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
-                    obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                });
+                // DISABLED index drop/create
+                // obj.eventsfile.dropIndexes(function (err) {
+                //     obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
+                //     obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
+                //     obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
+                //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                // });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
                 // Reset the timeout index
                 console.log("Resetting events expire index...");
-                obj.eventsfile.dropIndex('ExpireTime1', function (err) {
-                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                });
+                // DISABLED index drop/create
+                // obj.eventsfile.dropIndex('ExpireTime1', function (err) {
+                //     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
+                // });
             }
         });
 
@@ -1280,18 +1290,20 @@ module.exports.CreateDB = function (parent, func) {
             if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
                 // Reset all indexes
                 console.log("Resetting power events indexes...");
-                obj.powerfile.dropIndexes(function (err) {
-                    // Create all indexes
-                    obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
-                    obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                });
+                // DISABLED index drop/create
+                // obj.powerfile.dropIndexes(function (err) {
+                //     // Create all indexes
+                //     obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
+                //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                // });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
                 // Reset the timeout index
                 console.log("Resetting power events expire index...");
-                obj.powerfile.dropIndex('ExpireTime1', function (err) {
-                    // Reset the expire power events index
-                    obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                });
+                // DISABLED index drop/create
+                // obj.powerfile.dropIndex('ExpireTime1', function (err) {
+                //     // Reset the expire power events index
+                //     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
+                // });
             }
         });
 
@@ -1307,18 +1319,20 @@ module.exports.CreateDB = function (parent, func) {
             if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
                 // Reset all indexes
                 console.log("Resetting server stats indexes...");
-                obj.serverstatsfile.dropIndexes(function (err) {
-                    // Create all indexes
-                    obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                    obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
-                });
+                // DISABLED index drop/create
+                // obj.serverstatsfile.dropIndexes(function (err) {
+                //     // Create all indexes
+                //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                //     obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
+                // });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
                 // Reset the timeout index
                 console.log("Resetting server stats expire index...");
-                obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
-                    // Reset the expire server stats index
-                    obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                });
+                // DISABLED index drop/create
+                // obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
+                //     // Reset the expire server stats index
+                //     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
+                // });
             }
         });
 
@@ -1361,25 +1375,28 @@ module.exports.CreateDB = function (parent, func) {
         // Start NeDB main collection and setup indexes
         obj.file = new Datastore(datastoreOptions);
         obj.file.setAutocompactionInterval(86400000); // Compact once a day
-        obj.file.ensureIndex({ fieldName: 'type' });
-        obj.file.ensureIndex({ fieldName: 'domain' });
-        obj.file.ensureIndex({ fieldName: 'meshid', sparse: true });
-        obj.file.ensureIndex({ fieldName: 'nodeid', sparse: true });
-        obj.file.ensureIndex({ fieldName: 'email', sparse: true });
+        // DISABLED index create
+        // obj.file.ensureIndex({ fieldName: 'type' });
+        // obj.file.ensureIndex({ fieldName: 'domain' });
+        // obj.file.ensureIndex({ fieldName: 'meshid', sparse: true });
+        // obj.file.ensureIndex({ fieldName: 'nodeid', sparse: true });
+        // obj.file.ensureIndex({ fieldName: 'email', sparse: true });
 
         // Setup the events collection and setup indexes
         obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.eventsfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
-        obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
-        obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
+        // DISABLED index create
+        // obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
+        // obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
+        // obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
         obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup the power collection and setup indexes
         obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.powerfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
-        obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
+        // DISABLED index create
+        // obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
+        // obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
         obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup the SMBIOS collection, for NeDB we don't setup SMBIOS since NeDB will corrupt the database. Remove any existing ones.
@@ -1389,8 +1406,9 @@ module.exports.CreateDB = function (parent, func) {
         // Setup the server stats collection and setup indexes
         obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
         obj.serverstatsfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
-        obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
+        // DISABLED index create
+        // obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
+        // obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
         obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
         // Setup plugin info collection
