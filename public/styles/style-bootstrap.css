@@ -3503,11 +3503,6 @@ body:not(.fullscreen) .notifiyBox {
     color: #000;
 }
 
-.table td,
-.table th {
-    padding: 0.05rem !important; /* Decrease padding to reduce row height */
-}
-
 .btn-close {
     background-color: white !important;
     opacity: 1 !important;
@@ -3937,6 +3932,7 @@ body.is-mobile #p14title,
 body.is-mobile #p15title,
 body.is-mobile #p16title,
 body.is-mobile #p17title,
+body.is-mobile #p18title,
 body.is-mobile #p19title,
 body.is-mobile #p20title,
 body.is-mobile #p21title,
@@ -3981,7 +3977,7 @@ body.night.is-mobile #p10title, body.night.is-mobile #p11title,
 body.night.is-mobile #p12title, body.night.is-mobile #p13title,
 body.night.is-mobile #p14title, body.night.is-mobile #p15title,
 body.night.is-mobile #p16title, body.night.is-mobile #p17title,
-body.night.is-mobile #p19title,
+body.night.is-mobile #p18title, body.night.is-mobile #p19title,
 body.night.is-mobile #p20title, body.night.is-mobile #p21title,
 body.night.is-mobile #p30title, body.night.is-mobile #p31title,
 body.night.is-mobile #p51title {
@@ -4001,6 +3997,7 @@ body.is-mobile #p14BackButton,
 body.is-mobile #p15BackButton,
 body.is-mobile #p16BackButton,
 body.is-mobile #p17BackButton,
+body.is-mobile #p18BackButton,
 body.is-mobile #p19BackButton,
 body.is-mobile #p20BackButton,
 body.is-mobile #p21BackButton,
@@ -4025,6 +4022,7 @@ body.is-mobile #p14BackButton .fa-square-caret-left,
 body.is-mobile #p15BackButton .fa-square-caret-left,
 body.is-mobile #p16BackButton .fa-square-caret-left,
 body.is-mobile #p17BackButton .fa-square-caret-left,
+body.is-mobile #p18BackButton .fa-square-caret-left,
 body.is-mobile #p19BackButton .fa-square-caret-left,
 body.is-mobile #p20BackButton .fa-square-caret-left,
 body.is-mobile #p21BackButton .fa-square-caret-left,
@@ -4045,6 +4043,7 @@ body.is-mobile #p14title .fs-4,
 body.is-mobile #p15title .fs-4,
 body.is-mobile #p16title .fs-4,
 body.is-mobile #p17title .fs-4,
+body.is-mobile #p18title .fs-4,
 body.is-mobile #p19title .fs-4,
 body.is-mobile #p20title .fs-4,
 body.is-mobile #p21title .fs-4,
