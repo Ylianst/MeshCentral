@@ -94,7 +94,7 @@ function windows_volumes()
                         var keychild = child_process.execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
                         keychild.stdout.str = '';
                         keychild.stdout.on('data', function (c) { this.str += c.toString(); });
-                        keychild.waitExit();
+                        keychild.waitExit(4000);
                         var id = keychild.stdout.str.match(reID);
                         var rp = keychild.stdout.str.match(rePass);
                         // a recovery password protector should always have an identifier
