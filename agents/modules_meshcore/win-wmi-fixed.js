@@ -107,6 +107,21 @@ const ResultsFunctions = [
 ];
 
 //
+// Reference to IWbemCallResult can be found at:
+// https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nn-wbemcli-iwbemcallresult
+// Used for semisynchronous calls (WBEM_FLAG_RETURN_IMMEDIATELY): poll GetResultObject() with a timeout.
+//
+const CallResultFunctions = [
+        'QueryInterface',
+        'AddRef',
+        'Release',
+        'GetResultObject',
+        'GetResultString',
+        'GetResultServices',
+        'GetCallStatus'
+];
+
+//
 // Reference to IWbemClassObject can be found at:
 // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nn-wbemcli-iwbemclassobject
 //
@@ -710,4 +725,222 @@ function query(resourceString, queryString, fields, includeSysProp, timeout, ses
     return (ret);
 }
 
-module.exports = { query: query, queryAsync: queryAsync };
+// Helperfunction to avoid annoying backslash/double quote escapes
+function buildEscapePath(className, keys) {
+    if (!keys || Object.keys(keys).length === 0) { return className; }
+    var parts = [];
+    for (var k in keys) {
+        var val = keys[k];
+        // Numeric keys are written as is, the rest gets an escape
+        if (typeof val === 'number') { parts.push(k + '=' + val); }
+        else { parts.push(k + '="' + ('' + val).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'); }
+    }
+    return className + '.' + parts.join(',');
+}
+
+// Write a single input value into a VARIANT buffer (vbuf = the variant's toBuffer() view).
+// !!! Returns a GM variable that must be KEPT ALIVE until AFTER the COM call (for VT_BSTR only, whose pointer lives in the variant),
+// This is because the VARIANT does not contain the string bytes. It contains an 8-byte pointer to bstr's separately-allocated native memory.
+// The VARIANT and the string buffer are two different allocations, so the caller must keep a reference until after the COM call.
+// This prevents the GC from cleaning up the buffer allocation until we're done. 
+function writeInParamVariant(vbuf, val) {
+    var type = null, value = val;
+    if (val !== null && typeof val === 'object' && val.type != null) { type = ('' + val.type).toLowerCase(); value = val.value; }
+    if (type === null) {
+        if (val === null || typeof val === 'undefined') { type = 'null'; }
+        else if (typeof val === 'boolean') { type = 'bool'; }
+        else if (typeof val === 'string') { type = 'bstr'; }
+        else if (typeof val === 'number') { type = (Math.floor(value) === value) ? 'i4' : 'r8'; }   // integer -> VT_I4, fractional -> VT_R8
+        else { throw new Error('win-wmi: unsupported inParam value: ' + JSON.stringify(val)); }
+    }
+    switch (type) {
+        case 'empty':                          vbuf.writeUInt16LE(0x0000, 0); break;                                  // VT_EMPTY
+        case 'null':                           vbuf.writeUInt16LE(0x0001, 0); break;                                  // VT_NULL
+        case 'i2':  case 'int16':  case 'short':vbuf.writeUInt16LE(0x0002, 0); vbuf.writeInt16LE(value | 0, 8); break;  // VT_I2
+        case 'i4':  case 'int32':  case 'int':  vbuf.writeUInt16LE(0x0003, 0); vbuf.writeInt32LE(value | 0, 8); break;  // VT_I4
+        case 'r4':  case 'float':               vbuf.writeUInt16LE(0x0004, 0); vbuf.writeFloatLE(+value, 8);    break;  // VT_R4
+        case 'r8':  case 'double':              vbuf.writeUInt16LE(0x0005, 0); vbuf.writeDoubleLE(+value, 8);   break;  // VT_R8
+        case 'bool': case 'boolean':            vbuf.writeUInt16LE(0x000B, 0); vbuf.writeInt16LE(value ? -1 : 0, 8); break;  // VT_BOOL (-1 = true)
+        case 'i1':  case 'int8':  case 'sbyte': vbuf.writeUInt16LE(0x0010, 0); vbuf.writeInt8(value | 0, 8);    break;  // VT_I1
+        case 'ui1': case 'uint8': case 'byte':  vbuf.writeUInt16LE(0x0011, 0); vbuf.writeUInt8(value & 0xFF, 8);break;  // VT_UI1
+        case 'ui2': case 'uint16':              vbuf.writeUInt16LE(0x0012, 0); vbuf.writeUInt16LE(value & 0xFFFF, 8); break;  // VT_UI2
+        case 'ui4': case 'uint32': case 'uint': vbuf.writeUInt16LE(0x0013, 0); vbuf.writeUInt32LE(value >>> 0, 8); break;  // VT_UI4
+        case 'bstr': case 'string':                                                                                     // VT_BSTR
+            var bstr = GM.CreateVariable('' + value, { wide: true });
+            vbuf.writeUInt16LE(0x0008, 0);
+            bstr.pointerBuffer().copy(vbuf, 8);   // pointer to wide string at union offset 8
+            return bstr;                          // caller must keep this alive so the GC won't reclaim 
+        default: throw new Error('win-wmi: unsupported inParam VARIANT type: ' + type);
+    }
+    return null;    // directly written, no need to keep alive
+}
+
+// Open a reusable connection to a WMI namespace, so multiple ExecMethod calls can share a single
+// IWbemServices and skip the per-call ConnectToServer (the expensive DCOM/RPC handshake). Caller MUST
+// call release() when done.
+//   var sess = wmi.connect(ns);
+//   try { sess.execMethod(className, keys, method, inParams, timeout); ... } finally { sess.release(); }
+function wmiConnect(resourceString)
+{
+    var s = sm.manager.getService('winmgmt');
+    if (!s.isRunning()) { throw new Error('WMI service not running'); }
+
+    var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
+    locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
+    var services = GM.CreatePointer();
+    var resource = GM.CreateVariable(resourceString, { wide: true });
+    var hr = locator.funcs.ConnectToServer(locator, resource, 0, 0, 0, WBEM_FLAG_CONNECT_USE_MAX_WAIT, 0, 0, services).Val >>> 0;
+    if (hr != 0) {
+        releaseCOM(locator, false);
+        throw new Error('ConnectToServer(' + resourceString + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')');
+    }
+    services.funcs = COM.marshalFunctions(services.Deref(), ServiceFunctions);
+
+    return {
+        ns: resourceString,
+        services: services,
+        locator: locator,
+        _sigCache: {},   // 'Class.Method' -> in-params signature (IWbemClassObject), reused across calls
+        // Same signature as execMethod() minus the leading namespace (it's bound to this connection)
+        execMethod: function (className, keys, methodName, inParams, timeout) {
+            return execMethodOn(this.services, this.ns, className, keys, methodName, inParams, timeout, this._sigCache);
+        },
+        release: function () {
+            for (var k in this._sigCache) { this._sigCache[k] = releaseCOM(this._sigCache[k], true); }
+            this.services = releaseCOM(this.services, true);
+            this.locator = releaseCOM(this.locator, false);
+        }
+    };
+}
+
+// Call a WMI method via IWbemServices::ExecMethod
+// resourceString : namespace, e.g. 'root\\cimv2\\Security\\MicrosoftVolumeEncryption'
+// className      : the class the method lives on, e.g. 'Win32_EncryptableVolume'
+// keys           : (optional) plain object of key property/properties identifying the
+//                  instance, e.g. { DeviceID: vols[0].DeviceID }. Values are escaped
+//                  automatically - pass the RAW value, do NOT pre-escape. Pass null/{}
+//                  for static (class-level) methods.
+// methodName     : e.g. 'GetConversionStatus'
+// inParams       : (optional) plain object of { paramName: value } input arguments
+// timeout        : (optional) max ms to wait for the method to complete, default 60s.
+//
+// One-shot: connects, runs, releases. For several calls to the same namespace use wmi.connect(ns)
+// and reuse sess.execMethod(...) to avoid reconnecting each time.
+// Reference: https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-execmethod
+function execMethod(resourceString, className, keys, methodName, inParams, timeout)
+{
+    var sess = wmiConnect(resourceString);
+    try { return execMethodOn(sess.services, resourceString, className, keys, methodName, inParams, timeout); }
+    finally { sess.release(); }
+}
+
+// Core ExecMethod against an already-connected IWbemServices. Does NOT release `services`/locator -
+// the caller (execMethod wrapper or a wmiConnect() session) owns the connection lifetime.
+// sigCache (optional): a session-owned { 'Class.Method': inSignature } map. When passed, the in-params
+// signature is fetched once (GetObject+GetMethod) and reused on subsequent calls; the session releases it.
+function execMethodOn(services, ns, className, keys, methodName, inParams, timeout, sigCache)
+{
+    if (!timeout || typeof timeout !== 'number') { timeout = 60 * 1000; }   // default 60s ceiling
+    var debug = false;
+    function DBG(msg) { if (debug) { console.log('win-wmiii execMethod: ' + msg); } }
+    var objectPath = buildEscapePath(className, keys);
+    DBG('ns=' + ns + ' path=' + objectPath + ' method=' + methodName + ' in=' + JSON.stringify(inParams || {}));
+    var classObj = null, inSig = null, inSigCached = false, inInst = null, outParams = null, callRes = null;
+    try {
+        var hr;
+        var pathVar = GM.CreateVariable(objectPath, { wide: true });
+        var methodVar = GM.CreateVariable(methodName, { wide: true });
+
+        // Get the in-params signature (cached per Class.Method when a session is used) > spawn instance > put params in
+        var pInParams = 0;
+        if (inParams && Object.keys(inParams).length > 0) {
+            var sigKey = className + '.' + methodName;
+            if (sigCache && sigCache[sigKey]) {
+                inSig = sigCache[sigKey];       // reuse the cached signature, skip GetObject/GetMethod
+                inSigCached = true;
+            } else {
+                // Get the class definition, then the method's in-signature
+                // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-getobject
+                var classNameVar = GM.CreateVariable(className, { wide: true });
+                classObj = GM.CreatePointer();
+                if ((hr = services.funcs.GetObject(services.Deref(), classNameVar, 0, 0, classObj, 0).Val >>> 0) != 0) {
+                    throw new Error('GetObject(' + className + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
+                classObj.funcs = COM.marshalFunctions(classObj.Deref(), ResultFunctions);
+
+                // GetMethod -> in-param signature (ppOutSignature is optional, pass 0 - we don't use it)
+                // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemclassobject-getmethod
+                inSig = GM.CreatePointer();
+                if ((hr = classObj.funcs.GetMethod(classObj.Deref(), methodVar, 0, inSig, 0).Val >>> 0) != 0) {
+                    throw new Error('GetMethod(' + methodName + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
+                inSig.funcs = COM.marshalFunctions(inSig.Deref(), ResultFunctions);
+                if (sigCache) { sigCache[sigKey] = inSig; inSigCached = true; }   // hand ownership to the session cache
+            }
+
+            // create class instance to put params in
+            // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemclassobject-spawninstance
+            inInst = GM.CreatePointer();
+            if ((hr = inSig.funcs.SpawnInstance(inSig.Deref(), 0, inInst).Val >>> 0) != 0) {
+                throw new Error('SpawnInstance failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
+            inInst.funcs = COM.marshalFunctions(inInst.Deref(), ResultFunctions);
+
+            // Set the named properties in the instance
+            // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemclassobject-put
+            var keepAlive = [];
+            for (var name in inParams) {
+                var nameVar = GM.CreateVariable(name, { wide: true });
+                var v = GM.CreateVariable(24);   // VARIANT: 16 bytes on x86 / 24 on x64; same offset, so doesn't have to be 32/64 bit specific, use largest
+                var vbuf = v.toBuffer();
+                var val = inParams[name];
+                var keep = writeInParamVariant(vbuf, val);
+                if (keep != null) { keepAlive.push(keep); }     // Keep the B_STR reference alive until at least after the COM call, now releases after function exit
+                DBG('Put ' + name + '=' + JSON.stringify(val) + ' variant[0:12]=' + vbuf.slice(0, 12).toString('hex'));
+                if ((hr = inInst.funcs.Put(inInst.Deref(), nameVar, 0, v, 0).Val >>> 0) != 0) {
+                    throw new Error('Put(' + name + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
+            }
+            pInParams = inInst.Deref();
+        }
+
+        // Run execMethod semi-synchronous to prevent blocking
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemservices-execmethod
+        DBG('ExecMethod calling, pInParams=' + (pInParams ? 'set' : 'NULL'));
+        callRes = GM.CreatePointer();
+        hr = services.funcs.ExecMethod(services.Deref(), pathVar, methodVar, WBEM_FLAG_RETURN_IMMEDIATELY, 0, pInParams, 0, callRes).Val >>> 0;
+        DBG('ExecMethod returned 0x' + hr.toString(16) + (hr ? ' (' + (WBEM_ERRORS[hr] || 'unknown') + ')' : ''));
+        if (hr != 0) {
+            throw new Error('ExecMethod(' + methodName + ') failed: ' + (WBEM_ERRORS[hr] || 'unknown') + ' (0x' + hr.toString(16) + ')'); }
+        callRes.funcs = COM.marshalFunctions(callRes.Deref(), CallResultFunctions);
+
+        // GetResultObject returns WBEM_S_TIMEDOUT if the method hasn't finished within the chunk.
+        // https://learn.microsoft.com/en-us/windows/win32/api/wbemcli/nf-wbemcli-iwbemcallresult-getresultobject
+        outParams = GM.CreatePointer(); // results
+        var deadline = Date.now() + timeout;
+        var chunk = 2000;   // ms per GetResultObject() call
+        while (true) {
+            if (Date.now() > deadline) { throw new Error('ExecMethod(' + methodName + ') timed out after ' + (timeout/1000) + ' seconds'); }
+            var gr = callRes.funcs.GetResultObject(callRes.Deref(), chunk, outParams).Val >>> 0;
+            if (gr === WBEM_S_NO_ERROR) { break; }       // ready
+            if (gr === WBEM_S_TIMEDOUT) { continue; }   //continue until deadline
+            throw new Error('GetResultObject(' + methodName + ') failed: ' + (WBEM_ERRORS[gr] || 'unknown') + ' (0x' + gr.toString(16) + ')');
+        }
+
+        if (outParams.Deref().Val == 0) { DBG('no out-params returned'); return {}; }   // method returned no out-params
+        outParams.funcs = COM.marshalFunctions(outParams.Deref(), ResultFunctions);
+        // Single result object: read its property names directly (no need for NameCache's per-class caching / __CLASS read)
+        var propNames = getAllNames(outParams, false);
+        var propNameVars = [];
+        for (var pi = 0; pi < propNames.length; ++pi) { propNameVars.push(GM.CreateVariable(propNames[pi], { wide: true })); }
+        var out = enumerateProperties(outParams, propNames, propNameVars);
+        DBG('out=' + JSON.stringify(out) + '\r\n');
+        return out;
+    } finally {
+        // Release only the per-call COM objects. services/locator are owned by the caller (wrapper or session).
+        // inSig is released here only when NOT cached - a cached signature is owned by the session and freed in release().
+        outParams = releaseCOM(outParams, true);
+        callRes = releaseCOM(callRes, true);
+        inInst = releaseCOM(inInst, true);
+        if (!inSigCached) { inSig = releaseCOM(inSig, true); }
+        classObj = releaseCOM(classObj, true);
+    }
+}
+
+module.exports = { query: query, queryAsync: queryAsync, execMethod: execMethod, connect: wmiConnect };
