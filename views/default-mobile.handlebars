@@ -3866,8 +3866,8 @@
 
                 // IP-KVM information
                 if (node.mtype == 4) {
-                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", node.portnum); }
-                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", node.porttype); }
+                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", EscapeHtml(node.portnum)); }
+                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", EscapeHtml(node.porttype)); }
                 }
 
                 // Attribute: Mesh Agent
@@ -3881,7 +3881,7 @@
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
                     if (node.agent.id == 14) { str = node.agent.core; }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
-                    x += addDeviceAttribute("Mesh Agent", str);
+                    x += addDeviceAttribute("Mesh Agent", EscapeHtml(str));
                 }
 
                 // Attribute: Intel AMT
@@ -6660,25 +6660,25 @@
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
                     if (node.agent.id == 14) { str = node.agent.core; }
-                    x += addDetailItem("Mesh Agent", str);
+                    x += addDetailItem("Mesh Agent", EscapeHtml(str));
                 }
-                if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
+                if (node.firstconnect) { x += addDetailItem("First agent connection", EscapeHtml(printDateTime(new Date(node.firstconnect)))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
                 } else {
-                    if (node.lastconnect) { x += addDetailItem("Last agent connection", printDateTime(new Date(node.lastconnect))); }
+                    if (node.lastconnect) { x += addDetailItem("Last agent connection", EscapeHtml(printDateTime(new Date(node.lastconnect)))); }
                 }
                 if (node.lastaddr) {
                     var splitip = node.lastaddr.split(':');
                     if (splitip.length > 2) {
                         // IPv6
-                        x += addDetailItem("Last agent address", node.lastaddr);
+                        x += addDetailItem("Last agent address", EscapeHtml(node.lastaddr));
                     } else {
                         // IPv4
                         if (isPrivateIP(node.lastaddr)) {
-                            x += addDetailItem("Last agent address", splitip[0]);
+                            x += addDetailItem("Last agent address", EscapeHtml(splitip[0]));
                         } else {
-                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a>');
+                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + EscapeHtml(splitip[0]) + '" rel="noreferrer noopener" target="MeshIPLoopup">' + EscapeHtml(splitip[0]) + '</a>');
                         }
                     }
                 }
@@ -6686,12 +6686,12 @@
                     if (hardware.agentvers.compileTime) {
                         try {
                             var d = Date.parse(hardware.agentvers.compileTime)
-                            x += addDetailItem("Compile time", printDateTime(new Date(d)));
+                            x += addDetailItem("Compile time", EscapeHtml(printDateTime(new Date(d))));
                         } catch (ex) { }
                     }
                 }
                 if (hardware.time != null) {
-                    x += addDetailItem("Last details update", printDateTime(new Date(hardware.time)));
+                    x += addDetailItem("Last details update", EscapeHtml(printDateTime(new Date(hardware.time))));
                 }
                 if (x != '') { sections.push({ name: "Mesh Agent", html: x, img: 'meshagent' }); }
             }
@@ -6744,7 +6744,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
@@ -6853,10 +6853,10 @@
                     for (var i in hardware.windows.memory) {
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown'))) + '</b></div>';
-                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
-                        else if (m.Capacity) { x += addDetailItem("Capacity", format("{0} Mb", (m.Capacity / 1024 / 1024)), s); }
-                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
+                        x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? EscapeHtml(m.DeviceLocator) : 'Unknown'))) + '</b></div>';
+                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed)), s); }
+                        else if (m.Capacity) { x += addDetailItem("Capacity", EscapeHtml(format("{0} Mb", (m.Capacity / 1024 / 1024))), s); }
+                        if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (EscapeHtml(m.Manufacturer) + ', ') : '') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
                     x += '</table>';
@@ -6877,8 +6877,8 @@
                         if(m.Size && (m.Size == 'No Module Installed')) continue;
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.Locator ? m.Locator : 'Unknown')) + '</b></div>';
-                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
-                        else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
+                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format("{0}, {1}", m.Size, m.Speed)), s); }
+                        else if (m.Size) { x += addDetailItem("Capacity", EscapeHtml(format("{0}", (m.Size)), s)); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -6897,8 +6897,8 @@
                         if(m.Size && (m.Size == 'No Module Installed')) continue;
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.DeviceLocator ? m.DeviceLocator : 'Unknown')) + '</b></div>';
-                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0}, {1}", m.Size, m.Speed), s); }
-                        else if (m.Size) { x += addDetailItem("Capacity", format("{0}", (m.Size)), s); }
+                        if (m.Size && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format("{0}, {1}", m.Size, m.Speed)), s); }
+                        else if (m.Size) { x += addDetailItem("Capacity", EscapeHtml(format("{0}", (m.Size))), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != '')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -6922,7 +6922,7 @@
                         if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
                         if (m.Size) {
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
-                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", EscapeHtml(format("{0} Mb", Math.floor(m.Size / 1024 / 1024))), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
                         }
                         if(hardware.windows && hardware.windows.drives && m.Model){
@@ -7016,7 +7016,7 @@
                     var m = hardware.darwin.volumes[i];
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         x += addDetailItem("Capacity", EscapeHtml(m.size), s);
                     }
