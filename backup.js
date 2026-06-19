@@ -45,14 +45,14 @@ module.exports.zipDirectory = async function (dirPath, outputZip, password = '',
 // First check archive on illegal paths (updirs and absolute paths), then extract
 module.exports.zipExtract = async function (zipPath, destPath, removePath = '', password = "") {
     try {
-        const { ZipReader, BlobReader } = require("@zip.js/zip.js");
+        const { ZipReader, Uint8ArrayReader } = require("@zip.js/zip.js");
         const { createWriteStream } = require("fs");
         const { readFile, mkdir } = require("fs/promises");
         const path = require("path");
         const { Readable } = require("stream");
         const { pipeline } = require("stream/promises");
 
-        const zipReader = new ZipReader(new BlobReader(new Blob([(await readFile(zipPath))])));
+        const zipReader = new ZipReader(new Uint8ArrayReader(await readFile(zipPath)));
         const entries = await zipReader.getEntries();
         const resolveDestPath = path.resolve(destPath);
 
