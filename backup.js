@@ -42,6 +42,7 @@ module.exports.zipDirectory = async function (dirPath, outputZip, password = '',
 
 // restore zipfile
 // removePath: optional path to remove from destination path
+// First check archive on illegal paths (updirs and absolute paths), then extract
 module.exports.zipExtract = async function (zipPath, destPath, removePath = '', password = "") {
     try {
         const { ZipReader, BlobReader } = require("@zip.js/zip.js");
@@ -55,26 +56,48 @@ module.exports.zipExtract = async function (zipPath, destPath, removePath = '', 
         const entries = await zipReader.getEntries();
         const resolveDestPath = path.resolve(destPath);
 
+        // Archive validation: Abort the restore on any bad path before extraction
+        const targets = []; // { entry, fullPath } cache the paths while we're at it
         for (const entry of entries) {
-            const fullPath = path.posix.join(destPath.replaceAll(path.sep, path.posix.sep), entry.filename).replace(removePath, '');
-            // don't allow destPath dir escapes
-            const resolveEntry = path.resolve(destPath, entry.filename);
-            if (!resolveEntry.startsWith(resolveDestPath)) {
-                throw new Error('Illegal path in zip entry');
+            // skip symlinks in unix-mode zips (upper 16 bits hold st_mode); not present in dos/win zips
+            if (((entry.externalFileAttributes >>> 16) & 0xF000) === 0xA000) { continue; }
+
+            // anchored prefix strip — must match what the extraction pass writes
+            let name = entry.filename;
+            if (removePath && name.startsWith(removePath)) name = name.slice(removePath.length);
+
+            // reject any parent-dir token outright (split on both separators; segment match, not substring)
+            if (name.split(/[/\\]/).includes('..')) {
+                throw new Error('Aborting, nothing restored. Illegal path (parent traversal) in zip, entry: ' + entry.filename);
             }
+            // reject absolute paths (posix root, or Windows drive / UNC)
+            if (path.isAbsolute(name) || /^[a-zA-Z]:/.test(name) || name.startsWith('\\')) {
+                throw new Error('Aborting, nothing restored. Illegal absolute path in zip, entry: ' + entry.filename);
+            }
+
+            // backstop: resolved target must stay inside destPath
+            const fullPath = path.resolve(destPath, name);
+            if (fullPath !== resolveDestPath && !fullPath.startsWith(resolveDestPath + path.sep)) {
+                throw new Error('Illegal path in zip entry: ' + entry.filename);
+            }
+
+            targets.push({ entry, fullPath });
+        }
+
+        // Validated, extract!
+        for (const { entry, fullPath } of targets) {
             if (entry.directory) {
                 await mkdir(fullPath, { recursive: true });
             } else {
-                // zipFileEntry, make sure the path is there
                 await mkdir(path.dirname(fullPath), { recursive: true });
                 const { writable, readable } = new TransformStream();
                 await Promise.all([
-                    entry.getData(writable, { password: password }),
+                    entry.getData(writable, { password }),
                     pipeline(Readable.fromWeb(readable), createWriteStream(fullPath)),
                 ]);
             }
-            // console.log('extracted: ' + fullPath);
         }
+
         await zipReader.close();
         return { res: true, mes: 'Extraction successful' };
     } catch (e) {
