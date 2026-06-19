@@ -111,7 +111,7 @@ function windows_volumes()
     return (p1);
 }
 
-// Same as windows_volumes() but get the BitLocker recovery password through wmi. And ψ7 added
+// Same as windows_volumes() but get the BitLocker recovery password through wmi. And win7 added
 function windows_volumes_wmi()
 {
     var promise = require('promise');
