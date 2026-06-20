@@ -3701,126 +3701,244 @@ module.exports.CreateDB = function (parent, func) {
         return 'Starting auto-backup...';
     };
 
-    obj.createBackupfile = function(func) {
-        parent.debug('backup', 'Entering createBackupfile');
-        let archiver = require('archiver');
-        let archive = null;
-        let zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5),1),9);
+	obj.createBackupfile = function (func) {
+		parent.debug('backup', 'Entering createBackupfile');
 
-        //if password defined, or a password entered for the manual backup, create encrypted zip
-        if ((parent.config.settings.autobackup.zippasswordrequest != '') && ((typeof parent.config.settings.autobackup.zippassword == 'string') || (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')))  {
-            try {
-                //Only register format once, otherwise it triggers an error
-                if (archiver.isRegisteredFormat('zip-encrypted') == false) { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); }
-                archive = archiver.create('zip-encrypted', { zlib: { level: zipLevel }, encryptionMethod: 'aes256',
-                    password: (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')?parent.config.settings.autobackup.zippasswordrequest:parent.config.settings.autobackup.zippassword });
-                if (func) { func('Creating encrypted ZIP'); }
-            } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
-                obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
-                if (func) { func('Zipencryptionmodule failed, aborting');}
-                console.error('Zipencryptionmodule failed, aborting');
-            }
-        } else {
-            if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
-            archive = archiver('zip', { zlib: { level: zipLevel } });
-        }
-        delete parent.config.settings.autobackup.zippasswordrequest;
+		const { Readable, Writable } = require('node:stream');
+		const { finished } = require('node:stream/promises');
 
-        //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
-        if (obj.backupStatus == 0) {
-            // Zip the data directory with the dbdump|NeDB files
-            let output = fs.createWriteStream(obj.newAutoBackupFile);
+		let ZipWriter = null;
+		try {
+			ZipWriter = require('@zip.js/zip.js').ZipWriter;
+		} catch (ex) {
+			obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
+			if (func) { func('@zip.js/zip.js module failed, aborting'); }
+			console.error('@zip.js/zip.js module failed, aborting: ' + ex.message);
+		}
 
-            // Archive finalized and closed
-            output.on('close', function () { 
-                if (obj.backupStatus == 0) {
-                    let mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + ((archive.pointer() / 1048576).toFixed(2)) + "Mb";
-                    console.log(mesg);
-                    if (func) { func(mesg); };
-                    obj.performCloudBackup(obj.newAutoBackupFile, func);
-                    obj.removeExpiredBackupfiles(func);
+		const minimatchModule = require('minimatch');
+		const minimatch = minimatchModule.minimatch || minimatchModule;
 
-                } else {
-                    let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
-                    if (func) { func(mesg) }
-                    else { parent.addServerWarning(mesg, true ) };
-                    if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { if (err) {console.error('Failed to clean up backupfile: ' + err.message)} }) };
-                };
-                if (obj.databaseType != DB_NEDB) {
-                    //remove dump archive file, because zipped and otherwise fills up
-                    if (fs.existsSync(obj.newDBDumpFile)) { fs.unlink(obj.newDBDumpFile, function (err) { if (err) {console.error('Failed to clean up dbdump file: ' + err.message) } }) };
-                };
-                obj.performingBackup = false;
-                obj.backupStatus = 0x0;
-                }
-            );
-            output.on('end', function () { });
-            output.on('error', function (err) {
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.error('Output error: ' + err.message);
-                    if (func) { func('Output error: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
-                    archive.abort();
-                };
-            });
-            archive.on('warning', function (err) {
-                //if files added to the archiver object aren't reachable anymore (e.g. sqlite-journal files)
-                //an ENOENT warning is given, but the archiver module has no option to/does not skip/resume
-                //so the backup needs te be aborted as it otherwise leaves an incomplete zip and never 'ends'
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.log('Zip warning: ' + err.message); 
-                    if (func) { func('Zip warning: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
-                    archive.abort();
-                };
-            });
-            archive.on('error', function (err) {
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
-                    console.error('Zip error: ' + err.message);
-                    if (func) { func('Zip error: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
-                    archive.abort();
-                }
-                });
-            archive.pipe(output);
+		const zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5), 1), 9);
 
-            let globIgnoreFiles;
-            //slice in case exclusion gets pushed
-            globIgnoreFiles = parent.config.settings.autobackup.backupignorefilesglob ? parent.config.settings.autobackup.backupignorefilesglob.slice() : [];
-            if (parent.config.settings.sqlite3) { globIgnoreFiles.push (datapathFoldername + '/' + databaseName + '.sqlite*'); }; //skip sqlite database file, and temp files with ext -journal, -wal & -shm
-            //archiver.glob doesn't seem to use the third param, archivesubdir. Bug?
-            //workaround: go up a dir and add data dir explicitly to keep the zip tidy
-            archive.glob((datapathFoldername + '/**'), {
-                cwd: datapathParentPath,
-                ignore: globIgnoreFiles,
-                skip: (parent.config.settings.autobackup.backupskipfoldersglob ? parent.config.settings.autobackup.backupskipfoldersglob : [])
-            });
+		let zipPassword = null;
+		if ((parent.config.settings.autobackup.zippasswordrequest != '') &&
+			((typeof parent.config.settings.autobackup.zippassword == 'string') ||
+			 (typeof parent.config.settings.autobackup.zippasswordrequest == 'string'))) {
+			zipPassword = (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')
+				? parent.config.settings.autobackup.zippasswordrequest
+				: parent.config.settings.autobackup.zippassword;
 
-            if (parent.config.settings.autobackup.backupwebfolders) {
-                if (parent.webViewsOverridePath) { archive.directory(parent.webViewsOverridePath, 'meshcentral-views'); }
-                if (parent.webPublicOverridePath) { archive.directory(parent.webPublicOverridePath, 'meshcentral-public'); }
-                if (parent.webEmailsOverridePath) { archive.directory(parent.webEmailsOverridePath, 'meshcentral-emails'); }
-            };
-            if (parent.config.settings.autobackup.backupotherfolders) {
-                archive.directory(parent.filespath, 'meshcentral-files');
-                archive.directory(parent.recordpath, 'meshcentral-recordings');
-            };
-            //add dbdump to the root of the zip
-            if (obj.newDBDumpFile != null) archive.file(obj.newDBDumpFile, { name: path.basename(obj.newDBDumpFile) });
-            archive.finalize();
-        } else {
-            //failed somewhere before zipping
-            console.error('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')');
-            if (func) { func('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')') }
-            else {
-                parent.addServerWarning('Backup failed ('+ obj.backupStatus.toString(2).slice(-8) + ')', true);
-            }
-            //Just in case something's there
-            if (fs.existsSync(obj.newDBDumpFile)) { fs.unlink(obj.newDBDumpFile, function (err) { if (err) {console.error('Failed to clean up dbdump file: ' + err.message) } }); };
-            obj.backupStatus = 0x0;
-            obj.performingBackup = false;
-        };
-    };
+			if (func) { func('Creating encrypted ZIP'); }
+		} else {
+			if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
+		}
+
+		delete parent.config.settings.autobackup.zippasswordrequest;
+
+		function zipName(p) {
+			return p.split(path.sep).join('/').replace(/^\/+/, '');
+		}
+
+		function matchesGlob(name, patterns) {
+			if (!patterns || patterns.length === 0) return false;
+			const opts = { dot: true, nocase: (process.platform === 'win32') };
+			return patterns.some(function (pattern) {
+				return minimatch(name, pattern, opts) || minimatch(name + '/', pattern, opts);
+			});
+		}
+
+		function shouldSkipDirectory(name, skipPatterns) {
+			if (!skipPatterns || skipPatterns.length === 0) return false;
+			const opts = { dot: true, nocase: (process.platform === 'win32') };
+			return skipPatterns.some(function (pattern) {
+				return minimatch(name, pattern, opts) ||
+					   minimatch(name + '/', pattern, opts) ||
+					   minimatch(name + '/__dummy__', pattern, opts);
+			});
+		}
+
+		async function addDirectoryTree(zipWriter, sourceDir, archiveRoot, options) {
+			options = options || {};
+			const ignoreFiles = options.ignoreFiles || [];
+			const skipFolders = options.skipFolders || [];
+
+			async function walk(currentFsPath, currentZipPath) {
+				const stat = await fs.promises.stat(currentFsPath);
+				const currentZipName = zipName(currentZipPath);
+
+				if (matchesGlob(currentZipName, ignoreFiles)) return;
+
+				if (stat.isDirectory()) {
+					if (shouldSkipDirectory(currentZipName, skipFolders)) return;
+
+					await zipWriter.add(currentZipName.endsWith('/') ? currentZipName : currentZipName + '/', undefined, {
+						directory: true,
+						lastModDate: stat.mtime
+					});
+
+					const entries = await fs.promises.readdir(currentFsPath, { withFileTypes: true });
+					for (const entry of entries) {
+						await walk(path.join(currentFsPath, entry.name), path.join(currentZipPath, entry.name));
+					}
+				} else if (stat.isFile()) {
+					await zipWriter.add(currentZipName, Readable.toWeb(fs.createReadStream(currentFsPath)), {
+						lastModDate: stat.mtime
+					});
+				}
+			}
+
+			await walk(sourceDir, archiveRoot);
+		}
+
+		async function cleanupAfterZip() {
+			if (obj.databaseType != DB_NEDB) {
+				if (fs.existsSync(obj.newDBDumpFile)) {
+					fs.unlink(obj.newDBDumpFile, function (err) {
+						if (err) { console.error('Failed to clean up dbdump file: ' + err.message); }
+					});
+				}
+			}
+
+			obj.performingBackup = false;
+			obj.backupStatus = 0x0;
+		}
+
+		async function failZip(mesg) {
+			if (func) { func(mesg); }
+			else { parent.addServerWarning(mesg, true); }
+
+			if (fs.existsSync(obj.newAutoBackupFile)) {
+				fs.unlink(obj.newAutoBackupFile, function (err) {
+					if (err) { console.error('Failed to clean up backupfile: ' + err.message); }
+				});
+			}
+
+			await cleanupAfterZip();
+		}
+
+		(async function () {
+			if (obj.backupStatus != 0) {
+				console.error('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')');
+				if (func) { func('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')'); }
+				else { parent.addServerWarning('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')', true); }
+
+				if (fs.existsSync(obj.newDBDumpFile)) {
+					fs.unlink(obj.newDBDumpFile, function (err) {
+						if (err) { console.error('Failed to clean up dbdump file: ' + err.message); }
+					});
+				}
+
+				obj.backupStatus = 0x0;
+				obj.performingBackup = false;
+				return;
+			}
+
+			if (ZipWriter == null) {
+				await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+				return;
+			}
+
+			const output = fs.createWriteStream(obj.newAutoBackupFile);
+			const abortController = new AbortController();
+
+			output.on('error', function (err) {
+				if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+					console.error('Output error: ' + err.message);
+					if (func) { func('Output error: ' + err.message); }
+					obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
+					abortController.abort();
+				}
+			});
+
+			const zipOptions = {
+				level: zipLevel,
+				keepOrder: true,
+				signal: abortController.signal
+			};
+
+			if (zipPassword != null) {
+				zipOptions.password = zipPassword;
+				zipOptions.encryptionStrength = 3; // AES-256
+			}
+
+			const zipWriter = new ZipWriter(Writable.toWeb(output), zipOptions);
+
+			try {
+				let globIgnoreFiles = parent.config.settings.autobackup.backupignorefilesglob
+					? parent.config.settings.autobackup.backupignorefilesglob.slice()
+					: [];
+
+				if (parent.config.settings.sqlite3) {
+					globIgnoreFiles.push(datapathFoldername + '/' + databaseName + '.sqlite*');
+				}
+
+				const skipFolders = parent.config.settings.autobackup.backupskipfoldersglob
+					? parent.config.settings.autobackup.backupskipfoldersglob
+					: [];
+
+				await addDirectoryTree(
+					zipWriter,
+					path.join(datapathParentPath, datapathFoldername),
+					datapathFoldername,
+					{
+						ignoreFiles: globIgnoreFiles,
+						skipFolders: skipFolders
+					}
+				);
+
+				if (parent.config.settings.autobackup.backupwebfolders) {
+					if (parent.webViewsOverridePath) {
+						await addDirectoryTree(zipWriter, parent.webViewsOverridePath, 'meshcentral-views');
+					}
+					if (parent.webPublicOverridePath) {
+						await addDirectoryTree(zipWriter, parent.webPublicOverridePath, 'meshcentral-public');
+					}
+					if (parent.webEmailsOverridePath) {
+						await addDirectoryTree(zipWriter, parent.webEmailsOverridePath, 'meshcentral-emails');
+					}
+				}
+
+				if (parent.config.settings.autobackup.backupotherfolders) {
+					await addDirectoryTree(zipWriter, parent.filespath, 'meshcentral-files');
+					await addDirectoryTree(zipWriter, parent.recordpath, 'meshcentral-recordings');
+				}
+
+				if (obj.newDBDumpFile != null) {
+					const dumpStat = await fs.promises.stat(obj.newDBDumpFile);
+					await zipWriter.add(path.basename(obj.newDBDumpFile), Readable.toWeb(fs.createReadStream(obj.newDBDumpFile)), {
+						lastModDate: dumpStat.mtime
+					});
+				}
+
+				await zipWriter.close();
+				await finished(output);
+
+				if (obj.backupStatus == 0) {
+					const sizeMb = ((output.bytesWritten || fs.statSync(obj.newAutoBackupFile).size) / 1048576).toFixed(2);
+					const mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + sizeMb + 'Mb';
+					console.log(mesg);
+					if (func) { func(mesg); }
+
+					obj.performCloudBackup(obj.newAutoBackupFile, func);
+					obj.removeExpiredBackupfiles(func);
+					await cleanupAfterZip();
+				} else {
+					await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+				}
+			} catch (err) {
+				if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+					console.error('Zip error: ' + err.message);
+					if (func) { func('Zip error: ' + err.message); }
+					obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
+				}
+
+				abortController.abort();
+				output.destroy();
+				await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+			}
+		})();
+	};
 
     // Remove expired backupfiles by filenamedate
     obj.removeExpiredBackupfiles = function (func) {
