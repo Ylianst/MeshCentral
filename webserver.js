@@ -6669,9 +6669,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
 
         // Setup the response output
-        var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
-        archive.on('error', function (err) { throw err; });
-
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
         var meshexecutablename = 'meshagent';
@@ -6702,7 +6699,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Set the agent download including the mesh name.
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
-        archive.pipe(res);
 
         // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
         const macosInstallerOpts = {
@@ -6720,14 +6716,40 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
         }
 
-        require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
-            archive.append(installer.pkg, { name: meshpkgname });
-            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
-            archive.finalize();
-        }).catch(function (err) {
-            parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
-            try { res.sendStatus(500); } catch (ex) { }
-        });
+		require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(async function (installer) {
+			setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
+			const { Writable } = require('node:stream');
+			const zip = require('@zip.js/zip.js');
+
+			const zipWriter = new zip.ZipWriter(Writable.toWeb(res), { level: 5 });
+
+			await zipWriter.add(
+				meshpkgname,
+				new zip.Uint8ArrayReader(installer.pkg)
+			);
+
+			await zipWriter.add(
+				'Uninstall.command',
+				(typeof installer.uninstall === 'string')
+					? new zip.TextReader(installer.uninstall)
+					: new zip.Uint8ArrayReader(installer.uninstall),
+				{
+					executable: true,
+					unixMode: 0o100755
+				}
+			);
+
+			await zipWriter.close();
+		}).catch(function (err) {
+			parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
+			try {
+				if (!res.headersSent) {
+					res.sendStatus(500);
+				} else {
+					res.destroy(err);
+				}
+			} catch (ex) { }
+		});
     }
 
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
