@@ -4336,7 +4336,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.0', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
+        var modules = ['cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.0', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.17.0'); }
@@ -4364,8 +4364,6 @@ function mainStart() {
         if (config.settings.prometheus != null) { modules.push('prom-client@15.1.3'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
-            // Setup encrypted zip support if needed
-            if (config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted@2.0.0'); }
             // Enable Google Drive Support
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
