@@ -1250,6 +1250,11 @@
                     <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
                     <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow-y:auto;overflow-x:hidden;max-height:calc(100dvh - 100px);box-shadow:0 4px 24px rgba(0,0,0,0.28)">
+                        <div id="deskModifierBar" class="d-flex gap-2 px-3 py-2 border-bottom" style="background:var(--bs-body-bg,#fff)">
+                            <button id="deskModCtrl"  type="button" class="desk-mod-key" onclick="toggleMobileModifier('ctrl')">CTRL</button>
+                            <button id="deskModShift" type="button" class="desk-mod-key" onclick="toggleMobileModifier('shift')">SHIFT</button>
+                            <button id="deskModAlt"   type="button" class="desk-mod-key" onclick="toggleMobileModifier('alt')">ALT</button>
+                        </div>
                         <div id="deskMobileMonitorRow" style="display:none;background:var(--bs-body-bg,#fff)">
                             <div class="d-flex align-items-center px-3 py-2 border-bottom" style="font-size:15px;color:var(--bs-body-color,#212529)"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span id="deskMobileMonitorIcons" class="ms-auto d-flex gap-2" style="font-size:20px"></span></div>
                         </div>
@@ -5347,7 +5352,7 @@
 
         function ondockeyup(e) {
             mobileKbdGotKeypress = false;
-            var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; }
+            var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; if (typeof _releaseMobileModifiers === 'function') _releaseMobileModifiers(); }
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -9831,7 +9836,12 @@
                 }
                 if (count > 1) monitorRow = '<div class="d-flex align-items-center px-3 py-2 border-bottom" style="' + s + '"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span class="ms-auto d-flex gap-2" style="font-size:20px">' + icons + '</span></div>';
             }
-            panel.innerHTML =
+            var modChips = '<div class="d-flex gap-2 px-3 py-2 border-bottom" style="background:var(--bs-body-bg,#fff)">'
+                + '<button type="button" id="deskModCtrl"  class="desk-mod-key' + (_mobileModifiers.ctrl  ? ' armed' : '') + '" onclick="toggleMobileModifier(\'ctrl\')" >' + "CTRL"  + '</button>'
+                + '<button type="button" id="deskModShift" class="desk-mod-key' + (_mobileModifiers.shift ? ' armed' : '') + '" onclick="toggleMobileModifier(\'shift\')">' + "SHIFT" + '</button>'
+                + '<button type="button" id="deskModAlt"   class="desk-mod-key' + (_mobileModifiers.alt   ? ' armed' : '') + '" onclick="toggleMobileModifier(\'alt\')" >' + "ALT"   + '</button>'
+                + '</div>';
+            panel.innerHTML = modChips +
                 row(cls, 'fa-compress',         "Exit Fullscreen",                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
                 monitorRow +
                 row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
@@ -11249,6 +11259,7 @@
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
                     _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
+                    if (typeof _mobileModifiers !== 'undefined') { for (var _m in _mobileModifiers) _mobileModifiers[_m] = false; _updateMobileModifierUI(); }
                     // Hide trackpad cursor and reset trackpad state on disconnect
                     if (typeof trackpadMode !== 'undefined') {
                         trackpadMode = false;
@@ -12343,6 +12354,8 @@
         var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
         var dtouchLongPressTimer = null;
         var dtouchTwoFingerLastY = 0;
+        var dtouchLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var dtouchDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
         // Trackpad state (mirrors Classic Mobile)
         var trackpadMode      = false;
         var trackpadLastX     = null, trackpadLastY = null;
@@ -12352,6 +12365,8 @@
         var trackpadTapMoved  = false;
         var trackpadEdgeTimer = null;
         var trackpadEdgeDX    = 0, trackpadEdgeDY = 0;
+        var trackpadLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var trackpadDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
 
         function dtouchMakeEvent(clientX, clientY, button) {
             // When the canvas is rotated, crotX/crotY (agent-desktop-0.0.2.js) convert
@@ -12431,20 +12446,55 @@
         function trackpadStartEdgeScroll() {
             if (trackpadEdgeTimer) return;
             trackpadEdgeTimer = setInterval(function() {
-                if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
+                if ((!trackpadMode && !dtouchDragActive) || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
                 var dp = Q('deskarea3x') || Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                if (dtouchDragActive) { var dm = dtouchGetModule(); if (dm && Q('DeskControl').checked) dm.mousemove(dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
             }, 16);
         }
 
-        function trackpadCheckEdge() {
-            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect();
-            var cursorRect = Q('trackpadCursor').getBoundingClientRect();
-            var cx = cursorRect.left + 9, cy = cursorRect.top + 15, zone = 60;
+        function trackpadCheckEdge(cx, cy) {
+            if (cx === undefined) { var r = Q('trackpadCursor').getBoundingClientRect(); cx = r.left + 9; cy = r.top + 15; }
+            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect(), zone = 60;
             trackpadEdgeDX = cx < vpRect.left  + zone ? -Math.round((zone-(cx-vpRect.left))/4) :
                              cx > vpRect.right  - zone ?  Math.round((zone-(vpRect.right-cx))/4) : 0;
             trackpadEdgeDY = cy < vpRect.top   + zone ? -Math.round((zone-(cy-vpRect.top))/4) :
                              cy > vpRect.bottom - zone ?  Math.round((zone-(vpRect.bottom-cy))/4) : 0;
             if (trackpadEdgeDX || trackpadEdgeDY) trackpadStartEdgeScroll(); else trackpadStopEdgeScroll();
+        }
+
+        // Mobile sticky modifier keys (CTRL/SHIFT/ALT)
+        var _mobileModifiers = { ctrl: false, shift: false, alt: false };
+        var _modKeyCodes     = { ctrl: 17,    shift: 16,    alt: 18    };
+
+        function _charToKeyCode(ch) {
+            if (ch >= 97 && ch <= 122) return ch - 32; // a-z -> 65-90
+            if (ch >= 65 && ch <= 90)  return ch;       // A-Z
+            if (ch >= 48 && ch <= 57)  return ch;       // 0-9
+            return 0;
+        }
+
+        function _updateMobileModifierUI() {
+            var ids = { ctrl: 'deskModCtrl', shift: 'deskModShift', alt: 'deskModAlt' };
+            for (var mod in ids) { var b = Q(ids[mod]); if (b) b.classList.toggle('armed', !!_mobileModifiers[mod]); }
+        }
+
+        function _releaseMobileModifiers() {
+            var dm = desktop && desktop.m;
+            for (var mod in _mobileModifiers) {
+                if (_mobileModifiers[mod]) {
+                    if (dm) dm.SendKeyMsgKC((mod === 'ctrl' || mod === 'alt') ? dm.KeyAction.EXUP : dm.KeyAction.UP, _modKeyCodes[mod]);
+                    _mobileModifiers[mod] = false;
+                }
+            }
+            _updateMobileModifierUI();
+        }
+
+        function toggleMobileModifier(mod) {
+            if (!desktop || !desktop.m || !Q('DeskControl').checked) return;
+            _mobileModifiers[mod] = !_mobileModifiers[mod];
+            var dm = desktop.m, ext = (mod === 'ctrl' || mod === 'alt');
+            dm.SendKeyMsgKC(_mobileModifiers[mod] ? (ext ? dm.KeyAction.EXDOWN : dm.KeyAction.DOWN) : (ext ? dm.KeyAction.EXUP : dm.KeyAction.UP), _modKeyCodes[mod]);
+            _updateMobileModifierUI();
         }
 
         // Mobile soft-keyboard: focusing #softKeyboard shows the OS keyboard.
@@ -12456,13 +12506,22 @@
             if (!desktop || !desktop.m || !Q('DeskControl').checked) { el.value = ''; return; }
             if (mobileKbdGotKeypress) { el.value = ''; return; } // desktop keyboard — already handled by keypress
             var str = el.value; el.value = '';
+            var anyMod = _mobileModifiers.ctrl || _mobileModifiers.shift || _mobileModifiers.alt;
             if (str && desktop.m.SendKeyUnicode) {
                 for (var i = 0; i < str.length; i++) {
                     var c = str.charCodeAt(i);
+                    if (anyMod && desktop.m.SendKeyMsgKC) {
+                        var kc = _charToKeyCode(c);
+                        if (kc) {
+                            desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, kc], [desktop.m.KeyAction.UP, kc]]);
+                            continue;
+                        }
+                    }
                     desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, c);
                     desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, c);
                 }
             }
+            _releaseMobileModifiers();
         }
 
         function onSoftKeyboardFocusChange(focused) {
@@ -12492,12 +12551,14 @@
             setSessionActivity();
             deskCloseMobileActions();
             dtouchMoved = false;
+            dtouchLongPressed = false; dtouchDragActive = false; trackpadStopEdgeScroll();
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
+                trackpadLongPressed = false; trackpadDragActive = false;
                 if (e.touches.length === 2) {
                     // Fall through to pinch-start recording below (same as direct mode)
                 } else if (e.touches.length === 1) {
@@ -12509,7 +12570,7 @@
                     dtouchLongPressTimer = setTimeout(function() {
                         dtouchLongPressTimer = null;
                         if (trackpadTapMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
-                        trackpadSendClick(2);
+                        trackpadLongPressed = true; // armed: next move -> drag, lift -> right-click
                         trackpadTapMoved = true;
                     }, 500);
                     return;
@@ -12542,7 +12603,7 @@
             dtouchLongPressTimer = setTimeout(function() {
                 dtouchLongPressTimer = null;
                 if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
-                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                dtouchLongPressed = true; // armed: next move -> drag, lift -> right-click
                 dtouchMoved = true;
             }, 500);
         }
@@ -12561,6 +12622,11 @@
                     if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
                         trackpadTapMoved = true;
                         if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                        // First move after long press -> start drag
+                        if (trackpadLongPressed && !trackpadDragActive && Q('DeskControl').checked) {
+                            trackpadDragActive = true;
+                            var dm = dtouchGetModule(); if (dm) dm.mousedown(trackpadMakeEvent(0));
+                        }
                     }
                     var rect = Q('Desk').getBoundingClientRect();
                     trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
@@ -12572,8 +12638,8 @@
                 if (e.touches.length !== 2) return;
                 trackpadTapMoved = true; // prevent spurious tap on finger lift
             }
-            // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
-            if (_mobileZoomMode === 'native' && e.touches.length === 1) {
+            // Native zoom mode — 1 finger: pan (skipped when drag gesture is active)
+            if (_mobileZoomMode === 'native' && e.touches.length === 1 && !dtouchLongPressed && !dtouchDragActive) {
                 var t = e.touches[0];
                 var dx = t.clientX - dtouchLastX, dy = t.clientY - dtouchLastY;
                 dtouchLastX = t.clientX; dtouchLastY = t.clientY;
@@ -12638,9 +12704,28 @@
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
             dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+            // Stream active drag
+            if (dtouchDragActive) {
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                trackpadCheckEdge(t.clientX, t.clientY);
+                return;
+            }
+            // Finger moved after long press -> start drag
+            if (dtouchLongPressed) {
+                if (Math.abs(t.clientX - dtouchStartX) > 4 || Math.abs(t.clientY - dtouchStartY) > 4) {
+                    if (Q('DeskControl').checked) {
+                        dtouchDragActive = true;
+                        var dm = dtouchGetModule();
+                        if (dm) { dm.mousedown(dtouchMakeEvent(dtouchStartX, dtouchStartY, 0)); dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                    } else { dtouchLongPressed = false; }
+                }
+                return;
+            }
+            // Normal cursor move
             if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
             }
         }
 
@@ -12653,6 +12738,16 @@
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
                 trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
+                if (trackpadDragActive) {
+                    trackpadDragActive = false; trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mouseup(trackpadMakeEvent(0)); }
+                    return;
+                }
+                if (trackpadLongPressed) {
+                    trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) trackpadSendClick(2);
+                    return;
+                }
                 if (trackpadTapTimer !== null && !trackpadTapMoved) {
                     clearTimeout(trackpadTapTimer); trackpadTapTimer = null;
                     if (Q('DeskControl').checked) trackpadSendClick(0);
@@ -12663,6 +12758,19 @@
             if (!Q('DeskControl').checked) return;
             if (e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
+            // Drag end: send mouseup at final finger position
+            if (dtouchDragActive) {
+                dtouchDragActive = false; dtouchLongPressed = false;
+                trackpadStopEdgeScroll();
+                var dm = dtouchGetModule(); if (dm) dm.mouseup(dtouchMakeEvent(t.clientX, t.clientY, 0));
+                return;
+            }
+            // Long press without drag -> right-click
+            if (dtouchLongPressed) {
+                dtouchLongPressed = false;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                return;
+            }
             // 30px threshold (not dtouchMoved's 8px) — finger pressure causes micro-movement
             // that would block taps; only real drags exceed 30px.
             var totalDx = Math.abs(t.clientX - dtouchStartX);

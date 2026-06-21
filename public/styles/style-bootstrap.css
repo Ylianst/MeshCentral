@@ -4300,6 +4300,26 @@ body.is-mobile.fulldesk #deskarea4 { display: none !important; }
 /* Floating button: hidden normally, only shown in fullscreen on mobile */
 body.is-mobile.fulldesk #deskFsBtn { display: flex !important; }
 
+/* Sticky modifier key chips inside the More panel */
+.desk-mod-key {
+    border-radius: 6px;
+    background: var(--bs-secondary-bg, #e9ecef);
+    color: var(--bs-body-color, #212529);
+    border: 1px solid var(--bs-border-color, #ced4da);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 5px 8px;
+    min-width: 46px;
+    cursor: pointer;
+    line-height: 1;
+    text-align: center;
+}
+.desk-mod-key.armed {
+    background: rgba(234,179,8,0.85);
+    border-color: #ca8a04;
+    color: #000;
+}
+
 /* Top desktop toolbar: compact single row, horizontal scroll for overflow */
 /* deskarea1 (connect/disconnect bar): compact single row */
 body.is-mobile #deskarea1 {
