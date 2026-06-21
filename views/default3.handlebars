@@ -2810,7 +2810,7 @@
             QS('p3users')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p50groups')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
-            QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
+            QS('p5filetable')['height'] = 'calc(100vh - ' + (119 + xh) + 'px)'; // 140
             QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
             QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
@@ -7353,9 +7353,9 @@
             var chkNodeIds = getCheckedDevices(), intelamtpresent = false;
             for (var i in chkNodeIds) { if (getNodeFromId(chkNodeIds[i]).intelamt != null) { intelamtpresent = true; } }
             var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
-            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + 'devicelist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + 'devicelist.json' + '</a>');
+            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + 'computerlist.json' + '</a>'); }
             x += '<div style=margin-top:8px><label><input type=checkbox class="form-check-input me-2" id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setModalContent('xxAddAgent', "Device Information Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
@@ -7399,7 +7399,7 @@
                     if (typeof n.lastbootuptime == 'number') { csv += ',"' + n.lastbootuptime + '"'; }
                     csv += '\r\n';
                 }
-                saveAs(stringToUtf8Blob(csv), "devicelist.csv");
+                saveAs(stringToUtf8Blob(csv), 'devicelist.csv');
             }
             return false;
         }
@@ -7417,7 +7417,7 @@
                 if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
                 r.computers.push(c);
             }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "computerlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'computerlist.json');
         }
 
         function p2downloadDeviceInfoJSON() {
@@ -7430,7 +7430,7 @@
                 // Without details
                 var r = [];
                 for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
-                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'devicelist.json');
             }
             return false;
         }
@@ -15470,7 +15470,7 @@
 
         // Save console text to file
         function p15downloadConsoleText() {
-            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), "console.txt");
+            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), 'console.txt');
         }
 
         // Called then user presses the "Change Core" button
@@ -16524,7 +16524,7 @@
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
-        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), "config.json"); }
+        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), 'config.json'); }
 
         //
         // MY MESHS
@@ -18220,7 +18220,7 @@
 
         }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "Copy" : "Move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
 
         function p5fileDragDrop(e) {
@@ -18639,8 +18639,8 @@
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + 'eventslist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + 'eventslist.json' + '</a>');
             setModalContent('xxAddAgent', "Event List Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
@@ -18656,7 +18656,7 @@
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
                 csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "eventslist.csv");
+            saveAs(stringToUtf8Blob(csv), 'eventslist.csv');
             return false;
         }
 
@@ -18666,7 +18666,7 @@
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { r.push(events[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "eventslist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'eventslist.json');
             return false;
         }
 
@@ -19080,7 +19080,7 @@
                             const value = lineArray[j].trim();
                             if (headers[j].trim() !== "" && value !== "") {
                                 // Convert values "true" to true
-                                obj[headers[j]] = value.toLowerCase() === "true" ? true : value;
+                                obj[headers[j]] = value.toLowerCase() === 'true' ? true : value;
                             }
                         }
                         jsonArray.push(obj);
@@ -19135,8 +19135,8 @@
         function p4downloadUserInfo() {
             if (xxdialogMode) return;
             var x = "Download the list of users with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + "userlist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + "userlist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + 'userlist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + 'userlist.json' + '</a>');
             setModalContent('xxAddAgent', "User List Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
@@ -19157,14 +19157,14 @@
                 csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
                 csv += '\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "userlist.csv");
+            saveAs(stringToUtf8Blob(csv), 'userlist.csv');
             return false;
         }
 
         function p4downloadUserInfoJSON() {
             var r = []
             for (var i in users) { r.push(users[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "userlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'userlist.json');
             return false;
         }
 
@@ -22011,7 +22011,7 @@
                     csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
                 }
             }
-            saveAs(stringToUtf8Blob(csv), "ServerStats.csv");
+            saveAs(stringToUtf8Blob(csv), 'ServerStats.csv');
         }
 
         //
@@ -22088,7 +22088,7 @@
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
             for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
-            saveAs(stringToUtf8Blob(csv), "servertrace.csv");
+            saveAs(stringToUtf8Blob(csv), 'servertrace.csv');
             return false;
         }
 
