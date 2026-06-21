@@ -13,6 +13,12 @@
 /*jshint esversion: 6 */
 "use strict";
 
+// volume & bitlocker statuses
+const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: 'AES-128', 4: 'AES-256', 5: "Hardware encryption", 6: 'XTS-AES-128', 7: 'XTS-AES-256' };
+const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+const conversionStatus = { "-1": "Unknown", 0: "Fully Decrypted", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
+const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
     const fs = require('fs');
@@ -5316,9 +5322,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             } else if (typeof n.lsc == 'object') {
                                                 output += ',' + csvClean(n.lsc.antiVirus ? n.lsc.antiVirus : '') + ',,' + csvClean(n.lsc.firewall ? n.lsc.firewall : '')
                                             } else { output += ',,,'; }
-                                            if (typeof n.volumes == 'object') {
+                                            // BitLocker info sits in the sysinfo node
+                                            // present when the user has device-details rights (otherwise sys was deleted above).
+                                            var bitlockervolumes = (nodeinfo.sys && nodeinfo.sys.hardware && nodeinfo.sys.hardware.windows) ? nodeinfo.sys.hardware.windows.volumes : null;
+                                            if (bitlockervolumes != null) {
+                                                // Map the Win32_EncryptableVolume.ConversionStatus codes to labels (legacy string values pass through).
                                                 var bitlockerdetails = '', firstbitlocker = true;
-                                                for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
+                                                for (var a in bitlockervolumes) {
+                                                    var bv = bitlockervolumes[a];
+                                                    if ((bv.volumeStatus == null) && (bv.protectionStatus == null)) continue; // no BitLocker info for this volume
+                                                    if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; }
+                                                    var status = (bv.protectionStatus == 2) ? 'Locked' : ((typeof bv.volumeStatus === 'string') ? bv.volumeStatus : (conversionStatus[bv.volumeStatus] || 'Unknown'));
+                                                    bitlockerdetails += a + '/' + status;
+                                                }
                                                 output += ',' + csvClean(bitlockerdetails);
                                             } else {
                                                 output += ',';
@@ -5555,18 +5571,30 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     }
                                 } catch (ex) { console.log(ex); }
                             } else {
-                                // Create the JSON file
-
-                                // Add the device group name to each device
+                                // Create the JSON file, convert codes into description
                                 for (var i = 0; i < results.length; i++) {
                                     const nodeinfo = results[i];
                                     if (nodeinfo.node) {
                                         const mesh = parent.meshes[nodeinfo.node.meshid];
                                         if (mesh) { results[i].node.groupname = mesh.name; }
                                     }
+                                    // add a decoded per-volume status summary and remove the raw recovery keys
+                                    var bvols = nodeinfo.sys?.hardware?.windows?.volumes;
+                                    if (bvols) {
+                                        for (var a in bvols) {
+                                            var bv = bvols[a];
+                                            if (bv.dType) (bv.dType = driveType[bv.dType] ? driveType[bv.dType] : 'Unknown');
+                                            delete bv.recoveryPassword; // never include raw recovery keys in a report
+                                            if ((bv.volumeStatus == null) && (bv.protectionStatus == null)) continue;
+                                            if (bv.volumeStatus != null) { bv.volumeStatus = (typeof bv.volumeStatus === 'string') ? bv.volumeStatus : (conversionStatus[bv.volumeStatus] || 'Unknown'); }
+                                            if (bv.protectionStatus != null) { bv.protectionStatus = (typeof bv.protectionStatus === 'boolean') ? (bv.protectionStatus ? 'On' : 'Off') : ((typeof bv.protectionStatus === 'string') ? bv.protectionStatus : (protectionStatus[bv.protectionStatus] || 'Unknown')); }
+                                            if (bv.encryptionMethod != null) { bv.encryptionMethod = (typeof bv.encryptionMethod === 'string') ? bv.encryptionMethod : (encMethod[bv.encryptionMethod] || 'Unknown'); }
+                                        }
+                                        delete nodeinfo.sys.hardware.windows.bitlocker; // drop the recovery-key map from the export
+                                    }
                                 }
 
-                                output = JSON.stringify(results);
+                                output = JSON.stringify(results, null, 1);
                             }
                             try { ws.send(JSON.stringify({ action: 'getDeviceDetails', data: output, type: type })); } catch (ex) { }
                         });
@@ -6685,9 +6713,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
-                    // If this is not a device group admin users, don't send any BitLocker recovery passwords
-                    if ((rights != MESHRIGHT_ADMIN) && (doc.hardware) && (doc.hardware.windows) && (doc.hardware.windows.volumes)) {
-                        for (var i in doc.hardware.windows.volumes) { delete doc.hardware.windows.volumes[i].recoveryPassword; }
+                    // If this is not an admin user, don't send any BitLocker recovery info
+                    if (rights != MESHRIGHT_ADMIN && doc?.hardware?.windows) {
+                        if (doc.hardware.windows?.volumes) {
+                            for (var i in doc.hardware.windows.volumes) {
+                                delete doc.hardware.windows.volumes[i].recoveryPassword;    // previous single bitlocker schema
+                            }
+                        }
+                        delete doc.hardware.windows.bitlocker;  // new bitlocker driveletter independent cache
+                    }
+                  
+                    // deviceinfo for meshctrl.js, replace raw codes with readable strings and add recoveryPassword if possible
+                    if (command.responseid && command.responseid == 'meshctrl') {
+                        if (doc.hardware?.windows?.volumes) {
+                            for (const [drive, volumeInfo] of Object.entries(doc.hardware.windows.volumes)) {
+                                if (typeof volumeInfo.dType == 'number') { volumeInfo.dType = driveType[volumeInfo.dType] ?? 'Unknown'; }
+                                if (typeof volumeInfo.volumeStatus == 'number') {
+                                    if (volumeInfo.volumeStatus == 0) {volumeInfo.volumeStatus = conversionStatus[0]; continue; }
+                                    // only do volumes with a encryption status
+                                    volumeInfo.volumeStatus = conversionStatus[volumeInfo.volumeStatus] ?? 'Unknown';
+                                    if (volumeInfo.protectionStatus && typeof volumeInfo.protectionStatus == 'number') { volumeInfo.protectionStatus = protectionStatus[volumeInfo.protectionStatus] ?? 'Unknown'; }     
+                                    if (volumeInfo.encryptionMethod) { volumeInfo.encryptionMethod = encMethod[volumeInfo.encryptionMethod] ?? 'Unknown'; } 
+                                    if ((rights == MESHRIGHT_ADMIN) && volumeInfo.identifier && !(volumeInfo.hasOwnProperty('recoveryPassword')) && doc.hardware.windows?.bitlocker?.[volumeInfo.identifier])
+                                        { volumeInfo.recoveryPassword = doc.hardware.windows.bitlocker[volumeInfo.identifier].rp; }
+                                }
+                            }
+                        }
+                        var b;
+                        if ((rights == MESHRIGHT_ADMIN) && (b = doc.hardware?.windows?.bitlocker)) {
+                            for (const robj of Object.values(b)) {
+                                robj.recoveryPassword = robj.rp; delete robj.rp;
+                                robj.lastSeen = new Date(robj.t); delete robj.t;
+                            }
+                        }
                     }
 
                     if (command.nodeinfo === true) {

@@ -1461,11 +1461,43 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         command.data.type = 'sysinfo';
                         command.data.domain = domain.id;
                         command.data.time = Date.now();
-                        db.Set(command.data); // Update system information in the database.
 
-                        // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
-                        var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
+                        // Store the document and notify viewers that the sysinfo hash changed.
+                        var saveSysInfo = function () {
+                            db.Set(command.data);
+                            // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
+                            var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
+                        };
+
+                        var volumes = command.data.hardware?.windows?.volumes;
+                        if (volumes) {
+                            // BitLocker recovery keys are kept in hardware.windows.bitlocker, keyed by protector identifier
+                            // (decoupled from the drive letter, which can change). A key is retained for 'bitlockerKeyRetentionDays'
+                            // days after it was last read; 0 (default) disables carry-forward, keeping only keys read in this scan.
+                            var ttl = (parent.parent.config.settings?.bitlockerkeyretentiondays > 0) ? (parent.parent.config.settings.bitlockerkeyretentiondays * 86400000) : 0;
+                            var updateBLKeys = function (prevKeys) {
+                                var keys = {};
+                                // Carry forward keys last read within the retention window.
+                                if ((ttl > 0) && prevKeys) {
+                                    for (const id in prevKeys) { if ((command.data.time - prevKeys[id].t) <= ttl) { keys[id] = prevKeys[id]; } }
+                                }
+                                // Record keys actually read this scan (refreshes the timestamp).
+                                for (const v of Object.values(volumes)) {
+                                    if (v.identifier && v.recoveryPassword) { keys[v.identifier] = { rp: v.recoveryPassword, t: command.data.time }; }
+                                }
+                                command.data.hardware.windows.bitlocker = keys;
+                                saveSysInfo();
+                            };
+                            if (ttl > 0) {
+                                // Need the previous doc to carry keys forward.
+                                db.Get(command.data._id, function (err, nodes) { updateBLKeys((nodes && nodes.length > 0) ? nodes[0].hardware?.windows?.bitlocker : null); });
+                            } else {
+                                updateBLKeys(null);   // no carry-forward, no previous-doc read needed
+                            }
+                        } else {
+                            saveSysInfo();   // non-Windows
+                        }
                     }
                     break;
                 }

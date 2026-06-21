@@ -55,59 +55,73 @@ function getVolumes()
 
 function windows_volumes()
 {
+    var drives = {};
+    var error = null;
     var promise = require('promise');
     var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
-    var ret = {};
-    var values = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType']);
-    if(values[0]){
-        for (var i = 0; i < values.length; ++i) {
-            if (!values[i]['DeviceID']) { continue; }   //always check for null to be sure
-            var drive = values[i]['DeviceID'].slice(0,-1);
-            ret[drive] = {
-                name: (values[i]['VolumeName'] ? values[i]['VolumeName'] : ""),
-                type: (values[i]['FileSystem'] ? values[i]['FileSystem'] : "Unknown"),
-                size: (values[i]['Size'] ? values[i]['Size'] : 0),
-                sizeremaining: (values[i]['FreeSpace'] ? values[i]['FreeSpace'] : 0),
-                removable: (values[i]['DriveType'] == 2),
-                cdrom: (values[i]['DriveType'] == 5)
-            };
-        }
-    }
+    // RegExps for the specific patterns in the manage-bde output, case-insensitive multiline
+    var reID = new RegExp("{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}}", "mi");
+    var rePass = new RegExp("[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}", "mi");
+
+    var pending = 0, done = false;
+    function resolver() { if (done && (pending === 0)) { p1._res({ error: error, drives: drives }); } }
+
     try {
-        values = require('win-wmi-fixed').query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT * FROM Win32_EncryptableVolume', ['DriveLetter','ConversionStatus','ProtectionStatus']);
-        if(values[0]){
-            // RegExps for the specific patterns in the manage-bde output, case-insensitive multiline
-            var reID = new RegExp("{[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}}", "mi");
-            var rePass = new RegExp("[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}-[0-9]{6}", "mi");
-            var id, rp;
-            for (var i = 0; i < values.length; ++i) {
-                if (!values[i]['DriveLetter']) { continue; }   //There can be volumes withouth a DriveLetter(=null), which errors the slice. Skip for now, fix later
-                var drive = values[i]['DriveLetter'].slice(0,-1);
-                var statuses = {
-                    0: 'FullyDecrypted',
-                    1: 'FullyEncrypted',
-                    2: 'EncryptionInProgress',
-                    3: 'DecryptionInProgress',
-                    4: 'EncryptionPaused',
-                    5: 'DecryptionPaused'
+        var wmi = require('win-wmi-fixed');
+
+        wmi.query('ROOT\\CIMV2', 'SELECT DeviceID,VolumeName,FileSystem,Size,FreeSpace,DriveType FROM Win32_LogicalDisk', ['DeviceID', 'VolumeName', 'FileSystem', 'Size', 'FreeSpace', 'DriveType'], false, 5000)
+            .forEach(function (disk) {
+                if (!disk || !disk['DeviceID']) { return; }   // skip rows without a DeviceID. Shouldn't be possible, but could in case of wmi funkyness
+                var drive = disk['DeviceID'].slice(0, -1);
+                drives[drive] = {
+                    name: disk['VolumeName'] || '',
+                    type: disk['FileSystem'] || 'Unknown',
+                    size: parseInt(disk['Size']) || 0,
+                    sizeremaining: parseInt(disk['FreeSpace']) || 0,
+                    dType: disk['DriveType'] || 0
                 };
-                ret[drive].volumeStatus = statuses.hasOwnProperty(values[i].ConversionStatus) ? statuses[values[i].ConversionStatus] : 'FullyDecrypted';
-                ret[drive].protectionStatus = (values[i].ProtectionStatus == 0 ? 'Off' : (values[i].ProtectionStatus == 1 ? 'On' : 'Unknown'));
-                try {
-                    var keychild = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'manage-bde -protectors -get ' + drive + ': -Type recoverypassword'], {});
-                    keychild.stdout.str = ''; keychild.stdout.on('data', function (c) { this.str += c.toString(); });
-                    keychild.waitExit();
-                    // find position of pattern, or null if not found
-                    id = keychild.stdout.str.match(reID);
-                    rp = keychild.stdout.str.match(rePass);
-                    // recoveryPW can be empty if volume is locked
-                    if (id) { ret[drive].identifier = id[0]; }
-                    if (rp) { ret[drive].recoveryPassword = rp[0]; }
-                } catch(ex) { } // just carry on as we cant get bitlocker key
-            }
+            });
+
+        // The MicrosoftVolumeEncryption namespace is admin-only and manage-bde needs elevation; skip both entirely when not elevated, saves waiting unneccessary on time-out of wmi-query if run as user
+        if (require('user-sessions').isRoot()) {
+            var child_process = require('child_process');
+            wmi.query('ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption', 'SELECT DriveLetter,ConversionStatus,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume', ['DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'], false, 5000)
+                .forEach(function (vol) {
+                    if (!vol || !vol['DriveLetter']) { return; }   // there can be volumes without a DriveLetter(=null), which errors the slice
+                    var drive = vol['DriveLetter'].slice(0, -1);
+                    if (!drives[drive]) { return; }                // no matching logical disk, skip for now.
+                    drives[drive].volumeStatus = vol['ConversionStatus'];
+                    drives[drive].encryptionMethod = vol['EncryptionMethod'];
+                    drives[drive].protectionStatus = vol['ProtectionStatus'];
+                    // Only run manage-bde on encrypted drives (ConversionStatus/volumeStatus 0 = FullyDecrypted, otherwise some sort of encryption)
+                    if (drives[drive].volumeStatus != 0) {
+                        pending++;
+                        var keychild = child_process.execFile(process.env['windir'] + '\\system32\\manage-bde.exe', ['manage-bde', '-protectors', '-get', drive + ':', '-Type', 'recoverypassword'], {});
+                        keychild.stdout.str = '';
+                        keychild.stdout.on('data', function (c) { this.str += c.toString(); });
+                        keychild.target = drive;
+                        // Guard against a hung manage-bde
+                        keychild.timeout = setTimeout(function () { try { keychild.kill(); } catch (ex) { } }, 4000);
+                        keychild.on('exit', function () {
+                            clearTimeout(this.timeout);
+                            var id = this.stdout.str.match(reID);
+                            var rp = this.stdout.str.match(rePass);
+                            // a recovery password protector should always have an identifier
+                            if (id) { drives[this.target].identifier = id[0]; }
+                            // recoveryPW can be empty if volume is locked
+                            if (rp) { drives[this.target].recoveryPassword = rp[0]; }
+                            pending--;
+                            resolver();
+                        });
+                    }
+                });
         }
-        p1._res(ret);
-    } catch (ex) { p1._res(ret); } // just return volumes as cant get encryption/bitlocker
+    } catch (e) {
+        console.log('windows_volumes error: ' + (e && e.message ? e.message : e));
+        error = e;    // add error, fall through to resolve below
+    }
+    done = true;
+    resolver();    // if not root, resolve with partial info, otherwise the last child process resolves
     return (p1);
 }
 

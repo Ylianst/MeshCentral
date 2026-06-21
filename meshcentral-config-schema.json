@@ -569,6 +569,11 @@
           "default": false,
           "description": "Enables agent-side, websocket per-message deflate compression. wscompression must also be true for this to work."
         },
+        "bitlockerKeyRetentionDays": {
+          "type": "integer",
+          "default": 0,
+          "description": "How many days to retain a BitLocker recovery key after the agent last read it, so a key stays available while a volume is locked or detached. Especially useful for Bitlocker To Go devices. 0 (default) disables carry-forward: only keys read in the latest scan are kept."
+        },
         "noAgentUpdate": {
           "type": "integer",
           "default": 0,
