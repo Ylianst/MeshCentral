@@ -133,14 +133,6 @@ function windows_volumes_wmi()
     const NS_VE = 'ROOT\\CIMV2\\Security\\MicrosoftVolumeEncryption';
     var p1 = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     var drives = {};
-    var statuses = {
-        0: 'FullyDecrypted',
-        1: 'FullyEncrypted',
-        2: 'EncryptionInProgress',
-        3: 'DecryptionInProgress',
-        4: 'EncryptionPaused',
-        5: 'DecryptionPaused'
-    };
 
     try {
         // use win32_volume, for future property expansion and link through DeviceID
@@ -149,12 +141,11 @@ function windows_volumes_wmi()
                 if (!vol || vol['DriveLetter'] == null) { return; }   // skip letterless volumes for now
                 var drive = vol['DriveLetter'].slice(0, -1);
                 drives[drive] = {
-                    name: (vol['Label'] ? vol['Label'] : ""),
-                    type: (vol['FileSystem'] ? vol['FileSystem'] : "Unknown"),
-                    size: (vol['Capacity'] ? vol['Capacity'] : 0),
-                    sizeremaining: (vol['FreeSpace'] ? vol['FreeSpace'] : 0),
-                    removable: (vol['DriveType'] == 2),
-                    cdrom: (vol['DriveType'] == 5)
+                    name: vol['Label'] || '',
+                    type: vol['FileSystem'] || 'Unknown',
+                    size: parseInt(vol['Capacity']) || 0,
+                    sizeremaining: parseInt(vol['FreeSpace']) || 0,
+                    dType: vol['DriveType'] || 0
                 };
             });
 
@@ -169,8 +160,8 @@ function windows_volumes_wmi()
                 win8plus = !(build > 0 && build < 9200);
             } catch (ex) { }
             // Win7 lacks the ConversionStatus property, so only select it on win8+
-            var q = win8plus ? 'SELECT DeviceID,DriveLetter,ConversionStatus,ProtectionStatus FROM Win32_EncryptableVolume' : 'SELECT DeviceID,DriveLetter,ProtectionStatus FROM Win32_EncryptableVolume';
-            var fields = win8plus ? ['DeviceID', 'DriveLetter', 'ConversionStatus', 'ProtectionStatus'] : ['DeviceID', 'DriveLetter', 'ProtectionStatus'];
+            var q = win8plus ? 'SELECT DeviceID,DriveLetter,ConversionStatus,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume' : 'SELECT DeviceID,DriveLetter,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume';
+            var fields = win8plus ? ['DeviceID', 'DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'] : ['DeviceID', 'DriveLetter', 'ProtectionStatus', 'EncryptionMethod'];
             // re-use connection instead of creating a new one every time
             var sess = wmi.connect(NS_VE);
             try {
@@ -181,18 +172,16 @@ function windows_volumes_wmi()
                         if (!drives[drive]) { return; }                // no matching volume, skip for now. TODO match op DeviceID
                         try {
                             var v_id = { DeviceID: vol['DeviceID'] };   // DeviceID(=VolumeKeyProtectorID) is the key needed for the ExecMethod calls
-                            var conv;
+                            drives[drive].protectionStatus = vol['ProtectionStatus'];
+                            drives[drive].encryptionMethod = vol['EncryptionMethod'];
                             if (win8plus) {
-                                conv = vol.ConversionStatus;            // property available from the query
+                                drives[drive].volumeStatus = vol.ConversionStatus;            // property available from the query
                             } else {
                                 var cs = sess.execMethod('Win32_EncryptableVolume', v_id, 'GetConversionStatus', null, 5000);   // win7: no PrecisionFactor param, so no universal get
-                                conv = (cs && cs.ReturnValue == 0) ? cs.ConversionStatus : 0;
+                                drives[drive].volumeStatus = (cs && cs.ReturnValue == 0) ? cs.ConversionStatus : 0;
                             }
-                            // convert status to string.
-                            drives[drive].volumeStatus = statuses.hasOwnProperty(conv) ? statuses[conv] : 'FullyDecrypted';
-                            drives[drive].protectionStatus = (vol.ProtectionStatus == 0 ? 'Off' : (vol.ProtectionStatus == 1 ? 'On' : 'Unknown'));
                             // Only retrieve the recovery key on encrypted drives (conv 0 = FullyDecrypted, otherwise some sort of encryption)
-                            if (conv != 0) {
+                            if (drives[drive].volumeStatus != 0) {
                                 // Get protectorKey (= identifier). For now only { KeyProtectorType: 3 } (=numerical password=recoverykey). Future possibilities: get all id's and statuses (TPM , Certificate etc)
                                 // https://learn.microsoft.com/en-us/windows/win32/secprov/getkeyprotectors-win32-encryptablevolume
                                 var protKeys = sess.execMethod('Win32_EncryptableVolume', v_id, 'GetKeyProtectors', { KeyProtectorType: 3 }, 5000);
@@ -209,9 +198,8 @@ function windows_volumes_wmi()
                     });
             } finally { sess.release(); }
         }
-        console.log(JSON.stringify(drives, null, 1));
-        p1._res(drives);
-    } catch (e) { console.log('windows_volumes error: ' + (e && e.message ? e.message : e)); p1._res(drives); } // just return what we got
+        p1._res({ error: null, drives: drives });
+    } catch (e) { console.log('windows_volumes error: ' + (e && e.message ? e.message : e)); p1._res({ error: e, drives: drives }); } // just return what we got
 
     return (p1);
 }
