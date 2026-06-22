@@ -6031,7 +6031,19 @@
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
-                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { var ip = ''; if (node.mtype == 3) { ip = node.host; } else if (node.ip) { ip = node.ip; } r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + EscapeHtml(ip); } // IP address
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { 
+					var ip = ''; 
+					if (node.mtype == 3) { 
+						ip = node.host; 
+					} else if (node.ip) { 
+						ip = node.ip; 
+					}
+					if ((node.probableMainLanIP != null) && (node.probableMainLanIP != '') && (node.probableMainLanIP != ip)) {
+						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.probableMainLanIP) + '">LAN ' + EscapeHtml(node.probableMainLanIP) + '<br />WAN <a href="http://ip-api.com/#' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(ip) + '</a>';
+					} else {
+						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.ip) + '"><a href="http://ip-api.com/#' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(node.ip) + '</a>';
+					}
+				} // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
