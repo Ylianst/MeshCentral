@@ -1647,7 +1647,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.args.mpsaliasport != null && (typeof obj.args.mpsaliasport != 'number')) obj.args.mpsaliasport = null;
         if (obj.args.rediraliasport != null && (typeof obj.args.rediraliasport != 'number')) obj.args.rediraliasport = null;
         if (obj.args.redirport == null) obj.args.redirport = 80;
-        if (obj.args.minifycore == null) obj.args.minifycore = false;
+        obj.args.minifycore = false; // if (obj.args.minifycore == null) obj.args.minifycore = false;
         if (typeof obj.args.agentidletimeout != 'number') { obj.args.agentidletimeout = 150000; } else { obj.args.agentidletimeout *= 1000 } // Default agent idle timeout is 2m, 30sec.
         if ((obj.args.lanonly != true) && (typeof obj.args.webrtconfig == 'object')) { // fix incase you are using an old mis-spelt webrtconfig 
             obj.args.webrtcconfig = obj.args.webrtconfig;
