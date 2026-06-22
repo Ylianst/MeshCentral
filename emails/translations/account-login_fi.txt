@@ -1,4 +1,0 @@
-[[[SERVERNAME]]] - Tilille Kirjautuminen
-Kirjautumistunnuksesi on: [[[TOKEN]]]
-~
-Tätä tunnusta voidaan käyttää vain kerran ja se on voimassa 5 minuuttia.

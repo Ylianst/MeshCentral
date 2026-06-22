@@ -1,2 +1,0 @@
-[[0]] ellenőrző kód: [[1]]
-[[0]] hozzáférés token: [[1]]
