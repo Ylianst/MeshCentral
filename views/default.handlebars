@@ -1098,7 +1098,7 @@
                             <img alt="" width=200 height=200 src=images/mesh-256.png />
                         </picture>
                         <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                        <h1>General - <span id=p20meshName></span></h1>
+                        <h1>General<span id=p20meshName></span></h1>
                     </div>
                     <p id=p20info></p>
                     <p id=p20info2></p>
@@ -1136,7 +1136,7 @@
             <div id=p30 style="display:none">
                 <div id="p30title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>General - <span id=p30userName></span></h1>
+                    <h1>General<span id=p30userName></span></h1>
                 </div>
                 <div id="p30info" style="overflow-y:auto">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -1163,7 +1163,7 @@
             <div id=p31 style="display:none">
                 <div id="p31title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Events - <span id=p31userName></span></h1>
+                    <h1>Events<span id=p31userName></span></h1>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -6245,7 +6245,7 @@
                 meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'csv' }); // With details
             } else {
                 // Without details
-                var csv = "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime" + '\r\n', r = [];
+                var csv = 'id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime' + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"';
@@ -12784,7 +12784,7 @@
             // Volumes and Bitlocker
             if (hardware.windows && hardware.windows.volumes) {
                 var x = '';
-                const encMethod = { 0: '', 1: " / AES-128 with diffuser", 2: " / AES-256 with diffuser", 3: ' / AES-128', 4: ' / AES-256', 5: " / Hardware encryption", 6: ' / XTS-AES-128', 7: ' / XTS-AES-256' };
+                const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: "AES-128", 4: "AES-256", 5: "Hardware encryption", 6: "XTS-AES-128", 7: "XTS-AES-256" };
                 const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
                 const conversionStatus = { 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
                 for (var i in hardware.windows.volumes) {
@@ -12805,25 +12805,25 @@
                     }
                     if (m.type) {
                         var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : '')); 
-                        if (m.dType != null) {type = driveType.hasOwnProperty(m.dType) ? driveType[m.dType] : 'Unknown'; };
+                        if (m.dType != null) {type = driveType.hasOwnProperty(m.dType) ? driveType[m.dType] : "Unknown"; };
                         x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
                     }
 
                     if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
                         var bitlockerState;
-                        if (typeof(m.volumeStatus) === "string") {  // string style db schema 
+                        if (typeof(m.volumeStatus) === 'string') {  // string style db schema 
                             bitlockerState = m.volumeStatus;
                         } else {    // new code db schema
                             if (m.protectionStatus == 2) {
-                                bitlockerState = 'Locked'
+                                bitlockerState = "Locked";
                             } else {
-                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : 'Unknown');
+                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : "Unknown");
                             }
                         }
-                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? encMethod[m.encryptionMethod] : ' / Unknown');
+                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? ' / ' + encMethod[m.encryptionMethod] : ' / ' + "Unknown");
                         var lastrp = (m.identifier && hardware.windows.bitlocker) ? hardware.windows.bitlocker[m.identifier] : null;
                         var legacyrp = (m.lastKnownRecoveryPassword && (m.lastKnownIdentifier === m.identifier)) ? m.lastKnownRecoveryPassword : null;   // pre key-list (un-migrated) docs
-                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || 'External (PIN/Key/File)';
+                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || "External (PIN/Key/File)";
                         if (m.identifier) { 
                             bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(sendPW) + '\"' + ')');
                         }
@@ -14187,7 +14187,7 @@
             if (currentMesh == null) return;
 
             // Add device group name
-            var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
+            var meshrights = GetMeshRights(currentMesh), mname = ' - ' + EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
             if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p20meshName', mname);
@@ -17367,8 +17367,8 @@
             if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
             if (user == null) { setDialogMode(0); go(4); return; }
-            QH('p30userName', EscapeHtml(user.name));
-            QH('p31userName', EscapeHtml(user.name));
+            QH('p30userName', ' - ' + EscapeHtml(user.name));
+            QH('p31userName', ' - ' + EscapeHtml(user.name));
             var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
