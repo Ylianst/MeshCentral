@@ -858,7 +858,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             try {
                 if (parent.diagAgentSeen == null) { parent.diagAgentSeen = {}; }
                 var diagSeen = parent.diagAgentSeen[obj.nodeid] || (parent.diagAgentSeen[obj.nodeid] = {});
-                if (!diagSeen.orphaned) { diagSeen.orphaned = true; console.log(new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (ORPHANED, no such device group)'); }
+                if (!diagSeen.orphaned) { diagSeen.orphaned = true; parent.parent.diagLog('DEBUG', new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (ORPHANED, no such device group)'); }
             } catch (diagEx) { }
             return;
         }
@@ -880,7 +880,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         try {
             if (parent.diagAgentSeen == null) { parent.diagAgentSeen = {}; }
             var diagSeen = parent.diagAgentSeen[obj.nodeid] || (parent.diagAgentSeen[obj.nodeid] = {});
-            if (!diagSeen.ok) { diagSeen.ok = true; console.log(new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (OK, name="' + (mesh.name || '') + '")'); }
+            if (!diagSeen.ok) { diagSeen.ok = true; parent.parent.diagLog('DEBUG', new Date().toISOString() + ' Agent census: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (OK, name="' + (mesh.name || '') + '")'); }
         } catch (diagEx) { }
 
         // Mark when this device connected

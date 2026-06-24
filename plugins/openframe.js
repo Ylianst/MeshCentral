@@ -70,7 +70,7 @@ module.exports.openframe = function (pluginHandler) {
         'MeshServer=' + meshServerUrl
       ].join('\n');
 
-      log('Generated MSH for host: ' + cleanHost);
+      log(new Date().toISOString() + ' Generated MSH for host: ' + cleanHost);
 
       res.set('Content-Type', 'application/octet-stream');
       res.set('Content-Disposition', 'attachment; filename=meshagent.msh');
