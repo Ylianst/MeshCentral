@@ -1,4 +1,6 @@
 
+restartPod: "1"  # Bump to rollout the meshcentral deployment (any string works)
+
 image:
   registry: ghcr.io/flamingo-stack/meshcentral
   repository: meshcentral

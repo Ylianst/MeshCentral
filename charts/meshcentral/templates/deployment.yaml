@@ -19,6 +19,7 @@ spec:
   template:
     metadata:
       annotations:
+        rollout/restart-pod: "{{ .Values.restartPod }}"
         checksum/secrets: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
         checksum/env: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- with .Values.podAnnotations }}
