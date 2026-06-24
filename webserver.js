@@ -7741,11 +7741,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Receive mesh agent connections
                 obj.app.ws(url + 'agent.ashx', function (ws, req) {
+                    // Diag: the upgrade reached this process; absence of this line for an offline agent means the connection died upstream (gateway), not here.
+                    var diagTs = new Date().toISOString() + ' ';
+                    parent.diagLog('DEBUG', diagTs + 'Agent WS upgrade received from ' + req.clientIp + ' path=' + req.url.split('?')[0]);
                     var domain = checkAgentIpAddress(ws, req);
-                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                    if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
+                    if (domain == null) { parent.diagLog('DEBUG', diagTs + 'Agent WS HELD (bad domain or blocked IP) from ' + req.clientIp); parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
+                    if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { parent.diagLog('DEBUG', diagTs + 'Agent WS HELD (missing or invalid agent key) from ' + req.clientIp); return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
                     //console.log('Agent connect: ' + req.clientIp);
-                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
+                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { parent.diagLog('INFO', diagTs + 'Agent WS FAILED in CreateMeshAgent from ' + req.clientIp + ': ' + ex); console.log(ex); }
                 });
 
                 // Setup MQTT broker over websocket
@@ -7772,10 +7775,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (obj.agentapp) {
                     // Receive mesh agent connections on alternate port
                     obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
+                        // Diag: the upgrade reached this process; absence of this line for an offline agent means the connection died upstream (gateway), not here.
+                        var diagTs = new Date().toISOString() + ' ';
+                        parent.diagLog('DEBUG', diagTs + 'Agent WS upgrade received (agent port) from ' + req.clientIp + ' path=' + req.url.split('?')[0]);
                         var domain = checkAgentIpAddress(ws, req);
-                        if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                        if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
-                        try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
+                        if (domain == null) { parent.diagLog('DEBUG', diagTs + 'Agent WS HELD (bad domain or blocked IP, agent port) from ' + req.clientIp); parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
+                        if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { parent.diagLog('DEBUG', diagTs + 'Agent WS HELD (missing or invalid agent key, agent port) from ' + req.clientIp); return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
+                        try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { parent.diagLog('INFO', diagTs + 'Agent WS FAILED in CreateMeshAgent (agent port) from ' + req.clientIp + ': ' + e); console.log(e); }
                     });
 
                     // Setup mesh relay on alternative agent-only port
