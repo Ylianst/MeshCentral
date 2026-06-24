@@ -22,6 +22,16 @@ function log(msg) {
   console.log('[openframe-plugin] ' + msg);
 }
 
+// Derive this pod's tenant domain from config: the single non-empty, non-share domain key.
+// Mirrors db.js deriveTenantDomain() so this plugin can enforce that a tenant pod only ever
+// resolves nodes from its own domain in the shared multi-tenant database. Returns '' for a
+// legacy single-tenant install (only the default '' domain), where no scoping is needed.
+function deriveTenantDomain(domains) {
+  if (!domains) return '';
+  for (var k in domains) { if (k !== '' && domains[k].share == null) return k; }
+  return '';
+}
+
 // --- Plugin ---
 
 module.exports.openframe = function (pluginHandler) {
@@ -32,7 +42,12 @@ module.exports.openframe = function (pluginHandler) {
     var app = webserver.app;
     var db = parent.db;
 
-    log('Routes registered');
+    // This pod's tenant. All tenants share one MongoDB, so device lookups must be constrained
+    // to this domain — otherwise a node id naming another tenant would resolve from the shared
+    // collection (cross-tenant disclosure). Empty string = legacy single-tenant (no scoping).
+    var tenantDomain = deriveTenantDomain(parent.config && parent.config.domains);
+
+    log('Routes registered (tenant="' + tenantDomain + '")');
 
     // CORS preflight
     app.options(['/generate-msh', '/api/*'], function (req, res) {
@@ -88,6 +103,12 @@ module.exports.openframe = function (pluginHandler) {
       var parts = nodeId.split('/');
       if (parts.length !== 3 || parts[0] !== 'node') {
         return sendError(res, 400, 'Invalid device id format. Expected: node/<domain>/<id>');
+      }
+
+      // Tenant isolation: reject ids from another tenant's domain. Return 404 (not 403) so this
+      // cannot be used as an oracle to tell "exists in another tenant" from "does not exist".
+      if (tenantDomain !== '' && parts[1] !== tenantDomain) {
+        return sendError(res, 404, 'Device not found');
       }
 
       // 1. Verify device exists in DB
