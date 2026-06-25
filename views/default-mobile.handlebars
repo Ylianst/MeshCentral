@@ -6940,7 +6940,7 @@
             // Volumes and Bitlocker
             if (hardware.windows && hardware.windows.volumes) {
                 var x = '';
-                const encMethod = { 0: '', 1: " / AES-128 with diffuser", 2: " / AES-256 with diffuser", 3: ' / AES-128', 4: ' / AES-256', 5: " / Hardware encryption", 6: ' / XTS-AES-128', 7: ' / XTS-AES-256' };
+                const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: "AES-128", 4: "AES-256", 5: "Hardware encryption", 6: "XTS-AES-128", 7: "XTS-AES-256" };
                 const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
                 const conversionStatus = { 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
                 for (var i in hardware.windows.volumes) {
@@ -6967,19 +6967,19 @@
 
                     if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
                         var bitlockerState;
-                        if (typeof(m.volumeStatus) === "string") {  // string style db schema
+                        if (typeof(m.volumeStatus) === 'string') {  // string style db schema
                             bitlockerState = m.volumeStatus;
                         } else {    // new code db schema
                             if (m.protectionStatus == 2) {
                                 bitlockerState = 'Locked'
                             } else {
-                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : 'Unknown');
+                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : "Unknown");
                             }
                         }
-                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? encMethod[m.encryptionMethod] : ' / Unknown');
+                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? ' / ' + encMethod[m.encryptionMethod] : ' / ' + "Unknown");
                         var lastrp = (m.identifier && hardware.windows.bitlocker) ? hardware.windows.bitlocker[m.identifier] : null;
                         var legacyrp = (m.lastKnownRecoveryPassword && (m.lastKnownIdentifier === m.identifier)) ? m.lastKnownRecoveryPassword : null;   // pre key-list (un-migrated) docs
-                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || 'External (PIN/Key/File)';
+                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || "External (PIN/Key/File)";
                         if (m.identifier) {
                             bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(sendPW) + '\"' + ')');
                         }
