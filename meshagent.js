@@ -29,6 +29,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.remoteaddr = req.clientIp;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
+    obj.diagConnectTime = Date.now(); // Diag: connect timestamp, used to report first-frame/auth/close latency.
+    obj.diagMsgCount = 0; // Diag: inbound frame counter; 0 at close means the agent never sent anything.
     //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
     if (args.agentidletimeout != 0) { ws._socket.setTimeout(args.agentidletimeout, function () { obj.close(1); }); } // Inactivity timeout of 2:30 minutes, by default agent will WebSocket ping every 2 minutes and server will pong back.
     //obj.nodeid = null;
@@ -149,6 +151,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // When data is received from the mesh agent web socket
     ws.on('message', function (msg) {
+        // Diag: first inbound frame, logged once — its absence after an 'upgrade received' means the agent never sent Cmd 1 (never got the 101 handshake back from the gateway); its presence means the agent is talking and any failure is later in auth.
+        if (obj.diagMsgCount++ === 0) { try { parent.parent.diagLog('DEBUG', new Date().toISOString() + ' Agent first frame from ' + obj.remoteaddrport + ' after ' + (Date.now() - obj.diagConnectTime) + 'ms (len=' + msg.length + ')'); } catch (diagEx) { } }
         dataAccounting();
         if (msg.length < 2) return;
         if (typeof msg == 'object') { msg = msg.toString('binary'); } // TODO: Could change this entire method to use Buffer instead of binary string
@@ -579,6 +583,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // If the mesh agent web socket is closed, clean up.
     ws.on('close', function (req) {
         parent.agentStats.agentClose++;
+        // Diag: log EVERY close, including pre-auth ones (nodeid still null) — distinguishes "upgraded but dropped before authenticating" from "was online then dropped".
+        try { parent.parent.diagLog('DEBUG', new Date().toISOString() + ' Agent WS closed from ' + obj.remoteaddrport + ' (authenticated=' + (obj.authenticated || 0) + ', nodeid=' + (obj.nodeid || 'none') + ', frames=' + (obj.diagMsgCount || 0) + ', ' + (Date.now() - obj.diagConnectTime) + 'ms)'); } catch (diagEx) { }
         if (obj.nodeid != null) {
             const agentId = (obj.agentInfo && obj.agentInfo.agentId) ? obj.agentInfo.agentId : 'Unknown';
             //console.log('Agent disconnect ' + obj.nodeid + ' (' + obj.remoteaddrport + ') id=' + agentId);
@@ -934,6 +940,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // We are done, ready to communicate with this agent
         delete obj.pendingCompleteAgentConnection;
         obj.authenticated = 2;
+        // Diag: agent finished authentication and is now online; fires for BOTH new and reconnecting nodes (unlike the new-node-only census above), so reconnect successes are visible.
+        try { parent.parent.diagLog('DEBUG', new Date().toISOString() + ' Agent authenticated: node ' + obj.nodeid + ' -> group ' + obj.dbMeshKey + ' (now online) from ' + obj.remoteaddrport + ' after ' + (Date.now() - obj.diagConnectTime) + 'ms'); } catch (diagEx) { }
 
         // Check how many times this agent disconnected in the last few minutes.
         const disconnectCount = parent.wsagentsDisconnections[obj.nodeid];

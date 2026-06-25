@@ -333,8 +333,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // grepped to confirm whether a given (possibly re-minted) group id exists.
                 var censusListed = 0;
                 for (var censusGk in obj.meshes) {
-                    if (censusListed++ >= 100) { parent.diagLog('DEBUG', censusTs + 'DB census: device-group list truncated at 100'); break; }
                     var censusG = obj.meshes[censusGk];
+                    // Shared Mongo holds every tenant's device groups; only list groups for domains THIS pod serves, so a tenant's log doesn't dump (or leak) every other tenant's group ids.
+                    if (parent.config.domains[(censusG.domain || '')] == null) continue;
+                    if (censusListed++ >= 100) { parent.diagLog('DEBUG', censusTs + 'DB census: device-group list truncated at 100'); break; }
                     parent.diagLog('DEBUG', censusTs + 'DB census device group: ' + censusGk + ' name="' + (censusG.name || '') + '" domain="' + (censusG.domain || '') + '"' + ((censusG.deleted != null) ? ' DELETED' : ''));
                 }
             } catch (censusEx) { parent.diagLog('DEBUG', 'DB census error: ' + censusEx); }
