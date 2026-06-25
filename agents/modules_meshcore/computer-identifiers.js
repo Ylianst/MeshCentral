@@ -441,9 +441,12 @@ function linux_identifiers()
                 ];
                 const thedata = {};
                 for (var x in filesToRead) {
-                    try {   
-                        const content = require('fs').readFileSync('/sys/class/power_supply/' + batteries[i] + '/' + filesToRead[x]).toString().trim();
-                        thedata[filesToRead[x]] = /^\d+$/.test(content) ? parseInt(content, 10) : content;
+                    try {
+						const filePath = '/sys/class/power_supply/' + batteries[i] + '/' + filesToRead[x];
+						if(require('fs').existsSync(filePath)) {
+                        	const content = require('fs').readFileSync(filePath).toString().trim();
+                        	thedata[filesToRead[x]] = /^\d+$/.test(content) ? parseInt(content, 10) : content;
+						}
                     } catch (err) { }
                 }
                 if (Object.keys(thedata).length === 0) continue; // No data read, skip
