@@ -1673,8 +1673,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if ((typeof command.url != 'string') || (typeof command.approved != 'boolean') || (command.url.startsWith('2fa://') == false)) return;
 
                     // parse the URL
+                    // Node 22's WHATWG URL parser rejects custom schemes like 2fa://, so swap to https:// for parsing only.
                     var url = null;
-                    try { url = new URL(command.url); } catch (ex) { }
+                    try { url = new URL(command.url.replace(/^2fa:\/\//, 'https://')); } catch (ex) { }
                     if (url == null) return;
 
                     // Decode the cookie
