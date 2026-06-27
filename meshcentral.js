@@ -3306,11 +3306,22 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.agenttimestampproxy == 'string') { timeStampProxy = obj.args.agenttimestampproxy; }
         else if ((obj.args.agenttimestampproxy !== false) && (typeof obj.args.npmproxy == 'string')) { timeStampProxy = obj.args.npmproxy; }
 
-        // Setup the pending operations counter
-        var pendingOperations = 1;
-
+        // Collect architectures that need signing
+        var archIds = [];
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             if (obj.meshAgentsArchitectureNumbers[archid].codesign !== true) continue;
+            archIds.push(archid);
+        }
+
+        if (archIds.length === 0) { func(); return; }
+
+        var currentArchIndex = 0;
+
+        function signNextAgent() {
+            if (currentArchIndex >= archIds.length) { func(); return; }
+
+            var archid = archIds[currentArchIndex];
+            currentArchIndex++;
 
             var agentpath;
             if (domain.id == '') {
@@ -3321,7 +3332,7 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // When processing an extra domain, only load agents that are specific to that domain
                 agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
+                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { signNextAgent(); return; } // If the agent is not present in "meshcentral-data/agents" skip.
             }
 
             // Open the original agent with authenticode
@@ -3454,9 +3465,10 @@ function CreateMeshCentralServer(config, args) {
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
                         obj.callExternalSignJob(agentSignedFunc.signingArguments); // Call external signing job regardless of success or failure
-                        if (--pendingOperations === 0) { agentSignedFunc.func(); }
+                        // Wait 2 seconds between each codesign to avoid rate limiting from Sectigo's timestamp server
+                        // https://www.sectigo.com/resource-library/time-stamping-server
+                        setTimeout(signNextAgent, 2000);
                     }
-                    pendingOperations++;
                     xagentSignedFunc.func = func;
                     xagentSignedFunc.objx = objx;
                     xagentSignedFunc.archid = archid;
@@ -3525,13 +3537,15 @@ function CreateMeshCentralServer(config, args) {
                 } else {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
+                    signNextAgent();
                 }
 
-                
+            } else {
+                signNextAgent();
             }
         }
 
-        if (--pendingOperations === 0) { func(); }
+        signNextAgent();
     }
 
     obj.callExternalSignJob = function (signingArguments) {
