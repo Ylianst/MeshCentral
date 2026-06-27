@@ -5098,9 +5098,9 @@
 						ip = node.ip; 
 					}
 					if ((node.probableMainLanIP != null) && (node.probableMainLanIP != '') && (node.probableMainLanIP != ip)) {
-						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.probableMainLanIP) + '">LAN ' + EscapeHtml(node.probableMainLanIP) + '<br />WAN <a href="http://ip-api.com/#' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(ip) + '</a>';
+						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.probableMainLanIP) + '">' + "LAN" + ' ' + EscapeHtml(node.probableMainLanIP) + '<br />' + "WAN" + ' <a href="https://iplocation.com/?ip=' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(ip) + '</a>';
 					} else {
-						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.ip) + '"><a href="http://ip-api.com/#' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(node.ip) + '</a>';
+						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.ip) + '"><a href="https://iplocation.com/?ip=' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(node.ip) + '</a>';
 					}
 				}
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
