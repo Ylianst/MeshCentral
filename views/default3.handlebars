@@ -14795,21 +14795,21 @@
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
-                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format('{0} mWh', battery.FullChargedCapacity), s); }
                     if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
                     if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
-                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format('{0} mWh', battery.DesignedCapacity), s); }
                     if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
                     if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
                     if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
-                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format('{0} mW', battery.ChargeRate), s); }
                     if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
-                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format('{0} mW', battery.DischargeRate), s); }
                     if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
-                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
-                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
-                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format('{0} mWh', battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format('{0} V', (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format('{0} %', battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format('{0} %', battery.BatteryCharge), s); }
                     x += '</div>';
                 }
                 x += '</table>';
@@ -14827,8 +14827,8 @@
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown'))) + '</b></div>';
-                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed)), s); }
-                        else if (m.Capacity) { x += addDetailItem("Capacity", EscapeHtml(format("{0} Mb", (m.Capacity / 1024 / 1024))), s); }
+                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format('"{0} Mb, {1} Mhz', (m.Capacity / 1024 / 1024), m.Speed)), s); }
+                        else if (m.Capacity) { x += addDetailItem("Capacity", EscapeHtml(format('{0} Mb', (m.Capacity / 1024 / 1024))), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -14895,7 +14895,7 @@
                         if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
                         if (m.Size) {
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
-                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format('{0} Mb', Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
                         }
                         if (hardware.windows && hardware.windows.drives && m.Model) {
@@ -18075,26 +18075,26 @@
 
         function getNiceSize2(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", Math.round(bytes / 1024));
-            if (bytes < 2147483648) return format("{0} Mb", Math.round(bytes / 1024 / 1024));
-            return format("{0} Gb", Math.round(bytes / 1024 / 1024 / 1024));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', Math.round(bytes / 1024));
+            if (bytes < 2147483648) return format('{0} Mb', Math.round(bytes / 1024 / 1024));
+            return format('{0} Gb', Math.round(bytes / 1024 / 1024 / 1024));
         }
 
         function getNiceSize3(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
-            if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
-            return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', round(bytes / 1024, 1));
+            if (bytes < 2147483648) return format('{0} Mb', round(bytes / 1024 / 1024, 1));
+            return format('{0} Gb', round(bytes / 1024 / 1024 / 1024, 1));
         }
 
         function getNetworkSpeed(bitsPerSecond) {
-            if (bitsPerSecond <= 0) return "0 bps";
-            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
-            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
-            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
-            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
+            if (bitsPerSecond <= 0) return '0 bps';
+            if (bitsPerSecond < 1000) return format('{0} bps', bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format('{0} Kbps', Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format('{0} Mbps', Math.round(bitsPerSecond / 1000000));
+            return format('{0} Gbps', (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -20874,7 +20874,7 @@
             var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
-            if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
+            if (rec.size) { sessionSize = format('{0} Kb', Math.round(rec.size / 1024)); }
             var sessionName = '<i>' + "Unknown" + '</i>';
             if (rec.name && rec.meshname) {
                 var recmesh = meshes[rec.meshid];
