@@ -1078,6 +1078,7 @@ module.exports.isVM = function isVM()
         }
     }
 
+    if (id.identifiers.bios_vendor == 'Microsoft' && id.identifiers.bios_version.slice(0,3) === 'WSL') { ret = true; }
 
     if (!ret) { ret = this.isDocker(); }
     return (ret);
