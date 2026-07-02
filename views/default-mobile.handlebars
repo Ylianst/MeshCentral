@@ -6997,7 +6997,7 @@
                     var m = hardware.linux.volumes[i];
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         var sizes = ['KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
