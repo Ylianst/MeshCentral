@@ -4010,7 +4010,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
+                // The download page puts the filename inside a JavaScript string (var filename = '...'),
+                // so escape backslashes and single quotes to keep it inside that string.
+                var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
             }
         } else {
             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
