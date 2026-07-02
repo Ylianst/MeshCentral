@@ -70,55 +70,58 @@ function linux_identifiers()
     var ret = {};
     var values = {};
     var child = null;
-
-    if (!require('fs').existsSync('/sys/class/dmi/id')) {         
-        if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
-            if (require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')) {
-                identifiers['board_vendor'] = 'Raspberry Pi';
-                identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
-                identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
-                const memorySlots = [];
-                child = require('child_process').execFile('/bin/sh', ['sh']);
-                child.stdout.str = ''; child.stdout.on('data', dataHandler);
-                child.stdin.write('vcgencmd get_mem arm && vcgencmd get_mem gpu\nexit\n');
-                child.waitExit();
-                try { 
-                    const lines = child.stdout.str.trim().split('\n');
-                    if (lines.length == 2) {
-                        memorySlots.push({ Locator: "ARM Memory", Size: lines[0].split('=')[1].trim() })
-                        memorySlots.push({ Locator: "GPU Memory", Size: lines[1].split('=')[1].trim() })
-                        ret.memory = { Memory_Device: memorySlots };
-                    }
-                } catch (xx) { }
+    try {
+        identifiers['bios_vendor'] = 'Unknown';
+        if (!require('fs').existsSync('/sys/class/dmi/id')) {
+            if (require('fs').existsSync('/etc/wsl.conf')) {
+                identifiers['bios_vendor'] = 'Microsoft';
+                identifiers['bios_version'] = 'WSL';
             } else {
-                throw('Unknown board');
+                if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
+                    if (require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')) {
+                        identifiers['board_vendor'] = 'Raspberry Pi';
+                        identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
+                        identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
+                        const memorySlots = [];
+                        child = require('child_process').execFile('/bin/sh', ['sh']);
+                        child.stdout.str = ''; child.stdout.on('data', dataHandler);
+                        child.stdin.write('vcgencmd get_mem arm && vcgencmd get_mem gpu\nexit\n');
+                        child.waitExit();
+                        try { 
+                            const lines = child.stdout.str.trim().split('\n');
+                            if (lines.length == 2) {
+                                memorySlots.push({ Locator: "ARM Memory", Size: lines[0].split('=')[1].trim() })
+                                memorySlots.push({ Locator: "GPU Memory", Size: lines[1].split('=')[1].trim() })
+                                ret.memory = { Memory_Device: memorySlots };
+                            }
+                        } catch (xx) { }
+                    }
+                }
             }
         } else {
-            throw ('this platform does not have DMI statistics');
-        }
-    } else {
-        var entries = require('fs').readdirSync('/sys/class/dmi/id');
-        for (var i in entries) {
-            if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile()) {
-                try {
-                    ret[entries[i]] = require('fs').readFileSync('/sys/class/dmi/id/' + entries[i]).toString().trim();
-                } catch(z) { }
-                if (ret[entries[i]] == 'None') { delete ret[entries[i]]; }
+            var entries = require('fs').readdirSync('/sys/class/dmi/id');
+            for (var i in entries) {
+                if (require('fs').statSync('/sys/class/dmi/id/' + entries[i]).isFile()) {
+                    try {
+                        ret[entries[i]] = require('fs').readFileSync('/sys/class/dmi/id/' + entries[i]).toString().trim();
+                    } catch(z) { }
+                    if (ret[entries[i]] == 'None') { delete ret[entries[i]]; }
+                }
             }
-        }
-        entries = null;
+            entries = null;
 
-        identifiers['bios_date'] = ret['bios_date'];
-        identifiers['bios_vendor'] = ret['bios_vendor'];
-        identifiers['bios_version'] = ret['bios_version'];
-        identifiers['bios_serial'] = ret['product_serial'];
-        identifiers['board_name'] = ret['board_name'];
-        identifiers['board_serial'] = ret['board_serial'];
-        identifiers['board_vendor'] = ret['board_vendor'];
-        identifiers['board_version'] = ret['board_version'];
-        identifiers['product_uuid'] = ret['product_uuid'];
-        identifiers['product_name'] = ret['product_name'];
-    }
+            identifiers['bios_date'] = ret['bios_date'];
+            identifiers['bios_vendor'] = ret['bios_vendor'];
+            identifiers['bios_version'] = ret['bios_version'];
+            identifiers['bios_serial'] = ret['product_serial'];
+            identifiers['board_name'] = ret['board_name'];
+            identifiers['board_serial'] = ret['board_serial'];
+            identifiers['board_vendor'] = ret['board_vendor'];
+            identifiers['board_version'] = ret['board_version'];
+            identifiers['product_uuid'] = ret['product_uuid'];
+            identifiers['product_name'] = ret['product_name'];
+        }
+    } catch (e) { console.log(e && e.message ? e.message : e); }
 
     // BIOS Mode
     try {
@@ -167,6 +170,7 @@ function linux_identifiers()
     child.stdin.write('uname -r\nexit\n');
     child.waitExit();
     try { ret['kernel_release'] = child.stdout.str.trim(); } catch (xx) { }
+    if (ret['kernel_release'].indexOf('-WSL2') !== -1) { identifiers['bios_version'] = 'WSL2'; }
 
     child = require('child_process').execFile('/bin/sh', ['sh']);
     child.stdout.str = ''; child.stdout.on('data', dataHandler);
@@ -1074,6 +1078,7 @@ module.exports.isVM = function isVM()
         }
     }
 
+    if (id.identifiers.bios_vendor == 'Microsoft' && id.identifiers.bios_version.slice(0,3) === 'WSL') { ret = true; }
 
     if (!ret) { ret = this.isDocker(); }
     return (ret);
