@@ -365,7 +365,11 @@ module.exports.CreateServer = function (parent) {
             });
             if (func != null) { func(true); }
         }else if ((to.startsWith('slack:')) && (obj.slackClient != null)) { //slack
-            const req = require('https').request(new URL(to.substring(6)), { method: 'POST' }, function (res) { if (func != null) { func(true); } });
+            // Slack incoming webhooks are always on hooks.slack.com, so only allow that host.
+            var slackUrl;
+            try { slackUrl = new URL(to.substring(6)); } catch (ex) { if (func != null) { func(false); } return; }
+            if (slackUrl.hostname != 'hooks.slack.com') { if (func != null) { func(false); } return; }
+            const req = require('https').request(slackUrl, { method: 'POST' }, function (res) { if (func != null) { func(true); } });
             req.on('error', function (err) { if (func != null) { func(false); } });
             req.write(JSON.stringify({"text": msg }));
             req.end();

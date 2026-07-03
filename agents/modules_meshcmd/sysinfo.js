@@ -226,7 +226,7 @@ function windows_thermals()
 {
     var ret = [];
     try {
-        ret = require('win-wmi').query('ROOT\\WMI', 'SELECT CurrentTemperature,InstanceName FROM MSAcpi_ThermalZoneTemperature',['CurrentTemperature','InstanceName']);
+        ret = require('win-wmi-fixed').query('ROOT\\WMI', 'SELECT CurrentTemperature,InstanceName FROM MSAcpi_ThermalZoneTemperature',['CurrentTemperature','InstanceName']);
         if (ret[0]) {
             for (var i = 0; i < ret.length; ++i) {
                 ret[i]['CurrentTemperature'] = ((parseFloat(ret[i]['CurrentTemperature']) / 10) - 273.15).toFixed(2);

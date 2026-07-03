@@ -188,6 +188,13 @@
                 });
             });
         });
+
+        function mobileSubMenuScroll(tableId, dir) {
+            if (!document.body.classList.contains('is-mobile')) return;
+            var inner = document.getElementById(tableId + 'ScrollInner');
+            if (!inner) return;
+            inner.scrollLeft += dir * 80;
+        }
     </script>
     <!-- right click menu -->
     <div id="contextMenu" class="contextMenu noselect" style="display:none">
@@ -412,31 +419,37 @@
                         </tr>
                     </table>
                     <div id=MainSubMenuSpan style="display:none">
-                        <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
-                            <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
-                                    onkeypress="if (event.key == 'Enter') go(10)">General</td>
-                                <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
-                                    onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
-                                    onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
-                                <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
-                                    onkeypress="if (event.key == 'Enter') go(13)">Files</td>
-                                <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
-                                    onkeypress="if (event.key == 'Enter') go(16)">Events</td>
-                                <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
-                                    onkeypress="if (event.key == 'Enter') go(17)">Details</td>
-                                <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
-									onkeypress="if (event.key == 'Enter') go(18)">Software</td>
-                                <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
-                                    onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
-                                <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
-                                    onkeypress="if (event.key == 'Enter') go(15)">Console</td>
-                                <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
-                                    onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
-                                <td class="topbar_td_end style3">&nbsp;</td>
-                            </tr>
-                        </table>
+                        <div class="mobile-submenu-scroll">
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',-1)" aria-label="Scroll left"><i class="fa fa-caret-square-left"></i></button>
+                            <div class="mobile-submenu-scroll-inner" id="MainSubMenuScrollInner">
+                                <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
+                                    <tr>
+                                        <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event)
+                                            onkeypress="if (event.key == 'Enter') go(10)">General</td>
+                                        <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event)
+                                            onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                        <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event)
+                                            onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
+                                        <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event)
+                                            onkeypress="if (event.key == 'Enter') go(13)">Files</td>
+                                        <td tabindex=0 id=MainDevEvents class="topbar_td style3x" onmouseup=go(16,event)
+                                            onkeypress="if (event.key == 'Enter') go(16)">Events</td>
+                                        <td tabindex=0 id=MainDevInfo class="topbar_td style3x" onmouseup=go(17,event)
+                                            onkeypress="if (event.key == 'Enter') go(17)">Details</td>
+                                        <td tabindex=0 id=MainDevApps class="topbar_td style3x" onmouseup=go(18,event)
+                                            onkeypress="if (event.key == 'Enter') go(18)">Software</td>
+                                        <td tabindex=0 id=MainDevAmt class="topbar_td style3x" onmouseup=go(14,event)
+                                            onkeypress="if (event.key == 'Enter') go(14)">Intel&reg;AMT</td>
+                                        <td tabindex=0 id=MainDevConsole class="topbar_td style3x" onmouseup=go(15,event)
+                                            onkeypress="if (event.key == 'Enter') go(15)">Console</td>
+                                        <td tabindex=0 id=MainDevPlugins class="topbar_td style3x" onmouseup=go(19,event)
+                                            onkeypress="if (event.key == 'Enter') go(19)">Plugins</td>
+                                        <td class="topbar_td_end style3">&nbsp;</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <button class="mobile-submenu-arrow" onclick="mobileSubMenuScroll('MainSubMenu',1)" aria-label="Scroll right"><i class="fa fa-caret-square-right"></i></button>
+                        </div>
                     </div>
                     <div id=MeshSubMenuSpan style="display:none">
                         <table id=MeshSubMenu cellpadding=0 cellspacing=0 class=style1>
@@ -929,8 +942,8 @@
                         <div style="margin-left:25px">
                             <div id="p2ServerActionsBackup">
                                 <div class="p2AccountActions"><span
-                                        style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink"
-                                    href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a>
+                                        style="display:none"><strong>&#x2713;</strong></span></div><a href=#
+                                    onclick="return server_showBackupDlg()">Download server backup</a>
                             </div>
                             <div id="p2ServerActionsRestore">
                                 <div class="p2AccountActions"><span
@@ -986,7 +999,7 @@
                     <div id="p10BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-circle-info fa-sm me-2 text-secondary"></i>General - <span id=p10deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-circle-info fa-sm me-2 text-secondary"></i>General<span id=p10deviceName></span></div>
                 </div>
                 <div id=p10info style="overflow-y:auto" class="pt-3">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -1047,7 +1060,7 @@
                     <div id="p11BackButton" class="pe-2">
                         <i class="fa-solid fa-2xl fa-square-caret-left" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-display fa-sm me-2 text-secondary"></i>Desktop - <span id=p11deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-display fa-sm me-2 text-secondary"></i>Desktop<span id=p11deviceName></span></div>
                     <div id="p11KeyboardLights" style="font-size:x-small;color:black" class="ms-auto pe-2">
                         <div id="p11numlock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">NUM</div>
                         <div id="p11capslock" style="display:inline-block;margin-left:1px;border-radius:5px;background-color:#A3FFB8;padding:2px">CAPS</div>
@@ -1237,7 +1250,15 @@
                     <!-- Mobile action panel: fixed above the tab bar, shown via deskToggleMobileActions() -->
                     <div id="deskMobileActionsBackdrop" onclick="deskCloseMobileActions()" style="display:none;position:fixed;inset:0;z-index:1998"></div>
                     <div id="deskMobileActionsPanel" style="display:none;position:fixed;right:8px;bottom:82px;z-index:1999;min-width:220px;border-radius:12px;overflow-y:auto;overflow-x:hidden;max-height:calc(100dvh - 100px);box-shadow:0 4px 24px rgba(0,0,0,0.28)">
-                        <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
+                        <div id="deskModifierBar" class="d-flex gap-2 px-3 py-2 border-bottom" style="background:var(--bs-body-bg,#fff)">
+                            <button id="deskModCtrl"  type="button" class="desk-mod-key" onclick="toggleMobileModifier('ctrl')">CTRL</button>
+                            <button id="deskModShift" type="button" class="desk-mod-key" onclick="toggleMobileModifier('shift')">SHIFT</button>
+                            <button id="deskModAlt"   type="button" class="desk-mod-key" onclick="toggleMobileModifier('alt')">ALT</button>
+                        </div>
+                        <div id="deskMobileMonitorRow" style="display:none;background:var(--bs-body-bg,#fff)">
+                            <div class="d-flex align-items-center px-3 py-2 border-bottom" style="font-size:15px;color:var(--bs-body-color,#212529)"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span id="deskMobileMonitorIcons" class="ms-auto d-flex gap-2" style="font-size:20px"></span></div>
+                        </div>
+                        <a id="deskKbdItem" class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="toggleMobileKeyboard();deskCloseMobileActions()"><i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>On-screen Keyboard</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDeskType();deskCloseMobileActions()"><i class="fa-solid fa-font fa-fw me-2 text-primary"></i>Type Text</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="deviceActionFunction();deskCloseMobileActions()"><i class="fa-solid fa-bolt fa-fw me-2 text-primary"></i>Actions</a>
                         <a class="d-block px-3 py-2 text-decoration-none border-bottom" style="font-size:15px;background:var(--bs-body-bg,#fff);color:var(--bs-body-color,#212529)" onclick="showDesktopSettings();deskCloseMobileActions()"><i class="fa-solid fa-gear fa-fw me-2 text-primary"></i>Settings</a>
@@ -1264,7 +1285,7 @@
                     <div id="p12BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-terminal fa-sm me-2 text-secondary"></i>Terminal - <span id=p12deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-terminal fa-sm me-2 text-secondary"></i>Terminal<span id=p12deviceName></span></div>
                     <div id="devListToolbarViewIcons2" class="ms-auto">
                         <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
@@ -1405,7 +1426,7 @@
                     <div id="p13BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-folder-open fa-sm me-2 text-secondary"></i>Files - <span id=p13deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-folder-open fa-sm me-2 text-secondary"></i>Files<span id=p13deviceName></span></div>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -1528,7 +1549,7 @@
                     <div id="p14BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><span id=p14deviceNamePrefix>Intel&reg; AMT</span> - <span id=p14deviceName></span></div>
+                    <div class='fs-4 fw-bold'><span id=p14deviceNamePrefix>Intel&reg; AMT</span><span id=p14deviceName></span></div>
                     <div id="devListToolbarViewIcons" class="ms-auto">
                         <i class="fa-solid fa-xl fa-maximize fa-border" role="button" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."></i>
                     </div>
@@ -1540,7 +1561,7 @@
                     <div id="p15BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><span id=p15deviceName></span></div>
+                    <div class='fs-4 fw-bold'>Console<span id=p15deviceName></span></div>
                 </div>
                 <table id="consoleTable" cellpadding=0 cellspacing=0>
                     <tr>
@@ -1594,7 +1615,7 @@
                     <div id="p16BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-calendar fa-sm me-2 text-secondary"></i>Events - <span id=p16deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-calendar fa-sm me-2 text-secondary"></i>Events<span id=p16deviceName></span></div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1631,7 +1652,7 @@
                     <div id="p17BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-list fa-sm me-2 text-secondary"></i>Details - <span id=p17deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-list fa-sm me-2 text-secondary"></i>Details<span id=p17deviceName></span></div>
                     <div id="devListToolbarViewIcons3" class="ms-auto">
                         <i class="fa-solid fa-rotate-right fa-xl fa-border" role="button" onclick=refreshDetails(event) title="Refresh details information."></i>
                         <i class="fa-solid fa-chart-line fa-xl fa-border" role="button" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."></i>
@@ -1660,38 +1681,38 @@
                 </div>
             </div>
             <div id=p18 style="display:none">
-			    <div id="p18title">
-				    <div id="p18BackButton" style="float:left">
-					    <div class="backButton" tabindex=0 onclick=goBack() title="Back" 
-						    onkeypress="if (event.key == 'Enter') goBack()">
-						    <div class="backButtonEx"></div>
-					    </div>
-				    </div>
-				    <h1>Software - <span id=p18deviceName></span></h1>
-			    </div>
-			    <div id="p18toolbar" style="padding:10px;background-color:#f5f5f5;border-bottom:1px solid #ddd">
-				    <input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm" value="Refresh" onclick="loadInstalledApps()" />
-				    <input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." 
-					    style="margin-left:10px;width:250px" onkeyup="filterInstalledApps()" />
-				    <label style="margin-left:15px">
-					    <input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
-				    </label>
-				    <span id="p18Status" style="margin-left:20px;color:gray"></span>
-			    </div>
-			    <div id="p18info" style="overflow-y:auto;padding:10px">
-				    <div id="p18html">
-					    <div style="text-align:center;padding:50px;color:gray">
-						    <i>Click Refresh to load installed software...</i>
-					    </div>
-				    </div>
-			    </div>
+                <div id="p18title" class="d-flex align-items-center">
+                    <div id="p18BackButton" class="pe-2">
+                        <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
+                    </div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-cubes fa-sm me-2 text-secondary"></i>Software<span id=p18deviceName></span></div>
+                    <div id="devListToolbarViewIcons2" class="ms-auto">
+                    </div>
+                </div>
+                <div id="p18toolbar" class="areaHead d-flex flex-wrap">
+                    <div class="d-flex align-items-center">
+                        <input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm me-1" value="Refresh" onclick="loadInstalledApps()" />
+                        <input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
+                        <label style="margin-left:15px">
+                            <input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
+                        </label>
+                        <span id="p18Status" style="margin-left:20px"></span>
+                    </div>
+                </div>
+                <div id="p18info" style="overflow-y:auto;padding:10px">
+                    <div id="p18html">
+                        <div style="text-align:center;padding:50px">
+                            <i>Click Refresh to load installed software...</i>
+                        </div>
+                    </div>
+                </div>
 		    </div>
             <div id=p19 style="display:none">
                 <div id="p19title" class="d-flex align-items-center">
                     <div id="p19BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Plugins - <span id=p19deviceName></span></div>
+                    <div class='fs-4 fw-bold'>Plugins<span id=p19deviceName></span></div>
                 </div>
                 <div id="p19headers"></div>
                 <div id=p19pages></div>
@@ -1702,7 +1723,7 @@
                         <div id="p20BackButton" class="pe-2">
                             <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                         </div>
-                        <div class='fs-4 fw-bold'>General - <span id=p20meshName></span></div>
+                        <div class='fs-4 fw-bold'>General<span id=p20meshName></span></div>
                     </div>
                     <div class="d-flex">
                         <div class="flex-grow-1">
@@ -1755,7 +1776,7 @@
                     <div id="p30BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>General - <span id=p30userName></span></div>
+                    <div class='fs-4 fw-bold'>General<span id=p30userName></span></div>
                 </div>
                 <div id="p30info" class='pe-2' style="overflow-y:auto">
                     <div class="d-flex">
@@ -1788,7 +1809,7 @@
                     <div id="p31BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'>Events - <span id=p31userName></span></div>
+                    <div class='fs-4 fw-bold'>Events<span id=p31userName></span></div>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -2384,13 +2405,6 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
-        //
-		// INSTALLED SOFTWARE
-		//
-		var installedAppsData = null;       // Gespeicherte App-Daten
-		var installedAppsLoading = false;   // Ladestatus
-		var showStoreApps = false;          // Store Apps anzeigen?
-
         /*
         // Check browser dark mode preference
         var prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -2651,9 +2665,6 @@
             // Make the dialog box movable
             dialogBoxDrag();
 
-            // Fix links
-            if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
-
             // Hide night mode button if needed
             QV('uiViewButton4', (features2 & 0x00300000) == 0);
 
@@ -2799,7 +2810,7 @@
             QS('p3users')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p50groups')['max-height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
-            QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
+            QS('p5filetable')['height'] = 'calc(100vh - ' + (119 + xh) + 'px)'; // 140
             QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
             QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
@@ -3659,7 +3670,7 @@
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
-                            QH('p18Status', '<span style=color:red>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
+                            QH('p18Status', '<span>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
                             QH('p18html', '<div style="text-align:center;padding:50px;color:gray"><i>' + "Click Refresh to load installed software..." + '</i></div>');
                             installedAppsLoading = false;
                             installedAppsLoadingType = 0;
@@ -3874,7 +3885,7 @@
                                 x += '<hr />'
                                 x += addHtmlValue2("Name", '<b>' + EscapeHtml(i) + '</b>');
                                 if (typeof net[0].mac == 'string') { x += addHtmlValue2("MAC address", '<a href="https://maclookup.app/search/result?mac=' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy MAC address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '")></i>'); }
-                                if (net[0].fqdn) { x += addHtmlValue2("FQDN", net[0].fqdn); }
+                                if (net[0].fqdn) { x += addHtmlValue2("FQDN", EscapeHtml(net[0].fqdn)); }
                                 for (var j = 0; j < net.length; j++) {
                                     var netif = net[j];
                                     if (netif.family == 'IPv6') {
@@ -3894,6 +3905,14 @@
                         }
                         x += '</div>';
                         QH('d2netinfo', x);
+                    }
+                    break;
+                }
+                case 'backuprestore': {
+                    if (message.dialog == 'backup') {
+                        server_showBackupDlgUpdate(message.data);
+                    } else {
+                        server_showRestoreDlgUpdate(message.data);
                     }
                     break;
                 }
@@ -5333,7 +5352,7 @@
 
         function ondockeyup(e) {
             mobileKbdGotKeypress = false;
-            var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; }
+            var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; if (typeof _releaseMobileModifiers === 'function') _releaseMobileModifiers(); }
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -7334,9 +7353,9 @@
             var chkNodeIds = getCheckedDevices(), intelamtpresent = false;
             for (var i in chkNodeIds) { if (getNodeFromId(chkNodeIds[i]).intelamt != null) { intelamtpresent = true; } }
             var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
-            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + 'devicelist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + 'devicelist.json' + '</a>');
+            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + 'computerlist.json' + '</a>'); }
             x += '<div style=margin-top:8px><label><input type=checkbox class="form-check-input me-2" id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setModalContent('xxAddAgent', "Device Information Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
@@ -7355,20 +7374,12 @@
                 meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'csv' }); // With details
             } else {
                 // Without details
-                var csv = "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags,lastbootuptime" + '\r\n', r = [];
+                var csv = 'id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime' + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname ? (n.rname.split(',').join('')) : '') + '","' + (n.host ? (n.host.split(',').join('')) : '') + '","' + n.icon + '","' + (n.ip ? n.ip : '') + '","' + (n.osdesc ? (n.osdesc.split(',').join('')) : '') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn ? n.conn : '') + '","' + (n.pwr ? n.pwr : '') + '"';
                     if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; }
                     else if (typeof n.lsc == 'object') { csv += ',"' + csvClean(n.lsc.antiVirus) + '",,"' + csvClean(n.lsc.firewall) + '"'; } else { csv += ',,,'; }
-                    if (typeof n.volumes == 'object') {
-                        var bitlockerdetails = '', firstbitlocker = true;
-                        for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
-                        csv += ',"' + csvClean(bitlockerdetails) + '"';
-                    }
-                    else {
-                        csv += ',';
-                    }
                     if (typeof n.av == 'object') {
                         var avdetails = '', firstav = true;
                         for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled) ? 'enabled' : 'disabled') + '/' + ((n.av[a].updated) ? 'updated' : 'notupdated')); } }
@@ -7388,7 +7399,7 @@
                     if (typeof n.lastbootuptime == 'number') { csv += ',"' + n.lastbootuptime + '"'; }
                     csv += '\r\n';
                 }
-                saveAs(stringToUtf8Blob(csv), "devicelist.csv");
+                saveAs(stringToUtf8Blob(csv), 'devicelist.csv');
             }
             return false;
         }
@@ -7406,7 +7417,7 @@
                 if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
                 r.computers.push(c);
             }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "computerlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'computerlist.json');
         }
 
         function p2downloadDeviceInfoJSON() {
@@ -7419,7 +7430,7 @@
                 // Without details
                 var r = [];
                 for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
-                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'devicelist.json');
             }
             return false;
         }
@@ -8802,9 +8813,15 @@
                     QV('p10deviceBattery', false);
                 }
 
+                // Clear installedAppsData for Software tab
+                installedAppsData = { desktop: [], store: [] };
+                installedAppsLoading = false;
+                installedAppsLoadingType = 0;
+                showStoreApps = false;
+
                 // Add node name
-                var nname = EscapeHtml(node.name), nnameEx;
-                if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
+                var nname = '&nbsp;-&nbsp;' + EscapeHtml(node.name), nnameEx;
+                if (nname.length == 0) { nname = ' - <i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" role="button">' + nname + ' <i class="fa-solid fa-pencil fa-2xs"/></i></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span class="deviceGroupName" style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
@@ -8813,9 +8830,10 @@
                 QH('p12deviceName', nname);
                 QH('p13deviceName', nname);
                 QH('p14deviceName', nname);
-                QH('p15deviceName', "Console - " + nname);
+                QH('p15deviceName', nname);
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
+                QH('p18deviceName', nname);
                 QH('p19deviceName', nname);
 
                 // Node attributes
@@ -9273,7 +9291,7 @@
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
                 QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0));
-                QH('p15coreName', ((node.agent != null) && (node.agent.core != null)) ? node.agent.core : '');
+                QH('p15coreName', ((node.agent != null) && (node.agent.core != null)) ? EscapeHtml(node.agent.core) : '');
 
                 // Set the Intel AMT / Intel SM tab name
                 if ((node.intelamt != null) && (typeof node.intelamt.sku == 'number') && ((node.intelamt.sku & 16) != 0)) {
@@ -9743,16 +9761,34 @@
             desktop.m.SwapMouse = !desktop.m.SwapMouse;
         }
 
+        var _deskMobilePanelStaticHTML = null;
         function deskToggleMobileActions() {
             var panel = Q('deskMobileActionsPanel'), backdrop = Q('deskMobileActionsBackdrop');
             if (!panel) return;
             var show = (panel.style.display === 'none');
             if (show) {
                 if (document.body.classList.contains('fulldesk')) {
-                    // Fullscreen mode: rebuild panel with all controls
+                    // Fullscreen mode: save static HTML if not yet saved, then rebuild
+                    if (_deskMobilePanelStaticHTML === null) _deskMobilePanelStaticHTML = panel.innerHTML;
                     _buildFullscreenPanel(panel);
                 } else {
-                    // Normal mode: update dynamic labels to reflect current state
+                    // Normal mode: restore static HTML if fullscreen had replaced it
+                    if (_deskMobilePanelStaticHTML !== null) {
+                        panel.innerHTML = _deskMobilePanelStaticHTML;
+                        _deskMobilePanelStaticHTML = null;
+                        // Re-apply current monitor selection since saved HTML may be stale
+                        if (_deskLastSelDisplay !== null) {
+                            ['deskMobileMonitorIcons', 'DeskMonitorSelectionSpan'].forEach(function(id) {
+                                var container = Q(id);
+                                if (!container) return;
+                                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                                    if (idx === _deskLastSelDisplay) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                                });
+                            });
+                        }
+                    }
+                    // Update dynamic labels to reflect current state
                     var rc = Q('deskRightClickItem');
                     if (rc) {
                         var active = desktop && desktop.m && desktop.m.SwapMouse;
@@ -9763,6 +9799,11 @@
                     if (tp) {
                         tp.innerHTML = '<i class="fa-solid fa-computer-mouse fa-fw me-2 text-primary"></i>'
                             + (trackpadMode ? 'Disable Trackpad Mode' : 'Enable Trackpad Mode');
+                    }
+                    var ki = Q('deskKbdItem');
+                    if (ki) {
+                        ki.innerHTML = '<i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>' + "On-screen Keyboard"
+                            + ' <i class="fa-solid ' + (_mobileKbdEnabled ? 'fa-toggle-on text-success' : 'fa-toggle-off text-secondary') + ' ms-1"></i>';
                     }
                 }
             }
@@ -9785,25 +9826,48 @@
                      + '<i class="fa-solid ' + icon + ' fa-fw me-2 ' + (extra || 'text-primary') + '"></i>'
                      + label + '</a>';
             }
-            panel.innerHTML =
-                row(cls, 'fa-compress',         'Exit Fullscreen',                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
-                row(cls, (_mobileZoomMode==='native'?'fa-compress-arrows-alt':'fa-expand-arrows-alt'),
-                    (_mobileZoomMode==='native'?'Scale to Fit':'Native Size (Scrollable)'),  'deskMobileToggleZoom();deskCloseMobileActions()') +
-                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', "Q('DeskControl').click();deskCloseMobileActions()") +
-                row(cls, 'fa-keyboard',          'On-screen Keyboard',                       'toggleMobileKeyboard();deskCloseMobileActions()') +
-                row(cls, 'fa-computer-mouse',    (trackpad?'Disable':'Enable')+' Trackpad',  'deskToggleTrackpad();deskCloseMobileActions()') +
-                row(cls, 'fa-hand-pointer',      (swap?'Disable':'Enable')+' Right-click',   'deskToggleRightClickMode();deskCloseMobileActions()') +
-                row(cls, 'fa-font',              'Type Text',                                'showDeskType();deskCloseMobileActions()') +
+            var monitorRow = '';
+            if (_deskLastDisplays) {
+                var icons = '', count = 0;
+                for (var i in _deskLastDisplays) {
+                    count++;
+                    var str = _deskLastDisplays[i], allDisplays = 1;
+                    if (str == 'All Displays') { allDisplays = 2; }
+                    var mt = 'id=DeskMonitorSelectionX' + i + ' title="' + EscapeHtml(str) + '" onclick=deskSetDisplay(' + i + ') role=button';
+                    var gray = (_deskLastSelDisplay == i) ? '' : ' gray';
+                    if (allDisplays == 2) {
+                        icons += '<span ' + mt + ' class="fa-layers fa-fw' + gray + '"><i class="fa-solid fa-desktop"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 left-3 up-3"></i><i class="fa-solid fa-square" data-fa-transform="shrink-12 right-3 up-3"></i></span>';
+                    } else {
+                        icons += '<i ' + mt + ' class="fa-fw fa-solid fa-desktop' + gray + '"></i>';
+                    }
+                }
+                if (count > 1) monitorRow = '<div class="d-flex align-items-center px-3 py-2 border-bottom" style="' + s + '"><i class="fa-solid fa-desktop fa-fw me-2 text-primary"></i>Select Monitor<span class="ms-auto d-flex gap-2" style="font-size:20px">' + icons + '</span></div>';
+            }
+            var modChips = '<div class="d-flex gap-2 px-3 py-2 border-bottom" style="background:var(--bs-body-bg,#fff)">'
+                + '<button type="button" id="deskModCtrl"  class="desk-mod-key' + (_mobileModifiers.ctrl  ? ' armed' : '') + '" onclick="toggleMobileModifier(\'ctrl\')" >' + "CTRL"  + '</button>'
+                + '<button type="button" id="deskModShift" class="desk-mod-key' + (_mobileModifiers.shift ? ' armed' : '') + '" onclick="toggleMobileModifier(\'shift\')">' + "SHIFT" + '</button>'
+                + '<button type="button" id="deskModAlt"   class="desk-mod-key' + (_mobileModifiers.alt   ? ' armed' : '') + '" onclick="toggleMobileModifier(\'alt\')" >' + "ALT"   + '</button>'
+                + '</div>';
+            panel.innerHTML = modChips +
+                row(cls, 'fa-compress',         "Exit Fullscreen",                          'deskToggleFull();deskCloseMobileActions()',                       'text-danger') +
+                monitorRow +
+                row(cls, (_mobileZoomMode==='native' ? 'fa-compress-arrows-alt' : 'fa-expand-arrows-alt'),
+                    (_mobileZoomMode==='native' ? "Scale to Fit" : "Native Size (Scrollable)"),  'deskMobileToggleZoom();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          'Input <i class="fa-solid ' + (inputOn?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'Q("DeskControl").click();deskCloseMobileActions()') +
+                row(cls, 'fa-keyboard',          "On-screen Keyboard" + ' <i class="fa-solid ' + (_mobileKbdEnabled?'fa-toggle-on text-success':'fa-toggle-off text-secondary') + ' ms-1"></i>', 'toggleMobileKeyboard();deskCloseMobileActions()') +
+                row(cls, 'fa-computer-mouse',    (trackpad ? "Disable Trackpad Mode" : "Enable Trackpad Mode"),  'deskToggleTrackpad();deskCloseMobileActions()') +
+                row(cls, 'fa-hand-pointer',      (swap ? "Disable Right-click Mode" : "Enable Right-click Mode"),   'deskToggleRightClickMode();deskCloseMobileActions()') +
+                row(cls, 'fa-font',              "Type Text",                                'showDeskType();deskCloseMobileActions()') +
                 row(cls, 'fa-terminal',          'Ctrl + Alt + Del',                        'if(desktop&&desktop.m)desktop.m.sendcad();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Send ESC',                                 'sendDeskEsc();deskCloseMobileActions()') +
-                row(cls, 'fa-sliders',           'Keyboard Shortcuts',                       'deskCustomizeKeys();deskCloseMobileActions()') +
-                row(cls, 'fa-paste',             'Clipboard',                               'showDeskClip();deskCloseMobileActions()') +
-                row(cls, 'fa-clipboard',         'Upload Clipboard',                         'deskClipboardOutFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-right',      'Rotate Right',                             'drotate(1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate-left',       'Rotate Left',                              'drotate(-1);deskCloseMobileActions()') +
-                row(cls, 'fa-rotate',            'Refresh Desktop',                          'deskRefreshFunction();deskCloseMobileActions()') +
-                row(cls, 'fa-gear',              'Desktop Settings',                         'showDesktopSettings();deskCloseMobileActions()') +
-                row(end, 'fa-plug-circle-xmark', 'Disconnect',                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
+                row(cls, 'fa-sliders',           "Keyboard Shortcuts",                       'deskCustomizeKeys();deskCloseMobileActions()') +
+                row(cls, 'fa-paste',             "Clipboard",                               'showDeskClip();deskCloseMobileActions()') +
+                row(cls, 'fa-clipboard',         "Upload Clipboard",                         'deskClipboardOutFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-right',      "Rotate Right",                             'drotate(1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate-left',       "Rotate Left",                              'drotate(-1);deskCloseMobileActions()') +
+                row(cls, 'fa-rotate',            "Refresh Desktop",                          'deskRefreshFunction();deskCloseMobileActions()') +
+                row(cls, 'fa-gear',              "Desktop Settings",                         'showDesktopSettings();deskCloseMobileActions()') +
+                row(end, 'fa-plug-circle-xmark', "Disconnect",                               'connectDesktop(null,0);deskCloseMobileActions()',                 'text-danger');
         }
         function deskCloseMobileActions() {
             QV('deskMobileActionsPanel', false);
@@ -10412,8 +10476,16 @@
                 // Setup the map
                 d2map = new ol.Map({
                     target: 'd2map',
-                    interactions: ol.interaction.defaults({ dragPan: false, mouseWheelZoom: false }),
-                    layers: [new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer],
+                    interactions: ol.interaction.defaults({dragPan:false, mouseWheelZoom:false}),
+                    layers: [ new ol.layer.Tile({
+                        source: new ol.source.OSM({
+                            tileLoadFunction: function(imageTile, src) { 
+                                var img = imageTile.getImage();
+                                img.referrerPolicy = 'origin';
+                                img.src = src;
+                            }
+                        })
+                    }), vectorLayer ],
                     view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
                 });
                 document.getElementById('xxAddAgentModal').removeEventListener('shown.bs.modal', showLocation);
@@ -11187,17 +11259,25 @@
                     desktopNode = desktop = null;
                     QV('DeskFocus', false);
                     QV('DeskMonitorSelectionSpan', false);
+                    QV('deskMobileMonitorRow', false);
                     QV('deskRecordIcon', false);
                     QV('DeskInputLockedButton', false);
                     QV('DeskInputUnLockedButton', false);
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
                     _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
-                    // Hide trackpad cursor and reset trackpad state on disconnect
+                    if (typeof _mobileModifiers !== 'undefined') { for (var _m in _mobileModifiers) _mobileModifiers[_m] = false; _updateMobileModifierUI(); }
+                    // Reset trackpad and soft keyboard state on disconnect
                     if (typeof trackpadMode !== 'undefined') {
                         trackpadMode = false;
                         var _tpc = document.getElementById('trackpadCursor');
                         if (_tpc) _tpc.style.display = 'none';
+                    }
+                    if (typeof _mobileKbdEnabled !== 'undefined') {
+                        _mobileKbdEnabled = false;
+                        var _sk = document.getElementById('softKeyboard');
+                        if (_sk) _sk.blur();
+                        _updateSoftKbdIcon();
                     }
                     webRtcDesktopReset();
                     deskPreferedStickyDisplay = 0;
@@ -12209,6 +12289,7 @@
         }
 
         function deskDisplayInfo(sender, displays, selDisplay) {
+            _deskLastDisplays = displays; _deskLastSelDisplay = selDisplay;
             var displayCount = 0, displaySelector = '';
             for (var i in displays) {
                 displayCount++;
@@ -12226,11 +12307,36 @@
             }
             QH('DeskMonitorSelectionSpan', displaySelector);
             QV('DeskMonitorSelectionSpan', displayCount > 1);
+            QH('deskMobileMonitorIcons', displaySelector);
+            QV('deskMobileMonitorRow', displayCount > 1);
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
         }
 
         function deskGetDisplayNumbers(e) { desktop.m.GetDisplayNumbers(); }
         var deskPreferedStickyDisplay = -1;
-        function deskSetDisplay(v) { desktop.m.SetDisplay(deskPreferedStickyDisplay = parseInt(v)); }
+        var _deskLastDisplays = null, _deskLastSelDisplay = null;
+        function deskSetDisplay(v) {
+            v = parseInt(v);
+            desktop.m.SetDisplay(deskPreferedStickyDisplay = v);
+            _deskLastSelDisplay = v;
+            // Update selected state on monitor icons immediately (no server roundtrip for this)
+            ['DeskMonitorSelectionSpan', 'deskMobileMonitorIcons'].forEach(function(id) {
+                var container = Q(id);
+                if (!container) return;
+                container.querySelectorAll('[id^="DeskMonitorSelectionX"]').forEach(function(el) {
+                    var idx = parseInt(el.id.replace('DeskMonitorSelectionX', ''));
+                    if (idx === v) { el.classList.remove('gray'); } else { el.classList.add('gray'); }
+                });
+            });
+            // Rebuild fullscreen panel if open so it reflects new selection
+            var panel = Q('deskMobileActionsPanel');
+            if (panel && panel.style.display !== 'none' && document.body.classList.contains('fulldesk')) {
+                _buildFullscreenPanel(panel);
+            }
+        }
 
         // Double click detection. This is important for macOS.
         var dblClickDetectArgs = { t: 0, x: 0, y: 0 };
@@ -12245,7 +12351,7 @@
             dblClickDetectArgs.y = e.clientY;
         }
 
-        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
+        function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); var sk = Q('softKeyboard'); if (sk && !_mobileKbdEnabled && document.activeElement === sk) { sk.blur(); } }
         function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
@@ -12261,6 +12367,8 @@
         var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
         var dtouchLongPressTimer = null;
         var dtouchTwoFingerLastY = 0;
+        var dtouchLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var dtouchDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
         // Trackpad state (mirrors Classic Mobile)
         var trackpadMode      = false;
         var trackpadLastX     = null, trackpadLastY = null;
@@ -12270,6 +12378,8 @@
         var trackpadTapMoved  = false;
         var trackpadEdgeTimer = null;
         var trackpadEdgeDX    = 0, trackpadEdgeDY = 0;
+        var trackpadLongPressed = false; // long press fired; next move starts drag, lift sends right-click
+        var trackpadDragActive  = false; // mousedown(left) sent; streaming drag until mouseup
 
         function dtouchMakeEvent(clientX, clientY, button) {
             // When the canvas is rotated, crotX/crotY (agent-desktop-0.0.2.js) convert
@@ -12349,55 +12459,108 @@
         function trackpadStartEdgeScroll() {
             if (trackpadEdgeTimer) return;
             trackpadEdgeTimer = setInterval(function() {
-                if (!trackpadMode || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
-                var dp = Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                if ((!trackpadMode && !dtouchDragActive) || (trackpadEdgeDX === 0 && trackpadEdgeDY === 0)) { trackpadStopEdgeScroll(); return; }
+                var dp = Q('deskarea3x') || Q('DeskParent'); dp.scrollLeft += trackpadEdgeDX; dp.scrollTop += trackpadEdgeDY;
+                if (dtouchDragActive) { var dm = dtouchGetModule(); if (dm && Q('DeskControl').checked) dm.mousemove(dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
             }, 16);
         }
 
-        function trackpadCheckEdge() {
-            var deskRect = Q('Desk').getBoundingClientRect();
-            // Use cursor position relative to canvas for edge detection
-            var cx = deskRect.left + trackpadCurX, cy = deskRect.top + trackpadCurY, zone = 60;
-            trackpadEdgeDX = cx < deskRect.left  + zone ? -Math.round((zone-(cx-deskRect.left))/4) :
-                             cx > deskRect.right  - zone ?  Math.round((zone-(deskRect.right-cx))/4) : 0;
-            trackpadEdgeDY = cy < deskRect.top   + zone ? -Math.round((zone-(cy-deskRect.top))/4) :
-                             cy > deskRect.bottom - zone ?  Math.round((zone-(deskRect.bottom-cy))/4) : 0;
+        function trackpadCheckEdge(cx, cy) {
+            if (cx === undefined) { var r = Q('trackpadCursor').getBoundingClientRect(); cx = r.left + 9; cy = r.top + 15; }
+            var vpRect = (Q('deskarea3x') || Q('DeskParent')).getBoundingClientRect(), zone = 60;
+            trackpadEdgeDX = cx < vpRect.left  + zone ? -Math.round((zone-(cx-vpRect.left))/4) :
+                             cx > vpRect.right  - zone ?  Math.round((zone-(vpRect.right-cx))/4) : 0;
+            trackpadEdgeDY = cy < vpRect.top   + zone ? -Math.round((zone-(cy-vpRect.top))/4) :
+                             cy > vpRect.bottom - zone ?  Math.round((zone-(vpRect.bottom-cy))/4) : 0;
             if (trackpadEdgeDX || trackpadEdgeDY) trackpadStartEdgeScroll(); else trackpadStopEdgeScroll();
+        }
+
+        // Mobile sticky modifier keys (CTRL/SHIFT/ALT)
+        var _mobileModifiers = { ctrl: false, shift: false, alt: false };
+        var _modKeyCodes     = { ctrl: 17,    shift: 16,    alt: 18    };
+
+        function _charToKeyCode(ch) {
+            if (ch >= 97 && ch <= 122) return ch - 32; // a-z -> 65-90
+            if (ch >= 65 && ch <= 90)  return ch;       // A-Z
+            if (ch >= 48 && ch <= 57)  return ch;       // 0-9
+            return 0;
+        }
+
+        function _updateMobileModifierUI() {
+            var ids = { ctrl: 'deskModCtrl', shift: 'deskModShift', alt: 'deskModAlt' };
+            for (var mod in ids) { var b = Q(ids[mod]); if (b) b.classList.toggle('armed', !!_mobileModifiers[mod]); }
+        }
+
+        function _releaseMobileModifiers() {
+            var dm = desktop && desktop.m;
+            for (var mod in _mobileModifiers) {
+                if (_mobileModifiers[mod]) {
+                    if (dm) dm.SendKeyMsgKC((mod === 'ctrl' || mod === 'alt') ? dm.KeyAction.EXUP : dm.KeyAction.UP, _modKeyCodes[mod]);
+                    _mobileModifiers[mod] = false;
+                }
+            }
+            _updateMobileModifierUI();
+        }
+
+        function toggleMobileModifier(mod) {
+            if (!desktop || !desktop.m || !Q('DeskControl').checked) return;
+            _mobileModifiers[mod] = !_mobileModifiers[mod];
+            var dm = desktop.m, ext = (mod === 'ctrl' || mod === 'alt');
+            dm.SendKeyMsgKC(_mobileModifiers[mod] ? (ext ? dm.KeyAction.EXDOWN : dm.KeyAction.DOWN) : (ext ? dm.KeyAction.EXUP : dm.KeyAction.UP), _modKeyCodes[mod]);
+            _updateMobileModifierUI();
         }
 
         // Mobile soft-keyboard: focusing #softKeyboard shows the OS keyboard.
         // Key events bubble to document handlers (backspace, enter, etc.).
         // Mobile keyboards fire 'input' instead of keypress -> SendKeyUnicode.
         var mobileKbdGotKeypress = false;
+        var _mobileKbdEnabled = false;
 
         function onSoftKeyboardInput(el) {
             if (!desktop || !desktop.m || !Q('DeskControl').checked) { el.value = ''; return; }
             if (mobileKbdGotKeypress) { el.value = ''; return; } // desktop keyboard — already handled by keypress
             var str = el.value; el.value = '';
+            var anyMod = _mobileModifiers.ctrl || _mobileModifiers.shift || _mobileModifiers.alt;
             if (str && desktop.m.SendKeyUnicode) {
                 for (var i = 0; i < str.length; i++) {
                     var c = str.charCodeAt(i);
+                    if (anyMod && desktop.m.SendKeyMsgKC) {
+                        var kc = _charToKeyCode(c);
+                        if (kc) {
+                            desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, kc], [desktop.m.KeyAction.UP, kc]]);
+                            continue;
+                        }
+                    }
                     desktop.m.SendKeyUnicode(desktop.m.KeyAction.DOWN, c);
                     desktop.m.SendKeyUnicode(desktop.m.KeyAction.UP, c);
                 }
             }
+            _releaseMobileModifiers();
         }
 
-        function onSoftKeyboardFocusChange(focused) {
-            // Update the toggle button icon: solid keyboard = open, regular = closed
+        function _updateSoftKbdIcon() {
             var btn = Q('DeskSoftKbdBtn');
             if (btn) {
                 var icon = btn.querySelector('i');
-                if (icon) {
-                    icon.className = focused ? 'fa-solid fa-keyboard text-warning' : 'fa-solid fa-keyboard';
-                }
+                if (icon) icon.className = _mobileKbdEnabled ? 'fa-solid fa-keyboard text-warning' : 'fa-solid fa-keyboard';
             }
+            var ki = Q('deskKbdItem');
+            if (ki) {
+                ki.innerHTML = '<i class="fa-solid fa-keyboard fa-fw me-2 text-primary"></i>' + "On-screen Keyboard"
+                    + ' <i class="fa-solid ' + (_mobileKbdEnabled ? 'fa-toggle-on text-success' : 'fa-toggle-off text-secondary') + ' ms-1"></i>';
+            }
+        }
+
+        function onSoftKeyboardFocusChange(focused) {
+            _updateSoftKbdIcon();
         }
 
         function toggleMobileKeyboard() {
             var kb = Q('softKeyboard');
             if (!kb) return;
-            if (document.activeElement === kb) { kb.blur(); } else { kb.focus(); }
+            _mobileKbdEnabled = !_mobileKbdEnabled;
+            if (_mobileKbdEnabled) { kb.focus(); } else { kb.blur(); }
+            _updateSoftKbdIcon();
         }
 
         function dtouchSendClick(clientX, clientY, button) {
@@ -12410,19 +12573,30 @@
             setSessionActivity();
             deskCloseMobileActions();
             dtouchMoved = false;
+            dtouchLongPressed = false; dtouchDragActive = false; trackpadStopEdgeScroll();
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
             if (xxdialogMode || desktop == null) return;
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                trackpadTapMoved = false;
-                trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
-                trackpadDown = false;
-                return;
+                trackpadLongPressed = false; trackpadDragActive = false;
+                if (e.touches.length === 2) {
+                    // Fall through to pinch-start recording below (same as direct mode)
+                } else if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    trackpadTapMoved = false;
+                    trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
+                    trackpadDown = false;
+                    dtouchLongPressTimer = setTimeout(function() {
+                        dtouchLongPressTimer = null;
+                        if (trackpadTapMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                        trackpadLongPressed = true; // armed: next move -> drag, lift -> right-click
+                        trackpadTapMoved = true;
+                    }, 500);
+                    return;
+                } else { return; }
             }
             // Direct mode — 2 fingers
             if (e.touches.length === 2) {
@@ -12433,8 +12607,12 @@
                     // Record pinch start for zoom gesture
                     _nativePinchStartDist = Math.sqrt(fdx*fdx + fdy*fdy);
                     var sc = Q('deskarea3x');
-                    _nativePinchStartW = sc ? sc.scrollWidth  : 640;
-                    _nativePinchStartH = sc ? sc.scrollHeight : 480;
+                    // Use the CSS variable values as the authoritative current size so
+                    // subsequent pinches start from the exact same dimension that was set.
+                    var cssW = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-w'));
+                    var cssH = parseFloat(document.documentElement.style.getPropertyValue('--native-desk-h'));
+                    _nativePinchStartW = (cssW > 0) ? cssW : (sc ? sc.scrollWidth  : 640);
+                    _nativePinchStartH = (cssH > 0) ? cssH : (sc ? sc.scrollHeight : 480);
                     _nativePinchMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                     _nativePinchMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 }
@@ -12447,7 +12625,7 @@
             dtouchLongPressTimer = setTimeout(function() {
                 dtouchLongPressTimer = null;
                 if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
-                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                dtouchLongPressed = true; // armed: next move -> drag, lift -> right-click
                 dtouchMoved = true;
             }, 500);
         }
@@ -12458,20 +12636,32 @@
             e.preventDefault();
             // Trackpad mode
             if (trackpadMode) {
-                if (e.touches.length !== 1) return;
-                var t = e.touches[0];
-                if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
-                var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
-                trackpadLastX = t.clientX; trackpadLastY = t.clientY;
-                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) trackpadTapMoved = true;
-                var rect = Q('Desk').getBoundingClientRect();
-                trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
-                trackpadSendMove();
-                trackpadCheckEdge();
-                return;
+                if (e.touches.length === 1) {
+                    var t = e.touches[0];
+                    if (trackpadLastX === null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
+                    var dx = t.clientX - trackpadLastX, dy = t.clientY - trackpadLastY;
+                    trackpadLastX = t.clientX; trackpadLastY = t.clientY;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        trackpadTapMoved = true;
+                        if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                        // First move after long press -> start drag
+                        if (trackpadLongPressed && !trackpadDragActive && Q('DeskControl').checked) {
+                            trackpadDragActive = true;
+                            var dm = dtouchGetModule(); if (dm) dm.mousedown(trackpadMakeEvent(0));
+                        }
+                    }
+                    var rect = Q('Desk').getBoundingClientRect();
+                    trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
+                    trackpadSendMove();
+                    trackpadCheckEdge();
+                    return;
+                }
+                // 2-finger pinch: fall through to native/direct zoom handling below
+                if (e.touches.length !== 2) return;
+                trackpadTapMoved = true; // prevent spurious tap on finger lift
             }
-            // Native zoom mode — 1 finger: pan by adjusting scrollLeft/Top
-            if (_mobileZoomMode === 'native' && e.touches.length === 1) {
+            // Native zoom mode — 1 finger: pan (skipped when drag gesture is active)
+            if (_mobileZoomMode === 'native' && e.touches.length === 1 && !dtouchLongPressed && !dtouchDragActive) {
                 var t = e.touches[0];
                 var dx = t.clientX - dtouchLastX, dy = t.clientY - dtouchLastY;
                 dtouchLastX = t.clientX; dtouchLastY = t.clientY;
@@ -12525,9 +12715,10 @@
                 if (Math.abs(dy) > 1 && Q('DeskControl').checked) {
                     var dm = dtouchGetModule();
                     if (dm && dm.SendMouseMsg && dm.KeyAction) {
-                        var wev = dtouchMakeEvent(midX, midY, 0);
-                        wev.wheelDelta = -dy * 4;
-                        dm.SendMouseMsg(dm.KeyAction.SCROLL, wev);
+                        // Use last known cursor position so scroll doesn't move the remote cursor
+                        var _scrollEv = trackpadMode ? trackpadMakeEvent(0) : dtouchMakeEvent(dtouchLastX, dtouchLastY, 0);
+                        _scrollEv.wheelDelta = -dy * 4;
+                        dm.SendMouseMsg(dm.KeyAction.SCROLL, _scrollEv);
                     }
                 }
                 return;
@@ -12535,9 +12726,28 @@
             if (e.touches.length !== 1) return;
             var t = e.touches[0];
             dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+            // Stream active drag
+            if (dtouchDragActive) {
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                trackpadCheckEdge(t.clientX, t.clientY);
+                return;
+            }
+            // Finger moved after long press -> start drag
+            if (dtouchLongPressed) {
+                if (Math.abs(t.clientX - dtouchStartX) > 4 || Math.abs(t.clientY - dtouchStartY) > 4) {
+                    if (Q('DeskControl').checked) {
+                        dtouchDragActive = true;
+                        var dm = dtouchGetModule();
+                        if (dm) { dm.mousedown(dtouchMakeEvent(dtouchStartX, dtouchStartY, 0)); dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                    } else { dtouchLongPressed = false; }
+                }
+                return;
+            }
+            // Normal cursor move
             if (Math.abs(t.clientX - dtouchStartX) > 8 || Math.abs(t.clientY - dtouchStartY) > 8) {
                 dtouchMoved = true;
                 if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mousemove(dtouchMakeEvent(t.clientX, t.clientY, 0)); }
             }
         }
 
@@ -12550,6 +12760,16 @@
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
                 trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
+                if (trackpadDragActive) {
+                    trackpadDragActive = false; trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mouseup(trackpadMakeEvent(0)); }
+                    return;
+                }
+                if (trackpadLongPressed) {
+                    trackpadLongPressed = false;
+                    if (Q('DeskControl').checked) trackpadSendClick(2);
+                    return;
+                }
                 if (trackpadTapTimer !== null && !trackpadTapMoved) {
                     clearTimeout(trackpadTapTimer); trackpadTapTimer = null;
                     if (Q('DeskControl').checked) trackpadSendClick(0);
@@ -12560,6 +12780,19 @@
             if (!Q('DeskControl').checked) return;
             if (e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
+            // Drag end: send mouseup at final finger position
+            if (dtouchDragActive) {
+                dtouchDragActive = false; dtouchLongPressed = false;
+                trackpadStopEdgeScroll();
+                var dm = dtouchGetModule(); if (dm) dm.mouseup(dtouchMakeEvent(t.clientX, t.clientY, 0));
+                return;
+            }
+            // Long press without drag -> right-click
+            if (dtouchLongPressed) {
+                dtouchLongPressed = false;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                return;
+            }
             // 30px threshold (not dtouchMoved's 8px) — finger pressure causes micro-movement
             // that would block taps; only real drags exceed 30px.
             var totalDx = Math.abs(t.clientX - dtouchStartX);
@@ -13337,11 +13570,11 @@
                 shortname = EscapeHtml(name);
 
                 // Figure out the date
-                var fdatestr = '';
+                var fdatestr = '&nbsp;';
                 if (f.d != null) {
                     var fdate = new Date(f.d);
                     if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); }
-                    var fdatestr = printDateTime(fdate) + '&nbsp;';
+                    fdatestr = printDateTime(fdate) + '&nbsp;';
                 }
 
                 // Figure out the size
@@ -13367,10 +13600,11 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
-                    h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
-                    if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += EscapeHtml(currentNode.volumes[shortname.charAt(0).toUpperCase()].name) + ' (' + shortname + ')';
+                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' mt-1" onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
+                    var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
+                    if (sysvol && sysvol.name) {
+                        h += EscapeHtml(sysvol.name) + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
@@ -13388,7 +13622,12 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox class="form-check-input me-2" onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + EscapeHtml(fsize) + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -14377,7 +14616,7 @@
                 if (hardware.agentvers != null) {
                     if (hardware.agentvers.compileTime) {
                         var d = Date.parse(hardware.agentvers.compileTime)
-                        x += addDetailItem("Compile time", isNaN(d) ? hardware.agentvers.compileTime : printDateTime(new Date(d)));
+                        x += addDetailItem("Compile time", isNaN(d) ? EscapeHtml(hardware.agentvers.compileTime) : printDateTime(new Date(d)));
                     }
                 }
                 if (hardware.time != null) {
@@ -14482,7 +14721,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
@@ -14558,21 +14797,21 @@
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
-                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format('{0} mWh', battery.FullChargedCapacity), s); }
                     if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
                     if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
-                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format('{0} mWh', battery.DesignedCapacity), s); }
                     if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
                     if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
                     if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
-                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format('{0} mW', battery.ChargeRate), s); }
                     if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
-                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format('{0} mW', battery.DischargeRate), s); }
                     if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
-                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
-                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
-                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format('{0} mWh', battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format('{0} V', (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format('{0} %', battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format('{0} %', battery.BatteryCharge), s); }
                     x += '</div>';
                 }
                 x += '</table>';
@@ -14590,8 +14829,8 @@
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown'))) + '</b></div>';
-                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
-                        else if (m.Capacity) { x += addDetailItem("Capacity", format("{0} Mb", (m.Capacity / 1024 / 1024)), s); }
+                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format('"{0} Mb, {1} Mhz', (m.Capacity / 1024 / 1024), m.Speed)), s); }
+                        else if (m.Capacity) { x += addDetailItem("Capacity", EscapeHtml(format('{0} Mb', (m.Capacity / 1024 / 1024))), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -14658,7 +14897,7 @@
                         if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
                         if (m.Size) {
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
-                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format('{0} Mb', Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
                         }
                         if (hardware.windows && hardware.windows.drives && m.Model) {
@@ -14676,6 +14915,9 @@
             // Volumes and Bitlocker
             if (hardware.windows && hardware.windows.volumes) {
                 var x = '';
+                const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: "AES-128", 4: "AES-256", 5: "Hardware encryption", 6: "XTS-AES-128", 7: "XTS-AES-256" };
+                const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                const conversionStatus = { 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
                 for (var i in hardware.windows.volumes) {
                     var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
@@ -14694,17 +14936,28 @@
                     }
                     if (m.type) {
                         var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        if (m.dType != null) { type = driveType.hasOwnProperty(m.dType) ? driveType[m.dType] : "Unknown"; }
                         x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
                     }
 
-                    if (m.protectionStatus || m.volumeStatus) {
-                        var bitlockerState = [];
-                        if (m.protectionStatus) bitlockerState.push("Enabled");
-                        if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
-                        if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
-                        if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
-                        bitlockerState = bitlockerState.join(' - ');
-                        if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
+                    if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
+                        var bitlockerState;
+                        if (typeof(m.volumeStatus) === 'string') {  // string style db schema
+                            bitlockerState = m.volumeStatus;
+                        } else {    // new code db schema
+                            if (m.protectionStatus == 2) {
+                                bitlockerState = "Locked";
+                            } else {
+                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : "Unknown");
+                            }
+                        }
+                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? ' / ' + encMethod[m.encryptionMethod] : ' / ' + "Unknown");
+                        var lastrp = (m.identifier && hardware.windows.bitlocker) ? hardware.windows.bitlocker[m.identifier] : null;
+                        var legacyrp = (m.lastKnownRecoveryPassword && (m.lastKnownIdentifier === m.identifier)) ? m.lastKnownRecoveryPassword : null;   // pre key-list (un-migrated) docs
+                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || "External (PIN/Key/File)";
+                        if (m.identifier) {
+                            bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(sendPW) + '\"' + ')');
+                        }
                         x += addDetailItem("BitLocker", bitlockerState, s);
                     }
                     x += '</div>';
@@ -14719,7 +14972,7 @@
                     var m = hardware.linux.volumes[i];
                     if (m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         var sizes = ['KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
@@ -14752,7 +15005,7 @@
                     var m = hardware.darwin.volumes[i];
                     if (m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         x += addDetailItem("Capacity", EscapeHtml(m.size), s);
                     }
@@ -14812,16 +15065,16 @@
             installedAppsLoading = true;
             installedAppsLoadingType = 1;  // Desktop Apps laden
             installedAppsData = { desktop: [], store: [] };  // Reset
-            QH('p18Status', '<span style="color:blue">' + "Loading desktop apps..." + '</span>');
+            QH('p18Status', '<span>' + "Loading desktop apps..." + '</span>');
             QH('p18html', '<div style="text-align:center;padding:50px;color:gray">' + "Loading installed software..." + '</div>');
             if ((currentNode.conn & 1) == 0) {
                 QH('p18html', '<div style="text-align:center;padding:50px;color:#cc0000"><b>' + "Device is offline." + '</b></div>');
-                QH('p18Status', '<span style="color:red">' + "Offline" + '</span>');
+                QH('p18Status', '<span>' + "Offline" + '</span>');
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
                 return;
             }
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedapps'});
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedapps'});
         }
 
         function handleInstalledAppsResponse(data) {
@@ -14849,7 +15102,7 @@
                     displayInstalledApps();
                 }
             } catch (e) {
-                QH('p18Status', '<span style="color:red">' + "ERROR: " + e.message + '</span>');
+                QH('p18Status', '<span>' + "ERROR: " + e.message + '</span>');
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
             }
@@ -14860,8 +15113,8 @@
             if (installedAppsLoading) return;
             installedAppsLoading = true;
             installedAppsLoadingType = 2;
-            QH('p18Status', '<span style="color:blue">' + "Loading store apps..." + '</span>');
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedstoreapps' });
+            QH('p18Status', '<span>' + "Loading store apps..." + '</span>');
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedstoreapps' });
         }
 
         function toggleStoreApps() {
@@ -14895,22 +15148,22 @@
                 return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
             });
             var x = '';
-            // ===== DESKTOP APPS TABELLE (immer anzeigen) =====
+            // ===== DESKTOP APPS TABLE (immer anzeigen) =====
             x += '<div style="margin-bottom:20px">';
-            x += '<h4 style="border-bottom:2px solid #007bff;padding-bottom:5px;margin-top:0">';
-            x += '<span style="color:#007bff">&#128187;</span> ' + "Desktop Applications" + ' (' + desktopApps.length + ')';
+            x += '<h4 style="border-bottom:2px solid var(--bs-primary);padding-bottom:5px;margin-top:0">';
+            x += '<span style="color:var(--bs-primary)">&#128187;</span> ' + "Desktop Applications" + ' (' + desktopApps.length + ')';
             x += '</h4>';
-            x += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
-            x += '<thead><tr style="background-color:#e9ecef">';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Name" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:120px">' + "Version" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Publisher" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:100px">' + "Install Date" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:200px">' + "Location" + '</th>';
-            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Actions" + '</th>';
+            x += '<table class="table table-striped table-bordered" style="width:100%;font-size:13px">';
+            x += '<thead><tr>';
+            x += '<th style="text-align:left">' + "Name" + '</th>';
+            x += '<th style="text-align:left;width:120px">' + "Version" + '</th>';
+            x += '<th style="text-align:left;width:200px">' + "Publisher" + '</th>';
+            x += '<th style="text-align:left;width:100px">' + "Install Date" + '</th>';
+            x += '<th style="text-align:left;width:200px">' + "Location" + '</th>';
+            x += '<th style="text-align:center;width:100px">' + "Actions" + '</th>';
             x += '</tr></thead><tbody>';
             if (desktopApps.length === 0) {
-                x += '<tr><td colspan="6" style="text-align:center;color:gray;padding:20px">';
+                x += '<tr><td colspan="6" style="text-align:center;color:var(--bs-secondary);padding:20px">';
                 x += searchTerm ? "No applications matching" + '"' + EscapeHtml(searchTerm) + '"' : "No desktop applications found";
                 x += '</td></tr>';
             } else {
@@ -14918,19 +15171,18 @@
                     var app = desktopApps[i];
                     var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
                     var hasUninstall = (uninstallCmd !== '');
-                    var rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
-                    x += '<tr style="background-color:' + rowColor + '">';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee" title="' + EscapeHtml(app.name || '') + '">' + EscapeHtml(app.name || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.version || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.publisher || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.date || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
-                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
+                    x += '<tr>';
+                    x += '<td title="' + EscapeHtml(app.name || '') + '">' + EscapeHtml(app.name || '-') + '</td>';
+                    x += '<td>' + EscapeHtml(app.version || '-') + '</td>';
+                    x += '<td>' + EscapeHtml(app.publisher || '-') + '</td>';
+                    x += '<td>' + EscapeHtml(app.date || '-') + '</td>';
+                    x += '<td>' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
+                    x += '<td style="text-align:center">';
                     var userRights = GetNodeRights(currentNode);				
 					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')" />';
+						x += '<button class="btn btn-sm btn-secondary" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')">Uninstall</button>';
 					} else {
-						x += '<span style="color:#999">-</span>';
+						x += '<span style="color:var(--bs-secondary)">-</span>';
 					}
                     x += '</td>';
                     x += '</tr>';
@@ -14938,22 +15190,22 @@
             }
             x += '</tbody></table>';
             x += '</div>';
-            // ===== STORE APPS TABELLE (nur wenn Checkbox aktiv) =====
+            // ===== STORE APPS TABLE (nur wenn Checkbox aktiv) =====
 			if (showStoreApps) {
 				x += '<div style="margin-bottom:20px">';
-				x += '<h4 style="border-bottom:2px solid #28a745;padding-bottom:5px">';
-				x += '<span style="color:#28a745">&#127979;</span> ' + "Microsoft Store Apps" + ' (' + storeApps.length + ')';
+				x += '<h4 style="border-bottom:2px solid var(--bs-success);padding-bottom:5px">';
+				x += '<span style="color:var(--bs-success)">&#127979;</span> ' + "Microsoft Store Apps" + ' (' + storeApps.length + ')';
 				x += '</h4>';
-				x += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
-				x += '<thead><tr style="background-color:#d4edda">';
-				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb">' + "Name" + '</th>';
-				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb;width:120px">' + "Version" + '</th>';
-				x += '<th style="text-align:left;padding:8px;border:1px solid #c3e6cb;width:250px">' + "Package" + '</th>';
-				x += '<th style="text-align:center;padding:8px;border:1px solid #c3e6cb;width:100px">' + "Scope" + '</th>';
-				x += '<th style="text-align:center;padding:8px;border:1px solid #c3e6cb;width:80px">' + "Actions" + '</th>';
+				x += '<table class="table table-striped table-bordered" style="width:100%;font-size:13px">';
+				x += '<thead><tr>';
+				x += '<th style="text-align:left">' + "Name" + '</th>';
+				x += '<th style="text-align:left;width:120px">' + "Version" + '</th>';
+				x += '<th style="text-align:left;width:250px">' + "Package" + '</th>';
+				x += '<th style="text-align:center;width:100px">' + "Scope" + '</th>';
+				x += '<th style="text-align:center;width:80px">' + "Actions" + '</th>';
 				x += '</tr></thead><tbody>';
 				if (storeApps.length === 0) {
-					x += '<tr><td colspan="5" style="text-align:center;color:gray;padding:20px">';
+					x += '<tr><td colspan="5" style="text-align:center;color:var(--bs-secondary);padding:20px">';
 					x += searchTerm ? "No store apps matching" + '"' + EscapeHtml(searchTerm) + '"' : "No store apps found";
 					x += '</td></tr>';
 				} else {
@@ -14961,31 +15213,30 @@
 						var app = storeApps[i];
 						var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
 						var hasUninstall = (uninstallCmd !== '');
-						var rowColor = (i % 2 == 0) ? '#ffffff' : '#f0fff0';
 						var scopeBadge = '';
 						if (app.scope) {
 							if (app.scope.indexOf('User') >= 0) {
-								scopeBadge = '<span style="background:#ffc107;color:#000;padding:2px 6px;border-radius:3px;font-size:10px" title="' + "Installed for current user only" + '">' + "User" + '</span>';
+								scopeBadge = '<span class="badge bg-warning" title="' + "Installed for current user only" + '">' + "User" + '</span>';
 							} else if (app.scope.indexOf('System') >= 0) {
-								scopeBadge = '<span style="background:#17a2b8;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px" title="' + "Installed for all users" + '">' + "System" + '</span>';
+								scopeBadge = '<span class="badge bg-info" title="' + "Installed for all users" + '">' + "System" + '</span>';
 							}
 							if (app.scope.indexOf('Prov') >= 0) {
-								scopeBadge += ' <span style="background:#6c757d;color:#fff;padding:2px 6px;border-radius:3px;font-size:10px" title="' + "Provisioned for new users" + '">' + "Prov" + '</span>';
+								scopeBadge += ' <span class="badge bg-secondary" title="' + "Provisioned for new users" + '">' + "Prov" + '</span>';
 							}
 						} else {
-							scopeBadge = '<span style="color:#999">-</span>';
+							scopeBadge = '<span>-</span>';
 						}
-						x += '<tr style="background-color:' + rowColor + '">';
-						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb">' + EscapeHtml(app.name || '-') + '</td>';
-						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb">' + EscapeHtml(app.version || '-') + '</td>';
-						x += '<td style="padding:6px 8px;border:1px solid #c3e6cb" title="' + EscapeHtml(app.packageFullName || '') + '">' + EscapeHtml(app.publisher || '-') + '</td>';
-						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">' + scopeBadge + '</td>';
-						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">';
+						x += '<tr>';
+						x += '<td>' + EscapeHtml(app.name || '-') + '</td>';
+						x += '<td>' + EscapeHtml(app.version || '-') + '</td>';
+						x += '<td title="' + EscapeHtml(app.packageFullName || '') + '">' + EscapeHtml(app.publisher || '-') + '</td>';
+						x += '<td style="text-align:center">' + scopeBadge + '</td>';
+						x += '<td style="text-align:center">';
 						var userRights = GetNodeRights(currentNode);
 						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-							x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')" />';
+							x += '<button class="btn btn-sm btn-secondary" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')">Remove</button>';
 						} else {
-							x += '<span style="color:#999">-</span>';
+							x += '<span style="color:var(--bs-secondary)">-</span>';
 						}
 						x += '</td>';
 						x += '</tr>';
@@ -15016,19 +15267,19 @@
             if (currentNode == null) return;
             var cmd = decodeURIComponent(encodedCmd);
             if (!cmd || cmd.trim() === '') {
-                QH('p18Status', '<span style="color:red">' + "ERROR: " + "No uninstall command available" + '</span>');
+                QH('p18Status', '<span>' + "ERROR: " + "No uninstall command available" + '</span>');
                 return;
             }
             var dialogContent = '<div style="max-width:500px">';
             dialogContent += '<p><b>' + "Uninstall this software?" + '</b></p>';
-            dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px;max-height:80px;overflow-y:auto">' + EscapeHtml(cmd) + '</div>';
+            dialogContent += '<div class="badge text-wrap w-100" style="background-color:var(--bs-secondary-bg);color:var(--bs-body-color);overflow-y:auto">' + EscapeHtml(cmd) + '</div>';
             dialogContent += '<p style="margin-top:10px"><i>' + "Silent uninstall will be performed" + '</i></p>';
             dialogContent += '</div>';
             setModalContent('xxAddAgent', "Uninstall Software", dialogContent);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
-                QH('p18Status', '<span style="color:blue">' + "Uninstalling..." + '</span>');
+                QH('p18Status', '<span>' + "Uninstalling..." + '</span>');
                 var base64Cmd = btoa(unescape(encodeURIComponent(cmd))); //Use Base64 encoding to avoid special character problems.
-                meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
+                meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallapp', value: base64Cmd });
                 setTimeout(function() { QH('p18Status', "Uninstall started. Click Refresh to update"); }, 2000);
             });
         }
@@ -15039,12 +15290,12 @@
 			var cmd = decodeURIComponent(encodedCmd);
 			var dialogContent = '<div style="max-width:500px">';
 			dialogContent += '<p><b>' + "Remove this Store app?" + '</b></p>';
-			dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px">' + EscapeHtml(cmd) + '</div>';
+			dialogContent += '<div class="badge text-wrap w-100" style="background-color:var(--bs-secondary-bg);color:var(--bs-body-color);overflow-y:auto">' + EscapeHtml(cmd) + '</div>';
 			dialogContent += '</div>';
             setModalContent('xxAddAgent', "Remove Store App", dialogContent);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function() {
-				QH('p18Status', '<span style="color:blue">' + "Removing..." + '</span>');
-				meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
+				QH('p18Status', '<span>' + "Removing..." + '</span>');
+				meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallstoreapp', value: '"' + cmd.replace(/"/g, '\\"') + '"' });
 				setTimeout(function() { QH('p18Status', "Remove command sent. Click Refresh to update"); }, 2000);
 			});
 		}
@@ -15053,9 +15304,9 @@
             try {
                 var result = JSON.parse(data);
                 if (result.success) {
-                    QH('p18Status', '<span style=color:green>✓ ' + "Success" + '</span> ' + "Click Refresh to update");
+                    QH('p18Status', '<span>✓ ' + "Success" + '</span> ' + "Click Refresh to update");
                 } else if (result.error) {
-                    QH('p18Status', '<span style=color:red>✗ ' + "ERROR: " + EscapeHtml(result.error) + '</span>');
+                    QH('p18Status', '<span>✗ ' + "ERROR: " + EscapeHtml(result.error) + '</span>');
                 }
             } catch(e) {}
         }
@@ -15112,7 +15363,7 @@
                 var samenode = (consoleNode == 'server');
                 consoleNode = 'server';
 
-                QH('p15deviceName', "My Server Console");
+                QH('p15deviceName', ' - ' + "My Server Console");
                 QE('p15consoleText', true);
                 QH('p15statetext', '');
                 QH('p15coreName', '');
@@ -15241,7 +15492,7 @@
 
         // Save console text to file
         function p15downloadConsoleText() {
-            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), "console.txt");
+            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), 'console.txt');
         }
 
         // Called then user presses the "Change Core" button
@@ -16184,22 +16435,76 @@
             if (t == 'gd2') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 2, code: Q('gdcode').value }); }
         }
 
+        function server_showBackupDlg() {
+            if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showBackupDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'backup' });
+            return false;
+        }
+        function server_showBackupDlgUpdate(configPassword) {
+            var x = "Enter optional password for the backup" + '<br /><br />';
+            x += '<tr><td align=right>' + nobreak("Password: ") + '</td><td><input id=dbackup_password style=width:256px maxlength=256 type=password name=backup_password autocomplete=off/> <b></b></td></tr>';
+            x += '<div><label><input id=doverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
+            setModalContent('xxAddAgent', "Download server backup", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => backup_enterPassword());
+            Q('dbackup_password').focus();
+            return false;
+        }
+        function backup_enterPassword() {
+            xxModal.hide();
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            window.location.href = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+        }
+
         function server_showRestoreDlg() {
             if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showRestoreDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'restore' });
+            return false;
+        }
+        function server_showRestoreDlgUpdate(configPassword) {
             var x = "Restore the server using a backup," + ' <span style=color:red>' + "this will delete the existing server data." + '</span> ' + "Only do this if you know what you are doing." + '<br /><br />';
-            x += '<form action="/restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : '') + '" enctype="multipart/form-data" method="post"><div>';
-            x += '<input type=hidden name=auth value=' + authCookie + '>';
+            x += '<div>';
             x += '<input id=account_dlgFileInput type=file name=datafile class="form-control" accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()>';
-            x += '</div></form>';
-
+            x += '<tr><br><td align=right>' + nobreak("Backup Password: ") + '</td><td><input id=drestore_password style=width:256px maxlength=256 type=password name=restore_password autocomplete=off/> <b></b></td></tr>';
+            x += '</div>';
+            x += '<div><label><input id=drestoreoverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
             setModalContent('xxAddAgent', "Restore Server", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => server_uploadServerRestore());
             account_validateServerRestore();
             return false;
         }
 
         function account_validateServerRestore() {
             QE('idx_dlgOkButton', Q('account_dlgFileInput').files.length == 1);
+        }
+
+        function server_uploadServerRestore() {
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('drestore_password').value, override: Q('drestoreoverrulepw').checked });
+            let formData = new FormData();           
+            formData.append('datafile', Q('account_dlgFileInput').files[0]);
+            // formData.append('restore_password', Q('drestore_password').value);
+            formData.append('auth', authCookie);
+            setModalContent('xxAddAgent', "Restore Server", "Uploading backup");
+            QE('idx_dlgOkButton', false);
+            QE('idx_dlgCancelButton', false);
+            fetch('{{{domainurl}}}restoreserver.ashx' + ((urlargs.key) ? ('?key=' + urlargs.key) : ''), {
+                method: 'POST',
+                body: formData,
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        setModalContent('xxAddAgent', "Restore Server", "Network error: " + response.status);
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                        QE('idx_dlgOkButton', true);
+                    }
+                })
+                .catch((error) => {
+                    setModalContent('xxAddAgent', "Restore Server", "Error: " + error.message);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    QE('idx_dlgOkButton', true);
+                })
+            return false;
         }
 
         function server_showVersionDlg() {
@@ -16241,7 +16546,7 @@
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
-        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), "config.json"); }
+        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), 'config.json'); }
 
         //
         // MY MESHS
@@ -16252,7 +16557,7 @@
             if (currentMesh == null) return;
 
             // Add device group name
-            var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
+            var meshrights = GetMeshRights(currentMesh), mname = ' - ' + EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
             if ((meshrights & 1) != 0) { mname = '<span role=button tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)">' + mname + ' <i class="fa-solid fa-pencil fa-2xs"></i></span>'; }
             QH('p20meshName', mname);
@@ -17725,12 +18030,26 @@
                 var h = '';
                 if (f.t < 3 || f.t == 4) {
                     var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;<span style=float:right title="' + title + '">' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999>';
+                    h += '<input file=999 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;';
+                    h += '<span style=float:right title="' + title + '">' + right + '</span>';
+                    h += '<span title="' + shortname + '">';
+                    h += '<div class="fileIcon' + f.t + ' mt-1" onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div>';
+                    h += '<a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a>';
+                    h += '</span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
-                    if (publicfolder) { publiclink = '<i class="fa-regular fa-copy" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i> <i class="fa-regular fa-copy" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>'; }
+                    if (publicfolder) { 
+                        publiclink = '<i class="fa-regular fa-copy fa-fw" style=cursor:pointer title="' + "Display public link" + '" onclick=\'return p5showPublicLink("' + (publicPath + '/' + encodeURIComponentEx(f.nx)) + '?download=1' + loginkey + '")\'></i>';
+                        publiclink += '<i class="fa-solid fa-download fa-fw" title="' + "Copy link to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(publicPath + '/' + encodeURIComponentEx(f.nx) + '?download=1' + loginkey) + '")></i>';
+                    }
                     if (f.s > 0) { link = publiclink + '<a onclick=downloadFile("downloadfile.ashx?link=' + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + '")>' + shortname + '</a>'; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class="fcb form-check-input me-2" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + fsize + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + f.nx + '">&nbsp;';
+                    h += '<span class=fsize>' + fdatestr + '</span>';
+                    h += '<span style=float:right>' + fsize + '</span>';
+                    h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
+                    h += '</div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -17763,26 +18082,26 @@
 
         function getNiceSize2(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", Math.round(bytes / 1024));
-            if (bytes < 2147483648) return format("{0} Mb", Math.round(bytes / 1024 / 1024));
-            return format("{0} Gb", Math.round(bytes / 1024 / 1024 / 1024));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', Math.round(bytes / 1024));
+            if (bytes < 2147483648) return format('{0} Mb', Math.round(bytes / 1024 / 1024));
+            return format('{0} Gb', Math.round(bytes / 1024 / 1024 / 1024));
         }
 
         function getNiceSize3(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
-            if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
-            return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', round(bytes / 1024, 1));
+            if (bytes < 2147483648) return format('{0} Mb', round(bytes / 1024 / 1024, 1));
+            return format('{0} Gb', round(bytes / 1024 / 1024 / 1024, 1));
         }
 
         function getNetworkSpeed(bitsPerSecond) {
-            if (bitsPerSecond <= 0) return "0 bps";
-            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
-            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
-            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
-            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
+            if (bitsPerSecond <= 0) return '0 bps';
+            if (bitsPerSecond < 1000) return format('{0} bps', bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format('{0} Kbps', Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format('{0} Mbps', Math.round(bitsPerSecond / 1000000));
+            return format('{0} Gbps', (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -17928,7 +18247,7 @@
 
         }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0 ? 'copy' : 'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "copy" : "move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1) ? 's' : ''), (p5clipboardCut == 0 ? "Copy" : "Move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
 
         function p5fileDragDrop(e) {
@@ -18347,8 +18666,8 @@
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + 'eventslist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + 'eventslist.json' + '</a>');
             setModalContent('xxAddAgent', "Event List Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
@@ -18364,7 +18683,7 @@
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
                 csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "eventslist.csv");
+            saveAs(stringToUtf8Blob(csv), 'eventslist.csv');
             return false;
         }
 
@@ -18374,7 +18693,7 @@
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { r.push(events[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "eventslist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'eventslist.json');
             return false;
         }
 
@@ -18581,8 +18900,10 @@
                 // Delete accounts, ask for confirmation
                 var x = "Confirm delete selected account(s)?" + '<br /><br />';
                 x += '<label><input id=d3check type=checkbox class="form-check-input me-2" onchange=p3usersGroupActionFunctionDelCheck() />' + "Confirm" + '</label>';
-                //setDialogMode(2, "Delete Accounts", 3, p3groupActionFunctionDelExec, x);
+                setModalContent('xxAddAgent', "Delete Accounts", x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', p3groupActionFunctionDelExec);
                 QE('idx_dlgOkButton', false);
+                return false;
             } else if (op == 4) {
                 // Validate emails
                 for (var i in userids) {
@@ -18786,7 +19107,7 @@
                             const value = lineArray[j].trim();
                             if (headers[j].trim() !== "" && value !== "") {
                                 // Convert values "true" to true
-                                obj[headers[j]] = value.toLowerCase() === "true" ? true : value;
+                                obj[headers[j]] = value.toLowerCase() === 'true' ? true : value;
                             }
                         }
                         jsonArray.push(obj);
@@ -18841,8 +19162,8 @@
         function p4downloadUserInfo() {
             if (xxdialogMode) return;
             var x = "Download the list of users with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + "userlist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + "userlist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + 'userlist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + 'userlist.json' + '</a>');
             setModalContent('xxAddAgent', "User List Export", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
@@ -18863,14 +19184,14 @@
                 csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
                 csv += '\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "userlist.csv");
+            saveAs(stringToUtf8Blob(csv), 'userlist.csv');
             return false;
         }
 
         function p4downloadUserInfoJSON() {
             var r = []
             for (var i in users) { r.push(users[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "userlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'userlist.json');
             return false;
         }
 
@@ -19634,8 +19955,8 @@
             if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
             if (user == null) { go(4); return; }
-            QH('p30userName', EscapeHtml(user.name));
-            QH('p31userName', EscapeHtml(user.name));
+            QH('p30userName', ' - ' + EscapeHtml(user.name));
+            QH('p31userName', ' - ' + EscapeHtml(user.name));
             var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
@@ -20014,7 +20335,7 @@
         function p30showUserEmailChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
+            x += '<div class="form-floating mb-2"><input id=dp30email class="form-control" maxlength=256 onchange=p30validateEmail() onkeyup=p30validateEmail() placeholder=Email /><label for=dp30email>Email</label></div>';
             if (serverinfo.emailcheck) { x += addHtmlFormFloating("Status", '<select id=dp30verified class="form-control" onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
 
             setModalContent('xxAddAgent', format("Change Email for {0}", EscapeHtml(currentUser.name)), x);
@@ -20560,7 +20881,7 @@
             var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
-            if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
+            if (rec.size) { sessionSize = format('{0} Kb', Math.round(rec.size / 1024)); }
             var sessionName = '<i>' + "Unknown" + '</i>';
             if (rec.name && rec.meshname) {
                 var recmesh = meshes[rec.meshid];
@@ -21717,7 +22038,7 @@
                     csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
                 }
             }
-            saveAs(stringToUtf8Blob(csv), "ServerStats.csv");
+            saveAs(stringToUtf8Blob(csv), 'ServerStats.csv');
         }
 
         //
@@ -21794,7 +22115,7 @@
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
             for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
-            saveAs(stringToUtf8Blob(csv), "servertrace.csv");
+            saveAs(stringToUtf8Blob(csv), 'servertrace.csv');
             return false;
         }
 
@@ -22041,19 +22362,6 @@
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
             var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
 
-            // Classic Mobile tab shuffle: on mobile, hide the active device sub-tab from
-            // the bottom bar so all remaining tabs fit without scrolling.
-            if (document.body.classList.contains('is-mobile')) {
-                var _devTabIds = ['MainDev','MainDevDesktop','MainDevTerminal','MainDevFiles','MainDevAmt','MainDevConsole','MainDevEvents','MainDevInfo','MainDevPlugins'];
-                for (var _dti = 0; _dti < _devTabIds.length; _dti++) {
-                    var _dtEl = document.getElementById(_devTabIds[_dti]);
-                    if (_dtEl) _dtEl.classList.remove('mob-active-tab');
-                }
-                if (x >= 10 && x < 20 && panels[x]) {
-                    var _dtActive = document.getElementById(panels[x]);
-                    if (_dtActive) _dtActive.classList.add('mob-active-tab');
-                }
-            }
 
             for (var i in panels) {
                 QC(panels[i]).remove('style3x');
@@ -22101,12 +22409,10 @@
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11, 12].indexOf(x) >= 0) ? 'hidden' : null;
 
-            // Software Panel - Apps laden wenn Panel 18 aktiv wird
+            // Software Panel
 			if (x == 18) {
 				if (currentNode == null) { go(1); return; }
-					QH('p18deviceName', EscapeHtml(currentNode.name));
-				// Optional: Apps automatisch laden
-				loadInstalledApps();
+				if (installedAppsData.desktop.length == 0) loadInstalledApps();
 			}
         }
 
@@ -23254,18 +23560,18 @@
         function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
         function copyTextToClip2(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = decodeURIComponent(txt); document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
-        function capitalizeFirstLetter(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
-        function printDate(d) { return d.toLocaleDateString(args.locale); }
-        function printTime(d) { return d.toLocaleTimeString(args.locale); }
-        function printDateTime(d) { return d.toLocaleString(args.locale); }
-        function printTimer(d) { return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2); }
+        function capitalizeFirstLetter(x) { EscapeHtml(return x.charAt(0).toUpperCase() + x.slice(1)); }
+        function printDate(d) { EscapeHtml(return d.toLocaleDateString(args.locale); }
+        function printTime(d) { EscapeHtml(return d.toLocaleTimeString(args.locale); }
+        function printDateTime(d) { EscapeHtml(return d.toLocaleString(args.locale); }
+        function printTimer(d) { EscapeHtml(return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2)); }
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
 
         function addDetailItem(title, value, state, classNames = []) {
             return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-7'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-5 text-end'}"> ${value} </div></div>`;
         }
 
-        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return EscapeHtml(format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; })); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href="' + link + '">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function getOrderedList(objList, oname) { var r = []; for (var i in objList) { r.push(objList[i]); } r.sort(function (a, b) { var aa = a[oname].toLowerCase(), bb = b[oname].toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }); return r; }
         function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }

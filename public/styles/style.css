@@ -3051,6 +3051,46 @@ a {
     color: #222;
 }
 
+.night #p18html {
+    color: #CCC;
+}
+
+.night #p18html table {
+    background-color: #000 !important;
+    border-color: #444 !important;
+}
+
+.night #p18html thead tr {
+    background-color: #222 !important;
+}
+
+.night #p18html thead th {
+    border-color: #444 !important;
+    color: #CCC !important;
+}
+
+.night #p18html tbody tr {
+    background-color: #444 !important;
+}
+
+.night #p18html tbody tr:nth-child(even) {
+    background-color: #333 !important;
+}
+
+.night #p18html tbody td {
+    border-color: #444 !important;
+    color: #CCC !important;
+}
+
+.night #p18html h4 {
+    color: #CCC;
+    border-bottom-color: #007bff !important;
+}
+
+.night #p18html h4 span {
+    color: #007bff !important;
+}
+
 #p40 {
     height: calc(100vh - 191px);
 }

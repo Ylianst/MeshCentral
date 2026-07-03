@@ -600,7 +600,7 @@
                     <div id="p2ServerActions">
                         <p><strong>Server actions</strong></p>
                         <div style="margin-left:25px">
-                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a id="p6backuplink" href="{{{domainurl}}}backup.zip" rel="noreferrer noopener" target="_blank">Download server backup</a></div>
+                            <div id="p2ServerActionsBackup"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showBackupDlg()">Download server backup</a></div>
                             <div id="p2ServerActionsRestore"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showRestoreDlg()">Restore server with backup</a></div>
                             <div id="p2ServerActionsGoogleBackup" style="display:none"><div class="p2AccountActions"><span id="p2ServerActionsGoogleBackupCheck" style="display:none"><strong>&#x2713;</strong></span></div><span><a href=# onclick="return server_setupGoogleDriveBackup()">Google Drive backup</a><br /></span></div>
                             <div id="p2ServerActionsVersion"><div class="p2AccountActions"><span style="display:none"><strong>&#x2713;</strong></span></div><a href=# onclick="return server_showVersionDlg()">Check server version</a></div>
@@ -631,7 +631,7 @@
             <div id=p10 style="display:none">
                 <div id=p10title>
                     <div id="p10BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>General - <span id=p10deviceName></span></h1>
+                    <h1>General<span id=p10deviceName></span></h1>
                 </div>
                 <div id=p10info style="overflow-y:auto">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -676,7 +676,7 @@
                     <div id=p11deviceNameHeader>
                         <div id="p11BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                         <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
-                        <h1>Desktop - <span id=p11deviceName></span></h1>
+                        <h1>Desktop<span id=p11deviceName></span></h1>
                     </div>
                 </div>
                 <div id="p11warning" onclick="showFeaturesDlg()">
@@ -793,7 +793,7 @@
                 <div id="p12title">
                     <div id="p12BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <div id="devListToolbarViewIcons2" style="float:right"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
-                    <h1>Terminal - <span id=p12deviceName></span></h1>
+                    <h1>Terminal<span id=p12deviceName></span></h1>
                 </div>
                 <div id="p12warning" onclick=showFeaturesDlg()>
                     <div class="icon2"></div>
@@ -860,7 +860,7 @@
             <div id=p13 style="display:none">
                 <div id="p13title">
                     <div id="p13BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Files - <span id=p13deviceName></span></h1>
+                    <h1>Files<span id=p13deviceName></span></h1>
                 </div>
                 <table id="p13toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -942,14 +942,14 @@
                 <div id="p14title">
                     <div id="p14BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
                     <div id="devListToolbarViewIcons"><div class="viewSelector" onclick=deskToggleFull(event) title="Full Screen. Hold shift to browser full screen."><div class="viewSelector5"></div></div></div>
-                    <h1><span id=p14deviceNamePrefix>Intel&reg; AMT</span> - <span id=p14deviceName></span></h1>
+                    <h1><span id=p14deviceNamePrefix>Intel&reg; AMT</span><span id=p14deviceName></span></h1>
                 </div>
                 <iframe id=p14iframe src="{{{domainurl}}}commander.ashx"></iframe>
             </div>
             <div id=p15 style="display:none">
                 <div id="p15title">
                     <div id="p15BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1><span id=p15deviceName></span></h1>
+                    <h1>Console<span id=p15deviceName></span></h1>
                 </div>
                 <table id="consoleTable" cellpadding=0 cellspacing=0>
                     <tr>
@@ -997,7 +997,7 @@
             <div id=p16 style="display:none">
                 <div id="p16title">
                     <div id="p16BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Events - <span id=p16deviceName></span></h1>
+                    <h1>Events<span id=p16deviceName></span></h1>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1037,7 +1037,7 @@
                         <div class="viewSelector" onclick=refreshDetails(event) title="Refresh details information."><div class="viewSelector12"></div></div>
                         <div class="viewSelector" onclick=deskToggleCpuGraph(event) title="Show device CPU and memory usage."><div class="viewSelector6"></div></div>
                     </div>
-                    <h1>Details - <span id=p17deviceName></span></h1>
+                    <h1>Details<span id=p17deviceName></span></h1>
                 </div>
                 <div id=p17info style="overflow-y:auto">
                     <div id=p17graph style="width:100%">
@@ -1062,25 +1062,21 @@
             <div id=p18 style="display:none">
 			<div id="p18title">
 				<div id="p18BackButton" style="float:left">
-					<div class="backButton" tabindex=0 onclick=goBack() title="Back" 
-						onkeypress="if (event.key == 'Enter') goBack()">
+					<div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()">
 						<div class="backButtonEx"></div>
 					</div>
 				</div>
-				<h1>Software - <span id=p18deviceName></span></h1>
+				<h1>Software<span id=p18deviceName></span></h1>
 			</div>
-			<div id="p18toolbar" style="padding:10px;background-color:#f5f5f5;border-bottom:1px solid #ddd">
-				<input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm" value="Refresh" onclick="loadInstalledApps()" />
-				<input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." 
-					style="margin-left:10px;width:250px" onkeyup="filterInstalledApps()" />
-				<label style="margin-left:15px">
-					<input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
-				</label>
-				<span id="p18Status" style="margin-left:20px;color:gray"></span>
+			<div id="p18toolbar" class="areaHead">
+				<input type="button" id="p18RefreshBtn" value="Refresh" onclick="loadInstalledApps()" style="padding-right:4px" />
+				<input type="text" id="p18SearchInput" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
+				<label><input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" />Show Store Apps</label>
+				<span id="p18Status" style="margin-left:20px"></span>
 			</div>
 			<div id="p18info" style="overflow-y:auto;padding:10px">
 				<div id="p18html">
-					<div style="text-align:center;padding:50px;color:gray">
+					<div style="text-align:center;padding:50px">
 						<i>Click Refresh to load installed software...</i>
 					</div>
 				</div>
@@ -1089,7 +1085,7 @@
             <div id=p19 style="display:none">
                 <div id="p19title">
                     <div id="p19BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Plugins - <span id=p19deviceName></span></h1>
+                    <h1>Plugins<span id=p19deviceName></span></h1>
                 </div>
                 <div id="p19headers"></div>
                 <div id=p19pages></div>
@@ -1102,7 +1098,7 @@
                             <img alt="" width=200 height=200 src=images/mesh-256.png />
                         </picture>
                         <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                        <h1>General - <span id=p20meshName></span></h1>
+                        <h1>General<span id=p20meshName></span></h1>
                     </div>
                     <p id=p20info></p>
                     <p id=p20info2></p>
@@ -1140,7 +1136,7 @@
             <div id=p30 style="display:none">
                 <div id="p30title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>General - <span id=p30userName></span></h1>
+                    <h1>General<span id=p30userName></span></h1>
                 </div>
                 <div id="p30info" style="overflow-y:auto">
                     <table style="width:100%" cellpadding="0" cellspacing="0">
@@ -1167,7 +1163,7 @@
             <div id=p31 style="display:none">
                 <div id="p31title">
                     <div style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Events - <span id=p31userName></span></h1>
+                    <h1>Events<span id=p31userName></span></h1>
                 </div>
                 <table class="pTable">
                     <tr>
@@ -1653,13 +1649,6 @@
         var p12TermConsoleMsgTimer = null;
         var p13FilesConsoleMsgTimer = null;
 
-        //
-		// INSTALLED SOFTWARE
-		//
-		var installedAppsData = null;       // Gespeicherte App-Daten
-		var installedAppsLoading = false;   // Ladestatus
-		var showStoreApps = false;          // Store Apps anzeigen?
-
         /*
         // Check browser dark mode preference
         var prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1917,9 +1906,6 @@
 
             // Make the dialog box movable
             dialogBoxDrag();
-
-            // Fix links
-            if (urlargs.key) { Q('p6backuplink').href += '?key=' + urlargs.key; }
 
             // Hide night mode button if needed
             QV('uiViewButton4', (features2 & 0x00300000) == 0);            
@@ -2771,8 +2757,8 @@
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
-                            QH('p18Status', '<span style=color:red>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
-                            QH('p18html', '<div style="text-align:center;padding:50px;color:gray"><i>' + "Click Refresh to load installed software..." + '</i></div>');
+                            QH('p18Status', '<span>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
+                            QH('p18html', '<div style="text-align:center;padding:50px"><i>' + "Click Refresh to load installed software..." + '</i></div>');
                             installedAppsLoading = false;
                             installedAppsLoadingType = 0;
                             return;
@@ -2986,7 +2972,7 @@
                                 x += '<hr />'
                                 x += addHtmlValue2("Name", '<b>' + EscapeHtml(i) + '</b>');
                                 if (typeof net[0].mac == 'string') { x += addHtmlValue2("MAC address", '<a href="https://maclookup.app/search/result?mac=' + net[0].mac.split(':').join('').substring(0, 6) + '" rel="noreferrer noopener" target="MeshMACLoopup">' + EscapeHtml(net[0].mac.toLowerCase()) + '</a> <img src="images/link4.png" title="' + "Copy MAC address to clipboard" + '" style="cursor:pointer" onclick=copyTextToClip2("' + encodeURIComponentEx(net[0].mac.toLowerCase()) + '") width=10 height=10>'); }
-                                if (net[0].fqdn) { x += addHtmlValue2("FQDN", net[0].fqdn); }
+                                if (net[0].fqdn) { x += addHtmlValue2("FQDN", EscapeHtml(net[0].fqdn)); }
                                 for (var j = 0; j < net.length; j++) {
                                     var netif = net[j];
                                     if (netif.family == 'IPv6') {
@@ -3006,6 +2992,14 @@
                         }
                         x += '</div>';
                         QH('d2netinfo', x);
+                    }
+                    break;
+                }
+                case 'backuprestore': {
+                    if (message.dialog == 'backup') {
+                        server_showBackupDlgUpdate(message.data);
+                    } else {
+                        server_showRestoreDlgUpdate(message.data);
                     }
                     break;
                 }
@@ -6231,9 +6225,9 @@
             var chkNodeIds = getCheckedDevices(), intelamtpresent = false;
             for (var i in chkNodeIds) { if (getNodeFromId(chkNodeIds[i]).intelamt != null) { intelamtpresent = true; } }
             var x = "Download the list of devices with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + "devicelist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + "devicelist.json" + '</a>');
-            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + "computerlist.json" + '</a>'); }
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoCSV()\'>' + 'devicelist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p2downloadDeviceInfoJSON()\'>' + 'devicelist.json' + '</a>');
+            if (intelamtpresent) { x += addHtmlValue("Intel&reg; AMT JSON", '<a href=# style=cursor:pointer onclick=\'return p2downloadAmtInfoJSON()\'>' + 'computerlist.json' + '</a>'); }
             x += '<div style=margin-top:8px><label><input type=checkbox id=d2DevInfoDetailsCheck />' + "Include device details" + '</label></div>';
             setDialogMode(2, "Device Information Export", 1, null, x);
         }
@@ -6251,19 +6245,12 @@
                 meshserver.send({ action: 'getDeviceDetails', nodeids: chkNodeIds, tz: tz, tf: new Date().getTimezoneOffset(), l: getLang(), type: 'csv' }); // With details
             } else {
                 // Without details
-                var csv = "id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,bitlocker,avdetails,tags,lastbootuptime" + '\r\n', r = [];
+                var csv = 'id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime' + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
                     csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"';
                     if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; }
                     else if (typeof n.lsc == 'object') { csv += ',"' + csvClean(n.lsc.antiVirus) + '",,"' + csvClean(n.lsc.firewall) + '"'; } else { csv += ',,,';  }
-                    if (typeof n.volumes == 'object') {
-                        var bitlockerdetails = '', firstbitlocker = true;
-                        for (var a in n.volumes) { if (typeof n.volumes[a].protectionStatus !== 'undefined') { if (firstbitlocker) { firstbitlocker = false; } else { bitlockerdetails += '|'; } bitlockerdetails += a + '/' + n.volumes[a].volumeStatus; } }
-                        csv += ',"' + csvClean(bitlockerdetails) + '"'; }
-                    else {
-                        csv += ',';
-                    }
                     if (typeof n.av == 'object') {
                         var avdetails = '', firstav = true;
                         for (var a in n.av) { if (typeof n.av[a].product == 'string') { if (firstav) { firstav = false; } else { avdetails += '|'; } avdetails += (n.av[a].product + '/' + ((n.av[a].enabled)?'enabled':'disabled') + '/' + ((n.av[a].updated)?'updated':'notupdated')); } }
@@ -6281,7 +6268,7 @@
                     if (typeof n.lastbootuptime == 'number') { csv += ',"' + n.lastbootuptime + '"'; }
                     csv += '\r\n';
                 }
-                saveAs(stringToUtf8Blob(csv), "devicelist.csv");
+                saveAs(stringToUtf8Blob(csv), 'devicelist.csv');
             }
             return false;
         }
@@ -6299,7 +6286,7 @@
                 if (node.intelamt.hash) { c.tlscerthash = node.intelamt.hash; }
                 r.computers.push(c);
             }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "computerlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'computerlist.json');
         }
 
         function p2downloadDeviceInfoJSON() {
@@ -6312,7 +6299,7 @@
                 // Without details
                 var r = [];
                 for (var i in chkNodeIds) { r.push(getNodeFromId(chkNodeIds[i])); }
-                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "devicelist.json");
+                saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'devicelist.json');
             }
             return false;
         }
@@ -7688,9 +7675,15 @@
                     QV('p10deviceBattery', false);
                 }
 
+                // Clear installedAppsData for Software tab
+                installedAppsData = { desktop: [], store: [] };
+                installedAppsLoading = false;
+                installedAppsLoadingType = 0;
+                showStoreApps = false;
+
                 // Add node name
-                var nname = EscapeHtml(node.name), nnameEx;
-                if (nname.length == 0) { nname = '<i>' + "None" + '</i>'; }
+                var nname = '&nbsp;-&nbsp;' + EscapeHtml(node.name), nnameEx;
+                if (nname.length == 0) { nname = ' - <i>' + "None" + '</i>'; }
                 if (((meshrights & 4) != 0) && ((!mesh.flags) || ((mesh.flags & 2) == 0 || (mesh.flags & 16)))) { nname = '<span tabindex=0 title="' + "Click here to edit the server-side device name" + '" onclick=showEditNodeValueDialog(0) onkeyup="if (event.key == \'Enter\') showEditNodeValueDialog(0)" style=cursor:pointer>' + nname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
                 nnameEx = nname;
                 if (mesh) { nname += '<span style=color:#AAA;font-size:small> - ' + EscapeHtml(mesh.name) + '</span>'; }
@@ -7699,9 +7692,10 @@
                 QH('p12deviceName', nname);
                 QH('p13deviceName', nname);
                 QH('p14deviceName', nname);
-                QH('p15deviceName', "Console - " + nname);
+                QH('p15deviceName', nname);
                 QH('p16deviceName', nname);
                 QH('p17deviceName', nname);
+                QH('p18deviceName', nname);
                 QH('p19deviceName', nname);
 
                 // Node attributes
@@ -8159,7 +8153,7 @@
                 QV('MainDevConsole', (consoleRights && ((node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 8) != 0))) && (meshrights & 8));
                 QV('MainDevPlugins', false);
                 QV('p15uploadCore', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 16) != 0));
-                QH('p15coreName', ((node.agent != null) && (node.agent.core != null))?node.agent.core:'');
+                QH('p15coreName', ((node.agent != null) && (node.agent.core != null)) ? EscapeHtml(node.agent.core) : '');
 
                 // Set the Intel AMT / Intel SM tab name
                 if ((node.intelamt != null) && (typeof node.intelamt.sku == 'number') && ((node.intelamt.sku & 16) != 0)) {
@@ -9177,7 +9171,15 @@
             d2map = new ol.Map({
                 target: 'd2map',
                 interactions: ol.interaction.defaults({dragPan:false, mouseWheelZoom:false}),
-                layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }), vectorLayer ],
+                layers: [ new ol.layer.Tile({ 
+                    source: new ol.source.OSM({ 
+                        tileLoadFunction: function(imageTile, src) { 
+                            var img = imageTile.getImage();
+                            img.referrerPolicy = 'origin';
+                            img.src = src;
+                        }
+                    })
+                }), vectorLayer ],
                 view: new ol.View({ center: ol.proj.fromLonLat([clng, clat]), zoom: zoom })
             });
             return false;
@@ -11547,11 +11549,11 @@
                 shortname = EscapeHtml(name);
 
                 // Figure out the date
-                var fdatestr = '';
+                var fdatestr = '&nbsp;';
                 if (f.d != null) {
                     var fdate = new Date(f.d);
                     if (typeof f.d == 'number') { fdate = new Date(f.d * 1000); }
-                    var fdatestr = printDateTime(fdate) + '&nbsp;';
+                    fdatestr = printDateTime(fdate) + '&nbsp;';
                 }
 
                 // Figure out the size
@@ -11577,10 +11579,11 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right title="' + title + '">' + right + '</span>';
+                    h += '<input file=999 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
                     h += '<span title="' + shortname + '"><div class=fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
-                    if (isWindowsNode(currentNode) && f.dt && currentNode.volumes && currentNode.volumes[shortname.charAt(0).toUpperCase()] && currentNode.volumes[shortname.charAt(0).toUpperCase()].name) {
-                        h += EscapeHtml(currentNode.volumes[shortname.charAt(0).toUpperCase()].name) + ' (' + shortname + ')';
+                    var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
+                    if (sysvol && sysvol.name) {
+                        h += EscapeHtml(sysvol.name) + ' (' + shortname + ')';
                     } else {
                         h += shortname;
                     }
@@ -12481,7 +12484,7 @@
                 if (hardware.agentvers != null) {
                     if (hardware.agentvers.compileTime) {
                         var d = Date.parse(hardware.agentvers.compileTime)
-                        x += addDetailItem("Compile time", isNaN(d)?hardware.agentvers.compileTime:printDateTime(new Date(d)));
+                        x += addDetailItem("Compile time", isNaN(d) ? EscapeHtml(hardware.agentvers.compileTime) : printDateTime(new Date(d)));
                     }
                 }
                 if (hardware.time != null) {
@@ -12586,7 +12589,7 @@
                 }
                 if (hardware.network && hardware.network.dns) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', hardware.network.dns.join(", "));
+                    x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
                 }
                 x += '</table>';
@@ -12665,21 +12668,21 @@
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
-                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format("{0} mWh", battery.FullChargedCapacity), s); }
+                    if (battery.FullChargedCapacity) { x += addDetailItem("Full Charged Capacity", format('{0} mWh', battery.FullChargedCapacity), s); }
                     if (battery.EstimatedRuntime) { x += addDetailItem("Estimated Runtime", format("{0} minutes", Math.floor((battery.EstimatedRuntime / 60))), s); }
                     if (battery.Chemistry) { x += addDetailItem("Chemistry", EscapeHtml(battery.Chemistry), s); }
-                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format("{0} mWh", battery.DesignedCapacity), s); }
+                    if (battery.DesignedCapacity) { x += addDetailItem("Design Capacity", format('{0} mWh', battery.DesignedCapacity), s); }
                     if (battery.ManufactureDate) { x += addDetailItem("Manufacture Date", EscapeHtml(battery.ManufactureDate), s); }
                     if (battery.ManufactureName) { x += addDetailItem("Manufacture Name", EscapeHtml(battery.ManufactureName), s); }
                     if (battery.SerialNumber) { x += addDetailItem("Serial Number", EscapeHtml(battery.SerialNumber), s); }
-                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format("{0} mW", battery.ChargeRate), s); }
+                    if (battery.ChargeRate) { x += addDetailItem("Charge Rate", format('{0} mW', battery.ChargeRate), s); }
                     if (battery.Charging != null) { x += addDetailItem("Charging", (battery.Charging ? "Yes" : "No"), s); }
-                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format("{0} mW", battery.DischargeRate), s); }
+                    if (battery.DischargeRate) { x += addDetailItem("Discharge Rate", format('{0} mW', battery.DischargeRate), s); }
                     if (battery.Discharging != null) { x += addDetailItem("Discharging", (battery.Discharging ? "Yes" : "No"), s); }
-                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format("{0} mWh", battery.RemainingCapacity), s); }
-                    if (battery.Voltage) { x += addDetailItem("Voltage", format("{0} V", (battery.Voltage / 1000)), s); }
-                    if (battery.Health) { x += addDetailItem("Health", format("{0} %", battery.Health), s); }
-                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format("{0} %", battery.BatteryCharge), s); }   
+                    if (battery.RemainingCapacity) { x += addDetailItem("Remaining Capacity", format('{0} mWh', battery.RemainingCapacity), s); }
+                    if (battery.Voltage) { x += addDetailItem("Voltage", format('{0} V', (battery.Voltage / 1000)), s); }
+                    if (battery.Health) { x += addDetailItem("Health", format('{0} %', battery.Health), s); }
+                    if (battery.BatteryCharge) { x += addDetailItem("Battery Charge", format('{0} %', battery.BatteryCharge), s); }   
                     x += '</div>';
                 }
                 x += '</table>';
@@ -12697,8 +12700,8 @@
                         var m = hardware.windows.memory[i];
                         x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                         x += '<div style=margin-bottom:3px><b>' + EscapeHtml((m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown'))) + '</b></div>';
-                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", format("{0} Mb, {1} Mhz", (m.Capacity / 1024 / 1024), m.Speed), s); }
-                        else if (m.Capacity) { x += addDetailItem("Capacity", format("{0} Mb", (m.Capacity / 1024 / 1024)), s); }
+                        if (m.Capacity && m.Speed) { x += addDetailItem("Capacity / Speed", EscapeHtml(format('"{0} Mb, {1} Mhz', (m.Capacity / 1024 / 1024), m.Speed)), s); }
+                        else if (m.Capacity) { x += addDetailItem("Capacity", EscapeHtml(format('{0} Mb', (m.Capacity / 1024 / 1024))), s); }
                         if (m.PartNumber) { x += addDetailItem("Part Number", EscapeHtml((m.Manufacturer && m.Manufacturer != 'Undefined')?(m.Manufacturer + ', '):'') + EscapeHtml(m.PartNumber), s); }
                         x += '</div>';
                     }
@@ -12765,7 +12768,7 @@
                         if (m.Model && (m.Model != m.Caption)) { x += addDetailItem("Model", EscapeHtml(m.Model), s); }
                         if (m.Size) {
                             if ((typeof m.Size == 'string') && (parseInt(m.Size) == m.Size)) { m.Size = parseInt(m.Size); }
-                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format("{0} Mb", Math.floor(m.Size / 1024 / 1024)), s); }
+                            if (typeof m.Size == 'number') { x += addDetailItem("Capacity", format('{0} Mb', Math.floor(m.Size / 1024 / 1024)), s); }
                             if (typeof m.Size == 'string') { x += addDetailItem("Capacity", EscapeHtml(m.Size), s); }
                         }
                         if(hardware.windows && hardware.windows.drives && m.Model){
@@ -12783,6 +12786,9 @@
             // Volumes and Bitlocker
             if (hardware.windows && hardware.windows.volumes) {
                 var x = '';
+                const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: "AES-128", 4: "AES-256", 5: "Hardware encryption", 6: "XTS-AES-128", 7: "XTS-AES-256" };
+                const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                const conversionStatus = { 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
                 for (var i in hardware.windows.volumes) {
                     var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
@@ -12800,18 +12806,29 @@
                         x += addDetailItem("Capacity Remaining", EscapeHtml(fsize), s);
                     }
                     if (m.type) {
-                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : ''));
+                        var type = (m.removable == true ? "Removable" : (m.cdrom == true ? "CD-ROM" : '')); 
+                        if (m.dType != null) {type = driveType.hasOwnProperty(m.dType) ? driveType[m.dType] : "Unknown"; };
                         x += addDetailItem("File System", (type != '' ? (type + ' / ') : '') + (m.type == 'Unknown' ? "Unknown" : EscapeHtml(m.type)), s);
                     }
 
-                    if (m.protectionStatus || m.volumeStatus) {
-                        var bitlockerState = [];
-                        if (m.protectionStatus) bitlockerState.push("Enabled");
-                        if (m.volumeStatus && m.volumeStatus == 'FullyDecrypted') bitlockerState.push("Fully Decrypted");
-                        if (m.volumeStatus && m.volumeStatus == 'EncryptionInProgress') bitlockerState.push("Encryption In Progress");
-                        if (m.volumeStatus && m.volumeStatus == 'FullyEncrypted') bitlockerState.push("Fully Encrypted");
-                        bitlockerState = bitlockerState.join(' - ');
-                        if (m.recoveryPassword) { bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(m.recoveryPassword) + '\")'); }
+                    if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
+                        var bitlockerState;
+                        if (typeof(m.volumeStatus) === 'string') {  // string style db schema 
+                            bitlockerState = m.volumeStatus;
+                        } else {    // new code db schema
+                            if (m.protectionStatus == 2) {
+                                bitlockerState = "Locked";
+                            } else {
+                                bitlockerState = (conversionStatus.hasOwnProperty(m.volumeStatus) ? conversionStatus[m.volumeStatus] : "Unknown");
+                            }
+                        }
+                        bitlockerState += (encMethod.hasOwnProperty(m.encryptionMethod) ? ' / ' + encMethod[m.encryptionMethod] : ' / ' + "Unknown");
+                        var lastrp = (m.identifier && hardware.windows.bitlocker) ? hardware.windows.bitlocker[m.identifier] : null;
+                        var legacyrp = (m.lastKnownRecoveryPassword && (m.lastKnownIdentifier === m.identifier)) ? m.lastKnownRecoveryPassword : null;   // pre key-list (un-migrated) docs
+                        var sendPW = m.recoveryPassword || (lastrp ? lastrp.rp : null) || legacyrp || "External (PIN/Key/File)";
+                        if (m.identifier) { 
+                            bitlockerState += addKeyLink('', 'deviceDetailsShowBitlockerInfo(\"' + encodeURIComponentEx(i) + '\",\"' + encodeURIComponentEx(m.identifier) + '\",\"' + encodeURIComponentEx(sendPW) + '\"' + ')');
+                        }
                         x += addDetailItem("BitLocker", bitlockerState, s);
                     }
                     x += '</div>';
@@ -12826,7 +12843,7 @@
                     var m = hardware.linux.volumes[i];
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         var sizes = ['KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
@@ -12859,7 +12876,7 @@
                     var m = hardware.darwin.volumes[i];
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + m.mount_point + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
                     if (m.size) {
                         x += addDetailItem("Capacity", EscapeHtml(m.size), s);
                     }
@@ -12918,16 +12935,16 @@
             installedAppsLoading = true;
             installedAppsLoadingType = 1;  // Desktop Apps laden
             installedAppsData = { desktop: [], store: [] };  // Reset
-            QH('p18Status', '<span style="color:blue">' + "Loading desktop apps..." + '</span>');
-            QH('p18html', '<div style="text-align:center;padding:50px;color:gray">' + "Loading installed software..." + '</div>');
+            QH('p18Status', '<span>' + "Loading desktop apps..." + '</span>');
+            QH('p18html', '<div style="text-align:center;padding:50px">' + "Loading installed software..." + '</div>');
             if ((currentNode.conn & 1) == 0) {
                 QH('p18html', '<div style="text-align:center;padding:50px;color:#cc0000"><b>' + "Device is offline." + '</b></div>');
-                QH('p18Status', '<span style="color:red">' + "Offline" + '</span>');
+                QH('p18Status', '<span>' + "Offline" + '</span>');
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
                 return;
             }
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedapps' });
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedapps' });
         }
 
         function handleInstalledAppsResponse(data) {
@@ -12955,7 +12972,7 @@
                     displayInstalledApps();
                 }
             } catch (e) {
-                QH('p18Status', '<span style="color:red">' + "ERROR: " + e.message + '</span>');
+                QH('p18Status', '<span>' + "ERROR: " + e.message + '</span>');
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
             }
@@ -12966,8 +12983,8 @@
             if (installedAppsLoading) return;
             installedAppsLoading = true;
             installedAppsLoadingType = 2;  // Store Apps laden
-            QH('p18Status', '<span style="color:blue">' + "Loading store apps..." + '</span>');
-            meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'installedstoreapps' });
+            QH('p18Status', '<span>' + "Loading store apps..." + '</span>');
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'installedstoreapps' });
         }
 
         function toggleStoreApps() {
@@ -13122,7 +13139,7 @@
             if (currentNode == null) return;
             var cmd = decodeURIComponent(encodedCmd);
             if (!cmd || cmd.trim() === '') {
-                QH('p18Status', '<span style="color:red">' + "ERROR: " + "No uninstall command available" + '</span>');
+                QH('p18Status', '<span>' + "ERROR: " + "No uninstall command available" + '</span>');
                 return;
             }
             var dialogContent = '<div style="max-width:500px">';
@@ -13131,9 +13148,9 @@
             dialogContent += '<p style="margin-top:10px"><i>' + "Silent uninstall will be performed" + '</i></p>';
             dialogContent += '</div>';
             setDialogMode(2, "Uninstall Software", 3, function() {
-                QH('p18Status', '<span style="color:blue">' + "Uninstalling..." + '</span>');
+                QH('p18Status', '<span>' + "Uninstalling..." + '</span>');
                 var base64Cmd = btoa(unescape(encodeURIComponent(cmd))); //Use Base64 encoding to avoid special character problems.
-                meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallapp ' + base64Cmd });
+                meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallapp', value: base64Cmd });
                 setTimeout(function() { QH('p18Status', "Uninstall started. Click Refresh to update"); }, 2000);
             }, dialogContent);
         }
@@ -13147,8 +13164,8 @@
 			dialogContent += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;word-break:break-all;font-family:monospace;font-size:11px">' + EscapeHtml(cmd) + '</div>';
 			dialogContent += '</div>';
 			setDialogMode(2, "Remove Store App", 3, function() {
-				QH('p18Status', '<span style="color:blue">' + "Removing..." + '</span>');        
-				meshserver.send({ action: 'software', nodeid: currentNode._id, value: 'uninstallstoreapp "' + cmd.replace(/"/g, '\\"') + '"' });
+				QH('p18Status', '<span>' + "Removing..." + '</span>');        
+				meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'uninstallstoreapp', value: '"' + cmd.replace(/"/g, '\\"') + '"' });
 				setTimeout(function() { QH('p18Status', "Remove command sent. Click Refresh to update"); }, 2000);
 			}, dialogContent);
 		}
@@ -13157,9 +13174,9 @@
             try {
                 var result = JSON.parse(data);
                 if (result.success) {
-                    QH('p18Status', '<span style=color:green>✓ ' + "Success" + '</span> ' + "Click Refresh to update");
+                    QH('p18Status', '<span>✓ ' + "Success" + '</span> ' + "Click Refresh to update");
                 } else if (result.error) {
-                    QH('p18Status', '<span style=color:red>✗ ' + "ERROR: " + EscapeHtml(result.error) + '</span>');
+                    QH('p18Status', '<span>✗ ' + "ERROR: " + EscapeHtml(result.error) + '</span>');
                 }
             } catch(e) {}
         }
@@ -13216,7 +13233,7 @@
                 var samenode = (consoleNode == 'server');
                 consoleNode = 'server';
 
-                QH('p15deviceName', "My Server Console");
+                QH('p15deviceName', ' - ' + "My Server Console");
                 QE('p15consoleText', true);
                 QH('p15statetext', '');
                 QH('p15coreName', '');
@@ -13343,7 +13360,7 @@
 
         // Save console text to file
         function p15downloadConsoleText() {
-            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), "console.txt");
+            saveAs(new Blob([Q('p15agentConsoleText').innerText], { type: 'application/octet-stream' }), 'console.txt');
         }
 
         // Called then user presses the "Change Core" button
@@ -14078,22 +14095,51 @@
             if (t == 'gd2') { meshserver.send({ action: 'serverBackup', service: 'googleDrive', state: 2, code: Q('gdcode').value }); }
         }
 
-        function server_showRestoreDlg() {
+        function server_showBackupDlg() {
+            if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showBackupDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'backup' });
+            return false;
+        }
+        function server_showBackupDlgUpdate(configPassword) {
+            var x = "Enter optional password for the backup" + '<br /><br />';
+            x += '<tr><td align=right>' + nobreak("Password:") + '</td><td><input id=dbackup_password style=width:256px maxlength=256 type=password name=backup_password autocomplete=off/> <b></b></td></tr>';
+            x += '<div><label><input id=doverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
+            setDialogMode(2, "Download server backup", 3, backup_enterPassword, x);
+            Q('dbackup_password').focus();
+            return false;
+        }
+        function backup_enterPassword() {
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            window.location.href = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+        }
+
+        function server_showRestoreDlg(){
+            if (xxdialogMode) return false;
+            // check for password in config.json and pass it to server_showRestoreDlgUpdate
+            meshserver.send({ action: 'serverbackuppassword', check: true, dialog: 'restore' });
+            return false;
+        }
+        function server_showRestoreDlgUpdate(configPassword) {
             if (xxdialogMode) return false;
             var x = "Restore the server using a backup," + ' <span style=color:red>' + "this will delete the existing server data." + '</span> ' + "Only do this if you know what you are doing." + '<br /><br />';
             x += '<form action="/restoreserver.ashx' + ((urlargs.key)?('?key=' + urlargs.key):'') + '" enctype="multipart/form-data" method="post"><div>';
             x += '<input type=hidden name=auth value=' + authCookie + '>';
             x += '<input id=account_dlgFileInput type=file name=datafile style=width:100% accept=".zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed" onchange=account_validateServerRestore()><br /><br />';
+            x += '<tr><tr><td align=left>' + nobreak("Backup Password: ") + '</td><td><input id=drestore_password style=width:200px maxlength=256 type=password name=restore_password autocomplete=off/> <b></b></td></tr><br />';
+            x += '<div><label><input id=drestoreoverrulepw type=checkbox ' + (configPassword?'':'disabled') + ' /> ' + "Use System Password" + '</label></div>';
             x += '<input id=account_dlgCancelButton type=button value=' + "Cancel" + ' style=float:right;width:80px;margin-left:5px onclick=dialogclose(0)>';
             x += '<input id=account_dlgOkButton type=submit value=' + "OK" + ' style=float:right;width:80px onclick=dialogclose(1)>';
             x += '</div><br /><br /></form>';
-            setDialogMode(2, "Restore Server", 0, null, x);
+            setDialogMode(2, "Restore Server", 0, restore_enterPassword, x);
             account_validateServerRestore();
             return false;
         }
-
         function account_validateServerRestore() {
             QE('account_dlgOkButton', Q('account_dlgFileInput').files.length == 1);
+        }
+        function restore_enterPassword() {
+            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('drestore_password').value, override: Q('drestoreoverrulepw').checked });
         }
 
         function server_showVersionDlg() {
@@ -14132,7 +14178,7 @@
             meshserver.send({ action: 'serverconfig' });
             return false;
         }
-        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), "config.json"); }
+        function d2CopyServerConfigToClip() { saveAs(new Blob([Q('d2ServerConfigPre').innerText], { type: 'application/octet-stream' }), 'config.json'); }
 
         //
         // MY MESHS
@@ -14143,7 +14189,7 @@
             if (currentMesh == null) return;
 
             // Add device group name
-            var meshrights = GetMeshRights(currentMesh), mname = EscapeHtml(currentMesh.name);
+            var meshrights = GetMeshRights(currentMesh), mname = ' - ' + EscapeHtml(currentMesh.name);
             if (mname.length == 0) { mname = '<i>' + "None" + '</i>'; }
             if ((meshrights & 1) != 0) { mname = '<span tabindex=0 title="' + "Click here to edit the device group name" + '" onclick=p20editmesh(1) onkeyup="if (event.key == \'Enter\') p20editmesh(1)" style=cursor:pointer>' + mname + ' <img class=hoverButton src="images/link5.png" /></span>'; }
             QH('p20meshName', mname);
@@ -15567,26 +15613,26 @@
 
         function getNiceSize2(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", Math.round(bytes / 1024));
-            if (bytes < 2147483648) return format("{0} Mb", Math.round(bytes / 1024 / 1024));
-            return format("{0} Gb", Math.round(bytes / 1024 / 1024 / 1024));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', Math.round(bytes / 1024));
+            if (bytes < 2147483648) return format('{0} Mb', Math.round(bytes / 1024 / 1024));
+            return format('{0} Gb', Math.round(bytes / 1024 / 1024 / 1024));
         }
 
         function getNiceSize3(bytes) {
             if (bytes <= 0) return "None";
-            if (bytes < 2048) return format("{0} b", bytes);
-            if (bytes < 2097152) return format("{0} Kb", round(bytes / 1024, 1));
-            if (bytes < 2147483648) return format("{0} Mb", round(bytes / 1024 / 1024, 1));
-            return format("{0} Gb", round(bytes / 1024 / 1024 / 1024, 1));
+            if (bytes < 2048) return format('{0} b', bytes);
+            if (bytes < 2097152) return format('{0} Kb', round(bytes / 1024, 1));
+            if (bytes < 2147483648) return format('{0} Mb', round(bytes / 1024 / 1024, 1));
+            return format('{0} Gb', round(bytes / 1024 / 1024 / 1024, 1));
         }
 
         function getNetworkSpeed(bitsPerSecond) {
-            if (bitsPerSecond <= 0) return "0 bps";
-            if (bitsPerSecond < 1000) return format("{0} bps", bitsPerSecond);
-            if (bitsPerSecond < 1000000) return format("{0} Kbps", Math.round(bitsPerSecond / 1000));
-            if (bitsPerSecond < 1000000000) return format("{0} Mbps", Math.round(bitsPerSecond / 1000000));
-            return format("{0} Gbps", (bitsPerSecond / 1000000000).toFixed(1));
+            if (bitsPerSecond <= 0) return '0 bps';
+            if (bitsPerSecond < 1000) return format('{0} bps', bitsPerSecond);
+            if (bitsPerSecond < 1000000) return format('{0} Kbps', Math.round(bitsPerSecond / 1000));
+            if (bitsPerSecond < 1000000000) return format('{0} Mbps', Math.round(bitsPerSecond / 1000000));
+            return format('{0} Gbps', (bitsPerSecond / 1000000000).toFixed(1));
         }
 
         function p5getQuotabar(f) {
@@ -15698,7 +15744,7 @@
         }
         function p5pasteFile() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Confirm {0} of {1} entrie{2} to this location?", (p5clipboardCut == 0?'copy':'move'), p5clipboard.length, ((p5clipboard.length > 1)?'s':'')) } setDialogMode(2, "Paste", 3, p5pasteFileEx, x); }
         function p5pasteFileEx() { meshserver.send({ action: 'fileoperation', fileop: (p5clipboardCut == 0?'copy':'move'), scpath: p5clipboardFolder, path: filetreelocation, names: p5clipboard }); p5folderup(999); if (p5clipboardCut == 1) { p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0; p5updateClipview(); } }
-        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1)?'s':''), (p5clipboardCut == 0?"copy":"move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
+        function p5updateClipview() { var x = ''; if ((p5clipboard != null) && (p5clipboard.length > 0)) { x = format("Holding {0} entrie{1} for {2}", p5clipboard.length, ((p5clipboard.length > 1)?'s':''), (p5clipboardCut == 0?"Copy":"Move")) + ', <a href=# onclick="return p5clearClip()" style=cursor:pointer>' + "Clear" + '</a>.' } QH('p5bottomstatus', x); p5setActions(); }
         function p5clearClip() { p5clipboard = null; p5clipboardFolder = null; p5clipboardCut = 0; p5updateClipview(); return false; }
 
         function p5fileDragDrop(e) {
@@ -16106,8 +16152,8 @@
         function p3showDownloadEventsDialog(mode) {
             if (xxdialogMode) return;
             var x = "Download the list of events with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + "eventslist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + "eventslist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogCSV(' + mode + ')">' + 'eventslist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick="return p3downloadEventsDialogJSON(' + mode + ')">' + 'eventslist.json' + '</a>');
             setDialogMode(2, "Event List Export", 1, null, x, mode);
         }
 
@@ -16122,7 +16168,7 @@
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
                 csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "eventslist.csv");
+            saveAs(stringToUtf8Blob(csv), 'eventslist.csv');
             return false;
         }
 
@@ -16132,7 +16178,7 @@
             if (mode == 2) { eventList = events; }
             if (mode == 3) { eventList = currentUserEvents; }
             for (var i in eventList) { r.push(events[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "eventslist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'eventslist.json');
             return false;
         }
 
@@ -16534,7 +16580,7 @@
                             const value = lineArray[j].trim();
                             if (headers[j].trim() !== "" && value !== "") {
                                 // Convert values "true" to true
-                                obj[headers[j]] = value.toLowerCase() === "true" ? true : value;
+                                obj[headers[j]] = value.toLowerCase() === 'true' ? true : value;
                             }
                         }
                         jsonArray.push(obj);
@@ -16570,8 +16616,8 @@
         function p4downloadUserInfo() {
             if (xxdialogMode) return;
             var x = "Download the list of users with one of the file formats below." + '<br /><br />';
-            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + "userlist.csv" + '</a>');
-            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + "userlist.json" + '</a>');
+            x += addHtmlValue("CSV Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoCSV()\'>' + 'userlist.csv' + '</a>');
+            x += addHtmlValue("JSON Format", '<a href=# style=cursor:pointer onclick=\'return p4downloadUserInfoJSON()\'>' + 'userlist.json' + '</a>');
             setDialogMode(2, "User List Export", 1, null, x);
         }
 
@@ -16591,14 +16637,14 @@
                 csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
                 csv += '\r\n';
             }
-            saveAs(stringToUtf8Blob(csv), "userlist.csv");
+            saveAs(stringToUtf8Blob(csv), 'userlist.csv');
             return false;
         }
 
         function p4downloadUserInfoJSON() {
             var r = []
             for (var i in users) { r.push(users[i]); }
-            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), "userlist.json");
+            saveAs(new Blob([JSON.stringify(r, null, 2)], { type: 'application/octet-stream' }), 'userlist.json');
             return false;
         }
 
@@ -17328,8 +17374,8 @@
             if ((event != null) && (event.originalTarget != null) && (event.originalTarget.href != null)) return;
             var user = currentUser = users[decodeURIComponent(userid)];
             if (user == null) { setDialogMode(0); go(4); return; }
-            QH('p30userName', EscapeHtml(user.name));
-            QH('p31userName', EscapeHtml(user.name));
+            QH('p30userName', ' - ' + EscapeHtml(user.name));
+            QH('p31userName', ' - ' + EscapeHtml(user.name));
             var self = (user._id == userinfo._id), activeSessions = 0;
             if (wssessions != null && wssessions[user._id]) { activeSessions = wssessions[user._id]; }
 
@@ -17699,7 +17745,7 @@
         function p30showUserEmailChangeDialog(event) {
             if (xxdialogMode) return false;
             var x = '';
-            x += addHtmlValue("Email", '<input id=dp30email style=width:230px maxlength=32 onchange=p30validateEmail() onkeyup=p30validateEmail() />');
+            x += addHtmlValue("Email", '<input id=dp30email style=width:230px maxlength=256 onchange=p30validateEmail() onkeyup=p30validateEmail() />');
             if (serverinfo.emailcheck) { x += addHtmlValue("Status", '<select id=dp30verified style=width:230px onchange=p30validateEmail()><option value=0>' + "Not verified" + '</option><option value=1>' + "Verified" + '</option></select>'); }
             setDialogMode(2, format("Change Email for {0}", EscapeHtml(currentUser.name)), 3, p30showUserEmailChangeDialogEx, x);
             Q('dp30email').focus();
@@ -18051,7 +18097,7 @@
             var sessionStartStr = printTime(new Date(rec.startTime));
             if (rec.sessionStart) { sessionStartStr = printTime(new Date(rec.sessionStart)); }
             var sessionSize = '';
-            if (rec.size) { sessionSize = format("{0} Kb", Math.round(rec.size / 1024)); }
+            if (rec.size) { sessionSize = format('{0} Kb', Math.round(rec.size / 1024)); }
             var sessionName = '<i>' + "Unknown" + '</i>';
             if (rec.name && rec.meshname) {
                 var recmesh = meshes[rec.meshid];
@@ -19178,7 +19224,7 @@
                     csv += new Date(serverTimelineStats[i].time) + ', ' + serverTimelineStats[i].conn.ca + ', ' + serverTimelineStats[i].conn.cu + ', ' + serverTimelineStats[i].conn.us + ', ' + serverTimelineStats[i].conn.rs + ', ' + (serverTimelineStats[i].conn.am ? serverTimelineStats[i].conn.am : '') + ', ' + serverTimelineStats[i].mem.external + ', ' + serverTimelineStats[i].mem.heapUsed + ', ' + serverTimelineStats[i].mem.heapTotal + ', ' + serverTimelineStats[i].mem.rss + '\r\n';
                 }
             }
-            saveAs(stringToUtf8Blob(csv), "ServerStats.csv");
+            saveAs(stringToUtf8Blob(csv), 'ServerStats.csv');
         }
 
         //
@@ -19250,7 +19296,7 @@
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
             for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
-            saveAs(stringToUtf8Blob(csv), "servertrace.csv");
+            saveAs(stringToUtf8Blob(csv), 'servertrace.csv');
             return false;
         }
 
@@ -19519,12 +19565,10 @@
             // Some panels must not have scroll bars
             QS('column_l')['overflow'] = ([11,12].indexOf(x)>= 0)?'hidden':null;
 
-            // Software Panel - Apps laden wenn Panel 18 aktiv wird
+            // Software Panel
 			if (x == 18) {
 				if (currentNode == null) { go(1); return; }
-					QH('p18deviceName', EscapeHtml(currentNode.name));
-				// Optional: Apps automatisch laden
-				loadInstalledApps();
+				if (installedAppsData.desktop.length == 0) loadInstalledApps();
 			}
         }
 
@@ -20596,14 +20640,14 @@
         function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
         function copyTextToClip2(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = decodeURIComponent(txt); document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
-        function capitalizeFirstLetter(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
-        function printDate(d) { return d.toLocaleDateString(args.locale); }
-        function printTime(d) { return d.toLocaleTimeString(args.locale); }
-        function printDateTime(d) { return d.toLocaleString(args.locale); }
-        function printTimer(d) { return zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2); }
+        function capitalizeFirstLetter(x) { return EscapeHtml(x.charAt(0).toUpperCase() + x.slice(1)); }
+        function printDate(d) { return EscapeHtml(d.toLocaleDateString(args.locale)); }
+        function printTime(d) { return EscapeHtml(d.toLocaleTimeString(args.locale)); }
+        function printDateTime(d) { return EscapeHtml(d.toLocaleString(args.locale)); }
+        function printTimer(d) { return EscapeHtml(zeroPad(Math.floor(d / 3600), 2) + ':' + zeroPad((Math.floor(d / 60) % 60), 2) + ':' + zeroPad((d % 60), 2)); }
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
-        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
+        function format(format) { var args = Array.prototype.slice.call(arguments, 1); return EscapeHtml(format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; })); };
         function addTextLink(subtext, text, link) { var i = text.toLowerCase().indexOf(subtext.toLowerCase()); if (i == -1) { return text; } return text.substring(0, i) + '<a href="' + link + '">' + subtext + '</a>' + text.substring(i + subtext.length); }
         function getOrderedList(objList, oname) { var r = []; for (var i in objList) { r.push(objList[i]); } r.sort(function(a, b) { var aa = a[oname].toLowerCase(), bb = b[oname].toLowerCase(); if (aa > bb) return 1; if (aa < bb) return -1; return 0; }); return r; }
         function capitalizeFirstLetter(string) { return string.charAt(0).toUpperCase() + string.slice(1); }

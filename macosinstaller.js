@@ -35,7 +35,7 @@ const LAUNCH_DAEMON_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
     <key>KeepAlive</key>
     <true/>
     <key>ThrottleInterval</key>
-    <integer>5</integer>
+    <integer>1</integer>
   </dict>
 </plist>
 `;
@@ -49,11 +49,12 @@ const LAUNCH_AGENT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
     <key>ProgramArguments</key>
     <array>
       <string>/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###</string>
-      <string>-kvm1</string>
+      <string>-kvmagent</string>
     </array>
     <key>LimitLoadToSessionType</key>
     <array>
       <string>LoginWindow</string>
+      <string>Aqua</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/</string>
@@ -75,29 +76,50 @@ INSTALLDIR="/usr/local/mesh_services/\${COMPANYNAME}/\${SERVICENAME}"
 
 chown -R root:wheel "/usr/local/mesh_services/\${COMPANYNAME}" || true
 chown root:wheel "\${INSTALLDIR}/\${EXECUTABLENAME}" "\${INSTALLDIR}/\${EXECUTABLENAME}.msh"
-chown root:wheel "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}.plist"
+chown root:wheel "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist"
 
 chmod 755 "\${INSTALLDIR}" "\${INSTALLDIR}/\${EXECUTABLENAME}"
-chmod 644 "\${INSTALLDIR}/\${EXECUTABLENAME}.msh" "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}.plist"
+chmod 644 "\${INSTALLDIR}/\${EXECUTABLENAME}.msh" "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist"
 
 /bin/launchctl bootout system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || true
 /bin/launchctl bootstrap system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || /bin/launchctl load "/Library/LaunchDaemons/\${SERVICENAME}.plist"
+
+CONSOLE_USER=$(stat -f '%Su' /dev/console 2>/dev/null || true)
+CONSOLE_UID=$(id -u "\${CONSOLE_USER}" 2>/dev/null || true)
+if [ -n "\${CONSOLE_UID}" ] && [ "\${CONSOLE_UID}" != "0" ]; then
+    /bin/launchctl bootout "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
+    /bin/launchctl bootstrap "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
+fi
 `;
 
 const UNINSTALL = `#!/bin/bash
 
 echo "Stopping ###SERVICENAME###..."
 sudo /bin/launchctl bootout system "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null || sudo /bin/launchctl unload "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null
+sudo pkill -9 "###SERVICENAME###" &> /dev/null || true
+CONSOLE_USER=$(stat -f '%Su' /dev/console 2>/dev/null || true)
+CONSOLE_UID=$(id -u "\${CONSOLE_USER}" 2>/dev/null || true)
+if [ -n "\${CONSOLE_UID}" ] && [ "\${CONSOLE_UID}" != "0" ]; then
+    sudo /bin/launchctl bootout "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/###SERVICENAME###-launchagent.plist" &> /dev/null || true
+fi
 sudo /bin/launchctl unload "/Library/LaunchDaemons/meshagentDiagnostic_periodicStart.plist" &> /dev/null
 sudo /bin/launchctl unload "/Library/LaunchDaemons/meshagentDiagnostic.plist" &> /dev/null
 sudo rm "/Library/LaunchDaemons/meshagentDiagnostic_periodicStart.plist" &> /dev/null
 sudo rm "/Library/LaunchDaemons/meshagentDiagnostic.plist" &> /dev/null
+
+echo "Resetting TCC permissions for ###SERVICENAME###..."
+BUNDLE_ID=$(mdls -name kMDItemCFBundleIdentifier -raw "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###" 2>/dev/null || true)
+if [ -n "\${BUNDLE_ID}" ] && [ "\${BUNDLE_ID}" != "(null)" ]; then
+    sudo tccutil reset All "\${BUNDLE_ID}" &> /dev/null || true
+fi
+sudo tccutil reset All "###SERVICENAME###" &> /dev/null || true
+
 sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###" &> /dev/null
 sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###.msh" &> /dev/null
 sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###.db" &> /dev/null
 sudo rm "/usr/local/mesh_services/meshagentDiagnostic/meshagentDiagnostic" &> /dev/null
 sudo rm "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null
-sudo rm "/Library/LaunchAgents/###SERVICENAME###.plist" &> /dev/null
+sudo rm "/Library/LaunchAgents/###SERVICENAME###-launchagent.plist" &> /dev/null
 echo "###SERVICENAME### was uninstalled."
 `;
 
@@ -308,14 +330,21 @@ async function createMacOSInstaller(opts) {
         await fsp.copyFile(opts.agentPath, path.join(installDir, opts.executableName));
         await fsp.writeFile(path.join(installDir, opts.executableName + '.msh'), opts.meshSettings);
         await fsp.writeFile(path.join(launchDaemons, opts.serviceName + '.plist'), replaceTokens(LAUNCH_DAEMON_PLIST, tokens));
-        await fsp.writeFile(path.join(launchAgents, opts.serviceName + '.plist'), replaceTokens(LAUNCH_AGENT_PLIST, tokens));
+        await fsp.writeFile(path.join(launchAgents, opts.serviceName + '-launchagent.plist'), replaceTokens(LAUNCH_AGENT_PLIST, tokens));
         await fsp.writeFile(path.join(scriptsRoot, 'postinstall'), replaceTokens(POSTINSTALL, tokens));
+
+        if (opts.backgroundPath) {
+            await fsp.copyFile(opts.backgroundPath, path.join(resourcesDir, 'background'));
+        } else {
+            const backgroundPath = path.join(__dirname, 'agents', 'macosinstallerbackground.png');
+            await fsp.copyFile(backgroundPath, path.join(resourcesDir, 'background'));
+        }
 
         await chmodIfExists(path.join(installDir, opts.executableName), 0o755);
         await chmodIfExists(path.join(scriptsRoot, 'postinstall'), 0o755);
         await chmodIfExists(path.join(installDir, opts.executableName + '.msh'), 0o644);
         await chmodIfExists(path.join(launchDaemons, opts.serviceName + '.plist'), 0o644);
-        await chmodIfExists(path.join(launchAgents, opts.serviceName + '.plist'), 0o644);
+        await chmodIfExists(path.join(launchAgents, opts.serviceName + '-launchagent.plist'), 0o644);
 
         const payloadStats = await walk(payloadRoot);
         const installKBytes = Math.ceil(payloadStats.bytes / 1000);
@@ -335,7 +364,8 @@ async function createMacOSInstaller(opts) {
         const distribution = '<?xml version="1.0" encoding="utf-8"?>\n'
             + '<installer-script minSpecVersion="1.000000">\n'
             + '    <title>' + xmlEscape(opts.displayName) + '</title>\n'
-            + '    <options customize="never" allow-external-scripts="no" rootVolumeOnly="true"/>\n'
+            + '    <options customize="always" allow-external-scripts="no" rootVolumeOnly="true"/>\n'
+            + '    <background file="background" alignment="topleft" scaling="tofit"/>\n'
             + '    <welcome language="en-US" mime-type="text/plain"><![CDATA[' + welcome.split(']]>').join(']]]]><![CDATA[>') + ']]></welcome>\n'
             + '    <choices-outline>\n'
             + '        <line choice="choice65"/>\n'

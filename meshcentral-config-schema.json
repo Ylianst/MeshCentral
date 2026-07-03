@@ -569,6 +569,11 @@
           "default": false,
           "description": "Enables agent-side, websocket per-message deflate compression. wscompression must also be true for this to work."
         },
+        "bitlockerKeyRetentionDays": {
+          "type": "integer",
+          "default": 0,
+          "description": "How many days to retain a BitLocker recovery key after the agent last read it, so a key stays available while a volume is locked or detached. Especially useful for Bitlocker To Go devices. 0 (default) disables carry-forward: only keys read in the latest scan are kept."
+        },
         "noAgentUpdate": {
           "type": "integer",
           "default": 0,
@@ -2229,6 +2234,11 @@
                 "type": "string",
                 "default": null,
                 "description": "The filename of a image file in .png format located in meshcentral-data to display in the MeshCentral Agent installation dialog, image should be square and from 64x64 to 200x200."
+              },
+              "macosinstallerimage": {
+                "type": "string",
+                "default": null,
+                "description": "The filename of a background image file in .png format located in meshcentral-data to display in the macOS installer."
               },
               "fileName": {
                 "type": "string",

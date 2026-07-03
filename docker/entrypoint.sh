@@ -127,12 +127,12 @@ function dynamic_config() {
         echo "Setting port... $PORT"
 
         jq --arg port "$PORT" \
-            '.settings.port = $port' \
+            '.settings.port = ($port|tonumber)' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Invalid or no port, defaulting to '443', Value(s) given: ${PORT:-empty}"
         jq --arg port "443" \
-            '.settings.port = $port' \
+            '.settings.port = ($port|tonumber)' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     fi
 
@@ -141,12 +141,12 @@ function dynamic_config() {
         echo "Setting redirport... $REDIR_PORT"
 
         jq --arg redirport "$REDIR_PORT" \
-            '.settings.redirPort = $redirport' \
+            '.settings.redirPort = ($redirport|tonumber)' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     else
         echo "Invalid or no redirport, defaulting to '80', Value(s) given: ${REDIR_PORT:-empty}"
         jq --arg redirport "80" \
-            '.settings.redirPort = $redirport' \
+            '.settings.redirPort = ($redirport|tonumber)' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     fi
 

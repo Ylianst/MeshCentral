@@ -44,6 +44,7 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
@@ -88,7 +89,7 @@ function getDomainInfo() {
     switch (process.platform) {
         case 'win32':
             try {
-                ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
+                ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_ComputerSystem', ['Name', 'Domain', 'PartOfDomain'])[0];
             }
             catch (x) {
             }
@@ -1716,7 +1717,7 @@ function handleServerCommand(data) {
                         sessionid: data.sessionid 
                     });
                 };
-                if (data.value == 'installedapps') {
+                if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
                             if (require('win-info').installedApps) {
@@ -1738,7 +1739,7 @@ function handleServerCommand(data) {
                     } else {
                         sendSoftwareResponse({ success: false, error: "Not supported" });
                     }
-                } else if (data.value == 'installedstoreapps') {
+                } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });
                         return;
@@ -1748,17 +1749,18 @@ function handleServerCommand(data) {
                             require('win-info').installedStoreApps().then(sendSoftwareResponse).catch(function(e) { sendSoftwareResponse({ error: e.toString() }); });
                         }
                     } catch (e) { sendSoftwareResponse({ error: e.toString() }); }
-                } else if (typeof data.value === 'string' && data.value.indexOf('uninstallapp ') === 0) {
+                } else if (data.type == 'uninstallapp' && (typeof data.value == 'string' && data.value != '')) {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
                         return;
                     }
-                    var base64Cmd = data.value.substring(13).trim();
+                    var base64Cmd = data.value.trim();
                     var uninstallCmd = '';
                     try {
                         var b = Buffer.from(base64Cmd, 'base64');
                         var decoded = b.toString();
-                        if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) { uninstallCmd = decoded; } else { uninstallCmd = base64Cmd; }
+                        var lc = decoded ? decoded.toLowerCase() : '';
+                        if (decoded && decoded.length > 0 && (lc.indexOf('msiexec') >= 0 || lc.indexOf('.exe') >= 0)) { uninstallCmd = decoded; } else { uninstallCmd = base64Cmd; }
                     } catch (e) { uninstallCmd = base64Cmd; }
                     if (!uninstallCmd || uninstallCmd.trim() === '' || uninstallCmd.trim() === '\\') {
                         sendSoftwareResponse({ success: false, error: 'No valid uninstall command available' });
@@ -1781,6 +1783,7 @@ function handleServerCommand(data) {
                             writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
                             var originalCmd = uninstallCmd;
                             if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                                uninstallCmd = uninstallCmd.replace(/\/I\s*(\{[^}]+\})/gi, '/X $1'); // change /I to /X  for uninstall, fixes 7zip example
                                 uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
                                 if (uninstallCmd.indexOf('/QN') < 0) { uninstallCmd = uninstallCmd + ' /QN /norestart'; }
                             } else {
@@ -1807,12 +1810,12 @@ function handleServerCommand(data) {
                             sendSoftwareResponse({ error: ex.toString() });
                         }
                     }
-                } else if (typeof data.value === 'string' && data.value.indexOf('uninstallstoreapp ') === 0) {
+                } else if (data.type == 'uninstallstoreapp' && (typeof data.value === 'string' && data.value != '')) {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Uninstall is only supported on Windows devices" });
                         return;
                     }
-                    var rawName = data.value.substring(18).trim();
+                    var rawName = data.value.trim();
                     var packageName = rawName.replace(/"/g, "").replace(/'/g, ""); 
                     var logDir = (process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent';
                     try { if (!require('fs').existsSync(logDir)) { require('fs').mkdirSync(logDir); } } catch (e) { }
@@ -2323,6 +2326,12 @@ function getSystemInformation(func) {
         replaceSpacesWithUnderscoresRec(results);
         var hasher = require('SHA384Stream').create();
 
+        var finalizeResults = function ()
+        {
+            results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
+            func(results);
+        };
+
         // On Windows platforms, get volume information - Needs more testing.
         if (process.platform == 'win32')
         {
@@ -2330,23 +2339,19 @@ function getSystemInformation(func) {
             if (require('win-volumes').volumes_promise != null)
             {
                 var p = require('win-volumes').volumes_promise();
-                p.then(function (res)
-                {
-                    results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res);
-                    results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-                    func(results);
+                p.then(function (res) {
+                    if (res && res.drives) { try { results.hardware.windows.volumes = cleanGetBitLockerVolumeInfo(res.drives); } catch (ex) { } }
+                    finalizeResults();
                 });
             }
             else
             {
-                results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-                func(results);
+                finalizeResults();
             }
         }
         else
         {
-            results.hash = hasher.syncHash(JSON.stringify(results)).toString('hex');
-            func(results);
+            finalizeResults();
         }
         
     } catch (ex) { func(null, ex); }
@@ -4443,6 +4448,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (require('notifybar-desktop').DefaultPinned != null) { availcommands += ',privacybar'; }
                     try { require('win-utils'); availcommands += ',taskbar'; } catch (ex) { }
                     try { require('win-info'); availcommands += ',qfe,defender,av,installedstoreapps'; } catch (ex) { }
+                    try { require('win-updates'); availcommands += ',winupdates,winupdatesinstalled,winupdateshistory,winupdatesdedup'; } catch (ex) { }
                     try { require('win-deskutils'); availcommands += ',mousetrails,idletime,deskbackground'; } catch (ex) { }
                 }
                 if (amt != null) { availcommands += ',amt,amtconfig,amtevents'; }
@@ -4527,10 +4533,72 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform != 'win32') {
                     response = 'Unknown command "printers", type "help" for list of available commands.';
                 } else {
-                    var printers = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
+                    var wmi = require('win-wmi-fixed');
+                    var printers = wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
                     trimResults(printers);
+                    var tcpPorts = wmi.query('ROOT\\CIMV2', 'SELECT Name, HostAddress, PortNumber FROM Win32_TCPIPPrinterPort');
+                    trimResults(tcpPorts);
+                    var portMap = {};
+                    for (var j = 0; j < tcpPorts.length; ++j) { portMap[tcpPorts[j].Name] = tcpPorts[j].HostAddress + ':' + tcpPorts[j].PortNumber; }
+                    // For vendor ports not covered by Win32_TCPIPPrinterPort, walk the registry under Print\Monitors
+                    try {
+                        var reg = require('win-registry');
+                        var HKLM = reg.HKEY.LocalMachine;
+                        var monitorsKey = 'SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors';
+                        var monitors = reg.QueryKey(HKLM, monitorsKey);
+                        if (monitors && monitors.keys) {
+                            for (var m = 0; m < monitors.keys.length; ++m) {
+                                var portsKey = monitorsKey + '\\' + monitors.keys[m] + '\\Ports';
+                                try {
+                                    var portsNode = reg.QueryKey(HKLM, portsKey);
+                                    if (portsNode && portsNode.keys) {
+                                        for (var p = 0; p < portsNode.keys.length; ++p) {
+                                            var portName = portsNode.keys[p];
+                                            if (portMap[portName]) continue;
+                                            var portKey = portsKey + '\\' + portName;
+                                            var ip = null;
+                                            try { ip = reg.QueryKey(HKLM, portKey, 'IPAddress'); } catch (e) {}
+                                            if (!ip) { try { ip = reg.QueryKey(HKLM, portKey, 'HostName'); } catch (e) {} }
+                                            if (ip) { portMap[portName] = ip; }
+                                        }
+                                    }
+                                } catch (e) {}
+                            }
+                        }
+                    } catch (e) {}
+                    // For Epson and other vendor ports still missing, query ROOT\StandardCimv2\MSFT_PrinterPort
+                    try {
+                        var msftPorts = wmi.query('ROOT\\StandardCimv2', 'SELECT Name, Description FROM MSFT_PrinterPort');
+                        trimResults(msftPorts);
+                        for (var j = 0; j < msftPorts.length; ++j) {
+                            if (!portMap[msftPorts[j].Name] && msftPorts[j].Description) {
+                                portMap[msftPorts[j].Name] = msftPorts[j].Description;
+                            }
+                        }
+                    } catch (e) {}
+                    var printJobs = wmi.query('ROOT\\CIMV2', 'SELECT Name FROM Win32_PrintJob');
+                    trimResults(printJobs);
+                    var jobCount = {};
+                    for (var j = 0; j < printJobs.length; ++j) {
+                        var jobPrinter = printJobs[j].Name.split(',')[0];
+                        jobCount[jobPrinter] = (jobCount[jobPrinter] || 0) + 1;
+                    }
+                    var printerStatusMap = { 1: 'Other', 2: 'Unknown', 3: 'Idle', 4: 'Printing', 5: 'Warmup', 6: 'Stopped', 7: 'Offline' };
+                    var errorStateMap = { 0: 'Unknown', 1: 'Other', 2: 'No Error', 3: 'Low Paper', 4: 'No Paper', 5: 'Low Toner', 6: 'No Toner', 7: 'Door Open', 8: 'Jammed', 9: 'Offline', 10: 'Service Requested', 11: 'Output Bin Full' };
                     for (var i = 0; i < printers.length; ++i) {
-                        sendConsoleText(printers[i].Name + ' - ' + printers[i].PortName, sessionid);
+                        var portDesc = portMap[printers[i].PortName];
+                        var jobs = jobCount[printers[i].Name] || 0;
+                        var status = printerStatusMap[printers[i].PrinterStatus] || 'Unknown';
+                        var errors = [];
+                        var err = parseInt(printers[i].DetectedErrorState) || 0;
+                        if (err > 2) { errors.push(errorStateMap[err] || ('Error ' + err)); }
+                        var line = printers[i].Name +
+                            ' - ' + printers[i].PortName +
+                            (portDesc ? ' (' + portDesc + ')' : '') +
+                            ' [' + status + ']' +
+                            (errors.length > 0 ? ' [' + errors.join(', ') + ']' : '') +
+                            (jobs > 0 ? ' [' + jobs + ' job' + (jobs > 1 ? 's' : '') + ' queued]' : '');
+                        sendConsoleText(line, sessionid);
                     }
                 }
                 break;
@@ -4578,7 +4646,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     }
 
                     sendConsoleText('Querying Domain Controller... This can take up to 60 seconds. Please wait...', sessionid);
-                    global._domainQuery = require('win-wmi').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
+                    global._domainQuery = require('win-wmi-fixed').queryAsync('ROOT\\CIMV2', 'SELECT * FROM Win32_NTDomain');
                     global._domainQuery.session = sessionid;
                     global._domainQuery.then(function (v) {
                         var results = [];
@@ -4614,24 +4682,33 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     break;
                 }
                 if (args['_'].length < 2 || args['_'].length > 3) {
-                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(a)sync][(p)retty]\r\n' +
-                            'Example: wmi [ROOT\\]CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" ap\r\n';
+                    response = 'Execute a WMI query.\r\nUsage: wmi namespace "query" [(n)sync][(u)npretty][(s)ilence][(i)ncludesystemproperties]\r\n' +
+                            'Default: async, pretty and shows progress\r\n' +
+                            'Note: Sync queries block the agent for the duration of the query\r\n' +
+                            'Example: wmi CIMV2 "SELECT Name,ProcessId FROM Win32_Process WHERE Name=\'meshagent.exe\'" in\r\n';
                     break;
                 }
                 var opt = (args['_'][2]|| '').toLowerCase();
                 var ns = args['_'][0].trim();
                 if (!/^root\\\w/i.test(ns)) { ns = 'ROOT\\' + ns; }
                 var q = (args['_'][1]).trim();
+                var indent = (opt.indexOf('u') === -1); // unpretty, so default true
+                var showProgress = (opt.indexOf('s') === -1);   //s is now silence
+                var includeSysProp = (opt.indexOf('i') !== -1);
+                var async = opt.indexOf('n') === -1;
                 var wmi = require('win-wmi-fixed');
-                var output = function (res) { sendConsoleText(res && res[0] ? JSON.stringify(res, null, ((opt.indexOf('p') !== -1) ? 2 : 0)) : 'No results', sessionid); };
-                var error = function (e) { var msg = (e && e.message) ? e.message : (typeof e === 'string' ? e : JSON.stringify(e)); sendConsoleText('Error: ' + msg, sessionid);};
-                sendConsoleText('Performing query. Response can take a while (sometimes >60s)', sessionid);
-                if (opt.indexOf('a') !== -1) {
-                    wmi.queryAsync(ns, q)
+                var output = function (res) { sendConsoleText((res && res.length > 0) ? (JSON.stringify(res, null, (indent ? 2 : 0))) : 'No results', sessionid); };
+                var error = function (e) {
+                    e = e || {};
+                    sendConsoleText(((e.results && e.results.length) ? 'Partial result:\r\n' + JSON.stringify(e.results, null, (indent ? 2 : 0)) + '\r\nPartial resultcount: ' + e.results.length + '\r\n' : '') +
+                        'Error: ' + (e.message || JSON.stringify(e)), sessionid); };
+                if (showProgress) { sendConsoleText('Performing ' + (async ? 'asynchronous ': '') + 'query ' + (async ? '': 'synchronously (be careful with large queries as it blocks the agent for the duration)'), sessionid); }
+                if (async) {
+                    wmi.queryAsync(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null))
                     .then( output )
                     .catch( error );
                 } else {
-                    try { output(wmi.query(ns, q)); } catch (e) { error(e); }
+                    try { output(wmi.query(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
             case 'translations': {
@@ -4643,10 +4720,37 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             case 'bitlocker':
                 if (process.platform == 'win32') {
-                    if (require('win-volumes').volumes_promise != null) {
-                        var p = require('win-volumes').volumes_promise();
-                        p.then(function (res) { sendConsoleText(JSON.stringify(cleanGetBitLockerVolumeInfo(res), null, 1), this.session); });
+                    if (require('user-sessions').isRoot()) {
+                        if (require('win-volumes').volumes_promise != null) {
+                            var p = require('win-volumes').volumes_promise();
+                            p.sessionid = sessionid;
+                            p.then(function (res) {
+                                if (res && res.error) { sendConsoleText('Bitlocker error: ' + (res.error.message ? res.error.message : res.error), this.sessionid); }
+                                var drives = (res && res.drives && (Object.keys(res.drives).length !== 0)) ? res.drives : null;     // win-volumes returns 'drives' as at least {}, so also check on empty object
+                                if (drives) {
+                                    var conversionStatuses = { 0: 'FullyDecrypted', 1: 'FullyEncrypted', 2: 'EncryptionInProgress', 3: 'DecryptionInProgress', 4: 'EncryptionPaused', 5: 'DecryptionPaused' };
+                                    var encryptionMethods = { 0: 'None', 1: 'AES_128_WITH_DIFFUSER', 2: 'AES_256_WITH_DIFFUSER', 3: 'AES_128', 4: 'AES_256', 5: 'HARDWARE_ENCRYPTION', 6: 'XTS_AES_128', 7: 'XTS_AES_256' };
+                                    var protectionStatuses = { 0: 'Off', 1: 'On', 2: 'Locked'};
+                                    var driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                                    for (var i in drives) {
+                                        const v = drives[i];
+                                        if (conversionStatuses[v.volumeStatus]) { v.volumeStatus = conversionStatuses[v.volumeStatus]; } else { v.volumeStatus = 'Unknown'; }
+                                        if (encryptionMethods[v.encryptionMethod]) { v.encryptionMethod = encryptionMethods[v.encryptionMethod]; } else { v.encryptionMethod = 'Unknown'; }
+                                        if (protectionStatuses[v.protectionStatus]) { v.protectionStatus = protectionStatuses[v.protectionStatus]; } else { v.protectionStatus = 'Unknown'; }
+                                        if (driveType[v.dType]) {v.dType = driveType[v.dType]; } else { v.dType = 'Unknown'; }
+                                        if (v.recoveryPassword && (rights != MESHRIGHT_ADMIN)) { v.recoveryPassword = '(Only admins)'; }
+                                    }
+                                }
+                                sendConsoleText(JSON.stringify((drives ? drives : 'No volume/bitlocker info'), null, 1), this.sessionid);
+                            });
+                        } else {
+                            sendConsoleText('BitLocker info not available.', sessionid);
+                        }
+                    } else {
+                        sendConsoleText('Bitlocker info requires an elevated agent', sessionid);
                     }
+                } else {
+                    sendConsoleText('BitLocker is only supported on Windows.', sessionid);
                 }
                 break;
             case 'dhcp': // This command is only supported on Linux, this is because Linux does not give us the DNS suffix for each network adapter independently so we have to ask the DHCP server.
@@ -5347,8 +5451,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform == 'win32') {
                     // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
                     response = JSON.stringify(require('win-info').av(), null, 1);
-                } if (process.platform == 'linux') {
-                    response = JSON.stringify(require('linux-info').av(), null, 1);
+                } else if (process.platform == 'linux') {
+                    require('linux-info').av(function (r) { sendConsoleText(JSON.stringify(r, null, 1), sessionid); });
+                    response = null;
                 } else {
                     response = 'Not supported on the platform';
                 }
@@ -5520,7 +5625,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length < 1) {
                     response = 'Proper usage: eval "JavaScript code"'; // Display correct command usage
                 } else {
-                    response = JSON.stringify(mesh.eval(args['_'][0])); // This can only be run by trusted administrator.
+                    var evalResult = mesh.eval(args['_'][0]); try { response = JSON.stringify(evalResult); } catch (ex) { response = null; } // This can only be run by trusted administrator.
                 }
                 break;
             }
@@ -5570,8 +5675,31 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     if (results == null) {
                         sendConsoleText(err, this.sessionid);
                     } else {
-                        sendConsoleText(JSON.stringify(results, null, 1), this.sessionid);
+                        // Send the full data to the server first
                         mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results });
+                        // Mask BitLocker recovery keys for non-admins in the console output only and optionally replace codes with strings
+                        pretty = !(args['_'].length > 0 && args['_'][0] == 'raw');
+                        const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: 'AES-128', 4: 'AES-256', 5: "Hardware encryption", 6: 'XTS-AES-128', 7: 'XTS-AES-256' };
+                        const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
+                        const conversionStatus = { "-1": "Unknown", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
+                        const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
+                        var replacer = function (k, val) {
+                            if ( k === 'recoveryPassword' && rights != MESHRIGHT_ADMIN) { return '(Only admins)'; }
+                            else if (pretty && typeof val === 'number') {
+                                switch (k) {
+                                    case 'encryptionMethod':
+                                        return (val >= 1 && val <= 7)  ? encMethod[val] : val;
+                                    case 'protectionStatus':
+                                        return (val >= 0 && val <= 2) ? protectionStatus[val] : val;
+                                    case 'volumeStatus':
+                                        return (val >= -1 && val <= 5) ? conversionStatus[val] : val;
+                                    case 'dType':
+                                        return (val >= 1 && val <= 6) ? driveType[val]: val;
+                                }
+                            }
+                            return val;
+                        };
+                        sendConsoleText(JSON.stringify(results, replacer, 1), this.sessionid);
                     }
                 });
                 break;
@@ -5814,7 +5942,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var interfaces = require('os').networkInterfaces();
                 if (process.platform == 'win32') {
                     try {
-                        var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                        var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
                         if (ret[0]) {
                             var speedMap = {};
                             for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
@@ -6040,57 +6168,175 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'installedapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedApps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid); 
-                        }).catch(function(e) { 
-                            sendConsoleText("Error: " + e, sessionid); 
-                        });
-                    } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaPr = require('win-info').installedApps();
+                        iaPr.sessionid = sessionid;
+                        iaPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += '\n       Location: ' + a.location;
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) {
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'linux') {
                     try {
-                        require('linux-info').packages().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaLPr = require('linux-info').packages();
+                        iaLPr.sessionid = sessionid;
+                        iaLPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module linux-info error: " + ex, sessionid);
+                        sendConsoleText('Module linux-info error: ' + ex, sessionid);
                     }
                 } else if (process.platform == 'darwin') {
                     try {
-                        require('mac-info').apps().then(function (apps) { 
-                            sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                        }).catch(function(e) {
-                            sendConsoleText("Error: " + e, sessionid);
-                        });
+                        sendConsoleText('Fetching installed apps, please wait...', sessionid);
+                        var iaMPr = require('mac-info').apps();
+                        iaMPr.sessionid = sessionid;
+                        iaMPr.then(function (apps) {
+                            if (apps.length === 0) { sendConsoleText('No installed apps found.', this.sessionid); return; }
+                            var lines = ['Installed Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.arch) line += ' [' + a.arch + ']';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.date) line += ' [Installed: ' + a.date + ']';
+                                if (a.location) line += ' (' + a.location + ')';
+                                lines.push(line);
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
                     } catch (ex) {
-                        sendConsoleText("Module mac-info error: " + ex, sessionid);
+                        sendConsoleText('Module mac-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed apps not supported on this platform.', sessionid);
                 }
                 break;
             }
             case 'installedstoreapps': {
                 if (process.platform == 'win32') {
                     try {
-                        require('win-info').installedStoreApps().then(function (apps) {
-                            if (apps && apps.length > 0) {
-                                sendConsoleText(JSON.stringify(apps, null, 1), sessionid);
-                            } else {
-                                sendConsoleText("No Store Apps found or PowerShell error.", sessionid);
+                        sendConsoleText('Fetching installed Store apps, please wait...', sessionid);
+                        var isaPr = require('win-info').installedStoreApps();
+                        isaPr.sessionid = sessionid;
+                        isaPr.then(function (apps) {
+                            if (!apps || apps.length === 0) { sendConsoleText('No Store apps found.', this.sessionid); return; }
+                            var lines = ['Installed Store Apps (' + apps.length + '):'];
+                            for (var i = 0; i < apps.length; i++) {
+                                var a = apps[i];
+                                var line = '  [' + (i + 1) + '] ' + a.name;
+                                if (a.version) line += ' (v' + a.version + ')';
+                                if (a.publisher) line += ' - ' + a.publisher;
+                                if (a.scope) line += ' [' + a.scope + ']';
+                                if (a.packageFullName) line += '\n       Package: ' + a.packageFullName;
+                                lines.push(line);
                             }
-                        }).catch(function(e) { 
-                            sendConsoleText("Promise Error: " + e, sessionid); 
-                        });
-                    } catch (ex) { 
-                        sendConsoleText("Module win-info error: " + ex, sessionid); 
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) {
+                        sendConsoleText('Module win-info error: ' + ex, sessionid);
                     }
                 } else {
-                    sendConsoleText("Installed Store Apps not supported on this platform.", sessionid);
+                    sendConsoleText('Installed Store Apps not supported on this platform.', sessionid);
                 }
+                break;
+            }
+            case 'winupdates': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Checking for pending updates, this may take up to 60 seconds...', sessionid);
+                        var wuPr = require('win-updates').getAvailableUpdates();
+                        wuPr.sessionid = sessionid;
+                        wuPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No pending updates.', this.sessionid); return; }
+                            var lines = ['Pending Updates (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : '') + (updates[i].severity ? ' [' + updates[i].severity + ']' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdatesinstalled': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Checking installed updates, this may take up to 60 seconds...', sessionid);
+                        var wuiPr = require('win-updates').getInstalledUpdates();
+                        wuiPr.sessionid = sessionid;
+                        wuiPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No installed updates found.', this.sessionid); return; }
+                            var lines = ['Installed Updates (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdateshistory': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Fetching update history, this may take up to 60 seconds...', sessionid);
+                        var wuhPr = require('win-updates').getInstalledUpdateHistory();
+                        wuhPr.sessionid = sessionid;
+                        wuhPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No update history found.', this.sessionid); return; }
+                            var lines = ['Update History (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
+                break;
+            }
+            case 'winupdatesdedup': {
+                if (process.platform == 'win32') {
+                    try {
+                        sendConsoleText('Fetching de-duplicated update history, this may take up to 60 seconds...', sessionid);
+                        var wudPr = require('win-updates').getInstalledUpdatesDeDuplicated();
+                        wudPr.sessionid = sessionid;
+                        wudPr.then(function (updates) {
+                            if (updates.length === 0) { sendConsoleText('No update history found.', this.sessionid); return; }
+                            var lines = ['Installed Updates De-duplicated (' + updates.length + '):'];
+                            for (var i = 0; i < updates.length; i++) {
+                                lines.push('  [' + (i + 1) + '] ' + updates[i].title + (updates[i].kbArticleIDs.length ? ' (' + updates[i].kbArticleIDs.join(', ') + ')' : ''));
+                            }
+                            sendConsoleText(lines.join('\n'), this.sessionid);
+                        }, function (e) { sendConsoleText('Error: ' + e, this.sessionid); });
+                    } catch (ex) { sendConsoleText('win-updates error: ' + ex, sessionid); }
+                } else { sendConsoleText('Windows updates not supported on this platform.', sessionid); }
                 break;
             }
             case 'uninstallapp': {
@@ -6102,7 +6348,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     try {
                         var b = Buffer.from(base64Cmd, 'base64');
                         var decoded = b.toString();
-                        if (decoded && decoded.length > 0 && decoded.indexOf(':') >= 0) {
+                        var lc = decoded ? decoded.toLowerCase() : '';
+                        if (decoded && decoded.length > 0 && (lc.indexOf('msiexec') >= 0 || lc.indexOf('.exe') >= 0)) {
                             uninstallCmd = decoded;
                         } else {
                             uninstallCmd = base64Cmd;
@@ -6136,6 +6383,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         writeLog('UNINSTALL START - Command: ' + uninstallCmd.replace(/\\/g, '/'));
                         var originalCmd = uninstallCmd;
                         if (uninstallCmd.toLowerCase().indexOf('msiexec') >= 0) {
+                            uninstallCmd = uninstallCmd.replace(/\/I\s*(\{[^}]+\})/gi, '/X $1');
                             uninstallCmd = uninstallCmd.replace(/\/q[nbrf]?/gi, '');
                             if (uninstallCmd.indexOf('/QN') < 0) {
                                 uninstallCmd = uninstallCmd + ' /QN /norestart';
@@ -6795,6 +7043,217 @@ function handleServerConnection(state) {
     broadcastToRegisteredApps({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
 }
 
+function getProbableMainLanIp() {
+    if (process.platform != 'win32') return null;
+
+    function str(v) {
+        if (v == null) return '';
+        try { return String(v); } catch (ex) { return ''; }
+    }
+
+    function intVal(v, d) {
+        var x;
+        try { x = parseInt(str(v)); } catch (ex) { x = NaN; }
+        if (isNaN(x)) return d;
+        return x;
+    }
+
+    function isIPv4(ip) {
+        var p, i, n;
+
+        ip = str(ip);
+        if (ip == '') return false;
+        if (ip == '0.0.0.0') return false;
+        if (ip.indexOf(':') >= 0) return false;
+        if (ip.indexOf('169.254.') == 0) return false;
+        if (ip.indexOf('127.') == 0) return false;
+
+        p = ip.split('.');
+        if (p.length != 4) return false;
+
+        for (i = 0; i < 4; i++) {
+            if (p[i] == '') return false;
+            n = parseInt(p[i]);
+            if (isNaN(n)) return false;
+            if ((n < 0) || (n > 255)) return false;
+        }
+
+        return true;
+    }
+
+    function hasAnyValue(v) {
+        var i;
+
+        if (v == null) return false;
+
+        if (typeof v == 'string') {
+            return (v != '');
+        }
+
+        if (typeof v == 'number') {
+            return true;
+        }
+
+        // Duktape/WMI may expose arrays or array-like objects.
+        try {
+            if (v.length != null) {
+                for (i = 0; i < v.length; i++) {
+                    if (str(v[i]) != '') return true;
+                }
+                return false;
+            }
+        } catch (ex) { }
+
+        return (str(v) != '');
+    }
+
+    function firstIPv4(v) {
+        var i, s;
+
+        if (v == null) return null;
+
+        if (typeof v == 'string') {
+            return isIPv4(v) ? v : null;
+        }
+
+        try {
+            if (v.length != null) {
+                for (i = 0; i < v.length; i++) {
+                    s = str(v[i]);
+                    if (isIPv4(s)) return s;
+                }
+            }
+        } catch (ex) { }
+
+        s = str(v);
+        if (isIPv4(s)) return s;
+
+        return null;
+    }
+
+    function isUpAdapter(a) {
+        var op, media;
+
+        if (a == null) return true;
+
+        // InterfaceOperationalStatus commonly has 1 = Up.
+        // But do not hard-fail unknown values; WMI support varies.
+        op = intVal(a.InterfaceOperationalStatus, -1);
+        if ((op != -1) && (op != 1)) return false;
+
+        // MediaConnectState commonly has 1 = Connected.
+        media = intVal(a.MediaConnectState, -1);
+        if ((media != -1) && (media != 1)) return false;
+
+        return true;
+    }
+
+    function adapterPriority(a) {
+        var pm, medium, link, hardware, connector;
+
+        if (a == null) return 20;
+
+        pm = intVal(a.NdisPhysicalMedium, -1);
+        medium = intVal(a.NdisMedium, -1);
+        link = intVal(a.LinkTechnology, -1);
+
+        hardware = (str(a.HardwareInterface).toLowerCase() == 'true');
+        connector = (str(a.ConnectorPresent).toLowerCase() == 'true');
+
+        /*
+            MSFT_NetAdapter is documented in ROOT\StandardCimv2.
+            Useful physical media values include:
+              14 = 802.3 / Ethernet
+               1 = Wireless LAN
+               9 = Native 802.11
+
+            These numeric values avoid matching adapter names such as
+            "Wi-Fi", "WLAN", or "Wireless".
+        */
+
+        if (pm == 14) return 0;                         // wired Ethernet
+        if ((medium == 0) && connector) return 1;       // 802.3-style fallback
+        if ((link == 2) && hardware) return 2;          // Ethernet-ish fallback
+
+        if ((pm == 1) || (pm == 9)) return 10;          // Wi-Fi / WLAN
+        if (link == 11) return 11;                      // wireless fallback
+
+        return 20;                                      // VPN, virtual, tunnel, unknown
+    }
+
+    try {
+        var wmi = require('win-wmi-fixed');
+        var configs;
+        var adapters;
+        var adapterByIndex = {};
+        var candidates = [];
+        var i, cfg, a, ip, gw, idx, metric;
+
+        configs = wmi.query(
+            'ROOT\\CIMV2',
+            'SELECT InterfaceIndex,IPAddress,DefaultIPGateway,IPConnectionMetric FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True',
+            ['InterfaceIndex', 'IPAddress', 'DefaultIPGateway', 'IPConnectionMetric']
+        );
+
+        if ((configs == null) || (configs.length == null) || (configs.length == 0)) {
+            return null;
+        }
+
+        try {
+            adapters = wmi.query(
+                'ROOT\\StandardCimv2',
+                'SELECT InterfaceIndex,NdisPhysicalMedium,NdisMedium,LinkTechnology,HardwareInterface,ConnectorPresent,InterfaceOperationalStatus,MediaConnectState FROM MSFT_NetAdapter',
+                ['InterfaceIndex', 'NdisPhysicalMedium', 'NdisMedium', 'LinkTechnology', 'HardwareInterface', 'ConnectorPresent', 'InterfaceOperationalStatus', 'MediaConnectState']
+            );
+
+            if ((adapters != null) && (adapters.length != null)) {
+                for (i = 0; i < adapters.length; i++) {
+                    idx = intVal(adapters[i].InterfaceIndex, -1);
+                    if (idx >= 0) adapterByIndex['i' + idx] = adapters[i];
+                }
+            }
+        } catch (ex2) {
+            adapters = null;
+        }
+
+        for (i = 0; i < configs.length; i++) {
+            cfg = configs[i];
+
+            gw = cfg.DefaultIPGateway;
+            if (!hasAnyValue(gw)) continue;
+
+            ip = firstIPv4(cfg.IPAddress);
+            if (ip == null) continue;
+
+            idx = intVal(cfg.InterfaceIndex, -1);
+            a = adapterByIndex['i' + idx];
+
+            if (!isUpAdapter(a)) continue;
+
+            metric = intVal(cfg.IPConnectionMetric, 999999);
+
+            candidates[candidates.length] = {
+                ip: ip,
+                idx: idx,
+                pri: adapterPriority(a),
+                metric: metric
+            };
+        }
+
+        if (candidates.length == 0) return null;
+
+        candidates.sort(function (x, y) {
+            if (x.pri != y.pri) return x.pri - y.pri;
+            if (x.metric != y.metric) return x.metric - y.metric;
+            return x.idx - y.idx;
+        });
+
+        return candidates[0].ip;
+    } catch (ex) {
+        return null;
+    }
+}
+
 // Update the server with the latest network interface information
 var sendNetworkUpdateNagleTimer = null;
 function sendNetworkUpdateNagle() { if (sendNetworkUpdateNagleTimer != null) { clearTimeout(sendNetworkUpdateNagleTimer); sendNetworkUpdateNagleTimer = null; } sendNetworkUpdateNagleTimer = setTimeout(sendNetworkUpdate, 5000); }
@@ -6806,7 +7265,7 @@ function sendNetworkUpdate(force) {
         var netInfo = { netif2: require('os').networkInterfaces() };
         if (process.platform == 'win32') {
             try {
-                var ret = require('win-wmi').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
+                var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
                 if (ret[0]) {
                     var speedMap = {};
                     for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
@@ -6820,6 +7279,13 @@ function sendNetworkUpdate(force) {
                     }
                 }
             } catch(ex) { }
+            
+			try {
+                var probableMainLanIp = getProbableMainLanIp();
+                if (probableMainLanIp != null) {
+                    netInfo.probable_main_lan_ip = probableMainLanIp;
+                }
+            } catch (ex) { }
         } else if (process.platform == 'linux') {
             var adapterNames = Object.keys(netInfo.netif2);
             for (var i = 0; i < adapterNames.length; i++) {
@@ -6845,79 +7311,101 @@ function sendNetworkUpdate(force) {
 }
 
 // Called periodically to check if we need to send updates to the server
+var sendPeriodicServerUpdateInProgress = false;
 function sendPeriodicServerUpdate(flags, force) {
     if (meshServerConnectionState == 0) return; // Not connected to server, do nothing.
-    if (!flags) { flags = 0xFFFFFFFF; }
-    if (!force) { force = false; }
 
-    // If we have a connected MEI, get Intel ME information
-    if ((flags & 1) && (amt != null) && (amt.state == 2)) {
-        delete meshCoreObj.intelamt;
-        amt.getMeiState(9, function (meinfo) {
-            meshCoreObj.intelamt = meinfo;
-            meshCoreObj.intelamt.microlms = amt.lmsstate;
-            meshCoreObjChanged();
-        });
-    }
+    // Defensive guard against re-entrancy. The info collectors below are currently
+    // non-blocking (Linux av()/firewall() are async; Windows uses native WMI), so
+    // nothing here pumps the event loop and this guard never actually fires. It's
+    // kept as a safety net: if a future collector re-introduces a blocking
+    // child.waitExit() (which runs a nested event loop), a timer firing inside it
+    // could re-enter and throw 'waitExit() already in progress'. Skipping the
+    // overlapping run avoids that.
+    if (sendPeriodicServerUpdateInProgress) return;
+    sendPeriodicServerUpdateInProgress = true;
+    try {
+        if (!flags) { flags = 0xFFFFFFFF; }
+        if (!force) { force = false; }
 
-    // Update network information
-    if (flags & 2) { sendNetworkUpdateNagle(false); }
+        // If we have a connected MEI, get Intel ME information
+        if ((flags & 1) && (amt != null) && (amt.state == 2)) {
+            delete meshCoreObj.intelamt;
+            amt.getMeiState(9, function (meinfo) {
+                meshCoreObj.intelamt = meinfo;
+                meshCoreObj.intelamt.microlms = amt.lmsstate;
+                meshCoreObjChanged();
+            });
+        }
 
-    // Update anti-virus information
-    if ((flags & 4) && (process.platform == 'win32')) {
-        // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
-        try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
-        //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
-    }
-    // Update Linux AV/Firewall information
-    if ((flags & 4) && (process.platform == 'linux')) {
-        try {
-            var lsc = {};
-            var avResult = require('linux-info').av();
-            if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
-            var fwResult = require('linux-info').firewall();
-            if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
-            if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
-        } catch (ex) { }
-    }
+        // Update network information
+        if (flags & 2) { sendNetworkUpdateNagle(false); }
 
-    if (process.platform == 'win32') {
-        if (require('MeshAgent')._securitycenter == null) {
+        // Update anti-virus information
+        if ((flags & 4) && (process.platform == 'win32')) {
+            // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
+            try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
+            //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
+        }
+        // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
+        // spawn child processes), so they don't block this periodic update with a nested
+        // waitExit() loop. Results are applied in the callbacks and flushed via
+        // meshCoreObjChanged().
+        if ((flags & 4) && (process.platform == 'linux')) {
             try {
-                require('MeshAgent')._securitycenter = require('win-securitycenter').status();
-                meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
-                require('win-securitycenter').on('changed', function () {
-                    require('MeshAgent')._securitycenter = require('win-securitycenter').status();
-                    meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
-                    require('MeshAgent').SendCommand({ action: 'coreinfo', wsc: require('MeshAgent')._securitycenter });
+                require('linux-info').av(function (avResult) {
+                    try {
+                        var lsc = {};
+                        if (avResult && avResult.length > 0) { meshCoreObj.av = avResult; lsc.antiVirus = 'OK'; }
+                        require('linux-info').firewall(function (fwResult) {
+                            try {
+                                if (fwResult && fwResult.installed) { lsc.firewall = fwResult.enabled ? 'OK' : 'BAD'; }
+                                if (Object.keys(lsc).length > 0) { meshCoreObj.lsc = lsc; meshCoreObjChanged(); }
+                            } catch (ex) { }
+                        });
+                    } catch (ex) { }
                 });
             } catch (ex) { }
         }
 
-        // Get Defender Information
-        try {
-            meshCoreObj.defender = require('win-info').defender();
-            meshCoreObjChanged();
-        } catch (ex) { }
+        if (process.platform == 'win32') {
+            if (require('MeshAgent')._securitycenter == null) {
+                try {
+                    require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                    meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
+                    require('win-securitycenter').on('changed', function () {
+                        require('MeshAgent')._securitycenter = require('win-securitycenter').status();
+                        meshCoreObj['wsc'] = require('MeshAgent')._securitycenter; // Windows Security Central (WSC)
+                        require('MeshAgent').SendCommand({ action: 'coreinfo', wsc: require('MeshAgent')._securitycenter });
+                    });
+                } catch (ex) { }
+            }
 
-        // Calculate Windows Idle Time
-        try {
-            require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
-                meshCoreObj.idletime = seconds;
+            // Get Defender Information
+            try {
+                meshCoreObj.defender = require('win-info').defender();
                 meshCoreObjChanged();
-            });
-        } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
-    }
+            } catch (ex) { }
 
-    // Send available data right now
-    if (force) {
-        meshCoreObj = sortObjRec(meshCoreObj);
-        var x = JSON.stringify(meshCoreObj);
-        if (x != LastPeriodicServerUpdate) {
-            LastPeriodicServerUpdate = x;
-            mesh.SendCommand(meshCoreObj);
+            // Calculate Windows Idle Time
+            try {
+                require('win-deskutils').idle.getSecondsAllSessions().then(function (seconds) {
+                    meshCoreObj.idletime = seconds;
+                    meshCoreObjChanged();
+                });
+            } catch (ex) { sendConsoleText('Error getting idle time: ' + ex.toString());}
         }
-    }
+
+        // Send available data right now
+        if (force) {
+            meshCoreObj = sortObjRec(meshCoreObj);
+            var x = JSON.stringify(meshCoreObj);
+            if (x != LastPeriodicServerUpdate) {
+                LastPeriodicServerUpdate = x;
+                mesh.SendCommand(meshCoreObj);
+            }
+        }
+    } finally { sendPeriodicServerUpdateInProgress = false; }
 }
 
 // Sort the names in an object
@@ -6925,17 +7413,17 @@ function sortObject(obj) { return Object.keys(obj).sort().reduce(function(a, v) 
 
 // Fix the incoming data and cut down how much data we use
 function cleanGetBitLockerVolumeInfo(volumes) {
+    // Keep the raw codes info and let the view convert to strings
     for (var i in volumes) {
         const v = volumes[i];
         if (typeof v.size == 'string') { v.size = parseInt(v.size); }
         if (typeof v.sizeremaining == 'string') { v.sizeremaining = parseInt(v.sizeremaining); }
         if (v.identifier == '') { delete v.identifier; }
         if (v.name == '') { delete v.name; }
-        if (v.removable != true) { delete v.removable; }
-        if (v.cdrom != true) { delete v.cdrom; }
-        if (v.protectionStatus == 'On') { v.protectionStatus = true; } else { delete v.protectionStatus; }
-        if (v.volumeStatus == 'FullyDecrypted') { delete v.volumeStatus; }
         if (v.recoveryPassword == '') { delete v.recoveryPassword; }
+        if (v.volumeStatus === 0) { delete v.volumeStatus; }
+        if (v.encryptionMethod === 0) { delete v.encryptionMethod; }
+        if (v.protectionStatus === 0) { delete v.protectionStatus; }
     }
     return sortObject(volumes);
 }

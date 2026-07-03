@@ -3206,6 +3206,12 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
                 }
             }
         }
+    
+        // Windows volumes
+        if ((hardware?.windows?.volumes)) { info["Volumes"] = hardware.windows.volumes; }
+    
+        // Bitlocker cache
+        if ((hardware?.windows?.bitlocker)) { info["Bitlocker cache"] = hardware.windows.bitlocker; }
     }
 
     // Display everything

@@ -1,5 +1,0 @@
-[[[SERVERNAME]]] - 帐户邀请
-已在服务器[[[SERVERNAME]]]（[[[SERVERURL]]]/[[[URLARGS1]]]）上为您创建了一个帐户，您现在可以使用用户名“ [[[ACCOUNTNAME]]]”和密码“ [[[PASSWORD]]]”。
-~
-最好的祝福，
-~[[[USERNAME]]]
