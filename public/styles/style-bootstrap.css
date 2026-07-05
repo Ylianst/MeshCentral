@@ -1509,6 +1509,20 @@ NoMeshesPanel img {
     float: right;
 }
 
+#p6title {
+    align-items: flex-start !important;
+    min-height: 0;
+    position: relative;
+}
+
+#p6title > #MainMeshImage {
+    float: none;
+    object-fit: contain;
+    position: absolute;
+    right: 10px;
+    top: 0;
+}
+
 #DeskTools {
     position: absolute;
     width: 400px;
