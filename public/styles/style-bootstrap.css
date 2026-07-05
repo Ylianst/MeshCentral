@@ -2320,7 +2320,13 @@ nav .lbbuttonsel2 {
     color: var(--title-color, #212529); /* fallback: dark gray */
 }
 
-/* Theme-aware Bootstrap surface colors */
+/* Keep Bootstrap and Bootswatch surfaces readable when MeshCentral switches theme mode. */
+[data-bs-theme="light"] body,
+body[data-bs-theme="light"] {
+    color: #212529;
+    background-color: #ffffff;
+}
+
 [data-bs-theme="dark"] .h1,
 [data-bs-theme="dark"] h1,
 .night .h1 {
@@ -2343,7 +2349,7 @@ nav .lbbuttonsel2 {
 [data-bs-theme="light"] .fs-4,
 [data-bs-theme="light"] .content-heading,
 [data-bs-theme="light"] .panel-title {
-    color: var(--bs-heading-color, #212529);
+    color: #212529;
 }
 
 [data-bs-theme="dark"] .modal-body h1,
@@ -2374,8 +2380,20 @@ nav .lbbuttonsel2 {
 [data-bs-theme="light"] .modal-content,
 [data-bs-theme="light"] .table,
 [data-bs-theme="light"] .list-group-item {
-    color: var(--bs-body-color, #212529);
-    background-color: var(--bs-body-bg, #ffffff);
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card,
+[data-bs-theme="light"] .modal-body,
+[data-bs-theme="light"] .modal-footer {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card-title,
+[data-bs-theme="light"] .card-text {
+    color: #212529;
 }
 
 [data-bs-theme="dark"] .content-area,
@@ -2394,7 +2412,27 @@ nav .lbbuttonsel2 {
 [data-bs-theme="light"] .form-label,
 [data-bs-theme="light"] .form-text,
 [data-bs-theme="light"] .ms-2 {
-    color: var(--bs-body-color, #212529);
+    color: #212529;
+}
+
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-control-sm,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .form-select-sm,
+[data-bs-theme="light"] textarea,
+[data-bs-theme="light"] select,
+[data-bs-theme="light"] input[type="text"],
+[data-bs-theme="light"] input[type="password"],
+[data-bs-theme="light"] input[type="email"],
+[data-bs-theme="light"] input[type="number"] {
+    color: #212529;
+    background-color: #ffffff;
+    border-color: #ced4da;
+}
+
+[data-bs-theme="light"] .form-control::placeholder {
+    color: #6c757d;
+    opacity: 1;
 }
 
 [data-bs-theme="dark"] .form-label,
@@ -3759,7 +3797,7 @@ body:not(.fullscreen) .notifiyBox {
     color: #000;
 }
 
-/* Close button styles for both themes */
+/* Keep Bootstrap close buttons visible across light and dark themes. */
 .btn-close {
     background: #ffffff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
     opacity: 0.8 !important;
