@@ -422,6 +422,20 @@ body {
     right: 3px;
 }
 
+.textnewui {
+    color: white !important;
+    font-weight: bold;
+    padding-top: 5px;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    margin-right: 10px;
+}
+
+.LogoffLinkColor {
+    color: white !important;
+}
+
 #logoutControlSpan2 {
     cursor: pointer;
     color: white;
@@ -711,6 +725,10 @@ body {
     border-radius: 5px 5px 0 0;
     margin-bottom: 6px;
     cursor: move;
+}
+
+#dialogHeader .modal-title {
+    color: inherit !important;
 }
 
 #id_dialogclose {
@@ -2288,34 +2306,44 @@ nav .lbbuttonsel2 {
     color: var(--title-color, #212529); /* fallback: dark gray */
 }
 
-/* Dark theme heading styles */
+/* Theme-aware Bootstrap surface colors */
 [data-bs-theme="dark"] .h1,
 [data-bs-theme="dark"] h1,
 .night .h1 {
     background-image: linear-gradient(to right, #000 0%, #333 100%);
-    color: #f8f9fa !important;
+    color: var(--bs-heading-color, #f8f9fa);
 }
 
-/* Light theme text colors */
-[data-bs-theme="light"] h1,
-[data-bs-theme="light"] h2,
-[data-bs-theme="light"] h3,
-[data-bs-theme="light"] h4,
-[data-bs-theme="light"] h5,
-[data-bs-theme="light"] h6,
+[data-bs-theme="light"] .modal-body h1,
+[data-bs-theme="light"] .modal-body h2,
+[data-bs-theme="light"] .modal-body h3,
+[data-bs-theme="light"] .modal-body h4,
+[data-bs-theme="light"] .modal-body h5,
+[data-bs-theme="light"] .modal-body h6,
+[data-bs-theme="light"] .card-body h1,
+[data-bs-theme="light"] .card-body h2,
+[data-bs-theme="light"] .card-body h3,
+[data-bs-theme="light"] .card-body h4,
+[data-bs-theme="light"] .card-body h5,
+[data-bs-theme="light"] .card-body h6,
 [data-bs-theme="light"] .fs-4,
 [data-bs-theme="light"] .content-heading,
 [data-bs-theme="light"] .panel-title {
-    color: var(--bs-heading-color, #212529) !important;
+    color: var(--bs-heading-color, #212529);
 }
 
-/* Dark theme text colors */
-[data-bs-theme="dark"] h1,
-[data-bs-theme="dark"] h2,
-[data-bs-theme="dark"] h3,
-[data-bs-theme="dark"] h4,
-[data-bs-theme="dark"] h5,
-[data-bs-theme="dark"] h6,
+[data-bs-theme="dark"] .modal-body h1,
+[data-bs-theme="dark"] .modal-body h2,
+[data-bs-theme="dark"] .modal-body h3,
+[data-bs-theme="dark"] .modal-body h4,
+[data-bs-theme="dark"] .modal-body h5,
+[data-bs-theme="dark"] .modal-body h6,
+[data-bs-theme="dark"] .card-body h1,
+[data-bs-theme="dark"] .card-body h2,
+[data-bs-theme="dark"] .card-body h3,
+[data-bs-theme="dark"] .card-body h4,
+[data-bs-theme="dark"] .card-body h5,
+[data-bs-theme="dark"] .card-body h6,
 [data-bs-theme="dark"] .fs-4,
 [data-bs-theme="dark"] .content-heading,
 [data-bs-theme="dark"] .panel-title,
@@ -2323,23 +2351,17 @@ nav .lbbuttonsel2 {
 .night .fs-4,
 .night .content-heading,
 .night .panel-title {
-    color: var(--bs-heading-color, #f8f9fa) !important;
+    color: var(--bs-heading-color, #f8f9fa);
 }
 
-[data-bs-theme="dark"] b,
-[data-bs-theme="dark"] span {
-    color: #bbb !important;
-}
-
-/* Main content areas */
 [data-bs-theme="light"] .content-area,
 [data-bs-theme="light"] .panel-content,
 [data-bs-theme="light"] .card-body,
 [data-bs-theme="light"] .modal-content,
 [data-bs-theme="light"] .table,
 [data-bs-theme="light"] .list-group-item {
-    color: #212529;
-    background-color: #ffffff;
+    color: var(--bs-body-color, #212529);
+    background-color: var(--bs-body-bg, #ffffff);
 }
 
 [data-bs-theme="dark"] .content-area,
@@ -2348,36 +2370,32 @@ nav .lbbuttonsel2 {
 [data-bs-theme="dark"] .modal-content,
 [data-bs-theme="dark"] .table,
 [data-bs-theme="dark"] .list-group-item {
-    color: #f8f9fa;
-    background-color: #212529;
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-body-bg, #212529);
 }
 
 /* Form elements */
 [data-bs-theme="light"] .form-control,
 [data-bs-theme="light"] .form-select,
-[data-bs-theme="light"] label,
-[data-bs-theme="light"] input,
-[data-bs-theme="light"] textarea,
-[data-bs-theme="light"] select,
+[data-bs-theme="light"] .form-label,
+[data-bs-theme="light"] .form-text,
 [data-bs-theme="light"] .ms-2 {
-    color: #212529;
+    color: var(--bs-body-color, #212529);
 }
 
 [data-bs-theme="dark"] .form-label,
 [data-bs-theme="dark"] .form-text,
-[data-bs-theme="dark"] label,
 [data-bs-theme="dark"] .ms-2 {
-    color: #f8f9fa;
+    color: var(--bs-body-color, #f8f9fa);
 }
 
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select {
-    background-color: #2b3035;
-    border-color: #6c757d;
-    color: #f8f9fa;
+    background-color: var(--bs-tertiary-bg, #2b3035);
+    border-color: var(--bs-border-color, #6c757d);
+    color: var(--bs-body-color, #f8f9fa);
 }
 
-/* Ensure form controls are visible in dark mode */
 [data-bs-theme="dark"] input[type="text"],
 [data-bs-theme="dark"] input[type="password"],
 [data-bs-theme="dark"] input[type="email"],
@@ -2385,17 +2403,15 @@ nav .lbbuttonsel2 {
 [data-bs-theme="dark"] textarea,
 [data-bs-theme="dark"] select,
 [data-bs-theme="dark"] .form-select {
-    color: #f8f9fa !important;
-    background-color: #2b3035 !important;
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
 }
 
-/* Fix for select dropdown options in dark mode */
 [data-bs-theme="dark"] select option {
-    color: #f8f9fa !important;
-    background-color: #2b3035 !important;
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
 }
 
-/* Ensure checkboxes are visible in both light and dark mode */
 [data-bs-theme="light"] input[type="checkbox"] {
     opacity: 1 !important;
     appearance: checkbox !important;
@@ -2411,23 +2427,29 @@ nav .lbbuttonsel2 {
     appearance: checkbox !important;
 }
 
-/* Ensure select dropdown remains visible when focused */
 [data-bs-theme="dark"] select:focus {
-    color: #f8f9fa !important;
-    background-color: #2b3035 !important;
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 
-/* Fix for placeholder text in inputs */
-[data-bs-theme="dark"] ::placeholder {
-    color: #adb5bd !important;
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: var(--bs-secondary-color, #adb5bd);
     opacity: 1;
 }
 
-/* Ensure labels are visible in dark mode */
-[data-bs-theme="dark"] label {
-    color: #f8f9fa !important;
+/* Preserve Bootstrap floating-label behavior in dark themes. */
+[data-bs-theme="dark"] .form-floating > .form-control::placeholder,
+[data-bs-theme="dark"] .form-floating > .form-control-plaintext::placeholder {
+    color: transparent !important;
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control-plaintext ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label {
+    color: rgba(var(--bs-body-color-rgb), 0.65) !important;
 }
 
 /* Buttons */
@@ -2523,20 +2545,6 @@ nav .lbbuttonsel2 {
 
 [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
     background-color: #6c757d;
-}
-
-.textnewui {
-    color: white !important;
-    font-weight: bold;
-    padding-top: 5px;
-    cursor: pointer;
-    position: absolute;
-    right: 0;
-    margin-right: 10px;
-}
-
-.LogoffLinkColor {
-    color:white !important;
 }
 
 .h2end {
