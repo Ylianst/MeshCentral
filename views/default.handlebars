@@ -1732,7 +1732,7 @@
             var logoutControl = '';
             if (logoutControls) {
                 if (logoutControls.name != null) { logoutControl = ('<span onmouseup=go(2) CLASS="LogoffLinkColor" style="cursor:pointer">' + format("Welcome {0}.", logoutControls.name) + '</span>'); }
-                if (logoutControls.logoutUrl != null) { logoutControl += format(' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'); }
+                if (logoutControls.logoutUrl != null) { logoutControl += ' <a href="' + logoutControls.logoutUrl + '" CLASS="LogoffLinkColor">' + "Logout" + '</a>'; }
             }
             if (args.hide & 1) { QH('logoutControlSpan2', logoutControl); } else { QH('logoutControlSpan', logoutControl); }
 
