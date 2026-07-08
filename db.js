@@ -28,7 +28,19 @@
 module.exports.CreateDB = function (parent, func) {
     var obj = {};
     var Datastore = null;
-    var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
+	var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
+	// If sessionrecording.maxrecordingdays set, use this is value
+	if (parent.args && parent.args.domains) {
+	  for (var d in parent.args.domains) {
+	    var domain = parent.args.domains[d];
+	    if (domain.sessionrecording && typeof domain.sessionrecording.maxrecordingdays == 'number') {
+	      var recordingDays = domain.sessionrecording.maxrecordingdays;
+	      if (recordingDays * 86400 > expireEventsSeconds) {
+	        expireEventsSeconds = recordingDays * 86400;
+	      }
+	    }
+	  }
+	}
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire server stats after 30 days (2592000). (Seconds * Minutes * Hours * Days)
     const common = require('./common.js');
