@@ -18,9 +18,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to release (e.g., 1.1.57)"
-        required: true
+        description: "Version to release (x.y.z). Leave empty for auto patch bump."
+        required: false
         type: string
+        default: ''
 
 env:
   REGISTRY: "ghcr.io"
@@ -32,6 +33,12 @@ env:
 # =============================================================================
 
 jobs:
+  version:
+    name: Resolve Version
+    uses: ./.github/workflows/version.yml
+    with:
+      version: ${{ inputs.version }}
+
   changes:
     name: Detect Changes
     uses: ./.github/workflows/changes.yml
@@ -42,11 +49,11 @@ jobs:
 
   build:
     name: "Build meshcentral"
-    needs: [changes]
+    needs: [version, changes]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && needs.changes.outputs.docker == 'true') ||
-      (github.event_name == 'workflow_dispatch' && inputs.version != '')
+      (github.event_name == 'workflow_dispatch' && needs.version.outputs.version != '')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,7 +94,7 @@ jobs:
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=raw,value=${{ needs.version.outputs.version }},enable=${{ needs.version.outputs.version != '' }}
           labels: |
             org.opencontainers.image.vendor=${{ env.ORGANISATION }}
             org.opencontainers.image.description=MeshCentral - full computer management web site
@@ -120,11 +127,11 @@ jobs:
 
   build_helm:
     name: "Build Helm Chart"
-    needs: [changes]
+    needs: [version, changes]
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' && needs.changes.outputs.helm == 'true') ||
-      (github.event_name == 'workflow_dispatch' && inputs.version != '')
+      (github.event_name == 'workflow_dispatch' && needs.version.outputs.version != '')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -137,7 +144,7 @@ jobs:
         with:
           name: meshcentral
           repository: ${{ github.repository }}/helm-charts
-          tag: ${{ inputs.version || '9.9.9' }}
+          tag: ${{ needs.version.outputs.version }}
           path: ./charts/meshcentral
           registry: ${{ env.REGISTRY }}
           registry_username: ${{ github.actor }}
@@ -146,16 +153,15 @@ jobs:
 
   release:
     name: "Create Release"
-    needs: [build, build_helm]
+    needs: [version, build, build_helm]
     runs-on: ubuntu-latest
-    if: ${{ !failure() && !cancelled() }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Generate release header
         run: |
-          VERSION="${{ inputs.version || 'latest' }}"
+          VERSION="${{ needs.version.outputs.version }}"
           cat > RELEASE_HEADER.md <<EOF
           ## Images
           - \`${{ env.REGISTRY }}/${{ github.repository }}/meshcentral:${VERSION}\`
@@ -168,8 +174,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.version || 'latest' }}
-          name: "🦩 ${{ inputs.version || 'latest' }}"
+          tag_name: ${{ needs.version.outputs.version }}
+          name: "🦩 ${{ needs.version.outputs.version }}"
           draft: false
           prerelease: ${{ github.event_name == 'push' }}
           token: ${{ secrets.GITHUB_TOKEN }}

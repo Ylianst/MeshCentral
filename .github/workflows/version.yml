@@ -1,0 +1,66 @@
+name: Resolve Version
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Version to release (x.y.z). Leave empty for auto patch bump."
+        required: false
+        type: string
+        default: ''
+    outputs:
+      version:
+        description: "Resolved release version"
+        value: ${{ jobs.version.outputs.version }}
+
+jobs:
+  version:
+    name: Resolve version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version_push.outputs.version || steps.version_dispatch.outputs.version }}
+    steps:
+      - name: Resolve version (push)
+        id: version_push
+        if: github.event_name != 'workflow_dispatch'
+        run: |
+          echo "push event: version resolves to latest"
+          echo "version=latest" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve version (dispatch)
+        id: version_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # Releases, not git tags: upstream's inherited bare tags and the 9.9.x sentinel outrank the real line under sort -V
+          latest=$(gh release list --limit 100 --exclude-drafts --exclude-pre-releases \
+            --json tagName --jq '.[].tagName' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v '^9\.9\.' | sort -V | tail -1 || true)
+          latest=${latest:-0.0.0}
+          IFS='.' read -r cur_major cur_minor cur_patch <<< "$latest"
+
+          if [ -z "$INPUT_VERSION" ]; then
+            version="${cur_major}.${cur_minor}.$((cur_patch + 1))"
+            echo "No version provided, auto patch bump: ${latest} -> ${version}"
+          else
+            if ! [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "Invalid version format: ${INPUT_VERSION} (expected x.y.z)"
+              exit 1
+            fi
+            IFS='.' read -r new_major new_minor new_patch <<< "$INPUT_VERSION"
+            if ! ([ "$new_major" -eq $((cur_major + 1)) ] && [ "$new_minor" -eq 0 ] && [ "$new_patch" -eq 0 ]) &&
+               ! ([ "$new_major" -eq "$cur_major" ] && [ "$new_minor" -eq $((cur_minor + 1)) ] && [ "$new_patch" -eq 0 ]) &&
+               ! ([ "$new_major" -eq "$cur_major" ] && [ "$new_minor" -eq "$cur_minor" ] && [ "$new_patch" -eq $((cur_patch + 1)) ]); then
+              echo "Invalid version bump: ${latest} -> ${INPUT_VERSION} (expected $((cur_major + 1)).0.0, ${cur_major}.$((cur_minor + 1)).0, or ${cur_major}.${cur_minor}.$((cur_patch + 1)))"
+              exit 1
+            fi
+            version="$INPUT_VERSION"
+            echo "Using provided version: ${version}"
+          fi
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
