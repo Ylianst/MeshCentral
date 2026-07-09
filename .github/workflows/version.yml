@@ -37,11 +37,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Releases, not git tags: upstream's inherited bare tags and the 9.9.x sentinel outrank the real line under sort -V
-          latest=$(gh release list --limit 100 --exclude-drafts --exclude-pre-releases \
-            --json tagName --jq '.[].tagName' \
-            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v '^9\.9\.' | sort -V | tail -1 || true)
-          latest=${latest:-0.0.0}
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Latest release tag '${latest}' is not x.y.z"; exit 1; }
           IFS='.' read -r cur_major cur_minor cur_patch <<< "$latest"
 
           if [ -z "$INPUT_VERSION" ]; then

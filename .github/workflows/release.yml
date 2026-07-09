@@ -144,7 +144,7 @@ jobs:
         with:
           name: meshcentral
           repository: ${{ github.repository }}/helm-charts
-          tag: ${{ needs.version.outputs.version }}
+          tag: ${{ needs.version.outputs.version == 'latest' && '9.9.9' || needs.version.outputs.version }}
           path: ./charts/meshcentral
           registry: ${{ env.REGISTRY }}
           registry_username: ${{ github.actor }}
@@ -154,6 +154,7 @@ jobs:
   release:
     name: "Create Release"
     needs: [version, build, build_helm]
+    if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
