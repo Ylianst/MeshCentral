@@ -30,6 +30,12 @@ function SerialTunnel(options) {
 if (!String.prototype.startsWith) { String.prototype.startsWith = function (searchString, position) { position = position || 0; return this.substr(position, searchString.length) === searchString; }; }
 if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchString, position) { var subjectString = this.toString(); if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) { position = subjectString.length; } position -= searchString.length; var lastIndex = subjectString.lastIndexOf(searchString, position); return lastIndex !== -1 && lastIndex === position; }; }
 
+// otplib v13+ ships as an ES module. On Node.js 22 before 22.12, require() of an ES module throws
+// ERR_REQUIRE_ESM unless started with --experimental-require-module. Preload it once via dynamic
+// import() so 2FA works on every runtime without a Node flag (systemd, Docker, PM2, launchd, pkg, ...).
+var otplib = null;
+import('otplib').then(function (mod) { otplib = mod; }, function () { otplib = null; });
+
 // Construct a HTTP server object
 module.exports.CreateWebServer = function (parent, db, args, certificates, doneFunc) {
     var obj = {}, i = 0;
@@ -1110,9 +1116,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Check Google Authenticator
-        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
-            const otplib = require('otplib');
-            const verified = otplib.verifySync({ 
+        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib != null)){
+            const verified = otplib.verifySync({
                 epochTolerance: 60, 
                 token: token, 
                 secret: user.otpsecret,

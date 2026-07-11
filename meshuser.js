@@ -19,6 +19,12 @@ const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3
 const conversionStatus = { "-1": "Unknown", 0: "Fully Decrypted", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
 const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
 
+// otplib v13+ ships as an ES module. On Node.js 22 before 22.12, require() of an ES module throws
+// ERR_REQUIRE_ESM unless started with --experimental-require-module. Preload it once via dynamic
+// import() so 2FA works on every runtime without a Node flag (systemd, Docker, PM2, launchd, pkg, ...).
+var otplib = null;
+import('otplib').then(function (mod) { otplib = mod; }, function () { otplib = null; });
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
     const fs = require('fs');
@@ -3765,8 +3771,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Request a one time password to be setup
-                        var otplib = null;
-                        try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { ws.send(JSON.stringify({ action: 'otpauth-request', err: 6 })); return; }
                         const secret = otplib.generateSecret(); // TODO: Check the random source of this value.
 
@@ -3797,10 +3801,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const twoStepLoginSupported = ((parent.parent.config.settings.no2factorauth !== true) && (domain.auth != 'sspi') && (parent.parent.certificates.CommonName.indexOf('.') != -1) && (args.nousers !== true));
                     if (twoStepLoginSupported) {
                         // Perform the one time password setup
-                        var otplib = null;
-                        try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { break; }
-                        const verified = require('otplib').verifySync({ 
+                        const verified = otplib.verifySync({
                             epochTolerance: 60, 
                             token: command.token, 
                             secret: command.secret,
