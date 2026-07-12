@@ -5486,13 +5486,22 @@ body.is-mobile #p13filetable {
 }
 
 .icon-preview-container {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    display: block;
     min-height: 44px;
 }
 
+.icon-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.icon-preview-row .text-muted {
+    flex: 0 0 auto;
+}
+
 .icon-preview-item {
+    flex: 0 0 auto;
     width: 64px;
     height: 64px;
     object-fit: contain;
@@ -5501,6 +5510,10 @@ body.is-mobile #p13filetable {
 .icon-customization .icon-preview-container .btn-outline-danger {
     color: var(--bs-danger) !important;
     border-color: var(--bs-danger) !important;
+}
+
+.icon-customization .icon-preview-container .icon-reset-button {
+    white-space: normal;
 }
 
 .icon-customization .icon-preview-container .btn-outline-danger:hover,

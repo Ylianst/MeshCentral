@@ -244,10 +244,12 @@ class IconUploadComponent {
                 <small class="text-muted d-block mb-3">Upload SVG, PNG or JPEG files up to ${CUSTOM_ICON_MAX_FILE_SIZE / 1048576} MB. PNG/JPEG files must be ${CUSTOM_ICON_MAX_DIMENSION} x ${CUSTOM_ICON_MAX_DIMENSION} pixels or smaller.</small>
 
                 <div class="icon-preview-container ${hasIcon ? '' : 'd-none'}" id="preview_container_${this.iconKey}">
-                    <small class="text-muted me-2">Preview:</small>
-                    <img class="icon-preview-item" id="preview_${this.iconKey}"
-                         src="${initialPreviewSrc}" alt="Icon preview" />
-                    <button class="btn btn-sm btn-outline-danger ms-auto" type="button"
+                    <div class="icon-preview-row">
+                        <small class="text-muted me-2">Preview:</small>
+                        <img class="icon-preview-item" id="preview_${this.iconKey}"
+                             src="${initialPreviewSrc}" alt="Icon preview" />
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger icon-reset-button w-100 mt-2" type="button"
                             onclick="window.iconUploadComponents['${this.iconKey}'].removeIcon()">
                         <i class="fas fa-times me-1"></i>Default icon
                     </button>
