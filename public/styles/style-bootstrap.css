@@ -423,7 +423,7 @@ body {
 }
 
 .textnewui {
-    color: white;
+    color: white !important;
     font-weight: bold;
     padding-top: 5px;
     cursor: pointer;
@@ -433,7 +433,7 @@ body {
 }
 
 .LogoffLinkColor {
-    color:white;
+    color: white !important;
 }
 
 #logoutControlSpan2 {
@@ -725,6 +725,10 @@ body {
     border-radius: 5px 5px 0 0;
     margin-bottom: 6px;
     cursor: move;
+}
+
+#dialogHeader .modal-title {
+    color: inherit !important;
 }
 
 #id_dialogclose {
@@ -1411,6 +1415,11 @@ NoMeshesPanel img {
     background-color: #DDD;
 }
 
+.mobileFileActionDropdown,
+.mobileActionDropdown {
+    display: none !important;
+}
+
 .pwState {
     display: table-cell;
     height: 16px;
@@ -1498,6 +1507,20 @@ NoMeshesPanel img {
     height: 200px;
     width: 200px;
     float: right;
+}
+
+#p6title {
+    align-items: flex-start !important;
+    min-height: 0;
+    position: relative;
+}
+
+#p6title > #MainMeshImage {
+    float: none;
+    object-fit: contain;
+    position: absolute;
+    right: 10px;
+    top: 0;
 }
 
 #DeskTools {
@@ -2294,10 +2317,286 @@ nav .lbbuttonsel2 {
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+    color: var(--title-color, #212529); /* fallback: dark gray */
 }
 
+/* Keep Bootstrap and Bootswatch surfaces readable when MeshCentral switches theme mode. */
+[data-bs-theme="light"] body,
+body[data-bs-theme="light"] {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="dark"] .h1,
+[data-bs-theme="dark"] h1,
 .night .h1 {
     background-image: linear-gradient(to right, #000 0%, #333 100%);
+    color: var(--bs-heading-color, #f8f9fa);
+}
+
+[data-bs-theme="light"] .modal-body h1,
+[data-bs-theme="light"] .modal-body h2,
+[data-bs-theme="light"] .modal-body h3,
+[data-bs-theme="light"] .modal-body h4,
+[data-bs-theme="light"] .modal-body h5,
+[data-bs-theme="light"] .modal-body h6,
+[data-bs-theme="light"] .card-body h1,
+[data-bs-theme="light"] .card-body h2,
+[data-bs-theme="light"] .card-body h3,
+[data-bs-theme="light"] .card-body h4,
+[data-bs-theme="light"] .card-body h5,
+[data-bs-theme="light"] .card-body h6,
+[data-bs-theme="light"] .fs-4,
+[data-bs-theme="light"] .content-heading,
+[data-bs-theme="light"] .panel-title {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .modal-body h1,
+[data-bs-theme="dark"] .modal-body h2,
+[data-bs-theme="dark"] .modal-body h3,
+[data-bs-theme="dark"] .modal-body h4,
+[data-bs-theme="dark"] .modal-body h5,
+[data-bs-theme="dark"] .modal-body h6,
+[data-bs-theme="dark"] .card-body h1,
+[data-bs-theme="dark"] .card-body h2,
+[data-bs-theme="dark"] .card-body h3,
+[data-bs-theme="dark"] .card-body h4,
+[data-bs-theme="dark"] .card-body h5,
+[data-bs-theme="dark"] .card-body h6,
+[data-bs-theme="dark"] .fs-4,
+[data-bs-theme="dark"] .content-heading,
+[data-bs-theme="dark"] .panel-title,
+.night h1,
+.night .fs-4,
+.night .content-heading,
+.night .panel-title {
+    color: var(--bs-heading-color, #f8f9fa);
+}
+
+[data-bs-theme="light"] .content-area,
+[data-bs-theme="light"] .panel-content,
+[data-bs-theme="light"] .card-body,
+[data-bs-theme="light"] .modal-content,
+[data-bs-theme="light"] .table,
+[data-bs-theme="light"] .list-group-item {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card,
+[data-bs-theme="light"] .modal-body,
+[data-bs-theme="light"] .modal-footer {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card-title,
+[data-bs-theme="light"] .card-text {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .content-area,
+[data-bs-theme="dark"] .panel-content,
+[data-bs-theme="dark"] .card-body,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .list-group-item {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-body-bg, #212529);
+}
+
+/* Form elements */
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .form-label,
+[data-bs-theme="light"] .form-text,
+[data-bs-theme="light"] .ms-2 {
+    color: #212529;
+}
+
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-control-sm,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .form-select-sm,
+[data-bs-theme="light"] textarea,
+[data-bs-theme="light"] select,
+[data-bs-theme="light"] input[type="text"],
+[data-bs-theme="light"] input[type="password"],
+[data-bs-theme="light"] input[type="email"],
+[data-bs-theme="light"] input[type="number"] {
+    color: #212529;
+    background-color: #ffffff;
+    border-color: #ced4da;
+}
+
+[data-bs-theme="light"] .form-control::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+[data-bs-theme="dark"] .form-label,
+[data-bs-theme="dark"] .form-text,
+[data-bs-theme="dark"] .ms-2 {
+    color: var(--bs-body-color, #f8f9fa);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--bs-tertiary-bg, #2b3035);
+    border-color: var(--bs-border-color, #6c757d);
+    color: var(--bs-body-color, #f8f9fa);
+}
+
+[data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] input[type="password"],
+[data-bs-theme="dark"] input[type="email"],
+[data-bs-theme="dark"] input[type="number"],
+[data-bs-theme="dark"] textarea,
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] .form-select {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+}
+
+[data-bs-theme="dark"] select option {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+}
+
+[data-bs-theme="light"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
+}
+
+[data-bs-theme="light"] input[type="checkbox"]:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+[data-bs-theme="dark"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
+}
+
+[data-bs-theme="dark"] select:focus {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: var(--bs-secondary-color, #adb5bd);
+    opacity: 1;
+}
+
+/* Preserve Bootstrap floating-label behavior in dark themes. */
+[data-bs-theme="dark"] .form-floating > .form-control::placeholder,
+[data-bs-theme="dark"] .form-floating > .form-control-plaintext::placeholder {
+    color: transparent !important;
+}
+
+[data-bs-theme="dark"] .form-floating > .form-control:focus ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control:not(:placeholder-shown) ~ label,
+[data-bs-theme="dark"] .form-floating > .form-control-plaintext ~ label,
+[data-bs-theme="dark"] .form-floating > .form-select ~ label {
+    color: rgba(var(--bs-body-color-rgb), 0.65) !important;
+}
+
+/* Buttons */
+[data-bs-theme="light"] .btn {
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+    color: #adb5bd;
+}
+
+/* Context menus */
+[data-bs-theme="light"] .contextMenu {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] .contextMenu {
+    background-color: #343a40;
+    border: 1px solid #495057;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="light"] .cmtext {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .cmtext {
+    color: #f8f9fa;
+}
+
+/* Navigation and headers */
+[data-bs-theme="light"] .topbar_td,
+[data-bs-theme="light"] .masthead {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .topbar_td,
+[data-bs-theme="dark"] .masthead {
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+/* Tables */
+[data-bs-theme="light"] .table,
+[data-bs-theme="light"] .table td,
+[data-bs-theme="light"] .table th,
+[data-bs-theme="light"] .table tr {
+    --bs-table-bg: #ffffff;
+    --bs-table-striped-bg: #f8f9fa;
+    --bs-table-hover-bg: #e9ecef;
+    color: #212529 !important;
+}
+
+/* Power state indicators in tables */
+[data-bs-theme="light"] .table .pwState {
+    border: 1px solid #dee2e6;
+    min-width: 2px;
+}
+
+[data-bs-theme="light"] .table .pwsBlack {
+    background-color: #212529 !important;
+}
+
+[data-bs-theme="light"] .table .pwsTransparent {
+    background-color: #f8f9fa !important;
+    border-left: none;
+    border-right: none;
+}
+
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: #212529;
+    --bs-table-striped-bg: #2c3034;
+    --bs-table-hover-bg: #32383e;
+    color: #f8f9fa;
+}
+
+/* Tabs */
+[data-bs-theme="light"] .nav-tabs .nav-link {
+    color: #495057;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+    color: #f8f9fa;
+}
+
+/* Custom scrollbars */
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb {
+    background-color: #adb5bd;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
 }
 
 .h2end {
@@ -2568,7 +2867,7 @@ body:not(.fullscreen) .notifiyBox {
     .notification:hover {
         background-color: #EFE8B6;
     }
-      
+
 #notificationBadge {
     box-shadow: -0.1px 1px 2px #000000;
     -webkit-box-shadow: -0.1px 1px 2px #000000;
@@ -3467,14 +3766,14 @@ body:not(.fullscreen) .notifiyBox {
 
 .sidebar .nav-link {
     font-size: xx-large;
-    
+
 }
 
 .nav-link {
     width: unset !important;
 }
 
-.nav { 
+.nav {
     --bs-nav-link-padding-x: 19px !important;
 }
 
@@ -3498,13 +3797,33 @@ body:not(.fullscreen) .notifiyBox {
     color: #000;
 }
 
-.table td,
-.table th {
-    padding: 0.05rem !important; /* Decrease padding to reduce row height */
+/* Keep Bootstrap close buttons visible across light and dark themes. */
+.btn-close {
+    background: #ffffff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    opacity: 0.8 !important;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.btn-close {
-    background-color: white !important;
+[data-bs-theme="dark"] .btn-close {
+    background: #2b3035 url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/*  Text directly displayed in div light/dark mode visibility */
+[data-bs-theme="light"] .col-md-10:not(.text-muted),
+[data-bs-theme="light"] .col-lg-10:not(.text-muted) {
+    color: #212529 !important;
+}
+
+[data-bs-theme="dark"] .col-md-10:not(.text-muted),
+[data-bs-theme="dark"] .col-lg-10:not(.text-muted) {
+    color: #f8f9fa !important;
+}
+
+.btn-close:hover {
     opacity: 1 !important;
 }
 
@@ -3526,18 +3845,1017 @@ body:not(.fullscreen) .notifiyBox {
     display: none !important;
 }
 
-/* hide .sidebar when on mobile */
+body.is-mobile #page_leftbar { display: none !important; }
+
+/* Device list: separator between items */
+/* List view (xxdevice2) rows — add padding and a subtle divider line */
+body.is-mobile #xdevices tr[name="xxdevice2"] > td:first-child {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+/* Group-header divs that are direct children of xdevices */
+body.is-mobile #xdevices > div { margin-top: 10px !important; }
+
+/* p5toolbarBottom: same transparent fix as p13toolbarBottom */
+#p5toolbarBottom .style6 { background: transparent !important; }
+
+/* All nav title bars (no back button): same style as device sub-panels
+   but with left padding instead of the blue back button.
+   Covers: My Devices(1) | My Events(3) | My Users(4) | My Files(5) |
+           My Server(6) | Stats(40) | Trace(41) | Plugins(42) |
+           User Groups(50) | Recordings(52) | My Reports(60) */
+body.is-mobile #p1title,
+body.is-mobile #p3title,  body.is-mobile #p4title,
+body.is-mobile #p5title,  body.is-mobile #p6title,
+body.is-mobile #p40title, body.is-mobile #p41title,
+body.is-mobile #p42title, body.is-mobile #p50title,
+body.is-mobile #p52title, body.is-mobile #p60title {
+    padding: 0 12px 0 15px !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
+    align-items: center !important;
+    display: flex !important;
+}
+body.night.is-mobile #p1title,
+body.night.is-mobile #p3title,  body.night.is-mobile #p4title,
+body.night.is-mobile #p5title,  body.night.is-mobile #p6title,
+body.night.is-mobile #p40title, body.night.is-mobile #p41title,
+body.night.is-mobile #p42title, body.night.is-mobile #p50title,
+body.night.is-mobile #p52title, body.night.is-mobile #p60title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* My Server: server icon small, right-aligned */
+body.is-mobile #MainMeshImage {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* "More" dropdowns: mobileActionDropdown (My Users/Files) +
+   mobileFileActionDropdown (Device Files tab) — shared styling 
+   Pill shape, item dividers, proper light/dark colours. */
+.mobileActionDropdown .dropdown-menu,
+.mobileFileActionDropdown .dropdown-menu {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.28) !important;
+    padding: 0 !important;
+    min-width: 200px !important;
+}
+.mobileActionDropdown .dropdown-item,
+.mobileFileActionDropdown .dropdown-item {
+    padding: 10px 16px !important;
+    font-size: 15px !important;
+    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+}
+.mobileActionDropdown .dropdown-item:last-child,
+.mobileFileActionDropdown .dropdown-item:last-child { border-bottom: none !important; }
+/* Dark mode */
+.night .mobileActionDropdown .dropdown-menu,
+.night .mobileFileActionDropdown .dropdown-menu {
+    background: #1c1c1e !important;
+    border-color: #3a3a3c !important;
+}
+.night .mobileActionDropdown .dropdown-item,
+.night .mobileFileActionDropdown .dropdown-item {
+    color: #e5e5e7 !important;
+    border-bottom-color: rgba(255,255,255,0.1) !important;
+    background: transparent !important;
+}
+.night .mobileActionDropdown .dropdown-item:hover,
+.night .mobileActionDropdown .dropdown-item:focus,
+.night .mobileFileActionDropdown .dropdown-item:hover,
+.night .mobileFileActionDropdown .dropdown-item:focus {
+    background: rgba(255,255,255,0.08) !important;
+    color: #fff !important;
+}
+
+/* Title bar text: consistent 1rem across ALL panel titles
+   One rule covers both device sub-panels (p10–p19) and main-nav panels
+   (p3–p6) so font size, colour and line-height are identical everywhere. */
+body.is-mobile #p3title .fs-4,  body.is-mobile #p4title .fs-4,
+body.is-mobile #p5title .fs-4,  body.is-mobile #p6title .fs-4,
+body.is-mobile #p10title .fs-4, body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4, body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4, body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4, body.is-mobile #p17title .fs-4,
+body.is-mobile #p19title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
+/* All main-nav panels: flex-column so content fills height
+   Covers My Events(3), My Users(4), My Files(5), My Server(6),
+   Server Stats(40)/Trace(41)/Plugins(42),
+   User Groups(50)/Recordings(52), My Reports(60) */
+body.is-mobile #p1,
+body.is-mobile #p3,  body.is-mobile #p4,
+body.is-mobile #p5,  body.is-mobile #p6,
+body.is-mobile #p20, body.is-mobile #p21,
+body.is-mobile #p30, body.is-mobile #p31,
+body.is-mobile #p40, body.is-mobile #p41,
+body.is-mobile #p42, body.is-mobile #p50,
+body.is-mobile #p51, body.is-mobile #p52,
+body.is-mobile #p60 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+body.is-mobile #p1title,  body.is-mobile #p3title,
+body.is-mobile #p4title,  body.is-mobile #p5title,
+body.is-mobile #p40title, body.is-mobile #p41title,
+body.is-mobile #p42title, body.is-mobile #p50title,
+body.is-mobile #p52title, body.is-mobile #p60title { flex-shrink: 0 !important; }
+/* Events list fills remaining space */
+body.is-mobile #p3events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Users list fills remaining space */
+body.is-mobile #p3users {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Files table fills remaining space */
+body.is-mobile #p5filetable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* My Server: p6info fills remaining space. Also handles xdevices for p1. */
+body.is-mobile #p6info,
+body.is-mobile #xdevices {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+/* Content areas that fill remaining flex height */
+body.is-mobile #p50groups,
+body.is-mobile #p52recordings,
+body.is-mobile #p41events,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+body.is-mobile #serverMainStats {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* User profile image: <picture> wraps a <img width="200" height="200">.
+   Must target the inner img since the HTML attribute beats CSS on the picture. */
+body.is-mobile #MainUserImage img,
+body.is-mobile #MainUserImageEx {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50%;
+    object-fit: cover;
+}
+/* Group/mesh image in p20 (group detail): same issue — target inner img */
+body.is-mobile #p20main #MainMeshImage img,
+body.is-mobile #p20main #MainMeshImage {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+/* Title text consistency: also cover the user/group detail panels */
+body.is-mobile #p40title .fs-4, body.is-mobile #p41title .fs-4,
+body.is-mobile #p42title .fs-4, body.is-mobile #p50title .fs-4,
+body.is-mobile #p51title .fs-4, body.is-mobile #p52title .fs-4,
+body.is-mobile #p60title .fs-4, body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
+body.is-mobile #MainSubMenuSpan,
+body.is-mobile #MeshSubMenuSpan,
+body.is-mobile #EventsSubMenuSpan,
+body.is-mobile #UserSubMenuSpan,
+body.is-mobile #UsersSubMenuSpan,
+body.is-mobile #ServerSubMenuSpan {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    height: clamp(44px, 13vw, 54px) !important;
+    z-index: 500 !important;
+    overflow: hidden !important;
+    background: #113962 !important;
+    border-top: 1px solid #000 !important;
+    display: flex;
+    align-items: stretch;
+}
+
+body.is-mobile #MainSubMenu,
+body.is-mobile #MeshSubMenu,
+body.is-mobile #EventsSubMenu,
+body.is-mobile #UserSubMenu,
+body.is-mobile #UsersSubMenu,
+body.is-mobile #ServerSubMenu {
+    /* Become a flex item that fills the span, and a flex container for the tr row */
+    display: flex !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: clamp(44px, 13vw, 54px) !important;
+    background: transparent !important;
+}
+
+/* tbody is an auto-inserted anonymous box — make it layout-transparent */
+body.is-mobile #MainSubMenu tbody,
+body.is-mobile #MeshSubMenu tbody,
+body.is-mobile #EventsSubMenu tbody,
+body.is-mobile #UserSubMenu tbody,
+body.is-mobile #UsersSubMenu tbody,
+body.is-mobile #ServerSubMenu tbody { display: contents !important; }
+
+/* tr becomes the flex item filling the table, and a flex container for the tds */
+body.is-mobile #MainSubMenu tr,
+body.is-mobile #MeshSubMenu tr,
+body.is-mobile #EventsSubMenu tr,
+body.is-mobile #UserSubMenu tr,
+body.is-mobile #UsersSubMenu tr,
+body.is-mobile #ServerSubMenu tr {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+body.is-mobile .topbar_td {
+    /* display:flex WITHOUT !important — makes the td a flex container so
+       align-items/justify-content center text, while still letting
+       QV()'s inline display:none override it for permission-hidden tabs. */
+    display: flex;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* Adaptive height and font: scales with viewport width.
+       clamp(min, preferred, max) — preferred grows with screen size via vw units. */
+    height: clamp(44px, 13vw, 54px) !important;
+    padding: 0 clamp(4px, 1.5vw, 10px) !important;
+    color: rgba(255,255,255,0.75) !important;
+    font-size: clamp(12px, 3.5vw, 15px) !important;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Trailing spacer td — hide it on mobile so it doesn't eat space from the right */
+body.is-mobile .topbar_td_end {
+    display: none !important;
+}
+
+body.is-mobile .topbar_td.style3x {
+    color: rgba(255,255,255,0.7) !important;
+    background: transparent !important;
+}
+
+body.is-mobile .topbar_td.style3x:hover,
+body.is-mobile .topbar_td.style3x:active {
+    background: rgba(255,255,255,0.12) !important;
+    color: #fff !important;
+}
+
+body.is-mobile .topbar_td.style3sel {
+    color: #fff !important;
+    background: rgba(255,255,255,0.18) !important;
+    border-bottom: 3px solid #fff !important;
+}
+
+/* Classic Mobile tab shuffle: the active device sub-tab is hidden from the bottom bar.
+   Hiding it frees up space so all other tabs remain visible without horizontal scroll.
+   Using display:none !important to beat QV()'s inline style. */
+/* mob-active-tab: replaced by scrollable submenu, no longer needed */
+/* body.is-mobile .mob-active-tab { display: none !important; } */
+
+/* Collapse #topbar to 0 height on mobile */
+body.is-mobile #topbar {
+    height: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide the main navigation row — accessible via the hamburger menu on mobile */
+body.is-mobile #MainMenuSpan { display: none !important; }
+
+/* Footer sits at bottom:0 z-index:1000 and covers the bottom tab bar */
+body.is-mobile #footer { display: none !important; }
+
+/* Container: full width, no side borders/margins. */
+body.is-mobile #container {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    padding-left: 0 !important;
+    grid-template-columns: 0 1fr !important;
+    grid-template-rows: 66px 0 auto 0 !important;
+}
+
+/* Content area: pad bottom so the fixed 44px tab bar doesn't overlap content */
+/* column_l: zero horizontal padding so structural bars (toolbars, title bars,
+   canvas, terminal) stretch edge-to-edge like a native app. Bottom padding
+   reserves space for the fixed 44px tab bar. */
+body.is-mobile #column_l {
+    /* Match padding-bottom to the tab bar height so nothing is hidden behind it */
+    padding: 0 0 clamp(44px, 13vw, 54px) 0 !important;
+}
+
+/* Content areas: 10px breathing room so text/cards/tables don't press against
+   screen edges. Structural bars, canvas, terminal stay full-width (not listed). */
+body.is-mobile #p10info,
+body.is-mobile #p2info,
+body.is-mobile #p6info,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info,
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap,
+body.is-mobile #p3events,
+body.is-mobile #p3users,
+body.is-mobile #p50groups,
+body.is-mobile #serverMainStats,
+body.is-mobile #p5filetable,
+body.is-mobile #p13filetable,
+body.is-mobile #p16events,
+body.is-mobile #p17info,
+body.is-mobile #p15agentConsole,
+body.is-mobile #p15agentConsoleText {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+/* Details tab: section header icons are 64px — too large on a phone.
+   The JS renders each section as <img src=details/xxx64.png width=64> in a
+   <td style=width:64px> table cell. Shrink to 32px on mobile. */
+body.is-mobile #p17info img[src*="details/"] {
+    width: 32px !important;
+    height: 32px !important;
+}
+body.is-mobile #p17info td[style*="width:64px"] {
+    width: 36px !important;
+}
+
+/* Panel title bar: full-width, masthead-integrated
+   #column_l has padding: 0 15px which makes everything 30px narrower than the
+   screen. Negative margins break the title bars out to true full width.
+   Back button: flush to left screen edge, masthead blue (#036), rounded on
+   the right only — visually "attached" to the masthead above. */
+
+body.is-mobile #p10title,
+body.is-mobile #p11title,
+body.is-mobile #p12title,
+body.is-mobile #p13title,
+body.is-mobile #p14title,
+body.is-mobile #p15title,
+body.is-mobile #p16title,
+body.is-mobile #p17title,
+body.is-mobile #p18title,
+body.is-mobile #p19title,
+body.is-mobile #p20title,
+body.is-mobile #p21title,
+body.is-mobile #p30title,
+body.is-mobile #p31title,
+body.is-mobile #p51title {
+    padding: 0 12px 0 0 !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0,0,0,0.15);
+    align-items: stretch !important;
+    gap: 0;
+}
+
+/* p20title is nested inside p20main which has padding-left/right: 10px.
+   Negative margins cancel that padding so the title bar spans full width. */
+/* p20title and p6title live inside their scrollable parent (p20main / p6info)
+   which has padding: 0 10px. Negative margins cancel that so they span full width. */
+body.is-mobile #p20title,
+body.is-mobile #p6title {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+/* Server console (p15) without the back button: add left indent to match
+   other title bars that DO have the back button providing the indent.
+   The JS adds class 'no-back-btn' to p15title when view is 115. */
+body.is-mobile #p15title.no-back-btn {
+    padding-left: 15px !important;
+}
+
+/* Option bars (areaHead) below the title bar: slightly tinted so they're
+   visually distinct from the pure-white title bar. Overrides --sub-menu-bg
+   (the white gradient) for a consistent look on all device panels. */
+body.is-mobile { --sub-menu-bg: #f0f2f5; }
+
+/* Night mode: keep the white title bar (it reads well as a card against the
+   dark column_l background). Only adjust the separator line colour. */
+body.night.is-mobile #p10title, body.night.is-mobile #p11title,
+body.night.is-mobile #p12title, body.night.is-mobile #p13title,
+body.night.is-mobile #p14title, body.night.is-mobile #p15title,
+body.night.is-mobile #p16title, body.night.is-mobile #p17title,
+body.night.is-mobile #p18title, body.night.is-mobile #p19title,
+body.night.is-mobile #p20title, body.night.is-mobile #p21title,
+body.night.is-mobile #p30title, body.night.is-mobile #p31title,
+body.night.is-mobile #p51title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* Back button: flush to screen left edge, masthead colour, pill-shaped right side */
+/* Back buttons: NO display:flex !important — QV() hides them with
+   element.style.display='none' (inline style). CSS !important would
+   override that, keeping the button visible even when it should hide
+   (e.g. server console reuses p15 but shouldn't show p15BackButton). */
+body.is-mobile #p10BackButton,
+body.is-mobile #p11BackButton,
+body.is-mobile #p12BackButton,
+body.is-mobile #p13BackButton,
+body.is-mobile #p14BackButton,
+body.is-mobile #p15BackButton,
+body.is-mobile #p16BackButton,
+body.is-mobile #p17BackButton,
+body.is-mobile #p18BackButton,
+body.is-mobile #p19BackButton,
+body.is-mobile #p20BackButton,
+body.is-mobile #p21BackButton,
+body.is-mobile #p30BackButton,
+body.is-mobile #p31BackButton,
+body.is-mobile #p51BackButton {
+    background: #036;
+    border-radius: 0 0 12px 0;
+    padding: 0 14px !important;
+    margin: 0 12px 0 0;
+    display: flex;     /* no !important — allows QV() to override with display:none */
+    align-items: center;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+body.is-mobile #p10BackButton .fa-square-caret-left,
+body.is-mobile #p11BackButton .fa-square-caret-left,
+body.is-mobile #p12BackButton .fa-square-caret-left,
+body.is-mobile #p13BackButton .fa-square-caret-left,
+body.is-mobile #p14BackButton .fa-square-caret-left,
+body.is-mobile #p15BackButton .fa-square-caret-left,
+body.is-mobile #p16BackButton .fa-square-caret-left,
+body.is-mobile #p17BackButton .fa-square-caret-left,
+body.is-mobile #p18BackButton .fa-square-caret-left,
+body.is-mobile #p19BackButton .fa-square-caret-left,
+body.is-mobile #p20BackButton .fa-square-caret-left,
+body.is-mobile #p21BackButton .fa-square-caret-left,
+body.is-mobile #p30BackButton .fa-square-caret-left,
+body.is-mobile #p31BackButton .fa-square-caret-left,
+body.is-mobile #p51BackButton .fa-square-caret-left {
+    color: #fff !important;
+    font-size: 1.2rem !important;
+}
+
+/* Title text: 1rem, dark, vertically centred, truncates with … when too long.
+   flex:1 + min-width:0 allows the text to shrink in the flex row. */
+body.is-mobile #p10title .fs-4,
+body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4,
+body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4,
+body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4,
+body.is-mobile #p17title .fs-4,
+body.is-mobile #p18title .fs-4,
+body.is-mobile #p19title .fs-4,
+body.is-mobile #p20title .fs-4,
+body.is-mobile #p21title .fs-4,
+body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4,
+body.is-mobile #p51title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Right-side icon containers in title bars: always a single horizontal row, never shrink. */
+body.is-mobile #devListToolbarViewIcons,
+body.is-mobile #devListToolbarViewIcons2,
+body.is-mobile #devListToolbarViewIcons3 {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Hide group/mesh name: JS appends <span class="deviceGroupName"> - GroupName </span> */
+body.is-mobile .deviceGroupName { display: none !important; }
+
+/* adjustPanels() computes panel heights from 100vh without knowing about the
+   44px fixed tab bar on mobile. Override each panel to add 44px to the offset
+   so content stops above the tab bar. !important beats the JS inline style. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap     { max-height: calc(100vh - 90px)  !important; }
+/* adjustPanels() sizes panels using calc(100vh - N). These overrides keep the
+   same N but use 100dvh so the browser URL bar is accounted for. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap     { max-height: calc(100dvh - 241px) !important; }
+body.is-mobile #p2info          { height:     calc(100dvh - 215px) !important;
+                                  max-height: calc(100dvh - 215px) !important; }
+body.is-mobile #p3events        { height:     calc(100dvh - 245px) !important; }
+body.is-mobile #p3users,
+body.is-mobile #p50groups       { max-height: calc(100dvh - 245px) !important; }
+body.is-mobile #serverMainStats { height:     calc(100dvh - 245px) !important;
+                                  max-height: calc(100dvh - 245px) !important; }
+body.is-mobile #p5filetable     { height:     calc(100dvh - 294px) !important; }
+
+/* All device panels: flex column that fills column_l's content height.
+   IMPORTANT: display and flex-direction must NOT have !important here.
+   QV() hides panels with element.style.display='none' (inline style).
+   CSS !important beats inline styles, so display:flex !important would
+   make panels impossible to hide and break tab navigation. Without
+   !important, inline style.display='none' correctly overrides the CSS. */
+body.is-mobile #p10,
+body.is-mobile #p11,
+body.is-mobile #p12,
+body.is-mobile #p13,
+body.is-mobile #p15,
+body.is-mobile #p16,
+body.is-mobile #p17 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Title bars: never collapse */
+body.is-mobile #p10title, body.is-mobile #p11title, body.is-mobile #p12title,
+body.is-mobile #p13title, body.is-mobile #p15title,
+body.is-mobile #p16title, body.is-mobile #p17title { flex-shrink: 0 !important; }
+
+/* p10 General: p10info fills remaining space and scrolls internally */
+body.is-mobile #p10info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p11 Desktop: same flex-column pattern as Console.
+   deskarea0 fills p11's remaining height as a flex column:
+     deskarea1 (connect bar)  -> flex-shrink:0, natural height
+     deskarea3x (canvas)      -> flex:1, fills all remaining space
+     deskarea4 (controls bar) -> flex-shrink:0, always visible at bottom
+   No !important on display/flex-direction so QV() can still hide deskarea0
+   if ever needed, but !important is fine for the structural properties. */
+body.is-mobile #deskarea0 {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+}
+body.is-mobile #deskarea1 { flex-shrink: 0 !important; }
+body.is-mobile #deskarea4 { flex-shrink: 0 !important; }
+body.is-mobile #deskarea3x,
+body.is-mobile .room4submenu #deskarea3x {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+
+/* p12 Terminal: termTable (div) fills remaining space; inner <table> is
+   absolutely positioned to span 100% so CSS table sizing distributes rows:
+   areaHead row -> min-height; termarea3x row -> fills remainder; areaFoot -> min-height */
+body.is-mobile #termTable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+body.is-mobile #termTable > table {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+body.is-mobile #termarea3x {
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+body.is-mobile #termarea3xdiv { height: 100% !important; }
+
+/* p15 Console: override CSS table display to flex-column so row heights
+   distribute correctly. display:flex on <table>/<tbody> is well-supported
+   and gives us proper flex semantics (no table-height-distribution quirks).
+   Row order: areaHead(shrink) | areaProgress(shrink) | output(flex:1) | input(shrink) */
+body.is-mobile #consoleTable {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+}
+body.is-mobile #consoleTable > tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+}
+/* All rows: block, don't grow (single-td rows so display:block is fine) */
+body.is-mobile #consoleTable > tbody > tr {
+    display: block !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+}
+/* td cells: when tr is display:block, td loses automatic table-cell width.
+   Make all td elements full-width block elements. */
+body.is-mobile #consoleTable > tbody > tr > td {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+/* Output row (3rd): fills all remaining space */
+body.is-mobile #consoleTable > tbody > tr:nth-child(3) {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+}
+/* p15agentConsole td: fills the flex output row, scrolls its content */
+body.is-mobile #p15agentConsole {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    display: block !important;
+}
+body.is-mobile #p15agentConsoleText {
+    height: auto !important;
+    max-height: none !important;
+    /* Base CSS hardcodes width:930px - overrides to full viewport width */
+    width: 100% !important;
+    max-width: 100% !important;
+    /* pre defaults to white-space:pre which never wraps, causing horizontal scroll.
+       pre-wrap preserves spacing/newlines but wraps at the container edge. */
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* p16 Events: events list fills remaining space after title + filter bar */
+body.is-mobile #p16events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p17 Details: details content fills remaining space */
+body.is-mobile #p17info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Prevent window-level scroll on mobile. */
+html.is-mobile,
+body.is-mobile {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+
+/* Center the remote desktop canvas inside its container on mobile. */
+body.is-mobile #DeskParent {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+body.is-mobile #Desk {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+/* Canvas area: 66px masthead + ~35px deskarea1 + ~35px deskarea4 + 44px tab-bar padding = 180px.
+   This makes total document height exactly 100vh with no page scroll needed. */
+body.is-mobile #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile .room4submenu #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile.fulldesk #deskarea3x {
+    max-height: 100% !important;
+    height: 100% !important;
+}
+
+/* Fullscreen mode: hide both toolbars so the canvas fills the entire viewport.
+   All controls move into the floating button panel. */
+body.is-mobile.fulldesk #p11title,
+body.is-mobile.fulldesk #deskarea1,
+body.is-mobile.fulldesk #deskarea4 { display: none !important; }
+
+/* Floating button: hidden normally, only shown in fullscreen on mobile */
+body.is-mobile.fulldesk #deskFsBtn { display: flex !important; }
+
+/* Sticky modifier key chips inside the More panel */
+.desk-mod-key {
+    border-radius: 6px;
+    background: var(--bs-secondary-bg, #e9ecef);
+    color: var(--bs-body-color, #212529);
+    border: 1px solid var(--bs-border-color, #ced4da);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 5px 8px;
+    min-width: 46px;
+    cursor: pointer;
+    line-height: 1;
+    text-align: center;
+}
+.desk-mod-key.armed {
+    background: rgba(234,179,8,0.85);
+    border-color: #ca8a04;
+    color: #000;
+}
+
+/* Top desktop toolbar: compact single row, horizontal scroll for overflow */
+/* deskarea1 (connect/disconnect bar): compact single row */
+body.is-mobile #deskarea1 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+/* Hide secondary/non-mobile-friendly items from the top desktop toolbar.
+   .deskareaicon (rotate L/R, view mode toggle) are kept — useful on mobile.
+   #idx_deskFullBtn2 (exit fullscreen ✖) shown only when actually in fullscreen,
+   vertically centred (float:right conflicts with flex parent). */
+body.is-mobile #autoconnectbutton1,
+body.is-mobile #connectbutton1rspan,
+body.is-mobile #connectbutton1hspan,
+body.is-mobile #desktopCustomUiButtons,
+body.is-mobile #desktopCustomUpperRight,
+body.is-mobile #deskFocusBtn { display: none !important; }
+
+body.is-mobile #idx_deskFullBtn2 { display: none !important; }
+body.is-mobile.fulldesk #idx_deskFullBtn2 {
+    display: flex !important;
+    align-items: center !important;
+    float: none !important;
+    align-self: center !important;
+}
+
+/* Bottom desktop toolbar: compact single row */
+body.is-mobile #deskarea4 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keyboard shortcut selector: constrain width on mobile so it doesn't
+   crowd the other buttons in the scrollable deskarea4 bar. */
+/* Keyboard shortcut selector: compact Bootstrap look on mobile */
+body.is-mobile #deskkeys {
+    max-width: 110px !important;
+    font-size: 11px !important;
+    /* ensure Bootstrap form-select styling is applied */
+    appearance: auto;
+}
+
+/* Type and keyboard toggle moved into More panel - free toolbar space */
+body.is-mobile #DeskType     { display: none !important; }
+body.is-mobile #DeskSoftKbdBtn { display: none !important; }
+
+/* Move Actions + Settings into the More panel on mobile */
+body.is-mobile #deskActionsBtn,
+body.is-mobile #deskActionsSettings { display: none !important; }
+
+/* Replace the desktop icon spray with the More button on mobile */
+body.is-mobile #deskarea4Icons { display: none !important; }
+body.is-mobile #deskMobileActions { display: flex !important; flex-shrink: 0 !important; }
+body.is-mobile #deskMobileActions .btn { white-space: nowrap !important; }
+/* Clipboard dialog button moved into the More panel on mobile */
+body.is-mobile #DeskClip { display: none !important; }
+
+
+
+/* fulldesk = remote-desktop fullscreen mode (body class added by deskToggleFull()).
+   NOT 'fullscreen' - that class is always on body in the Modern UI (it is the
+   normal grid layout mode) and would apply these rules to every mobile page view,
+   making column_l overflow-y:auto and creating a double scrollbar on all views. */
+body.is-mobile.fulldesk #container {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.is-mobile.fulldesk #column_l {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* Mobile landscape: reclaim vertical space 
+   'is-landscape' is toggled by JS on resize so deskAdjust() is also called,
+   ensuring the canvas recalculates dimensions immediately on rotation. */
+
+/* Hide panel title bars in landscape — saves ~50px; back nav still works
+   via the browser gesture or rotating back to portrait. */
+body.is-mobile.is-landscape #p11title,
+body.is-mobile.is-landscape #p12title,
+body.is-mobile.is-landscape #p13title { display: none !important; }
+
+/* Compact the connect/disconnect toolbar to save a few more pixels */
+body.is-mobile.is-landscape #deskarea1 {
+    min-height: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+
+/* Canvas scale-fill in landscape fullscreen.
+   deskAdjust() and onScreenSizeChange set portrait-sized pixel values via
+   inline styles. !important in CSS always beats inline styles, so the canvas
+   is permanently 100%x100% of DeskParent whenever both classes are present —
+   regardless of how many times deskAdjust() fires. */
+body.is-mobile.is-landscape.fulldesk #Desk {
+    width:  100% !important;
+    height: 100% !important;
+}
+body.is-mobile.is-landscape.fulldesk #DeskParent {
+    overflow: hidden !important;
+}
+
+/* Native 1:1 zoom: DeskParent becomes content-sized (native resolution) inside
+   deskarea3x. JS in dtouchmove manually sets deskarea3x.scrollLeft/Top to pan.
+   overflow:hidden on deskarea3x is kept (base CSS) — JS can still scroll it. */
+body.is-mobile.native-zoom #DeskParent {
+    position: relative !important;
+    display:  block !important;
+    width:    var(--native-desk-w, 100%) !important;
+    height:   var(--native-desk-h, 100%) !important;
+}
+body.is-mobile.native-zoom #Desk {
+    width:  100% !important;
+    height: 100% !important;
+}
+
+/* Mobile terminal */
+
+/* deskAdjust() sets termarea3x height via inline style based on desktop layout.
+   On mobile the offsets are different: 66px masthead + ~50px p12title +
+   ~44px areaHead + ~44px areaFoot + 44px bottom-tab-bar = 248px.
+   !important beats the inline style set by JS. */
+body.is-mobile #termarea3x {
+    height: calc(100vh - 252px) !important;
+}
+body.is-mobile #termarea3xdiv {
+    height: calc(100vh - 252px) !important;
+}
+
+/* Terminal toolbar and footer: scroll horizontally instead of wrapping rows */
+body.is-mobile #termTable .areaHead,
+body.is-mobile #termTable .areaFoot {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    align-items: center !important;
+}
+
+/* Files panel toolbar: same no-wrap treatment as Terminal (both rows) */
+body.is-mobile #p13toolbar .areaHead,
+body.is-mobile #p13toolbar .areaHead2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    align-items: center !important;
+}
+
+/* Files "More" dropdown: scrollable list so all items are reachable */
+body.is-mobile .mobileFileActionDropdown .dropdown-menu {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* On mobile, hide the Actions button from Terminal/Files toolbars — it wraps
+   on small screens and is accessible via device actions elsewhere. */
+body.is-mobile #termActionsBtn,
+body.is-mobile #filesActionsBtn { display: none !important; }
+
+/* Tab key button: hidden everywhere except mobile */
+body.is-mobile #tabbutton { display: inline-flex !important; }
+
+/*  Mobile files panel */
+
+/* p13filetable: flex:1 fills all remaining space in the p13 flex column,
+   replacing the fragile fixed-height calc. adjustPanels() inline style is
+   cancelled by height:auto !important. */
+body.is-mobile #p13filetable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p13toolbarBottom: the status bar below the file list (shows "3 files: 0 bytes").
+   style6 uses a white gradient background that appears as a visible bar in dark mode
+   on both desktop and mobile. Transparent inherits the panel background,
+   matching both light and dark themes. */
+#p13toolbarBottom .style6 {
+    background: transparent !important;
+}
+
+/* These apply on any narrow viewport (desktop narrow window, tablet, phone). */
 @media (max-width: 768px) {
-    #page_leftbar {
-        display: none !important;
+    #container,
+    .fullscreen #container,
+    #column_l,
+    .fullscreen #column_l {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        /* overflow: hidden (not overflow-x: hidden) — setting only one axis
+           forces the other to 'auto' per CSS spec, creating an unwanted scrollbar */
+        overflow: hidden;
+    }
+
+    /* masthead needs overflow:visible so its dropdown menu can extend below it */
+    #masthead {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        overflow: visible;
     }
 
     .fullscreen #container {
-        width: 100vw !important;
-        min-width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
+        grid-template-columns: 70px minmax(0, 1fr);
     }
 
     #masthead .title {
@@ -3562,18 +4880,108 @@ body:not(.fullscreen) .notifiyBox {
         gap: 0;
     }
 
-    .masthead-titles-container {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0;
-    }
-
     #masthead {
         background-size: 18rem 2.5rem !important;
         background-position: center left;
         background-repeat: no-repeat !important;
         padding-right: 20px !important;
     }
+
+    #p10info {
+        overflow-x: hidden !important;
+    }
+
+    #p10info > table {
+        table-layout: fixed;
+    }
+
+    #p10info > table > tbody > tr > td:first-child {
+        width: calc(100% - 140px) !important;
+    }
+
+    #p10info > table > tbody > tr > td:nth-child(2),
+    #p10info > table > tbody > tr > td:nth-child(3) {
+        width: 0 !important;
+    }
+
+    #p10info > table > tbody > tr > td:nth-child(4) {
+        width: 140px !important;
+    }
+
+    #p10info #MainComputerImage {
+        width: 120px;
+        height: 120px;
+    }
+
+    #p13toolbar,
+    #p13toolbar tbody,
+    #p13toolbar tr,
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2 {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2,
+    #p13toolbar .areaHead > .d-flex,
+    #p13toolbar .areaHead2 > .d-flex,
+    #p4toolbarActions,
+    #p4toolbarActions > .d-flex,
+    #p5filehead,
+    #p5filehead > .d-flex {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        min-width: 0;
+        row-gap: 4px;
+    }
+
+    #p13toolbar .areaHead {
+        column-gap: 4px;
+    }
+
+    #p13toolbar .areaHead > .d-flex.ms-auto {
+        margin-left: 0 !important;
+    }
+
+    #p13toolbar .areaHead input,
+    #p13toolbar .areaHead button,
+    #p13toolbar .areaHead2 input,
+    #p13toolbar .areaHead2 button,
+    #p4toolbarActions input,
+    #p4toolbarActions button,
+    #p5filehead input,
+    #p5filehead button {
+        margin-bottom: 4px;
+    }
+
+    #p5toolbar,
+    #p5toolbar tbody,
+    #p5toolbar tr,
+    #p5filehead,
+    #p5filesubhead {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #UserSearchInput {
+        max-width: 150px;
+    }
+
+    .desktopFileAction,
+    .desktopAction {
+        display: none !important;
+    }
+
+    .mobileFileActionDropdown,
+    .mobileActionDropdown {
+        display: inline-flex !important;
+    }
+
     #MainMeshImage /*, #p2AccountImageFrame */ {
         /* text-align: center !important; */
         float: none !important;
@@ -3585,6 +4993,7 @@ body:not(.fullscreen) .notifiyBox {
         float: none !important;
         text-align: left;
     }
+
     #userDropdown {
         display: flex !important;
     }
@@ -3602,17 +5011,6 @@ body:not(.fullscreen) .notifiyBox {
     }
 
     .userDropdownSubmenu {
-        right: 100%;
-        left: auto;
-        top: 13rem !important;
-        margin-left: 0;
-        margin-right: 4px;
-    }
-    .userDropdownUISettings {
-        position: relative;
-    }
-
-    .userDropdownSubmenu {
         position: static !important;
         right: auto !important;
         left: auto !important;
@@ -3625,7 +5023,11 @@ body:not(.fullscreen) .notifiyBox {
         padding: 0 !important;
         border-radius: 0 !important;
     }
-    
+
+    .userDropdownUISettings {
+        position: relative;
+    }
+
     .userDropdownMenuItem:hover {
         border-radius: unset !important;
     }
@@ -3638,25 +5040,13 @@ body:not(.fullscreen) .notifiyBox {
         margin-right: 40px;
     }
 
-    .notifiyBox:after {
-        margin-right: 40px;
-    }
-
     .notifiyBox:before {
         content: none;
     }
 
     body {
-        min-width: 100vw !important;
+        min-width: 0 !important;
     }
-
-
-    /* #container {
-        width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    } */
 }
 /* css fixes for select2 */
 /* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
@@ -3837,6 +5227,17 @@ body:not(.fullscreen) .notifiyBox {
     transform: rotate(90deg);
 }
 
+/* Icon customization modal preview */
+.icon-preview-container {
+    align-items: center;
+}
+
+.icon-preview-item {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
 @media (min-width: 769px) {
     .userDropdownSubmenu {
         position: absolute;
@@ -3851,4 +5252,95 @@ body:not(.fullscreen) .notifiyBox {
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Mobile scrollable submenu — desktop: wrapper divs are invisible pass-throughs */
+.mobile-submenu-scroll,
+.mobile-submenu-scroll-inner {
+    display: contents;
+}
+
+.mobile-submenu-arrow {
+    display: none;
+}
+
+/* Mobile: when MainSubMenuSpan is shown, make it a flex row for scrollable tabs.
+   No !important here so JS inline style="display:none" still hides it correctly. */
+body.is-mobile #MainSubMenuSpan {
+    align-items: center;
+    overflow: visible;
+    height: 24px;
+    position: relative;
+    z-index: 1;
+}
+body.is-mobile #MainSubMenuSpan:not([style*="display:none"]):not([style*="display: none"]) {
+    display: flex;
+}
+
+body.is-mobile .mobile-submenu-scroll {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner {
+    display: block;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+    min-width: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner::-webkit-scrollbar {
+    display: none;
+}
+
+body.is-mobile #MainSubMenu {
+    display: inline-table !important;
+    width: auto !important;
+    height: 24px;
+    table-layout: auto !important;
+}
+
+body.is-mobile #MainSubMenu .topbar_td {
+    width: auto !important;
+    min-width: unset !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    white-space: nowrap !important;
+}
+
+body.is-mobile .mobile-submenu-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 100%;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+}
+
+body.is-mobile .mobile-submenu-arrow:hover,
+body.is-mobile .mobile-submenu-arrow:active {
+    background: #505050;
+}
+
+body.is-mobile .mobile-submenu-arrow i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

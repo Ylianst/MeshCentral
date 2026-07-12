@@ -1,7 +1,0 @@
-[[[SERVERNAME]]] - Device Help Request
-Device "[[[DEVICENAME]]]" requested assistance.
-
-User: "[[[HELPUSERNAME]]]"
-Request: "[[[HELPREQUEST]]]"
-
-[[[SERVERURL]]]?viewmode=10&gotonode=[[[NODEID]]]

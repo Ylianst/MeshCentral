@@ -184,6 +184,9 @@ class ModernCard {
 // - `normalizePreviewUrl` for domain/path normalization
 // - `iconKey`, `label`, `currentValue` for per-instance identity and content
 // The component owns input/file/preview UI; persistence and status updates stay in page logic.
+const CUSTOM_ICON_MAX_FILE_SIZE = 10485760;
+const CUSTOM_ICON_MAX_DIMENSION = 64;
+
 class IconUploadComponent {
     constructor(iconKey, container, options = {}) {
         this.iconKey = iconKey;
@@ -205,6 +208,24 @@ class IconUploadComponent {
         try { return this.options.normalizePreviewUrl(value); } catch (ex) { return value; }
     }
 
+    getImageDimensions(file) {
+        return new Promise((resolve, reject) => {
+            // Read image dimensions locally before upload so oversized icons fail fast.
+            const imageUrl = URL.createObjectURL(file);
+            const image = new Image();
+            image.onload = function () {
+                const dimensions = { width: image.naturalWidth, height: image.naturalHeight };
+                URL.revokeObjectURL(imageUrl);
+                resolve(dimensions);
+            };
+            image.onerror = function () {
+                URL.revokeObjectURL(imageUrl);
+                reject(new Error('Unable to read uploaded icon dimensions.'));
+            };
+            image.src = imageUrl;
+        });
+    }
+
     render() {
         const hasIcon = this.options.currentValue.length > 0;
         const initialPreviewSrc = hasIcon ? this.getPreviewSrc(this.options.currentValue) : '';
@@ -220,6 +241,7 @@ class IconUploadComponent {
                         <i class="fas fa-upload me-2"></i>Upload
                     </button>
                 </div>
+                <small class="text-muted d-block mb-3">Upload SVG, PNG or JPEG files up to ${CUSTOM_ICON_MAX_FILE_SIZE / 1048576} MB. PNG/JPEG files must be ${CUSTOM_ICON_MAX_DIMENSION} x ${CUSTOM_ICON_MAX_DIMENSION} pixels or smaller.</small>
 
                 <div class="icon-preview-container ${hasIcon ? '' : 'd-none'}" id="preview_container_${this.iconKey}">
                     <small class="text-muted me-2">Preview:</small>
@@ -231,7 +253,7 @@ class IconUploadComponent {
                     </button>
                 </div>
 
-                <input type="file" class="d-none" accept=".svg,.png,image/svg+xml,image/png"
+                <input type="file" class="d-none" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg"
                        id="iconFile_${this.iconKey}"
                        onchange="window.iconUploadComponents['${this.iconKey}'].handleFileUpload(this)" />
             </div>
@@ -280,14 +302,29 @@ class IconUploadComponent {
 
         const button = this.container.querySelector('.btn-outline-primary');
         const originalContent = button.innerHTML;
+        const file = input.files[0];
 
         // Show loading state
         button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Uploading...';
         button.disabled = true;
 
         try {
+            if (!(/^image\/(svg\+xml|png|jpeg)$/i.test(file.type)) && !(/\.(svg|png|jpg|jpeg)$/i.test(file.name || ''))) { throw new Error('Only SVG, PNG and JPEG icon files are supported.'); }
+            if ((file.size < 4) || (file.size > CUSTOM_ICON_MAX_FILE_SIZE)) { throw new Error('Icon files must be non-empty and ' + (CUSTOM_ICON_MAX_FILE_SIZE / 1048576) + ' MB or smaller.'); }
+            var uploadFile = file;
+            if (/\.(svg)$/i.test(file.name || '') || /^image\/svg\+xml$/i.test(file.type || '')) {
+                // Ensure DOMPurify is loaded
+                if ((typeof DOMPurify === 'undefined') || (typeof DOMPurify.sanitize !== 'function')) { throw new Error('Unable to clean SVG icon in this browser.'); }
+                // Clean SVG file
+                const cleanedSvg = DOMPurify.sanitize(await file.text(), { USE_PROFILES: { svg: true, svgFilters: true } });
+                if ((typeof cleanedSvg !== 'string') || (cleanedSvg.search(/<svg[\s>]/i) < 0)) { throw new Error('Invalid SVG icon file.'); }
+                uploadFile = new File([cleanedSvg], file.name, { type: 'image/svg+xml', lastModified: file.lastModified });
+            } else {
+                const dimensions = await this.getImageDimensions(file);
+                if ((dimensions.width < 1) || (dimensions.height < 1) || (dimensions.width > CUSTOM_ICON_MAX_DIMENSION) || (dimensions.height > CUSTOM_ICON_MAX_DIMENSION)) { throw new Error('PNG/JPEG icon images must be ' + CUSTOM_ICON_MAX_DIMENSION + ' x ' + CUSTOM_ICON_MAX_DIMENSION + ' pixels or smaller.'); }
+            }
             if (this.options.onUpload) {
-                const result = await this.options.onUpload(this.iconKey, input.files[0]);
+                const result = await this.options.onUpload(this.iconKey, uploadFile);
 
                 // Show success state
                 button.innerHTML = '<i class="fas fa-check me-2"></i>Success!';
@@ -316,11 +353,13 @@ class IconUploadComponent {
         } catch (error) {
             // Show error state
             button.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Failed';
+            button.title = (error && error.message) ? error.message : '';
             button.classList.remove('btn-outline-primary');
             button.classList.add('btn-danger');
 
             setTimeout(() => {
                 button.innerHTML = originalContent;
+                button.title = '';
                 button.classList.remove('btn-danger');
                 button.classList.add('btn-outline-primary');
                 button.disabled = false;

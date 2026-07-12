@@ -141,6 +141,13 @@
 				return false;
 			});
 			
+			window.addEventListener('blur', function () {
+				if (!self.socket || !self.activeSession) return;
+				// Release modifiers so they can't get stuck on the remote after an Alt+Tab (issue #330).
+				var mods = [42, 54, 29, 57373, 56, 57400, 57435, 57436];
+				for (var i = 0; i < mods.length; i++) { self.socket.send(JSON.stringify(['scancode', mods[i], false])); }
+			});
+
 			return this;
         },
         /**

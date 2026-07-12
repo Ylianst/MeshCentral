@@ -518,16 +518,23 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return a text file from a remote HTTPS server
     obj.loadTextFile = function (url, tag, func) {
-        const u = require('url').parse(url);
+        const u = new URL(url);
         if (u.protocol == 'https:') {
             // Read from HTTPS
             const https = require('https');
-            https.get(url, function(resp) {
+            const options = { timeout: 10000 };
+            if (process.env['HTTPS_PROXY'] || process.env['HTTP_PROXY'] || process.env['https_proxy'] || process.env['http_proxy']) {
+                options.agent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTPS_PROXY'] || process.env['HTTP_PROXY'] || process.env['https_proxy'] || process.env['http_proxy']);
+            }
+            const req = https.get(url, options, function(resp) {
+                if (resp.statusCode < 200 || resp.statusCode >= 300) { resp.resume(); func(url, null, tag); return; }
                 var data = '';
                 resp.on('data', function(chunk) { data += chunk; });
-                resp.on('end', function () { func(url, data, tag); });
-                resp.on('error', function (chunk) { func(url, null, tag); });
-            }).on('error', function (err) { func(url, null, tag); });
+                resp.on('end', function() { func(url, data, tag); });
+                resp.on('error', function() { func(url, null, tag); });
+            });
+            req.on('error', function() { func(url, null, tag); });
+            req.on('timeout', function() { req.destroy(); func(url, null, tag); });
         } else if (u.protocol == 'file:') {
             // Read a file
             obj.fs.readFile(url.substring(7), 'utf8', function (err, data) {
@@ -538,7 +545,7 @@ module.exports.CertificateOperations = function (parent) {
 
     // Return the certificate of the remote HTTPS server
     obj.loadCertificate = function (url, hostname, tag, func) {
-        const u = require('url').parse(url);
+        const u = new URL(url);
         if (u.protocol == 'https:') {
             // Read the certificate from HTTPS
             if (hostname == null) { hostname = u.hostname; }

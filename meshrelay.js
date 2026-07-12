@@ -36,13 +36,11 @@ const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
 const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
 const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
 const MESHRIGHT_RELAY               = 0x00200000; // 2097152
-const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
 const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
 // Protocol:
 // 1 = Terminal
 // 2 = Desktop
-// 4 = Registry
 // 5 = Files
 // 6 = Admin PowerShell
 // 8 = User Shell
@@ -68,15 +66,6 @@ function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, extraKey,
         }
         func(found);
     });
-}
-
-function isProtocolAllowedByRights(rights, protocol) {
-    if ((rights == null) || (rights == MESHRIGHT_ADMIN)) { return true; }
-    if ((protocol == 1) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) { return false; }
-    if ((protocol == 2) && ((rights & MESHRIGHT_NODESKTOP) != 0)) { return false; }
-    if ((protocol == 4) && ((rights & MESHRIGHT_NOREGISTRY) != 0)) { return false; }
-    if ((protocol == 5) && ((rights & MESHRIGHT_NOFILES) != 0)) { return false; }
-    return true;
 }
 
 module.exports.CreateMeshRelay = function (parent, ws, req, domain, user, cookie) {
@@ -896,9 +885,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-                const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-                if ((obj.nouser !== true) && ((rights & 0x00200008) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return; }
-                if ((obj.nouser !== true) && (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false)) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                if ((obj.nouser !== true) && ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
@@ -911,6 +898,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 if (obj.id == null) { obj.id = parent.crypto.randomBytes(9).toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); } // If there is no connection id, generate one.
                 const command = { nodeid: cookie.nodeid, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?' + (obj.req.query.p != null ? ('p=' + obj.req.query.p + '&') : '') + 'id=' + obj.id + '&rauth=' + rcookie, tcpport: cookie.tcpport, tcpaddr: cookie.tcpaddr, soptions: {} };
                 if (user) { command.userid = user._id; }
+                if (typeof domain.terminaluservariable == 'string') { command.soptions.terminalUserVariable = domain.terminaluservariable; }
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                     if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -921,7 +909,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                     if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
+                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                     if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                     if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -946,9 +934,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-                const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-                if ((rights & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-                if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                if ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
@@ -969,7 +955,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
+                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                         if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -995,7 +981,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
+                        if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                         if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -1021,9 +1007,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const node = docs[0];
 
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-                const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-                if ((obj.nouser !== true) && ((rights & 0x00200008) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-                if ((obj.nouser !== true) && (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false)) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                if ((obj.nouser !== true) && ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0)) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
@@ -1057,7 +1041,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                     if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
-                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAautoAcceptIfFileNoUser = true; }
+                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                     if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                     if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -1086,9 +1070,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     const node = docs[0];
 
                     // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-                    const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-                    if ((rights & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-                    if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                    if ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
 
                     // Set nodeid and meshid
                     obj.nodeid = node._id;
@@ -1335,9 +1317,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
             obj.meshid = node.meshid;
 
             // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
-            const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
-            if ((rights & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-            if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+            if ((parent.GetNodeRights(obj.user, node.meshid, node._id) & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
 
             // Setup TCP client
             obj.client = new net.Socket();

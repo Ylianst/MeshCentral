@@ -119,6 +119,7 @@ function processBlock(state, block, err) {
 
                 switch (command) {
                     case 3: // Tile
+                        if (state.swidth == null) { break; }
                         var x = block.data.readUInt16BE(4);
                         var y = block.data.readUInt16BE(6);
                         var dimensions = require('image-size').imageSize(block.data.slice(8));

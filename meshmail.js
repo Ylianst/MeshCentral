@@ -31,6 +31,10 @@ module.exports.CreateMeshMail = function (parent, domain) {
     const sortCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
     const constants = (obj.parent.crypto.constants ? obj.parent.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
+    // Safe JSON stringify resistant to circular references.
+    // Node TLS errors (e.g. SMTP cert mismatch) include the certificate chain, where each X509 cert has an 'issuerCertificate' field pointing back at its issuer, closing the cycle. Plain JSON.stringify throws "Converting circular structure to JSON" and crashes the server. This helper drops cert-related fields and tracks seen objects via a WeakSet.
+    function safeStringify(o) { try { const seen = new WeakSet(); return JSON.stringify(o, function (k, v) { if (typeof v === 'object' && v !== null) { if (seen.has(v)) return '[Circular]'; seen.add(v); } if (k === 'issuerCertificate' || k === 'cert' || k === 'raw') return '[Cert]'; return v; }); } catch (ex) { return '[stringify-error: ' + ex.message + ']'; } }
+
     function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
 
@@ -488,15 +492,15 @@ module.exports.CreateMeshMail = function (parent, domain) {
                     sendNextMail();
                 }, function (error) {
                     obj.sendingMail = false;
-                    parent.debug('email', 'SendGrid sending error: ' + JSON.stringify(error));
+                    parent.debug('email', 'SendGrid sending error: ' + safeStringify(error));
                     obj.retry++;
                     // Wait and try again
                     if (obj.retry < 3) {
                         setTimeout(sendNextMail, 10000);
                     } else {
                         // Failed, send the next mail
-                        parent.debug('email', 'SendGrid server failed (Skipping): ' + JSON.stringify(err));
-                        console.log('SendGrid server failed (Skipping): ' + JSON.stringify(err));
+                        parent.debug('email', 'SendGrid server failed (Skipping): ' + safeStringify(err));
+                        console.log('SendGrid server failed (Skipping): ' + safeStringify(err));
                         obj.pendingMails.shift();
                         obj.retry = 0;
                         sendNextMail();
@@ -516,7 +520,7 @@ module.exports.CreateMeshMail = function (parent, domain) {
             } else {
                 // SMTP send
                 obj.smtpServer.sendMail(mailToSend, function (err, info) {
-                    parent.debug('email', 'SMTP response: ' + JSON.stringify(err) + ', ' + JSON.stringify(info));
+                    parent.debug('email', 'SMTP response: ' + safeStringify(err) + ', ' + JSON.stringify(info));
                     obj.sendingMail = false;
                     if (err == null) {
                         // Send the next mail
@@ -525,15 +529,15 @@ module.exports.CreateMeshMail = function (parent, domain) {
                         sendNextMail();
                     } else {
                         obj.retry++;
-                        parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + JSON.stringify(err));
-                        console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + JSON.stringify(err));
+                        parent.debug('email', 'SMTP server failed (Retry:' + obj.retry + '): ' + safeStringify(err));
+                        console.log('SMTP server failed (Retry:' + obj.retry + '/3): ' + safeStringify(err));
                         // Wait and try again
                         if (obj.retry < 3) {
                             setTimeout(sendNextMail, 10000);
                         } else {
                             // Failed, send the next mail
-                            parent.debug('email', 'SMTP server failed (Skipping): ' + JSON.stringify(err));
-                            console.log('SMTP server failed (Skipping): ' + JSON.stringify(err));
+                            parent.debug('email', 'SMTP server failed (Skipping): ' + safeStringify(err));
+                            console.log('SMTP server failed (Skipping): ' + safeStringify(err));
                             obj.pendingMails.shift();
                             obj.retry = 0;
                             sendNextMail();
@@ -558,8 +562,8 @@ module.exports.CreateMeshMail = function (parent, domain) {
                 // Remove all non-object types from error to avoid a JSON stringify error.
                 var err2 = {};
                 for (var i in err) { if (typeof (err[i]) != 'object') { err2[i] = err[i]; } }
-                parent.debug('email', 'SMTP mail server ' + obj.config.smtp.host + ' failed: ' + JSON.stringify(err2));
-                console.log('SMTP mail server ' + obj.config.smtp.host + ' failed: ' + JSON.stringify(err2));
+                parent.debug('email', 'SMTP mail server ' + obj.config.smtp.host + ' failed: ' + safeStringify(err2));
+                console.log('SMTP mail server ' + obj.config.smtp.host + ' failed: ' + safeStringify(err2));
             }
         });
     };

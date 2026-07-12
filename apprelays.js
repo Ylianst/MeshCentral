@@ -57,7 +57,6 @@ const MESHRIGHT_RESETOFF            = 0x00040000; // 262144
 const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
 const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
 const MESHRIGHT_RELAY               = 0x00200000; // 2097152
-const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
 const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
 // SerialTunnel object is used to embed TLS within another connection.
@@ -532,6 +531,11 @@ module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
     obj.socketContentLengthRemaining = 0;
     function processHttpData(data) {
         //console.log('processHttpData', data.length);
+        // If already in streaming mode, forward directly without accumulating to avoid memory leaks. This is used for streaming responses like SSE (Server-Sent Events).
+        if (obj.isStreaming) {
+            try { obj.res.write(data, 'binary'); } catch (ex) { }
+            return;
+        }
         obj.socketAccumulator += data;
         while (true) {
             //console.log('ACC(' + obj.socketAccumulator + '): ' + obj.socketAccumulator);
@@ -557,8 +561,15 @@ module.exports.CreateWebRelay = function (parent, db, args, domain, mtype) {
 
                 // Check if this is a streaming response
                 if ((obj.socketXHeader['content-type'] != null) && (obj.socketXHeader['content-type'].toLowerCase().indexOf('text/event-stream') >= 0)) {
-                    obj.isStreaming = true; // This tunnel is now a streaming tunnel and will not close anytime soon.
-                    if (obj.onNextRequest != null) obj.onNextRequest(); // Call this so that any HTTP requests that are waitting for this one to finish get handled by a new tunnel.
+                    obj.isStreaming = true;
+                    if (obj.onNextRequest != null) obj.onNextRequest();
+                    // Forward headers, then clear accumulator and switch to direct forward mode
+                    processHttpResponse(obj.socketXHeader, null, false);
+                    if (obj.socketAccumulator.length > 0) {
+                        try { obj.res.write(obj.socketAccumulator, 'binary'); } catch (ex) { }
+                        obj.socketAccumulator = ''; // Free the memory to avoid memory leaks
+                    }
+                    return; // Exit the while loop, future data handled directly
                 }
 
                 // Check if this HTTP request has a body

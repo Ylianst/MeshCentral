@@ -147,7 +147,7 @@ RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
-            npm install ssh2@1.16.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 otplib@12.0.1 yub@0.11.1;; \
+            npm install ssh2@1.17.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 yub@0.11.1;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
@@ -174,7 +174,7 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
             apk add --no-cache postgresql-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
-            npm install pg@8.14.1;; \
+            npm install pg@8.16.3;; \
         false|no|FALSE|NO) \
             echo "Not including PostgreSQL Tools.";; \
         *) \
@@ -187,7 +187,7 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
             apk add --no-cache mariadb-client && \
             cd meshcentral && \
             echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
-            npm install mariadb@3.4.0 mysql2@3.11.4;; \
+            npm install mariadb@3.4.5 mysql2@3.15.1;; \
         false|no|FALSE|NO) \
             echo "Not including MariaDB/MySQL Tools.";; \
         *) \

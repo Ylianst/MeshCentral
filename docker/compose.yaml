@@ -15,8 +15,8 @@ services:
       - meshcentral-web:/opt/meshcentral/meshcentral-web
       - meshcentral-backups:/opt/meshcentral/meshcentral-backups
     ports:
-      - ${PORT}:${PORT}
-      - ${REDIR_PORT}:${REDIR_PORT}
+      - 443:443
+      - 80:80
 volumes:
   meshcentral-data:
   meshcentral-files:

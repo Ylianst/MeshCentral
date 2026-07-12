@@ -167,9 +167,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_REMOTECOMMAND = 0x00020000;
     const MESHRIGHT_RESETOFF = 0x00040000;
     const MESHRIGHT_GUESTSHARING = 0x00080000;
-    const MESHRIGHT_DEVICEDETAILS = 0x00100000;
-    const MESHRIGHT_RELAY = 0x00200000;
-    const MESHRIGHT_NOREGISTRY = 0x00400000;
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
@@ -1113,12 +1110,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Check Google Authenticator
-        const otplib = require('otplib')
-        otplib.authenticator.options = { window: 2 }; // Set +/- 1 minute window
-        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6) && (otplib.authenticator.check(token, user.otpsecret) == true)) {
-            parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
-            func(true, { twoFactorType: 'otp' });
-            return;
+        if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
+            const otplib = require('otplib');
+            const verified = otplib.verifySync({ 
+                epochTolerance: 60, 
+                token: token, 
+                secret: user.otpsecret,
+                guardrails: otplib.createGuardrails({
+                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                })
+            });
+            if (verified.valid === true) {
+                parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
+                func(true, { twoFactorType: 'otp' });
+                return;
+            }
         };
 
         // Check written down keys
@@ -1366,11 +1372,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             // Wait and redirect the user
                             setTimeout(function () {
                                 req.session.loginmode = 4;
-                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; }
-                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; }
-                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; }
-                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; }
-                                if ((user.otpduo != null)) { req.session.tduo = 1; }
+                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; } else { delete req.session.temail; }
+                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; } else { delete req.session.tsms; }
+                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; } else { delete req.session.tmsg; }
+                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; } else { delete req.session.tpush; }
+                                if ((user.otpduo != null)) { req.session.tduo = 1; } else { delete req.session.tduo; }
                                 req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
                                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             }, randomWaitTime);
@@ -2973,7 +2979,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // If set and there is no user logged in, redirect the root page. Make sure not to redirect if /login is used
         if ((typeof domain.unknownuserrootredirect == 'string') && ((req.session == null) || (req.session.userid == null))) {
-            var q = require('url').parse(req.url, true);
+            var q = new URL(req.url, 'http://localhost');
             if (!q.pathname.endsWith('/login')) { res.redirect(domain.unknownuserrootredirect + getQueryPortion(req)); return; }
         }
 
@@ -3262,7 +3268,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
                 }
                 if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
-                    if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
+                    // backup function changed to support all types, only NeDB can be restored through the webinterface
+                    // if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
                     if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
                 }
 
@@ -4003,7 +4010,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
+                // The download page puts the filename inside a JavaScript string (var filename = '...'),
+                // so escape backslashes and single quotes to keep it inside that string.
+                var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
             }
         } else {
             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
@@ -4663,6 +4673,148 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return obj.path.join(obj.parent.datapath, 'icons', 'custom', userKey);
     }
 
+    // Maximum accepted custom icon upload size, in bytes.
+    const customIconMaxFileSize = 10485760;
+    // Maximum accepted width or height for uploaded PNG/JPEG sidebar icons, in pixels.
+    const customIconMaxDimension = 64;
+    // Image extensions accepted for uploaded custom sidebar icons.
+    const customIconAllowedExtensions = new Set(['.svg', '.png', '.jpg', '.jpeg']);
+
+    /**
+     * Return the HTTP response MIME type for a stored custom icon filename.
+     *
+     * @param {string} iconName Filename or path segment for the stored custom icon.
+     * @returns {string|null} MIME type for supported icons, or null for unsupported extensions.
+     */
+    function getCustomIconMimeType(iconName) {
+        const lower = iconName.toLowerCase();
+        if (lower.endsWith('.svg')) { return 'image/svg+xml'; }
+        if (lower.endsWith('.png')) { return 'image/png'; }
+        if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) { return 'image/jpeg'; }
+        return null;
+    }
+
+    /**
+     * Reject SVG content that can execute script or load external content.
+     *
+     * @param {string} svgContent Raw UTF-8 SVG content from the uploaded file.
+     * @returns {string|null} SVG content safe to store, or null if it is invalid or unsafe.
+     */
+    function cleanSvg(svgContent) {
+        if (typeof svgContent !== 'string') { return null; }
+        const cleaned = (svgContent.charCodeAt(0) === 0xFEFF) ? svgContent.substring(1) : svgContent;
+        if (cleaned.search(/<svg[\s>]/i) < 0) { return null; }
+        if (cleaned.search(/<\s*(script|foreignObject|iframe|object|embed|applet|link|meta)\b/i) >= 0) { return null; }
+        if (cleaned.search(/\s+on[a-z0-9_-]+\s*=/i) >= 0) { return null; }
+        if (cleaned.search(/\s+(href|xlink:href|src)\s*=\s*(['"]?)\s*(?!#)/i) >= 0) { return null; }
+        return cleaned;
+    }
+
+    /**
+     * Check if a JPEG marker is a Start Of Frame marker that contains image dimensions.
+     *
+     * @param {number} marker JPEG marker byte after the 0xFF prefix.
+     * @returns {boolean} True when the marker segment contains width and height fields.
+     */
+    function isJpegStartOfFrameMarker(marker) {
+        return ((marker >= 0xC0) && (marker <= 0xC3)) || ((marker >= 0xC5) && (marker <= 0xC7)) || ((marker >= 0xC9) && (marker <= 0xCB)) || ((marker >= 0xCD) && (marker <= 0xCF));
+    }
+
+    /**
+     * Read JPEG dimensions from header bytes without fully decoding the image.
+     *
+     * @param {Buffer} data Initial bytes from the uploaded JPEG file.
+     * @returns {{width:number,height:number}|null} Parsed dimensions, or null if the JPEG header is invalid or incomplete.
+     */
+    function getJpegDimensions(data) {
+        // JPEG files must start with the SOI marker.
+        if ((data.length < 4) || (data[0] !== 0xFF) || (data[1] !== 0xD8)) { return null; }
+        // Start scanning after the SOI marker.
+        var offset = 2;
+        while (offset + 9 < data.length) {
+            // Each JPEG segment starts with a marker prefix.
+            if (data[offset] !== 0xFF) { return null; }
+            // Skip fill bytes before the marker value.
+            while ((offset < data.length) && (data[offset] === 0xFF)) { offset++; }
+            const marker = data[offset++];
+            // SOI/EOI and restart markers do not carry segment lengths.
+            if ((marker === 0xD8) || (marker === 0xD9)) { continue; }
+            if ((marker >= 0xD0) && (marker <= 0xD7)) { continue; }
+            // Remaining markers should include a two-byte segment length.
+            if (offset + 2 > data.length) { return null; }
+            const segmentLength = data.readUInt16BE(offset);
+            if (segmentLength < 2) { return null; }
+            if (isJpegStartOfFrameMarker(marker)) {
+                // SOF payload layout: precision, height, width.
+                if (offset + 7 > data.length) { return null; }
+                return { width: data.readUInt16BE(offset + 5), height: data.readUInt16BE(offset + 3) };
+            }
+            // Move to the next marker segment.
+            offset += segmentLength;
+        }
+        return null;
+    }
+
+    /**
+     * Validate the raster image signature and extract dimensions for supported custom icon formats.
+     *
+     * @param {Buffer} data Initial bytes from the uploaded icon file.
+     * @param {string} extension Lowercase extension from the original uploaded filename.
+     * @returns {{width:number,height:number}|null} Parsed raster dimensions, or null if the signature/type is invalid.
+     */
+    function getCustomIconDimensions(data, extension) {
+        // PNG dimensions are fixed in the IHDR chunk at byte offsets 16 and 20.
+        if ((extension === '.png') && (data.length >= 24) && (data[0] === 0x89) && (data[1] === 0x50) && (data[2] === 0x4E) && (data[3] === 0x47) && (data[4] === 0x0D) && (data[5] === 0x0A) && (data[6] === 0x1A) && (data[7] === 0x0A)) {
+            return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
+        }
+        // JPEG dimensions are stored in the first SOF marker segment.
+        if (((extension === '.jpg') || (extension === '.jpeg')) && (data.length >= 3) && (data[0] === 0xFF) && (data[1] === 0xD8) && (data[2] === 0xFF)) {
+            return getJpegDimensions(data);
+        }
+        return null;
+    }
+
+    /**
+     * Enforce custom icon upload policy before moving the temp file into persistent storage.
+     * SVG files are checked for active content; PNG/JPEG files are signature and dimension checked.
+     *
+     * @param {string} iconTempPath Safe resolved path to the uploaded temp file.
+     * @param {string} extension Lowercase extension from the original uploaded filename.
+     * @param {function(string|null):void} callback Called with null on success, or a user-safe error message on failure.
+     */
+    function validateCustomIconFile(iconTempPath, extension, callback) {
+        obj.fs.stat(iconTempPath, function (statErr, stats) {
+            if (statErr) { callback('Unable to read uploaded icon.'); return; }
+            if ((stats == null) || (stats.isFile() !== true)) { callback('Invalid icon file.'); return; }
+            // Reject empty and oversized uploads before reading any file content.
+            if ((stats.size < 4) || (stats.size > customIconMaxFileSize)) { callback('Icon files must be non-empty and ' + (customIconMaxFileSize / 1048576) + ' MB or smaller.'); return; }
+            if (extension === '.svg') {
+                obj.fs.readFile(iconTempPath, 'utf8', function (readErr, svgContent) {
+                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
+                    const cleanedSvg = cleanSvg(svgContent);
+                    if (cleanedSvg == null) { callback('Invalid SVG icon file.'); return; }
+                    obj.fs.writeFile(iconTempPath, cleanedSvg, 'utf8', function (writeErr) {
+                        callback(writeErr ? 'Unable to clean uploaded SVG icon.' : null);
+                    });
+                });
+                return;
+            }
+            obj.fs.open(iconTempPath, 'r', function (openErr, fd) {
+                if (openErr) { callback('Unable to read uploaded icon.'); return; }
+                // Reading the first 64 KB is enough for normal PNG headers and JPEG SOF markers.
+                const header = Buffer.alloc(Math.min(stats.size, 65536));
+                obj.fs.read(fd, header, 0, header.length, 0, function (readErr, bytesRead) {
+                    obj.fs.close(fd, function () { });
+                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
+                    const dimensions = getCustomIconDimensions(header.slice(0, bytesRead), extension);
+                    if (dimensions == null) { callback('The uploaded icon does not match its file type.'); return; }
+                    if ((dimensions.width < 1) || (dimensions.height < 1) || (dimensions.width > customIconMaxDimension) || (dimensions.height > customIconMaxDimension)) { callback('Icon images must be ' + customIconMaxDimension + ' x ' + customIconMaxDimension + ' pixels or smaller.'); return; }
+                    callback(null);
+                });
+            });
+        });
+    }
+
     function handleCustomIconUpload(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -4671,9 +4823,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { res.sendStatus(401); return; }
 
         const multiparty = require('multiparty');
-        const form = new multiparty.Form();
+        const form = new multiparty.Form({ maxFilesSize: customIconMaxFileSize });
         form.parse(req, function (err, fields, files) {
-            if (err) { res.status(400).json({ success: false, error: 'Invalid form submission.' }); return; }
+            if (err) { res.status(400).json({ success: false, error: (err.status === 413) ? 'Icon files must be non-empty and ' + (customIconMaxFileSize / 1048576) + ' MB or smaller.' : 'Invalid form submission.' }); return; }
 
             const allowedTypes = { myDevices: 1, myAccount: 1, myEvents: 1, myFiles: 1, myUsers: 1, myServer: 1 };
             const iconType = (fields && fields.iconType && fields.iconType[0]) ? fields.iconType[0] : null;
@@ -4687,7 +4839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cleanupTempFile = function () { try { obj.fs.unlink(iconTempPath, function () { }); } catch (ex) { } };
 
             const extension = obj.path.extname(iconFile.originalFilename || '').toLowerCase();
-            if ((extension !== '.svg') && (extension !== '.png')) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG and PNG files are supported.' }); return; }
+            if (customIconAllowedExtensions.has(extension) === false) { cleanupTempFile(); res.status(400).json({ success: false, error: 'Only SVG, PNG and JPEG icon files are supported.' }); return; }
 
             const iconsRoot = obj.path.join(obj.parent.datapath, 'icons');
             const customDir = obj.path.join(iconsRoot, 'custom');
@@ -4700,27 +4852,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             const previousIcon = (fields && fields.previousIcon && fields.previousIcon[0]) ? fields.previousIcon[0] : null;
             const previousInfo = resolveCustomIconPath(previousIcon, user);
-            if ((previousInfo != null) && (previousInfo.isOwned === true)) {
-                try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
-            }
 
             const newFilename = iconType + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 8) + extension;
             const destinationPath = obj.path.join(userCustomDir, newFilename);
 
-            const respondSuccess = function () { res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename }); };
-
-            obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
-                if (renameErr == null) { respondSuccess(); return; }
-                if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
-                    obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
-                        cleanupTempFile();
-                        if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
-                        respondSuccess();
-                    });
-                } else {
-                    cleanupTempFile();
-                    res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+            const respondSuccess = function () {
+                if ((previousInfo != null) && (previousInfo.isOwned === true)) {
+                    try { obj.fs.unlinkSync(previousInfo.diskPath); } catch (ex) { }
                 }
+                res.json({ success: true, path: domain.url + 'icons/custom/' + userKey + '/' + newFilename });
+            };
+
+            validateCustomIconFile(iconTempPath, extension, function (validationError) {
+                if (validationError != null) { cleanupTempFile(); res.status(400).json({ success: false, error: validationError }); return; }
+                obj.fs.rename(iconTempPath, destinationPath, function (renameErr) {
+                    if (renameErr == null) { respondSuccess(); return; }
+                    if ((renameErr != null) && (renameErr.code === 'EXDEV')) {
+                        obj.common.copyFile(iconTempPath, destinationPath, function (copyErr) {
+                            cleanupTempFile();
+                            if (copyErr) { res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' }); return; }
+                            respondSuccess();
+                        });
+                    } else {
+                        cleanupTempFile();
+                        res.status(500).json({ success: false, error: 'Failed to save uploaded icon.' });
+                    }
+                });
             });
         });
     }
@@ -4754,7 +4911,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         const lower = iconName.toLowerCase();
-        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false)) { return null; }
+        if ((lower.endsWith('.svg') === false) && (lower.endsWith('.png') === false) && (lower.endsWith('.jpg') === false) && (lower.endsWith('.jpeg') === false)) { return null; }
         return { ownerKey: ownerKey, iconName: iconName, diskPath: diskPath, isOwned: isOwned, isLegacy: (pathParts.length === 1) };
     }
 
@@ -4786,11 +4943,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const iconInfo = resolveCustomIconPath('/icons/custom/' + req.params[0], user);
         if (iconInfo == null) { res.sendStatus(404); return; }
         if ((iconInfo.isLegacy !== true) && (iconInfo.isOwned !== true)) { res.sendStatus(404); return; }
-        const iconNameLower = iconInfo.iconName.toLowerCase();
+        const contentType = getCustomIconMimeType(iconInfo.iconName);
+        if (contentType == null) { res.sendStatus(404); return; }
 
         obj.fs.readFile(iconInfo.diskPath, function (err, data) {
             if (err) { res.sendStatus(404); return; }
-            res.set({ 'Content-Type': iconNameLower.endsWith('.png') ? 'image/png' : 'image/svg+xml' });
+            const headers = { 'Content-Type': contentType, 'X-Content-Type-Options': 'nosniff' };
+            if (contentType === 'image/svg+xml') { headers['Content-Security-Policy'] = "default-src 'none'; style-src 'unsafe-inline'; script-src 'none'; object-src 'none'; base-uri 'none'"; }
+            res.set(headers);
             res.send(data);
         });
     }
@@ -5873,7 +6033,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     };
 
     // Handle a server backup request
-    function handleBackupRequest(req, res) {
+    async function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
@@ -5883,23 +6043,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
 
-        // Require modules
-        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method to maximum.
-
-        // Good practice to catch this error explicitly
-        archive.on('error', function (err) { throw err; });
-
-        // Set the archive name
-        res.attachment((domain.title ? domain.title : 'MeshCentral') + '-Backup-' + new Date().toLocaleDateString().replace('/', '-').replace('/', '-') + '.zip');
-
-        // Pipe archive data to the file
-        archive.pipe(res);
-
-        // Append files from a glob pattern
-        archive.directory(obj.parent.datapath, false);
-
-        // Finalize the archive (ie we are done appending files but streams have to finish yet)
-        archive.finalize();
+        // start a new backup and async wait for it to finish with a timeout
+        if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
+        obj.db.performBackup();
+        const waitFor = ms => new Promise(res => setTimeout(res, ms));
+        var backupStart = Date.now();
+        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 120 * 1000)) {
+            await waitFor(2000);
+        }
+        if (obj.fs.existsSync(obj.db.newAutoBackupFile) && obj.db.performingBackup == false) {
+            res.setHeader('Content-Type', 'application/x-zip-compressed');
+            res.download(obj.db.newAutoBackupFile);
+        } else {
+            obj.parent.addServerWarning('handleBackupRequest: Backup error', true);
+            res.status(500).send("Backup error.");
+        }
     }
 
     // Handle a server restore request
@@ -5927,7 +6085,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
 
             res.set('Content-Type', 'text/html');
-            res.end('<html><body>Server must be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
+            const rootUrl = req.protocol + '://' + req.get('host') + (req.query.key ? '/?key=' + req.query.key : '/');
+            res.end('<html><body><script>setTimeout(function(){window.location.replace("' + rootUrl + '");}, 10000);</script>Server will be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
             parent.Stop(files.datafile[0].path);
         });
     }
@@ -6442,12 +6601,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.CheckWebServerOriginName = function (domain, req) {
         if (domain.allowedorigin === true) return true; // Ignore origin
         if (typeof req.headers.origin != 'string') return true; // No origin in the header, this is a desktop app
-        const originUrl = require('url').parse(req.headers.origin, true);
-        if (typeof originUrl.hostname != 'string') return false; // Origin hostname is not valid
+        let originUrl; try { originUrl = new URL(req.headers.origin); } catch (ex) { return false; }
+        if (!originUrl.hostname) return false; // Origin hostname is not valid
         if (Array.isArray(domain.allowedorigin)) return (domain.allowedorigin.indexOf(originUrl.hostname) >= 0); // Check if this is an allowed origin from an explicit list
-        if (obj.isTrustedCert(domain) === false) return true; // This server does not have a trusted certificate.
         if (domain.dns != null) return (domain.dns == originUrl.hostname); // Match the domain DNS
-        return (obj.certificates.CommonName == originUrl.hostname); // Match the default server name
+        return (obj.getWebServerName(domain, req) == originUrl.hostname); // Match the server hostname
     }
 
     // Create a OSX mesh agent installer
@@ -6520,11 +6678,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
         var meshexecutablename = 'meshagent';
-        var meshmpkgname = 'MeshAgent.mpkg';
+        var meshpkgname = 'MeshAgent.pkg';
         if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
             meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
             meshexecutablename = meshexecutablename.split('meshagent').join(domain.agentcustomization.filename);
-            meshmpkgname = meshmpkgname.split('MeshAgent').join(domain.agentcustomization.filename);
+            meshpkgname = meshpkgname.split('MeshAgent').join(domain.agentcustomization.filename);
         }
 
         // Customise the mesh agent display name
@@ -6549,62 +6707,29 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
         archive.pipe(res);
 
-        // Opens the "MeshAgentOSXPackager.zip"
-        var yauzl = require('yauzl');
-        yauzl.open(obj.path.join(__dirname, 'agents', 'MeshAgentOSXPackager.zip'), { lazyEntries: true }, function (err, zipfile) {
-            if (err) { res.sendStatus(500); return; }
-            zipfile.readEntry();
-            zipfile.on('entry', function (entry) {
-                if (/\/$/.test(entry.fileName)) {
-                    // Skip all folder entries
-                    zipfile.readEntry();
-                } else {
-                    if (entry.fileName == 'MeshAgent.mpkg/Contents/distribution.dist') {
-                        // This is a special file entry, we need to fix it.
-                        zipfile.openReadStream(entry, function (err, readStream) {
-                            readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
-                            readStream.on('end', function () {
-                                var meshname = mesh.name.split(']').join('').split('[').join(''); // We can't have ']]' in the string since it will terminate the CDATA.
-                                var welcomemsg = 'Welcome to the MeshCentral agent for MacOS\n\nThis installer will install the mesh agent for "' + meshname + '" and allow the administrator to remotely monitor and control this computer over the internet. For more information, go to https://meshcentral.com.\n\nThis software is provided under Apache 2.0 license.\n';
-                                var installsize = Math.floor((argentInfo.size + meshsettings.length) / 1024);
-                                archive.append(readStream.xxdata.toString().split('###DISPLAYNAME###').join(meshdisplayname).split('###WELCOMEMSG###').join(welcomemsg).split('###INSTALLSIZE###').join(installsize), { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) });
-                                zipfile.readEntry();
-                            });
-                        });
-                    } else if (entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchAgent.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64_LaunchDaemon.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Info.plist' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/postflight' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Resources/Postflight.sh' ||
-                        entry.fileName == 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/Uninstall.command' ||
-                        entry.fileName == 'MeshAgent.mpkg/Uninstall.command') {
-                            // This is a special file entry, we need to fix it.
-                            zipfile.openReadStream(entry, function (err, readStream) {
-                                readStream.on('data', function (data) { if (readStream.xxdata) { readStream.xxdata += data; } else { readStream.xxdata = data; } });
-                                readStream.on('end', function () {
-                                    var options = { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) };
-                                    if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
-                                    archive.append(readStream.xxdata.toString().split('###SERVICENAME###').join(meshservicename).split('###COMPANYNAME###').join(meshcompanyname).split('###EXECUTABLENAME###').join(meshexecutablename), options);
-                                    zipfile.readEntry();
-                                });
-                            });
-                    } else {
-                        // Normal file entry
-                        zipfile.openReadStream(entry, function (err, readStream) {
-                            if (err) { throw err; }
-                            var options = { name: entry.fileName.replace('MeshAgent.mpkg',meshmpkgname) };
-                            if (entry.fileName.endsWith('postflight') || entry.fileName.endsWith('Uninstall.command')) { options.mode = 493; }
-                            archive.append(readStream, options);
-                            readStream.on('end', function () { zipfile.readEntry(); });
-                        });
-                    }
-                }
-            });
-            zipfile.on('end', function () {
-                archive.file(argentInfo.path, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.bin'.replace('MeshAgent.mpkg',meshmpkgname) });
-                archive.append(meshsettings, { name: 'MeshAgent.mpkg/Contents/Packages/internal.pkg/Contents/meshagent_osx64.msh'.replace('MeshAgent.mpkg',meshmpkgname) });
-                archive.finalize();
-            });
+        // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
+        const macosInstallerOpts = {
+            agentPath: argentInfo.path,
+            meshSettings: meshsettings,
+            meshName: mesh.name.split(']').join('').split('[').join(''), // We can't have ']]' in the string since it will terminate the CDATA.
+            executableName: meshexecutablename,
+            packageName: meshpkgname,
+            displayName: meshdisplayname,
+            serviceName: meshservicename,
+            companyName: meshcompanyname
+        };
+
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.macosinstallerimage == 'string')) {
+            macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
+        }
+
+        require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
+            archive.append(installer.pkg, { name: meshpkgname });
+            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
+            archive.finalize();
+        }).catch(function (err) {
+            parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
+            try { res.sendStatus(500); } catch (ex) { }
         });
     }
 
@@ -8290,14 +8415,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 strategy.obj.openidClient.custom.setHttpOptionsDefaults({ agent: obj.httpsProxyAgent });
             }
             // Discover additional information if available, use endpoints from config if present
-            let issuer
-            try {
-                parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer}`);
-                issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
-            } catch (err) {
-                let error = new Error('OIDC: Discovery failed.', { cause: err });
-                parent.authLog('setupDomainAuthStrategy', `ERROR: ${JSON.stringify(error)} ISSUER_URI: ${strategy.issuer.issuer}`);
-                throw error
+            let issuer;
+            let attempts = 0;
+            const maxAttempts = 3;
+            while (attempts < maxAttempts) {
+                try {
+                    parent.authLog('setupDomainAuthStrategy', `OIDC: Discovering Issuer Endpoints: ${strategy.issuer.issuer} (Attempt ${attempts + 1}/${maxAttempts})`);
+                    issuer = await strategy.obj.openidClient.Issuer.discover(strategy.issuer.issuer);
+                    break; // Success!
+                } catch (err) {
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        console.log(`OIDC: Discovery failed. Retrying in 5 seconds... Error: ${err.message}`);
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    } else {
+                        parent.authLog('setupDomainAuthStrategy', `OIDC: Discovery failed after ${maxAttempts} attempts. OIDC will be disabled for this domain. Error: ${err.message} ISSUER_URI: ${strategy.issuer.issuer}`);
+                        parent.addServerWarning(`OIDC: Discovery failed. OIDC has been disabled for this domain. Error: ${err.message}`);
+                        return authStrategyFlags;
+                    }
+                }
             }
             if (Object.keys(strategy.issuer).length > 1) {
                 parent.authLog('setupDomainAuthStrategy', `OIDC: Adding Issuer Metadata: ${JSON.stringify(strategy.issuer)}`);
@@ -8430,7 +8567,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
 
                 // If profile is null/undefined or roles are requested, extract user info from the tokenset
-                if ((!profile || (strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
+                if ((!profile || (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) && !profile.roles) && tokenset && tokenset.id_token) {
                     try {
                         // Simple JWT decoder to extract user claims from id_token
                         const parts = tokenset.id_token.split('.');
@@ -8504,26 +8641,28 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
                         getGroups(user.preset, tokenset).then((groups) => {
                             user = Object.assign(user, { 'groups': groups });
-                            //done(null, user);
+							if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
+                                // Check also for roles
+		                        user.groups = (user.groups || []).concat(user.roles);
+		                    }
+		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
+		                    done(null, user);
                         }).catch((err) => {
                             let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                             parent.debug('error', `${JSON.stringify(error)}`);
                             parent.authLog('oidcCallback', error.message);
                             user.groups = [];
-                            //done(null, user);
+                            done(null, user);
                         });
-                    }
-                    if(strategy.custom.authorities.includes('roles')){
-                        if(user.roles){
-                            if(!strategy.custom.authorities.includes('groups')){
-                                user.groups = user.roles;
-                            } else {
-                                user.groups = (user.groups || []).concat(user.roles);
-                            }
+                    
+                    } else if (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) {
+                        // Only roles are requested
+                        if (user.roles) {
+                            user.groups = user.roles;
                         }
-                    }
-                    parent.authLog('OIDC: USER GROUPS/ROLES:', user);
-                    done(null, user);
+                        parent.authLog('OIDC: USER ROLES:', user);
+                        done(null, user);
+                    }  
                 } else {
                     done(null, user);
                 }
@@ -9352,7 +9491,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
         if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
         if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
-        if ((user.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
         if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
         if ((user.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
         if ((user.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
