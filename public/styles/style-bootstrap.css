@@ -4,6 +4,11 @@
     --sub-menu-color: #888;
 }
 
+[data-bs-theme="dark"] {
+    --sub-menu-bg: var(--bs-body-bg, #212529);
+    --sub-menu-color: var(--bs-body-color, #f8f9fa);
+}
+
 :focus {
     outline: 0;
 }
@@ -1146,7 +1151,8 @@ NoMeshesPanel img {
 
 [data-bs-theme="dark"] #xdevices,
 [data-bs-theme="dark"] #NoMeshesPanel,
-[data-bs-theme="dark"] #serverStatsTable {
+[data-bs-theme="dark"] #serverStatsTable,
+[data-bs-theme="dark"] #p10info {
     color: var(--bs-body-color, #f8f9fa);
     background-color: var(--bs-body-bg, #000);
 }
@@ -1166,7 +1172,12 @@ NoMeshesPanel img {
 [data-bs-theme="dark"] #serverStatsTable tbody,
 [data-bs-theme="dark"] #serverStatsTable tr,
 [data-bs-theme="dark"] #serverStatsTable td,
-[data-bs-theme="dark"] #serverStatsTable th {
+[data-bs-theme="dark"] #serverStatsTable th,
+[data-bs-theme="dark"] #p10info table,
+[data-bs-theme="dark"] #p10info tbody,
+[data-bs-theme="dark"] #p10info tr,
+[data-bs-theme="dark"] #p10info td,
+[data-bs-theme="dark"] #p10info th {
     color: inherit;
     background-color: transparent !important;
 }
