@@ -249,7 +249,7 @@ class IconUploadComponent {
                         <img class="icon-preview-item" id="preview_${this.iconKey}"
                              src="${initialPreviewSrc}" alt="Icon preview" />
                     </div>
-                    <button class="btn btn-sm btn-outline-danger icon-reset-button w-100 mt-2" type="button"
+                    <button class="btn btn-sm btn-danger icon-reset-button w-100 mt-2" type="button"
                             onclick="window.iconUploadComponents['${this.iconKey}'].removeIcon()">
                         <i class="fas fa-times me-1"></i>Default icon
                     </button>
