@@ -9578,7 +9578,13 @@
             QV('DeskBackgroundButton', inputAllowed && (deskState == 3) && (desktop.contype == 1) && (currentNode.agent) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && online);
             QV('DeskControlSpan', inputAllowed)
             QV('DeskRefreshButton', (deskState == 3) && (desktop.contype == 1))
-            if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); } else { Q('DeskControl').checked = false; }
+            // GetNodeRights() returns 0 when currentNode is null or its device group is not (yet) in the
+            // local "meshes" cache, which is indistinguishable from "no remote control right". Remote input
+            // is enforced server-side by the agent and the desktop multiplexor, so only clear the toggle when
+            // we could actually evaluate the rights, instead of silently unchecking it on a transient state.
+            var deskRightsKnown = (currentNode != null) && (meshes[currentNode.meshid] != null);
+            if (rights & 8) { Q('DeskControl').checked = (getstore('DeskControl', 1) == 1); }
+            else if (deskRightsKnown) { Q('DeskControl').checked = false; }
             QS('DeskControlSpan').color = Q('DeskControl').checked?null:'red';
 
             if (online == false) QV('DeskTools', false);
