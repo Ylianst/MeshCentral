@@ -1,5 +1,22 @@
-### STAGE 1 BUILDING.
-FROM debian:trixie-slim AS builder
+### STAGE 1 NODEJS BASE IMAGE
+
+FROM debian:trixie-slim AS node-base
+
+ARG NODE_MAJOR=24
+
+# Install general dependencies and nodesource's NodeJS
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends --no-install-suggests \
+        ca-certificates curl gnupg2 jq tzdata wget && \
+    mkdir -p /etc/apt/keyrings/ && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "Types: deb \nURIs: https://deb.nodesource.com/node_${NODE_MAJOR}.x/ \nSuites: nodistro \nComponents: main \nSigned-By: /etc/apt/keyrings/nodesource.gpg" > /etc/apt/sources.list.d/nodesource.sources && cat /etc/apt/sources.list.d/nodesource.sources && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends --no-install-suggests \
+        nodejs
+
+### STAGE 2 BUILDING MESHCENTRAL BASICS
+FROM node-base AS mesh-compiler
 
 # Any value inside one of the disable ARGs will be accepted.
 ARG DISABLE_EXTRACT="yes"
@@ -8,39 +25,34 @@ ARG DISABLE_TRANSLATE="yes"
 #    NODE_OPTIONS="--max_old_space_size=4096"
 # If your process gets OOM killed, perhaps the above will help.
 
-# Install nodesource's NodeJS
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --no-install-suggests \
-        nodejs npm && \
-    npm install -g npm@latest && \
-    mkdir -p /opt/meshcentral/meshcentral
+RUN mkdir -p /opt/meshcentral/meshcentral
 
 WORKDIR /opt/meshcentral
 COPY ./ /opt/meshcentral/meshcentral/
 
 # Check the Docker build arguments and if they are empty do the task.
 RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_TRANSLATE" ]; then \
-        echo -e "----------\nPREPARING ENVIRONMENT...\n----------"; \
+        echo "----------\nPREPARING ENVIRONMENT...\n----------"; \
         cd meshcentral && \
         npm install html-minifier-terser@7.2.0 jsdom@26.0.0 esprima@4.0.1 && \
         cd translate && \
         case "$DISABLE_EXTRACT" in \
             false|no|FALSE|NO) \
-                echo -e "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
+                echo "----------\nSTARTING THE EXTRACTING PROCESS...\n----------"; \
                 node translate.js extractall;; \
             *) \
                 echo "Setting EXTRACT as disabled.";; \
         esac && \
         case "$DISABLE_MINIFY" in \
             false|no|FALSE|NO) \
-                echo -e "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
+                echo "----------\nSTARTING THE MINIFYING PROCESS...\n----------"; \
                 node translate.js minifyall;; \
             *) \
                 echo "Setting MINIFY as disabled.";; \
         esac && \
         case "$DISABLE_TRANSLATE" in \
             false|no|FALSE|NO) \
-                echo -e "----------\nSTARTING THE TRANSLATING PROCESS...\n----------"; \
+                echo "----------\nSTARTING THE TRANSLATING PROCESS...\n----------"; \
                 node translate.js translateall;; \
             *) \
                 echo "Setting TRANSLATE as disabled.";; \
@@ -51,30 +63,27 @@ RUN if [ -n "$DISABLE_EXTRACT" ] || [ -n "$DISABLE_MINIFY" ] || [ -n "$DISABLE_T
 
 RUN rm -rf /opt/meshcentral/meshcentral/docker /opt/meshcentral/meshcentral/node_modules /opt/meshcentral/meshcentral/docs
 
-### STAGE 2 PRECOMPILE DEPS MODULE
+### STAGE 3 PRECOMPILE NODEJS DEPENDENCIES
 
-FROM debian:trixie-slim AS dep-compiler
+FROM node-base AS dep-compiler
 
 ENV NODE_ENV="production"
 
-# Install general dependencies and nodesource's NodeJS
 RUN apt-get update && \
-    echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
     apt-get install -y --no-install-recommends --no-install-suggests \
-        bash gcc g++ jq make nodejs npm python3 tzdata && \
-    npm install -g npm@latest
+        gcc g++ make python3
 
-COPY --from=builder /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
+COPY --from=mesh-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
 WORKDIR /opt/meshcentral/meshcentral
 
 RUN jq '.dependencies += {"modern-syslog": "1.2.0", "telegram": "2.26.22"}' package.json > temp.json && mv temp.json package.json \
-    && npm i --package-lock-only \
+    && npm install --package-lock-only \
     && npm ci --omit=dev \
     && npm cache clean --force
 
-### STAGE 3 fun. building from source...
+### STAGE 4 COMPILING MONGODB TOOLS AND DEPENDENCIES
 
-FROM golang:trixie AS mongo-tools-compiler
+FROM golang:trixie AS mongo-compiler
 
 ARG INCLUDE_MONGODB_TOOLS="false"
 
@@ -95,15 +104,13 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
             exit 1;; \
     esac
 
-### STAGE 4 BUILDING.
+### STAGE 5 COMPILING LAYERS AND FORGING MESHCENTRAL STATE
 
-FROM debian:trixie-slim AS finalizer
-
-ARG NODEJS_DOWNLOAD="https://nodejs.org/dist/v24.12.0/node-v24.12.0-linux-x64.tar.xz"
+FROM node-base AS finalizer
 
 # Copy files from previous layers
 COPY --from=dep-compiler /opt/meshcentral/meshcentral /opt/meshcentral/meshcentral
-COPY --from=mongo-tools-compiler /mongo-tools/bin/ /tmp/bin/
+COPY --from=mongo-compiler /mongo-tools/bin/ /tmp/bin/
 
 # environment variables
 ENV NODE_ENV="production" \
@@ -165,12 +172,7 @@ ENV MARIADB_HOST="" \
 
 WORKDIR /opt/meshcentral
 
-RUN apt-get update && \
-    echo -e "----------\nINSTALLING DEBIAN PACKAGES...\n----------"; \
-    apt-get install -y --no-install-recommends --no-install-suggests \
-        bash ca-certificates curl jq nodejs npm tzdata wget && \
-    npm install -g npm@latest && \    
-    rm -rfv \
+RUN rm -rfv \
         /var/cache/* \
         /usr/share/man/ \
         /usr/share/doc/ \
@@ -182,12 +184,12 @@ RUN apt-get update && \
 RUN case "$PREINSTALL_LIBS" in \
         true|yes|TRUE|YES) \
             cd meshcentral && \
-            echo -e "----------\nPREINSTALLING LIBRARIES...\n----------"; \
+            echo "----------\nPREINSTALLING LIBRARIES...\n----------"; \
             npm install ssh2@1.17.0 nodemailer@6.10.1 image-size@2.0.2 wildleek@2.0.0 yub@0.11.1;; \
         false|no|FALSE|NO) \
             echo "Not pre-installing libraries.";; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
+            echo "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
@@ -196,7 +198,7 @@ RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
             mv /tmp/bin/* /usr/bin; \
             cd meshcentral && \
-            echo -e "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
+            echo "----------\nPREINSTALLING MONGODB LIBRARIES...\n----------"; \
             npm install mongodb@4.17.2 @mongodb-js/saslprep@1.3.1;; \
         false|no|FALSE|NO) \
             echo "Not including MongoDB Tools.";; \
@@ -209,12 +211,12 @@ RUN case "$INCLUDE_POSTGRESQL_TOOLS" in \
         true|yes|TRUE|YES) \
             apt-get install -y --no-install-recommends --no-install-suggests postgresql-client-17; \
             cd meshcentral && \
-            echo -e "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
+            echo "----------\nPREINSTALLING POSTGRESQL LIBRARIES...\n----------"; \
             npm install pg@8.16.3;; \
         false|no|FALSE|NO) \
             echo "Not including PostgreSQL Tools.";; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
+            echo "Invalid value for build argument INCLUDE_POSTGRESQL_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 
@@ -222,12 +224,12 @@ RUN case "$INCLUDE_MARIADB_TOOLS" in \
         true|yes|TRUE|YES) \
             apt-get install -y --no-install-recommends --no-install-suggests default-mysql-client mariadb-client; \
             cd meshcentral && \
-            echo -e "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
+            echo "----------\nPREINSTALLING MARIADB/MYSQL LIBRARIES...\n----------"; \
             npm install mariadb@3.4.5 mysql2@3.15.1;; \
         false|no|FALSE|NO) \
             echo "Not including MariaDB/MySQL Tools.";; \
         *) \
-            echo -e "Invalid value for build argument INCLUDE_MARIADB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
+            echo "Invalid value for build argument INCLUDE_MARIADB_TOOLS, possible values: 'yes', 'true', 'no' or 'false'"; \
             exit 1;; \
     esac
 

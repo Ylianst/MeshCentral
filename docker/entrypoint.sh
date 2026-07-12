@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "NodeJS: $(node -v)"
+echo "NPM: $(npm -v)"
+
 # Origin: https://github.com/Melo-Professional/MeshCentral-Stylish-UI
 stylishui_base_url="https://github.com/Melo-Professional/MeshCentral-Stylish-UI/archive/refs"
 stylishui_compat="https://raw.githubusercontent.com/Melo-Professional/MeshCentral-Stylish-UI/refs/heads/main/metadata/compat.json"
