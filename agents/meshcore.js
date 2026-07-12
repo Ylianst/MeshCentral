@@ -368,7 +368,7 @@ function lockDesktop(uid) {
         case 'win32':
             {
                 var options = { type: 1, uid: uid };
-                var child = require('child_process').execFile('RunDll32.exe', ['user32.dll,LockWorkStation'], options);
+                var child = require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', ['/c', 'RunDll32.exe user32.dll,LockWorkStation'], options);
                 child.waitExit();
             }
             break;
@@ -956,7 +956,7 @@ function getRegistryFullPath(hiveName, path) {
 }
 
 function getRegistryExecutableCandidates() {
-    return ['reg.exe', 'C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
+    return ['C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
 }
 
 function runRegistryCommand(args, returnOutput) {

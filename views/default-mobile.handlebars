@@ -4166,7 +4166,7 @@
             QV('p10console', currentDevicePanel == 4);
             QV('p10terminal', currentDevicePanel == 5);
             var menus = [];
-            if (currentDevicePanel != 0) { menus.push({ n: "Summary", f: 'setupDeviceMenu(0)' }); }
+            if (currentDevicePanel != 0) { menus.push({ n: "General", f: 'setupDeviceMenu(0)' }); }
 
             if ((currentDevicePanel != 1) &&
                 (currentNode != null) &&
@@ -6060,7 +6060,7 @@
             QE('p18FolderUp', (registry != null) && ((registryCurrentHive != null) || (registryCurrentPath != '')));
             QV('p18subhead', registry != null);
             if ((registryRoots == null) && (registry == null)) {
-                QH('p18RootsInfo', 'Connect to load the first read-only Registry slice from the agent.');
+                QH('p18RootsInfo', "Connect to load the first read-only Registry slice from the agent.");
                 QH('p18roots', '');
                 p18setCurrentPath('Root');
             }
@@ -6083,7 +6083,7 @@
                     registryRoots = null;
                     registryCurrentHive = null;
                     registryCurrentPath = '';
-                    QH('p18RootsInfo', 'Connect to load the first read-only Registry slice from the agent.');
+                    QH('p18RootsInfo', "Connect to load the first read-only Registry slice from the agent.");
                     QH('p18roots', '');
                     p18setCurrentPath('Root');
                     if (registry != null) { registry.Stop(); registry = null; }
@@ -6119,7 +6119,7 @@
             registryCurrentHive = null;
             registryCurrentPath = '';
             p18setCurrentPath('Root');
-            QH('p18RootsInfo', 'Loading root hives...');
+            QH('p18RootsInfo', "Loading root hives...");
             if (registry != null) { registry.sendText({ action: 'listroots', reqid: 1 }); }
             setupRegistry();
         }
@@ -6128,7 +6128,7 @@
             registryCurrentHive = hive;
             registryCurrentPath = path || '';
             p18setCurrentPath(p18getDisplayPath(hive, registryCurrentPath));
-            QH('p18RootsInfo', 'Loading registry key...');
+            QH('p18RootsInfo', "Loading registry key...");
             if (registry != null) { registry.sendText({ action: 'list', reqid: 2, hive: hive, path: registryCurrentPath }); }
             setupRegistry();
         }
@@ -6155,7 +6155,7 @@
             if (registry == null) return false;
             var target = p18normalizePath(Q('p18currentpath').value);
             if (target == null) {
-                QH('p18RootsInfo', 'Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.');
+                QH('p18RootsInfo', "Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.");
                 return false;
             }
             if (target.hive == null) { p18requestRoots(); } else { p18requestKey(target.hive, target.path); }
@@ -6185,14 +6185,14 @@
             }
             if (data.action == 'listroots') {
                 registryRoots = data.roots || [];
-                QH('p18RootsInfo', (registryRoots.length > 0) ? 'Read-only root hives returned by the agent:' : 'No registry roots were returned.');
+                QH('p18RootsInfo', (registryRoots.length > 0) ? "Read-only root hives returned by the agent:" : "No registry roots were returned.");
                 var x = '', itemCount = 0;
                 for (var i = 0; i < registryRoots.length; i++) {
                     if (itemCount == 0) { x = p18renderRegistryHeader(); }
                     x += p18renderRegistryRow('hive', registryRoots[i], 'Hive', '', 'p18openRoot', encodeURIComponentEx(registryRoots[i]));
                     itemCount++;
                 }
-                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>No registry roots were returned.</i></div>'; }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
                 QH('p18roots', x);
                 setupRegistry();
             }
@@ -6215,8 +6215,8 @@
                         itemCount++;
                     }
                 }
-                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>Registry key is empty.</i></div>'; }
-                QH('p18RootsInfo', 'Read-only registry view.');
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "Registry key is empty." + '</i></div>'; }
+                QH('p18RootsInfo', "Read-only registry view.");
                 QH('p18roots', x);
                 setupRegistry();
             }

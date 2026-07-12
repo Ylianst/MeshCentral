@@ -231,7 +231,7 @@
                     <div id=MainSubMenuSpan style="display:none">
                         <table id=MainSubMenu cellpadding=0 cellspacing=0 class=style1>
                             <tr>
-                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">Summary</td>
+                                <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
@@ -675,7 +675,7 @@
             <div id=p9 style="display:none">
                 <div id="p9title">
                     <div id="p9BackButton"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
-                    <h1>Registry - <span id=p9deviceName></span></h1>
+                    <h1>Registry<span id=p9deviceName></span></h1>
                 </div>
                 <table id="p9toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -11615,9 +11615,9 @@
 
         function p9getRegistryItemDisplayType(item) {
             if (item == null) return '';
-            if (item.kind == 'hive') return 'Hive';
-            if (item.kind == 'key') return 'Key';
-            return item.type || 'Value';
+            if (item.kind == 'hive') return "Hive";
+            if (item.kind == 'key') return "Key";
+            return item.type || "Value";
         }
 
         function p9canEditValue(item) {
@@ -11657,24 +11657,24 @@
 
         function p9showSelectedDetails() {
             if (registrySelected == null) return false;
-            var title = 'Registry Details';
+            var title = "Registry Details";
             var fullPath = p9getSelectedFullPath();
             var x = '<div class=dialogText>';
-            x += '<div style=margin-bottom:8px><b>Kind:</b> ' + EscapeHtml(registrySelected.kind) + '</div>';
-            x += '<div style=margin-bottom:8px><b>Name:</b> ' + EscapeHtml(registrySelected.displayName) + '</div>';
-            x += '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(fullPath) + '</div>';
+            x += '<div style=margin-bottom:8px><b>' + "Kind:" + '</b> ' + EscapeHtml(registrySelected.kind) + '</div>';
+            x += '<div style=margin-bottom:8px><b>' + "Name:" + '</b> ' + EscapeHtml(registrySelected.displayName) + '</div>';
+            x += '<div style=margin-bottom:8px><b>' + "Path:" + '</b> ' + EscapeHtml(fullPath) + '</div>';
             if (registrySelected.kind == 'key') {
-                title = 'Registry Key';
-                x += '<div style=margin-bottom:8px><b>Type:</b> Key</div>';
+                title = "Registry Key";
+                x += '<div style=margin-bottom:8px><b>' + "Type:" + '</b> ' + "Key" + '</div>';
                 x += '<div style=color:#666>' + "Read-only mode is active. Use the Registry list to browse this key." + '</div>';
             } else if (registrySelected.kind == 'hive') {
-                title = 'Registry Hive';
-                x += '<div style=margin-bottom:8px><b>Type:</b> Hive</div>';
+                title = "Registry Hive";
+                x += '<div style=margin-bottom:8px><b>' + "Type:" + '</b> ' + "Hive" + '</div>';
                 x += '<div style=color:#666>' + "Read-only mode is active. Use the Registry list to browse this hive." + '</div>';
             } else {
-                title = 'Registry Value';
-                x += '<div style=margin-bottom:8px><b>Type:</b> ' + EscapeHtml(registrySelected.type) + '</div>';
-                x += '<div><b>Data:</b></div><div class=selecttext style=margin-top:4px;padding:6px;background-color:#EEE;border-radius:4px;white-space:pre-wrap;word-break:break-word>' + EscapeHtml(registrySelected.value) + '</div>';
+                title = "Registry Value";
+                x += '<div style=margin-bottom:8px><b>' + "Type:" + '</b> ' + EscapeHtml(registrySelected.type) + '</div>';
+                x += '<div><b>' + "Data:" + '</b></div><div class=selecttext style=margin-top:4px;padding:6px;background-color:#EEE;border-radius:4px;white-space:pre-wrap;word-break:break-word>' + EscapeHtml(registrySelected.value) + '</div>';
             }
             x += '</div>';
             setDialogMode(2, title, 1, null, x);
@@ -11754,7 +11754,7 @@
 
         function p9createRegistryKey() {
             if ((registry == null) || (registryCurrentHive == null)) return false;
-            setDialogMode(2, 'New Registry Key', 3, p9createRegistryKeyEx, '<div style=margin-bottom:8px><b>Parent:</b> ' + EscapeHtml(p9getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div><div style=margin-bottom:4px><b>Name</b></div><input type=text id=p9registryKeyNameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryKeyNameCheck") style=width:100% /><div style="margin-top:8px;color:#666">Registry keys use only a name. Type and data apply to values, not to branches.</div>');
+            setDialogMode(2, "New Registry Key", 3, p9createRegistryKeyEx, '<div style=margin-bottom:8px><b>' + "Parent:" + '</b> ' + EscapeHtml(p9getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div><div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryKeyNameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryKeyNameCheck") style=width:100% /><div style="margin-top:8px;color:#666">' + "Registry keys use only a name. Type and data apply to values, not to branches." + '</div>');
             focusTextBox('p9registryKeyNameInput');
             p9registryKeyNameCheck();
             return false;
@@ -11762,11 +11762,11 @@
 
         function p9createRegistryValue() {
             if ((registry == null) || (registryCurrentHive == null)) return false;
-            var x = '<div style=margin-bottom:8px><b>Parent:</b> ' + EscapeHtml(p9getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div>';
-            x += '<div style=margin-bottom:4px><b>Name</b></div><input type=text id=p9registryValueNameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryValueCreateCheck") style=width:100% />';
-            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Type</b></div><select id=p9registryValueTypeInput onchange=p9registryValueCreateCheck() style=width:100%>' + p9renderRegistryTypeOptions('REG_SZ') + '</select>';
-            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Data</b></div><textarea id=p9registryValueCreateInput onkeyup=p9registryValueCreateCheck(event) style=width:100%;height:120px;resize:none></textarea>';
-            setDialogMode(2, 'New Registry Value', 3, p9createRegistryValueEx, x);
+            var x = '<div style=margin-bottom:8px><b>' + "Parent:" + '</b> ' + EscapeHtml(p9getDisplayPath(registryCurrentHive, registryCurrentPath)) + '</div>';
+            x += '<div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryValueNameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryValueCreateCheck") style=width:100% />';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Type" + '</b></div><select id=p9registryValueTypeInput onchange=p9registryValueCreateCheck() style=width:100%>' + p9renderRegistryTypeOptions('REG_SZ') + '</select>';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Data" + '</b></div><textarea id=p9registryValueCreateInput onkeyup=p9registryValueCreateCheck(event) style=width:100%;height:120px;resize:none></textarea>';
+            setDialogMode(2, "New Registry Value", 3, p9createRegistryValueEx, x);
             focusTextBox('p9registryValueNameInput');
             p9registryValueCreateCheck();
             return false;
@@ -11775,11 +11775,11 @@
         function p9renameRegistryItem() {
             var item = p9getSelectedItem();
             if (item == null) return false;
-            if ((item.kind == 'value') && (item.rawName == '')) { messagebox('Registry', 'The default registry value cannot be renamed in this increment.'); return false; }
-            var x = '<div style=margin-bottom:8px><b>Current Name:</b> ' + EscapeHtml(item.displayName) + '</div>';
-            x += '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
-            x += '<div style=margin-bottom:4px><b>New Name</b></div><input type=text id=p9registryRenameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryRenameCheck") style=width:100% value="' + EscapeHtml(item.displayName) + '" />';
-            setDialogMode(2, 'Rename Registry Item', 3, p9renameRegistryItemEx, x, { item: { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName } });
+            if ((item.kind == 'value') && (item.rawName == '')) { messagebox("Registry", "The default registry value cannot be renamed in this increment."); return false; }
+            var x = '<div style=margin-bottom:8px><b>' + "Current Name:" + '</b> ' + EscapeHtml(item.displayName) + '</div>';
+            x += '<div style=margin-bottom:8px><b>' + "Path:" + '</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
+            x += '<div style=margin-bottom:4px><b>' + "New Name" + '</b></div><input type=text id=p9registryRenameInput maxlength=255 onkeyup=p9registryTextInputKeyUp(event,"p9registryRenameCheck") style=width:100% value="' + EscapeHtml(item.displayName) + '" />';
+            setDialogMode(2, "Rename Registry Item", 3, p9renameRegistryItemEx, x, { item: { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName } });
             focusTextBox('p9registryRenameInput');
             p9registryRenameCheck();
             return false;
@@ -11788,22 +11788,22 @@
         function p9deleteRegistryItems() {
             var items = p9getSelectedItems();
             if (items.length == 0) return false;
-            if (p9canDeleteSelection(items) == false) { messagebox('Registry', 'Deleting root hives is not allowed.'); return false; }
-            var x = (items.length > 1) ? format('Delete {0} selected registry items?', items.length) : 'Delete selected registry item?';
-            setDialogMode(2, 'Delete Registry Item', 3, p9deleteRegistryItemsEx, x);
+            if (p9canDeleteSelection(items) == false) { messagebox("Registry", "Deleting root hives is not allowed."); return false; }
+            var x = (items.length > 1) ? format("Delete {0} selected registry items?", items.length) : "Delete selected registry item?";
+            setDialogMode(2, "Delete Registry Item", 3, p9deleteRegistryItemsEx, x);
             return false;
         }
 
         function p9editRegistryValue() {
             var item = p9getSelectedItem();
             if ((item == null) || (item.kind != 'value')) return false;
-            if (p9canEditValue(item) == false) { messagebox('Registry', 'Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD.'); return false; }
-            var x = '<div style=margin-bottom:8px><b>Path:</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
-            x += '<div style=margin-bottom:4px><b>Name</b></div><input type=text id=p9registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
-            x += '<div style="margin-top:8px;margin-bottom:4px"><b>Type</b></div><select id=p9registryValueTypeEditInput onchange=p9registryValueEditCheck() style=width:100%>' + p9renderRegistryTypeOptions(item.type) + '</select>';
-            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">This type is currently shown as read-only.</div>'; }
+            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD."); return false; }
+            var x = '<div style=margin-bottom:8px><b>' + "Path:" + '</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
+            x += '<div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
+            x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Type" + '</b></div><select id=p9registryValueTypeEditInput onchange=p9registryValueEditCheck() style=width:100%>' + p9renderRegistryTypeOptions(item.type) + '</select>';
+            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
             x += '<textarea id=p9registryValueEditInput onkeyup=p9registryValueEditCheck(event) style=width:100%;height:140px;resize:none>' + EscapeHtml(item.value || '') + '</textarea>';
-            setDialogMode(2, 'Edit Registry Value', 3, p9editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
+            setDialogMode(2, "Edit Registry Value", 3, p9editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
             focusTextBox('p9registryValueEditInput');
             p9registryValueEditCheck();
             return false;
@@ -11902,7 +11902,7 @@
                     x += p9renderRegistryRow('hive', registryRoots[i], 'Hive', '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
                     itemCount++;
                 }
-                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>No registry roots were returned.</i></div>'; }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
                 QH('p9roots', x);
                 p9syncSelectionFromCheckboxes();
                 setupRegistry();
@@ -11927,7 +11927,7 @@
                         itemCount++;
                     }
                 }
-                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>Registry key is empty.</i></div>'; }
+                if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "Registry key is empty." + '</i></div>'; }
                 QH('p9roots', x);
                 p9syncSelectionFromCheckboxes();
                 setupRegistry();
@@ -11964,7 +11964,7 @@
             QE('p9currentpath', registry != null);
             p9syncSelectionFromCheckboxes();
             if ((registryRoots == null) && (registry == null)) {
-                p9setInfo('Connect to load the first read-only Registry slice from the agent.');
+                p9setInfo("Connect to load the first read-only Registry slice from the agent.");
                 QH('p9roots', '');
                 p9setCurrentPath('Root');
             }
@@ -11989,7 +11989,7 @@
                     registryCurrentPath = '';
                     registryLastData = null;
                     p9clearSelection();
-                    p9setInfo('Connect to load the first read-only Registry slice from the agent.');
+                    p9setInfo("Connect to load the first read-only Registry slice from the agent.");
                     QH('p9roots', '');
                     p9setCurrentPath('Root');
                     if (registry != null) { registry.Stop(); registry = null; }
@@ -12026,7 +12026,7 @@
             registryCurrentPath = '';
             p9clearSelection();
             p9setCurrentPath('Root');
-            p9setInfo('Loading root hives...');
+            p9setInfo("Loading root hives...");
             if (registry != null) { registry.sendText({ action: 'listroots', reqid: 1 }); }
             setupRegistry();
         }
@@ -12036,7 +12036,7 @@
             registryCurrentPath = path || '';
             p9clearSelection();
             p9setCurrentPath(p9getDisplayPath(hive, registryCurrentPath));
-            p9setInfo('Loading registry key...');
+            p9setInfo("Loading registry key...");
             if (registry != null) { registry.sendText({ action: 'list', reqid: 2, hive: hive, path: registryCurrentPath }); }
             setupRegistry();
         }
@@ -12063,7 +12063,7 @@
             if (registry == null) return false;
             var target = p9normalizePath(Q('p9currentpath').value);
             if (target == null) {
-                p9setInfo('Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.');
+                p9setInfo("Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.");
                 return false;
             }
             if (target.hive == null) { p9requestRoots(); } else { p9requestKey(target.hive, target.path); }
@@ -12093,13 +12093,13 @@
                 QH('p9roots', '');
                 return;
             }
-            if (data.action == 'createkey') { p9setInfo('Registry key created.'); p9refreshRegistry(); return; }
-            if (data.action == 'delete') { p9clearSelection(); p9setInfo('Registry item deleted.'); p9refreshRegistry(); return; }
-            if (data.action == 'setvalue') { p9setInfo('Registry value updated.'); p9refreshRegistry(); return; }
-            if (data.action == 'rename') { p9clearSelection(); p9setInfo('Registry item renamed.'); p9refreshRegistry(); return; }
+            if (data.action == 'createkey') { p9setInfo("Registry key created."); p9refreshRegistry(); return; }
+            if (data.action == 'delete') { p9clearSelection(); p9setInfo("Registry item deleted."); p9refreshRegistry(); return; }
+            if (data.action == 'setvalue') { p9setInfo("Registry value updated."); p9refreshRegistry(); return; }
+            if (data.action == 'rename') { p9clearSelection(); p9setInfo("Registry item renamed."); p9refreshRegistry(); return; }
             if (data.action == 'export') {
                 p9downloadTextFile(((registrySelected != null) ? registrySelected.displayName : 'registry-export') + '.reg', data.content || '');
-                p9setInfo('Registry key exported.');
+                p9setInfo("Registry key exported.");
                 return;
             }
             if ((data.action == 'listroots') || (data.action == 'list')) { registryLastData = data; p9renderRegistryData(); }
