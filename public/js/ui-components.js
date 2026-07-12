@@ -235,7 +235,7 @@ class IconUploadComponent {
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" id="iconInput_${this.iconKey}"
                            value="${this.options.currentValue}"
-                           placeholder="Enter URL or data URL for ${this.options.label} icon"
+                           placeholder="Enter URL"
                            oninput="window.iconUploadComponents['${this.iconKey}'].handleUrlInput(this)" />
                     <button class="btn btn-outline-primary" type="button" onclick="window.iconUploadComponents['${this.iconKey}'].triggerFileUpload()">
                         <i class="fas fa-upload me-2"></i>Upload

@@ -3095,6 +3095,8 @@
             if ((features2 & 0x00200000) != 0) { nNightMode = '2'; }
             if (nNightMode == '1') { nightMode = true; }
             else if ((nNightMode == '0') && (window.matchMedia)) { nightMode = window.matchMedia('(prefers-color-scheme: dark)').matches }
+            // Dark Bootswatch themes need Bootstrap dark mode so light-mode overrides do not break contrast.
+            if ((typeof MeshCentralTheme !== 'undefined') && MeshCentralTheme.isDarkBaseTheme(getstore('theme', 'default'))) { nightMode = true; }
             if (nightMode) {
                 document.documentElement.setAttribute('data-bs-theme', 'dark');
                 QC('body').add('night'); QS('body')['background-color'] = '#000';
@@ -16142,12 +16144,17 @@
 
         function account_switchThemeEx() {
             var themeSwitcher = document.getElementById('theme-switcher');
-            const selectedTheme = themeSwitcher.value;
-            const safeTheme = ((selectedTheme != 'default') ? encodeURIComponent(selectedTheme) : encodeURIComponent('..'));
-            var themeStylesheet = document.getElementById('theme-stylesheet');
-            themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
+            const selectedTheme = ((typeof MeshCentralTheme !== 'undefined') ? MeshCentralTheme.normalizeTheme(themeSwitcher.value) : themeSwitcher.value);
+            if (typeof MeshCentralTheme !== 'undefined') {
+                MeshCentralTheme.applyTheme(selectedTheme);
+            } else {
+                const safeTheme = ((selectedTheme != 'default') ? encodeURIComponent(selectedTheme) : encodeURIComponent('..'));
+                var themeStylesheet = document.getElementById('theme-stylesheet');
+                themeStylesheet.href = `styles/themes/${safeTheme}/bootstrap-min.css`;
+            }
             // Save selected theme
             putstore('theme', selectedTheme);
+            setNightMode();
             // Update last 4 themes selected
             var lastThemes = JSON.parse(getstore('lastThemes') || '[]');
             if (!lastThemes.includes(selectedTheme)) {
@@ -23695,11 +23702,11 @@
         function showIconCustomization() {
             customIconValues = loadCustomIconState();
             var visibleIconConfig = getVisibleCustomIconConfig();
-            var x = '<div class="container-fluid">';
+            var x = '<div class="container-fluid icon-customization">';
             x += '<div class="row mb-4">';
             x += '<div class="col-12">';
-            x += '<div class="d-flex align-items-center mb-3">';
-            x += '<div class="bg-primary bg-gradient rounded-circle p-3 me-3">';
+            x += '<div class="icon-customization-intro d-flex align-items-center mb-3">';
+            x += '<div class="icon-customization-intro-icon bg-primary rounded-circle p-3 me-3">';
             x += '<i class="fas fa-palette fa-2x text-white"></i>';
             x += '</div>';
             x += '<div>';
@@ -23710,16 +23717,16 @@
             x += '</div>';
             x += '</div>';
 
-            x += '<div class="row" id="iconCardsContainer">';
+            x += '<div class="row g-3" id="iconCardsContainer">';
             for (var i = 0; i < visibleIconConfig.length; i++) {
                 var cfg = visibleIconConfig[i];
                 var currentValue = customIconValues[cfg.key] || '';
                 var hasIcon = currentValue.length > 0;
 
-                x += '<div class="col-lg-6 col-xl-4 mb-3">';
-                x += '<div class="card modern-card h-100 ' + (hasIcon ? 'border-success' : '') + '" data-icon-key="' + cfg.key + '">';
+                x += '<div class="col-lg-6 col-xl-4">';
+                x += '<div class="card modern-card icon-customization-card h-100 ' + (hasIcon ? 'border-success' : '') + '" data-icon-key="' + cfg.key + '">';
                 x += '<div class="card-header d-flex align-items-center">';
-                x += '<div class="bg-light rounded-circle p-2 me-3">';
+                x += '<div class="icon-customization-card-icon rounded-circle p-2 me-3">';
                 x += '<i class="fas ' + getIconClass(cfg.key) + ' fa-lg text-secondary"></i>';
                 x += '</div>';
                 x += '<div class="flex-grow-1">';
@@ -23798,19 +23805,19 @@
             card.classList.remove('border-warning', 'border-success');
             if (state === 'custom') {
                 if (statusElement) {
-                    statusElement.className = 'text-success';
+                    statusElement.className = 'status-badge text-success';
                     statusElement.innerHTML = '<i class="fas fa-check-circle me-1"></i>Custom icon set';
                 }
                 card.classList.add('border-success');
             } else if (state === 'unsaved') {
                 if (statusElement) {
-                    statusElement.className = 'text-warning';
+                    statusElement.className = 'status-badge text-warning';
                     statusElement.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>Unsaved changes';
                 }
                 card.classList.add('border-warning');
             } else {
                 if (statusElement) {
-                    statusElement.className = 'text-muted';
+                    statusElement.className = 'status-badge text-muted';
                     statusElement.innerHTML = '<i class="fas fa-circle me-1"></i>Default icon';
                 }
             }
