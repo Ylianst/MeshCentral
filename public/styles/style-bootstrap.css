@@ -2714,6 +2714,23 @@ body[data-bs-theme="light"] {
     color: #f8f9fa;
 }
 
+/* Keep the legacy tab active/hover effect above theme base colors. */
+[data-bs-theme="light"] .topbar_td.style3sel,
+[data-bs-theme="light"] .topbar_td.style3x.fullselect,
+[data-bs-theme="dark"] .topbar_td.style3sel,
+[data-bs-theme="dark"] .topbar_td.style3x.fullselect {
+    color: #fff;
+    background-color: #003366;
+}
+
+[data-bs-theme="light"] .topbar_td.style3x:hover,
+[data-bs-theme="light"] .topbar_td.style3x.semiselect,
+[data-bs-theme="dark"] .topbar_td.style3x:hover,
+[data-bs-theme="dark"] .topbar_td.style3x.semiselect {
+    color: #fff;
+    background-color: #606060;
+}
+
 /* Tables */
 [data-bs-theme="light"] .table,
 [data-bs-theme="light"] .table td,
