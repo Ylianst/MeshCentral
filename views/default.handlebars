@@ -11869,7 +11869,7 @@
         }
 
         function p9getRowSelectAction(kind, hive, path, rawName, displayName, type, value) {
-            return "return p9selectItem('" + kind + "','" + encodeURIComponentEx(hive || '') + "','" + encodeURIComponentEx(path || '') + "','" + encodeURIComponentEx(rawName || '') + "','" + encodeURIComponentEx(displayName || '') + "','" + encodeURIComponentEx(type || '') + "','" + encodeURIComponentEx(value || '') + "')";
+            return 'return p9selectItem(\'' + kind + '\',\'' + encodeURIComponentEx(hive || '') + '\',\'' + encodeURIComponentEx(path || '') + '\',\'' + encodeURIComponentEx(rawName || '') + '\',\'' + encodeURIComponentEx(displayName || '') + '\',\'' + encodeURIComponentEx(type || '') + '\',\'' + encodeURIComponentEx(value || '') + '\')';
         }
 
         function p9renderRegistryRow(kind, name, type, value, funcName, encodedName, rawName, hive, path) {
@@ -11899,7 +11899,7 @@
                 var x = '', itemCount = 0;
                 for (var i = 0; i < registryRoots.length; i++) {
                     if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                    x += p9renderRegistryRow('hive', registryRoots[i], 'Hive', '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
+                    x += p9renderRegistryRow('hive', registryRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
                     itemCount++;
                 }
                 if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
