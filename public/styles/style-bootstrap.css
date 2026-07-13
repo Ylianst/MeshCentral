@@ -3195,28 +3195,28 @@ body:not(.fullscreen) .notifiyBox {
     padding: 0;
 }
 
-#p13toolbar {
+#p13toolbar, #p9toolbar {
     width: 100%;
 }
 
-    #p13toolbar .areaHead {
+    #p13toolbar .areaHead, #p9toolbar .areaHead {
         border-bottom: 2px solid black;
     }
 
-    #p13toolbar .areaHead2 {
+    #p13toolbar .areaHead2, #p9toolbar .areaHead2 {
         width: 100%;
         background: var(--bs-secondary-bg);
         padding: 4px 0px;
     }
 
 
-    #p13toolbar .areaHead3 {
+    #p13toolbar .areaHead3, #p9toolbar .areaHead3 {
         background: var(--bs-secondary-bg);
         height: 28px;
     }
 
 
-#p13filetable {
+#p13filetable, #p9filetable {
     width: 100%;
     height: calc(100vh - 323px);
     overflow: auto;
@@ -3224,7 +3224,7 @@ body:not(.fullscreen) .notifiyBox {
     user-select: none;
 }
 
-.room4submenu #p13filetable {
+.room4submenu #p13filetable, .room4submenu #p9filetable {
     height: calc(100vh - 349px);
 }
 
@@ -3249,7 +3249,7 @@ body:not(.fullscreen) .notifiyBox {
     height: calc(100vh - 65px);
 }
 
-#p13toolbarBottom, #p13toolbar {
+#p13toolbarBottom, #p13toolbar, #p9toolbarBottom, #p9toolbar {
     width: 100%;
 }
 
@@ -4218,6 +4218,7 @@ body.is-mobile #p50groups,
 body.is-mobile #serverMainStats,
 body.is-mobile #p5filetable,
 body.is-mobile #p13filetable,
+body.is-mobile #p9filetable,
 body.is-mobile #p16events,
 body.is-mobile #p17info,
 body.is-mobile #p15agentConsole,
@@ -4788,7 +4789,9 @@ body.is-mobile #termTable .areaFoot {
 
 /* Files panel toolbar: same no-wrap treatment as Terminal (both rows) */
 body.is-mobile #p13toolbar .areaHead,
-body.is-mobile #p13toolbar .areaHead2 {
+body.is-mobile #p13toolbar .areaHead2,
+body.is-mobile #p9toolbar .areaHead,
+body.is-mobile #p9toolbar .areaHead2 {
     flex-wrap: nowrap !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
