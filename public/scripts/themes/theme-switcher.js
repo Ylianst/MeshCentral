@@ -1,7 +1,14 @@
 var MeshCentralTheme = (function () {
   var darkBaseThemes = { cyborg: true, darkly: true, solar: true, vapor: true };
 
-  // Return a safe theme key that can be used in localStorage and stylesheet paths.
+  /**
+   * Return a safe theme key for storage, comparisons, and stylesheet paths.
+   * Valid theme names are lowercased, for example "Materia" becomes "materia".
+   * Missing, non-string, or unsafe values return "default".
+   *
+   * @param {string} theme Theme name selected by the user or loaded from localStorage.
+   * @returns {string} Normalized theme key, or "default" when the input is invalid.
+   */
   function normalizeTheme(theme) {
     if ((typeof theme !== "string") || !/^[a-z0-9_-]+$/i.test(theme)) return "default";
     return theme.toLowerCase();
