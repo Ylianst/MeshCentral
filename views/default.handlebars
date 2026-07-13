@@ -724,7 +724,7 @@
                                     <option value=1 selected="selected">Sort by name</option>
                                 </select>
                             </div>
-                            <div>&nbsp;&nbsp;<input id="p9currentpath" type="text" autocomplete="off" spellcheck="false" value="Root" style="width:calc(100% - 28px)" onkeydown="if (event.key == 'Enter') return p9openPathInput()" disabled="disabled" /></div>
+                            <div>&nbsp;&nbsp;<input id="p9currentpath" type="text" autocomplete="off" spellcheck="false" value="Root" style="width:calc(100% - 28px)" onkeydown="if (event.key == 'Enter') return p9gotoCurrentPath()" disabled="disabled" /></div>
                         </td>
                     </tr>
                 </table>
@@ -12065,9 +12065,9 @@
             if (registryCurrentHive == null) { p9requestRoots(); } else { p9requestKey(registryCurrentHive, registryCurrentPath); }
         }
 
-        function p9openPathInput() {
+        function p9gotoPath(path) {
             if (registry == null) return false;
-            var target = p9normalizePath(Q('p9currentpath').value);
+            var target = p9normalizePath(path);
             if (target == null) {
                 p9setInfo("Invalid registry path. Use a full hive path such as HKEY_LOCAL_MACHINE\\Software.");
                 return false;
@@ -12075,6 +12075,26 @@
             if (target.hive == null) { p9requestRoots(); } else { p9requestKey(target.hive, target.path); }
             return false;
         }
+
+        function p9gotoCurrentPath() { return p9gotoPath(Q('p9currentpath').value); }
+
+        function p9openPathInput() {
+            if (registry == null) return false;
+            var x = '<div style=margin-bottom:4px><b>' + "Registry Key" + '</b></div>';
+            x += '<input type=text id=p9pathinput maxlength=1024 onkeyup=p9registryTextInputKeyUp(event,"p9pathInputCheck") style=width:100% value="' + EscapeHtml(p9getDisplayPath(registryCurrentHive, registryCurrentPath)) + '" placeholder="HKEY_LOCAL_MACHINE\\Software" />';
+            setDialogMode(2, "Go To Registry Key", 3, p9openPathInputEx, x);
+            focusTextBox('p9pathinput');
+            p9pathInputCheck();
+            return false;
+        }
+
+        function p9pathInputCheck(e) {
+            var ok = (p9normalizePath(Q('p9pathinput').value) != null);
+            QE('idx_dlgOkButton', ok);
+            if ((ok == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); }
+        }
+
+        function p9openPathInputEx() { p9gotoPath(Q('p9pathinput').value); }
 
         function p9folderup() {
             if (registry == null) return;
