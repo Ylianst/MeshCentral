@@ -1048,7 +1048,7 @@
                     <div id="p9BackButton" class="pe-2">
                         <i class="fa-solid fa-square-caret-left fa-2xl" role="button" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"></i>
                     </div>
-                    <div class='fs-4 fw-bold'><i class="fa-solid fa-list-ul fa-sm me-2 text-secondary"></i>Registry<span id=p9deviceName></span></div>
+                    <div class='fs-4 fw-bold'><i class="fa-solid fa-key fa-sm me-2 text-secondary"></i>Registry<span id=p9deviceName></span></div>
                 </div>
                 <table id="p9toolbar" cellpadding="0" cellspacing="0">
                     <tr>
@@ -1072,7 +1072,7 @@
                             <div id="p9rightOfButtons" class="toright2 d-flex align-items-center"></div>
                             <div class="d-flex align-items-center">
                                 <input type=button disabled="disabled" id=p9FolderUp class="btn btn-secondary me-1 btn-sm" value="Up" onclick="p9folderup()" />
-                                <input type=button disabled="disabled" id=p9SelectAllButton class="btn btn-secondary me-1 btn-sm" value="Select All" onclick="p9selectall()" />
+                                <input type=button disabled="disabled" id=p9SelectAllButton class="btn btn-secondary me-1 btn-sm" value="Select All" onclick="p9selectall()" style="width:100px" />
                                 <input type=button disabled="disabled" id=p9RenameButton class="btn btn-primary me-1 btn-sm" value="Rename" onclick="p9renameRegistryItem()" />
                                 <input type=button disabled="disabled" id=p9DeleteButton class="btn btn-primary me-1 btn-sm" value="Delete" onclick="p9deleteRegistryItems()" />
                                 <input type=button disabled="disabled" id=p9EditButton class="btn btn-primary me-1 btn-sm" value="Edit" onclick="p9editRegistryValue()" />
@@ -1088,7 +1088,7 @@
                     </tr>
                     <tr id="p9subhead" style="display:none">
                         <td class="areaHead3">
-                            <div>&nbsp;&nbsp;<input type="text" id="p9currentpath" class="form-control form-control-sm" autocomplete="off" spellcheck="false" value="Root" style="width:calc(100% - 28px)" onkeydown="if (event.key == 'Enter') return p9gotoCurrentPath()" disabled="disabled" /></div>
+                            <div><input type="text" id="p9currentpath" class="form-control form-control-sm" autocomplete="off" spellcheck="false" value="Root" onkeydown="if (event.key == 'Enter') return p9gotoCurrentPath()" disabled="disabled" /></div>
                         </td>
                     </tr>
                 </table>
@@ -2876,6 +2876,7 @@
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p5filetable')['height'] = 'calc(100vh - ' + (119 + xh) + 'px)'; // 140
             QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
+            QS('p9filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)';
             QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('xdevices')['max-height'] = 'calc(100vh - ' + (46 + xh) + 'px)'; // 124

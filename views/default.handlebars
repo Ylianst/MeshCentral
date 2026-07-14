@@ -699,7 +699,7 @@
                             <div id="p9rightOfButtons" class="toright2"></div>
                             <div>
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p9FolderUp value="Up" onclick="p9folderup()" />
-                                <input type=button style="margin-right:2px" disabled="disabled" id=p9SelectAllButton value="Select All" onclick="p9selectall()" />
+                                <input type=button style="margin-right:2px;width:90px" disabled="disabled" id=p9SelectAllButton value="Select All" onclick="p9selectall()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p9RenameButton value="Rename" onclick="p9renameRegistryItem()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p9DeleteButton value="Delete" onclick="p9deleteRegistryItems()" />
                                 <input type=button style="margin-right:2px" disabled="disabled" id=p9EditButton value="Edit" onclick="p9editRegistryValue()" />
@@ -2118,6 +2118,7 @@
             QS('p3events')['height'] = 'calc(100vh - ' + (50 + xh) + 'px)'; // 124
             QS('p5filetable')['height'] = 'calc(100vh - ' + (99 + xh) + 'px)'; // 160
             QS('p13filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)'; // 124
+            QS('p9filetable')['height'] = 'calc(100vh - ' + (127 + xh + xh2) + 'px)';
             QS('serverMainStats')['height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('serverMainStats')['max-height'] = 'calc(100vh - ' + (50 + xh + xh2) + 'px)'; // 110
             QS('xdevices')['max-height'] = 'calc(100vh - ' + (46 + xh) + 'px)'; // 124
