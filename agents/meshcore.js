@@ -1058,15 +1058,28 @@ function renameRegistryEntry(item, newName) {
     throw ('Registry hives cannot be renamed.');
 }
 
+// reg.exe writes .reg files as UTF-16LE with a BOM, the agent has no utf16 decoder.
+// Decode in chunks, a per-char string concat would be O(n^2) on a large export (HKLM\SOFTWARE is tens of MB).
+function utf16leToString(buf) {
+    var start = ((buf.length > 1) && (buf[0] == 0xFF) && (buf[1] == 0xFE)) ? 2 : 0;
+    var parts = [], chunk = [];
+    for (var i = start; (i + 1) < buf.length; i += 2) {
+        chunk.push(buf[i] + (buf[i + 1] * 256));
+        if (chunk.length == 8192) { parts.push(String.fromCharCode.apply(null, chunk)); chunk = []; }
+    }
+    if (chunk.length > 0) { parts.push(String.fromCharCode.apply(null, chunk)); }
+    return parts.join('');
+}
+
 function exportRegistryKey(hiveName, path) {
     if ((path == null) || (path === '')) { throw ('Select a registry key to export.'); }
     var fs = require('fs');
-    var os = require('os');
-    var pathLib = require('path');
-    var tmpFile = pathLib.join(os.tmpdir(), 'mesh-registry-export-' + Date.now() + '.reg');
+    // Write to the agent folder, not to a shared temp folder, the export can hold sensitive keys
+    var tmpFolder = (process.cwd() != '//') ? process.cwd() : ((process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent\\');
+    var tmpFile = tmpFolder + 'mesh-registry-export-' + Date.now() + '.reg';
     try {
         runRegistryCommand(['export', getRegistryFullPath(hiveName, path), tmpFile, '/y']);
-        return fs.readFileSync(tmpFile, { encoding: 'utf16le' });
+        return utf16leToString(fs.readFileSync(tmpFile));
     } finally {
         try { fs.unlinkSync(tmpFile); } catch (ex) { }
     }
