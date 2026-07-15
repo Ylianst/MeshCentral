@@ -60,6 +60,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
+    const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -653,7 +654,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
-            serverinfo.softwareinventory = domain?.softwareinventory === true;
+            
             if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
@@ -992,7 +993,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
+                    if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
                         var agent = parent.wsagents[command.nodeid];
                         if (agent != null) {
                             routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
@@ -1036,6 +1037,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if (url.searchParams.get('p') == '4') { requiredNonRights = MESHRIGHT_NOREGISTRY; }
                         else if (url.searchParams.get('p') == '5') { requiredNonRights = MESHRIGHT_NOFILES; }
+                        else if (url.searchParams.get('p') == '6') { requiredNonRights = MESHRIGHT_NOSOFTWARE; }
 
                         // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
                         if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.searchParams.get('p') == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }

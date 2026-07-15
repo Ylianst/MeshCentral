@@ -170,6 +170,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_DEVICEDETAILS = 0x00100000;
     const MESHRIGHT_RELAY = 0x00200000;
     const MESHRIGHT_NOREGISTRY = 0x00400000;
+    const MESHRIGHT_NOSOFTWARE = 0x00800000;
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
@@ -9495,6 +9496,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
         if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
         if ((user.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
+        if ((user.removeRights & 0x00800000) != 0) { add += 0x00800000; } // No Software
         if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
         if ((user.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
         if ((user.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
