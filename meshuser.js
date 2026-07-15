@@ -987,10 +987,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                if (domain.softwareinventory !== true) { 
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                    break;
-                }
+                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     var mesh = parent.meshes[node.meshid];
                     if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
