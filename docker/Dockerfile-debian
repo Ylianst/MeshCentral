@@ -87,9 +87,10 @@ FROM golang:trixie AS mongo-compiler
 
 ARG INCLUDE_MONGODB_TOOLS="false"
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends --no-install-suggests \
-        git lsb-release
+# where build deps are installed for mongo-tools compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential git lsb-release pkg-config libkrb5-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN case "$INCLUDE_MONGODB_TOOLS" in \
         true|yes|TRUE|YES) \
