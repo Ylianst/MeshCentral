@@ -824,7 +824,7 @@ function onUserSessionChanged(user, locked) {
                 if(userobj && userobj.length > 0){
                     for (var j = 0; j < userobj.length; j++) {
                         if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === a[i].Username) {
-                            meshCoreObj.upnusers.push(userobj[j].UPN);
+                            if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                             break;
                         }
                     }
@@ -841,7 +841,7 @@ function onUserSessionChanged(user, locked) {
                     if(userobj && userobj.length > 0){
                         for (var j = 0; j < userobj.length; j++) {
                             if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
-                                meshCoreObj.upnusers.push(userobj[j].UPN);
+                                if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                                 break;
                             }
                         }
@@ -5751,7 +5751,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain, upn: u[i].UPN });
                             }
                         }
-                        sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
+                        //sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
                     });
                 } else
                 { response = "activeusers command only supported on Windows"; }
