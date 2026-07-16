@@ -5751,7 +5751,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                                 v.push({ tsid: i, type: u[i].StationName, user: u[i].Username, domain: u[i].Domain, upn: u[i].UPN });
                             }
                         }
-                        //sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
+                        sendConsoleText(JSON.stringify(v, null, 1), this.sessionid);
                     });
                 } else
                 { response = "activeusers command only supported on Windows"; }
