@@ -3873,6 +3873,9 @@
                                 node.pwr = message.event.pwr;
                                 node.lastconnect = Date.now();
 
+                                // Refresh Software Inventory
+                                if ((message.event.conn & 1) && currentNode && (currentNode._id == node._id) && (xxcurrentView == 18)) { loadInstalledApps(); }
+
                                 // Clear sesssion and battery information if needed
                                 if ((node.conn & 1) == 0) { delete node.sessions; }
 
