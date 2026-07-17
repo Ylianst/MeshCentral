@@ -4966,72 +4966,23 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform != 'win32') {
                     response = 'Unknown command "printers", type "help" for list of available commands.';
                 } else {
-                    var wmi = require('win-wmi-fixed');
-                    var printers = wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
-                    trimResults(printers);
-                    var tcpPorts = wmi.query('ROOT\\CIMV2', 'SELECT Name, HostAddress, PortNumber FROM Win32_TCPIPPrinterPort');
-                    trimResults(tcpPorts);
-                    var portMap = {};
-                    for (var j = 0; j < tcpPorts.length; ++j) { portMap[tcpPorts[j].Name] = tcpPorts[j].HostAddress + ':' + tcpPorts[j].PortNumber; }
-                    // For vendor ports not covered by Win32_TCPIPPrinterPort, walk the registry under Print\Monitors
-                    try {
-                        var reg = require('win-registry');
-                        var HKLM = reg.HKEY.LocalMachine;
-                        var monitorsKey = 'SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors';
-                        var monitors = reg.QueryKey(HKLM, monitorsKey);
-                        if (monitors && monitors.keys) {
-                            for (var m = 0; m < monitors.keys.length; ++m) {
-                                var portsKey = monitorsKey + '\\' + monitors.keys[m] + '\\Ports';
-                                try {
-                                    var portsNode = reg.QueryKey(HKLM, portsKey);
-                                    if (portsNode && portsNode.keys) {
-                                        for (var p = 0; p < portsNode.keys.length; ++p) {
-                                            var portName = portsNode.keys[p];
-                                            if (portMap[portName]) continue;
-                                            var portKey = portsKey + '\\' + portName;
-                                            var ip = null;
-                                            try { ip = reg.QueryKey(HKLM, portKey, 'IPAddress'); } catch (e) {}
-                                            if (!ip) { try { ip = reg.QueryKey(HKLM, portKey, 'HostName'); } catch (e) {} }
-                                            if (ip) { portMap[portName] = ip; }
-                                        }
-                                    }
-                                } catch (e) {}
-                            }
-                        }
-                    } catch (e) {}
-                    // For Epson and other vendor ports still missing, query ROOT\StandardCimv2\MSFT_PrinterPort
-                    try {
-                        var msftPorts = wmi.query('ROOT\\StandardCimv2', 'SELECT Name, Description FROM MSFT_PrinterPort');
-                        trimResults(msftPorts);
-                        for (var j = 0; j < msftPorts.length; ++j) {
-                            if (!portMap[msftPorts[j].Name] && msftPorts[j].Description) {
-                                portMap[msftPorts[j].Name] = msftPorts[j].Description;
-                            }
-                        }
-                    } catch (e) {}
-                    var printJobs = wmi.query('ROOT\\CIMV2', 'SELECT Name FROM Win32_PrintJob');
-                    trimResults(printJobs);
-                    var jobCount = {};
-                    for (var j = 0; j < printJobs.length; ++j) {
-                        var jobPrinter = printJobs[j].Name.split(',')[0];
-                        jobCount[jobPrinter] = (jobCount[jobPrinter] || 0) + 1;
-                    }
-                    var printerStatusMap = { 1: 'Other', 2: 'Unknown', 3: 'Idle', 4: 'Printing', 5: 'Warmup', 6: 'Stopped', 7: 'Offline' };
-                    var errorStateMap = { 0: 'Unknown', 1: 'Other', 2: 'No Error', 3: 'Low Paper', 4: 'No Paper', 5: 'Low Toner', 6: 'No Toner', 7: 'Door Open', 8: 'Jammed', 9: 'Offline', 10: 'Service Requested', 11: 'Output Bin Full' };
+                    var winInfo = require('win-info');
+                    var printers = winInfo.printers();
                     for (var i = 0; i < printers.length; ++i) {
-                        var portDesc = portMap[printers[i].PortName];
-                        var jobs = jobCount[printers[i].Name] || 0;
-                        var status = printerStatusMap[printers[i].PrinterStatus] || 'Unknown';
-                        var errors = [];
-                        var err = parseInt(printers[i].DetectedErrorState) || 0;
-                        if (err > 2) { errors.push(errorStateMap[err] || ('Error ' + err)); }
-                        var line = printers[i].Name +
-                            ' - ' + printers[i].PortName +
-                            (portDesc ? ' (' + portDesc + ')' : '') +
-                            ' [' + status + ']' +
-                            (errors.length > 0 ? ' [' + errors.join(', ') + ']' : '') +
-                            (jobs > 0 ? ' [' + jobs + ' job' + (jobs > 1 ? 's' : '') + ' queued]' : '');
-                        sendConsoleText(line, sessionid);
+                        var p = printers[i];
+                        if (p.type === 'system') {
+                            var line = p.name + ' - ' + p.port;
+                            if (p.portDesc) { line += ' (' + p.portDesc + ')'; }
+                            line += ' [' + p.status + ']';
+                            if (p.errors.length > 0) { line += ' [' + p.errors.join(', ') + ']'; }
+                            if (p.jobCount > 0) { line += ' [' + p.jobCount + ' job' + (p.jobCount > 1 ? 's' : '') + ' queued]'; }
+                            sendConsoleText(line, sessionid);
+                        } else if (p.type === 'adgpo') {
+                            var line = p.name + ' [User/AD-GPO]';
+                            if (p.portDesc) { line += ' - ' + p.portDesc; }
+                            line += ' (source: ' + p.label + ')';
+                            sendConsoleText(line, sessionid);
+                        }
                     }
                 }
                 break;
