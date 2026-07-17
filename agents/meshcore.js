@@ -824,7 +824,7 @@ function onUserSessionChanged(user, locked) {
                 if(userobj && userobj.length > 0){
                     for (var j = 0; j < userobj.length; j++) {
                         if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === a[i].Username) {
-                            meshCoreObj.upnusers.push(userobj[j].UPN);
+                            if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                             break;
                         }
                     }
@@ -841,7 +841,7 @@ function onUserSessionChanged(user, locked) {
                     if(userobj && userobj.length > 0){
                         for (var j = 0; j < userobj.length; j++) {
                             if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
-                                meshCoreObj.upnusers.push(userobj[j].UPN);
+                                if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                                 break;
                             }
                         }
