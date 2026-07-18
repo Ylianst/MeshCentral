@@ -20174,9 +20174,9 @@
             if (xxcurrentView == x) return;
 
             // Set the goback stack, if going to top-level view, clear the stack.
-            if ((xxcurrentView < 0) || (x < 10)) { goBackStack = []; } else {
+            if ((xxcurrentView < 0) || (x < 9)) { goBackStack = []; } else {
                 // Do not push into the back stack if we are changing tabs at the same level.
-                if ((xxcurrentView == 50) || (Math.floor(xxcurrentView / 10) != Math.floor(x / 10))) { goBackStack.push(xxcurrentView); }
+                if ((xxcurrentView == 50) || (getTabGroup(xxcurrentView) != getTabGroup(x))) { goBackStack.push(xxcurrentView); }
             }
 
             // If we are recording the desktop, stop it now.
