@@ -22978,6 +22978,10 @@
             if (idtype == 'server') { go(6); }
         }
 
+        function getTabGroup(v) {
+            return (v === 9) ? 1 : Math.floor(v / 10);
+        }
+
         function go(x, event) {
             if (event && ((event.which == 3) || (event.button == 2))) return; // ignore right clicks as they are handled elsewhere
             // Remind the user to add two factor authentication
