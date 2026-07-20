@@ -924,6 +924,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
                     if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
+                    if (Array.isArray(domain.consentmessages.autoacceptusers)) { command.soptions.consentAutoAcceptUsers = domain.consentmessages.autoacceptusers.map(function (s) { return ('' + s).toLowerCase(); }); }
                     if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                     if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
                     if (domain.consentmessages.autoacceptiffilelocked === true) { command.soptions.consentAutoAcceptIfFileLocked = true; }
@@ -971,6 +972,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
                         if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                        if (Array.isArray(domain.consentmessages.autoacceptusers)) { command.soptions.consentAutoAcceptUsers = domain.consentmessages.autoacceptusers.map(function (s) { return ('' + s).toLowerCase(); }); }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
                         if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
@@ -996,6 +998,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                         if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
                         if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
+                        if (Array.isArray(domain.consentmessages.autoacceptusers)) { command.soptions.consentAutoAcceptUsers = domain.consentmessages.autoacceptusers.map(function (s) { return ('' + s).toLowerCase(); }); }
                         if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                         if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
                         if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
@@ -1057,6 +1060,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                     if (domain.consentmessages.autoacceptontimeout === true) { command.soptions.consentAutoAccept = true; }
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
                     if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
+                    if (Array.isArray(domain.consentmessages.autoacceptusers)) { command.soptions.consentAutoAcceptUsers = domain.consentmessages.autoacceptusers.map(function (s) { return ('' + s).toLowerCase(); }); }
                     if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
                     if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
                     if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
