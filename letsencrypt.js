@@ -29,6 +29,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
     obj.runAsProduction = false;
     obj.redirWebServerHooked = false;
     obj.zerossl = false;
+    obj.custom = false;
     obj.csr = null;
     obj.configErr = null;
     obj.configOk = false;
@@ -60,6 +61,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
     obj.getCertificate = function(certs, func) {
         obj.runAsProduction = (obj.parent.config.letsencrypt.production === true);
         obj.zerossl = ((typeof obj.parent.config.letsencrypt.zerossl == 'object') ? obj.parent.config.letsencrypt.zerossl : false);
+        obj.custom = ((typeof obj.parent.config.letsencrypt.custom == 'object') ? obj.parent.config.letsencrypt.custom : false);
         obj.log("Getting certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
         if (certs.CommonName.indexOf('.') == -1) { obj.configErr = "Add \"cert\" value to settings in config.json before using Let's Encrypt."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.parent.config.letsencrypt == null) { obj.configErr = "No Let's Encrypt configuration"; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
