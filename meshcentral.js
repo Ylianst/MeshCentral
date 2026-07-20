@@ -703,6 +703,9 @@ function CreateMeshCentralServer(config, args) {
                     if (isUpgrade) {
                         obj.args.specificupdate = specificupdate;
                         childProcess.xrestart = 3;
+                    } else {
+                        data += '\nERROR: Downgrade from ' + currentVersion + ' to ' + specificupdate + ' is not allowed.';
+                        childProcess.xrestart = 1;
                     }
                 }
             }
