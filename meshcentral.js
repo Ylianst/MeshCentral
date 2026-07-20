@@ -685,9 +685,25 @@ function CreateMeshCentralServer(config, args) {
             else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; }
             else if (data.indexOf('Starting self upgrade to: ') >= 0) {
                 const specificupdate = data.substring(data.indexOf('Starting self upgrade to: ') + 26).split('\r')[0].split('\n')[0];
-                if (/^[a-z0-9\.\-]+$/i.test(specificupdate)) {
-                    obj.args.specificupdate = specificupdate;
-                    childProcess.xrestart = 3;
+                if (/^[0-9\.\-]+$/i.test(specificupdate)) {
+                    var isUpgrade = false;
+                    try {
+                        var currentVersion = getCurrentVersion();
+                        if (currentVersion) {
+                            var sVer = specificupdate.split('-')[0].split('.');
+                            var cVer = currentVersion.split('-')[0].split('.');
+                            for (var i = 0; i <= 2; i++) {
+                                var sVal = parseInt(sVer[i] || 0);
+                                var cVal = parseInt(cVer[i] || 0);
+                                if (sVal > cVal) { isUpgrade = true; break; }
+                                else if (sVal < cVal) { break; }
+                            }
+                        }
+                    } catch (ex) { }
+                    if (isUpgrade) {
+                        obj.args.specificupdate = specificupdate;
+                        childProcess.xrestart = 3;
+                    }
                 }
             }
             var datastr = data;
