@@ -3654,41 +3654,34 @@ function CreateMeshCentralServer(config, args) {
                         this.meshAgentBinary.fileHash = hash.digest('binary');
                         this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
 
-                        // Compress the agent using ZIP
-                        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-                        const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                        const onZipEnd = function onZipEnd() {
-                            // Concat all the buffer for create compressed zip agent
-                            const concatData = Buffer.concat(onZipData.x.zacc);
-                            delete onZipData.x.zacc;
+						const zip = require('@zip.js/zip.js');
 
-                            // Hash the compressed binary
-                            const hash = obj.crypto.createHash('sha384').update(concatData);
-                            onZipData.x.zhash = hash.digest('binary');
-                            onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
+						// Compress the agent using ZIP
+						const x = this.meshAgentBinary;
 
-                            // Set the agent
-                            onZipData.x.zdata = concatData;
-                            onZipData.x.zsize = concatData.length;
-                        }
-                        const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                        this.meshAgentBinary.zacc = [];
-                        onZipData.x = this.meshAgentBinary;
-                        onZipEnd.x = this.meshAgentBinary;
-                        onZipError.x = this.meshAgentBinary;
-                        archive.on('data', onZipData);
-                        archive.on('end', onZipEnd);
-                        archive.on('error', onZipError);
+						const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9 });
 
-                        // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
-                        // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
-                        const ReadableStream = require('stream').Readable;
-                        const zipInputStream = new ReadableStream();
-                        zipInputStream.push(this.meshAgentBinary.data);
-                        zipInputStream.push(null);
-                        archive.append(zipInputStream, { name: 'meshagent' });
+						zipWriter.add(
+							'meshagent',
+							new zip.Uint8ArrayReader(x.data),
+							{ level: 9 }
+						).then(function () {
+							return zipWriter.close();
+						}).then(function (zipData) {
+							// Convert zip.js Uint8Array output to Buffer
+							const concatData = Buffer.from(zipData);
 
-                        archive.finalize();
+							// Hash the compressed binary
+							const hash = obj.crypto.createHash('sha384').update(concatData);
+							x.zhash = hash.digest('binary');
+							x.zhashhex = Buffer.from(x.zhash, 'binary').toString('hex');
+
+							// Set the agent
+							x.zdata = concatData;
+							x.zsize = concatData.length;
+						}).catch(function (err) {
+							console.log('ZIP compression failed', err);
+						});
                     })
                     obj.exeHandler.streamExeWithMeshPolicy(
                         {
@@ -3700,39 +3693,39 @@ function CreateMeshCentralServer(config, args) {
                             peinfo: objx.meshAgentBinaries[archid].pe
                         });
                 } else {
-                    // Load the agent as-is
-                    objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+					
+					// Load the agent as-is
+					objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
 
-                    // Compress the agent using ZIP
-                    const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
+					// Compress the agent using ZIP
+					const zip = require('@zip.js/zip.js');
+					const x = objx.meshAgentBinaries[archid];
+					const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9 });
 
-                    const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                    const onZipEnd = function onZipEnd() {
-                        // Concat all the buffer for create compressed zip agent
-                        const concatData = Buffer.concat(onZipData.x.zacc);
-                        delete onZipData.x.zacc;
+					zipWriter.add(
+						'meshagent',
+						new zip.Uint8ArrayReader(x.data),
+						{ level: 9 }
+					).then(function () {
+						return zipWriter.close();
+					}).then(function (zipData) {
+						// Convert zip.js Uint8Array output to Buffer
+						const concatData = Buffer.from(zipData);
 
-                        // Hash the compressed binary
-                        const hash = obj.crypto.createHash('sha384').update(concatData);
-                        onZipData.x.zhash = hash.digest('binary');
-                        onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
+						// Hash the compressed binary
+						const hash = obj.crypto.createHash('sha384').update(concatData);
+						x.zhash = hash.digest('binary');
+						x.zhashhex = Buffer.from(x.zhash, 'binary').toString('hex');
 
-                        // Set the agent
-                        onZipData.x.zdata = concatData;
-                        onZipData.x.zsize = concatData.length;
+						// Set the agent
+						x.zdata = concatData;
+						x.zsize = concatData.length;
 
-                        //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
-                    }
-                    const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                    objx.meshAgentBinaries[archid].zacc = [];
-                    onZipData.x = objx.meshAgentBinaries[archid];
-                    onZipEnd.x = objx.meshAgentBinaries[archid];
-                    onZipError.x = objx.meshAgentBinaries[archid];
-                    archive.on('data', onZipData);
-                    archive.on('end', onZipEnd);
-                    archive.on('error', onZipError);
-                    archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
-                    archive.finalize();
+						//console.log('Packed', x.size, x.zsize);
+					}).catch(function (err) {
+						// Keep this silent if the old code ignored ZIP errors.
+						// parent.debug('web', 'ZIP compression failed: ' + err);
+					});
                 }
             }
 
@@ -4363,7 +4356,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['archiver@7.0.1', 'cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.0', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
+        var modules = ['cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.0', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.17.0'); }
@@ -4391,8 +4384,6 @@ function mainStart() {
         if (config.settings.prometheus != null) { modules.push('prom-client@15.1.3'); } // Add Prometheus Metrics support
 
         if (typeof config.settings.autobackup == 'object') {
-            // Setup encrypted zip support if needed
-            if (config.settings.autobackup.zippassword) { modules.push('archiver-zip-encrypted@2.0.0'); }
             // Enable Google Drive Support
             if (typeof config.settings.autobackup.googledrive == 'object') { modules.push('googleapis@128.0.0'); }
             // Enable WebDAV Support
