@@ -6931,6 +6931,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", EscapeHtml(str));
                 }
+                if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2])); }
                 if (node.firstconnect) { x += addDetailItem("First agent connection", EscapeHtml(printDateTime(new Date(node.firstconnect)))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
