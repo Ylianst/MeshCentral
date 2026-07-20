@@ -72,13 +72,6 @@
             document.body.classList.add('is-mobile');
             document.documentElement.classList.add('is-mobile');
         }
-        // Auto-fullscreen on landscape: when in the desktop view and connected,
-        // rotating to landscape triggers deskToggleFull() so the existing fulldesk
-        // CSS maximises the canvas without any new layout code.
-        // A flag tracks whether WE triggered fullscreen so we can auto-exit on
-        // rotating back to portrait (but not if the user exited fullscreen manually).
-        var _mobileAutoFullscreen = false;
-        var _mobileSavedAspectRatio = 0;
         var _mobileZoomMode = 'fit'; // 'native' = 1:1 scrollable  |  'fit' = fill viewport
         var _nativePinchStartDist = 0, _nativePinchStartW = 0, _nativePinchStartH = 0;
         var _nativePinchMidX = 0, _nativePinchMidY = 0;
@@ -128,13 +121,9 @@
                     if (m.attributeName !== 'class') return;
                     var inFull = document.body.classList.contains('fulldesk');
                     if (inFull && !_prevHadFulldesk) {
-                        // Just entered fullscreen: portrait->native, landscape->fit
-                        setTimeout(function() {
-                            var landscape = window.matchMedia('(orientation: landscape)').matches;
-                            _mobileSetZoom(landscape ? 'fit' : 'native');
-                        }, 200);
+                        setTimeout(function() { _mobileSetZoom('native'); }, 200);
                     } else if (!inFull && _prevHadFulldesk) {
-                        _mobileSetZoom('fit'); // always reset to fit on exit
+                        _mobileSetZoom('fit');
                     }
                     _prevHadFulldesk = inFull;
                 });
@@ -144,31 +133,10 @@
             if (!document.body.classList.contains('is-mobile')) return;
             var landscape = window.matchMedia('(orientation: landscape)').matches;
             document.body.classList.toggle('is-landscape', landscape);
-            // Check DOM state — JS variables like xxcurrentView / fullscreen are
-            // in a later function scope and not accessible from this early script.
-            var p11 = document.getElementById('p11');
-            var inDesktop = p11 && p11.style.display !== 'none';
-            var alreadyFullscreen = document.body.classList.contains('fulldesk');
-            if (landscape && inDesktop && !alreadyFullscreen) {
-                // Auto-enter fullscreen in landscape using the global function
-                if (typeof deskToggleFull === 'function') {
-                    _mobileAutoFullscreen = true;
-                    _mobileSavedAspectRatio = (typeof deskAspectRatio !== 'undefined') ? deskAspectRatio : 0;
-                    deskToggleFull();
-                }
-                // CSS rule body.is-mobile.is-landscape.fulldesk #Desk { width/height: 100% !important }
-                // handles the canvas fill automatically — no JS override needed here.
-            } else if (!landscape && alreadyFullscreen && _mobileAutoFullscreen) {
-                _mobileAutoFullscreen = false;
-                if (typeof deskToggleFull === 'function') deskToggleFull();
-                // Let deskAdjust() recalculate naturally for portrait (no forced CSS override)
-                setTimeout(function() { if (typeof deskAdjust === 'function') deskAdjust(); }, 400);
-            } else {
-                // Not entering/exiting fullscreen but still call deskAdjust so the
-                // canvas recalculates for the new viewport dimensions
-                if (typeof deskAdjust === 'function') {
-                    requestAnimationFrame(function() { deskAdjust(); });
-                }
+            if (typeof _mobileSetZoom === 'function') {
+                _mobileSetZoom(_mobileZoomMode);
+            } else if (typeof deskAdjust === 'function') {
+                requestAnimationFrame(function() { deskAdjust(); });
             }
         }
         function _updateOrientation() {
@@ -11365,7 +11333,6 @@
                     QV('DeskInputUnLockedButton', false);
                     deskFocusBtn.value = "All Focus";
                     if (fullscreen == true) { deskToggleFull(); }
-                    _mobileAutoFullscreen = false; // reset so reconnecting in landscape re-triggers
                     if (typeof _mobileModifiers !== 'undefined') { for (var _m in _mobileModifiers) _mobileModifiers[_m] = false; _updateMobileModifierUI(); }
                     // Reset trackpad and soft keyboard state on disconnect
                     if (typeof trackpadMode !== 'undefined') {

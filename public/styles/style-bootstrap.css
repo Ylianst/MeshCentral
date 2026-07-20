@@ -5445,25 +5445,6 @@ body.is-mobile.fulldesk #column_l {
     overflow-y: auto !important;
 }
 
-/* Mobile landscape: reclaim vertical space 
-   'is-landscape' is toggled by JS on resize so deskAdjust() is also called,
-   ensuring the canvas recalculates dimensions immediately on rotation. */
-
-/* Hide panel title bars in landscape — saves ~50px; back nav still works
-   via the browser gesture or rotating back to portrait. */
-body.is-mobile.is-landscape #p11title,
-body.is-mobile.is-landscape #p12title,
-body.is-mobile.is-landscape #p13title {
-    display: none !important;
-}
-
-/* Compact the connect/disconnect toolbar to save a few more pixels */
-body.is-mobile.is-landscape #deskarea1 {
-    min-height: 0 !important;
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
-}
-
 /* Canvas scale-fill in landscape fullscreen.
    deskAdjust() and onScreenSizeChange set portrait-sized pixel values via
    inline styles. !important in CSS always beats inline styles, so the canvas
