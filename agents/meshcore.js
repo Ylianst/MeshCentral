@@ -1561,6 +1561,7 @@ function handleServerCommand(data) {
                                 tunnel.consentAutoAcceptIfTerminalLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfTerminalLocked === true));
                                 tunnel.consentAutoAcceptIfFileLocked = (tunnel.soptions && (tunnel.soptions.consentAutoAcceptIfFileLocked === true));
                                 tunnel.oldStyle = (tunnel.soptions && tunnel.soptions.oldStyle) ? tunnel.soptions.oldStyle : false;
+								tunnel.consentAutoAcceptUsers = (tunnel.soptions && Array.isArray(tunnel.soptions.consentAutoAcceptUsers)) ? tunnel.soptions.consentAutoAcceptUsers : undefined;
                                 tunnel.terminalUserVariable = (tunnel.soptions && tunnel.soptions.terminalUserVariable) ? tunnel.soptions.terminalUserVariable : false;
                                 tunnel.tcpaddr = data.tcpaddr;
                                 tunnel.tcpport = data.tcpport;
