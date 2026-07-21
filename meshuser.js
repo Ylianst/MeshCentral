@@ -7128,9 +7128,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandServerVersion(command) {
-        // Do not allow this command when logged in using a login token
-        if (req.session.loginToken != null) return;
-
         // Check the server version
         if (userHasSiteUpdate() && domainHasMyServerUpgrade())
             parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', tags: tags }); });
