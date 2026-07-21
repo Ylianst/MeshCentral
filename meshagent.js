@@ -1358,7 +1358,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
                                     if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
                                     const device = nodes[0];
-                                    if (typeof device.name == 'string') { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device.meshid, device._id, device.name, command.msgArgs[0], command.msgArgs[1]); }
+                                    if ((typeof device.name == 'string') && Array.isArray(command.msgArgs) && (command.msgArgs.length >= 2)) { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device.meshid, device._id, device.name, command.msgArgs[0], command.msgArgs[1]); }
                                 });
                             }
                         }
