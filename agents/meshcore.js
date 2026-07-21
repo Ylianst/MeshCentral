@@ -7398,9 +7398,6 @@ function handleServerConnection(state) {
             sendAgentMessage("This is an old agent version, consider updating.", 3, 117);
         }
 
-        var oldNodeId = db.Get('OldNodeId');
-        if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
-
         // Send SMBios tables if present
         if (SMBiosTablesRaw != null) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }
 

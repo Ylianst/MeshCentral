@@ -1325,30 +1325,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
-                case 'mc1migration':
-                    {
-                        if (command.oldnodeid.length != 64) break;
-                        const oldNodeKey = 'node//' + command.oldnodeid.toLowerCase();
-                        db.Get(oldNodeKey, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            const node = nodes[0];
-                            if (node.meshid == obj.dbMeshKey) {
-                                // Update the device name & host
-                                const newNode = { "name": node.name };
-                                if (node.intelamt != null) { newNode.intelamt = node.intelamt; }
-                                ChangeAgentCoreInfo(newNode);
-
-                                // Delete this node including network interface information and events
-                                db.Remove(node._id);
-                                db.Remove('if' + node._id);
-
-                                // Event node deletion
-                                const change = 'Migrated device ' + node.name;
-                                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.dbNodeKey]), obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain });
-                            }
-                        });
-                        break;
-                    }
                 case 'openUrl':
                     {
                         // Sent by the agent to return the status of a open URL action.
