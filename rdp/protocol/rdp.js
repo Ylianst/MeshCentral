@@ -135,16 +135,20 @@ function RdpClient(config) {
     log.debug('screen ' + this.mcs.clientCoreData.obj.desktopWidth.value + 'x' + this.mcs.clientCoreData.obj.desktopHeight.value);
 
     // config keyboard layout
-    switch (config.locale) {
-        case 'fr':
-            log.debug('french keyboard layout');
-            this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout.FRENCH;
-            break;
-        case 'en':
-        default:
-            log.debug('english keyboard layout');
-            this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout.US;
-    }
+    // config.locale is a browser language tag (ex: 'de-AT', 'fr-FR', 'en-US'), so only
+    // the primary language subtag is used to select the RDP keyboard layout.
+    var localeToKeyboardLayout = {
+        'ar': 'ARABIC',    'bg': 'BULGARIAN', 'cs': 'CZECH',     'da': 'DANISH',
+        'de': 'GERMAN',    'el': 'GREEK',     'en': 'US',        'es': 'SPANISH',
+        'fi': 'FINNISH',   'fr': 'FRENCH',    'he': 'HEBREW',    'hu': 'HUNGARIAN',
+        'is': 'ICELANDIC', 'it': 'ITALIAN',   'ja': 'JAPANESE',  'ko': 'KOREAN',
+        'nb': 'NORWEGIAN', 'nl': 'DUTCH',     'nn': 'NORWEGIAN', 'no': 'NORWEGIAN',
+        'zh': 'CHINESE_US_KEYBOARD'
+    };
+    var localeLanguage = String(config.locale || 'en').toLowerCase().split(/[-_]/)[0];
+    var keyboardLayoutName = localeToKeyboardLayout[localeLanguage] || 'US';
+    log.debug(keyboardLayoutName.toLowerCase() + ' keyboard layout');
+    this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout[keyboardLayoutName];
 
     this.cliprdr.on('clipboard', (content) => {
         this.emit('clipboard', content)
