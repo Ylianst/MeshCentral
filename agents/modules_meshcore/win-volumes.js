@@ -149,7 +149,7 @@ function windows_volumes_wmi()
                 };
             });
 
-        // The MicrosoftVolumeEncryption namespace is admin-only and manage-bde needs elevation; skip entirely when not elevated, saves waiting on the wmi-query time-out if run as user
+        // The MicrosoftVolumeEncryption namespace is admin-only; skip entirely when not elevated, saves waiting on the wmi-query time-out if run as user
         if (require('user-sessions').isRoot()) {
             // Check win version: Win7=7600/7601, Win8+>=9200.
             // Default to win8+ if unreadable.
@@ -159,9 +159,9 @@ function windows_volumes_wmi()
                 var build = parseInt(reg.QueryKey(reg.HKEY.LocalMachine, 'Software\\Microsoft\\Windows NT\\CurrentVersion', 'CurrentBuildNumber'), 10);
                 win8plus = !(build > 0 && build < 9200);
             } catch (ex) { }
-            // Win7 lacks the ConversionStatus property, so only select it on win8+
-            var q = win8plus ? 'SELECT DeviceID,DriveLetter,ConversionStatus,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume' : 'SELECT DeviceID,DriveLetter,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume';
-            var fields = win8plus ? ['DeviceID', 'DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'] : ['DeviceID', 'DriveLetter', 'ProtectionStatus', 'EncryptionMethod'];
+            // Win7 lacks the ConversionStatus & EncryptionMethod property, so only select it on win8+
+            var q = win8plus ? 'SELECT DeviceID,DriveLetter,ConversionStatus,ProtectionStatus,EncryptionMethod FROM Win32_EncryptableVolume' : 'SELECT DeviceID,DriveLetter,ProtectionStatus FROM Win32_EncryptableVolume';
+            var fields = win8plus ? ['DeviceID', 'DriveLetter', 'ConversionStatus', 'ProtectionStatus', 'EncryptionMethod'] : ['DeviceID', 'DriveLetter', 'ProtectionStatus'];
             // re-use connection instead of creating a new one every time
             var sess = wmi.connect(NS_VE);
             try {
@@ -173,12 +173,14 @@ function windows_volumes_wmi()
                         try {
                             var v_id = { DeviceID: vol['DeviceID'] };   // DeviceID(=VolumeKeyProtectorID) is the key needed for the ExecMethod calls
                             drives[drive].protectionStatus = vol['ProtectionStatus'];
-                            drives[drive].encryptionMethod = vol['EncryptionMethod'];
                             if (win8plus) {
-                                drives[drive].volumeStatus = vol.ConversionStatus;            // property available from the query
+                                drives[drive].encryptionMethod = vol['EncryptionMethod'];
+                                drives[drive].volumeStatus = vol['ConversionStatus'];            // property available from the query
                             } else {
                                 var cs = sess.execMethod('Win32_EncryptableVolume', v_id, 'GetConversionStatus', null, 5000);   // win7: no PrecisionFactor param, so no universal get
                                 drives[drive].volumeStatus = (cs && cs.ReturnValue == 0) ? cs.ConversionStatus : 0;
+                                cs = sess.execMethod('Win32_EncryptableVolume', v_id, 'GetEncryptionMethod', null, 5000);
+                                drives[drive].encryptionMethod = (cs && cs.ReturnValue == 0) ? cs.EncryptionMethod : 0;
                             }
                             // Only retrieve the recovery key on encrypted drives (conv 0 = FullyDecrypted, otherwise some sort of encryption)
                             if (drives[drive].volumeStatus != 0) {
