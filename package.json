@@ -53,7 +53,7 @@
     "otplib": "13.4.1",
     "ua-client-hints-js": "0.1.2",
     "ua-parser-js": "1.0.40",
-    "ws": "8.21.0",
+    "ws": "8.21.1",
     "yauzl": "2.10.0"
   },
   "engines": {
