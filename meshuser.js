@@ -3067,7 +3067,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var mesh = parent.meshes[node.meshid];
                             if (mesh && mesh.relayid) { relayid = mesh.relayid; addr = node.host; }
                         }
-                        var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : obj.getWebServerName(domain, req);
+                        var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : parent.getWebServerName(domain, req);
                         var webRelayPort = ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0));
                         if (webRelayPort == 0) { try { ws.send(JSON.stringify({ action: 'webrelay',  responseid: command.responseid, result: 'WebRelay Disabled' })); return; } catch (ex) { } }
                         const authRelayCookie = parent.parent.encodeCookie({ ruserid: user._id, x: req.session.x }, parent.parent.loginCookieEncryptionKey);
