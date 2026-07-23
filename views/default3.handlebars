@@ -1343,19 +1343,19 @@
                                         <button type="button" class="btn btn-success btn-sm" id=connectbutton2 title="Connect using MeshAgent remote desktop" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled">Connect</button>
                                         <button type="button" class="btn btn-success btn-sm dropdown-toggle dropdown-toggle-split" id=connectbutton2d data-bs-toggle="dropdown" aria-expanded="false" onclick=newContextMenu(event,1)><span class="visually-hidden">Toggle Dropdown</span></button>
                                         <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(6,0,event)">Admin PowerShell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(8,0,event)">User Shell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(8,0x10,event)">Ask User Shell</a></li>
-                                            <li><a class="dropdown-item" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</a></li>
-                                            <li class="ass"><a class="dropdown-item" onclick="cmtermaction(8,0,event)"><b>User Shell</b></a></li>
-                                            <li class="ass"><a class="dropdown-item" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
-                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></a></li>
-                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(8,0,event)">User Shell</a></li>
-                                            <li class="lin"><a class="dropdown-item" onclick="cmtermaction(100,0,event)">Login Shell</a></li>
+                                            <li><a class="dropdown-item term-admin" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></a></li>
+                                            <li><a class="dropdown-item term-admin" onclick="cmtermaction(6,0,event)">Admin PowerShell</a></li>
+                                            <li><a class="dropdown-item term-user" onclick="cmtermaction(8,0,event)">User Shell</a></li>
+                                            <li><a class="dropdown-item term-user" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
+                                            <li><a class="dropdown-item term-ask-admin" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</a></li>
+                                            <li><a class="dropdown-item term-ask-admin" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</a></li>
+                                            <li><a class="dropdown-item term-ask-user" onclick="cmtermaction(8,0x10,event)">Ask User Shell</a></li>
+                                            <li><a class="dropdown-item term-ask-user" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</a></li>
+                                            <li class="ass"><a class="dropdown-item term-user" onclick="cmtermaction(8,0,event)"><b>User Shell</b></a></li>
+                                            <li class="ass"><a class="dropdown-item term-user" onclick="cmtermaction(9,0,event)">User PowerShell</a></li>
+                                            <li class="lin"><a class="dropdown-item term-admin" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></a></li>
+                                            <li class="lin"><a class="dropdown-item term-user" onclick="cmtermaction(8,0,event)">User Shell</a></li>
+                                            <li class="lin"><a class="dropdown-item term-ask-user" onclick="cmtermaction(100,0,event)">Login Shell</a></li>
                                         </ul>
                                     </div>
                                     <div class="btn-group dropdown-center me-1" id=connectbutton2sspan>
@@ -2373,6 +2373,8 @@
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
         var features3 = parseInt('{{{features3}}}');
+        var termMenu = parseInt('{{{termMenu}}}');
+        if (isNaN(termMenu)) { termMenu = 7; }
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -7812,6 +7814,17 @@
                             } else {
                                 children[i].style.display = (children[i].classList.contains('lin') || children[i].classList.contains('ass')) ? 'none' : 'block';
                             }
+
+                            var item = children[i];
+                            var menuItem = item.firstElementChild || item;
+                            var showItem = true;
+                            if (menuItem.classList.contains('term-admin') && !(termMenu & 1)) { showItem = false; }
+                            if (menuItem.classList.contains('term-user') && !(termMenu & 2)) { showItem = false; }
+                            if (menuItem.classList.contains('term-ask-admin') && !((termMenu & 4) && (termMenu & 1))) { showItem = false; }
+                            if (menuItem.classList.contains('term-ask-user') && !((termMenu & 4) && (termMenu & 2))) { showItem = false; }
+                            if (item.classList.contains('lin')) { showItem = showItem && (currentNode.agent.id > 4 && !isWindowsNode(currentNode)); }
+                            if (item.classList.contains('ass')) { showItem = showItem && (currentNode.agent.id == 34); }
+                            item.style.display = showItem ? 'block' : 'none';
                         }
                     }
                     break;

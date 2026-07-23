@@ -56,6 +56,33 @@ const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 // 101 = Intel AMT Redirection
 // 200 = Messenger
 
+function isTerminalProtocolAllowed(domain, protocol) {
+    // Admin/User terminal protocols only.
+    if ((protocol != 1) && (protocol != 6) && (protocol != 8) && (protocol != 9)) return true;
+
+    var menu = null;
+    if ((domain != null) && (typeof domain.terminal == 'object')) {
+        menu = domain.terminal.contextmenu;
+        if (menu == null) { menu = domain.terminal.contextMenu; }
+    }
+    if (menu == null) return true;
+    if (typeof menu == 'string') { menu = [menu]; }
+    if (Array.isArray(menu) == false) return true;
+
+    var mask = 0;
+    for (var i = 0; i < menu.length; i++) {
+        if (typeof menu[i] != 'string') continue;
+        var v = menu[i].toLowerCase().trim();
+        if (v == 'all') return true;
+        if (v == 'admin') { mask |= 1; }
+        if (v == 'user') { mask |= 2; }
+        if (v == 'ask') { mask |= 4; }
+    }
+    if (mask == 0) mask = 7;
+    if ((protocol == 1) || (protocol == 6)) return ((mask & 1) != 0);
+    return ((mask & 2) != 0);
+}
+
 function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, extraKey, func) {
     // Check the public id
     parent.db.GetAllTypeNodeFiltered([nodeid], domain.id, 'deviceshare', null, function (err, docs) {
@@ -205,6 +232,17 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
 
     // Patch Messenger protocol to 200
     if ((obj.id != null) && (obj.id.startsWith('meshmessenger/') == true)) { obj.req.query.p = 200; }
+
+    // Server-side enforcement of terminal mode restrictions.
+    var requestedProtocol = parseInt(obj.req.query.p);
+    if (Number.isNaN(requestedProtocol) == false) {
+        console.log('Requested protocol: ' + requestedProtocol);
+        if (isTerminalProtocolAllowed(domain, requestedProtocol) == false) {
+            parent.parent.debug('relay', 'Relay: Terminal mode denied by domain terminal.contextMenu (' + obj.req.clientIp + ')');
+            try { ws.close(); } catch (e) { }
+            return;
+        }
+    }
 
     // Mesh Rights
     const MESHRIGHT_EDITMESH = 1;

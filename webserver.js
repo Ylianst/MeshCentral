@@ -10171,6 +10171,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
         xargs.customCSSTags += generateThemePackCSSTags(domain, page);
         xargs.customJSTags += generateThemePackJSTags(domain, page);
+
+        // Terminal context menu options
+        var termMenu = 7;
+        if (domain.terminal != null) {
+            var terminalContextMenu = domain.terminal.contextmenu;
+            if ((terminalContextMenu == null) && (domain.terminal.contextMenu != null)) { terminalContextMenu = domain.terminal.contextMenu; }
+            if (typeof terminalContextMenu === 'string') { terminalContextMenu = [terminalContextMenu]; }
+            if (Array.isArray(terminalContextMenu)) {
+                termMenu = 0;
+                if (terminalContextMenu.indexOf('all') >= 0) { termMenu = 7; }
+                else {
+                    if (terminalContextMenu.indexOf('admin') >= 0) { termMenu |= 1; }
+                    if (terminalContextMenu.indexOf('user') >= 0) { termMenu |= 2; }
+                    if (terminalContextMenu.indexOf('ask') >= 0) { termMenu |= 4; }
+                }
+            }
+        }
+        xargs.termMenu = termMenu;
+
         return xargs;
     }
 

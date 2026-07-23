@@ -85,23 +85,23 @@
         <div class="cmtext" onclick="cmconnectfilesaction()">Ask Consent</div>
     </div>
     <div id="termShellContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(6,0,event)">Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</div>
-        <div class="cmtext" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</div>
-        <div class="cmtext" onclick="cmtermaction(8,0x10,event)">Ask User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</div>
+        <div class="cmtext term-admin" onclick="cmtermaction(1,0,event)"><b>Admin Shell</b></div>
+        <div class="cmtext term-admin" onclick="cmtermaction(6,0,event)">Admin PowerShell</div>
+        <div class="cmtext term-user" onclick="cmtermaction(8,0,event)">User Shell</div>
+        <div class="cmtext term-user" onclick="cmtermaction(9,0,event)">User PowerShell</div>
+        <div class="cmtext term-ask-admin" onclick="cmtermaction(1,0x10,event)">Ask Admin Shell</div>
+        <div class="cmtext term-ask-admin" onclick="cmtermaction(6,0x10,event)">Ask Admin PowerShell</div>
+        <div class="cmtext term-ask-user" onclick="cmtermaction(8,0x10,event)">Ask User Shell</div>
+        <div class="cmtext term-ask-user" onclick="cmtermaction(9,0x10,event)">Ask User PowerShell</div>
     </div>
     <div id="termShellContextMenu2" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(8,0,event)"><b>User Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(9,0,event)">User PowerShell</div>
+        <div class="cmtext term-user" onclick="cmtermaction(8,0,event)"><b>User Shell</b></div>
+        <div class="cmtext term-user" onclick="cmtermaction(9,0,event)">User PowerShell</div>
     </div>
     <div id="termShellContextMenuLinux" class="contextMenu noselect" style="display:none;min-width:0px">
-        <div class="cmtext" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></div>
-        <div class="cmtext" onclick="cmtermaction(8,0,event)">User Shell</div>
-        <div class="cmtext" onclick="cmtermaction(100,0,event)">Login Shell</div>
+        <div class="cmtext term-admin" onclick="cmtermaction(1,0,event)"><b>Root Shell</b></div>
+        <div class="cmtext term-user" onclick="cmtermaction(8,0,event)">User Shell</div>
+        <div class="cmtext term-ask-user" onclick="cmtermaction(100,0,event)">Login Shell</div>
     </div>
     <div id="deskConnectContextMenu" class="contextMenu noselect" style="display:none;min-width:0px">
         <div class="cmtext" onclick="cmdeskaction(1,event)">Ask Consent + Bar</div>
@@ -1652,6 +1652,8 @@
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
         var features3 = parseInt('{{{features3}}}');
+        var termMenu = parseInt('{{{termMenu}}}');
+        if (isNaN(termMenu)) { termMenu = 7; }
         var sessionTime = parseInt('{{{sessiontime}}}');
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var webRelayDns = '{{{webRelayDns}}}';
@@ -6724,6 +6726,19 @@
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
                     if (currentNode.agent.id > 4 && !isWindowsNode(currentNode)) { contextmenudiv = document.getElementById('termShellContextMenuLinux'); } // Non-Windows options
                     if (currentNode.agent.id == 34) { contextmenudiv = document.getElementById('termShellContextMenu2'); } // Windows MeshCentral Assistant
+                    var items = contextmenudiv.children;
+
+                    for (var i = 0; i < items.length; i++) {
+                        var item = items[i];
+                        var menuItem = item.firstElementChild || item;
+                        var showItem = true;
+                        if (menuItem.classList.contains('term-admin') && !(termMenu & 1)) { showItem = false; }
+                        if (menuItem.classList.contains('term-user') && !(termMenu & 2)) { showItem = false; }
+                        if (menuItem.classList.contains('term-ask-admin') && !((termMenu & 4) && (termMenu & 1))) { showItem = false; }
+                        if (menuItem.classList.contains('term-ask-user') && !((termMenu & 4) && (termMenu & 2))) { showItem = false; }
+                        item.style.display = showItem ? 'block' : 'none';
+                    }
+                    
                     showContextMenuDiv(contextmenudiv, event.pageX, event.pageY);
                     break;
                 }
