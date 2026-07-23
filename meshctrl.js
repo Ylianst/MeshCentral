@@ -16,7 +16,7 @@ var settings = {};
 const crypto = require('crypto');
 const args = require('minimist')(process.argv.slice(2));
 const path = require('path');
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'serverversion', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -26,6 +26,7 @@ if (args['_'].length == 0) {
     console.log("Supported actions:");
     console.log("  Help [action]               - Get help on an action.");
     console.log("  ServerInfo                  - Show server information.");
+    console.log("  ServerVersion               - Show server version.");
     console.log("  UserInfo                    - Show user information.");
     console.log("  ListUsers                   - List user accounts.");
     console.log("  ListUserSessions            - List online users.");
@@ -96,6 +97,7 @@ if (args['_'].length == 0) {
         case 'config': { performConfigOperations(args); return; }
         case 'indexagenterrorlog': { indexAgentErrorLog(); return; }
         case 'serverinfo': { ok = true; break; }
+        case 'serverversion': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listusersessions': { ok = true; break; }
@@ -374,6 +376,14 @@ if (args['_'].length == 0) {
                         console.log("Get information on the MeshCentral server, Example usages:\r\n");
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginpass mypassword");
                         console.log("  MeshCtrl ServerInfo --loginuser myaccountname --loginkeyfile key.txt");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
+                    case 'serverversion': {
+                        console.log("Get the version of the MeshCentral server, Example usages:\r\n");
+                        console.log("  MeshCtrl ServerVersion --loginuser myaccountname --loginpass mypassword");
+                        console.log("  MeshCtrl ServerVersion --loginuser myaccountname --loginkeyfile key.txt");
                         console.log("\r\nOptional arguments:\r\n");
                         console.log("  --json                 - Show result as JSON.");
                         break;
@@ -1381,6 +1391,7 @@ function serverConnect() {
         //console.log('Connected.');
         switch (settings.cmd) {
             case 'serverinfo': { break; }
+            case 'serverversion': { ws.send(JSON.stringify({ action: 'serverversion', responseid: 'meshctrl' })); break; }
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users', responseid: 'meshctrl' })); break; }
             case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); break; }
@@ -2091,6 +2102,23 @@ function serverConnect() {
                         for (var i in data.serverinfo) { console.log(i + ':', data.serverinfo[i]); }
                     }
                     process.exit();
+                }
+                break;
+            }
+            case 'serverversion': { // SERVERVERSION
+                if (settings.cmd == 'serverversion') {
+                    if (data.responseid == 'meshctrl') {
+                        if (data.result != 'OK') { console.log(data.result); process.exit(); }
+                        if (args.json) {
+                            console.log(JSON.stringify(data.tags, null, 2));
+                        } else {
+                            var svmsg = 'MeshCentral version: ' + data.tags.current;
+                            if (typeof data.tags.latest == 'string') { svmsg += ' (latest: ' + data.tags.latest + ')'; }
+                            if (typeof data.tags.stable == 'string') { svmsg += ' (stable: ' + data.tags.stable + ')'; }
+                            console.log(svmsg);
+                        }
+                        process.exit();
+                    }
                 }
                 break;
             }

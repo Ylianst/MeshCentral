@@ -7129,8 +7129,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandServerVersion(command) {
         // Check the server version
-        if (userHasSiteUpdate() && domainHasMyServerUpgrade())
+        if (command.responseid != null) {
+            if (userHasSiteUpdate() && domainHasMyServerUpgrade()) {
+                parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', responseid: command.responseid, result: 'OK', tags: tags }); });
+            }
+            else { obj.send({ action: 'serverversion', responseid: command.responseid, result: 'Permission denied' }); }
+        }
+        else if (userHasSiteUpdate() && domainHasMyServerUpgrade()) {
             parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', tags: tags }); });
+        }
     }
 
     function serverCommandSetClip(command) {
