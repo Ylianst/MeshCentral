@@ -7726,7 +7726,6 @@ function sendPeriodicServerUpdate(flags, force) {
         if ((flags & 4) && (process.platform == 'win32')) {
             // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
             try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
-            //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
         }
         // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
         // spawn child processes), so they don't block this periodic update with a nested
@@ -7761,6 +7760,13 @@ function sendPeriodicServerUpdate(flags, force) {
                     });
                 } catch (ex) { }
             }
+
+            // Pending reboot
+            try {
+                meshCoreObj.pr = require('win-info').pendingReboot();
+                meshCoreObjChanged();
+            } catch (ex) { }
+
 
             // Get Defender Information
             try {

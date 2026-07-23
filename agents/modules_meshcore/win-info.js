@@ -160,24 +160,32 @@ function regQuery(H, Path, Key)
 }
 function pendingReboot()
 {
+    var ret = [];
     var tmp = null;
-    var ret = null;
     var HKEY = require('win-registry').HKEY;
     if(regQuery(HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing', 'RebootPending') !=null)
     {
-        ret = 'Component Based Servicing';
+        ret.push('Component Based Servicing');
     }
-    else if(regQuery(HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate', 'RebootRequired'))
+    if(regQuery(HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate', 'RebootRequired'))
     {
-        ret = 'Windows Update';
+        ret.push('Windows Update');
     }
-    else if ((tmp=regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager', 'PendingFileRenameOperations'))!=null && tmp != 0 && tmp != '')
+    try {
+        var keyInfo = regQuery(HKEY.LocalMachine, 'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update');
+        if (keyInfo && keyInfo.subkeys){
+            if (keyInfo.subkeys.indexOf('RebootRequired') !== -1) {
+                ret.push('Windows Update');
+            }
+        }
+    } catch(ex) { }
+    if ((tmp=regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\Session Manager', 'PendingFileRenameOperations'))!=null && tmp != 0 && tmp != '')
     {
-        ret = 'File Rename';
+        ret.push('File Rename');
     }
-    else if (regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName', 'ComputerName') != regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName', 'ComputerName'))
+    if (regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName', 'ComputerName') != regQuery(HKEY.LocalMachine, 'SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName', 'ComputerName'))
     {
-        ret = 'System Rename';
+        ret.push('System Rename');
     }
     return (ret);
 }

@@ -2996,11 +2996,20 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
         }
         output["AntiVirus"] = av; outputCount++;
     }
+    // Defender for Windows Server
+    if(typeof node.defender == 'object') {
+        output["Windows Defender"] = node.defender; outputCount++; 
+    }
+    if (node.pr && node.pr.length > 0) {
+        var pr = [];
+        for (var i in node.pr) { pr.push(node.pr[i]); }
+        output["Pending Reboot"] = pr; outputCount++;
+    }            
     if (typeof node.wsc == 'object') {
-        output["WindowsSecurityCenter"] = node.wsc; outputCount++;
+        output["Windows Security Center"] = node.wsc; outputCount++;
     }
     if (typeof node.lsc == 'object') {
-        output["LinuxSecurityCenter"] = node.lsc; outputCount++;
+        output["Linux Security Center"] = node.lsc; outputCount++;
     }
     if (outputCount > 0) { info["General"] = output; }
 

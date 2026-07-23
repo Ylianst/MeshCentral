@@ -4643,6 +4643,7 @@
                                 if (message.event.node.av != null) { node.av = message.event.node.av; }
                                 if (message.event.node.lsc != null) { node.lsc = message.event.node.lsc; }
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
+                                if (message.event.node.pr != null) { node.pr = message.event.node.pr; }
                                 if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
                                 if (message.event.node.volumes != null) { node.volumes = message.event.node.volumes; }
                                 node.namel = node.name.toLowerCase();
@@ -9017,6 +9018,13 @@
                     if (node.defender.TamperProtected != null) { if (node.defender.TamperProtected == true) { y.push("TamperProtection" + ' - <span style=color:green>' + "On" + '</span>'); } else { y.push("TamperProtection" + ' - <span style=color:red>' + "Off" + '</span>'); } }
                     if (node.defender.AntivirusSignatureVersion != null) { y.push("SignatureVersion" + ' - <span style=color:green>' + EscapeHtml(node.defender.AntivirusSignatureVersion) + '</span>'); }
                     if (y.length > 0) x += addDeviceAttribute("Windows Defender", y.join(', '));
+                }
+
+                // Pending Reboot
+                if (node.pr) {
+                    var y = [];
+                    for (var i in node.pr){ y.push(node.pr[i]); }
+                    if (y.length > 0) x += addDeviceAttribute("Pending Reboot", y.join(', '));
                 }
 
                 // Linux Security Central
