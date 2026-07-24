@@ -4203,7 +4203,12 @@ function InstallModules(modules, args, func) {
                     var modulePath = null;
                     // This is the first way to test if a module is already installed.
                     try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) {
-                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { modulePath = ("" + ex).split(' ').at(-1); } else { throw new Error(); }
+                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { 
+                            var rootPath = __dirname;
+                            if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { rootPath = require('path').join(__dirname, '../..'); }
+                            var pkgPath = require('path').join(rootPath, 'node_modules', moduleName, 'package.json');
+                            if (require('fs').existsSync(pkgPath)) { modulePath = pkgPath; }
+                        } else { throw new Error(); }
                     }
                     // If the module is not installed, but we get the ERR_PACKAGE_PATH_NOT_EXPORTED error, try a second way.
                     if ((versionMatch == false) && (modulePath != null)) {
