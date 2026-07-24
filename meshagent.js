@@ -1577,6 +1577,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Information includes file hash and download location URL
                     if (typeof command.name != 'string') break;
                     var info = parent.parent.meshToolsBinaries[command.name];
+                    if (info == null) break;
                     if ((command.hash != null) && (info.hash == command.hash)) return;
 
                     // To build the connection URL, if we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
