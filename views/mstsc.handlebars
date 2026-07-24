@@ -117,6 +117,7 @@
             var password = Q('inputPassword').value;
             var savepass = Q('inputSaveCredentials').checked;
             var options = { savepass: savepass, useServerCreds: (Q('d3coreMode').value == 1) };
+            if (typeof urlargs.flags == 'number') { options.flags = urlargs.flags; }
             QV('myCanvas', true);
             QV('main', false);
             canvas.width = window.innerWidth;

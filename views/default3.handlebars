@@ -4053,7 +4053,8 @@
                         if (node != null) { vncurl += '&name=' + encodeURIComponentEx(node.name); }
                         safeNewWindow(vncurl, 'mcnovnc/' + message.nodeid);
                     } else if (message.tag == 'mstsc') {
-                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
+                        var rdpflags = (desktopsettings.rdpflags != null) ? ('flags=' + parseInt(desktopsettings.rdpflags) + '&') : '';
+                        var rdpurl = window.location.origin + domainUrl + 'mstsc.html?' + rdpflags + 'ws=' + message.cookie + (urlargs.key ? ('&key=' + urlargs.key) : '');
                         var node = getNodeFromId(message.nodeid);
                         if (node != null) { rdpurl += '&name=' + encodeURIComponentEx(node.name); }
                         if (message.localRelay) { rdpurl += '&local=1'; }
