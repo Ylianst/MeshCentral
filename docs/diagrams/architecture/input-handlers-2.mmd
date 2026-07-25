@@ -1,0 +1,12 @@
+flowchart TD
+    TouchStart["touchstart"] --> TrackTouches["Track Touch Points"]
+    TrackTouches --> EvaluateState["Evaluate Gesture Candidates"]
+
+    EvaluateState -->|"movement < threshold"| Wait["Wait for More Input"]
+    EvaluateState -->|"movement > threshold"| EliminateTap["Eliminate Tap/Longpress"]
+
+    EliminateTap --> DetectType["Determine Drag / Pinch / TwoDrag"]
+    DetectType --> GestureStart["Dispatch gesturestart"]
+    GestureStart --> GestureMove["Dispatch gesturemove"]
+    GestureMove --> TouchEnd["touchend"]
+    TouchEnd --> GestureEnd["Dispatch gestureend"]

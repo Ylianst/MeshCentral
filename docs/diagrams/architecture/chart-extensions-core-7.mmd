@@ -1,0 +1,6 @@
+flowchart TD
+    StateA["Previous State"] --> Animator["Animator"]
+    StateB["Next State"] --> Animator
+    Animator --> Interpolate["Interpolate Properties"]
+    Interpolate --> Frame["Render Frame"]
+    Frame --> Complete["Animation Complete"]

@@ -1,0 +1,19 @@
+flowchart LR
+    Websock["Websock"] --> RFB["RFB"]
+    RFB --> Compression["Compression"]
+    Compression --> Decoders["Decoders"]
+    Decoders --> Display["Display"]
+
+    subgraph transport_layer["Transport Layer"]
+        Websock
+    end
+
+    subgraph protocol_layer["Protocol Layer"]
+        RFB
+        Compression
+    end
+
+    subgraph rendering_layer["Rendering Layer"]
+        Decoders
+        Display
+    end

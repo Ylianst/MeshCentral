@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant Server
+    participant Client
+
+    Server->>Client: CB_MONITOR_READY
+    Client->>Server: CB_CLIP_CAPS
+    Client->>Server: CB_FORMAT_LIST

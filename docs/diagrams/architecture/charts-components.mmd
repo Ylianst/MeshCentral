@@ -1,0 +1,8 @@
+flowchart TD
+    UI["MeshCentral UI"] --> Extensions["Chart Extensions"]
+    Extensions --> Core["Chart Core"]
+    Core --> Utilities["Chart Utilities"]
+    Utilities --> Data["Chart Data Handling"]
+    Utilities --> Rendering["Chart Rendering"]
+    Utilities --> Interactions["Chart Interactions"]
+    Rendering --> Canvas["HTML5 Canvas API"]

@@ -1,0 +1,6 @@
+flowchart TD
+    Update["FramebufferUpdate"] --> Rect["Read Rectangle Header"]
+    Rect --> Encoding["Identify Encoding"]
+    Encoding --> Decoder["Decoder.decodeRect()"]
+    Decoder --> DisplayRender["Display Rendering"]
+    DisplayRender --> Flip["Display.flip()"]

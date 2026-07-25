@@ -1,0 +1,5 @@
+flowchart LR
+    UpdateRequest["Update Request"] --> ResolveConfig["Resolve Animation Config"]
+    ResolveConfig --> CreateAnimations["Create Property Animations"]
+    CreateAnimations --> Animator["Global Animator"]
+    Animator --> Redraw["Canvas Redraw"]

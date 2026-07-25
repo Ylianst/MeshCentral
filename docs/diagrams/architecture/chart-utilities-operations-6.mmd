@@ -1,0 +1,5 @@
+flowchart LR
+    ActiveElements --> BuildTooltipItems["Create Tooltip Items"]
+    BuildTooltipItems --> FormatCallbacks["Execute Callbacks"]
+    FormatCallbacks --> LayoutTooltip["Measure & Position"]
+    LayoutTooltip --> DrawTooltip["Render Tooltip"]

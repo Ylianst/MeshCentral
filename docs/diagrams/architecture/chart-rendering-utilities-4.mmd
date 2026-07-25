@@ -1,0 +1,7 @@
+flowchart TD
+    UpdateCall["Chart.update()"] --> AnimationResolver["Animation Resolver"]
+    AnimationResolver --> Animator["Animator Manager"]
+    Animator --> Easing["Easing Functions"]
+    Animator --> FrameLoop["requestAnimationFrame"]
+    FrameLoop --> ElementUpdate["Element Property Interpolation"]
+    ElementUpdate --> Redraw["Canvas Redraw"]

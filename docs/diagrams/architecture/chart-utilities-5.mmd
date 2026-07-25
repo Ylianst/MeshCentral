@@ -1,0 +1,5 @@
+flowchart TD
+    ChartInstance["Chart Core (On)"] --> DatasetController["Dataset Controller (Ns)"]
+    ChartInstance --> AnimationManager["Animation Manager (Os)"]
+    DatasetController --> Elements["Chart Elements"]
+    AnimationManager --> Elements

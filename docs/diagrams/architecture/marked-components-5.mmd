@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant App as Application
+    participant Marked as Marked
+    participant Hooks as Hooks
+    participant Lexer as Lexer
+    participant Parser as Parser
+
+    App->>Marked: parse(markdown)
+    Marked->>Hooks: preprocess(markdown)
+    Hooks-->>Marked: transformed markdown
+    Marked->>Lexer: lex(markdown)
+    Lexer-->>Marked: tokens
+    Marked->>Hooks: processAllTokens(tokens)
+    Hooks-->>Marked: modified tokens
+    Marked->>Parser: parse(tokens)
+    Parser-->>Marked: html
+    Marked->>Hooks: postprocess(html)
+    Hooks-->>App: final html

@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant Server
+    participant Client
+
+    Server->>Client: CB_FORMAT_LIST
+    Client->>Server: CB_FORMAT_LIST_RESPONSE
+    Client->>Server: CB_FORMAT_DATA_REQUEST
+    Server->>Client: CB_FORMAT_DATA_RESPONSE

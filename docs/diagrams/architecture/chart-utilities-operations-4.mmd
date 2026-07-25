@@ -1,0 +1,5 @@
+flowchart TD
+    UpdateRequest["Update Request"] --> ResolveConfig["Resolve Animation Config"]
+    ResolveConfig --> CreateAnimation["Create Property Animations"]
+    CreateAnimation --> Animator["Global Animator"]
+    Animator --> ElementUpdate["Update Element Properties"]

@@ -1,0 +1,5 @@
+flowchart LR
+    BufferService --> NormalBuffer["Normal Buffer"]
+    BufferService --> AltBuffer["Alternate Buffer"]
+    NormalBuffer --> BufferLines["CircularList of BufferLine"]
+    AltBuffer --> BufferLines

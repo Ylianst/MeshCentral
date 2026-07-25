@@ -1,0 +1,6 @@
+flowchart TD
+    Websock["Websock Transport"] --> RFB["RFB Protocol"]
+    RFB --> Security["Security Type Negotiation"]
+    Security --> Crypto["Crypto Components"]
+    Crypto --> SessionKey["Session Keys"]
+    SessionKey --> EncryptedData["Encrypted Frame Data"]

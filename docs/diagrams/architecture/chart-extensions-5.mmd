@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant Chart
+    participant PluginService
+    participant Plugin
+
+    Chart->>PluginService: beforeInit
+    PluginService->>Plugin: beforeInit()
+
+    Chart->>PluginService: beforeUpdate
+    PluginService->>Plugin: beforeUpdate()
+
+    Chart->>PluginService: beforeDraw
+    PluginService->>Plugin: beforeDraw()
+
+    Chart->>PluginService: afterDraw
+    PluginService->>Plugin: afterDraw()

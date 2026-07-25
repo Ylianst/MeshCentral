@@ -1,0 +1,6 @@
+flowchart TD
+    DOMEvent["DOM Event"] --> Normalize["Normalize Coordinates"]
+    Normalize --> InteractionMode["Resolve Interaction Mode"]
+    InteractionMode --> ActiveElements["Determine Active Elements"]
+    ActiveElements --> TooltipUpdate["Update Tooltip"]
+    ActiveElements --> HoverStyles["Apply Hover Styles"]

@@ -1,0 +1,16 @@
+classDiagram
+    class DateAdapterBase {
+        +parse(value, format)
+        +format(timestamp, format)
+        +add(timestamp, amount, unit)
+        +diff(max, min, unit)
+        +startOf(timestamp, unit)
+        +endOf(timestamp, unit)
+    }
+
+    class RadialLinearScale {
+        +getDistanceFromCenterForValue(value)
+        +getPointPosition(index, value)
+        +computeTickLimit()
+        +fit()
+    }

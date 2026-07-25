@@ -1,0 +1,19 @@
+flowchart TD
+    AppLayer["RFB / RA2 Authentication"] --> LegacyCrypto["LegacyCrypto Interface"]
+
+    LegacyCrypto --> AES["AES Ciphers"]
+    LegacyCrypto --> DES["DES Ciphers"]
+    LegacyCrypto --> RSA["RSA Cipher"]
+    LegacyCrypto --> DH["Diffie-Hellman Cipher"]
+    LegacyCrypto --> MD5["MD5 Digest"]
+
+    AES --> AESECB["AESECBCipher"]
+    AES --> AESEAX["AESEAXCipher"]
+
+    DES --> DESECB["DESECBCipher"]
+    DES --> DESCBC["DESCBCCipher"]
+    DES --> DESCore["DES Core Engine"]
+
+    RSA --> RSACipherNode["RSACipher"]
+    DH --> DHCipherNode["DHCipher"]
+    DH --> DHPublicKeyNode["DHPublicKey"]

@@ -1,0 +1,5 @@
+flowchart LR
+    Datasets --> GenerateLabels["Generate Legend Labels"]
+    GenerateLabels --> LayoutLegend["Compute Layout"]
+    LayoutLegend --> HitBoxes["Build Interaction Boxes"]
+    HitBoxes --> RenderLegend["Draw Legend"]

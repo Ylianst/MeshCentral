@@ -1,0 +1,8 @@
+flowchart TD
+    Init["Initialize Chart"] --> BuildScales["Build Scales"]
+    BuildScales --> BuildControllers["Build Controllers"]
+    BuildControllers --> ParseData["Parse Data"]
+    ParseData --> Layout["Layout Phase"]
+    Layout --> Render["Render Phase"]
+    Render --> Animate["Animation Engine"]
+    Animate --> Events["Interaction Handling"]

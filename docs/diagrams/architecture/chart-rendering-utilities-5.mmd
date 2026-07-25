@@ -1,0 +1,5 @@
+flowchart TD
+    ChartResize["Resize Event"] --> Measure["Text Measurement"]
+    Measure --> TickCalc["Tick Generation"]
+    TickCalc --> LayoutEngine["Box Layout System"]
+    LayoutEngine --> ChartArea["Chart Area Calculation"]

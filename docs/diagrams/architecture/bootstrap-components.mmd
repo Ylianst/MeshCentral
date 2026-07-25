@@ -1,0 +1,25 @@
+flowchart TD
+    BaseComponent["BaseComponent"]
+    Config["Config"]
+    EventHandler["EventHandler"]
+    SelectorEngine["SelectorEngine"]
+    PopperEngine["Popper Integration"]
+
+    Alert["Alert"]
+    Modal["Modal"]
+    Dropdown["Dropdown"]
+    Tooltip["Tooltip"]
+    Carousel["Carousel"]
+
+    BaseComponent --> Config
+    Alert --> BaseComponent
+    Modal --> BaseComponent
+    Dropdown --> BaseComponent
+    Tooltip --> BaseComponent
+    Carousel --> BaseComponent
+
+    Dropdown --> PopperEngine
+    Tooltip --> PopperEngine
+
+    BaseComponent --> EventHandler
+    BaseComponent --> SelectorEngine

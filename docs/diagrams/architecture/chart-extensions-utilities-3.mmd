@@ -1,0 +1,7 @@
+flowchart TD
+    UpdateCall["Chart.update()"] --> ResolveAnimations["Resolve Animations"]
+    ResolveAnimations --> CreateAnimation["Create Animation Instances"]
+    CreateAnimation --> AnimatorQueue["Animator Queue"]
+    AnimatorQueue --> FrameLoop["requestAnimationFrame Loop"]
+    FrameLoop --> Tick["Tick & Interpolate"]
+    Tick --> Draw["Re-render Chart"]

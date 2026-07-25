@@ -1,0 +1,7 @@
+flowchart TD
+    RawData["Raw Dataset"] --> Parse["Parse Values"]
+    Parse --> RadialScale["Radial Linear Scale"]
+    RadialScale --> Coordinates["(x,y) Coordinates"]
+    Coordinates --> Controller["Dataset Controller"]
+    Controller --> Canvas["Canvas Rendering"]
+    Canvas --> Animation["Animation Manager"]

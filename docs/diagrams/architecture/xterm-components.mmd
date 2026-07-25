@@ -1,0 +1,17 @@
+flowchart TD
+    Terminal["Terminal (Public API)"] --> CoreTerminal["CoreTerminal"]
+    CoreTerminal --> InputHandler["InputHandler"]
+    CoreTerminal --> BufferService["BufferService"]
+    CoreTerminal --> RenderService["RenderService"]
+    CoreTerminal --> CoreMouseService["CoreMouseService"]
+
+    RenderService --> DomRenderer["DomRenderer"]
+    DomRenderer --> RowFactory["DomRendererRowFactory"]
+
+    CoreTerminal --> SelectionService["SelectionService"]
+    CoreTerminal --> Linkifier["Linkifier"]
+    CoreTerminal --> AccessibilityManager["AccessibilityManager"]
+    CoreTerminal --> DecorationService["DecorationService"]
+
+    InputHandler --> EscapeParser["EscapeSequenceParser"]
+    EscapeParser --> BufferService

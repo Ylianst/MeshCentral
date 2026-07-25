@@ -1,0 +1,15 @@
+flowchart TD
+    Key["Raw Key"] --> ImportCTR["Import AES-CTR Key"]
+    Key --> ImportCBC["Import AES-CBC Key"]
+
+    ImportCBC --> InitCMAC["Initialize CMAC Subkeys"]
+
+    Message["Plaintext"] --> EncryptCTR["AES-CTR Encryption"]
+    Nonce["Nonce"] --> NonceCMAC["CMAC(Nonce)"]
+    AD["Additional Data"] --> ADCMAC["CMAC(AD)"]
+
+    EncryptCTR --> MAC["CMAC(Ciphertext)"]
+    NonceCMAC --> MAC
+    ADCMAC --> MAC
+
+    MAC --> Output["Ciphertext + Tag"]

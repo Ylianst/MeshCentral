@@ -1,0 +1,6 @@
+flowchart TD
+    BeforeLayout["beforeLayout Hook"] --> CollectBoxes["Collect Layout Boxes"]
+    CollectBoxes --> MeasureBoxes["Measure Width/Height"]
+    MeasureBoxes --> AllocateSpace["Allocate Positions"]
+    AllocateSpace --> ChartArea["Finalize Chart Area"]
+    ChartArea --> RenderPhase["Render Phase"]

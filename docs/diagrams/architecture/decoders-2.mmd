@@ -1,0 +1,3 @@
+flowchart LR
+    Sock["Websock"] -->|"read delta"| CopyRect["CopyRect Decoder"]
+    CopyRect -->|"copyImage()"| Display["Display"]

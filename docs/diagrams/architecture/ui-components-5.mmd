@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant User
+    participant Component
+    participant PageLogic
+
+    User->>Component: Select File
+    Component->>Component: Show Loading State
+    Component->>PageLogic: onUpload(iconKey, file)
+    PageLogic-->>Component: { path }
+    Component->>Component: Update Preview
+    Component->>Component: Show Success State

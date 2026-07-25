@@ -1,0 +1,7 @@
+flowchart TD
+    UserOptions["User Options"] --> ScopeResolver["Scope Resolver"]
+    ScopeResolver --> DatasetScope["Dataset Scope"]
+    ScopeResolver --> ElementScope["Element Scope"]
+    ScopeResolver --> GlobalDefaults["Global Defaults"]
+    ScopeResolver --> Fallback["Fallback Chain"]
+    ScopeResolver --> FinalConfig["Resolved Options"]

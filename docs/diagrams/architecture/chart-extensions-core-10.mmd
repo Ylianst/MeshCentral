@@ -1,0 +1,7 @@
+flowchart TD
+    InputData["Dataset Input"] --> ParseStage["Parsing"]
+    ParseStage --> ScaleMap["Scale Mapping"]
+    ScaleMap --> GeometryStage["Geometry Computation"]
+    GeometryStage --> ElementUpdate["Element Update"]
+    ElementUpdate --> AnimationStage["Animation"]
+    AnimationStage --> CanvasRender["Canvas Render"]

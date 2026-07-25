@@ -1,0 +1,5 @@
+flowchart TD
+    Cursor["Cursor Position"] --> Normalize["Normalize Coordinates"]
+    Normalize --> AxisFilter["Axis Filtering"]
+    AxisFilter --> DistanceCheck["Distance / Containment Check"]
+    DistanceCheck --> ActiveSet["Active Elements"]

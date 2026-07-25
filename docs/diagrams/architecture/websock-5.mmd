@@ -1,0 +1,7 @@
+flowchart TD
+    HasData{"sQlen > 0?"}
+    HasData -->|"No"| Done["Do nothing"]
+    HasData -->|"Yes"| State{"readyState open?"}
+    State -->|"No"| Done
+    State -->|"Yes"| Send["WebSocket.send(binary)"]
+    Send --> Reset["Reset sQlen"]

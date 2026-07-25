@@ -1,0 +1,5 @@
+flowchart TD
+    RFB["RFB Core"] -->|"selects encoding"| Decoder["Decoder Implementation"]
+    Decoder -->|"reads bytes"| Websock["Websock"]
+    Decoder -->|"inflate data"| Compression["Compression Module"]
+    Decoder -->|"render operations"| Display["Display"]

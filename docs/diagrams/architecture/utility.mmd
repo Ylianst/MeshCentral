@@ -1,0 +1,10 @@
+flowchart TD
+    RFB["RFB Module"] -->|"updates cursor"| Cursor["Cursor"]
+    Display["Display Module"] -->|"visual output"| Cursor
+    InputHandlers["Input Handlers"] -->|"mouse events"| Cursor
+
+    RFB -->|"dispatches events"| EventTarget["EventTargetMixin"]
+    Websock["Websock"] -->|"emits messages"| EventTarget
+
+    Cursor --> DOM["Browser DOM"]
+    EventTarget --> Components["Internal Components"]

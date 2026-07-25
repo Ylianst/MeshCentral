@@ -1,0 +1,6 @@
+flowchart TD
+    Parsed["Parsed Values"] --> Merge["Merge With Defaults"]
+    Merge --> Resolve["Resolve Scriptable Options"]
+    Resolve --> MapScale["Map To Scale Coordinates"]
+    MapScale --> Geometry["Compute Geometry"]
+    Geometry --> Model["Create Element Model"]

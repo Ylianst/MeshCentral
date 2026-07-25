@@ -1,0 +1,7 @@
+flowchart TD
+    Rect["Rectangle"] --> Tiles["16x16 Tiles"]
+    Tiles --> SubEnc["Subencoding Flags"]
+    SubEnc --> Raw["Raw Tile"]
+    SubEnc --> BG["Background Specified"]
+    SubEnc --> FG["Foreground Specified"]
+    SubEnc --> SubRects["Subrectangles"]

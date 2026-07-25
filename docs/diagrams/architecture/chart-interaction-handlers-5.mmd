@@ -1,0 +1,5 @@
+flowchart TD
+    DetectChange["Active Set Changed?"] -->|No| NoUpdate["No Re-render"]
+    DetectChange -->|Yes| RemoveHover["Remove Old Hover Styles"]
+    RemoveHover --> ApplyHover["Apply New Hover Styles"]
+    ApplyHover --> Render["Trigger Render"]

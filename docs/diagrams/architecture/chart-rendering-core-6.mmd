@@ -1,0 +1,7 @@
+flowchart TD
+    Start["Start Animation"] --> Frame["requestAnimationFrame"]
+    Frame --> Update["Update Animated Properties"]
+    Update --> Redraw["Re-render Canvas"]
+    Redraw --> Check["More Frames?"]
+    Check -->|Yes| Frame
+    Check -->|No| End["Complete"]

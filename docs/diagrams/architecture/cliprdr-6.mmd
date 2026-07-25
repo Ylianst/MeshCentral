@@ -1,0 +1,5 @@
+flowchart TD
+    ServerData["CB_FORMAT_DATA_RESPONSE"] --> Decode["Decode UCS2 string"]
+    Decode --> Store["Update content"]
+    Store --> EmitEvent["Emit clipboard event"]
+    EmitEvent --> Application["Application consumes data"]

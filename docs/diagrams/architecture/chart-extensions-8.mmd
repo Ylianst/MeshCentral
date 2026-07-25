@@ -1,0 +1,6 @@
+flowchart TD
+    DataHandling["Chart Data Handling"] --> Core
+    Rendering["Chart Rendering"] --> Core
+    Interactions["Chart Interactions"] --> Core
+    Core["Chart Extensions Core"] --> Utilities
+    Utilities["Chart Extensions Utilities"] --> Runtime["Chart.js Runtime"]

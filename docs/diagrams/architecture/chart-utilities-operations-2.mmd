@@ -1,0 +1,7 @@
+flowchart TD
+    Init["Initialize Chart"] --> BuildScales["Build / Update Scales"]
+    BuildScales --> BuildControllers["Build Dataset Controllers"]
+    BuildControllers --> UpdateDatasets["Update Datasets"]
+    UpdateDatasets --> Layout["Compute Layout"]
+    Layout --> Render["Render Canvas"]
+    Render --> Plugins["Notify Plugins"]

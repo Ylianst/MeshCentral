@@ -1,0 +1,9 @@
+flowchart LR
+    Registry["Registry"] --> Controllers["Controllers"]
+    Registry --> Elements["Elements"]
+    Registry --> Scales["Scales"]
+    Registry --> Plugins["Plugins"]
+
+    Controllers --> LineController["Line Controller"]
+    Controllers --> BarController["Bar Controller"]
+    Controllers --> DoughnutController["Doughnut Controller"]

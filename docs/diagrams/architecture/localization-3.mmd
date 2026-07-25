@@ -1,0 +1,8 @@
+flowchart TD
+    Setup["setup()"] --> CheckLang{"Language = en?"}
+    CheckLang -->|"Yes"| Skip["Skip Dictionary Load"]
+    CheckLang -->|"No"| Fetch["Fetch baseURL + language.json"]
+    Fetch --> CheckResponse{"Response OK?"}
+    CheckResponse -->|"Yes"| Parse["Parse JSON"]
+    CheckResponse -->|"No"| Error["Throw Error"]
+    Parse --> Store["Store in _dictionary"]

@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant User
+    participant ChartCore
+    participant Controller
+    participant Scale
+    participant Canvas
+
+    User->>ChartCore: new Chart(config)
+    ChartCore->>Controller: create dataset controllers
+    ChartCore->>Scale: initialize scales
+    ChartCore->>Canvas: initial render

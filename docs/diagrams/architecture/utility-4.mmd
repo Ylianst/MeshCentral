@@ -1,0 +1,7 @@
+flowchart TD
+    Websock["Websock"] -->|"receives framebuffer update"| RFB["RFB"]
+    RFB -->|"cursor update message"| Cursor["Cursor"]
+    Cursor -->|"updates DOM"| Browser["Browser"]
+
+    RFB -->|"fires events"| EventTarget["EventTargetMixin"]
+    EventTarget --> Display["Display"]

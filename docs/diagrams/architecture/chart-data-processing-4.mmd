@@ -1,0 +1,9 @@
+flowchart TD
+    Input["Incoming Dataset"] --> TypeCheck{"Data Type?"}
+    TypeCheck -->|Primitive| ParsePrimitive["Parse Primitive Data"]
+    TypeCheck -->|Array| ParseArray["Parse Array Data"]
+    TypeCheck -->|Object| ParseObject["Parse Object Data"]
+
+    ParsePrimitive --> ParsedOutput["Normalized Parsed Entries"]
+    ParseArray --> ParsedOutput
+    ParseObject --> ParsedOutput

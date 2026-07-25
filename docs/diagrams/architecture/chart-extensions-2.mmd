@@ -1,0 +1,12 @@
+flowchart LR
+    Extensions["Chart Extensions"] --> Core["Core Layer"]
+    Extensions --> Utilities["Utilities Layer"]
+
+    Core --> RuntimeWrap["Runtime Wrapper"]
+    Core --> Lifecycle["Lifecycle Management"]
+
+    Utilities --> Registry["Component Registry"]
+    Utilities --> Layout["Layout Boxes"]
+    Utilities --> Animation["Animation Orchestration"]
+    Utilities --> Plugins["Plugin Coordination"]
+    Utilities --> Options["Option Resolution"]

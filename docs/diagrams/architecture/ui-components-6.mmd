@@ -1,0 +1,4 @@
+flowchart TD
+    UrlInput["User Types URL"] --> Validate["Normalize Preview URL"]
+    Validate --> ShowPreview["Show Preview"]
+    ShowPreview --> NotifyPage["onUrlInput(iconKey, value)"]

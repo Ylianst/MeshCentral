@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant User
+    participant Browser
+    participant Websock
+    participant RFB
+    participant Decoder
+    participant Display
+    participant Server
+
+    User->>Browser: Connect to device
+    Browser->>Websock: Open WebSocket
+    Websock->>Server: Establish connection
+    Server->>RFB: Protocol handshake
+    RFB->>RFB: Security negotiation (RA2 / VNCAuth)
+    Server->>Websock: Framebuffer update
+    Websock->>RFB: Buffered binary data
+    RFB->>Decoder: decodeRect()
+    Decoder->>Display: Render operation
+    Display->>Browser: Canvas update

@@ -1,0 +1,16 @@
+flowchart LR
+    UserInput["User Input"] --> BrowserEvents["Browser DOM Events"]
+
+    subgraph input_handlers["Input Handlers Module"]
+        GestureHandler["GestureHandler"]
+        Keyboard["Keyboard"]
+    end
+
+    BrowserEvents --> GestureHandler
+    BrowserEvents --> Keyboard
+
+    GestureHandler --> HighLevelGestures["Custom Gesture Events"]
+    Keyboard --> KeyEvents["Normalized Key Events"]
+
+    HighLevelGestures --> RFBModule["RFB and Display Module"]
+    KeyEvents --> RFBModule

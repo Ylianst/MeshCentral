@@ -1,0 +1,8 @@
+flowchart TD
+    Component["Any Component"] -->|"extends"| EventTarget["EventTargetMixin"]
+    EventTarget --> Map["Map of event types"]
+    Map --> Set["Set of callbacks per type"]
+
+    Add["addEventListener(type, cb)"] --> Map
+    Remove["removeEventListener(type, cb)"] --> Map
+    Dispatch["dispatchEvent(event)"] --> Callbacks["Invoke callbacks"]

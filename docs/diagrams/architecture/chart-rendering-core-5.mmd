@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant App as Application
+    participant Chart as Chart Engine
+    participant Controller as Dataset Controller
+    participant Scale as Scale (Wo/Linear)
+    participant Canvas as Canvas Context
+
+    App->>Chart: new Chart(config)
+    Chart->>Controller: buildOrUpdateControllers()
+    Controller->>Scale: parse() + compute limits
+    Chart->>Scale: buildTicks()
+    Chart->>Controller: updateElements()
+    Controller->>Canvas: draw()

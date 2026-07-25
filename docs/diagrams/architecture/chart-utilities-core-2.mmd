@@ -1,0 +1,11 @@
+classDiagram
+    class DateAdapterBase {
+        +init(options)
+        +formats()
+        +parse(value, format)
+        +format(timestamp, format)
+        +add(timestamp, amount, unit)
+        +diff(max, min, unit)
+        +startOf(timestamp, unit)
+        +endOf(timestamp, unit)
+    }

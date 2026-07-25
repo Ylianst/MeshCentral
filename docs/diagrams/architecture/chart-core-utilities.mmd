@@ -1,0 +1,9 @@
+flowchart TD
+    ChartCore["Chart Core"] --> Utilities["Chart Core Utilities"]
+    Utilities --> Anim["Cs Animation Engine"]
+    Utilities --> Tooltip["Fa Tooltip Engine"]
+    Utilities --> Helpers["Geometry and Parsing Helpers"]
+
+    Anim --> Controllers["Dataset Controllers"]
+    Tooltip --> Interaction["Interaction System"]
+    Tooltip --> Rendering["Rendering Layer"]

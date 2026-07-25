@@ -1,0 +1,9 @@
+flowchart TD
+    A["Raw Markdown"] --> B["Preprocess"]
+    B --> C["Lexing"]
+    C --> D["Token Tree"]
+    D --> E["Token Walking"]
+    E --> F["Parsing"]
+    F --> G["Rendering"]
+    G --> H["Postprocess"]
+    H --> I["HTML Output"]

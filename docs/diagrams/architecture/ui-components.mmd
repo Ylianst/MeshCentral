@@ -1,0 +1,13 @@
+flowchart TD
+    Templates["Handlebars Templates"] --> UiComponents["Ui Components Module"]
+
+    UiComponents --> ModernModal["ModernModal"]
+    UiComponents --> ModernCard["ModernCard"]
+    UiComponents --> IconUpload["IconUploadComponent"]
+
+    ModernModal --> BootstrapModal["Bootstrap Modal"]
+    ModernCard --> BootstrapCard["Bootstrap Card Styles"]
+    IconUpload --> DOMAPI["DOM APIs"]
+
+    UiComponents --> BootstrapComponents["Bootstrap Components"]
+    UiComponents --> Localization["Localization"]

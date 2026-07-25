@@ -1,0 +1,8 @@
+flowchart TD
+    KeyDown["keydown"] --> NormalizeCode["Normalize Key Code"]
+    NormalizeCode --> TranslateKeysym["Translate to Keysym"]
+    TranslateKeysym --> PlatformFixes["Apply Platform Fixes"]
+    PlatformFixes --> SendEvent["Send Key Event"]
+
+    KeyUp["keyup"] --> ReleaseEvent["Release Key"]
+    ReleaseEvent --> SendEvent

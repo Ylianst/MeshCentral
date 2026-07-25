@@ -1,0 +1,6 @@
+flowchart TD
+    UpdateCall["Chart.update()"] --> LayoutPhase["Layout Computation"]
+    LayoutPhase --> ResolveElements["Resolve Elements"]
+    ResolveElements --> AnimationPhase["Animation Resolution"]
+    AnimationPhase --> DrawPhase["Draw Elements"]
+    DrawPhase --> CanvasCommit["Canvas Paint"]

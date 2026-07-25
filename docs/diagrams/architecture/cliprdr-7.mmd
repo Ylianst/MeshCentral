@@ -1,0 +1,9 @@
+flowchart TD
+    Connect["Transport Connected"] --> MonitorReady["Receive CB_MONITOR_READY"]
+    MonitorReady --> SendCaps["Send Capabilities"]
+    SendCaps --> SendFormats["Send Format List"]
+    SendFormats --> ServerFormats["Receive Server Format List"]
+    ServerFormats --> Ack["Send Format List Response"]
+    Ack --> Request["Send Format Data Request"]
+    Request --> ReceiveData["Receive Format Data Response"]
+    ReceiveData --> EmitClipboard["Emit Clipboard Event"]

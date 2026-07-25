@@ -1,0 +1,6 @@
+flowchart TD
+    TransportConnect["Transport Connect Event"] --> Init["Client.connect()"]
+    Init --> WaitCliprdr["Wait for cliprdr PDU"]
+    WaitCliprdr --> Recv["recv() Dispatcher"]
+    Recv --> HandleType["Switch on msgType"]
+    HandleType --> Next["Register next cliprdr listener"]

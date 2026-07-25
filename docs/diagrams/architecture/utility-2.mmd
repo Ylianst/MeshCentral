@@ -1,0 +1,10 @@
+flowchart TD
+    Attach["attach(target)"] --> Detect["Detect browser capabilities"]
+    Detect -->|"Supports cursor URIs"| Native["Use CSS cursor URL"]
+    Detect -->|"Fallback required"| Overlay["Create fixed canvas overlay"]
+
+    Change["change(rgba, hotx, hoty, w, h)"] --> Render["Render ImageData to canvas"]
+    Render --> Apply["Apply CSS cursor or update overlay"]
+
+    MouseMove["Mouse Events"] --> UpdatePos["Update cursor position"]
+    UpdatePos --> Visibility["Update visibility logic"]

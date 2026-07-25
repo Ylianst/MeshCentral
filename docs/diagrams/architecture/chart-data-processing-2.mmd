@@ -1,0 +1,5 @@
+flowchart LR
+    DataValues["Parsed Values"] --> DetermineLimits["Determine Min/Max"]
+    DetermineLimits --> TickBuilder["Build Ticks"]
+    TickBuilder --> RangeConfig["Configure Scale Range"]
+    RangeConfig --> PixelMapping["Value to Pixel Conversion"]

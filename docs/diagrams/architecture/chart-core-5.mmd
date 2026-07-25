@@ -1,0 +1,5 @@
+flowchart TD
+    Raw["Raw Values"] --> Limits["Determine Limits"]
+    Limits --> Ticks["Generate Ticks"]
+    Ticks --> Map["Value to Pixel"]
+    Map --> Render["Render Axis"]

@@ -1,0 +1,8 @@
+# CodeWiki temp files (dependency graphs can be 7GB+)
+temp/
+dependency_graphs/
+
+# JSON intermediate files (except schema/config)
+*.json
+!*-schema.json
+!*-config.json

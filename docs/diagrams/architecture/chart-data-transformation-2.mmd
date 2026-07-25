@@ -1,0 +1,6 @@
+flowchart TD
+    UserConfig["User Configuration"] --> Merge["Merge With Defaults"]
+    Merge --> Scope["Resolve Option Scopes"]
+    Scope --> Scriptable["Evaluate Scriptable Options"]
+    Scriptable --> Indexable["Apply Index-Based Variants"]
+    Indexable --> FinalOptions["Resolved Element Options"]

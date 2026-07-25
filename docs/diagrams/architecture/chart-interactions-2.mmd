@@ -1,0 +1,9 @@
+flowchart LR
+    ChartInteractions["Chart Interactions"] --> Handlers["Interaction Handlers"]
+    ChartInteractions --> Utilities["Interaction Utilities"]
+
+    Handlers --> Platform["Platform Abstraction (ls)"]
+    Handlers --> ModeResolution["Mode Resolution (mo)"]
+
+    Utilities --> Geometry["Geometry Helpers"]
+    Utilities --> Filtering["Filtering & Traversal"]

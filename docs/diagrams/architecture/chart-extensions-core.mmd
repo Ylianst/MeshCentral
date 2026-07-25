@@ -1,0 +1,10 @@
+flowchart TD
+    AppLayer["Application UI"] --> Extensions["Chart Extensions"]
+    Extensions --> Core["Chart Extensions Core"]
+
+    Core --> ChartRuntime["Chart Runtime (Chart.js)"]
+    ChartRuntime --> Controllers["Dataset Controllers"]
+    ChartRuntime --> Elements["Visual Elements"]
+    ChartRuntime --> Scales["Scales"]
+    ChartRuntime --> Plugins["Plugins"]
+    ChartRuntime --> Animator["Animation Engine"]

@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant App
+    participant Terminal
+    participant CoreTerminal
+    participant RenderService
+
+    App->>Terminal: open(container)
+    Terminal->>CoreTerminal: open(container)
+    CoreTerminal->>RenderService: initialize renderer
+    RenderService-->>CoreTerminal: dimensions ready
+    CoreTerminal-->>Terminal: ready

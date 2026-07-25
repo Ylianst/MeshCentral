@@ -1,0 +1,6 @@
+flowchart TD
+    RawOpen["onopen"] --> EmitOpen["eventHandlers.open()"]
+    RawMessage["onmessage"] --> Recv["_recvMessage()"]
+    Recv --> EmitMessage["eventHandlers.message()"]
+    RawClose["onclose"] --> EmitClose["eventHandlers.close(e)"]
+    RawError["onerror"] --> EmitError["eventHandlers.error(e)"]

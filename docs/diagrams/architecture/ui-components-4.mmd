@@ -1,0 +1,5 @@
+flowchart TD
+    UpdateCall["updateStatus(status)"] --> RemoveOld["Remove Old Classes"]
+    RemoveOld --> AddNew["Add New Classes"]
+    AddNew --> UpdateIcon["Update Status Icon"]
+    UpdateIcon --> UpdateText["Update Status Text"]

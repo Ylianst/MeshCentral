@@ -1,0 +1,7 @@
+flowchart LR
+    BrowserEvent["Browser Event"] --> Platform["Platform Event Adapter"]
+    Platform --> InteractionHandlers["Chart Interaction Handlers"]
+    InteractionHandlers --> InteractionModes["Interaction Modes"]
+    InteractionModes --> DatasetController["Dataset Controller"]
+    DatasetController --> Elements["Chart Elements"]
+    InteractionHandlers --> Tooltip["Tooltip Plugin"]

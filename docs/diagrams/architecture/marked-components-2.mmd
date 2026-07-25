@@ -1,0 +1,7 @@
+flowchart TD
+    Marked["Marked"] --> Use["use Extensions"]
+    Marked --> SetOptions["setOptions"]
+    Marked --> Parse["parse Markdown"]
+    Parse --> LexerCall["Lexer.lex"]
+    Parse --> ParserCall["Parser.parse"]
+    Parse --> WalkTokens["walkTokens"]

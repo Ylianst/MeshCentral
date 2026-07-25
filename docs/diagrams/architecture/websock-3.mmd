@@ -1,0 +1,4 @@
+flowchart TD
+    Check["rQwait(num)"] --> Enough{"Enough Data?"}
+    Enough -->|"No"| Wait["Return true - wait for more"]
+    Enough -->|"Yes"| Continue["Continue parsing"]

@@ -1,0 +1,7 @@
+flowchart TD
+    Tight["Tight Decoder"] --> Fill["Fill Mode"]
+    Tight --> JPEG["JPEG Mode"]
+    Tight --> Basic["Basic Compression"]
+    Basic --> Copy["Copy Filter"]
+    Basic --> Palette["Palette Filter"]
+    Basic --> Gradient["Gradient Filter"]

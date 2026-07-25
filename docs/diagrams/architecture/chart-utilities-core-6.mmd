@@ -1,0 +1,6 @@
+flowchart LR
+    Update["Chart Update"] --> ResolveAnimations["Resolve Animations"]
+    ResolveAnimations --> Animator["Animator Engine"]
+    Animator --> FrameTick["requestAnimationFrame"]
+    FrameTick --> PropertyInterpolation["Interpolate Properties"]
+    PropertyInterpolation --> Redraw["Canvas Redraw"]

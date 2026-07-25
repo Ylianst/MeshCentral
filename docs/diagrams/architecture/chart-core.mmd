@@ -1,0 +1,10 @@
+flowchart TD
+    Config["Chart Configuration"] --> Controller["Dataset Controller (Hn)"]
+    Controller --> Elements["Visual Elements (Hs)"]
+    Controller --> Scales["Scales (Js)"]
+
+    Scales --> Elements
+    Elements --> Canvas["Canvas Rendering Context"]
+
+    CoreUtils["Core Utilities (Cs, Fa)"] --> Controller
+    CoreUtils --> Scales

@@ -1,0 +1,5 @@
+flowchart TD
+    Raw["Raw Data Values"] --> Limits["Determine Data Limits"]
+    Limits --> Ticks["Generate Ticks"]
+    Ticks --> Pixels["Value to Pixel Mapping"]
+    Pixels --> Render["Grid and Labels Rendering"]

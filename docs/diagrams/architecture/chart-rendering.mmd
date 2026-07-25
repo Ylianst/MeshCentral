@@ -1,0 +1,6 @@
+flowchart TD
+    ChartCore["Chart Core"] --> Controllers["Dataset Controllers"]
+    Controllers --> ChartRendering["Chart Rendering"]
+    ChartRendering --> RenderingCore["Chart Rendering Core"]
+    RenderingCore --> RenderingUtilities["Chart Rendering Utilities"]
+    RenderingUtilities --> CanvasAPI["HTML5 Canvas API"]

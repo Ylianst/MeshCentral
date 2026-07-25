@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant Controller
+    participant Aggregation
+    participant Scale
+
+    Controller->>Aggregation: applyStack(value)
+    Aggregation-->>Controller: cumulativeValue
+    Controller->>Scale: updateRangeFromParsed()
+    Scale-->>Controller: updatedMinMax

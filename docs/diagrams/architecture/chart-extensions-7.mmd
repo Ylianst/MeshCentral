@@ -1,0 +1,10 @@
+flowchart TD
+    UpdateCall["Chart.update()"] --> ConfigResolve["Resolve Configuration"]
+    ConfigResolve --> ScaleUpdate["Update Scales"]
+    ScaleUpdate --> ControllerUpdate["Update Controllers"]
+    ControllerUpdate --> Parse["Parse Dataset Data"]
+    Parse --> Layout["Layout Engine"]
+    Layout --> Animations["Resolve Animations"]
+    Animations --> Draw["Draw Canvas"]
+    Draw --> PluginHooks["Plugin Hooks"]
+    PluginHooks --> Complete["Frame Complete"]

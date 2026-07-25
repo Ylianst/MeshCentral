@@ -1,0 +1,5 @@
+flowchart TD
+    DataMutation["Dataset Mutation"] --> SyncQueue["Sync List Update"]
+    SyncQueue --> Reparse["Re-parse Affected Range"]
+    Reparse --> RecalculateStack["Recalculate Stack"]
+    RecalculateStack --> Animate["Trigger Animation"]

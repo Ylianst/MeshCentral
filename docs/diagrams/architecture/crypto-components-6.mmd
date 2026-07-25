@@ -1,0 +1,5 @@
+flowchart TD
+    Message["Plaintext"] --> Pad["PKCS#1 v1.5 Padding"]
+    Pad --> ToBigInt["Convert to BigInt"]
+    ToBigInt --> ModPowEnc["c = m^e mod n"]
+    ModPowEnc --> Cipher["Ciphertext Bytes"]

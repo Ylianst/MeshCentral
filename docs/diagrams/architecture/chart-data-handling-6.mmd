@@ -1,0 +1,8 @@
+flowchart TD
+    Input["User Dataset"] --> Processing["Chart Data Processing"]
+    Processing --> Transformation["Chart Data Transformation"]
+    Transformation --> Aggregation["Chart Data Aggregation"]
+    Aggregation --> Controller["Dataset Controller"]
+    Controller --> Elements["Element Instances"]
+    Elements --> Rendering["Rendering Engine"]
+    Rendering --> Output["Canvas Output"]

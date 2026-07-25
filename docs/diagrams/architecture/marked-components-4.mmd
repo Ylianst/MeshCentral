@@ -1,0 +1,5 @@
+flowchart LR
+    Tokens["Token Array"] --> ParserLoop["Parser.parse() Loop"]
+    ParserLoop --> Switch["Token Type Switch"]
+    Switch --> RendererCall["Renderer Method"]
+    RendererCall --> HTML["HTML Fragment"]

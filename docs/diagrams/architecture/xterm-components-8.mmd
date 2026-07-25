@@ -1,0 +1,6 @@
+flowchart TD
+    RemoteHost["Remote Host"] --> WebSocket["WebSocket"]
+    WebSocket --> Terminal
+    Terminal --> CoreTerminal
+    CoreTerminal --> BufferService
+    BufferService --> RenderService

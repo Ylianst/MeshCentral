@@ -1,0 +1,5 @@
+flowchart TD
+    Start["Start RRE"] --> BG["Read background color"]
+    BG --> Fill["fillRect() full area"]
+    Fill --> Sub["Iterate subrectangles"]
+    Sub --> Draw["fillRect() subregion"]

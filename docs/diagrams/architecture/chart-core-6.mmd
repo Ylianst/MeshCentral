@@ -1,0 +1,6 @@
+flowchart TD
+    Init["Initialize"] --> Update["Update"]
+    Update --> Layout["Layout"]
+    Layout --> Draw["Draw"]
+    Draw --> Idle["Idle / Await Events"]
+    Idle --> Update

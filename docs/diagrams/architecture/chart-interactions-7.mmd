@@ -1,0 +1,5 @@
+flowchart LR
+    InteractionHandlers["Interaction Handlers"] --> ActiveItems["Active Items"]
+    ActiveItems --> TooltipPlugin["Tooltip Plugin"]
+    TooltipPlugin --> LayoutEngine["Tooltip Layout"]
+    LayoutEngine --> CanvasRender["Canvas Render"]

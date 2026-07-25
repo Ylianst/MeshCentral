@@ -1,0 +1,6 @@
+flowchart TD
+    UI["UI Components"] --> ChartsComponents["Charts Components"]
+    ChartsComponents --> ChartCore["Chart Core"]
+    ChartCore --> ChartUtilities["Chart Utilities"]
+    ChartUtilities --> ChartUtilitiesCore["Chart Utilities Core"]
+    ChartUtilitiesCore --> RenderingEngine["Canvas Rendering"]

@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Page
+    participant ModernModal
+    participant Bootstrap
+
+    Page->>ModernModal: show(title, content, callback)
+    ModernModal->>Page: setModalContent(...)
+    ModernModal->>Page: showModal(...)
+    Page->>Bootstrap: Initialize Modal Instance
+    Bootstrap-->>Page: Modal Displayed

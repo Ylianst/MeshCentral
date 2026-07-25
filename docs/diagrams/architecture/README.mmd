@@ -1,0 +1,18 @@
+flowchart TD
+    Browser["Browser Environment"] --> UI["UI Components"]
+    UI --> RFB["RFB Protocol Engine"]
+    UI --> Xterm["Terminal Engine"]
+    UI --> Charts["Charts Components"]
+    UI --> Markdown["Marked Components"]
+
+    RFB --> Websock["Websock Transport"]
+    Websock --> Server["Remote Server"]
+
+    RFB --> Decoders["Framebuffer Decoders"]
+    Decoders --> Display["Canvas Display"]
+
+    RFB --> Crypto["Crypto Components"]
+    RFB --> Compression["Compression"]
+    RFB --> Input["Input Handlers"]
+
+    Display --> Utility["Utility Layer"]

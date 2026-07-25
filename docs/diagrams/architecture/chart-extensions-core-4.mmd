@@ -1,0 +1,6 @@
+flowchart TD
+    Dataset["Dataset"] --> Controller["Dataset Controller"]
+    Controller --> Parse["Parse Data"]
+    Controller --> Geometry["Compute Geometry"]
+    Controller --> Elements["Create / Update Elements"]
+    Elements --> Canvas["Canvas Rendering"]

@@ -1,0 +1,8 @@
+flowchart LR
+    Start["Animation Created"] --> Active["Active State"]
+    Active --> Tick["Tick Frame Update"]
+    Tick --> Interpolate["Interpolate Value"]
+    Interpolate --> Apply["Apply to Target Property"]
+    Apply --> Check["Duration Complete?"]
+    Check -->|"No"| Tick
+    Check -->|"Yes"| Complete["Resolve Promises"]

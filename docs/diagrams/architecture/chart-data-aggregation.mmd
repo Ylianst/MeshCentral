@@ -1,0 +1,6 @@
+flowchart LR
+    RawData["Raw Dataset"] --> Processing["Chart Data Processing"]
+    Processing --> Transformation["Chart Data Transformation"]
+    Transformation --> Aggregation["Chart Data Aggregation"]
+    Aggregation --> Controllers["Chart Controllers"]
+    Controllers --> Rendering["Chart Rendering"]

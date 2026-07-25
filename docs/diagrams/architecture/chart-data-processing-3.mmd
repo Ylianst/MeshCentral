@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Chart
+    participant Animator
+    participant Dataset
+
+    Chart->>Animator: add(animationItems)
+    Animator->>Dataset: tick(currentTime)
+    Dataset-->>Animator: updated values
+    Animator->>Chart: request redraw
+    Animator-->>Chart: complete event

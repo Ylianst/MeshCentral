@@ -1,0 +1,9 @@
+flowchart TD
+    RFB["RFB"] --> Encoding["Encoding Type"]
+    Encoding --> Raw["Raw"]
+    Encoding --> Tight["Tight"]
+    Encoding --> ZRLE["ZRLE"]
+    Encoding --> Hextile["Hextile"]
+    Raw --> Display
+    Tight --> Display
+    ZRLE --> Display

@@ -1,0 +1,10 @@
+flowchart TD
+    Data["Parsed Dataset"] --> Controller["Dataset Controller (Hn)"]
+    Controller --> Elements["Visual Elements (Hs)"]
+    Elements --> Canvas["Canvas 2D Context"]
+
+    Scales["Scales (Js)"] --> Controller
+    Scales --> Elements
+
+    Animations["Animation Engine"] --> Controller
+    Animations --> Elements

@@ -1,0 +1,5 @@
+flowchart TD
+    Incoming["Incoming Message"] --> Space{"Enough Free Space?"}
+    Space -->|"Yes"| Append["Append to rQ"]
+    Space -->|"No"| Expand["_expandCompactRQ()"]
+    Expand --> Append

@@ -1,0 +1,18 @@
+flowchart TD
+    ChartInstance["Chart Instance"] --> Registry["Registry"]
+    ChartInstance --> Animator["Animator"]
+    ChartInstance --> LayoutEngine["Layout Engine"]
+    ChartInstance --> PluginService["Plugin Service"]
+
+    Registry --> Controllers["Dataset Controllers"]
+    Registry --> Elements["Chart Elements"]
+    Registry --> Scales["Scales"]
+    Registry --> Plugins["Plugins"]
+
+    Animator --> Animations["Animation Instances"]
+    LayoutEngine --> Boxes["Layout Boxes"]
+    PluginService --> Tooltip["Tooltip Plugin"]
+    PluginService --> Legend["Legend Plugin"]
+    PluginService --> Title["Title & Subtitle Plugins"]
+
+    Controllers --> Elements

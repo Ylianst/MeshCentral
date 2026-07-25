@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant User
+    participant Canvas
+    participant Platform
+    participant Chart
+    participant Handlers
+    participant Utilities
+    participant Controllers
+    participant Tooltip
+
+    User->>Canvas: Mouse Move / Click
+    Canvas->>Platform: Native Event
+    Platform->>Chart: Normalized Event
+    Chart->>Handlers: Resolve Interaction Mode
+    Handlers->>Utilities: Compute Candidates
+    Utilities->>Controllers: Hit Testing
+    Controllers-->>Chart: Active Elements
+    Chart->>Tooltip: Update Tooltip State
+    Chart->>Controllers: Apply Hover Styles

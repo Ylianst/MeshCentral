@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Client->>Client: Generate (g, p, private)
+    Client->>Server: Send public = g^a mod p
+    Server->>Client: Send public = g^b mod p
+    Client->>Client: Compute shared = (g^b)^a mod p
+    Server->>Server: Compute shared = (g^a)^b mod p

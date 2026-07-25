@@ -1,0 +1,16 @@
+flowchart TD
+    UI["Application Dashboards"] --> Extensions["Chart Extensions"]
+    Extensions --> Core["Chart Extensions Core"]
+    Extensions --> Utilities["Chart Extensions Utilities"]
+
+    Core --> Runtime["Chart.js Runtime"]
+    Runtime --> Controllers["Dataset Controllers"]
+    Runtime --> Elements["Visual Elements"]
+    Runtime --> Scales["Scales"]
+    Runtime --> Plugins["Plugins"]
+    Runtime --> Animator["Animation Engine"]
+
+    Utilities --> Registry["Registry Manager"]
+    Utilities --> Layout["Layout Engine"]
+    Utilities --> OptionResolver["Option Resolver"]
+    Utilities --> PluginService["Plugin Service"]

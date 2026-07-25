@@ -1,0 +1,6 @@
+flowchart TD
+    Browser["Browser Environment"] -->|"navigator.languages"| Localizer["Localizer"]
+    Localizer -->|"fetch language.json"| TranslationFiles["Translation JSON Files"]
+    Localizer -->|"get(id)"| ApplicationCode["Application UI Code"]
+    Localizer -->|"translateDOM()"| DOMTree["Document Object Model"]
+    DOMTree --> UI["Rendered User Interface"]

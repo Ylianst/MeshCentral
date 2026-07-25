@@ -1,0 +1,6 @@
+flowchart TD
+    DOMEvent["Mouse / Touch Event"] --> Interaction["Interaction Engine"]
+    Interaction --> HitDetection["Element Hit Testing"]
+    HitDetection --> ActiveElements["Active Elements"]
+    ActiveElements --> TooltipUpdate["Tooltip Update"]
+    TooltipUpdate --> ReRender["Chart Re-render"]

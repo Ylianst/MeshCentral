@@ -1,0 +1,7 @@
+flowchart TD
+    Input["Raw Dataset"] --> Parse["Parsing Utilities"]
+    Parse --> Controller["Dataset Controller"]
+    Controller --> Animate["Cs Animation"]
+    Animate --> Render["Rendering Layer"]
+    Render --> Interaction["User Interaction"]
+    Interaction --> Tooltip["Fa Tooltip"]

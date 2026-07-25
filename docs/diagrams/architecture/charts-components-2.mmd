@@ -1,0 +1,10 @@
+flowchart TD
+    Input["User Dataset"] --> Processing["Chart Data Handling"]
+    Processing --> Controllers["Dataset Controllers"]
+    Controllers --> Layout["Layout & Scale Computation"]
+    Layout --> Animation["Animation Resolution"]
+    Animation --> Draw["Chart Rendering"]
+    Draw --> Canvas["Canvas Output"]
+    Canvas --> Interaction["Chart Interactions"]
+    Interaction --> Update["State Update"]
+    Update --> Draw

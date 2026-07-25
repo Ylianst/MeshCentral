@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant App
+    participant Legacy as LegacyCrypto
+    participant Cipher
+
+    App->>Legacy: importKey("raw", keyData, algorithm)
+    Legacy->>Cipher: static importKey(...)
+    Cipher-->>Legacy: Cipher Instance
+    App->>Legacy: encrypt(algorithm, key, data)
+    Legacy->>Cipher: key.encrypt(...)
+    Cipher-->>App: Encrypted Data

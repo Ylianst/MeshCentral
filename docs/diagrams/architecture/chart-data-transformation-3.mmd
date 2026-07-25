@@ -1,0 +1,6 @@
+flowchart TD
+    ParsedData["Parsed Dataset Values"] --> ScaleMapping["Map To Scale Coordinates"]
+    ScaleMapping --> Geometry["Compute Geometry"]
+    Geometry --> ResolveStyle["Resolve Element Style"]
+    ResolveStyle --> ElementModel["Element Model Object"]
+    ElementModel --> Animation["Attach Animation Targets"]

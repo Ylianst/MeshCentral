@@ -1,0 +1,10 @@
+flowchart TD
+    Compressed["Compressed Input"] --> SetInput["setInput(data)"]
+    SetInput --> Resize{"Expected > ChunkSize?"}
+    Resize -->|"Yes"| Reallocate["Resize Output Buffer"]
+    Resize -->|"No"| Prepare["Prepare Output Window"]
+    Reallocate --> Prepare
+    Prepare --> InflateCall["inflate()"]
+    InflateCall --> Validate{"Output Size Correct?"}
+    Validate -->|"No"| Error["Throw Incomplete Block Error"]
+    Validate -->|"Yes"| Return["Return Uint8Array"]

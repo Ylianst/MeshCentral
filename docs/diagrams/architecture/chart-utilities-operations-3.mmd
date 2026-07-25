@@ -1,0 +1,5 @@
+flowchart LR
+    RawData["Raw Dataset"] --> Parse["Parse Values"]
+    Parse --> Stack["Apply Stacking"]
+    Stack --> ResolveOptions["Resolve Options"]
+    ResolveOptions --> UpdateElements["Update Elements"]

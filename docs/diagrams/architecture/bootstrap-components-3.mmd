@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant User
+    participant DOM
+    participant EventHandler
+    participant Component
+
+    User->>DOM: click / keydown
+    DOM->>EventHandler: native event
+    EventHandler->>Component: namespaced callback
+    Component->>DOM: state update + custom event

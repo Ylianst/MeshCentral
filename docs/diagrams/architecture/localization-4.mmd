@@ -1,0 +1,6 @@
+flowchart TD
+    Request["get(id)"] --> HasDict{"Dictionary Loaded?"}
+    HasDict -->|"No"| ReturnId["Return id"]
+    HasDict -->|"Yes"| HasKey{"Key Exists?"}
+    HasKey -->|"Yes"| ReturnValue["Return Translation"]
+    HasKey -->|"No"| ReturnId

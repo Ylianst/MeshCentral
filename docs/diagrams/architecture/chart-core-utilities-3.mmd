@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Controller
+    participant Animation as Cs
+    participant Animator
+    participant Element
+
+    Controller->>Animation: Create animation
+    Animation->>Animator: Register
+    Animator->>Animation: tick(time)
+    Animation->>Element: Update property
+    Animation-->>Controller: Complete callback

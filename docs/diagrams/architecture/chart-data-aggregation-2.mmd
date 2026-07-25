@@ -1,0 +1,9 @@
+flowchart TD
+    ParsedData["Parsed Dataset Values"] --> CheckStack["Stacked?"]
+    CheckStack -->|No| DirectValue["Use Parsed Value"]
+    CheckStack -->|Yes| StackLookup["Resolve Stack Group"]
+    StackLookup --> Accumulate["Accumulate Previous Stack Values"]
+    Accumulate --> AggregatedValue["Computed Aggregate"]
+    DirectValue --> AggregatedValue
+    AggregatedValue --> ScaleUpdate["Update Scale Min/Max"]
+    AggregatedValue --> ControllerInput["Pass to Controller"]

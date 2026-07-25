@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Server
+    participant WS as WebSocket
+    participant Websock
+    participant RFB
+
+    Server->>WS: Binary Frame
+    WS->>Websock: onmessage(ArrayBuffer)
+    Websock->>Websock: Append to rQ
+    Websock->>RFB: message event
+    RFB->>Websock: rQshift*()

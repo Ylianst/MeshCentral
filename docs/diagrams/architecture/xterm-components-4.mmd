@@ -1,0 +1,6 @@
+flowchart TD
+    IncomingData["Incoming Data"] --> Decoder["UTF Decoder"]
+    Decoder --> Parser["EscapeSequenceParser"]
+    Parser --> InputHandler
+    InputHandler --> BufferMutation["Buffer Updates"]
+    BufferMutation --> RenderService

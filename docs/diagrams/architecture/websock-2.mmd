@@ -1,0 +1,10 @@
+flowchart LR
+    RawChannel["Raw Channel"] --> RecvHandler["_recvMessage()"]
+    RecvHandler --> RQ["Receive Queue (rQ)"]
+    RQ --> RQReader["rQshift* / rQpeek*"]
+    RQReader --> RFBConsumer["RFB Consumer"]
+
+    RFBProducer["RFB Producer"] --> SQPush["sQpush*"]
+    SQPush --> SQ["Send Queue (sQ)"]
+    SQ --> Flush["flush()"]
+    Flush --> RawChannel

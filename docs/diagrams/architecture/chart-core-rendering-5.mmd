@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Chart
+    participant Controller
+    participant Scale
+    participant Element
+    participant Canvas
+
+    Chart->>Controller: update(mode)
+    Controller->>Scale: getPixelForValue()
+    Controller->>Element: updateElement()
+    Chart->>Canvas: clear()
+    Chart->>Element: draw(ctx)

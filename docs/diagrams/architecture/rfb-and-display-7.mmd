@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Server->>Client: RSA Public Key
+    Client->>Server: RSA Public Key
+    Client->>Server: Encrypted Client Random
+    Server->>Client: Encrypted Server Random
+    Client->>Server: Encrypted Hash
+    Server->>Client: Encrypted Hash
+    Client->>Server: Encrypted Credentials

@@ -1,0 +1,4 @@
+flowchart LR
+    TimeScale["Time Scale"] --> DateAdapter["Date Adapter Base"]
+    DateAdapter --> ConcreteAdapter["Concrete Adapter Implementation"]
+    ConcreteAdapter --> NativeDate["Date / External Library"]

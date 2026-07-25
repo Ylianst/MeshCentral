@@ -1,0 +1,9 @@
+flowchart TD
+    Start["User Opens Application"] --> ReadPrefs["Read navigator.languages"]
+    ReadPrefs --> PerfectMatch{"Perfect Match?"}
+    PerfectMatch -->|"Yes"| UseLang["Use Matched Language"]
+    PerfectMatch -->|"No"| EnglishCheck{"English?"}
+    EnglishCheck -->|"Yes"| UseDefault["Use Default en"]
+    EnglishCheck -->|"No"| GenericMatch{"Language Only Match?"}
+    GenericMatch -->|"Yes"| UseGeneric["Use Generic Language"]
+    GenericMatch -->|"No"| UseDefault
