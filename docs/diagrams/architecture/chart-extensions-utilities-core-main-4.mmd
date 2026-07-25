@@ -1,0 +1,6 @@
+flowchart TD
+    RawData["Raw Dataset"] --> Parse["Controller.parse()"]
+    Parse --> Scales["Scale Mapping"]
+    Scales --> Elements["Element Geometry"]
+    Elements --> Animator["Animation Layer"]
+    Animator --> Canvas["Canvas draw()"]

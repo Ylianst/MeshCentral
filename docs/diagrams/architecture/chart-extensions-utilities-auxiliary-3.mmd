@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant App as Application
+    participant Chart as Chart Instance
+    participant Plugins as Plugins
+    participant Controllers as Dataset Controllers
+    participant Canvas as Canvas Context
+
+    App->>Chart: new Chart(config)
+    Chart->>Plugins: beforeInit
+    Chart->>Controllers: buildOrUpdateControllers()
+    Chart->>Chart: update()
+    Chart->>Plugins: beforeUpdate
+    Chart->>Controllers: updateElements()
+    Chart->>Plugins: afterUpdate
+    Chart->>Chart: render()
+    Chart->>Plugins: beforeDraw
+    Chart->>Controllers: draw()
+    Controllers->>Canvas: draw elements
+    Chart->>Plugins: afterDraw

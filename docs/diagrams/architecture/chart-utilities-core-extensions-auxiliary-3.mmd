@@ -1,0 +1,6 @@
+flowchart TD
+    Start["Start Tick Generation"] --> ComputeLimit["Compute Tick Limit"]
+    ComputeLimit --> EvaluateStep["Evaluate Step Size"]
+    EvaluateStep --> RoundPrecision["Apply Precision"]
+    RoundPrecision --> CreateTicks["Create Tick Array"]
+    CreateTicks --> Output["Final Tick List"]

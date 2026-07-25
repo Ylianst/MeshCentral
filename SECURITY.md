@@ -1,105 +1,97 @@
-# Security Policy
+# Flamingo AI Privacy Policy
 
-## Supported Versions
+**Effective Date: 2025**  
+**Applies to: All Flamingo AI products, including OpenFrame, OpenMSP, and the Flamingo Website**
 
-Any version of MeshCentral 1.x.x is supported.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.x.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+## 1. Definitions
 
-## Reporting a Vulnerability
+**“Flamingo Software”** means all software products developed and released by Flamingo AI, Inc., including but not limited to OpenFrame, OpenMSP, related agents, integrations, orchestration layers, user interfaces, binaries, and documentation.  
 
-Please report any concerns or security issue to Ylian Saint-Hilaire (ylianst@gmail.com) and Simon Smith (simonsmith5521@gmail.com).
+**“OpenFrame”** refers to the self-hosted remote monitoring and management (RMM) platform released by Flamingo AI.  
 
-Ylian Saint-Hilaire (ylianst@gmail.com) PGP key below.
-```
------BEGIN PGP PUBLIC KEY BLOCK-----
-Version: BCPG v1.56
+**“OpenMSP”** refers to the community knowledge base, documentation, and related collaborative content contributed by users and curated by Flamingo AI.  
 
-mQMuBF2gC4sRCAClFNvMCCVW3ego3UHBQ6LhSenJfaZYhvn8gaGuemSQxqTI6bla
-BTAv3aMtQnvqlSuadMMegb+FO6hnaQMlGvpVA1qpkSzgrPS5HrBD3H33J2Nj3i93
-ZpDPpxdI0ehCj6IJPnl0GxGbpKIN8YpJUFl44wv1lMRFI1lgyb+dCoO60irYdNQB
-PV85BI+DwPfOBFHunwR78nqMvpvsk9HaeHjEP7oXr952/7EazUowZsMlEfkYnw5S
-+tLfpCoY3QWkektpJP40nMJSKQdV2NEuED99doA0X+7P1vsvFFFyMH69dnU2uSay
-XCHpkAbntBy0BGmtF1RnTcOMv2V/LPXnlMdvAQCbmLQzNra3r163tcdRY0jSs+pZ
-1L3w5tHNj2dzhfpa7wf/SIuds6QTr2LCN6miLoSVCRMMpT7d771b16GwQqWEXzN2
-+h7dYqrssHPOa8FSUrPerz0+0eFcbMSm5/L/4KXWXoQthURv8aMP9E0iVoUYaaKB
-7U+5vFEZbpoOZyZmTAjXQMSNZCft0azA82Q+G85euyicWtMv48yNVzUhkdh+M2ud
-ohkXX2Aor1TqpBJoIeWke7j9D+Bo+lu61zPRx5ed9teUeLJCwqNEjlE+6gre5kxF
-PoreAtn59QYcBIpzQEWVMbNFlDAR4jMyqIoKCGfBPiRw2V+kunbzqiGQEglIFfOt
-6sTN/+CJh0ei976VDmE0Z1kMN+CNLgIjIw8fl02V9QgAnHcpqtVUxR4dbGOhVDq5
-lWv+K75QQlWyXC2k+KboXcaCvH0WZEBACYzO0CfrZ5hP9BSkbj5usSUVGGHwEFAJ
-t+/04KVY71fW281Ej5kGNaIKxeKsx6+hMo+UXb5ZM+6fANNNxs1cK95sTH6PjkyB
-tsKxLoa3CV2v9mSE5JiKKt74R9nXVo7PXf6DizwAU2l30Lb6y6y0OdXdCCPAG8Ij
-FrMgPu5MtjgsO5DnkZfUqDPWHhOgEPyOh3Ho+pvDhNYh5cm2eLQ8g5orzs2FHwbZ
-DpAHwCdqrlcpBlKJ4W/MZdf1fg2PjqaTWm7ZFiGr91P0F6kltTLWbVKTjLdS0T+D
-L7QnWWxpYW4gU2FpbnQtSGlsYWlyZSA8eWxpYW5zdEBnbWFpbC5jb20+iF4EExEI
-AAYFAl2gC4sACgkQg7j/r4DH+kD/3gD+MRedlM53VzOtNOpS6mqDAxj1aWP90HN0
-AqO6zuCTyGgBAJlunLFKH8IUetmQOhiohB8HVhdm/q4lKRDV7sHdplDyuMwEXaAL
-ixACAJSU/sCV87he4oZUKzg2/IGl3QoDSbTCOd04dE1IjPjjHbi8t9M7Qau55aM8
-ypFEsc7zMslL8Fc78EejrKmM3zsB/RU9XWFyrbQwRbaK6OHeEHC2E3AFaG0p09c6
-d0kZloHuWyEsm5a/3PpbIM1eP9IESJXWCc+bQQt6DxLKHLmkKMwB/icWMg8uMJlx
-aady8TEq7LH5oFVKsglnwuN1nIkecrf77TVkEqTjIxS6TiOup6zOnioFNKLYBAH0
-WUnJEYFvx4OIXgQYEQgABgUCXaALiwAKCRCDuP+vgMf6QGFTAQCUj2gGwsFlN0eR
-Wowv4eLcc3FwQ+lBElUctKg8vNFb0gD/ZWVWsWwKerNgNnf7RGD9mt8G2CKvdgGG
-oZ2hPP2gU9w=
-=roW4
------END PGP PUBLIC KEY BLOCK-----
-```
-Simon Smith (simonsmith5521@gmail.com) PGP key below.
-```
------BEGIN PGP PUBLIC KEY BLOCK-----
+**“Flamingo Website”** refers to flamingo.cx and related domains controlled by Flamingo AI.  
 
-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
-z1Ncl3xSEOPFKUIvLck=
-=yUbV
------END PGP PUBLIC KEY BLOCK-----
-```
+
+## 2. Scope
+
+This Privacy Policy explains how Flamingo AI, Inc. (“Flamingo AI”) collects, uses, and protects personal data in connection with Flamingo Software, including OpenFrame, OpenMSP, and the Flamingo Website.  
+
+
+## 3. Data Collection
+
+- **Self-Hosted Deployments (OpenFrame):** Flamingo AI does not access or collect customer data. All data remains fully under customer control.  
+- **OpenMSP (Community):** Flamingo AI collects account registration details (username, email), and any content you voluntarily submit (posts, documentation, comments). Metadata (such as IP addresses and logs) may be collected for security, fraud prevention, and moderation.  
+- **Website:** Limited analytics (IP addresses, device/browser data, cookies) are collected for performance, security, and improvements.  
+- **Support Engagements:** Customers may voluntarily provide logs or diagnostic data for troubleshooting. Such data is deleted promptly after resolution.  
+
+
+## 4. Legal Basis for Processing (GDPR)
+
+Flamingo AI processes personal data only when:  
+- You have given consent (e.g., submitting community contributions to OpenMSP, website cookies).  
+- Processing is necessary for the performance of a contract (e.g., account creation, support requests).  
+- Processing is required by law.  
+- Processing is necessary for legitimate interests (e.g., community moderation, improving security and services).  
+
+
+## 5. Data Subject Rights
+
+Depending on your location (EU/UK under GDPR, California under CCPA, or similar laws), you may have the right to:  
+- Access your personal data.  
+- Rectify inaccurate data.  
+- Request deletion (“right to be forgotten”).  
+- Restrict or object to processing.  
+- Request portability of your data.  
+- Withdraw consent at any time.  
+- Opt out of sale or sharing of personal data (CCPA).  
+- Lodge a complaint with a supervisory authority (for EU/UK residents).  
+
+Requests can be submitted to **privacy@flamingo.so**.  
+
+
+## 6. Data Transfers
+
+- Flamingo AI does not transfer customer data from self-hosted deployments.  
+- If personal data must cross borders (e.g., for support or OpenMSP account services), Flamingo AI uses safeguards such as Standard Contractual Clauses.  
+
+
+## 7. Data Retention
+
+- Customer-controlled data in OpenFrame remains under customer control.  
+- Support data is retained only for resolution, typically deleted within 24 hours.  
+- Website analytics are retained no longer than necessary for stated purposes.  
+- OpenMSP contributions remain public unless removed by you or as part of community moderation. Account data may be deleted upon request.  
+
+
+## 8. Children’s Privacy
+
+Flamingo AI products are not directed to children under 16 in the EU/UK or under 13 in the US. Flamingo AI does not knowingly collect data from minors.  
+
+
+## 9. Security
+
+Flamingo AI implements reasonable technical and organizational safeguards, but **customers remain fully responsible for the security of their own infrastructure**.  
+
+
+## 10. Responsibility Disclaimer
+
+Use of Flamingo AI products is entirely at your own risk. Customers are solely responsible for compliance with applicable data protection laws when deploying Flamingo AI software or participating in OpenMSP.  
+
+
+## 11. Text Messaging Opt-In Data
+
+Text messaging originator opt-in data and consent will not be shared with any third parties, excluding aggregators and providers of the Text Message services.
+
+
+## 12. Contact Information
+
+**Privacy Inquiries:** privacy@flamingo.so  
+**General Information:** info@flamingo.so  
+
+---
+
+*By using Flamingo AI products, you acknowledge and agree to this Privacy Policy.*  
+

@@ -1,0 +1,5 @@
+flowchart TD
+    MouseMove["Mouse Move"] --> Linkifier
+    Linkifier --> LinkProviders["Link Providers"]
+    LinkProviders --> OscLinkProvider
+    Linkifier --> Renderer["Underline Decoration"]

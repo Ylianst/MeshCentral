@@ -1,3 +1,6 @@
-flowchart LR
-    Sock["Websock"] -->|"read delta"| CopyRect["CopyRect Decoder"]
-    CopyRect -->|"copyImage()"| Display["Display"]
+flowchart TD
+    Start["Start Tile"] --> ReadSub["Read Subencoding"]
+    ReadSub -->|"Raw"| RawTile["Blit Raw Pixels"]
+    ReadSub -->|"Background/Foreground"| SetupTile["Prepare Tile Buffer"]
+    SetupTile --> SubRects["Apply Subrectangles"]
+    SubRects --> Finish["Blit Tile"]

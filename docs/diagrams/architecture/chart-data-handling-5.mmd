@@ -1,8 +1,0 @@
-flowchart TD
-    Parsed["Parsed Dataset Values"] --> CheckStack["Stacked?"]
-    CheckStack -->|No| Direct["Use Direct Value"]
-    CheckStack -->|Yes| ResolveStack["Resolve Stack Bucket"]
-    ResolveStack --> Accumulate["Accumulate Values"]
-    Accumulate --> Aggregate["Aggregated Value"]
-    Direct --> Aggregate
-    Aggregate --> UpdateScale["Update Scale Min/Max"]

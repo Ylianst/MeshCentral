@@ -1,0 +1,6 @@
+flowchart TD
+    CoreMain["Chart Utilities Core Main"] --> Runtime["Chart Runtime (On)"]
+    Extensions["Chart Utilities Core Extensions"] --> CoreMain
+    Extensions --> Runtime
+    Extensions --> Utilities["Extension Utilities (ba)"]
+    Extensions --> LinearScale["Linear Scale (bo)"]

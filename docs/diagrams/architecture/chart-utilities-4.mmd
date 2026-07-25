@@ -1,5 +1,6 @@
-flowchart LR
-    Value["Numeric Value"] --> Radius["Distance From Center"]
-    Angle["Index Angle"] --> Polar["Polar Coordinate"]
-    Radius --> Polar
-    Center["Chart Center"] --> Polar
+flowchart TD
+    RawConfig["Raw Chart Configuration"] --> Normalize["Normalize & Enrich"]
+    Normalize --> MergeDefaults["Merge Defaults"]
+    MergeDefaults --> Validate["Extended Validation"]
+    Validate --> ReadyConfig["Runtime Ready Configuration"]
+    ReadyConfig --> ChartRuntime["Chart Runtime"]

@@ -1,0 +1,5 @@
+flowchart TD
+    UI["MeshCentral UI"] --> Extensions["Chart Extensions"]
+    Extensions --> UtilitiesCore["Chart Extensions Utilities Core"]
+    UtilitiesCore --> Runtime["Chart.js Runtime"]
+    Runtime --> Canvas["Canvas Rendering Context"]

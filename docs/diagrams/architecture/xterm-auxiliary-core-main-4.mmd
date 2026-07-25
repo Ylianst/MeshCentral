@@ -1,0 +1,6 @@
+flowchart LR
+    RenderRequest["Render Request"] --> ContrastCheck["Contrast Check"]
+    ContrastCheck --> CacheLookup["Cache Lookup"]
+    CacheLookup -->|Hit| UseCached["Use Cached Color"]
+    CacheLookup -->|Miss| Compute["Compute Contrast"]
+    Compute --> StoreCache["Store in Cache"]

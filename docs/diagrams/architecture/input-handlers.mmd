@@ -1,16 +1,6 @@
-flowchart LR
-    UserInput["User Input"] --> BrowserEvents["Browser DOM Events"]
-
-    subgraph input_handlers["Input Handlers Module"]
-        GestureHandler["GestureHandler"]
-        Keyboard["Keyboard"]
-    end
-
-    BrowserEvents --> GestureHandler
-    BrowserEvents --> Keyboard
-
-    GestureHandler --> HighLevelGestures["Custom Gesture Events"]
-    Keyboard --> KeyEvents["Normalized Key Events"]
-
-    HighLevelGestures --> RFBModule["RFB and Display Module"]
-    KeyEvents --> RFBModule
+flowchart TD
+    User["User Interaction"] --> BrowserEvents["Browser Events<br/>touchstart, keydown"]
+    BrowserEvents --> InputHandlers["Input Handlers Module"]
+    InputHandlers --> RFB["RFB Layer"]
+    RFB --> Websock["Websock Transport"]
+    Websock --> RemoteServer["Remote Server"]

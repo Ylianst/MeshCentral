@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant App as Application
+    participant Ext as Extensions Main (bn)
+    participant Core as Chart Core Main
+    participant Chart as Chart Runtime
+
+    App->>Ext: Provide extended config
+    Ext->>Ext: Normalize / enhance config
+    Ext->>Core: Forward config
+    Core->>Chart: Instantiate Chart
+    Chart-->>Ext: Lifecycle events
+    Ext->>Chart: Inject extension behavior

@@ -1,0 +1,14 @@
+flowchart TD
+    App["MeshCentral UI"] --> Terminal["Terminal (Xterm Core Main)"]
+
+    Terminal --> CoreTerminal["CoreTerminal Engine"]
+    Terminal --> RenderService["RenderService"]
+    Terminal --> InputHandler["InputHandler"]
+    Terminal --> SelectionService["SelectionService"]
+    Terminal --> MouseService["MouseService"]
+    Terminal --> Linkifier["Linkifier"]
+    Terminal --> AccessibilityManager["AccessibilityManager"]
+
+    CoreTerminal --> BufferService["BufferService"]
+    CoreTerminal --> Parser["EscapeSequenceParser"]
+    CoreTerminal --> CoreService["CoreService"]

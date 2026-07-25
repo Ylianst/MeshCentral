@@ -1,5 +1,8 @@
 flowchart TD
-    Start["Start RRE"] --> BG["Read background color"]
-    BG --> Fill["fillRect() full area"]
-    Fill --> Sub["Iterate subrectangles"]
-    Sub --> Draw["fillRect() subregion"]
+    Control["Read Control Byte"] --> Mode
+    Mode -->|"Fill"| Fill["Solid Color Fill"]
+    Mode -->|"JPEG"| JPEGMode["JPEG Image"]
+    Mode -->|"Basic"| Filter["Select Filter"]
+    Filter --> CopyF["Copy Filter"]
+    Filter --> PaletteF["Palette Filter"]
+    Filter --> GradientF["Gradient Filter"]

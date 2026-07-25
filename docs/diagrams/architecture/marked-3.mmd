@@ -1,0 +1,10 @@
+flowchart TD
+    A["Token Stream"] --> B{{"Token Type"}}
+    B -->|"heading"| C["Renderer heading"]
+    B -->|"paragraph"| D["Renderer paragraph"]
+    B -->|"list"| E["Renderer list"]
+    B -->|"table"| F["Renderer table"]
+    C --> G["HTML Fragment"]
+    D --> G
+    E --> G
+    F --> G

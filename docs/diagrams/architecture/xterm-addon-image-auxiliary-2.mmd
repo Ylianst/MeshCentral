@@ -1,0 +1,7 @@
+flowchart TD
+    Terminal["Xterm Terminal"] --> ImageAddon["Image Addon"]
+    ImageAddon --> ImageCore["Image Core"]
+    ImageCore --> ImageAux["Xterm Addon Image Auxiliary"]
+    ImageAux --> Decoder["WASM Decoder"]
+    ImageAux --> Renderer["Image Renderer"]
+    ImageAux --> Storage["Image Storage"]

@@ -1,0 +1,5 @@
+flowchart TD
+    ChartCore["Chart Core"] --> ChartCoreExtensions["Chart Core Extensions"]
+    ChartCoreExtensions --> ChartCoreExtensionsMain["Chart Core Extensions Main"]
+    ChartCoreExtensions --> ChartCoreExtensionsUtilities["Chart Core Extensions Utilities"]
+    ChartCoreExtensionsUtilities --> ChartJSRuntime["Chart.js Runtime (Qs)"]

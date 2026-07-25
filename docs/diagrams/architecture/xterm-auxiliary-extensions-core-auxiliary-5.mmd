@@ -1,0 +1,4 @@
+flowchart LR
+    BufferChange["Buffer Change"] --> RenderDebouncer
+    RenderDebouncer --> RenderRows["Render Rows"]
+    RenderRows --> FireEvents["onRender Event"]

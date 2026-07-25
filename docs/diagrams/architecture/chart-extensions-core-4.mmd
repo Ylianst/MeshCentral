@@ -1,6 +1,8 @@
 flowchart TD
-    Dataset["Dataset"] --> Controller["Dataset Controller"]
-    Controller --> Parse["Parse Data"]
-    Controller --> Geometry["Compute Geometry"]
-    Controller --> Elements["Create / Update Elements"]
-    Elements --> Canvas["Canvas Rendering"]
+    Config["Chart Configuration"] --> Parse["Dataset Parsing"]
+    Parse --> Scale["Scale Transformation"]
+    Scale --> Elements["Element Construction"]
+    Elements --> Layout["Layout Engine"]
+    Layout --> Render["Canvas Rendering"]
+    Render --> Interaction["Interaction Handling"]
+    Interaction --> Tooltip["Tooltip Update"]

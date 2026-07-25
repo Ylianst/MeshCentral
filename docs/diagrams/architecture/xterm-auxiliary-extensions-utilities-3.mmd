@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant User
+    participant Linkifier
+    participant LinkProvider
+    participant Terminal
+
+    User->>Linkifier: Mouse Move
+    Linkifier->>LinkProvider: provideLinks(row)
+    LinkProvider-->>Linkifier: Link ranges
+    Linkifier->>Terminal: underline + pointer cursor
+    User->>Linkifier: Mouse Click
+    Linkifier->>LinkProvider: activate(link)

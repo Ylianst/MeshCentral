@@ -1,365 +1,357 @@
 # Decoders
 
-The **Decoders** module is responsible for transforming encoded Remote Framebuffer (RFB) rectangle data into pixel operations that can be rendered by the Display layer. It is a critical part of the noVNC-based rendering pipeline used by MeshCentral, converting network-level framebuffer updates into visual updates on the HTML5 canvas.
+The **Decoders** module is a core part of the noVNC rendering pipeline embedded in MeshCentral. It is responsible for translating encoded framebuffer update rectangles received via the Remote Framebuffer (RFB) protocol into pixel operations on the client-side display.
 
-Each decoder implements a specific RFB encoding defined by the VNC protocol (e.g., Raw, CopyRect, Hextile, Tight, ZRLE, JPEG). The Decoders module works closely with:
+Each decoder implements a specific VNC encoding type (e.g., RAW, Hextile, Tight, ZRLE) and exposes a consistent `decodeRect(...)` interface used by the RFB layer. The decoded pixel data is then forwarded to the Display subsystem for rendering.
 
-- The RFB core for protocol orchestration
-- The Websock transport for buffered network reads
-- The Display module for rendering pixel data
-- The Compression module for zlib-based inflation
+---
 
-This document describes the architecture, responsibilities, and internal design of the Decoders module.
+## Purpose and Responsibilities
+
+The Decoders module:
+
+- Parses rectangle updates from the RFB stream
+- Handles protocol-specific encoding formats
+- Decompresses and transforms pixel data
+- Converts indexed or compressed data into RGBA buffers
+- Delegates final rendering to the Display component
+
+It operates directly on:
+
+- `Websock` receive queues (via `sock.rQ*` methods)
+- The Display abstraction (via `fillRect`, `blitImage`, `imageRect`, `copyImage`)
 
 ---
 
 ## Architectural Overview
 
-At runtime, the RFB core selects a decoder based on the encoding type specified in a framebuffer update. Each decoder processes the rectangle and invokes rendering methods on the Display instance.
-
 ```mermaid
-flowchart TD
-    RFB["RFB Core"] -->|"selects encoding"| Decoder["Decoder Implementation"]
-    Decoder -->|"reads bytes"| Websock["Websock"]
-    Decoder -->|"inflate data"| Compression["Compression Module"]
-    Decoder -->|"render operations"| Display["Display"]
+flowchart LR
+    Websock["Websock Receive Queue"] --> RFB["RFB Core"]
+    RFB --> Decoders["Decoders Module"]
+    Decoders --> Display["Display Renderer"]
+    Display --> Canvas["HTML5 Canvas"]
+
+    subgraph decoder_types["Supported Encoding Types"]
+        Raw["RawDecoder"]
+        CopyRect["CopyRectDecoder"]
+        RRE["RREDecoder"]
+        Hextile["HextileDecoder"]
+        Tight["TightDecoder"]
+        TightPNG["TightPNGDecoder"]
+        ZRLE["ZRLEDecoder"]
+        JPEG["JPEGDecoder"]
+    end
+
+    Decoders --> Raw
+    Decoders --> CopyRect
+    Decoders --> RRE
+    Decoders --> Hextile
+    Decoders --> Tight
+    Decoders --> TightPNG
+    Decoders --> ZRLE
+    Decoders --> JPEG
 ```
 
-### Key Responsibilities
+### Execution Flow
 
-- Parse rectangle metadata and payload from the socket buffer
-- Wait for sufficient bytes using `rQwait`
-- Decode or decompress pixel data
-- Convert pixel formats where necessary
-- Invoke drawing primitives such as:
-  - `blitImage()`
-  - `fillRect()`
-  - `copyImage()`
-  - `imageRect()`
+1. The RFB layer receives a framebuffer update message.
+2. The encoding type determines which decoder is selected.
+3. `decodeRect(x, y, width, height, sock, display, depth)` is invoked.
+4. The decoder consumes bytes from the socket queue.
+5. Pixel data is reconstructed and passed to the Display.
+6. Rendering is performed on the canvas.
+
+All decoders are incremental and return `false` when more data is required, allowing non-blocking processing.
 
 ---
 
-## Decoder Interface Contract
+## Common Decoder Interface
 
-All decoders expose a common method:
+All decoders implement:
 
-```javascript
-decodeRect(x, y, width, height, sock, display, depth)
+```text
+decodeRect(x, y, width, height, sock, display, depth) -> boolean
 ```
 
-### Parameters
+Where:
 
-- `x`, `y` – Top-left rectangle position
-- `width`, `height` – Rectangle dimensions
-- `sock` – Websock instance (buffered network reader)
-- `display` – Display renderer
-- `depth` – Pixel depth (8-bit or 24/32-bit)
+- `x, y` — rectangle origin
+- `width, height` — rectangle dimensions
+- `sock` — Websock abstraction for reading RFB data
+- `display` — Display instance responsible for rendering
+- `depth` — bits per pixel depth
 
-### Return Value
+Return value:
 
-- `true` → Rectangle fully processed
-- `false` → Not enough data available yet (caller must retry)
-
-This cooperative design allows incremental parsing of streamed network data.
+- `true` → rectangle fully decoded
+- `false` → waiting for more socket data
 
 ---
 
 # Decoder Implementations
 
-## CopyRect Decoder
+## RawDecoder
 
-**Component:** `meshcentral.public.novnc.core.decoders.copyrect.CopyRectDecoder`
+**Encoding Type:** RAW
 
-The CopyRect Decoder performs server-side screen copy operations. Instead of transmitting pixel data, the server instructs the client to copy a rectangle from one location to another.
+The simplest encoding. Pixel data is transmitted uncompressed.
+
+### Behavior
+
+- Reads line-by-line pixel data
+- Handles 8-bit and 32-bit depth
+- Converts 8-bit packed RGB into 32-bit RGBA
+- Forces alpha channel to 255 (fully opaque)
+- Uses `display.blitImage()` per scanline
+
+### Characteristics
+
+- No compression
+- High bandwidth usage
+- Minimal processing complexity
+
+---
+
+## CopyRectDecoder
+
+**Encoding Type:** COPYRECT
+
+Optimized encoding for screen regions that can be copied from existing framebuffer content.
 
 ### Behavior
 
 - Reads source coordinates (`deltaX`, `deltaY`)
 - Calls `display.copyImage()`
 
-```mermaid
-flowchart LR
-    Sock["Websock"] -->|"read delta"| CopyRect["CopyRect Decoder"]
-    CopyRect -->|"copyImage()"| Display["Display"]
-```
-
-### Characteristics
-
-- No pixel decoding
-- Extremely bandwidth-efficient
-- Used for window moves and scrolling
-
----
-
-## Raw Decoder
-
-**Component:** `meshcentral.public.novnc.core.decoders.raw.RawDecoder`
-
-The Raw Decoder processes uncompressed pixel data transmitted line-by-line.
-
-### Behavior
-
-- Calculates bytes per line
-- Reads row data
-- Converts 8-bit indexed color to RGBA if necessary
-- Ensures alpha channel is fully opaque
-- Calls `display.blitImage()`
-
 ### Use Case
 
-- Simple servers
-- High-bandwidth connections
-- Fallback encoding
+- Window dragging
+- Scrolling
+- Moving UI components
+
+Very low bandwidth and CPU cost.
 
 ---
 
-## RRE Decoder
+## RREDecoder (Rise-and-Run-length Encoding)
 
-**Component:** `meshcentral.public.novnc.core.decoders.rre.RREDecoder`
+**Encoding Type:** RRE
 
-RRE (Rise-and-Run-length Encoding) encodes a background color and multiple subrectangles.
+Encodes a rectangle as:
+
+- A background color
+- A list of subrectangles with individual colors
 
 ### Behavior
 
-1. Read subrectangle count
-2. Fill entire rectangle with background color
-3. Render each subrectangle with its own color
+1. Read number of subrectangles
+2. Fill full area with background color
+3. Apply colored subrectangles using `display.fillRect()`
+
+Efficient for large areas with solid color blocks.
+
+---
+
+## HextileDecoder
+
+**Encoding Type:** HEXTILE
+
+Divides rectangles into 16×16 tiles.
+
+### Features
+
+- Tile-based processing
+- Optional background and foreground colors
+- Subrectangle support
+- Raw tile fallback
+
+### Internal Flow
 
 ```mermaid
 flowchart TD
-    Start["Start RRE"] --> BG["Read background color"]
-    BG --> Fill["fillRect() full area"]
-    Fill --> Sub["Iterate subrectangles"]
-    Sub --> Draw["fillRect() subregion"]
+    Start["Start Tile"] --> ReadSub["Read Subencoding"]
+    ReadSub -->|"Raw"| RawTile["Blit Raw Pixels"]
+    ReadSub -->|"Background/Foreground"| SetupTile["Prepare Tile Buffer"]
+    SetupTile --> SubRects["Apply Subrectangles"]
+    SubRects --> Finish["Blit Tile"]
 ```
 
-### Advantages
-
-- Efficient for large solid-color areas
-- Low computational overhead
+Optimized for typical desktop UI patterns with repeating backgrounds and small updates.
 
 ---
 
-## Hextile Decoder
+## TightDecoder
 
-**Component:** `meshcentral.public.novnc.core.decoders.hextile.HextileDecoder`
+**Encoding Type:** TIGHT
 
-Hextile divides a rectangle into 16×16 tiles and encodes each tile separately using subencoding flags.
-
-### Tile Model
-
-```mermaid
-flowchart TD
-    Rect["Rectangle"] --> Tiles["16x16 Tiles"]
-    Tiles --> SubEnc["Subencoding Flags"]
-    SubEnc --> Raw["Raw Tile"]
-    SubEnc --> BG["Background Specified"]
-    SubEnc --> FG["Foreground Specified"]
-    SubEnc --> SubRects["Subrectangles"]
-```
-
-### Key Features
-
-- Maintains tile buffer
-- Supports raw tile fallback
-- Handles background and foreground optimization
-- Efficient for mixed content
-
----
-
-## JPEG Decoder
-
-**Component:** `meshcentral.public.novnc.core.decoders.jpeg.JPEGDecoder`
-
-The JPEG Decoder reconstructs a complete JPEG image from streamed segments.
-
-### Special Handling
-
-- Caches quantization tables
-- Caches Huffman tables
-- Inserts missing tables if omitted by server
-- Concatenates segments into full JPEG binary
-
-### Rendering
-
-Uses:
-
-```javascript
-display.imageRect(x, y, width, height, "image/jpeg", data);
-```
-
-### Advantages
-
-- High compression ratio
-- Ideal for photo-realistic content
-
----
-
-## Tight Decoder
-
-**Component:** `meshcentral.public.novnc.core.decoders.tight.TightDecoder`
-
-Tight encoding is one of the most complex and efficient encodings in VNC. It supports multiple filters and zlib streams.
+A complex, high-efficiency encoding using zlib compression and optional filters.
 
 ### Control Byte Structure
 
-- Lower 4 bits → zlib stream selection
-- Upper bits → filter/compression mode
-- Stream reset flags
+- Lower 4 bits → zlib stream reset flags
+- Upper 4 bits → compression type
 
 ### Supported Modes
 
-- Fill (solid color)
+- FillRect (solid color)
 - JPEG
-- Copy filter (raw RGB)
-- Palette filter
-- Gradient filter
+- Basic compression (Copy, Palette, Gradient filters)
+
+### Zlib Streams
+
+Maintains four independent zlib streams to improve compression across updates.
+
+### Filters
+
+1. **CopyFilter** — raw RGB data, optionally compressed
+2. **PaletteFilter** — indexed color images
+3. **GradientFilter** — predictive encoding based on neighboring pixels
 
 ```mermaid
 flowchart TD
-    Tight["Tight Decoder"] --> Fill["Fill Mode"]
-    Tight --> JPEG["JPEG Mode"]
-    Tight --> Basic["Basic Compression"]
-    Basic --> Copy["Copy Filter"]
-    Basic --> Palette["Palette Filter"]
-    Basic --> Gradient["Gradient Filter"]
+    Control["Read Control Byte"] --> Mode
+    Mode -->|"Fill"| Fill["Solid Color Fill"]
+    Mode -->|"JPEG"| JPEGMode["JPEG Image"]
+    Mode -->|"Basic"| Filter["Select Filter"]
+    Filter --> CopyF["Copy Filter"]
+    Filter --> PaletteF["Palette Filter"]
+    Filter --> GradientF["Gradient Filter"]
 ```
 
-### Compression
-
-- Uses four zlib streams
-- Integrated with the Compression module (Inflator)
-- Supports incremental decompression
-
-### Why Tight Matters
-
-- Excellent bandwidth efficiency
-- Adaptive compression strategies
-- Common default encoding in many VNC servers
+Tight is one of the most bandwidth-efficient encodings.
 
 ---
 
-## TightPNG Decoder
+## TightPNGDecoder
 
-**Component:** `meshcentral.public.novnc.core.decoders.tightpng.TightPNGDecoder`
+Extension of TightDecoder.
 
-Extends the Tight Decoder to support PNG rectangles instead of JPEG.
+### Differences
 
-### Differences from Tight
+- Supports PNG image rectangles
+- Disallows BasicCompression mode
 
-- Overrides PNG handler
-- Disallows basic compression mode
+Delegates PNG data directly to:
 
-### Rendering
-
-```javascript
-display.imageRect(x, y, width, height, "image/png", data);
+```text
+display.imageRect(x, y, width, height, "image/png", data)
 ```
 
 ---
 
-## ZRLE Decoder
+## JPEGDecoder
 
-**Component:** `meshcentral.public.novnc.core.decoders.zrle.ZRLEDecoder`
+Handles standalone JPEG-encoded rectangles.
 
-ZRLE (Zlib Run-Length Encoding) compresses 64×64 tiles using zlib followed by per-tile subencoding.
+### Key Features
 
-### Tile Processing Pipeline
+- Reads complete JPEG segment stream
+- Reconstructs missing Huffman or quantization tables
+- Caches tables for reuse (RealVNC compatibility)
+- Emits final image via `display.imageRect()`
 
-```mermaid
-flowchart TD
-    ZRLE["ZRLE Decoder"] --> Inflate["Inflate Zlib Block"]
-    Inflate --> TileLoop["Iterate 64x64 Tiles"]
-    TileLoop --> SubEnc["Read Subencoding"]
-    SubEnc --> Raw["Raw Tile"]
-    SubEnc --> Solid["Solid Color"]
-    SubEnc --> Palette["Palette Mode"]
-    SubEnc --> RLE["Run Length Mode"]
-```
+Optimized for photographic content and compressed screen regions.
+
+---
+
+## ZRLEDecoder
+
+**Encoding Type:** ZRLE (Zlib Run-Length Encoding)
+
+Tile-based encoding (64×64 tiles) with zlib compression.
 
 ### Supported Subencodings
 
-- Raw
-- Solid
-- Palette-based
-- RLE
-- Palette + RLE
+- Raw tile
+- Solid tile
+- Palette tile
+- RLE tile
+- RLE palette tile
 
-### Benefits
+### Tile Processing Model
 
-- Very efficient for mixed graphical content
-- Good balance between compression and decoding complexity
+```mermaid
+flowchart TD
+    ZData["Read Zlib Block"] --> Inflate["Inflate Data"]
+    Inflate --> TileLoop["Iterate Tiles 64x64"]
+    TileLoop --> SubType["Read Subencoding"]
+    SubType --> RawTile["Raw"]
+    SubType --> SolidTile["Solid"]
+    SubType --> PaletteTile["Palette"]
+    SubType --> RLETile["RLE"]
+```
+
+Efficient for mixed content with repeated patterns.
 
 ---
 
-# Interaction with Other Modules
-
-## RFB and Display
-
-The Decoders module is orchestrated by the RFB core. It does not manage protocol negotiation directly.
-
-For protocol handling details, see the RFB and Display module documentation.
-
-## Compression Module
-
-Tight and ZRLE use zlib inflation via the Compression module.
+# Data Flow Summary
 
 ```mermaid
 flowchart LR
-    Decoder["Tight or ZRLE"] -->|"compressed data"| Inflator["Inflator"]
-    Inflator -->|"raw pixels"| Decoder
+    Socket["Socket Bytes"] --> Parser["Decoder"]
+    Parser --> RGBA["RGBA Buffer"]
+    RGBA --> DisplayOps["Display Operations"]
+    DisplayOps --> Canvas["Canvas Rendering"]
 ```
-
-## Websock Transport
-
-All decoders rely on the Websock abstraction for:
-
-- Buffered reads
-- Waiting for sufficient bytes
-- Peeking without shifting
-- Shifting typed values
 
 ---
 
-# Design Patterns and Principles
+# State Management
 
-## Incremental Decoding
+Many decoders maintain internal state across calls:
 
-Decoders never assume the entire rectangle payload is available. They:
+- Partial tile counters (Hextile, ZRLE)
+- Remaining scanlines (Raw)
+- Pending subrectangles (RRE)
+- Active zlib streams (Tight)
+- Cached JPEG tables (JPEG)
 
-- Call `rQwait()` before reading
-- Return `false` when insufficient data exists
-- Preserve state between calls
-
-This enables streaming and avoids blocking behavior.
-
-## Stateless vs Stateful Decoders
-
-- Stateless: CopyRect
-- Stateful: Tight, Hextile, ZRLE (maintain buffers and counters)
-
-## Alpha Channel Normalization
-
-All decoders ensure alpha is set to `255` (fully opaque), standardizing canvas rendering behavior.
+This allows safe incremental decoding when socket buffers do not yet contain complete rectangle data.
 
 ---
 
 # Performance Considerations
 
-- Tight and ZRLE use reusable inflation streams
-- Scratch buffers reduce allocations
-- Tile-based approaches improve cache locality
-- Palette and RLE reduce bandwidth dramatically
+| Decoder | CPU Cost | Bandwidth Usage | Typical Use Case |
+|----------|------------|------------------|------------------|
+| Raw | Low | High | Simple or LAN environments |
+| CopyRect | Very Low | Very Low | UI movement |
+| RRE | Low | Medium | Large solid areas |
+| Hextile | Medium | Medium | Classic VNC servers |
+| Tight | Medium–High | Low | Modern servers |
+| TightPNG | Medium | Low | Image-heavy content |
+| JPEG | Medium | Low | Photographic regions |
+| ZRLE | Medium | Low | Mixed workloads |
 
 ---
 
-# Summary
+# Integration with Other Modules
 
-The **Decoders** module is the rendering backbone of the noVNC client within MeshCentral. It:
+The Decoders module collaborates closely with:
 
-- Implements multiple RFB encoding algorithms
-- Integrates tightly with Websock and Display
-- Supports incremental and streaming decoding
-- Balances CPU cost against bandwidth savings
+- **RFB Core** — selects encoding and invokes decoder
+- **Websock** — provides buffered socket reads
+- **Compression (Inflator)** — used by Tight and ZRLE
+- **Display** — performs final rendering
 
-By abstracting encoding-specific logic into dedicated decoder classes, the architecture remains modular, extensible, and maintainable while supporting a wide range of VNC server implementations.
+The module is intentionally isolated from UI logic and input handling, focusing strictly on framebuffer transformation.
+
+---
+
+# Design Principles
+
+- Incremental decoding
+- Zero-copy where possible
+- Explicit alpha normalization
+- Stream reuse for performance
+- Clear separation between protocol parsing and rendering
+
+---
+
+# Conclusion
+
+The **Decoders** module is a performance-critical layer in MeshCentral’s noVNC client stack. It translates diverse VNC encoding formats into consistent RGBA pixel operations, enabling efficient and responsive remote desktop rendering inside the browser.
+
+By supporting multiple encoding strategies and maintaining incremental state handling, it ensures compatibility with a wide range of VNC servers while balancing CPU and bandwidth efficiency.

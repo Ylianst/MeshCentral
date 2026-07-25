@@ -1,0 +1,12 @@
+flowchart TD
+    A["parse call"] --> B["Merge Options"]
+    B --> C{{"Async?"}}
+    C -->|"No"| D["Preprocess"]
+    D --> E["Lex"]
+    E --> F["processAllTokens"]
+    F --> G["walkTokens"]
+    G --> H["Parse"]
+    H --> I["Postprocess"]
+    I --> J["Return HTML"]
+    C -->|"Yes"| K["Promise Chain"]
+    K --> J

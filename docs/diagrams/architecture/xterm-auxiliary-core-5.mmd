@@ -1,0 +1,5 @@
+flowchart LR
+    RenderRequest["Render Request"] --> CacheLookup["Cache Lookup"]
+    CacheLookup -->|Hit| UseCached["Use Cached Contrast"]
+    CacheLookup -->|Miss| Compute["Compute Contrast"]
+    Compute --> Store["Store in Cache"]

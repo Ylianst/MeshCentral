@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Chart
+    participant DatasetController
+    participant Auxiliary
+    participant Animator
+    participant Renderer
+
+    Chart->>DatasetController: update(mode)
+    DatasetController->>Auxiliary: resolveOptions()
+    Auxiliary->>Animator: register animations
+    Animator-->>Auxiliary: animation frames
+    Auxiliary->>Renderer: apply computed values

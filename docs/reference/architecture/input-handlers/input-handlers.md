@@ -1,154 +1,104 @@
 # Input Handlers
 
-The **Input Handlers** module is responsible for capturing, normalizing, and translating user input events (touch and keyboard) into structured, protocol-ready actions for the noVNC-based remote desktop stack inside MeshCentral.
+The **Input Handlers** module is responsible for capturing, normalizing, and translating user interaction events (touch and keyboard) into a format suitable for remote transmission within the MeshCentral noVNC client stack.
 
-It acts as the bridge between browser-native input events and the Remote Framebuffer (RFB) protocol layer implemented in the [RFB and Display](rfb-and-display/rfb-and-display.md) module.
+It acts as the bridge between browser-native input events and the Remote Framebuffer (RFB) protocol layer, ensuring that gestures and key presses are interpreted consistently across platforms and devices.
 
----
+This module contains two primary components:
 
-## Purpose and Responsibilities
+- `GestureHandler` – Multi-touch gesture recognition and abstraction
+- `Keyboard` – Cross-platform keyboard event normalization and translation
 
-The Input Handlers module provides:
-
-- ✅ Touch gesture detection (tap, drag, pinch, long press)
-- ✅ Cross-platform keyboard normalization
-- ✅ Browser-specific compatibility handling
-- ✅ Translation of DOM events into high-level gesture/key events
-- ✅ Clean lifecycle management (attach/detach, grab/ungrab)
-
-It ensures that input behavior is consistent across:
-
-- Windows
-- macOS
-- iOS
-- Android
-- Linux
-- Physical and virtual keyboards
-- Multi-touch devices
+Together, these components provide a unified input abstraction layer for remote desktop and terminal sessions.
 
 ---
 
-## Core Components
+## Architectural Overview
 
-The module consists of two primary components:
-
-| Component | Responsibility |
-|-----------|---------------|
-| `GestureHandler` | Detects and emits high-level multi-touch gestures |
-| `Keyboard` | Captures and normalizes keyboard events into keysyms |
-
----
-
-# Architecture Overview
-
-```mermaid
-flowchart LR
-    UserInput["User Input"] --> BrowserEvents["Browser DOM Events"]
-
-    subgraph input_handlers["Input Handlers Module"]
-        GestureHandler["GestureHandler"]
-        Keyboard["Keyboard"]
-    end
-
-    BrowserEvents --> GestureHandler
-    BrowserEvents --> Keyboard
-
-    GestureHandler --> HighLevelGestures["Custom Gesture Events"]
-    Keyboard --> KeyEvents["Normalized Key Events"]
-
-    HighLevelGestures --> RFBModule["RFB and Display Module"]
-    KeyEvents --> RFBModule
-```
-
-The module transforms low-level browser input into structured events that the RFB layer can transmit to the remote system.
-
----
-
-# GestureHandler
-
-**Component:** `meshcentral.public.novnc.core.input.gesturehandler.GestureHandler`
-
-The GestureHandler converts raw touch events into semantic gestures.
-
-## Supported Gestures
-
-| Gesture | Description |
-|----------|------------|
-| `onetap` | Single finger tap |
-| `twotap` | Two-finger tap |
-| `threetap` | Three-finger tap |
-| `drag` | Single-finger drag |
-| `twodrag` | Two-finger drag |
-| `pinch` | Pinch/zoom gesture |
-| `longpress` | Press-and-hold gesture |
-
----
-
-## Internal State Model
-
-Gesture detection is implemented as a bitmask-based state machine.
-
-Key characteristics:
-
-- Multiple possible gestures remain active until eliminated
-- Threshold-based movement detection
-- Timeout-based differentiation (tap vs longpress vs pinch)
-- Conflict resolution between gesture candidates
-
-### Gesture Detection Flow
+The Input Handlers module sits between the browser DOM event system and the RFB layer that communicates with the remote server.
 
 ```mermaid
 flowchart TD
-    TouchStart["touchstart"] --> TrackTouches["Track Touch Points"]
-    TrackTouches --> EvaluateState["Evaluate Gesture Candidates"]
-
-    EvaluateState -->|"movement < threshold"| Wait["Wait for More Input"]
-    EvaluateState -->|"movement > threshold"| EliminateTap["Eliminate Tap/Longpress"]
-
-    EliminateTap --> DetectType["Determine Drag / Pinch / TwoDrag"]
-    DetectType --> GestureStart["Dispatch gesturestart"]
-    GestureStart --> GestureMove["Dispatch gesturemove"]
-    GestureMove --> TouchEnd["touchend"]
-    TouchEnd --> GestureEnd["Dispatch gestureend"]
+    User["User Interaction"] --> BrowserEvents["Browser Events<br/>touchstart, keydown"]
+    BrowserEvents --> InputHandlers["Input Handlers Module"]
+    InputHandlers --> RFB["RFB Layer"]
+    RFB --> Websock["Websock Transport"]
+    Websock --> RemoteServer["Remote Server"]
 ```
 
----
+### Responsibilities
 
-## Key Detection Mechanisms
-
-### 1. Movement Threshold
-
-Small movements are ignored to prevent accidental gestures.
-
-### 2. Angle Threshold
-
-Used to distinguish:
-
-- Two-finger drag (parallel movement)
-- Pinch (diverging or converging movement)
-
-### 3. Timeout Strategy
-
-Multiple timeouts are used to disambiguate gestures:
-
-| Timeout | Purpose |
-|----------|---------|
-| Multi-touch timeout | Ensures grouped touches form one gesture |
-| Tap timeout | Ensures tap duration is short |
-| Longpress timeout | Detects hold gestures |
-| Two-touch timeout | Differentiates pinch vs two-drag |
+- Capture DOM input events
+- Normalize platform-specific differences
+- Detect complex gestures (pinch, drag, tap, etc.)
+- Maintain key state tracking
+- Dispatch standardized input events
+- Forward processed input to the RFB layer
 
 ---
 
-## Event Emission
+## Component Overview
 
-GestureHandler dispatches **CustomEvent** objects:
+### 1. GestureHandler
+
+**Component:** `meshcentral.public.novnc.core.input.gesturehandler.GestureHandler`
+
+The GestureHandler detects and abstracts multi-touch gestures from raw touch events. It converts low-level touch sequences into higher-level semantic gesture events.
+
+#### Supported Gestures
+
+| Gesture | Description |
+|----------|-------------|
+| onetap | Single-finger tap |
+| twotap | Two-finger tap |
+| threetap | Three-finger tap |
+| drag | Single-finger movement |
+| longpress | Press and hold |
+| twodrag | Two-finger parallel movement |
+| pinch | Two-finger zoom gesture |
+
+#### Gesture Detection Model
+
+Gesture detection is implemented using:
+
+- A bitmask-based state machine
+- Movement and angle thresholds
+- Time-based detection windows
+- Multi-touch coordination logic
+
+```mermaid
+flowchart TD
+    Start["touchstart"] --> Track["Track Touch Points"]
+    Track --> MoveCheck{"Movement &gt; Threshold?"}
+    MoveCheck -->|No| Wait["Wait for More Events"]
+    MoveCheck -->|Yes| Analyze["Analyze Direction & Angle"]
+    Analyze --> Decide{"Pinch or Two Drag?"}
+    Decide -->|Angle &gt; 90°| Pinch["Pinch"]
+    Decide -->|Angle ≤ 90°| TwoDrag["Two Drag"]
+    Pinch --> EmitStart["Dispatch gesturestart"]
+    TwoDrag --> EmitStart
+```
+
+#### Key Internal Concepts
+
+- **Tracked Touches** – Active touch points being analyzed
+- **Ignored Touches** – Touches ignored due to conflict or cleanup
+- **Timeouts**:
+  - Multi-touch timeout
+  - Long press timeout
+  - Two-touch disambiguation timeout
+- **Average Position Calculation** – Used to compute gesture coordinates
+- **Magnitude Reporting** – Used for pinch distance or drag movement
+
+#### Event Dispatch Model
+
+GestureHandler emits `CustomEvent` instances:
 
 - `gesturestart`
 - `gesturemove`
 - `gestureend`
 
-Each event includes:
+Each event contains:
 
 ```text
 {
@@ -160,161 +110,165 @@ Each event includes:
 }
 ```
 
-These events are consumed by higher-level modules such as RFB to generate pointer events or scaling operations.
+These events are consumed by higher layers (typically the RFB module) to generate remote pointer or scaling actions.
 
 ---
 
-# Keyboard
+### 2. Keyboard
 
 **Component:** `meshcentral.public.novnc.core.input.keyboard.Keyboard`
 
-The Keyboard component captures browser keyboard events and translates them into X11-compatible keysyms for the remote system.
+The Keyboard component captures and normalizes browser keyboard events, translating them into X11-style keysyms for remote transmission.
 
----
+#### Core Responsibilities
 
-## Responsibilities
-
-- Normalize key codes across browsers
-- Translate to X11 keysyms
-- Track depressed keys
+- Track key press/release state
+- Normalize browser key codes
+- Convert to X11 keysym values
 - Handle platform-specific quirks
-- Emit consistent key down/up events
+- Detect composite key sequences (e.g., AltGr)
+- Prevent browser default behavior
 
 ---
 
-## Keyboard Event Flow
+## Keyboard Processing Flow
 
 ```mermaid
 flowchart TD
-    KeyDown["keydown"] --> NormalizeCode["Normalize Key Code"]
-    NormalizeCode --> TranslateKeysym["Translate to Keysym"]
-    TranslateKeysym --> PlatformFixes["Apply Platform Fixes"]
-    PlatformFixes --> SendEvent["Send Key Event"]
-
-    KeyUp["keyup"] --> ReleaseEvent["Release Key"]
-    ReleaseEvent --> SendEvent
+    KeyDown["keydown"] --> GetCode["Resolve Key Code"]
+    GetCode --> GetKeysym["Map to Keysym"]
+    GetKeysym --> PlatformFix["Apply Platform Fixes"]
+    PlatformFix --> SendEvent["Send Key Event"]
+    SendEvent --> RFB["Forward to RFB"]
 ```
 
----
+### Key Features
 
-## Platform Compatibility Handling
+#### 1. Key State Tracking
 
-The component includes extensive logic for:
+Maintains `_keyDownList` to ensure consistent press/release matching.
 
-### Windows
+Prevents duplicate key events and ensures proper cleanup on blur.
 
-- AltGr detection via Ctrl+Alt sequence timing
-- Missing Shift release bug workaround
-- Japanese IM key handling
+#### 2. AltGr Detection (Windows)
 
-### macOS / iOS
-
-- Remapping of Alt/Super behavior
-- CapsLock emulation (press + release)
-- Meta-key release inconsistencies
-- NumLock unsupported detection
-
-### Virtual Keyboards
-
-If a key cannot be identified:
-
-- Immediately send press and release
-- Prevents stuck keys
-
----
-
-## Internal Key Tracking
-
-Keyboard maintains an internal map:
+Windows emulates AltGr as a rapid sequence of:
 
 ```text
-_keyDownList = {
-  "KeyA": XK_A,
-  "ShiftLeft": XK_Shift_L
-}
+ControlLeft + AltRight
 ```
 
-This ensures:
+The module detects timing patterns (< 50 ms) to merge them into a single ISO Level 3 Shift event.
 
-- Consistent release events
-- No duplicate keysyms
-- Recovery when focus is lost
+#### 3. macOS Modifier Normalization
+
+macOS modifier behavior differs significantly:
+
+- Super keys remapped
+- Alt behaves as Mode_switch
+- CapsLock toggled as synthetic press-release
+- Meta key edge-case handling
+
+#### 4. Japanese IME Handling (Windows)
+
+Certain IME keys do not generate proper release events. The module simulates press-release pairs to maintain consistency.
+
+#### 5. Blur Safety
+
+When the browser window loses focus:
+
+- All pressed keys are automatically released
+- Prevents "stuck key" conditions remotely
 
 ---
 
-## Lifecycle Management
+## Interaction with Other Modules
 
-### grab()
+Although this document focuses only on Input Handlers, it integrates closely with:
 
-- Attaches `keydown` and `keyup` listeners
-- Adds window `blur` listener
-- Begins capturing keyboard input
+- RFB – Receives normalized pointer and key events
+- Websock – Transports encoded input to the remote server
+- Display – Reflects results of remote interaction
+- Utility components – Logging, browser detection, and event helpers
 
-### ungrab()
-
-- Removes listeners
-- Releases all depressed keys
-- Prevents stuck key state
+Input Handlers never directly manage rendering or networking. Instead, they provide a clean abstraction layer between user input and remote protocol logic.
 
 ---
 
-# Integration with RFB and Display
+## State Management Strategies
 
-The Input Handlers module feeds directly into the RFB client implementation.
+### Gesture State Machine
 
-```mermaid
-flowchart LR
-    Keyboard --> RFB["RFB"]
-    GestureHandler --> RFB
-    RFB --> Display["Display"]
+The GestureHandler uses a bitmask strategy:
+
+```text
+State = Bitmask of possible gestures
+
+If only one bit remains set → Gesture detected
+If multiple bits remain → Still ambiguous
+If zero bits remain → No gesture
 ```
 
-- Keyboard events → RFB key messages
-- Gesture events → Pointer/mouse messages
-- RFB forwards events to remote server
+This approach allows:
 
-See: [RFB and Display](rfb-and-display/rfb-and-display.md)
-
----
-
-# Design Characteristics
-
-### Deterministic Gesture Resolution
-
-The bitmask-based gesture elimination model ensures:
-
-- Only one final gesture survives
-- Conflicting gestures are eliminated early
-- No ambiguous output states
-
-### Cross-Browser Robustness
-
-Both components implement fallback paths for:
-
-- Legacy browsers
-- Inconsistent key APIs
-- Platform-specific event quirks
-
-### Clean Separation of Concerns
-
-- GestureHandler → touch semantics
-- Keyboard → key semantics
-- RFB → protocol transport
-- Display → rendering
+- Efficient elimination of impossible gestures
+- Parallel evaluation of gesture possibilities
+- Clear conflict resolution
 
 ---
 
-# Summary
+## Error Handling and Edge Cases
 
-The **Input Handlers** module provides a critical abstraction layer between browser-native input systems and the remote desktop protocol stack.
+### GestureHandler
 
-It ensures:
+- Throws errors if invalid internal states are reached
+- Guards against empty tracked touch lists
+- Resets state after gesture completion
+- Ignores conflicting touches
 
-- Reliable multi-touch gesture detection
-- Cross-platform keyboard normalization
-- Stable lifecycle management
-- Clean integration with the RFB layer
+### Keyboard
 
-Without this module, remote desktop interaction would suffer from inconsistent input behavior, stuck keys, incorrect gesture interpretation, and platform-specific bugs.
+- Ignores unidentified keys safely
+- Prevents duplicate releases
+- Handles OS inconsistencies gracefully
+- Clears all key state during ungrab
 
-It is a foundational component in delivering a smooth and predictable remote control experience within MeshCentral.
+---
+
+## Public API Summary
+
+### GestureHandler
+
+| Method | Purpose |
+|--------|----------|
+| attach(target) | Begin listening for touch events |
+| detach() | Remove event listeners |
+
+### Keyboard
+
+| Method | Purpose |
+|--------|----------|
+| grab() | Start listening for key events |
+| ungrab() | Stop listening and release keys |
+| onkeyevent | Callback for processed key events |
+
+---
+
+## Design Principles
+
+1. Platform abstraction over direct DOM usage
+2. Defensive handling of inconsistent browser behavior
+3. Separation of gesture recognition and protocol logic
+4. Deterministic state machines over heuristic guessing
+5. Clear event emission contract
+
+---
+
+## Summary
+
+The **Input Handlers** module provides the critical translation layer between browser-native interaction events and the remote desktop protocol stack.
+
+- GestureHandler transforms complex touch input into structured gesture events.
+- Keyboard normalizes cross-platform key behavior into protocol-safe keysyms.
+
+By isolating browser and OS quirks within this module, the rest of the MeshCentral noVNC stack can operate with consistent, predictable input behavior across devices and platforms.

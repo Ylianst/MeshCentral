@@ -1,0 +1,5 @@
+flowchart TD
+    A["User Click"] --> B["Document Data API Listener"]
+    B --> C["Resolve Target Element"]
+    C --> D["getOrCreateInstance()"]
+    D --> E["Execute Action (show/toggle)"]

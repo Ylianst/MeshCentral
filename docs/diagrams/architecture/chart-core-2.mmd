@@ -1,11 +1,7 @@
-sequenceDiagram
-    participant User
-    participant ChartCore
-    participant Controller
-    participant Scale
-    participant Canvas
-
-    User->>ChartCore: new Chart(config)
-    ChartCore->>Controller: create dataset controllers
-    ChartCore->>Scale: initialize scales
-    ChartCore->>Canvas: initial render
+flowchart TD
+    RawData["Raw Dataset"] --> Parse["Controller parse()"]
+    Parse --> Limits["Scale determineDataLimits()"]
+    Limits --> Ticks["Tick Generation"]
+    Ticks --> Map["Value to Pixel Mapping"]
+    Map --> Elements["Visual Elements"]
+    Elements --> Draw["Canvas Draw"]

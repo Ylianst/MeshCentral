@@ -1,0 +1,7 @@
+flowchart TD
+    Add["Add Image"] --> Tile["Tile by Cell Size"]
+    Tile --> Map["Map to Buffer Cells"]
+    Map --> Track["Track Tile Count"]
+    Track --> Render["Render on Viewport"]
+    Render --> EvictCheck["Check Pixel Limit"]
+    EvictCheck -->|Exceeded| Evict["Evict Oldest"]

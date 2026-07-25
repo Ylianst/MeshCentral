@@ -1,4 +1,7 @@
-flowchart LR
-    DataPoints["Data Points"] --> Spline["Spline Calculation"]
-    Spline --> ControlPoints["Bezier Control Points"]
-    ControlPoints --> Render["Path Rendering"]
+flowchart TD
+    Event["Pointer Event"] --> ResolveActive["Resolve Active Elements"]
+    ResolveActive --> BuildItems["Build Tooltip Items"]
+    BuildItems --> Measure["Measure Tooltip Size"]
+    Measure --> Position["Compute Alignment + Caret"]
+    Position --> Animate["Apply Animations"]
+    Animate --> Draw["Render Tooltip"]

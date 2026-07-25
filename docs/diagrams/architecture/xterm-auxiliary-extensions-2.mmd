@@ -1,0 +1,14 @@
+flowchart LR
+    Extensions["Xterm Auxiliary Extensions"]
+
+    Extensions --> Core["Extensions Core"]
+    Extensions --> Utilities["Extensions Utilities"]
+
+    Core --> Runtime["Runtime Extensions"]
+    Core --> Services["Service Wiring"]
+
+    Utilities --> Accessibility["Accessibility"]
+    Utilities --> Linkification["Linkification"]
+    Utilities --> Clipboard["Clipboard"]
+    Utilities --> Decorations["Decorations"]
+    Utilities --> Mouse["Mouse Protocol"]

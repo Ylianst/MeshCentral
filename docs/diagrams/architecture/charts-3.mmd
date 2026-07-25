@@ -1,0 +1,6 @@
+flowchart TD
+    RawConfig["Raw Chart Configuration"] --> Normalize["Normalize & Enrich"]
+    Normalize --> MergeDefaults["Merge Defaults"]
+    MergeDefaults --> Validate["Validation"]
+    Validate --> Ready["Runtime Ready Config"]
+    Ready --> ChartRuntime["Chart Runtime"]

@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant User
+    participant Chart
+    participant Interaction
+    participant Tooltip
+
+    User->>Chart: Mouse Event
+    Chart->>Interaction: getElementsAtEventForMode()
+    Interaction->>Tooltip: setActiveElements()
+    Tooltip->>Tooltip: update()
+    Tooltip->>Chart: request render

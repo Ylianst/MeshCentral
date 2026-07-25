@@ -1,0 +1,6 @@
+flowchart LR
+    DCS["DCS q Sequence"] --> SixelHandler
+    SixelHandler --> Decode["DecoderAsync"]
+    Decode --> RGBA["RGBA Pixel Buffer"]
+    RGBA --> Canvas["Canvas Creation"]
+    Canvas --> Storage["Add Image to Storage"]

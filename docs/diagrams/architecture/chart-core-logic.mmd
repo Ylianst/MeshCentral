@@ -1,0 +1,7 @@
+flowchart TD
+    InputData["Dataset Input"] --> Controller["Dataset Controller (Ns)"]
+    Controller --> Scale["Scale System (Js / Lo)"]
+    Scale --> PixelMapping["Pixel Mapping"]
+    PixelMapping --> Elements["Visual Elements"]
+    Elements --> Canvas["Canvas Rendering"]
+    DateAdapter["Date Adapter (Ln)"] --> Scale

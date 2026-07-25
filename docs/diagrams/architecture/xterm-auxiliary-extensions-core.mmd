@@ -1,0 +1,7 @@
+flowchart TD
+    XtermCore["Xterm Core"] --> XtermAux["Xterm Auxiliary"]
+    XtermAux --> XtermAuxExt["Xterm Auxiliary Extensions"]
+    XtermAuxExt --> XtermAuxExtCore["Xterm Auxiliary Extensions Core"]
+    XtermAuxExtCore --> CoreMain["Core Main"]
+    XtermAuxExtCore --> CoreAux["Core Auxiliary"]
+    XtermAuxExt --> Utilities["Extensions Utilities"]

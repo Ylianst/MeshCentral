@@ -1,6 +1,6 @@
 flowchart TD
-    Data["Dataset Values"] --> Parse["Parse Values"]
-    Parse --> Compute["Compute Total"]
-    Compute --> Ratio["Calculate Ratios"]
-    Ratio --> Angles["Map to Angles"]
-    Angles --> Update["Update Arc Elements"]
+    Init["Initialize Scale"] --> DataLimits["determineDataLimits()"]
+    DataLimits --> BuildTicks["buildTicks()"]
+    BuildTicks --> LabelGen["generateTickLabels()"]
+    LabelGen --> Fit["fit()"]
+    Fit --> Draw["draw()"]

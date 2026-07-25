@@ -1,6 +1,7 @@
-flowchart TD
-    TransportConnect["Transport Connect Event"] --> Init["Client.connect()"]
-    Init --> WaitCliprdr["Wait for cliprdr PDU"]
-    WaitCliprdr --> Recv["recv() Dispatcher"]
-    Recv --> HandleType["Switch on msgType"]
-    HandleType --> Next["Register next cliprdr listener"]
+sequenceDiagram
+    participant Transport
+    participant Client
+
+    Transport->>Client: connect(gccCore, userId, channelId)
+    Client->>Client: store connection context
+    Transport->>Client: cliprdr(CB_MONITOR_READY)

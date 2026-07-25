@@ -1,3 +1,6 @@
 flowchart LR
-    P1["Plain Block 1"] --> XOR1["XOR with IV"] --> E1["DES Encrypt"] --> C1["Cipher 1"]
-    P2["Plain Block 2"] --> XOR2["XOR with Cipher 1"] --> E2["DES Encrypt"] --> C2["Cipher 2"]
+    APriv["Private Key A"] --> ACalc["g^a mod p"]
+    BPriv["Private Key B"] --> BCalc["g^b mod p"]
+
+    ACalc --> SharedA["(g^b)^a mod p"]
+    BCalc --> SharedB["(g^a)^b mod p"]

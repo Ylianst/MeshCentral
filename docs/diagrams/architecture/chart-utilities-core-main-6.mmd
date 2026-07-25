@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant Controller
+    participant Utility as Utility Framework
+    participant Color as Color Engine
+    participant Canvas
+
+    Controller->>Utility: Compute geometry & scales
+    Controller->>Color: Resolve dataset colors
+    Utility->>Canvas: Draw shapes & text
+    Color->>Canvas: Provide fill/stroke styles

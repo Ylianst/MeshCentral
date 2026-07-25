@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant App as Application
+    participant Terminal
+    participant CoreTerminal
+    participant InputHandler
+    participant RenderService
+
+    App->>Terminal: open(container)
+    Terminal->>CoreTerminal: initialize
+    Terminal->>RenderService: create renderer
+    App->>Terminal: write(data)
+    Terminal->>CoreTerminal: write(data)
+    CoreTerminal->>InputHandler: parse(data)
+    InputHandler->>RenderService: request refresh

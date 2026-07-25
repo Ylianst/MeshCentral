@@ -1,0 +1,14 @@
+flowchart TD
+    Core["Xterm Addon Image Core"]
+    Main["Core Main"]
+    Aux["Core Auxiliary"]
+
+    Core --> Main
+    Core --> Aux
+
+    Main --> Lifecycle["Addon Lifecycle"]
+    Main --> Integration["Xterm Integration"]
+
+    Aux --> Sixel["SIXEL Decoder"]
+    Aux --> IIP["IIP Parser"]
+    Aux --> WASM["WebAssembly Engine"]

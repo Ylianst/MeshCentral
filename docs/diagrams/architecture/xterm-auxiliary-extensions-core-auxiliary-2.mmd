@@ -1,0 +1,11 @@
+flowchart TD
+    TerminalOpen["Terminal.open()"] --> CreateContainer["Create Accessibility Container"]
+    CreateContainer --> BuildRows["Build ARIA Row Elements"]
+    BuildRows --> AttachListeners["Attach Terminal Event Listeners"]
+
+    AttachListeners --> OnRender["onRender()"]
+    AttachListeners --> OnResize["onResize()"]
+    AttachListeners --> OnScroll["onScroll()"]
+
+    OnRender --> RenderRows["Render ARIA Rows"]
+    RenderRows --> UpdateLiveRegion["Announce Changes"]

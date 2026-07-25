@@ -1,0 +1,6 @@
+flowchart TD
+    Running["_running = true?"] -->|Yes| HasItems
+    HasItems["Any active items?"] -->|Yes| ContinueLoop
+    HasItems -->|No| StopLoop
+    ContinueLoop --> RequestNext["requestAnimationFrame"]
+    StopLoop --> SetRunningFalse["_running = false"]

@@ -1,12 +1,10 @@
 flowchart TD
-    TouchStart["touchstart"] --> TrackTouches["Track Touch Points"]
-    TrackTouches --> EvaluateState["Evaluate Gesture Candidates"]
-
-    EvaluateState -->|"movement < threshold"| Wait["Wait for More Input"]
-    EvaluateState -->|"movement > threshold"| EliminateTap["Eliminate Tap/Longpress"]
-
-    EliminateTap --> DetectType["Determine Drag / Pinch / TwoDrag"]
-    DetectType --> GestureStart["Dispatch gesturestart"]
-    GestureStart --> GestureMove["Dispatch gesturemove"]
-    GestureMove --> TouchEnd["touchend"]
-    TouchEnd --> GestureEnd["Dispatch gestureend"]
+    Start["touchstart"] --> Track["Track Touch Points"]
+    Track --> MoveCheck{"Movement &gt; Threshold?"}
+    MoveCheck -->|No| Wait["Wait for More Events"]
+    MoveCheck -->|Yes| Analyze["Analyze Direction & Angle"]
+    Analyze --> Decide{"Pinch or Two Drag?"}
+    Decide -->|Angle &gt; 90°| Pinch["Pinch"]
+    Decide -->|Angle ≤ 90°| TwoDrag["Two Drag"]
+    Pinch --> EmitStart["Dispatch gesturestart"]
+    TwoDrag --> EmitStart

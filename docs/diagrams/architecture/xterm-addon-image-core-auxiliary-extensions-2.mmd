@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Terminal
+    participant Parser
+    participant SixelHandler
+    participant Decoder
+    participant Storage
+
+    Terminal->>Parser: DCS q (SIXEL data)
+    Parser->>SixelHandler: hook + put()
+    SixelHandler->>Decoder: decode chunks
+    Decoder-->>SixelHandler: width + height + pixel data
+    SixelHandler->>Storage: addImage(canvas)
+    Storage->>Terminal: mark dirty rows

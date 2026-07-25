@@ -1,0 +1,7 @@
+flowchart LR
+    Input["Image Escape Sequence"] --> Parser["Protocol Parser"]
+    Parser --> ExtCore["Extensions Core"]
+    ExtCore --> Decoder["WASM Decoder"]
+    Decoder --> ExtUtils["Extensions Utilities"]
+    ExtUtils --> Buffer["Typed Array Buffers"]
+    Buffer --> Renderer["Renderer"]

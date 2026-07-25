@@ -1,0 +1,10 @@
+flowchart TD
+    ChartCore["Chart Instance (On)"] --> Controllers["Dataset Controllers (Ns)"]
+    ChartCore --> Scales["Scale System (Js, Linear, Time, Radial)"]
+    ChartCore --> Elements["Visual Elements (Arc, Line, Bar, Point)"]
+    ChartCore --> Plugins["Plugin System (sn)"]
+    ChartCore --> Animator["Animator (xt)"]
+    Controllers --> Elements
+    Controllers --> Scales
+    Plugins --> ChartCore
+    Animator --> Controllers

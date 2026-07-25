@@ -1,4 +1,5 @@
 flowchart TD
-    ChartUtilities["Chart Utilities"]
-    ChartUtilities --> ChartUtilitiesCore["Chart Utilities Core"]
-    ChartUtilities --> ChartUtilitiesOperations["Chart Utilities Operations"]
+    CoreMain["Core Main (Wo, Zt)"] --> Helpers["Rendering & Math Helpers"]
+    CoreMain --> ColorEngine["Color Engine"]
+    CoreExtensions["Core Extensions (ba, bn, bo)"] --> ConfigBridge["Configuration Bridge"]
+    CoreExtensions --> ScaleLogic["Linear Scale Logic"]

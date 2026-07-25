@@ -1,0 +1,9 @@
+flowchart TD
+    ChartCore["Chart Core Engine"] --> ScaleRegistry["Scale Registry"]
+    ScaleRegistry --> LinearScale["Linear Scale (bo)"]
+    LinearScale --> TickGeneration["Tick Generation"]
+    LinearScale --> ValueToPixel["Value to Pixel Mapping"]
+    LinearScale --> PixelToValue["Pixel to Value Mapping"]
+    LinearScale --> RangeNormalization["Range Normalization"]
+    ValueToPixel --> RenderingLayer["Chart Rendering Layer"]
+    TickGeneration --> RenderingLayer

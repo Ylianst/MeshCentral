@@ -1,0 +1,13 @@
+flowchart TD
+    Chart["Chart Class"]
+    Registry["Registry (Controllers, Elements, Scales, Plugins)"]
+    Animator["Animation Engine"]
+    Layout["Layout Manager"]
+    Interaction["Interaction Engine"]
+    Plugins["Plugin System"]
+
+    Chart --> Registry
+    Chart --> Animator
+    Chart --> Layout
+    Chart --> Interaction
+    Chart --> Plugins

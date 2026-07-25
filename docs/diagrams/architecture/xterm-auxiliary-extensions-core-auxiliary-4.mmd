@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant User
+    participant Linkifier
+    participant LinkProviderService
+    participant Terminal
+
+    User->>Linkifier: mousemove
+    Linkifier->>LinkProviderService: provideLinks(row)
+    LinkProviderService-->>Linkifier: link ranges
+    Linkifier->>Terminal: activate(link)

@@ -1,0 +1,10 @@
+flowchart TD
+    A[Markdown Source] --> B[Hooks Preprocess]
+    B --> C[Lexer]
+    C --> D[Tokenizer]
+    D --> E[Token Stream]
+    E --> F[walkTokens Callback]
+    F --> G[Parser]
+    G --> H[Renderer]
+    H --> I[Hooks Postprocess]
+    I --> J[HTML Output]

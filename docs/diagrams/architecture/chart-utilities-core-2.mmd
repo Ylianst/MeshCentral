@@ -1,11 +1,6 @@
-classDiagram
-    class DateAdapterBase {
-        +init(options)
-        +formats()
-        +parse(value, format)
-        +format(timestamp, format)
-        +add(timestamp, amount, unit)
-        +diff(max, min, unit)
-        +startOf(timestamp, unit)
-        +endOf(timestamp, unit)
-    }
+flowchart TD
+    RawConfig["Raw Chart Configuration"] --> Normalize["Normalize & Enrich"]
+    Normalize --> MergeDefaults["Merge Defaults"]
+    MergeDefaults --> Validate["Extended Validation"]
+    Validate --> CoreReady["Core-Ready Configuration"]
+    CoreReady --> Runtime["Chart Runtime"]

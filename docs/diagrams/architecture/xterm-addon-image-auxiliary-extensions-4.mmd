@@ -1,0 +1,7 @@
+flowchart TD
+    Data["Incoming Image Data"] --> SizeCheck["Size Check"]
+    SizeCheck -->|Within Limit| Decode["Decode"]
+    SizeCheck -->|Exceeded| Abort["Abort"]
+    Decode --> MemoryCheck["Memory Check"]
+    MemoryCheck -->|Safe| Render["Render Image"]
+    MemoryCheck -->|Exceeded| Release["Release Resources"]

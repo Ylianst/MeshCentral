@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant User
+    participant Textarea
+    participant CompositionHelper
+    participant CoreService
+
+    User->>Textarea: compositionstart
+    Textarea->>CompositionHelper: compositionupdate
+    CompositionHelper->>CoreService: triggerDataEvent(text)
+    Textarea->>CompositionHelper: compositionend

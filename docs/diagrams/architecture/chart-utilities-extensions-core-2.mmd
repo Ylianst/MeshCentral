@@ -1,0 +1,9 @@
+flowchart LR
+    Defaults["Defaults Resolver (de)"] --> ChartInstance["Chart Instance"]
+    ChartInstance --> Animator["Animation Engine (bt)"]
+    Animator --> FrameLoop["requestAnimationFrame"]
+    Animator --> Controllers["Dataset Controllers"]
+    Controllers --> Elements["Chart Elements"]
+    Defaults --> Scales["Scale System"]
+    Defaults --> Plugins["Plugin System"]
+    Defaults --> Layout["Layout Engine"]

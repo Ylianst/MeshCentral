@@ -1,0 +1,7 @@
+flowchart TD
+    ChartInstance["Chart Instance"] --> Controllers["Dataset Controllers (Ns)"]
+    ChartInstance --> Scales["Scales (Js, Lo)"]
+    ChartInstance --> Plugins["Plugins"]
+    Controllers --> Elements["Elements"]
+    Scales --> Controllers
+    Elements --> Canvas["Canvas"]

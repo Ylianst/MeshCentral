@@ -1,327 +1,306 @@
 # Crypto Components
 
-The **Crypto Components** module provides the cryptographic foundation for the browser-based remote desktop stack used in MeshCentral’s noVNC integration. It implements symmetric encryption, asymmetric encryption, key exchange, and legacy compatibility layers required for RFB (Remote Framebuffer) authentication and secure session establishment.
+The **Crypto Components** module provides the cryptographic foundation for MeshCentral's embedded noVNC client. It implements a collection of symmetric, asymmetric, and key exchange algorithms required for secure Remote Framebuffer (RFB) communication, legacy VNC authentication schemes, and compatibility with environments where the Web Crypto API does not fully cover required primitives.
 
-This module complements the networking and protocol layers (such as RFB, RA2, and Websock) by delivering the cryptographic primitives required during authentication handshakes and secure data exchange.
+This module acts as a compatibility and abstraction layer over:
 
----
+- The browser `window.crypto.subtle` API
+- Custom JavaScript implementations (DES, RSA, DH, MD5)
+- Legacy VNC-specific cryptographic workflows
 
-## 1. Purpose and Scope
-
-The Crypto Components module is responsible for:
-
-- Implementing AES-based symmetric encryption (ECB and EAX modes)
-- Providing DES encryption for legacy VNC authentication
-- Supporting RSA (PKCS#1 v1.5) for key transport
-- Implementing Diffie-Hellman (DH) key exchange
-- Offering a unified legacy crypto interface compatible with SubtleCrypto-like APIs
-- Supporting digest and key derivation functionality through pluggable algorithms
-
-It bridges modern Web Crypto APIs (`window.crypto.subtle`) with custom cryptographic implementations required by VNC/RFB security types.
+It ensures that the rest of the noVNC stack (notably the RFB layer) can rely on a unified crypto interface without being tightly coupled to a specific browser capability set.
 
 ---
 
-## 2. High-Level Architecture
+## Architectural Overview
 
-The module is structured around algorithm-specific cipher classes and a unifying `LegacyCrypto` facade.
+The Crypto Components module is organized around algorithm families and a unifying facade:
+
+- **AES Ciphers** – Modern symmetric encryption (ECB and EAX modes)
+- **DES Ciphers** – Legacy VNC authentication encryption
+- **RSA Cipher** – Public key encryption (PKCS#1 v1.5 style padding)
+- **Diffie-Hellman Cipher** – Key agreement for shared secret derivation
+- **LegacyCrypto** – Unified compatibility interface
+
+### High-Level Architecture
 
 ```mermaid
 flowchart TD
-    AppLayer["RFB / RA2 Authentication"] --> LegacyCrypto["LegacyCrypto Interface"]
+    RFB["RFB Protocol Layer"] --> Legacy["LegacyCrypto Interface"]
 
-    LegacyCrypto --> AES["AES Ciphers"]
-    LegacyCrypto --> DES["DES Ciphers"]
-    LegacyCrypto --> RSA["RSA Cipher"]
-    LegacyCrypto --> DH["Diffie-Hellman Cipher"]
-    LegacyCrypto --> MD5["MD5 Digest"]
+    Legacy --> AES["AES Ciphers"]
+    Legacy --> DES["DES Ciphers"]
+    Legacy --> RSA["RSA Cipher"]
+    Legacy --> DH["Diffie-Hellman Cipher"]
+    Legacy --> MD5["MD5 Digest"]
 
-    AES --> AESECB["AESECBCipher"]
-    AES --> AESEAX["AESEAXCipher"]
-
-    DES --> DESECB["DESECBCipher"]
-    DES --> DESCBC["DESCBCCipher"]
-    DES --> DESCore["DES Core Engine"]
-
-    RSA --> RSACipherNode["RSACipher"]
-    DH --> DHCipherNode["DHCipher"]
-    DH --> DHPublicKeyNode["DHPublicKey"]
+    AES --> Subtle["Web Crypto API"]
+    RSA --> Subtle
+    DH --> BigInt["BigInt Utilities"]
+    RSA --> BigInt
 ```
 
-### Design Characteristics
-
-- **Algorithm abstraction**: Each cipher exposes a consistent `algorithm` property.
-- **SubtleCrypto integration**: AES and RSA key generation rely on Web Crypto when available.
-- **Legacy compatibility**: DES and RSA-PKCS1-v1_5 are implemented for protocol compatibility.
-- **Pluggable interface**: `LegacyCrypto` maps algorithm names to implementations.
+The **LegacyCrypto** class acts as the primary entry point. It selects and delegates to the appropriate cipher implementation based on the algorithm name.
 
 ---
 
-## 3. LegacyCrypto Interface
+## Core Components
 
-**Core Component:**
-- `meshcentral.public.novnc.core.crypto.crypto.LegacyCrypto`
+### 1. AES Ciphers
 
-`LegacyCrypto` provides a SubtleCrypto-like API for algorithms not natively supported in the browser or requiring custom behavior.
-
-### Responsibilities
-
-- Route encryption/decryption requests to correct cipher
-- Import/export raw keys
-- Generate keys (if supported)
-- Perform digest operations (e.g., MD5)
-- Perform key derivation (e.g., DH)
-
-### Algorithm Registry
-
-Internally, it maps algorithm names to implementations:
-
-- `AES-ECB` → `AESECBCipher`
-- `AES-EAX` → `AESEAXCipher`
-- `DES-ECB` → `DESECBCipher`
-- `DES-CBC` → `DESCBCCipher`
-- `RSA-PKCS1-v1_5` → `RSACipher`
-- `DH` → `DHCipher`
-- `MD5` → MD5 implementation
-
-### Call Flow
-
-```mermaid
-sequenceDiagram
-    participant App
-    participant Legacy as LegacyCrypto
-    participant Cipher
-
-    App->>Legacy: importKey("raw", keyData, algorithm)
-    Legacy->>Cipher: static importKey(...)
-    Cipher-->>Legacy: Cipher Instance
-    App->>Legacy: encrypt(algorithm, key, data)
-    Legacy->>Cipher: key.encrypt(...)
-    Cipher-->>App: Encrypted Data
-```
-
-This abstraction allows RFB authentication code to remain algorithm-agnostic.
-
----
-
-## 4. AES Implementations
-
-**Core Components:**
-- `meshcentral.public.novnc.core.crypto.aes.AESECBCipher`
+**Components:**
 - `meshcentral.public.novnc.core.crypto.aes.AESEAXCipher`
+- `meshcentral.public.novnc.core.crypto.aes.AESECBCipher`
 
-### 4.1 AESECBCipher
+AES is used for modern symmetric encryption scenarios.
 
-Provides AES in ECB-like behavior by encrypting 16-byte blocks individually using `AES-CBC` with a zero IV.
+#### AESECBCipher
 
-#### Characteristics
+- Wraps AES block encryption using `AES-CBC` with a zero IV
+- Emulates ECB behavior by encrypting blocks individually
+- Requires input length to be a multiple of 16 bytes
+- Uses `window.crypto.subtle.importKey()` and `encrypt()`
 
-- Uses `window.crypto.subtle.importKey`
-- Requires plaintext length to be multiple of 16 bytes
-- Encrypts each block independently
-- Returns `null` on invalid input or uninitialized key
+This is primarily included for compatibility where AES-ECB is required but not directly available via Web Crypto.
 
-This mode exists primarily for protocol compatibility rather than modern security best practices.
+#### AESEAXCipher
 
----
-
-### 4.2 AESEAXCipher
-
-Implements AES-EAX (Authenticated Encryption with Associated Data).
-
-EAX combines:
+Implements **AES-EAX**, an authenticated encryption mode combining:
 
 - AES-CTR for encryption
 - AES-CMAC for authentication
 
-#### Internal Structure
+Internal workflow:
 
 ```mermaid
-flowchart TD
-    Key["Raw Key"] --> ImportCTR["Import AES-CTR Key"]
-    Key --> ImportCBC["Import AES-CBC Key"]
+flowchart LR
+    Key["Raw AES Key"] --> Init["Import CTR + CBC Keys"]
+    Init --> CMACInit["Generate CMAC Subkeys"]
 
-    ImportCBC --> InitCMAC["Initialize CMAC Subkeys"]
+    Nonce["Nonce"] --> NCMAC["CMAC(Nonce)"]
+    Data["Plaintext"] --> CTR["AES-CTR Encrypt"]
+    NCMAC --> CTR
 
-    Message["Plaintext"] --> EncryptCTR["AES-CTR Encryption"]
-    Nonce["Nonce"] --> NonceCMAC["CMAC(Nonce)"]
+    CTR --> ENC["Encrypted Data"]
+    ENC --> MACCalc["CMAC(Encrypted)"]
     AD["Additional Data"] --> ADCMAC["CMAC(AD)"]
 
-    EncryptCTR --> MAC["CMAC(Ciphertext)"]
-    NonceCMAC --> MAC
-    ADCMAC --> MAC
-
-    MAC --> Output["Ciphertext + Tag"]
+    MACCalc --> FinalMAC["Combine MACs"]
+    ADCMAC --> FinalMAC
+    NCMAC --> FinalMAC
 ```
 
-#### Key Concepts
+Key characteristics:
 
-- **Prefix blocks** distinguish nonce, associated data, and ciphertext.
-- CMAC subkeys are derived from AES encryption of a zero block.
-- Tag verification is done in constant-time style comparison.
+- Provides confidentiality + integrity
+- Appends a 16-byte authentication tag
+- Validates MAC before decryption
+- Returns `null` on authentication failure
 
-EAX is used when authenticated encryption is required (e.g., secure session data exchange).
+This cipher is significantly more secure than ECB and suitable for modern encrypted sessions.
 
 ---
 
-## 5. DES Implementations
+### 2. DES Ciphers
 
-**Core Components:**
+**Components:**
 - `meshcentral.public.novnc.core.crypto.des.DES`
 - `meshcentral.public.novnc.core.crypto.des.DESECBCipher`
 - `meshcentral.public.novnc.core.crypto.des.DESCBCCipher`
 
-### 5.1 DES Core Engine
+DES is retained for **legacy VNC authentication compatibility**.
 
-The `DES` class implements:
+#### DES (Core Engine)
 
-- Key scheduling
-- 16-round Feistel network
-- Permutation tables and S-box operations
+- Full JavaScript implementation of DES
+- Implements key scheduling and 16 Feistel rounds
+- Encrypts 8-byte blocks via `enc8()`
+- Derived from historical ACME and Flashlight VNC implementations
 
-It encrypts 8-byte blocks using:
-
-```text
-Input (8 bytes)
- → Initial permutation
- → 16 Feistel rounds
- → Final permutation
- → Output (8 bytes)
-```
-
-This implementation is ported and optimized for compatibility with legacy VNC authentication.
-
----
-
-### 5.2 DESECBCipher
+#### DESECBCipher
 
 - Encrypts 8-byte blocks independently
-- Requires plaintext multiple of 8 bytes
-- Used in classic VNC challenge-response authentication
+- Requires plaintext length multiple of 8 bytes
+- Used for traditional VNC challenge-response authentication
+
+#### DESCBCCipher
+
+- Implements CBC chaining
+- Uses XOR with previous block or IV
+- Applies DES block encryption per round
+
+DES should be considered cryptographically weak by modern standards and is preserved strictly for protocol compatibility.
 
 ---
 
-### 5.3 DESCBCCipher
+### 3. RSA Cipher
 
-- Implements Cipher Block Chaining
-- Uses provided IV
-- XORs each block with previous ciphertext
+**Component:**
+- `meshcentral.public.novnc.core.crypto.rsa.RSACipher`
+
+Implements RSA encryption using:
+
+- BigInt modular exponentiation
+- PKCS#1 v1.5-style padding
+- Web Crypto key generation (internally exported to JWK)
+
+#### Responsibilities
+
+- Generate RSA key pairs (via Web Crypto)
+- Import public keys
+- Perform modular exponentiation using BigInt
+- Encrypt/decrypt using manual padding logic
+
+Encryption workflow:
 
 ```mermaid
-flowchart LR
-    P1["Plain Block 1"] --> XOR1["XOR with IV"] --> E1["DES Encrypt"] --> C1["Cipher 1"]
-    P2["Plain Block 2"] --> XOR2["XOR with Cipher 1"] --> E2["DES Encrypt"] --> C2["Cipher 2"]
+flowchart TD
+    Msg["Message"] --> Pad["PKCS1 v1.5 Padding"]
+    Pad --> ToInt["Convert to BigInt"]
+    ToInt --> ModExp["c = m^e mod n"]
+    ModExp --> Bytes["BigInt to Byte Array"]
 ```
 
-DES support is retained strictly for compatibility with older RFB security types.
+Decryption performs:
+
+- `m = c^d mod n`
+- Padding validation
+- Extraction of original message
+
+The implementation explicitly checks padding structure and returns `null` on invalid input.
 
 ---
 
-## 6. Diffie-Hellman (DH)
+### 4. Diffie-Hellman Cipher
 
-**Core Components:**
+**Components:**
 - `meshcentral.public.novnc.core.crypto.dh.DHCipher`
 - `meshcentral.public.novnc.core.crypto.dh.DHPublicKey`
 
-The DH implementation enables secure key agreement between client and server.
+Provides a pure JavaScript Diffie-Hellman key exchange mechanism using BigInt arithmetic.
 
-### Workflow
+#### Key Generation
+
+- Accepts `g` (generator) and `p` (prime modulus)
+- Generates random private key
+- Computes public key: `g^private mod p`
+
+#### Shared Secret Derivation
+
+```mermaid
+flowchart LR
+    APriv["Private Key A"] --> ACalc["g^a mod p"]
+    BPriv["Private Key B"] --> BCalc["g^b mod p"]
+
+    ACalc --> SharedA["(g^b)^a mod p"]
+    BCalc --> SharedB["(g^a)^b mod p"]
+```
+
+Both parties derive the same shared secret using:
+
+- `modPow()` BigInt exponentiation
+- Byte-array conversion utilities
+
+This is used when secure key negotiation is required before symmetric encryption begins.
+
+---
+
+### 5. LegacyCrypto Interface
+
+**Component:**
+- `meshcentral.public.novnc.core.crypto.crypto.LegacyCrypto`
+
+The central compatibility layer.
+
+#### Responsibilities
+
+- Maps algorithm names to implementations
+- Delegates encryption and decryption
+- Provides key import/export abstraction
+- Supports:
+  - `encrypt()`
+  - `decrypt()`
+  - `importKey()`
+  - `generateKey()`
+  - `exportKey()`
+  - `digest()`
+  - `deriveBits()`
+
+Algorithm registry example:
+
+```text
+"AES-ECB"        → AESECBCipher
+"AES-EAX"        → AESEAXCipher
+"DES-ECB"        → DESECBCipher
+"DES-CBC"        → DESCBCCipher
+"RSA-PKCS1-v1_5" → RSACipher
+"DH"             → DHCipher
+"MD5"            → MD5
+```
+
+This abstraction ensures the rest of the system does not depend on concrete implementations.
+
+---
+
+## Interaction with the RFB Layer
+
+The Crypto Components module primarily serves the RFB protocol implementation during:
+
+- Authentication negotiation
+- Challenge-response encryption
+- Secure key agreement
+- Encrypted session setup
 
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Server
+    participant RFB
+    participant Legacy
+    participant Cipher
 
-    Client->>Client: Generate (g, p, private)
-    Client->>Server: Send public = g^a mod p
-    Server->>Client: Send public = g^b mod p
-    Client->>Client: Compute shared = (g^b)^a mod p
-    Server->>Server: Compute shared = (g^a)^b mod p
+    RFB->>Legacy: importKey(algorithm)
+    Legacy->>Cipher: instantiate cipher
+    RFB->>Legacy: encrypt(data)
+    Legacy->>Cipher: encrypt()
+    Cipher-->>Legacy: encrypted bytes
+    Legacy-->>RFB: result
 ```
 
-### Implementation Details
-
-- Uses `modPow` for modular exponentiation
-- Converts between `Uint8Array` and `BigInt`
-- Returns raw shared secret bytes via `deriveBits`
-
-This mechanism is typically used to derive symmetric session keys.
+The RFB layer remains algorithm-agnostic by interacting only with the LegacyCrypto interface.
 
 ---
 
-## 7. RSA (PKCS#1 v1.5)
+## Security Considerations
 
-**Core Component:**
-- `meshcentral.public.novnc.core.crypto.rsa.RSACipher`
+- **AES-EAX** provides authenticated encryption and should be preferred.
+- **AES-ECB** is included for compatibility and should not be used for new designs.
+- **DES** is cryptographically weak and maintained solely for legacy VNC support.
+- **RSA-PKCS1 v1.5** padding is historically common but less robust than modern OAEP.
+- Diffie-Hellman relies on secure parameter selection (`p`, `g`).
 
-Provides RSA encryption and decryption using PKCS#1 v1.5 padding.
-
-### Features
-
-- Key generation via Web Crypto (`RSA-OAEP` internally)
-- Manual extraction of modulus (`n`), exponent (`e`), and private exponent (`d`)
-- Public key import support
-- PKCS#1 v1.5 block formatting
-
-### Encryption Flow
-
-```mermaid
-flowchart TD
-    Message["Plaintext"] --> Pad["PKCS#1 v1.5 Padding"]
-    Pad --> ToBigInt["Convert to BigInt"]
-    ToBigInt --> ModPowEnc["c = m^e mod n"]
-    ModPowEnc --> Cipher["Ciphertext Bytes"]
-```
-
-### Decryption Flow
-
-- Convert ciphertext to BigInt
-- Compute `m = c^d mod n`
-- Validate PKCS#1 padding
-- Extract plaintext
-
-RSA is typically used to securely exchange symmetric keys during authentication.
+Where available, Web Crypto primitives are leveraged for stronger security and performance.
 
 ---
 
-## 8. Security Model and Integration
+## Design Principles
 
-The Crypto Components module is deeply integrated into:
+The Crypto Components module follows these architectural principles:
 
-- RFB authentication negotiation
-- RA2 security type
-- Session key establishment
-- Challenge-response verification
-
-### Layered Interaction
-
-```mermaid
-flowchart TD
-    Websock["Websock Transport"] --> RFB["RFB Protocol"]
-    RFB --> Security["Security Type Negotiation"]
-    Security --> Crypto["Crypto Components"]
-    Crypto --> SessionKey["Session Keys"]
-    SessionKey --> EncryptedData["Encrypted Frame Data"]
-```
-
-### Key Properties
-
-- Uses browser-native crypto where possible
-- Falls back to custom implementations for protocol compatibility
-- Maintains consistent API surface
-- Enforces algorithm-name validation to prevent misuse
+1. **Protocol Compatibility First** – Supports legacy VNC requirements.
+2. **Web Crypto Integration** – Uses browser-native primitives when possible.
+3. **BigInt-Based Fallbacks** – Implements required math when not provided by SubtleCrypto.
+4. **Clear Algorithm Abstraction** – Prevents higher layers from depending on implementation details.
+5. **Graceful Failure** – Returns `null` on invalid inputs or authentication failures.
 
 ---
 
-## 9. Summary
+## Summary
 
-The **Crypto Components** module delivers the cryptographic primitives required by the browser-based remote desktop stack. It:
+The **Crypto Components** module is the cryptographic backbone of the MeshCentral noVNC client. It provides:
 
-- Supports both modern and legacy algorithms
-- Implements authenticated encryption (AES-EAX)
-- Enables secure key exchange (DH)
-- Supports key transport (RSA)
-- Maintains backward compatibility with DES-based VNC authentication
+- Modern AES authenticated encryption
+- Legacy DES compatibility
+- RSA public key encryption
+- Diffie-Hellman key exchange
+- A unified LegacyCrypto interface
 
-By abstracting algorithm selection through `LegacyCrypto`, the module ensures protocol flexibility while keeping higher layers (such as RFB and authentication logic) clean and algorithm-independent.
-
-It serves as the cryptographic backbone of secure remote session establishment within the MeshCentral noVNC integration.
+By isolating cryptographic logic into a dedicated module, the system maintains clear separation between transport, rendering, input handling, and security logic while ensuring compatibility with both modern and legacy remote desktop environments.

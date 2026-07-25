@@ -1,10 +1,9 @@
 flowchart TD
-    Config["Chart Configuration"] --> Controller["Dataset Controller (Hn)"]
-    Controller --> Elements["Visual Elements (Hs)"]
-    Controller --> Scales["Scales (Js)"]
-
-    Scales --> Elements
-    Elements --> Canvas["Canvas Rendering Context"]
-
-    CoreUtils["Core Utilities (Cs, Fa)"] --> Controller
-    CoreUtils --> Scales
+    App["Application Layer"] --> Core["Chart Core"]
+    Core --> Controllers["Dataset Controllers (Ns)"]
+    Core --> Scales["Scales (Js, Lo)"]
+    Core --> Runtime["Runtime Orchestrator (On)"]
+    Runtime --> Animation["Animation Engine (Os)"]
+    Runtime --> Registry["Runtime Registry (Qs)"]
+    Controllers --> Canvas["Canvas Rendering"]
+    Scales --> Controllers

@@ -1,0 +1,9 @@
+flowchart TD
+    TerminalDOM["Visual Terminal"]
+    AccessibilityContainer["Accessibility Container"]
+    RowTree["ARIA Row List"]
+    LiveRegion["ARIA Live Region"]
+
+    TerminalDOM --> AccessibilityContainer
+    AccessibilityContainer --> RowTree
+    AccessibilityContainer --> LiveRegion

@@ -1,9 +1,0 @@
-flowchart TD
-    UI["UI Interaction"] --> DataChange["Dataset Mutation"]
-    DataChange --> Processing["Chart Data Processing"]
-    Processing --> Transformation["Chart Data Transformation"]
-    Transformation --> Aggregation["Chart Data Aggregation"]
-    Aggregation --> Controllers["Dataset Controllers"]
-    Controllers --> Elements["Chart Elements"]
-    Elements --> Rendering["Chart Rendering"]
-    Rendering --> Canvas["Canvas Output"]

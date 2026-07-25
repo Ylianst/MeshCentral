@@ -1,0 +1,11 @@
+flowchart TD
+    ChartInstance["Chart Instance"] --> ConfigResolver["Defaults Resolver (de)"]
+    ConfigResolver --> AnimationDefaults["Animation Defaults"]
+    ConfigResolver --> ScaleDefaults["Scale Defaults"]
+    ConfigResolver --> LayoutDefaults["Layout Defaults"]
+    ConfigResolver --> PluginDefaults["Plugin Defaults"]
+
+    AnimationDefaults --> Animator["Animator Engine"]
+    ScaleDefaults --> ScaleSystem["Scale Implementations"]
+    LayoutDefaults --> LayoutEngine["Layout Manager"]
+    PluginDefaults --> PluginSystem["Plugin Registry"]

@@ -1,0 +1,21 @@
+flowchart TD
+    App["MeshCentral UI"] --> Terminal["Terminal API"]
+
+    subgraph CoreLayer["Xterm Core Main"]
+        Terminal --> CoreTerminal["Core Terminal Engine"]
+        CoreTerminal --> BufferService["Buffer Service"]
+        CoreTerminal --> Parser["Escape Sequence Parser"]
+        CoreTerminal --> CoreService["Core Service"]
+    end
+
+    subgraph BrowserLayer["Xterm Core Auxiliary"]
+        Terminal --> RenderService["Render Service"]
+        Terminal --> SelectionService["Selection Service"]
+        Terminal --> AccessibilityManager["Accessibility Manager"]
+        Terminal --> Viewport["Viewport"]
+        Terminal --> Linkifier["Linkifier"]
+        Terminal --> ThemeService["Theme Service"]
+    end
+
+    RenderService --> DomRenderer["DOM Renderer"]
+    DomRenderer --> Screen["Terminal DOM"]

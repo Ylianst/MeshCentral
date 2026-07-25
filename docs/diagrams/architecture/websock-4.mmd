@@ -1,5 +1,7 @@
 flowchart TD
-    Incoming["Incoming Message"] --> Space{"Enough Free Space?"}
-    Space -->|"Yes"| Append["Append to rQ"]
-    Space -->|"No"| Expand["_expandCompactRQ()"]
-    Expand --> Append
+    RFBWrite["RFB Writes Data"] --> Push["sQpush*"]
+    Push --> Ensure["_sQensureSpace()"]
+    Ensure --> FlushCheck{"Buffer Full?"}
+    FlushCheck -->|"Yes"| Flush["flush()"]
+    FlushCheck -->|"No"| Continue["Continue Writing"]
+    Flush --> Send["WebSocket.send()"]

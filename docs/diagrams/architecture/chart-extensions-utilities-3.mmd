@@ -1,7 +1,13 @@
 flowchart TD
-    UpdateCall["Chart.update()"] --> ResolveAnimations["Resolve Animations"]
-    ResolveAnimations --> CreateAnimation["Create Animation Instances"]
-    CreateAnimation --> AnimatorQueue["Animator Queue"]
-    AnimatorQueue --> FrameLoop["requestAnimationFrame Loop"]
-    FrameLoop --> Tick["Tick & Interpolate"]
-    Tick --> Draw["Re-render Chart"]
+    ChartAPI["Chart Class"]
+    Registry["Registry"]
+
+    Registry --> Controllers["Dataset Controllers"]
+    Registry --> Elements["Visual Elements"]
+    Registry --> Scales["Scales"]
+    Registry --> Plugins["Built-in Plugins"]
+
+    Controllers --> Render["Element Rendering"]
+    Scales --> Mapping["Domain to Pixel Mapping"]
+    Plugins --> Hooks["Lifecycle Hooks"]
+    Render --> Canvas["Canvas 2D Context"]

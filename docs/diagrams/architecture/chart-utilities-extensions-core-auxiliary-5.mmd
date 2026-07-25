@@ -1,0 +1,6 @@
+flowchart TD
+    Option["Option Access"] --> IsFunction{"Function?"}
+    IsFunction -->|Yes| Execute["Execute with Context"]
+    IsFunction -->|No| IsArray{"Array?"}
+    IsArray -->|Yes| ResolveIndex["Resolve by Index"]
+    IsArray -->|No| ReturnStatic["Return Static Value"]

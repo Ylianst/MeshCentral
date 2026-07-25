@@ -1,0 +1,8 @@
+flowchart TD
+    Update --> BuildControllers
+    BuildControllers --> UpdateScales
+    UpdateScales --> Layout
+    Layout --> UpdateDatasets
+    UpdateDatasets --> Draw
+    Draw --> DrawDatasets
+    DrawDatasets --> DrawPlugins

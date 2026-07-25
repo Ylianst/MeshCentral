@@ -1,0 +1,7 @@
+flowchart LR
+    Input["Image Escape Sequence"] --> Parser["Protocol Parser"]
+    Parser --> AuxLayer["Auxiliary Layer"]
+    AuxLayer --> Decode["Base64 / Binary Decode"]
+    Decode --> Buffer["Typed Array Buffer"]
+    Buffer --> Storage["Image Storage"]
+    Storage --> Render["Renderer Overlay"]

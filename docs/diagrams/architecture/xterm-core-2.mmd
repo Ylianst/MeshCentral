@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant App as MeshCentral UI
+    participant Terminal as Terminal
+    participant Core as Core Engine
+    participant Renderer as Render Service
+
+    App->>Terminal: new Terminal(options)
+    Terminal->>Core: initialize core services
+    App->>Terminal: open(container)
+    Terminal->>Renderer: create renderer
+    Terminal->>Terminal: bind input events
+    Renderer->>Terminal: initial render

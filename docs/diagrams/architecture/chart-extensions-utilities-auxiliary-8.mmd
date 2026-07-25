@@ -1,0 +1,4 @@
+flowchart LR
+    UIState["UI State / Dashboard"] --> CoreConfig["Chart Extensions Utilities Core"]
+    CoreConfig --> ChartInstance["Chart (Auxiliary)"]
+    ChartInstance --> CanvasRender["Canvas Rendering"]

@@ -1,0 +1,6 @@
+flowchart TD
+    UpdateRequest["Chart Update"] --> ResolveAnimations["Resolve Animations"]
+    ResolveAnimations --> AnimatorQueue["Animator Queue"]
+    AnimatorQueue --> RAF["requestAnimationFrame"]
+    RAF --> Tick["Animation Tick"]
+    Tick --> Redraw["Re-render Chart"]

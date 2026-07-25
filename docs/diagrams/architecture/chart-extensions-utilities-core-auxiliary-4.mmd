@@ -1,0 +1,5 @@
+flowchart TD
+    RawValue["Raw Value"] --> Parse["Scale Parse"]
+    Parse --> Range["Determine Min/Max"]
+    Range --> Pixel["Map to Pixel"]
+    Pixel --> Render["Render Element"]

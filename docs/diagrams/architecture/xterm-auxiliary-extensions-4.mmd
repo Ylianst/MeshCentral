@@ -1,0 +1,11 @@
+flowchart TD
+    Input["User Input"] --> Terminal["Terminal Instance"]
+    Terminal --> Parser["Parser + Buffer"]
+    Parser --> Renderer["Renderer"]
+
+    Renderer --> ExtCore["Extensions Core"]
+    ExtCore --> ExtUtilities["Extensions Utilities"]
+
+    ExtUtilities --> DOM["DOM Updates"]
+    ExtUtilities --> ARIA["ARIA Tree"]
+    ExtUtilities --> Clipboard["Clipboard API"]

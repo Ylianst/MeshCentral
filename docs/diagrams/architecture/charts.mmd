@@ -1,0 +1,7 @@
+flowchart TD
+    UI["Dashboard UI Components"] --> Extensions["Chart Extensions"]
+    Extensions --> Core["Chart Core"]
+    Extensions --> Utilities["Chart Utilities"]
+    Core --> Runtime["Chart.js Runtime"]
+    Utilities --> Runtime
+    Runtime --> Canvas["Canvas Rendering Context"]

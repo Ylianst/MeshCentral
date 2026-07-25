@@ -1,0 +1,7 @@
+flowchart TD
+    RawData["Raw Dataset Data"] --> Parser["DatasetController.parse()"]
+    Parser --> ParsedData["_parsed[]"]
+    ParsedData --> ScaleMapping["Scale.getPixelForValue()"]
+    ScaleMapping --> Geometry["Element Geometry (x, y, radius, etc.)"]
+    Geometry --> DrawPhase["Element.draw()"]
+    DrawPhase --> Canvas["Canvas 2D Context"]

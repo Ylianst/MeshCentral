@@ -1,0 +1,13 @@
+flowchart TD
+    TerminalCore["Terminal Core"] --> RenderService["Render Service"]
+    TerminalCore --> BufferService["Buffer Service"]
+    TerminalCore --> CoreBrowserService["Core Browser Service"]
+
+    RenderService --> AccessibilityManager["Accessibility Manager"]
+    BufferService --> Linkifier["Linkifier"]
+    CoreBrowserService --> AccessibilityManager
+
+    Linkifier --> LinkProviderService["Link Provider Service"]
+    Linkifier --> MouseService["Mouse Service"]
+
+    RenderService --> ColorContrastCache["Color Contrast Cache"]

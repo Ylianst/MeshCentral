@@ -1,0 +1,6 @@
+flowchart TD
+    UpdateCall["chart.update()"] --> CreateAnimations["_resolveAnimations()"]
+    CreateAnimations --> AnimatorQueue["Animator"]
+    AnimatorQueue --> FrameTick["requestAnimationFrame"]
+    FrameTick --> ElementUpdate["Animation.tick()"]
+    ElementUpdate --> Redraw["chart.draw()"]

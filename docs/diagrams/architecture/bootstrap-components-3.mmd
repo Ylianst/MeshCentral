@@ -1,10 +1,4 @@
-sequenceDiagram
-    participant User
-    participant DOM
-    participant EventHandler
-    participant Component
-
-    User->>DOM: click / keydown
-    DOM->>EventHandler: native event
-    EventHandler->>Component: namespaced callback
-    Component->>DOM: state update + custom event
+flowchart TD
+    A["Component Defaults"] --> D["Merged Config"]
+    B["data-bs-* Attributes"] --> D
+    C["JavaScript Options"] --> D

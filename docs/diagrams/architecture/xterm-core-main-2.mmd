@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant App as MeshCentral UI
+    participant Terminal as Terminal
+    participant Core as CoreTerminal
+    participant Renderer as RenderService
+    participant Buffer as BufferService
+
+    App->>Terminal: new Terminal(options)
+    Terminal->>Core: initialize core services
+    App->>Terminal: open(domElement)
+    Terminal->>Renderer: create renderer
+    Terminal->>Buffer: initialize viewport rows
+    Terminal->>Terminal: bind keyboard and mouse
+    Terminal->>App: onWillOpen event

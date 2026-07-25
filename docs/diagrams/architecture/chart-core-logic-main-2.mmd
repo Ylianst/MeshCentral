@@ -1,0 +1,7 @@
+flowchart TD
+    Init["Initialize Scale"] --> DataLimits["determineDataLimits()"]
+    DataLimits --> BuildTicks["buildTicks()"]
+    BuildTicks --> ConvertLabels["generateTickLabels()"]
+    ConvertLabels --> Configure["configure()"]
+    Configure --> Fit["fit()"]
+    Fit --> Render["draw()"]

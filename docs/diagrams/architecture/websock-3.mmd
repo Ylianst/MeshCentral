@@ -1,4 +1,7 @@
 flowchart TD
-    Check["rQwait(num)"] --> Enough{"Enough Data?"}
-    Enough -->|"No"| Wait["Return true - wait for more"]
-    Enough -->|"Yes"| Continue["Continue parsing"]
+    MessageEvent["onmessage Event"] --> Convert["Uint8Array(e.data)"]
+    Convert --> CheckSpace{"Enough Space?"}
+    CheckSpace -->|"No"| Expand["_expandCompactRQ()"]
+    CheckSpace -->|"Yes"| Write
+    Expand --> Write["Append to rQ"]
+    Write --> Notify["Trigger message handler"]

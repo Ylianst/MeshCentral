@@ -1,0 +1,7 @@
+flowchart TD
+    Init["Initialize Chart"] --> BuildScales["Build / Update Scales"]
+    BuildScales --> BuildControllers["Build Dataset Controllers"]
+    BuildControllers --> UpdateDatasets["Update Datasets"]
+    UpdateDatasets --> Layout["Layout Engine"]
+    Layout --> Draw["Draw Pipeline"]
+    Draw --> PluginsHook["Plugin Hooks"]

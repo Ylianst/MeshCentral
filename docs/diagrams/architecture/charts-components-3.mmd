@@ -1,6 +1,0 @@
-flowchart TD
-    Event["Browser Event"] --> Normalize["Platform Adapter"]
-    Normalize --> Mode["Interaction Mode Resolution"]
-    Mode --> HitTest["Geometry Hit Testing"]
-    HitTest --> Active["Active Elements"]
-    Active --> RenderUpdate["Trigger Re-render"]

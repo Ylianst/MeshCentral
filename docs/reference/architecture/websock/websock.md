@@ -1,64 +1,74 @@
 # Websock
 
-The **Websock** module provides a high-performance, buffered abstraction over native `WebSocket` and `RTCDataChannel` objects. It is a foundational transport component in the noVNC stack used by MeshCentral, enabling efficient binary communication for the Remote Framebuffer (RFB) protocol.
+The **Websock** module provides a high-performance buffering wrapper around native browser communication channels such as `WebSocket` and `RTCDataChannel`. It is a foundational transport layer within the noVNC-based remote desktop stack, enabling efficient, binary-safe, low-latency communication between the browser client and a remote MeshCentral server.
 
-Unlike the standard WebSocket API, Websock decouples network events from data parsing by maintaining explicit **receive (rQ)** and **send (sQ)** queues. This design allows upper-layer modules—such as the [Rfb And Display](rfb-and-display/rfb-and-display.md) module—to process binary streams incrementally and safely.
+Unlike the standard `WebSocket` API, Websock introduces:
+
+- Buffered receive and send queues
+- Typed binary parsing utilities
+- Flow control helpers
+- A unified ready state abstraction
+- Pluggable raw channel support (WebSocket or RTCDataChannel)
+
+Websock is primarily consumed by the RFB implementation in the [Rfb And Display](rfb-and-display/rfb-and-display.md) module.
 
 ---
 
 ## 1. Purpose and Responsibilities
 
-Websock is responsible for:
+The Websock module is responsible for:
 
-- Abstracting WebSocket and RTCDataChannel transport differences
-- Providing buffered binary read/write operations
-- Managing receive queue compaction and growth
-- Emitting simplified lifecycle events (`open`, `message`, `close`, `error`)
-- Protecting upper layers from partial-frame and fragmentation issues
+- Establishing and managing transport connections
+- Buffering incoming binary data
+- Providing structured binary read operations
+- Buffering outgoing binary data
+- Managing transport lifecycle events
+- Abstracting differences between WebSocket and RTCDataChannel
 
 It does **not**:
 
-- Parse RFB protocol messages (handled by RFB)
-- Decode pixel encodings (handled by the Decoders module)
-- Perform cryptographic handshakes (handled by Crypto Components and RA2 ciphering)
+- Interpret protocol messages (handled by RFB)
+- Decode framebuffer updates (handled by Decoders)
+- Perform cryptographic operations (handled by Crypto Components)
+
+Websock operates strictly as a transport-layer abstraction.
 
 ---
 
 ## 2. Architectural Context
 
-Websock sits at the lowest application-level transport layer of the noVNC client stack.
+Websock sits between the browser networking layer and the RFB protocol implementation.
 
 ```mermaid
 flowchart TD
-    Browser["Browser Network Stack"] --> WS["WebSocket or RTCDataChannel"]
-    WS --> Websock["Websock"]
+    Browser["Browser WebSocket API"] --> Websock["Websock"]
     Websock --> RFB["RFB Protocol Engine"]
     RFB --> Display["Display Renderer"]
     RFB --> Decoders["Encoding Decoders"]
-    RFB --> Input["Input Handlers"]
 ```
 
-### Key Relationships
+### Upstream Dependency
+- Native `WebSocket` or `RTCDataChannel`
 
-- **RFB** consumes structured binary data from Websock's receive queue.
-- **Crypto Components** may operate on data before or after transport-level exchange during authentication phases.
-- **Compression and Decoders** operate on payloads extracted via Websock’s queue operations.
+### Downstream Consumer
+- [Rfb And Display](rfb-and-display/rfb-and-display.md)
+
+Websock ensures that RFB receives consistent, buffered, binary data regardless of the underlying transport.
 
 ---
 
 ## 3. Core Component
 
-### Websock Class
+### Websock
 
-**Location:** `public/novnc/core/websock.js`  
-**Export:** `meshcentral.public.novnc.core.websock.Websock`
+**Class:** `meshcentral.public.novnc.core.websock.Websock`
 
-The Websock class wraps a "raw channel" (WebSocket or RTCDataChannel) and exposes:
+The central class encapsulating:
 
-- A unified `readyState`
-- Buffered receive queue operations
-- Buffered send queue operations
-- Lifecycle event management
+- Receive Queue (rQ)
+- Send Queue (sQ)
+- Transport lifecycle management
+- Event dispatching
 
 ---
 
@@ -66,18 +76,16 @@ The Websock class wraps a "raw channel" (WebSocket or RTCDataChannel) and expose
 
 Websock maintains two primary buffers:
 
-- **Receive Queue (rQ)** → `Uint8Array`
-- **Send Queue (sQ)** → `Uint8Array`
+- **Receive Queue (rQ)** – Stores incoming binary data
+- **Send Queue (sQ)** – Buffers outgoing data before flushing
 
 ```mermaid
 flowchart LR
-    RawChannel["Raw Channel"] --> RecvHandler["_recvMessage()"]
-    RecvHandler --> RQ["Receive Queue (rQ)"]
-    RQ --> RQReader["rQshift* / rQpeek*"]
-    RQReader --> RFBConsumer["RFB Consumer"]
+    RawChannel["WebSocket / RTCDataChannel"] --> RecvHandler["_recvMessage()"]
+    RecvHandler --> RQ["Receive Queue (Uint8Array)"]
+    RQ --> Parser["RFB Binary Parser"]
 
-    RFBProducer["RFB Producer"] --> SQPush["sQpush*"]
-    SQPush --> SQ["Send Queue (sQ)"]
+    RFBWriter["RFB Outgoing Messages"] --> SQ["Send Queue (Uint8Array)"]
     SQ --> Flush["flush()"]
     Flush --> RawChannel
 ```
@@ -86,245 +94,224 @@ flowchart LR
 
 ## 5. Receive Queue (rQ)
 
-The receive queue stores binary data from incoming network messages. Instead of passing message payloads directly to listeners, Websock appends them to the buffer and triggers a `message` event notification.
+The receive queue is a dynamically managed `Uint8Array` buffer.
 
-### 5.1 Design Goals
+### Core Fields
 
-- Handle fragmented protocol messages
-- Avoid repeated small allocations
-- Allow incremental parsing
-- Compact and resize efficiently
+- `_rQ` – Underlying byte buffer
+- `_rQi` – Read index
+- `_rQlen` – Write index
+- `_rQbufferSize` – Allocated buffer size
 
-### 5.2 Core Fields
+### Binary Read Operations
 
-```text
-_rQ           Uint8Array backing buffer
-_rQi          Read index
-_rQlen        Write index
-_rQbufferSize Current allocated size
-```
+Websock provides structured methods for reading protocol primitives:
 
-### 5.3 Read Operations
+- `rQshift8()`
+- `rQshift16()`
+- `rQshift32()`
+- `rQshiftStr(len)`
+- `rQshiftBytes(len)`
+- `rQpeekBytes(len)`
+- `rQwait(msg, num, goback)`
 
-Websock provides typed read helpers:
+These methods allow RFB to parse network frames without interacting with raw ArrayBuffers.
 
-| Method | Description |
-|--------|------------|
-| `rQpeek8()` | Peek next byte |
-| `rQshift8()` | Read 8-bit value |
-| `rQshift16()` | Read 16-bit big-endian |
-| `rQshift32()` | Read 32-bit big-endian |
-| `rQshiftBytes(len)` | Read byte array |
-| `rQshiftStr(len)` | Read string |
-| `rQwait(msg, num, goback)` | Check if enough bytes are available |
-
-### 5.4 Data Availability Check
+### Receive Flow
 
 ```mermaid
 flowchart TD
-    Check["rQwait(num)"] --> Enough{"Enough Data?"}
-    Enough -->|"No"| Wait["Return true - wait for more"]
-    Enough -->|"Yes"| Continue["Continue parsing"]
+    MessageEvent["onmessage Event"] --> Convert["Uint8Array(e.data)"]
+    Convert --> CheckSpace{"Enough Space?"}
+    CheckSpace -->|"No"| Expand["_expandCompactRQ()"]
+    CheckSpace -->|"Yes"| Write
+    Expand --> Write["Append to rQ"]
+    Write --> Notify["Trigger message handler"]
 ```
 
-This mechanism allows RFB to pause parsing until sufficient bytes are available.
+### Buffer Growth Strategy
+
+Websock avoids uncontrolled memory growth:
+
+- Compacts unread bytes when possible
+- Doubles buffer size when necessary
+- Enforces maximum limit (40 MiB)
+
+If the incoming message cannot fit within the maximum buffer size, an error is thrown.
 
 ---
 
-## 6. Receive Queue Expansion and Compaction
+## 6. Send Queue (sQ)
 
-Websock avoids excessive copying by combining compaction and expansion logic.
+The send queue buffers outgoing protocol data before transmitting.
 
-### Strategy
+### Core Fields
 
-1. If processed data exists at the start of the buffer → compact.
-2. If insufficient space remains → resize (double or fit 8x current data).
-3. Cap maximum size at 40 MiB.
+- `_sQ` – Send buffer
+- `_sQlen` – Current write offset
+- `_sQbufferSize` – Fixed buffer size
+
+### Write Operations
+
+- `sQpush8(num)`
+- `sQpush16(num)`
+- `sQpush32(num)`
+- `sQpushString(str)`
+- `sQpushBytes(bytes)`
+
+### Flush Mechanism
 
 ```mermaid
 flowchart TD
-    Incoming["Incoming Message"] --> Space{"Enough Free Space?"}
-    Space -->|"Yes"| Append["Append to rQ"]
-    Space -->|"No"| Expand["_expandCompactRQ()"]
-    Expand --> Append
+    RFBWrite["RFB Writes Data"] --> Push["sQpush*"]
+    Push --> Ensure["_sQensureSpace()"]
+    Ensure --> FlushCheck{"Buffer Full?"}
+    FlushCheck -->|"Yes"| Flush["flush()"]
+    FlushCheck -->|"No"| Continue["Continue Writing"]
+    Flush --> Send["WebSocket.send()"]
 ```
 
-### Safety Limit
-
-```text
-MAX_RQ_GROW_SIZE = 40 MiB
-```
-
-If the queue exceeds this and cannot fit new data, an error is thrown.
+The `flush()` method transmits buffered data only when the transport state is `open`.
 
 ---
 
-## 7. Send Queue (sQ)
+## 7. Transport Lifecycle Management
 
-The send queue buffers outgoing data before transmitting it as a single binary frame.
+Websock abstracts both WebSocket and RTCDataChannel ready states.
 
-### 7.1 Core Fields
+### Unified Ready State
 
-```text
-_sQ           Uint8Array backing buffer
-_sQlen        Current write index
-_sQbufferSize Initial size 10 KiB
+```mermaid
+flowchart LR
+    WS["WebSocket State"] --> Map["ReadyStates Mapping"]
+    DC["RTCDataChannel State"] --> Map
+    Map --> WebsockState["connecting | open | closing | closed"]
 ```
 
-### 7.2 Write Operations
+This abstraction ensures consistent state handling regardless of the underlying channel type.
 
-| Method | Description |
-|--------|------------|
-| `sQpush8()` | Write 8-bit value |
-| `sQpush16()` | Write 16-bit big-endian |
-| `sQpush32()` | Write 32-bit big-endian |
-| `sQpushString()` | Write ASCII string |
-| `sQpushBytes()` | Write byte array |
-| `flush()` | Send buffer to transport |
+### Lifecycle Methods
 
-### 7.3 Flush Logic
+- `open(uri, protocols)` – Creates a WebSocket
+- `attach(rawChannel)` – Attaches existing channel
+- `close()` – Gracefully closes connection
+- `init()` – Resets internal buffers
+
+---
+
+## 8. Event Model
+
+Websock implements its own minimal event handler registry.
+
+Supported events:
+
+- `open`
+- `message`
+- `close`
+- `error`
 
 ```mermaid
 flowchart TD
-    HasData{"sQlen > 0?"}
-    HasData -->|"No"| Done["Do nothing"]
-    HasData -->|"Yes"| State{"readyState open?"}
-    State -->|"No"| Done
-    State -->|"Yes"| Send["WebSocket.send(binary)"]
-    Send --> Reset["Reset sQlen"]
+    RawEvent["WebSocket Event"] --> WebsockHandler["Internal Handler"]
+    WebsockHandler --> Dispatch["_eventHandlers[event]"]
+    Dispatch --> RFBConsumer["RFB Layer"]
 ```
 
-Websock flushes automatically when the buffer runs out of space or when explicitly requested.
+This design prevents direct coupling between RFB and the browser API.
 
 ---
 
-## 8. Lifecycle and Event Handling
+## 9. Data Processing Flow with RFB
 
-Websock normalizes lifecycle states across WebSocket and RTCDataChannel.
-
-### 8.1 Ready State Mapping
-
-It maps:
-
-- WebSocket numeric states
-- RTCDataChannel string states
-
-into unified string states:
-
-```text
-connecting
-open
-closing
-closed
-```
-
-### 8.2 Event Model
-
-```mermaid
-flowchart TD
-    RawOpen["onopen"] --> EmitOpen["eventHandlers.open()"]
-    RawMessage["onmessage"] --> Recv["_recvMessage()"]
-    Recv --> EmitMessage["eventHandlers.message()"]
-    RawClose["onclose"] --> EmitClose["eventHandlers.close(e)"]
-    RawError["onerror"] --> EmitError["eventHandlers.error(e)"]
-```
-
-Consumers register handlers using:
-
-```text
-on(evt, handler)
-off(evt)
-```
-
----
-
-## 9. Raw Channel Validation
-
-When attaching to a raw channel, Websock validates required properties:
-
-```text
-send
-close
-binaryType
-onerror
-onmessage
-onopen
-protocol
-readyState
-```
-
-This ensures compatibility with both:
-
-- Native `WebSocket`
-- `RTCDataChannel`
-
----
-
-## 10. Integration with RFB
-
-Websock does not interpret protocol data. Instead, RFB performs parsing using Websock's queue interface.
+Websock is deeply integrated with the RFB state machine.
 
 ```mermaid
 sequenceDiagram
     participant Server
-    participant WS as WebSocket
+    participant BrowserSocket
     participant Websock
     participant RFB
 
-    Server->>WS: Binary Frame
-    WS->>Websock: onmessage(ArrayBuffer)
-    Websock->>Websock: Append to rQ
-    Websock->>RFB: message event
-    RFB->>Websock: rQshift*()
+    Server->>BrowserSocket: Binary Frame
+    BrowserSocket->>Websock: onmessage
+    Websock->>Websock: Buffer into rQ
+    Websock->>RFB: message()
+    RFB->>Websock: rQshift*
 ```
 
-This separation ensures:
-
-- Clean transport abstraction
-- Deterministic parsing
-- Safe handling of partial messages
+RFB never directly reads from `ArrayBuffer`; it consumes structured data from Websock.
 
 ---
 
-## 11. Performance Considerations
+## 10. Error Handling and Safety
 
-### 11.1 Zero-Copy Where Possible
+Websock includes multiple safeguards:
 
-- Uses `Uint8Array.subarray()` when copying is unnecessary
-- Compacts buffer using `copyWithin()`
+- Verifies raw channel properties before attaching
+- Throws error if buffer overflow exceeds max limit
+- Prevents invalid read rewinds in `rQwait`
+- Ignores empty messages
 
-### 11.2 Batching Outgoing Frames
-
-- Aggregates writes before sending
-- Reduces WebSocket frame overhead
-
-### 11.3 Memory Growth Control
-
-- Exponential growth strategy
-- Hard limit at 40 MiB
+These protections are essential for long-running remote desktop sessions.
 
 ---
 
-## 12. Error Handling and Safety
+## 11. Performance Characteristics
 
-Websock throws errors in cases such as:
+### Memory Efficiency
 
-- Invalid raw channel (missing required properties)
-- Illegal buffer rollback in `rQwait()`
-- Buffer overflow beyond maximum limit
+- Uses `Uint8Array` for zero-copy subarrays
+- Compacts buffers before resizing
+- Caps growth at 40 MiB
 
-Upper layers should treat these as fatal transport-level failures.
+### Throughput Optimization
+
+- Batched send operations via send queue
+- Avoids excessive `WebSocket.send()` calls
+- Minimizes array copying during buffer expansion
+
+### Latency Considerations
+
+- Immediate event trigger after data arrival
+- Minimal processing in message handler
 
 ---
 
-## 13. Summary
+## 12. Interaction with Other Modules
 
-The **Websock** module is a critical transport abstraction that:
+Websock integrates closely with:
 
-- Bridges browser networking APIs and the RFB protocol
-- Provides high-performance buffered binary operations
-- Handles fragmentation and incremental parsing
-- Normalizes lifecycle and transport state
-- Enables robust remote desktop streaming in the MeshCentral noVNC client
+- [Rfb And Display](rfb-and-display/rfb-and-display.md) – Protocol parsing and rendering
+- Decoders – Frame decoding logic
+- Compression – Deflation/inflation for tight encoding
+- Crypto Components – Security handshakes and encryption
 
-By isolating transport concerns from protocol logic, Websock ensures that higher-level modules such as RFB, Decoders, and Display can operate deterministically and efficiently.
+Websock itself remains transport-only and protocol-agnostic.
+
+---
+
+## 13. Design Principles
+
+Websock follows several core principles:
+
+1. **Binary-first design** – All operations use typed arrays
+2. **Separation of concerns** – No protocol logic inside transport
+3. **Backpressure awareness** – Flush only when necessary
+4. **Transport abstraction** – WebSocket and RTCDataChannel compatible
+5. **Memory boundedness** – Explicit growth limits
+
+---
+
+## 14. Summary
+
+The **Websock** module is a high-performance, binary-safe transport abstraction layer used by the noVNC client in MeshCentral.
+
+It provides:
+
+- Robust receive and send buffering
+- Structured binary parsing utilities
+- Unified transport lifecycle management
+- Memory-safe growth strategies
+- Clean separation from protocol logic
+
+By isolating transport complexity within Websock, the RFB layer can focus entirely on protocol semantics and display rendering, resulting in a modular, maintainable, and high-performance remote desktop client architecture.

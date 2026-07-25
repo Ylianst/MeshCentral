@@ -1,0 +1,6 @@
+flowchart LR
+    Input["User Input"] --> CoreEngine["CoreTerminal"]
+    CoreEngine --> BufferUpdate["Buffer Updated"]
+    BufferUpdate --> RenderService
+    RenderService --> Renderer["DOM Renderer"]
+    Renderer --> Screen["Terminal DOM"]

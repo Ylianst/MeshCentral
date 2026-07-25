@@ -1,0 +1,13 @@
+flowchart TD
+    RFB["RFB Security Negotiation"]
+    LegacyCrypto["LegacyCrypto Interface"]
+    AES["AES (ECB / EAX)"]
+    DES["DES (Legacy VNC)"]
+    RSA["RSA"]
+    DH["Diffie-Hellman"]
+
+    RFB --> LegacyCrypto
+    LegacyCrypto --> AES
+    LegacyCrypto --> DES
+    LegacyCrypto --> RSA
+    LegacyCrypto --> DH

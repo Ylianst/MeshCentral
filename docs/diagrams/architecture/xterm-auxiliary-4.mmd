@@ -1,0 +1,5 @@
+flowchart LR
+    TerminalEvents["Terminal Events"] --> AuxCore["Auxiliary Core"]
+    AuxCore --> Extensions["Extensions Layer"]
+    Extensions --> DOMUpdates["DOM Updates"]
+    Extensions --> Accessibility["ARIA Updates"]

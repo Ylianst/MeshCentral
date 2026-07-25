@@ -1,0 +1,8 @@
+flowchart TD
+    Config["Chart Configuration"] --> Parse["Dataset Parsing"]
+    Parse --> Meta["Meta Construction"]
+    Meta --> Layout["Layout Engine"]
+    Layout --> Update["Controller Update"]
+    Update --> Draw["Canvas Rendering"]
+    Draw --> Interaction["Interaction Handling"]
+    Interaction --> Tooltip["Tooltip Update"]

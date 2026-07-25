@@ -1,5 +1,0 @@
-flowchart TD
-    Compare["Active Set Changed?"] -->|No| NoRender["No Update"]
-    Compare -->|Yes| ClearOld["Clear Old Hover Styles"]
-    ClearOld --> ApplyNew["Apply New Hover Styles"]
-    ApplyNew --> TriggerRender["Trigger Render"]

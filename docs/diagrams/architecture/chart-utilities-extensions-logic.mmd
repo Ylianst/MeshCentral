@@ -1,0 +1,7 @@
+flowchart TD
+    A["Domain Data"] --> B["Extensions Logic Layer"]
+    B --> C["Logic Core"]
+    B --> D["Logic Auxiliary"]
+    C --> E["Chart.js Runtime"]
+    D --> E
+    E --> F["Canvas Rendering"]

@@ -1,0 +1,8 @@
+flowchart TD
+    UpdateRequest["Property Update Requested"] --> CreateAnimation["Create Animation Instance"]
+    CreateAnimation --> RegisterAnimator["Register in Animator"]
+    RegisterAnimator --> FrameLoop["requestAnimationFrame Loop"]
+    FrameLoop --> Interpolate["Interpolate Values"]
+    Interpolate --> Apply["Apply to Target Property"]
+    Apply --> Redraw["Trigger Chart Draw"]
+    Redraw --> CheckComplete["Animation Complete?"]

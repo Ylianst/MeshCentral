@@ -1,0 +1,7 @@
+flowchart TD
+    Init["Initialize Chart"] --> Prepare["Prepare Dataset"]
+    Prepare --> Configure["Resolve Options"]
+    Configure --> Build["Build Controllers"]
+    Build --> Animate["Schedule Animations"]
+    Animate --> Render["Render to Canvas"]
+    Render --> Hooks["Execute Plugin Hooks"]

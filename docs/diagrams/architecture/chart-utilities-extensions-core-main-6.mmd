@@ -1,0 +1,5 @@
+flowchart TD
+    Animator["bt Engine"] --> NotifyProgress["notify(progress)"]
+    Animator --> NotifyComplete["notify(complete)"]
+    NotifyProgress --> ChartCallbacks["Chart onProgress"]
+    NotifyComplete --> ChartCallbacks

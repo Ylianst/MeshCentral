@@ -1,0 +1,5 @@
+flowchart TD
+    WheelEvent["Wheel / Scroll"] --> Viewport
+    Viewport --> CalculateDelta["Calculate Line Delta"]
+    CalculateDelta --> BufferService["Scroll Buffer"]
+    BufferService --> RenderService

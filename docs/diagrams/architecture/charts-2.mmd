@@ -1,0 +1,7 @@
+flowchart TD
+    Init["Initialize Chart"] --> BuildScales["Build Scales"]
+    BuildScales --> BuildControllers["Build Controllers"]
+    BuildControllers --> Layout["Layout Pass"]
+    Layout --> Update["Update Elements"]
+    Update --> Animate["Animation Engine"]
+    Animate --> Render["Render to Canvas"]

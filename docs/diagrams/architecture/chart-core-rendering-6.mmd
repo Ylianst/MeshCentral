@@ -1,6 +1,0 @@
-flowchart LR
-    Change["Data or Option Change"] --> Resolve["Resolve Animation Properties"]
-    Resolve --> Animator["Register with Animator"]
-    Animator --> Tick["Animation Tick"]
-    Tick --> Update["Update Element Props"]
-    Update --> Redraw["Re-render Canvas"]

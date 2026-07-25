@@ -1,6 +1,0 @@
-flowchart TD
-    Input["Raw Timestamp Data"] --> Parse["Adapter Parse"]
-    Parse --> Normalize["Normalize & Sort"]
-    Normalize --> Bounds["Determine Min/Max"]
-    Bounds --> Ticks["Generate Ticks"]
-    Ticks --> Pixels["Map to Pixel Space"]

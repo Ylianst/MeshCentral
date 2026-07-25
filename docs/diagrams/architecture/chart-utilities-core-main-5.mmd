@@ -1,0 +1,6 @@
+flowchart TD
+    InputColor["Raw Color Input"] --> DetectFormat["Detect Format"]
+    DetectFormat --> Parse["Parse to RGBA"]
+    Parse --> Normalize["Normalize Channels"]
+    Normalize --> Transform["Apply Transform (lighten, darken, etc.)"]
+    Transform --> Output["RGB / HSL / Hex String"]

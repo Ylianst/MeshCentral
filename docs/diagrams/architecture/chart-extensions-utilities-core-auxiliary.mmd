@@ -1,0 +1,29 @@
+flowchart TD
+    ChartInstance["Chart Instance"]
+    Config["Configuration Resolver"]
+    Registry["Registry"]
+    Controllers["Dataset Controllers"]
+    Elements["Chart Elements"]
+    Scales["Scales"]
+    Plugins["Plugins"]
+    Animator["Animation Engine"]
+    Interaction["Interaction Engine"]
+    Layout["Layout Engine"]
+    Canvas["Canvas Context"]
+
+    ChartInstance --> Config
+    ChartInstance --> Registry
+    Registry --> Controllers
+    Registry --> Elements
+    Registry --> Scales
+    Registry --> Plugins
+
+    ChartInstance --> Layout
+    ChartInstance --> Animator
+    ChartInstance --> Interaction
+
+    Controllers --> Elements
+    Controllers --> Scales
+    Layout --> Canvas
+    Controllers --> Canvas
+    Plugins --> ChartInstance

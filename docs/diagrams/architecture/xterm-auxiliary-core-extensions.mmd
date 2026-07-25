@@ -1,0 +1,7 @@
+flowchart TD
+    UI["UI Layer"] --> AuxExt["Xterm Auxiliary Core Extensions"]
+    AuxExt --> AuxCore["Xterm Auxiliary Core"]
+    AuxCore --> Core["Xterm Core"]
+    Core --> Buffer["Buffer Service"]
+    Core --> Render["Render Service"]
+    Core --> Input["Input Handler"]

@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Chart
+    participant Animator as bt Engine
+    participant Frame as requestAnimationFrame
+
+    Chart->>Animator: add(animationItems)
+    Chart->>Animator: start(chart)
+    Animator->>Frame: requestAnimationFrame()
+    Frame-->>Animator: frameTick(time)
+    Animator->>Animator: update(chartItems)
+    Animator->>Chart: draw()
+    Animator->>Chart: notify(progress)
+    Animator->>Chart: notify(complete)

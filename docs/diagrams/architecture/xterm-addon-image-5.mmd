@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Terminal
+    participant Parser
+    participant ImageAddon
+    participant Decoder
+    participant Renderer
+
+    Terminal->>Parser: DCS / OSC sequence
+    Parser->>ImageAddon: Image event
+    ImageAddon->>Decoder: Decode payload
+    Decoder-->>ImageAddon: RGBA pixels
+    ImageAddon->>Renderer: Register image
+    Renderer-->>Terminal: Paint overlay

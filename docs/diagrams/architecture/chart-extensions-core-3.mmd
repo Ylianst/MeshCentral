@@ -1,8 +1,22 @@
-flowchart TD
-    Init["Initialize Chart"] --> BuildScales["Build / Update Scales"]
-    BuildScales --> BuildControllers["Build Controllers"]
-    BuildControllers --> ParseData["Parse Dataset Data"]
-    ParseData --> Layout["Layout Engine"]
-    Layout --> Render["Render Layers"]
-    Render --> Animate["Animation Engine"]
-    Animate --> EventLoop["Interaction & Events"]
+sequenceDiagram
+    participant UI as UI Component
+    participant Core as Chart Extensions Core
+    participant Chart as Chart Runtime
+    participant Plugins as Plugin System
+
+    UI->>Core: Create Configuration
+    Core->>Chart: new Chart(ctx, config)
+    Chart->>Plugins: beforeInit
+    Chart->>Chart: buildScales()
+    Chart->>Chart: buildDatasets()
+    Chart->>Plugins: afterInit
+
+    UI->>Core: update(data)
+    Core->>Chart: chart.update()
+    Chart->>Plugins: beforeUpdate
+    Chart->>Chart: layout + animation
+    Chart->>Plugins: afterUpdate
+
+    UI->>Core: destroy()
+    Core->>Chart: chart.destroy()
+    Chart->>Plugins: beforeDestroy

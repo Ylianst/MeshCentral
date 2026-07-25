@@ -1,0 +1,4 @@
+flowchart TD
+    SelectionChange["selectionchange"] --> ValidateNodes["Validate Anchor/Focus Nodes"]
+    ValidateNodes --> MapToBuffer["Map DOM Position → Buffer Coordinates"]
+    MapToBuffer --> TerminalSelect["Terminal.select()"]

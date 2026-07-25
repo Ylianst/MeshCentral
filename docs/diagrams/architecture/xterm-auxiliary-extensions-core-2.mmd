@@ -1,0 +1,13 @@
+flowchart LR
+    Core["Xterm Auxiliary Extensions Core"]
+    Core --> Main["Core Main"]
+    Core --> Auxiliary["Core Auxiliary"]
+
+    Main --> Runtime["Terminal Runtime"]
+    Main --> Parser["Input + Parser"]
+    Main --> Buffer["Buffer Services"]
+
+    Auxiliary --> Accessibility["Accessibility Manager"]
+    Auxiliary --> Linkifier["Linkifier"]
+    Auxiliary --> Decorations["Decorations"]
+    Auxiliary --> Viewport["Viewport + Scroll"]

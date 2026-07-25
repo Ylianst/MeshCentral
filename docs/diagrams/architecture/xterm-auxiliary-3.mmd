@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant User
+    participant Terminal
+    participant Aux
+    participant Extensions
+    participant Browser
+
+    User->>Terminal: Input / Interaction
+    Terminal->>Aux: Lifecycle events
+    Aux->>Extensions: Dispatch enhancements
+    Extensions->>Browser: DOM / Clipboard / ARIA APIs
+    Browser-->>Terminal: Event callbacks

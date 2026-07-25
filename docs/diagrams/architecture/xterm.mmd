@@ -1,0 +1,22 @@
+flowchart TD
+    UI["MeshCentral UI"] --> Terminal["Terminal API"]
+
+    subgraph CoreLayer["Xterm Core"]
+        Terminal --> Engine["Core Terminal Engine"]
+        Engine --> Buffer["Buffer Service"]
+        Engine --> Parser["Escape Sequence Parser"]
+        Engine --> RenderService["Render Service"]
+    end
+
+    subgraph AuxiliaryLayer["Xterm Auxiliary"]
+        Terminal --> Accessibility["Accessibility Manager"]
+        Terminal --> Linkifier["Linkifier"]
+        Terminal --> Lifecycle["DOM Lifecycle Manager"]
+        Terminal --> Extensions["Extension System"]
+    end
+
+    subgraph AddonLayer["Xterm Addons"]
+        Extensions --> ImageAddon["Image Addon"]
+    end
+
+    RenderService --> DOM["Terminal DOM"]

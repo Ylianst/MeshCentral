@@ -1,0 +1,5 @@
+flowchart LR
+    Input["Encoded Image Data"] --> AuxLayer["Core Auxiliary Layer"]
+    AuxLayer --> Decoder["WASM Base64 Decoder"]
+    Decoder --> Binary["Binary Image Buffer"]
+    Binary --> UpperLayer["Protocol Handlers / Storage"]

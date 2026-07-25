@@ -1,0 +1,6 @@
+flowchart LR
+    Terminal["Terminal"] --> A11yMgr["Accessibility Manager"]
+    A11yMgr --> LiveRegion["ARIA Live Region"]
+    A11yMgr --> RowTree["Accessible Row Tree"]
+    Terminal --> Events["A11y Events"]
+    Events --> A11yMgr

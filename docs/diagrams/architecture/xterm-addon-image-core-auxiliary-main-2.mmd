@@ -1,0 +1,10 @@
+flowchart LR
+    Init["init(size)"] --> Allocate["Allocate / Grow WASM Memory"]
+    Allocate --> LoadTable["Initialize Decode Lookup Table"]
+    LoadTable --> Ready["Ready to Accept Chunks"]
+
+    Put["put(chunk)"] --> BufferAppend["Append to WASM Buffer"]
+    BufferAppend --> DecodeCall["Call dec() if threshold reached"]
+
+    End["end()"] --> FinalDecode["Flush Remaining Bytes"]
+    FinalDecode --> Output["Expose data8 View"]

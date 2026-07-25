@@ -1,0 +1,6 @@
+flowchart TD
+    Mouse["Mouse Event"] --> Linkifier
+    Linkifier --> Provider["Link Provider Service"]
+    Provider --> LinkData["Link Range + Metadata"]
+    Linkifier --> RenderSvc["Render Service"]
+    Linkifier --> Terminal

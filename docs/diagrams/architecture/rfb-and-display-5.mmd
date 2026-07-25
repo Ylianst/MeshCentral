@@ -1,5 +1,5 @@
-flowchart LR
-    Decoder["Decoder"] --> Backbuffer["Offscreen Canvas"]
+flowchart TD
+    DecoderOutput["Decoded Pixel Data"] --> Backbuffer["Hidden Canvas"]
     Backbuffer --> Damage["Damage Tracking"]
-    Damage --> Flip["Flip to Visible Canvas"]
+    Damage --> Flip["flip()"]
     Flip --> Visible["Visible Canvas"]

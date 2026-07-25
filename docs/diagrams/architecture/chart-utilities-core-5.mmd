@@ -1,8 +1,0 @@
-sequenceDiagram
-    participant Controller
-    participant RadialScale
-    participant Canvas
-
-    Controller->>RadialScale: getPointPositionForValue(index, value)
-    RadialScale-->>Controller: {x, y}
-    Controller->>Canvas: draw point/line/arc

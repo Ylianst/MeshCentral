@@ -1,6 +1,10 @@
 flowchart TD
-    UI["UI Components"] --> ChartsComponents["Charts Components"]
-    ChartsComponents --> ChartCore["Chart Core"]
-    ChartCore --> ChartUtilities["Chart Utilities"]
-    ChartUtilities --> ChartUtilitiesCore["Chart Utilities Core"]
-    ChartUtilitiesCore --> RenderingEngine["Canvas Rendering"]
+    ChartCore["Chart Core Modules"] --> ChartUtilsCore["Chart Utilities Core"]
+    ChartUtilsCore --> CoreMain["Core Main (Wo, Zt)"]
+    ChartUtilsCore --> CoreExtensions["Core Extensions (ba, bn, bo)"]
+
+    CoreExtensions --> RuntimeEnhancement["Runtime Enhancement"]
+    CoreExtensions --> ScaleLogic["Scale Logic"]
+
+    CoreMain --> RenderingHelpers["Rendering Helpers"]
+    CoreMain --> ColorEngine["Color Engine"]

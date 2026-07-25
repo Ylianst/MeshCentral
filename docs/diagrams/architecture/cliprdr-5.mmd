@@ -1,9 +1,6 @@
-flowchart TD
-    RecvStart["recv(stream)"] --> Parse["Parse clipPDU()"]
-    Parse --> Switch["Switch msgType"]
-    Switch --> Monitor["CB_MONITOR_READY"]
-    Switch --> FormatList["CB_FORMAT_LIST"]
-    Switch --> FormatListResp["CB_FORMAT_LIST_RESPONSE"]
-    Switch --> DataReq["CB_FORMAT_DATA_REQUEST"]
-    Switch --> DataResp["CB_FORMAT_DATA_RESPONSE"]
-    DataResp --> Emit["Emit clipboard event"]
+sequenceDiagram
+    participant Requester
+    participant Responder
+
+    Requester->>Responder: CB_FORMAT_DATA_REQUEST
+    Responder->>Requester: CB_FORMAT_DATA_RESPONSE

@@ -1,0 +1,13 @@
+flowchart TD
+    Root["Xterm Addon Image"]
+    Core["Xterm Addon Image Core"]
+    Aux["Xterm Addon Image Auxiliary"]
+
+    Root --> Core
+    Root --> Aux
+
+    Core --> CoreMain["Core Main"]
+    Core --> CoreAux["Core Auxiliary"]
+
+    Aux --> AuxCore["Auxiliary Core"]
+    Aux --> AuxExt["Auxiliary Extensions"]

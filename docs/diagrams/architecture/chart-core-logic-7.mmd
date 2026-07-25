@@ -1,0 +1,5 @@
+flowchart TD
+    Collect["Collect Layout Boxes"] --> Measure["Measure Labels"]
+    Measure --> Allocate["Allocate Chart Area"]
+    Allocate --> DrawGrid["Draw Grid"]
+    DrawGrid --> DrawLabels["Draw Axis Labels"]

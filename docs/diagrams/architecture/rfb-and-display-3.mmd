@@ -1,12 +1,7 @@
-sequenceDiagram
-    participant Client as RFB Client
-    participant Server as VNC Server
-
-    Client->>Server: ProtocolVersion
-    Server->>Client: Security Types
-    Client->>Server: Selected Security
-    Client->>Server: Authentication Data
-    Server->>Client: Security Result
-    Client->>Server: ClientInitialisation
-    Server->>Client: ServerInitialisation
-    Client->>Server: FramebufferUpdateRequest
+flowchart TD
+    Version["ProtocolVersion"] --> Security["Security"]
+    Security --> Authentication["Authentication"]
+    Authentication --> SecurityResult["SecurityResult"]
+    SecurityResult --> ClientInit["ClientInitialisation"]
+    ClientInit --> ServerInit["ServerInitialisation"]
+    ServerInit --> Connected["connected"]

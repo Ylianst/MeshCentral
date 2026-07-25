@@ -1,8 +1,13 @@
-flowchart LR
-    Start["Animation Created"] --> Active["Active State"]
-    Active --> Tick["Tick Frame Update"]
-    Tick --> Interpolate["Interpolate Value"]
-    Interpolate --> Apply["Apply to Target Property"]
-    Apply --> Check["Duration Complete?"]
-    Check -->|"No"| Tick
-    Check -->|"Yes"| Complete["Resolve Promises"]
+sequenceDiagram
+    participant Controller
+    participant Animations
+    participant Cs
+    participant Animator
+
+    Controller->>Animations: update(target, newValues)
+    Animations->>Cs: create animation instance
+    Cs->>Animator: register
+    Animator->>Cs: tick(timestamp)
+    Cs->>Cs: interpolate value
+    Cs->>Target: update property
+    Animator-->>Cs: complete

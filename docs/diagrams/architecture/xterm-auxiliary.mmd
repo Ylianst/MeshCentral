@@ -1,0 +1,8 @@
+flowchart TD
+    UI["MeshCentral UI"] --> Aux["Xterm Auxiliary"]
+    Aux --> Core["Xterm Core"]
+    Core --> Buffer["Buffer Service"]
+    Core --> Renderer["Renderer"]
+    Core --> Parser["Parser"]
+
+    Aux --> Browser["Browser DOM & APIs"]

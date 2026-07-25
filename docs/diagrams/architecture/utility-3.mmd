@@ -1,8 +1,12 @@
-flowchart TD
-    Component["Any Component"] -->|"extends"| EventTarget["EventTargetMixin"]
-    EventTarget --> Map["Map of event types"]
-    Map --> Set["Set of callbacks per type"]
+sequenceDiagram
+    participant RFB
+    participant Cursor
+    participant DOM
 
-    Add["addEventListener(type, cb)"] --> Map
-    Remove["removeEventListener(type, cb)"] --> Map
-    Dispatch["dispatchEvent(event)"] --> Callbacks["Invoke callbacks"]
+    RFB->>Cursor: attach(targetElement)
+    RFB->>Cursor: change(rgba, hotx, hoty, w, h)
+    Cursor->>DOM: update canvas or CSS cursor
+    RFB->>Cursor: move(clientX, clientY)
+    Cursor->>DOM: reposition overlay (fallback)
+    RFB->>Cursor: clear()
+    Cursor->>DOM: hide cursor

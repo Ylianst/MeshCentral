@@ -1,0 +1,6 @@
+flowchart TD
+    Sixel["SIXEL Handler"] --> CoreAux["Core Auxiliary"]
+    IIP["Inline Image Handler"] --> CoreAux
+    CoreAux --> Decoded["Decoded Binary Data"]
+    Decoded --> Storage["Image Storage"]
+    Storage --> Renderer["Renderer Overlay"]

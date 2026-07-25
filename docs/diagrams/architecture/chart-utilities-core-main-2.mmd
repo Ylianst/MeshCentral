@@ -1,0 +1,6 @@
+flowchart LR
+    Input["Data Point"] --> AngleCalc["Angle Calculation"]
+    AngleCalc --> Normalize["Normalize Angle"]
+    Normalize --> Distance["Distance Calculation"]
+    Distance --> PixelAlign["Pixel Alignment"]
+    PixelAlign --> Render["Canvas Rendering"]

@@ -1,0 +1,8 @@
+flowchart TD
+    NewData["Dataset Mutation"] --> ControllerUpdate["Controller.update()"]
+    ControllerUpdate --> CreateAnimations["Create Animation Items"]
+    CreateAnimations --> AnimatorAdd["bt.add(chart, items)"]
+    AnimatorAdd --> AnimatorStart["bt.start(chart)"]
+    AnimatorStart --> FrameLoop["requestAnimationFrame"]
+    FrameLoop --> TickUpdate["Item.tick(time)"]
+    TickUpdate --> Redraw["Chart.draw()"]

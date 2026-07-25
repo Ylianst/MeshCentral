@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant UI as UI Layer
+    participant Chart as Chart Instance
+    participant Plugins as Plugin Service
+    participant Controller as Dataset Controller
+    participant Canvas as Canvas Context
+
+    UI->>Chart: new Chart(config)
+    Chart->>Plugins: beforeInit
+    Chart->>Controller: buildOrUpdateElements()
+    Controller->>Canvas: draw elements
+    Chart->>Plugins: afterDraw

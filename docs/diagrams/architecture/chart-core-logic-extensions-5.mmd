@@ -1,0 +1,6 @@
+flowchart TD
+    ChartUpdate["Chart Update"] --> NotifyBefore["Notify beforeUpdate"]
+    NotifyBefore --> ControllerUpdate["Controller Update"]
+    ControllerUpdate --> NotifyAfter["Notify afterUpdate"]
+    NotifyAfter --> Render
+    Render --> NotifyDraw["Notify beforeDraw/afterDraw"]

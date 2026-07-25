@@ -1,6 +1,15 @@
 flowchart TD
-    RFB["RFB Authentication"] --> LegacyCrypto["LegacyCrypto"]
-    LegacyCrypto --> AES["AES"]
-    LegacyCrypto --> DES["DES"]
-    LegacyCrypto --> RSA["RSA"]
-    LegacyCrypto --> DH["Diffie-Hellman"]
+    TerminalAPI["Terminal API"]
+    CoreEngine["Core Terminal Engine"]
+    Buffer["Buffer Service"]
+    Parser["Escape Parser"]
+    Renderer["DOM Renderer"]
+    Addons["Addon System"]
+    ImageAddon["Image Addon"]
+
+    TerminalAPI --> CoreEngine
+    CoreEngine --> Buffer
+    CoreEngine --> Parser
+    CoreEngine --> Renderer
+    TerminalAPI --> Addons
+    Addons --> ImageAddon

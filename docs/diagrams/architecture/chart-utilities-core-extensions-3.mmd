@@ -1,0 +1,6 @@
+flowchart LR
+    Dataset["Dataset Values"] --> DetermineLimits["Determine Min/Max"]
+    DetermineLimits --> BuildTicks["Generate Ticks"]
+    DetermineLimits --> NormalizeRange["Normalize Range"]
+    NormalizeRange --> ValueToPixel["Value to Pixel Mapping"]
+    ValueToPixel --> Render["Render Chart Elements"]

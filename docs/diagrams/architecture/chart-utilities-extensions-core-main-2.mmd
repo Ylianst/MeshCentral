@@ -1,0 +1,7 @@
+flowchart LR
+    btInstance["bt Animation Engine"] --> ChartsMap["_charts Map"]
+    ChartsMap --> ChartState["Per-Chart State"]
+    ChartState --> Items["Animation Items[]"]
+    ChartState --> Listeners["Listeners"]
+    Listeners --> Progress["progress[]"]
+    Listeners --> Complete["complete[]"]

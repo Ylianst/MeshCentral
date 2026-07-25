@@ -1,0 +1,5 @@
+flowchart TD
+    NewImage["Decoded Image"] --> BudgetCheck["Check Pixel Budget"]
+    BudgetCheck -->|Within Limit| Store["Store Image"]
+    BudgetCheck -->|Exceeded| Evict["Evict Oldest"]
+    Evict --> Store

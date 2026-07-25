@@ -1,6 +1,11 @@
-flowchart TD
-    Init["Initialize Chart"] --> BuildScales["Build Scales"]
-    BuildScales --> BuildControllers["Build Dataset Controllers"]
-    BuildControllers --> UpdateDatasets["Update Datasets"]
-    UpdateDatasets --> Layout["Compute Layout"]
-    Layout --> Render["Render Canvas"]
+sequenceDiagram
+    participant Application
+    participant Utilities
+    participant Runtime
+    participant Canvas
+
+    Application->>Utilities: Provide data & config
+    Utilities->>Utilities: Normalize & extend
+    Utilities->>Runtime: Supply resolved options
+    Runtime->>Canvas: Render chart
+    Runtime-->>Utilities: Lifecycle hooks

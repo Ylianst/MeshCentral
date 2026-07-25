@@ -1,0 +1,7 @@
+flowchart TD
+    RawData["Raw Dataset"] --> Parsed["Parsed Values"]
+    Parsed --> MetaCache["Meta Cache"]
+    MetaCache --> Scales
+    Scales --> Geometry["Element Geometry"]
+    Geometry --> Animation
+    Animation --> Canvas

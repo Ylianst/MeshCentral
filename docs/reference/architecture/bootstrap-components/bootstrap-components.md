@@ -1,333 +1,397 @@
 # Bootstrap Components
 
-The **Bootstrap Components** module integrates the Bootstrap v5.3.3 JavaScript runtime into the MeshCentral web interface. It provides interactive UI behaviors such as modals, dropdowns, tooltips, tabs, carousels, toasts, and more.
+The **Bootstrap Components** module integrates Bootstrap v5.3.3 into the MeshCentral web interface. It provides a complete set of interactive UI primitives—modals, dropdowns, tooltips, tabs, toasts, carousels, and more—built on top of a shared component infrastructure.
 
-This module acts as the foundational UI behavior layer for higher-level interface modules such as [UI Components](../ui-components/ui-components.md) and [Charts Components](../charts-components/charts-components.md). While those modules define structure and visuals, Bootstrap Components enables dynamic interaction, accessibility, state management, and DOM orchestration.
+This module is responsible for:
 
----
+- Standardized UI behavior across the application
+- Declarative configuration using `data-bs-*` attributes
+- Event-driven component lifecycle management
+- Accessibility (ARIA attributes, keyboard support, focus management)
+- Overlay and positioning logic powered by Popper
 
-## 1. Purpose and Responsibilities
-
-Bootstrap Components is responsible for:
-
-- Managing component lifecycle (init, show, hide, dispose)
-- Coordinating DOM manipulation and transitions
-- Handling events via a unified event system
-- Integrating Popper.js for dynamic positioning
-- Enforcing accessibility attributes (ARIA roles, focus management)
-- Providing a Data API via `data-bs-*` attributes
-
-The module is distributed as a UMD bundle and exposes the following primary components:
-
-- Alert
-- Button
-- Carousel
-- Collapse
-- Dropdown
-- Modal
-- Offcanvas
-- Popover
-- ScrollSpy
-- Tab
-- Toast
-- Tooltip
-
-Supporting infrastructure includes:
-
-- BaseComponent
-- Config
-- EventHandler
-- SelectorEngine
-- Backdrop
-- FocusTrap
-- ScrollBarHelper
-- TemplateFactory
-- Swipe
-- Sanitizer
+At runtime, the module exposes a `bootstrap` namespace containing the primary components.
 
 ---
 
-## 2. High-Level Architecture
+## 1. Architectural Overview
+
+Bootstrap Components follow a layered architecture:
+
+- **Core Infrastructure Layer** – Data storage, configuration, event handling, selector engine
+- **Utility Layer** – Backdrop, FocusTrap, ScrollBarHelper, Swipe, TemplateFactory
+- **Interactive Component Layer** – Alert, Modal, Dropdown, Tooltip, etc.
+- **Positioning Engine** – Popper integration for dynamic placement
 
 ```mermaid
 flowchart TD
-    BaseComponent["BaseComponent"]
-    Config["Config"]
-    EventHandler["EventHandler"]
-    SelectorEngine["SelectorEngine"]
-    PopperEngine["Popper Integration"]
+    A["DOM Elements"] --> B["Data API (data-bs-*)"]
+    B --> C["BaseComponent"]
+    C --> D["EventHandler"]
+    C --> E["Config"]
+    C --> F["Data Store"]
 
-    Alert["Alert"]
-    Modal["Modal"]
-    Dropdown["Dropdown"]
-    Tooltip["Tooltip"]
-    Carousel["Carousel"]
+    C --> G["Interactive Components"]
+    G --> H["Modal"]
+    G --> I["Dropdown"]
+    G --> J["Tooltip / Popover"]
+    G --> K["Carousel"]
+    G --> L["Toast"]
 
-    BaseComponent --> Config
-    Alert --> BaseComponent
-    Modal --> BaseComponent
-    Dropdown --> BaseComponent
-    Tooltip --> BaseComponent
-    Carousel --> BaseComponent
+    I --> M["Popper Engine"]
+    J --> M
 
-    Dropdown --> PopperEngine
-    Tooltip --> PopperEngine
-
-    BaseComponent --> EventHandler
-    BaseComponent --> SelectorEngine
+    H --> N["Backdrop"]
+    H --> O["FocusTrap"]
 ```
-
-### Architectural Layers
-
-1. **Infrastructure Layer**  
-   - `Config` (configuration merging and validation)  
-   - `EventHandler` (namespaced event management)  
-   - `SelectorEngine` (DOM querying utilities)  
-   - `Manipulator` (data attribute abstraction)
-
-2. **Core Abstraction Layer**  
-   - `BaseComponent` (common lifecycle + instance registry)
-
-3. **Behavioral Components Layer**  
-   - Alert, Modal, Dropdown, Tooltip, etc.
-
-4. **Positioning Layer**  
-   - Popper.js integration for Tooltip, Popover, Dropdown
 
 ---
 
-## 3. BaseComponent and Instance Management
+## 2. Core Infrastructure
 
-All interactive components extend `BaseComponent`, which provides:
+### 2.1 BaseComponent
 
-- Instance registration via internal `Data` map
-- Static `getInstance()` and `getOrCreateInstance()`
-- Unified `dispose()` lifecycle
-- Event namespace isolation
-- Config merging and type validation
+`BaseComponent` is the foundation for all interactive components.
 
-### Instance Lifecycle
+Responsibilities:
+
+- Element resolution
+- Configuration merging and type checking
+- Instance registration via `Data`
+- Lifecycle management (`dispose`, `_queueCallback`)
+- Static helpers: `getInstance`, `getOrCreateInstance`
+
+All components (Modal, Dropdown, Tooltip, etc.) extend this class.
+
+---
+
+### 2.2 Data Store
+
+The internal `Data` object maintains a `Map<Element, Map<Key, Instance>>`.
+
+Key characteristics:
+
+- One component instance per element per component type
+- Automatic cleanup when disposed
+- Prevents accidental duplicate bindings
+
+```mermaid
+flowchart LR
+    A["HTMLElement"] --> B["Data Map"]
+    B --> C["Component Key (bs.modal)"]
+    C --> D["Modal Instance"]
+```
+
+---
+
+### 2.3 EventHandler
+
+Centralized event abstraction layer providing:
+
+- Namespaced events (`click.bs.modal`)
+- Delegated events
+- One-time listeners
+- Synthetic triggering
+
+This ensures consistent lifecycle hooks:
+
+- `show`
+- `shown`
+- `hide`
+- `hidden`
+
+---
+
+### 2.4 Config System
+
+The `Config` base class:
+
+- Merges defaults + data attributes + user options
+- Performs runtime type validation
+- Supports per-component `Default` and `DefaultType`
+
+Configuration precedence:
 
 ```mermaid
 flowchart TD
-    Init["Constructor"] --> Merge["Merge Config"]
-    Merge --> Register["Register Instance"]
-    Register --> Active["Component Active"]
-    Active --> Dispose["Dispose()"]
-    Dispose --> Cleanup["Remove Events and Data"]
+    A["Component Defaults"] --> D["Merged Config"]
+    B["data-bs-* Attributes"] --> D
+    C["JavaScript Options"] --> D
 ```
-
-This ensures:
-
-- One instance per element
-- Deterministic cleanup
-- No memory leaks from dangling listeners
 
 ---
 
-## 4. Event System Architecture
+## 3. Utility Components
 
-Bootstrap Components uses a custom event abstraction layer.
+These classes support higher-level interactive behavior.
 
-### Event Flow
+### Backdrop
+- Creates and manages overlay elements
+- Supports animation and click callbacks
+- Used by Modal and Offcanvas
+
+### FocusTrap
+- Keeps keyboard focus within a container
+- Handles Tab and Shift+Tab cycling
+- Used by Modal and Offcanvas
+
+### ScrollBarHelper
+- Detects scrollbar width
+- Adjusts body padding during overlays
+- Prevents layout shift when modals open
+
+### Swipe
+- Touch and pointer gesture detection
+- Used by Carousel
+
+### TemplateFactory
+- Generates sanitized HTML from templates
+- Used by Tooltip and Popover
+- Enforces allow-list sanitization
+
+---
+
+## 4. Interactive Components
+
+### 4.1 Alert
+Dismissible notification blocks.
+
+Lifecycle:
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant DOM
-    participant EventHandler
-    participant Component
-
-    User->>DOM: click / keydown
-    DOM->>EventHandler: native event
-    EventHandler->>Component: namespaced callback
-    Component->>DOM: state update + custom event
+    participant Alert
+    User->>Alert: click dismiss
+    Alert->>Alert: trigger close event
+    Alert->>Alert: remove show class
+    Alert->>Alert: remove element
+    Alert-->>User: closed event
 ```
 
-### Features
+---
 
-- Namespaced events (e.g., `click.bs.modal`)
-- Delegated event handling
-- One-off listeners
-- Custom event triggering with metadata
-- jQuery bridge compatibility
+### 4.2 Button
+
+- Toggles `.active`
+- Synchronizes `aria-pressed`
+- Driven via `data-bs-toggle="button"`
 
 ---
 
-## 5. Data API and Declarative Initialization
+### 4.3 Carousel
 
-Components can be initialized via:
+Image/content slider with:
 
-- JavaScript constructors
-- `data-bs-*` attributes
-- Automatic DOMContentLoaded scanning
+- Auto cycling
+- Keyboard navigation
+- Swipe support
+- Indicator synchronization
 
-Example behavior:
+Depends on:
 
-- `data-bs-toggle="modal"`
-- `data-bs-dismiss="alert"`
-
-This allows declarative behavior wiring without explicit JavaScript calls.
+- Swipe utility
+- Transition helpers
 
 ---
 
-## 6. Component Categories
+### 4.4 Collapse
 
-### 6.1 Structural Overlays
+Expands or hides content regions.
 
-- **Modal**
-- **Offcanvas**
-- **Backdrop**
-- **FocusTrap**
-- **ScrollBarHelper**
+Features:
 
-These components manage:
+- Accordion support via `parent`
+- Horizontal or vertical collapsing
+- ARIA synchronization
 
-- Body scroll locking
-- Focus containment
-- Backdrop rendering
+---
+
+### 4.5 Dropdown
+
+Context menu system.
+
+Key behaviors:
+
+- Uses Popper for dynamic placement
+- Auto-close modes (`true`, `inside`, `outside`, `false`)
+- Keyboard navigation
+
+```mermaid
+flowchart TD
+    A["Toggle Click"] --> B["Dropdown.show()"]
+    B --> C["Create Popper"]
+    C --> D["Position Menu"]
+    D --> E["Add show class"]
+```
+
+---
+
+### 4.6 Modal
+
+Overlay dialog system.
+
+Core responsibilities:
+
+- Backdrop management
+- Scroll locking
+- Focus trapping
+- Keyboard handling (Escape)
 - Transition handling
 
 ```mermaid
 flowchart TD
-    Modal["Modal"] --> Backdrop["Backdrop"]
-    Modal --> FocusTrap["FocusTrap"]
-    Modal --> ScrollBarHelper["ScrollBarHelper"]
+    A["Modal.show()"] --> B["ScrollBarHelper.hide()"]
+    B --> C["Backdrop.show()"]
+    C --> D["Display modal"]
+    D --> E["Activate FocusTrap"]
 ```
 
 ---
 
-### 6.2 Navigation and Layout
+### 4.7 Offcanvas
 
-- Tab
-- ScrollSpy
-- Collapse
-- Carousel
+Slide-in panel component.
 
-These components coordinate UI sections and active states.
-
----
-
-### 6.3 Interactive Controls
-
-- Button
-- Dropdown
-- Alert
-- Toast
-
-These components handle toggles, dismissals, and ephemeral UI state.
+- Shares Backdrop + FocusTrap logic
+- Optional body scroll preservation
+- Responsive hide on resize
 
 ---
 
-### 6.4 Positioned Floating UI
+### 4.8 Tooltip
 
-- Tooltip
-- Popover
-- Dropdown (dynamic mode)
+Small contextual overlay.
 
-These rely on Popper.js for intelligent positioning.
+- Uses Popper for placement
+- Supports hover, focus, click, manual triggers
+- Sanitized HTML templates
+
+---
+
+### 4.9 Popover
+
+Extends Tooltip.
+
+Adds:
+
+- Title section
+- Content body
+- Click-based default trigger
+
+---
+
+### 4.10 ScrollSpy
+
+Observes scroll position and activates navigation links.
+
+- Uses `IntersectionObserver`
+- Maintains active state
+- Optional smooth scrolling
+
+---
+
+### 4.11 Tab
+
+Manages tabbed interfaces.
+
+- ARIA role management
+- Keyboard navigation
+- Dropdown integration
+
+---
+
+### 4.12 Toast
+
+Transient notification messages.
+
+- Optional auto-hide
+- Mouse and keyboard interaction detection
+- Animation support
+
+---
+
+## 5. Popper Integration
+
+Dropdowns, Tooltips, and Popovers rely on Popper for dynamic positioning.
+
+```mermaid
+flowchart LR
+    A["Reference Element"] --> B["Popper Instance"]
+    B --> C["Placement Calculation"]
+    C --> D["Apply Styles"]
+```
+
+Popper modifiers used:
+
+- `offset`
+- `flip`
+- `preventOverflow`
+- `arrow`
+- `applyStyles`
+
+---
+
+## 6. Data API Pattern
+
+Most components support declarative initialization via HTML attributes.
+
+Example pattern:
+
+```text
+<button data-bs-toggle="modal" data-bs-target="#myModal">
+```
+
+Runtime flow:
 
 ```mermaid
 flowchart TD
-    Tooltip["Tooltip"] --> TemplateFactory["TemplateFactory"]
-    Tooltip --> Popper["Popper Engine"]
-    Popover["Popover"] --> Tooltip
-    Dropdown["Dropdown"] --> Popper
+    A["User Click"] --> B["Document Data API Listener"]
+    B --> C["Resolve Target Element"]
+    C --> D["getOrCreateInstance()"]
+    D --> E["Execute Action (show/toggle)"]
 ```
 
 ---
 
-## 7. TemplateFactory and Sanitization
+## 7. Lifecycle Model
 
-Dynamic components (Tooltip, Popover) use `TemplateFactory` to:
+All interactive components share a predictable lifecycle:
 
-- Generate DOM from templates
-- Inject content
-- Apply sanitization rules
-- Enforce allow-list security
+1. **Instantiation** – via constructor or `getOrCreateInstance`
+2. **Configuration Merge** – defaults + data attributes + options
+3. **Event Registration**
+4. **Action Execution** (`show`, `hide`, `toggle`)
+5. **Transition Handling**
+6. **Event Emission** (`shown`, `hidden`)
+7. **Disposal** (cleanup + Data removal)
 
-Sanitization prevents:
-
-- Script injection
-- Malicious attribute usage
-- Unsafe URL schemes
-
-Security is enforced using:
-
-- `DefaultAllowlist`
-- URL pattern validation
-- Optional custom sanitize function
+This consistency simplifies debugging and extension across the UI layer.
 
 ---
 
-## 8. Accessibility Model
+## 8. Role Within the System
 
-Bootstrap Components systematically enforce:
+Bootstrap Components provide the interactive presentation layer for the MeshCentral UI:
 
-- `aria-expanded`
-- `aria-selected`
-- `aria-modal`
-- `role="dialog"`
-- `aria-describedby`
+- Forms and alerts → Alert, Toast
+- Navigation → Tab, ScrollSpy, Dropdown
+- Dialog workflows → Modal, Offcanvas
+- Contextual help → Tooltip, Popover
+- Media/visual rotation → Carousel
 
-Keyboard support includes:
-
-- ESC to dismiss overlays
-- Arrow navigation for tabs and dropdowns
-- Focus trapping in modals/offcanvas
-- Home/End navigation in tab lists
+They operate entirely in the browser and do not directly interact with backend modules. Instead, they enhance DOM-driven views rendered elsewhere in the application.
 
 ---
 
-## 9. Transition and Animation Handling
+# Summary
 
-All transitions rely on:
+The **Bootstrap Components** module is a comprehensive UI behavior framework built on:
 
-- CSS transition duration detection
-- Emulated transition fallback
-- `_queueCallback()` abstraction
-
-This guarantees:
-
-- Reliable event sequencing
-- No race conditions on animation completion
-- Consistent behavior across browsers
-
----
-
-## 10. Integration Within the System
-
-Bootstrap Components serves as the behavioral foundation for:
-
-- [UI Components](../ui-components/ui-components.md)
-- [Charts Components](../charts-components/charts-components.md)
-
-It does not render business logic or domain data directly. Instead, it:
-
-- Provides reusable UI behavior primitives
-- Handles lifecycle and accessibility
-- Coordinates DOM state
-
-Higher-level modules compose these primitives to build:
-
-- Admin dashboards
-- Device management panels
-- Interactive configuration dialogs
-- Notification systems
-
----
-
-## 11. Summary
-
-The **Bootstrap Components** module is a structured, event-driven UI behavior engine built on top of Bootstrap v5.3.3.
-
-Key characteristics:
-
-- Strong lifecycle management via BaseComponent
-- Unified event abstraction
-- Secure templating and sanitization
-- Accessibility-first design
-- Declarative Data API support
+- A shared `BaseComponent` abstraction
+- A centralized event and data infrastructure
+- Utility helpers for overlays and accessibility
 - Popper-powered positioning
+- A consistent lifecycle and configuration system
 
-It forms the core interactive layer of the MeshCentral web UI and enables consistent, accessible, and modular front-end behavior across the application.
+Together, these elements provide a stable, extensible, and accessible foundation for all interactive interface elements within the MeshCentral web client.

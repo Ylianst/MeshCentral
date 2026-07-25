@@ -1,9 +1,11 @@
 sequenceDiagram
-    participant Client
-    participant Server
+    participant RFB
+    participant Legacy
+    participant Cipher
 
-    Client->>Client: Generate (g, p, private)
-    Client->>Server: Send public = g^a mod p
-    Server->>Client: Send public = g^b mod p
-    Client->>Client: Compute shared = (g^b)^a mod p
-    Server->>Server: Compute shared = (g^a)^b mod p
+    RFB->>Legacy: importKey(algorithm)
+    Legacy->>Cipher: instantiate cipher
+    RFB->>Legacy: encrypt(data)
+    Legacy->>Cipher: encrypt()
+    Cipher-->>Legacy: encrypted bytes
+    Legacy-->>RFB: result

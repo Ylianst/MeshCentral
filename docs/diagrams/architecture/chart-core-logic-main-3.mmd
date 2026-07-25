@@ -1,0 +1,6 @@
+flowchart LR
+    DatasetController["Dataset Controller"] --> ParsedData["Parsed Values"]
+    ParsedData --> ScaleMinMax["Scale Min/Max"]
+    ScaleMinMax --> TickBuilder["Tick Builder"]
+    TickBuilder --> PixelMapping["Pixel Mapping"]
+    PixelMapping --> RenderedElements["Canvas Rendering"]

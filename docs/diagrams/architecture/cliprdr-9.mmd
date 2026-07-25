@@ -1,0 +1,4 @@
+flowchart TD
+    Incoming["CB_FORMAT_DATA_RESPONSE"] --> Decode["Decode UCS2 string"]
+    Decode --> Update["Update content"]
+    Update --> EmitEvent["Emit clipboard event"]

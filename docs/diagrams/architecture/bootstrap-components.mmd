@@ -1,25 +1,19 @@
 flowchart TD
-    BaseComponent["BaseComponent"]
-    Config["Config"]
-    EventHandler["EventHandler"]
-    SelectorEngine["SelectorEngine"]
-    PopperEngine["Popper Integration"]
+    A["DOM Elements"] --> B["Data API (data-bs-*)"]
+    B --> C["BaseComponent"]
+    C --> D["EventHandler"]
+    C --> E["Config"]
+    C --> F["Data Store"]
 
-    Alert["Alert"]
-    Modal["Modal"]
-    Dropdown["Dropdown"]
-    Tooltip["Tooltip"]
-    Carousel["Carousel"]
+    C --> G["Interactive Components"]
+    G --> H["Modal"]
+    G --> I["Dropdown"]
+    G --> J["Tooltip / Popover"]
+    G --> K["Carousel"]
+    G --> L["Toast"]
 
-    BaseComponent --> Config
-    Alert --> BaseComponent
-    Modal --> BaseComponent
-    Dropdown --> BaseComponent
-    Tooltip --> BaseComponent
-    Carousel --> BaseComponent
+    I --> M["Popper Engine"]
+    J --> M
 
-    Dropdown --> PopperEngine
-    Tooltip --> PopperEngine
-
-    BaseComponent --> EventHandler
-    BaseComponent --> SelectorEngine
+    H --> N["Backdrop"]
+    H --> O["FocusTrap"]

@@ -1,0 +1,18 @@
+flowchart LR
+    Chart["Chart Class"] --> Controllers["Dataset Controllers"]
+    Chart --> Scales["Scale Registry"]
+    Chart --> Elements["Elements"]
+    Chart --> Plugins["Plugin Service"]
+    Chart --> Animator["Animator"]
+
+    Controllers --> LineCtrl["Line Controller"]
+    Controllers --> BarCtrl["Bar Controller"]
+    Controllers --> DoughnutCtrl["Doughnut Controller"]
+
+    Scales --> LinearScale["Linear Scale"]
+    Scales --> TimeScale["Time Scale"]
+    Scales --> RadialScale["Radial Linear Scale"]
+
+    Elements --> LineElement["Line Element"]
+    Elements --> BarElement["Bar Element"]
+    Elements --> ArcElement["Arc Element"]

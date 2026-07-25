@@ -1,0 +1,7 @@
+flowchart LR
+    UI["UI Components"] --> Localization["Localization"]
+    Bootstrap["Bootstrap Components"] --> Localization
+    RFB["RFB and Display"] --> UI
+    Input["Input Handlers"] --> UI
+
+    Localization --> DOM["Translated DOM"]

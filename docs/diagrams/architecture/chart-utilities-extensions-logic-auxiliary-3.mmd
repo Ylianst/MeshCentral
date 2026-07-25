@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant UI as UI Layer
+    participant Chart as Chart Instance
+    participant Controller as Dataset Controller
+    participant Animator as Animator
+    participant Canvas as Canvas Context
+
+    UI->>Chart: update()
+    Chart->>Controller: parse + build elements
+    Chart->>Animator: schedule animations
+    Animator->>Canvas: requestAnimationFrame
+    Canvas->>Chart: draw()

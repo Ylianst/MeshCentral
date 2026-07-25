@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant UI as MeshCentral UI
+    participant Terminal as Terminal
+    participant Core as Core Engine
+    participant Renderer as Render Service
+
+    UI->>Terminal: new Terminal(options)
+    Terminal->>Core: initialize services
+    UI->>Terminal: open(container)
+    Terminal->>Renderer: attach renderer
+    Renderer-->>Terminal: first render

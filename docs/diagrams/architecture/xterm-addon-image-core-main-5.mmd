@@ -1,0 +1,4 @@
+flowchart TD
+    ResetCall["reset()"] --> RestoreDefaults["Restore Default Options"]
+    RestoreDefaults --> StorageReset["storage.reset()"]
+    StorageReset --> HandlerReset["Reset Protocol Handlers"]

@@ -1,0 +1,4 @@
+flowchart TD
+    BrowserMouse["Browser Mouse Event"] --> CoreMouseService
+    CoreMouseService --> Encoding["Mouse Encoding Strategy"]
+    Encoding --> TerminalData["ESC Sequence"]

@@ -1,5 +1,8 @@
 flowchart TD
-    ServerData["CB_FORMAT_DATA_RESPONSE"] --> Decode["Decode UCS2 string"]
-    Decode --> Store["Update content"]
-    Store --> EmitEvent["Emit clipboard event"]
-    EmitEvent --> Application["Application consumes data"]
+    Receive["Transport cliprdr event"] --> Parse["Parse Clipboard PDU"]
+    Parse --> Switch["Switch on msgType"]
+    Switch --> MonitorReady["Handle Monitor Ready"]
+    Switch --> FormatList["Handle Format List"]
+    Switch --> FormatDataReq["Handle Format Data Request"]
+    Switch --> FormatDataResp["Handle Format Data Response"]
+    FormatDataResp --> Emit["Emit clipboard event"]

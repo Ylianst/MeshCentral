@@ -1,0 +1,6 @@
+flowchart TD
+    A[Chart Lifecycle] --> B[beforeUpdate]
+    B --> C[Auxiliary Extension Hook]
+    C --> D[Plugin Registry]
+    D --> E[Custom Extension Logic]
+    E --> F[afterDraw]

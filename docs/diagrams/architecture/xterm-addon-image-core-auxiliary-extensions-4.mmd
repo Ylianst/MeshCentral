@@ -1,0 +1,5 @@
+flowchart TD
+    JSLayer["JavaScript Runtime"] --> WasmInit["WASM Module Init"]
+    WasmInit --> Memory["WebAssembly Memory"]
+    Memory --> DecoderCore["Decode Functions"]
+    DecoderCore --> PixelBuffer["Uint8Array Output"]

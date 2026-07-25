@@ -1,0 +1,7 @@
+flowchart LR
+    RawData["Raw Dataset Values"] --> ParseStage["Parsing Stage"]
+    ParseStage --> DetermineLimits["Determine Data Limits"]
+    DetermineLimits --> BuildTicks["Build Ticks"]
+    DetermineLimits --> NormalizeRange["Normalize Range"]
+    NormalizeRange --> ValueToPixel["Convert Value to Pixel"]
+    ValueToPixel --> DrawElements["Render Chart Elements"]

@@ -1,0 +1,9 @@
+flowchart TD
+    XtermCore["Xterm Core"] --> Aux["Xterm Auxiliary"]
+    Aux --> AuxCore["Xterm Auxiliary Core"]
+    AuxCore --> AuxExt["Xterm Auxiliary Extensions"]
+
+    AuxExt --> ExtCore["Extensions Core"]
+    AuxExt --> ExtUtilities["Extensions Utilities"]
+
+    ExtUtilities --> Browser["Browser APIs"]

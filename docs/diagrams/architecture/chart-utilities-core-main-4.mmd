@@ -1,0 +1,5 @@
+flowchart TD
+    DataRange["Data Min/Max"] --> NormalizeRange["Normalize Range"]
+    NormalizeRange --> ComputeTicks["Compute Tick Steps"]
+    ComputeTicks --> FormatTicks["Apply Formatter"]
+    FormatTicks --> RenderAxis["Render Axis"]

@@ -1,0 +1,5 @@
+flowchart TD
+    AddImage["New Image"] --> CheckLimit["Check Pixel Budget"]
+    CheckLimit -->|"Within Limit"| Store
+    CheckLimit -->|"Exceeded"| EvictOldest["Evict Oldest Images"]
+    EvictOldest --> Store

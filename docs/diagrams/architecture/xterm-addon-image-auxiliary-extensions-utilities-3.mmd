@@ -1,0 +1,7 @@
+flowchart LR
+    Input["Incoming Image Data"] --> SizeCheck["Size Limit Check"]
+    SizeCheck -->|"Within Limit"| Decode["Decode via WASM"]
+    SizeCheck -->|"Exceeded"| Abort["Abort + Release"]
+    Decode --> MemoryCheck["Memory Usage Check"]
+    MemoryCheck -->|"OK"| Output["Pixel Buffer"]
+    MemoryCheck -->|"Exceeded"| Release["Release Resources"]

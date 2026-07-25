@@ -1,0 +1,11 @@
+flowchart TD
+    CustomController["Custom Controller"]
+    CustomScale["Custom Scale"]
+    CustomPlugin["Custom Plugin"]
+    Registry["Runtime Registry"]
+    ChartInstance["Chart Instance"]
+
+    CustomController --> Registry
+    CustomScale --> Registry
+    CustomPlugin --> Registry
+    Registry --> ChartInstance

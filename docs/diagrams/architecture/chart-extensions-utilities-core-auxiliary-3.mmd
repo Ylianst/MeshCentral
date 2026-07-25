@@ -1,0 +1,6 @@
+flowchart LR
+    Dataset["Dataset"] --> Controller["Controller"]
+    Controller --> Parse["Parse Data"]
+    Parse --> Geometry["Compute Geometry"]
+    Geometry --> Elements["Create Elements"]
+    Elements --> CanvasDraw["Draw on Canvas"]

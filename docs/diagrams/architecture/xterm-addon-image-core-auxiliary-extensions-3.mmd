@@ -1,0 +1,6 @@
+flowchart LR
+    Osc["OSC 1337 Sequence"] --> HeaderParser["Header Parser"]
+    HeaderParser --> Base64Decoder["Base64 Decoder"]
+    Base64Decoder --> ImageType["Image Type Detection"]
+    ImageType --> ResizeLogic["Resize Logic"]
+    ResizeLogic --> StorageAdd["Add to Image Storage"]

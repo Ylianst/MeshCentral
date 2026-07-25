@@ -1,0 +1,13 @@
+flowchart TD
+    UserConfig["User Configuration"]
+    DataInput["Dataset Data"]
+
+    UserConfig --> Resolver["Option Resolver"]
+    DataInput --> Controllers
+
+    Resolver --> Controllers
+    Controllers --> Scales
+    Scales --> PixelData["Pixel Coordinates"]
+    PixelData --> Elements
+    Elements --> Canvas["Canvas Rendering"]
+    Canvas --> Tooltip["Tooltip / Interaction"]

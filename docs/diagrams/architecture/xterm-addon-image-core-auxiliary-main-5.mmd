@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Terminal
+    participant Handler
+    participant Decoder
+    participant WASM
+    participant Renderer
+
+    Terminal->>Handler: Image escape sequence
+    Handler->>Decoder: Base64 payload chunks
+    Decoder->>WASM: Decode buffer
+    WASM-->>Decoder: Binary output
+    Decoder-->>Handler: data8 view
+    Handler->>Renderer: Render image

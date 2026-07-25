@@ -1,0 +1,11 @@
+flowchart TD
+    TerminalCore["Xterm Core Terminal"] --> Parser["Parser Hooks"]
+    Parser --> ImageAddon["Image Addon"]
+
+    ImageAddon --> CoreAux["Core Auxiliary"]
+    CoreAux --> CoreAuxExt["Core Auxiliary Extensions"]
+
+    CoreAuxExt --> SixelHandler["SIXEL Handler"]
+    CoreAuxExt --> IIPHandler["IIP Handler"]
+    CoreAuxExt --> ImageStorage["Image Storage"]
+    CoreAuxExt --> ImageRenderer["Image Renderer"]

@@ -1,0 +1,8 @@
+flowchart TD
+    CustomPlugin["Custom Plugin"]
+    CustomController["Custom Controller"]
+    UtilitiesCore["Utilities Core (Registry)"]
+
+    CustomPlugin --> UtilitiesCore
+    CustomController --> UtilitiesCore
+    UtilitiesCore --> ChartRuntime["Chart Runtime"]

@@ -1,0 +1,7 @@
+flowchart LR
+    A[Dataset Update] --> B[Animation Objects]
+    B --> C[Animator Queue]
+    C --> D[requestAnimationFrame]
+    D --> E[Tick Update]
+    E --> F[Element Property Interpolation]
+    F --> G[Canvas Redraw]

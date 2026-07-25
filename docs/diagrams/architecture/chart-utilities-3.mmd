@@ -1,16 +1,5 @@
-classDiagram
-    class DateAdapterBase {
-        +parse(value, format)
-        +format(timestamp, format)
-        +add(timestamp, amount, unit)
-        +diff(max, min, unit)
-        +startOf(timestamp, unit)
-        +endOf(timestamp, unit)
-    }
-
-    class RadialLinearScale {
-        +getDistanceFromCenterForValue(value)
-        +getPointPosition(index, value)
-        +computeTickLimit()
-        +fit()
-    }
+flowchart TD
+    UserConfig["User Configuration"] --> ExtensionsCore["Extensions Core"]
+    ExtensionsCore --> ExtensionsLogic["Extensions Logic"]
+    ExtensionsLogic --> Runtime["Chart.js Runtime"]
+    Auxiliary["Extensions Auxiliary"] --> Runtime

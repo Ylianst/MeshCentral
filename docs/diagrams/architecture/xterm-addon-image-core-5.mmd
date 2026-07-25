@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Terminal
+    participant Parser
+    participant ImageCore
+    participant Decoder
+    participant Renderer
+
+    Terminal->>Parser: DCS / OSC sequence
+    Parser->>ImageCore: Image event
+    ImageCore->>Decoder: Decode stream
+    Decoder-->>ImageCore: RGBA pixels
+    ImageCore->>Renderer: Register image tile
+    Renderer-->>Terminal: Paint overlay

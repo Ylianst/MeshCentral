@@ -1,9 +1,15 @@
-flowchart TD
-    RFB["RFB"] --> Encoding["Encoding Type"]
-    Encoding --> Raw["Raw"]
-    Encoding --> Tight["Tight"]
-    Encoding --> ZRLE["ZRLE"]
-    Encoding --> Hextile["Hextile"]
-    Raw --> Display
-    Tight --> Display
-    ZRLE --> Display
+flowchart LR
+    SocketBytes["Socket Bytes"]
+    RFB["RFB Parser"]
+    Decoder["Encoding Decoder"]
+    RGBA["RGBA Buffer"]
+    Display["Display Backbuffer"]
+    Flip["flip()"]
+    Canvas["Visible Canvas"]
+
+    SocketBytes --> RFB
+    RFB --> Decoder
+    Decoder --> RGBA
+    RGBA --> Display
+    Display --> Flip
+    Flip --> Canvas

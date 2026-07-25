@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Terminal as Xterm Terminal
+    participant Addon as Image Addon
+    participant Aux as Image Auxiliary
+    participant Decoder as WASM Decoder
+    participant Renderer as Renderer
+
+    Terminal->>Addon: Escape sequence
+    Addon->>Aux: Forward payload
+    Aux->>Decoder: Initialize decode
+    Decoder-->>Aux: Binary buffer
+    Aux->>Renderer: Render image

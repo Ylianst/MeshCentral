@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant App as Application
+    participant Terminal
+    participant CoreMain
+    participant CoreAux
+    participant Renderer
+
+    App->>Terminal: write(data)
+    Terminal->>CoreMain: process input
+    CoreMain->>Renderer: mark dirty rows
+    Renderer->>CoreAux: accessibility update
+    CoreAux->>Terminal: emit events

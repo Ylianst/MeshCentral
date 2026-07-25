@@ -1,7 +1,4 @@
-flowchart TD
-    Websock["Websock"] -->|"receives framebuffer update"| RFB["RFB"]
-    RFB -->|"cursor update message"| Cursor["Cursor"]
-    Cursor -->|"updates DOM"| Browser["Browser"]
-
-    RFB -->|"fires events"| EventTarget["EventTargetMixin"]
-    EventTarget --> Display["Display"]
+flowchart LR
+    Component["RFB or Display"] -->|"extends"| EventMixin["EventTargetMixin"]
+    EventMixin --> Listeners["Map&lt;type, Set&lt;callback&gt;&gt;"]
+    Component -->|"dispatchEvent"| EventMixin

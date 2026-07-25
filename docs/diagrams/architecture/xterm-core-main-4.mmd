@@ -1,0 +1,7 @@
+flowchart TD
+    KeyEvent["Keyboard Event"] --> TerminalHandler["Terminal Key Handlers"]
+    TerminalHandler --> Evaluate["evaluateKeyboardEvent()"]
+    Evaluate --> CoreService
+    CoreService --> WriteBuffer["WriteBuffer"]
+    WriteBuffer --> Parser["EscapeSequenceParser"]
+    Parser --> Buffer["BufferService"]

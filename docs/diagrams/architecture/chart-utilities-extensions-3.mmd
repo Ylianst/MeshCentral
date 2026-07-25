@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant User
+    participant Chart
+    participant Core as Extensions Core
+    participant Logic as Extensions Logic
+    participant Runtime as Chart.js Runtime
+
+    User->>Chart: Update data/config
+    Chart->>Core: Resolve defaults
+    Core-->>Chart: Merged options
+    Chart->>Logic: Prepare datasets
+    Logic->>Runtime: Register controllers
+    Runtime->>Runtime: Schedule animations
+    Runtime-->>Chart: Render to canvas

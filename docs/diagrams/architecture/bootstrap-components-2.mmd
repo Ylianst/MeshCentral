@@ -1,6 +1,4 @@
-flowchart TD
-    Init["Constructor"] --> Merge["Merge Config"]
-    Merge --> Register["Register Instance"]
-    Register --> Active["Component Active"]
-    Active --> Dispose["Dispose()"]
-    Dispose --> Cleanup["Remove Events and Data"]
+flowchart LR
+    A["HTMLElement"] --> B["Data Map"]
+    B --> C["Component Key (bs.modal)"]
+    C --> D["Modal Instance"]

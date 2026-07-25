@@ -1,0 +1,13 @@
+flowchart TD
+    Bootstrap["Bootstrap Components"]
+    UiComponents["Ui Components"]
+    Charts["Charts Module"]
+    Marked["Marked (Markdown)"]
+    Localization["Localization"]
+    Browser["Browser DOM"]
+
+    Bootstrap --> Browser
+    UiComponents --> Bootstrap
+    Charts --> Browser
+    Marked --> Browser
+    Localization --> Browser

@@ -1,6 +1,6 @@
-flowchart TD
-    RDPTransport["RDP Transport"] -->|"cliprdr channel"| CliprdrBase["Cliprdr Base Class"]
-    CliprdrBase --> ClientAutomata["Client Automata"]
-    ClientAutomata --> ClipboardState["Clipboard Content State"]
-    ClientAutomata --> EventLayer["EventEmitter"]
-    EventLayer --> Application["Application Layer"]
+flowchart LR
+    RdpTransport["RDP Transport"] --> CliprdrClient["Cliprdr Client"]
+    CliprdrClient --> PduParser["Clipboard PDU Parser"]
+    CliprdrClient --> PduBuilder["Clipboard PDU Builder"]
+    CliprdrClient --> EventEmitter["EventEmitter"]
+    EventEmitter --> AppLayer["Application Layer"]

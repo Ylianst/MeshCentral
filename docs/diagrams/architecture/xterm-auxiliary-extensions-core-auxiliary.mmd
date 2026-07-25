@@ -1,0 +1,16 @@
+flowchart TD
+    Terminal["Terminal"] --> AccessibilityManager["AccessibilityManager"]
+    Terminal --> Linkifier["Linkifier"]
+    Terminal --> RenderService["RenderService"]
+
+    AccessibilityManager --> CoreBrowserService["CoreBrowserService"]
+    AccessibilityManager --> RenderService
+    AccessibilityManager --> BufferService["BufferService"]
+
+    Linkifier --> MouseService["MouseService"]
+    Linkifier --> BufferService
+    Linkifier --> LinkProviderService["LinkProviderService"]
+
+    RenderService --> DomRenderer["DomRenderer"]
+    DomRenderer --> ThemeService["ThemeService"]
+    DomRenderer --> CharacterJoinerService["CharacterJoinerService"]

@@ -1,0 +1,5 @@
+flowchart TD
+    Terminal["Terminal"] -->|"onRender()"| AccessibilityManager
+    AccessibilityManager --> RowModel["Row Elements"]
+    AccessibilityManager --> LiveRegion["ARIA Live Region"]
+    RowModel --> ScreenReader["Screen Reader"]

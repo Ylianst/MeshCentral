@@ -1,243 +1,296 @@
 # Utility
 
-The **Utility** module provides foundational browser-side helpers that support the noVNC integration within MeshCentral. It contains low-level building blocks used by higher-level modules such as RFB and Display, Input Handlers, and Websock.
+The **Utility** module provides foundational helper components used by the noVNC-based remote access stack within MeshCentral. It delivers:
 
-This module focuses on two primary concerns:
+- Custom cursor management for remote desktop rendering
+- A lightweight event system mixin for internal component communication
 
-- **Cursor management** in environments where native CSS cursors are insufficient or unsupported.
-- **Event dispatching infrastructure** via a lightweight EventTarget mixin for internal component communication.
-
-Although small in size, the Utility module plays a critical role in ensuring consistent rendering behavior and predictable event handling across browsers and devices.
+Although small in surface area, Utility is a critical low-level module that supports higher-level modules such as RFB and Display, Input Handlers, and Websock by enabling consistent event propagation and cursor rendering behavior.
 
 ---
 
-## Architecture Overview
+## Overview
 
-The Utility module consists of two core components:
+The Utility module contains two core components:
 
-- `Cursor` – Manages custom cursor rendering and fallback behavior.
-- `EventTargetMixin` – Provides a minimal event subscription and dispatch system.
+- `meshcentral.public.novnc.core.util.cursor.Cursor`
+- `meshcentral.public.novnc.core.util.eventtarget.EventTargetMixin`
+
+These components serve different but complementary roles:
+
+- **Cursor** manages dynamic remote cursor rendering in the browser.
+- **EventTargetMixin** provides a minimal event subscription and dispatch mechanism for noVNC core classes.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    RFB["RFB Module"] -->|"updates cursor"| Cursor["Cursor"]
-    Display["Display Module"] -->|"visual output"| Cursor
-    InputHandlers["Input Handlers"] -->|"mouse events"| Cursor
-
-    RFB -->|"dispatches events"| EventTarget["EventTargetMixin"]
-    Websock["Websock"] -->|"emits messages"| EventTarget
-
-    Cursor --> DOM["Browser DOM"]
-    EventTarget --> Components["Internal Components"]
+    RFB["RFB Core"] -->|"uses"| Cursor["Cursor"]
+    RFB -->|"extends with"| EventMixin["EventTargetMixin"]
+    Display["Display"] -->|"interacts with"| Cursor
+    InputHandlers["Input Handlers"] -->|"emit events via"| EventMixin
 ```
-
-The Utility module acts as a support layer beneath protocol handling and display logic, interfacing directly with the browser DOM and abstracting event behavior.
-
----
-
-# Core Components
-
-## Cursor
-
-**Component:** `meshcentral.public.novnc.core.util.cursor.Cursor`
-
-The Cursor class is responsible for rendering and managing the remote cursor in the browser when connected to a VNC session.
-
-### Purpose
-
-Remote desktop protocols (like VNC) transmit cursor images from the server. Browsers, however, have limitations:
-
-- Some environments do not support CSS cursor URIs.
-- Touch devices require alternative handling.
-- Certain browsers have selection or rendering bugs.
-
-The Cursor class solves these challenges by:
-
-- Dynamically rendering cursor bitmaps to a canvas.
-- Using CSS `cursor: url(...)` when supported.
-- Falling back to a positioned `<canvas>` overlay when necessary.
-
----
-
-### High-Level Behavior
-
-```mermaid
-flowchart TD
-    Attach["attach(target)"] --> Detect["Detect browser capabilities"]
-    Detect -->|"Supports cursor URIs"| Native["Use CSS cursor URL"]
-    Detect -->|"Fallback required"| Overlay["Create fixed canvas overlay"]
-
-    Change["change(rgba, hotx, hoty, w, h)"] --> Render["Render ImageData to canvas"]
-    Render --> Apply["Apply CSS cursor or update overlay"]
-
-    MouseMove["Mouse Events"] --> UpdatePos["Update cursor position"]
-    UpdatePos --> Visibility["Update visibility logic"]
-```
-
----
-
-### Key Responsibilities
-
-#### 1. Attachment Lifecycle
-
-- `attach(target)` – Binds cursor handling to a specific DOM element.
-- `detach()` – Removes event listeners and overlay elements.
-
-When fallback mode is active, the class installs capturing mouse listeners:
-
-- `mouseover`
-- `mouseleave`
-- `mousemove`
-- `mouseup`
-
-These are used to maintain cursor visibility and position across nested DOM structures.
-
----
-
-#### 2. Cursor Image Updates
-
-- `change(rgba, hotx, hoty, w, h)`
-
-This method:
-
-1. Creates an `ImageData` object from raw RGBA pixel data.
-2. Draws it into an internal canvas.
-3. Applies it either as:
-   - A CSS cursor URL (preferred), or
-   - A visually positioned canvas overlay (fallback).
-
-The **hotspot** is recalculated whenever the cursor image changes.
-
----
-
-#### 3. Fallback Overlay Mode
-
-When native cursor URIs are not supported or when running on touch devices:
-
-- A fixed-position canvas is appended to `document.body`.
-- Pointer events are disabled to avoid interference.
-- Visibility is manually controlled.
-- Position is updated on every mouse move.
-
-Special handling exists for:
-
-- Visual vs layout viewport differences.
-- Mouse capture edge cases.
-- DOM changes during drag operations.
-
----
-
-#### 4. Visibility Rules
-
-The cursor is only shown when:
-
-- The pointer is over the attached target.
-- Or over a child element without its own explicit cursor.
-
-This prevents conflicts with nested UI elements.
-
----
-
-## EventTargetMixin
-
-**Component:** `meshcentral.public.novnc.core.util.eventtarget.EventTargetMixin`
-
-The EventTargetMixin provides a lightweight event subscription and dispatch system modeled after the browser's native `EventTarget` interface.
-
-It is used throughout the noVNC stack to decouple components and avoid tight coupling between networking, protocol parsing, and rendering logic.
-
----
-
-### Internal Structure
-
-```mermaid
-flowchart TD
-    Component["Any Component"] -->|"extends"| EventTarget["EventTargetMixin"]
-    EventTarget --> Map["Map of event types"]
-    Map --> Set["Set of callbacks per type"]
-
-    Add["addEventListener(type, cb)"] --> Map
-    Remove["removeEventListener(type, cb)"] --> Map
-    Dispatch["dispatchEvent(event)"] --> Callbacks["Invoke callbacks"]
-```
-
----
 
 ### Responsibilities
 
-#### 1. Listener Registration
-
-- `addEventListener(type, callback)`
-  - Stores callbacks in a `Map<string, Set<Function>>`.
-
-- `removeEventListener(type, callback)`
-  - Removes the specific callback for the event type.
-
-Using `Set` ensures:
-
-- No duplicate listeners.
-- Efficient add/remove operations.
+| Component | Responsibility |
+|------------|----------------|
+| Cursor | Renders and updates remote cursor graphics in the browser |
+| EventTargetMixin | Enables event-driven communication between noVNC core classes |
 
 ---
 
-#### 2. Event Dispatching
+# Cursor
 
-- `dispatchEvent(event)`
+**Component:** `meshcentral.public.novnc.core.util.cursor.Cursor`
 
-This method:
+The Cursor class is responsible for displaying the remote system's cursor inside the browser viewport. It supports both:
 
-1. Locates listeners for `event.type`.
-2. Invokes each callback with the component as context.
-3. Returns `true` unless `event.defaultPrevented` is set.
+- Native browser cursor rendering using Data URLs
+- A fallback canvas-based cursor overlay for environments without cursor URI support or on touch devices
 
-This mirrors browser-native behavior and enables consistent handling patterns across modules.
+## Design Goals
+
+- Provide pixel-accurate cursor rendering from remote framebuffer data
+- Support cursor hot spots (click offset position)
+- Maintain compatibility across browsers and mobile devices
+- Handle pointer capture and drag scenarios correctly
 
 ---
 
-# Interaction with Other Modules
+## Cursor Rendering Strategy
 
-While the Utility module is independent, it is commonly used by:
-
-- RFB (Remote Framebuffer protocol implementation)
-- Display (frame rendering layer)
-- Websock (WebSocket communication)
-- Input Handlers (keyboard and gesture processing)
-
-### Example Interaction Flow
+The Cursor class dynamically chooses between two strategies:
 
 ```mermaid
 flowchart TD
-    Websock["Websock"] -->|"receives framebuffer update"| RFB["RFB"]
-    RFB -->|"cursor update message"| Cursor["Cursor"]
-    Cursor -->|"updates DOM"| Browser["Browser"]
-
-    RFB -->|"fires events"| EventTarget["EventTargetMixin"]
-    EventTarget --> Display["Display"]
+    Start["Cursor Change Requested"] --> Check["Supports Cursor URI?"]
+    Check -->|"Yes"| Native["Set CSS cursor: url(data)"]
+    Check -->|"No or Touch"| Fallback["Render Canvas Overlay"]
+    Fallback --> Attach["Attach Canvas to document.body"]
 ```
 
-The Utility module ensures that:
+### 1. Native Mode
 
-- Remote cursor images are accurately represented.
-- Event-driven communication remains clean and modular.
+If the browser supports cursor URIs and is not a touch device:
+
+- The RGBA pixel buffer is written to a canvas
+- The canvas is converted to a Data URL
+- CSS `cursor: url(...) hotx hoty, default` is applied
+
+This approach leverages built-in browser cursor rendering for optimal performance.
+
+### 2. Fallback Mode
+
+Used when:
+
+- Cursor URIs are unsupported
+- Running on touch devices
+
+In this mode:
+
+- A fixed-position canvas is appended to `document.body`
+- Mouse movement events reposition the canvas
+- Visibility is dynamically toggled
+- Pointer events are disabled on the canvas to avoid interference
 
 ---
 
-# Design Principles
+## Cursor Lifecycle
 
-The Utility module reflects several architectural principles:
+```mermaid
+sequenceDiagram
+    participant RFB
+    participant Cursor
+    participant DOM
 
-- **Browser compatibility first** – Explicit fallback logic for inconsistent environments.
-- **Separation of concerns** – Rendering, networking, and event logic remain isolated.
-- **Minimal abstraction** – Small, focused helpers instead of heavy frameworks.
-- **Performance-conscious design** – Canvas updates and event maps are optimized for frequent updates.
+    RFB->>Cursor: attach(targetElement)
+    RFB->>Cursor: change(rgba, hotx, hoty, w, h)
+    Cursor->>DOM: update canvas or CSS cursor
+    RFB->>Cursor: move(clientX, clientY)
+    Cursor->>DOM: reposition overlay (fallback)
+    RFB->>Cursor: clear()
+    Cursor->>DOM: hide cursor
+```
+
+### Key Methods
+
+| Method | Purpose |
+|---------|----------|
+| `attach(target)` | Binds cursor management to a DOM element |
+| `detach()` | Removes listeners and canvas overlay |
+| `change(rgba, hotx, hoty, w, h)` | Updates cursor image and hotspot |
+| `clear()` | Hides the cursor and resets state |
+| `move(clientX, clientY)` | Manually repositions cursor (fallback mode) |
+
+---
+
+## Hotspot Management
+
+The cursor hotspot defines where click interactions occur relative to the image.
+
+Internally:
+
+- Position offsets are recalculated whenever the hotspot changes
+- The overlay canvas is shifted accordingly
+- Mouse event coordinates are corrected to maintain alignment
+
+This ensures accurate click targeting in remote desktop sessions.
+
+---
+
+## Visibility and Capture Handling
+
+The Cursor class accounts for:
+
+- Pointer capture (`document.captureElement`)
+- Drag operations leaving the target element
+- Nested DOM structures
+
+It determines visibility using `_shouldShowCursor()` based on:
+
+- Whether the pointer is inside the target element
+- Whether child elements override the cursor style
+- Whether pointer capture is active
+
+This prevents cursor flicker and incorrect visibility during complex interactions.
+
+---
+
+# EventTargetMixin
+
+**Component:** `meshcentral.public.novnc.core.util.eventtarget.EventTargetMixin`
+
+EventTargetMixin provides a lightweight event system compatible with DOM-style event handling but implemented entirely in JavaScript.
+
+It is used throughout noVNC core classes (such as RFB and Display) to provide:
+
+- Custom event emission
+- Event subscription
+- Controlled event propagation
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Component["RFB or Display"] -->|"extends"| EventMixin["EventTargetMixin"]
+    EventMixin --> Listeners["Map&lt;type, Set&lt;callback&gt;&gt;"]
+    Component -->|"dispatchEvent"| EventMixin
+```
+
+---
+
+## Internal Data Model
+
+EventTargetMixin maintains:
+
+```text
+Map<string, Set<Function>>
+```
+
+- Key: event type
+- Value: set of callback functions
+
+This ensures:
+
+- O(1) listener lookup per event type
+- No duplicate listeners per event type
+- Clean removal semantics
+
+---
+
+## Core Methods
+
+| Method | Description |
+|---------|-------------|
+| `addEventListener(type, callback)` | Registers a callback for an event type |
+| `removeEventListener(type, callback)` | Removes a specific callback |
+| `dispatchEvent(event)` | Invokes all listeners for `event.type` |
+
+### Dispatch Behavior
+
+- All callbacks are invoked using `callback.call(this, event)`
+- The method returns `false` if `event.defaultPrevented` is true
+- Otherwise returns `true`
+
+This mirrors the semantics of DOM `EventTarget`.
+
+---
+
+## Event Flow Example
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant RFB
+    participant Listener
+
+    App->>RFB: addEventListener("connect", callback)
+    RFB->>RFB: dispatchEvent({ type: "connect" })
+    RFB->>Listener: callback(event)
+```
+
+---
+
+# Integration with the Remote Desktop Stack
+
+The Utility module sits at a foundational layer of the client runtime:
+
+```mermaid
+flowchart TD
+    Websock["Websock"] --> RFB["RFB Core"]
+    RFB --> Display["Display"]
+    RFB --> Cursor
+    RFB --> EventMixin
+    Display --> EventMixin
+    InputHandlers["Input Handlers"] --> RFB
+```
+
+### How It Fits
+
+- **Websock** handles transport
+- **RFB** manages protocol logic
+- **Display** renders framebuffer updates
+- **Cursor** renders pointer visuals
+- **EventTargetMixin** enables internal event-driven architecture
+
+Utility enables these modules to operate cohesively without introducing heavy framework dependencies.
+
+---
+
+# Key Design Principles
+
+### 1. Minimalism
+Utility avoids external dependencies and keeps implementations lightweight.
+
+### 2. Browser Compatibility
+Cursor fallback mode ensures consistent behavior across:
+
+- Safari (including iOS quirks)
+- Firefox cursor limitations
+- Touch devices
+
+### 3. Framework Independence
+EventTargetMixin allows noVNC core classes to behave like DOM components without requiring actual DOM inheritance.
+
+### 4. Separation of Concerns
+
+- Rendering logic stays in Display
+- Protocol logic stays in RFB
+- Cursor behavior is isolated
+- Event mechanics are abstracted
 
 ---
 
 # Summary
 
-The **Utility** module provides essential infrastructure for the MeshCentral noVNC client layer:
+The **Utility** module provides essential infrastructure for MeshCentral’s noVNC client:
 
-- The `Cursor` class ensures reliable and accurate remote cursor rendering across browsers and devices.
-- The `EventTargetMixin` enables lightweight, decoupled event-driven communication between core components.
+- Accurate and cross-browser remote cursor rendering
+- A consistent internal event dispatch mechanism
 
-Although compact, this module is fundamental to the stability, compatibility, and extensibility of the remote desktop experience in MeshCentral.
+While compact in implementation, Utility is foundational to the stability, portability, and architectural cleanliness of the remote desktop client stack.

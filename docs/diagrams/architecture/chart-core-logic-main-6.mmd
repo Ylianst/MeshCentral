@@ -1,0 +1,7 @@
+flowchart TD
+    InputData["Dataset Input"] --> ParsePhase["Parsing Phase"]
+    ParsePhase --> ScaleLimits["Scale determineDataLimits()"]
+    ScaleLimits --> TickGen["Tick Generation"]
+    TickGen --> Layout["Layout Calculation"]
+    Layout --> DatasetUpdate["Controller update()"]
+    DatasetUpdate --> CanvasDraw["Canvas Rendering"]

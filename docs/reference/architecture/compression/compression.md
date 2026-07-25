@@ -1,223 +1,231 @@
 # Compression
 
-The **Compression** module provides low-level data compression and decompression services for the noVNC stack embedded within MeshCentral. It is responsible for handling zlib-compatible deflate and inflate operations used by higher-level components such as the RFB protocol implementation and various framebuffer decoders.
+The **Compression** module provides low-level zlib-based data compression and decompression services for the noVNC client embedded in MeshCentral. It acts as a thin, performance-oriented wrapper around the bundled `pako` zlib implementation and is responsible for efficiently handling compressed binary streams used throughout the remote framebuffer (RFB) protocol.
 
-At its core, the module wraps the `pako` zlib implementation and exposes two primary classes:
+Within the overall architecture, Compression is primarily consumed by:
 
-- `Deflator` — Compresses binary data using zlib (deflate algorithm)
-- `Inflate` — Decompresses zlib-compressed binary data
+- The [Decoders](../decoders/decoders.md) module (e.g., Tight, ZRLE)
+- The [RFB and Display](../rfb-and-display/rfb-and-display.md) module
+- The [Websock](../websock/websock.md) transport layer
 
-These classes are optimized for streaming scenarios and predictable memory allocation, making them suitable for real-time remote desktop workloads.
+Compression is intentionally minimal and stateless at the application level, delegating stream state management to the underlying zlib `ZStream` implementation.
 
 ---
 
-## Architectural Context
+## Purpose and Responsibilities
 
-The Compression module operates within the noVNC data pipeline. It sits between the transport layer and the framebuffer decoding layer.
+The Compression module provides two core capabilities:
+
+1. **Deflation (Compression)** – Compress raw binary data before transmission.
+2. **Inflation (Decompression)** – Decompress incoming zlib-compressed blocks.
+
+These capabilities are essential for:
+
+- Reducing bandwidth usage in remote desktop sessions.
+- Supporting RFB encodings such as Tight and ZRLE.
+- Maintaining protocol compatibility with VNC servers that rely on zlib streams.
+
+The module consists of two primary classes:
+
+- `Deflator` – Handles zlib compression.
+- `Inflate` – Handles zlib decompression.
+
+---
+
+## High-Level Architecture
 
 ```mermaid
 flowchart LR
-    Websock["Websock"] --> RFB["RFB"]
-    RFB --> Compression["Compression"]
-    Compression --> Decoders["Decoders"]
-    Decoders --> Display["Display"]
+    Websock["Websock Transport"] --> RFB["RFB Protocol Engine"]
+    RFB --> Decoders["Encoding Decoders"]
+    Decoders --> InflateClass["Inflate"]
+    RFB --> DeflatorClass["Deflator"]
 
-    subgraph transport_layer["Transport Layer"]
-        Websock
-    end
-
-    subgraph protocol_layer["Protocol Layer"]
-        RFB
-        Compression
-    end
-
-    subgraph rendering_layer["Rendering Layer"]
-        Decoders
-        Display
+    subgraph compression_layer["Compression Module"]
+        DeflatorClass --> ZlibDeflate["pako zlib deflate"]
+        InflateClass --> ZlibInflate["pako zlib inflate"]
     end
 ```
 
-### Related Modules
+### Interaction Flow
 
-- [Websock](../websock/websock.md) — Provides binary WebSocket transport.
-- [RFB and Display](../rfb-and-display/rfb-and-display.md) — Implements the RFB protocol and rendering orchestration.
-- [Decoders](../decoders/decoders.md) — Uses decompressed data to reconstruct framebuffer updates.
-- [Crypto Components](../crypto-components/crypto-components.md) — Handles encryption prior to decompression when required.
+- **Incoming Data Path**:
+  1. Websock receives binary frames.
+  2. RFB parses encoding type.
+  3. If compressed, a decoder invokes `Inflate`.
+  4. Decompressed data is passed to the Display pipeline.
 
-The Compression module does not implement protocol logic itself. Instead, it provides efficient primitives that other modules depend on.
+- **Outgoing Data Path**:
+  1. RFB prepares protocol messages.
+  2. `Deflator` compresses payloads if required.
+  3. Websock transmits compressed bytes.
 
 ---
 
-# Core Components
+## Core Components
 
-## Deflator
+### Deflator
 
 **Component:** `meshcentral.public.novnc.core.deflator.Deflator`
 
-The `Deflator` class performs zlib compression using the deflate algorithm via `pako`.
+The Deflator class wraps the zlib `deflate` functionality from `pako`. It maintains an internal `ZStream` instance and performs chunked compression using `Z_FULL_FLUSH`.
 
-### Responsibilities
+#### Key Characteristics
 
-- Initialize a zlib compression stream
-- Accept binary input (`Uint8Array`)
-- Produce compressed binary output
-- Handle large inputs via chunking
-- Perform full flush operations for streaming consistency
+- Uses `Z_DEFAULT_COMPRESSION` during initialization.
+- Applies `Z_FULL_FLUSH` for each compression call.
+- Handles multi-chunk output automatically.
+- Returns a single flattened `Uint8Array`.
 
-### Internal Design
-
-`Deflator` maintains:
-
-- A `ZStream` instance
-- A preallocated output buffer
-- A configurable chunk size (default: 100 KB)
-
-Compression is performed using `Z_FULL_FLUSH`, ensuring stream boundaries are respected. This is important in interactive or incremental transmission environments like VNC.
-
-### Compression Flow
+#### Internal Workflow
 
 ```mermaid
 flowchart TD
-    Input["Input Uint8Array"] --> Setup["Initialize ZStream Fields"]
-    Setup --> DeflateCall["deflate(Z_FULL_FLUSH)"]
-    DeflateCall --> CheckRemaining{"More Input?"}
-    CheckRemaining -->|"Yes"| ChunkLoop["Allocate New Chunk and Continue"]
-    ChunkLoop --> DeflateCall
-    CheckRemaining -->|"No"| Combine["Combine Output Chunks"]
-    Combine --> Output["Compressed Uint8Array"]
+    Start["Input Uint8Array"] --> Setup["Configure ZStream"]
+    Setup --> DeflateCall["Call deflate() with Z_FULL_FLUSH"]
+    DeflateCall --> Check["More input remaining?"]
+    Check -->|"Yes"| Chunk["Allocate new output chunk"]
+    Chunk --> DeflateCall
+    Check -->|"No"| Combine["Merge output chunks"]
+    Combine --> EndNode["Return compressed Uint8Array"]
 ```
 
-### Error Handling
+#### Stream Handling
 
-- Throws `Error("zlib deflate failed")` if compression fails.
-- Ensures all remaining input is processed before returning.
+The Deflator:
 
-### Design Considerations
+- Sets `input`, `avail_in`, and `next_in` before compression.
+- Allocates a reusable output buffer (`chunkSize` default 100 KB).
+- Iteratively calls `deflate()` until all input is consumed.
+- Merges chunks if multiple passes are required.
+- Clears input references after completion.
 
-- Uses dynamic chunk allocation when input exceeds buffer size.
-- Avoids repeated memory reallocations by predefining chunk size.
-- Designed for performance in high-frequency compression workloads.
+This design ensures:
+
+- Efficient memory reuse.
+- Proper flushing of zlib state.
+- Safe handling of large payloads.
 
 ---
 
-## Inflate
+### Inflate
 
 **Component:** `meshcentral.public.novnc.core.inflator.Inflate`
 
-The `Inflate` class performs zlib decompression and is typically used when receiving compressed framebuffer updates.
+The Inflate class wraps zlib `inflate` operations for decompressing binary RFB data blocks.
 
-### Responsibilities
+#### Key Characteristics
 
-- Initialize and maintain an inflate stream
-- Accept compressed input data
-- Decompress a fixed expected number of bytes
-- Reset state between logical streams
+- Initializes a persistent `ZStream` via `inflateInit()`.
+- Allows dynamic resizing of the output buffer.
+- Requires the expected output size.
+- Throws explicit errors on incomplete or failed decompression.
 
-### Internal Design
-
-The class maintains:
-
-- A `ZStream` instance
-- A preallocated output buffer
-- A dynamically resized buffer when expected output exceeds default size
-
-Unlike `Deflator`, `Inflate` expects a known output size. This aligns with how RFB encodings provide expected decompressed lengths.
-
-### Decompression Flow
+#### Internal Workflow
 
 ```mermaid
 flowchart TD
-    Compressed["Compressed Input"] --> SetInput["setInput(data)"]
-    SetInput --> Resize{"Expected > ChunkSize?"}
-    Resize -->|"Yes"| Reallocate["Resize Output Buffer"]
-    Resize -->|"No"| Prepare["Prepare Output Window"]
-    Reallocate --> Prepare
-    Prepare --> InflateCall["inflate()"]
-    InflateCall --> Validate{"Output Size Correct?"}
-    Validate -->|"No"| Error["Throw Incomplete Block Error"]
-    Validate -->|"Yes"| Return["Return Uint8Array"]
+    Input["Compressed Uint8Array"] --> SetInput["Set ZStream input fields"]
+    SetInput --> Resize["Resize output buffer if needed"]
+    Resize --> InflateCall["Call inflate()"]
+    InflateCall --> Validate["next_out equals expected?"]
+    Validate -->|"No"| ErrorNode["Throw error"]
+    Validate -->|"Yes"| ReturnNode["Return decompressed Uint8Array"]
 ```
 
-### Error Handling
+#### Stream Lifecycle
 
-- Throws `Error("zlib inflate failed")` on inflate errors.
-- Throws `Error("Incomplete zlib block")` if decompressed size differs from expected.
+The Inflate class provides:
 
-### Reset Capability
+- `setInput(data)` – Assigns compressed input to the stream.
+- `inflate(expected)` – Decompresses exactly `expected` bytes.
+- `reset()` – Resets the zlib stream state.
 
-The `reset()` method calls `inflateReset()` on the underlying stream, allowing reuse of the instance without reallocation.
+Strict validation ensures:
 
----
-
-# Interaction with Framebuffer Decoders
-
-Many RFB encodings use compression (e.g., Tight, ZRLE). The decompression process typically follows this pattern:
-
-```mermaid
-sequenceDiagram
-    participant Server
-    participant Websock
-    participant RFB
-    participant Inflate
-    participant Decoder
-    participant Display
-
-    Server->>Websock: Compressed Framebuffer Data
-    Websock->>RFB: Binary Message
-    RFB->>Inflate: Provide Compressed Block
-    Inflate->>RFB: Decompressed Bytes
-    RFB->>Decoder: Raw Pixel Data
-    Decoder->>Display: Rendered Frame
-```
-
-In this pipeline:
-
-- The RFB layer determines whether compression is used.
-- The Inflate class expands compressed blocks.
-- Decoders interpret pixel encoding.
-- The Display module renders final output.
+- Detection of truncated or corrupted zlib blocks.
+- Prevention of silent partial decompression.
 
 ---
 
-# Performance and Memory Considerations
+## Relationship to Other Modules
 
-The Compression module is designed for real-time remote desktop scenarios:
+### Decoders Module
 
-- ✅ Preallocated buffers reduce garbage collection pressure
-- ✅ Chunked compression handles arbitrarily large inputs
-- ✅ Explicit expected-size validation prevents silent corruption
-- ✅ Stream reuse improves throughput
+The [Decoders](../decoders/decoders.md) module relies heavily on Compression for RFB encodings such as:
 
-### Chunk Size
+- Tight
+- TightPNG
+- ZRLE
 
-Default chunk size:
+These encodings embed zlib-compressed pixel or tile data, which is passed through the `Inflate` class before rendering.
 
-```text
-1024 * 10 * 10 bytes
-= 102400 bytes (100 KB)
-```
+### RFB and Display Module
 
-This provides a balance between memory overhead and minimizing reallocation frequency.
+The [RFB and Display](../rfb-and-display/rfb-and-display.md) module orchestrates protocol negotiation and framebuffer updates. When compression is negotiated, it:
 
----
+- Uses Inflate for incoming compressed rectangles.
+- May use Deflator for outgoing messages.
 
-# Design Principles
+### Websock Module
 
-The Compression module adheres to the following principles:
-
-1. **Isolation of Concerns** — Pure compression logic without protocol awareness.
-2. **Streaming Safety** — Uses full flush semantics for incremental transmission.
-3. **Deterministic Output** — Strict validation of decompression size.
-4. **Performance Optimization** — Reduced memory churn and predictable buffer usage.
+The [Websock](../websock/websock.md) module provides raw binary transport over WebSocket. It does not interpret compression but supplies and receives the byte streams that Compression processes.
 
 ---
 
-# Summary
+## Error Handling Strategy
 
-The **Compression** module provides foundational zlib compression and decompression capabilities within the MeshCentral noVNC stack. Though small in surface area, it is critical to:
+Both Deflator and Inflate follow a fail-fast model:
 
-- Efficient transport of framebuffer updates
-- Compatibility with compressed RFB encodings
-- Maintaining high-performance remote desktop sessions
+- Any negative zlib return code triggers an exception.
+- Inflate validates output size strictly.
+- Partial blocks result in explicit errors.
 
-By abstracting zlib stream handling behind simple `Deflator` and `Inflate` classes, the module ensures clean integration with the broader architecture while maintaining strict correctness and performance guarantees.
+This approach prevents subtle rendering corruption and ensures protocol-level correctness.
+
+---
+
+## Performance Considerations
+
+### Chunk-Based Processing
+
+Deflator supports multi-chunk compression for large inputs, reducing the risk of:
+
+- Large contiguous memory allocations.
+- Buffer overflow conditions.
+
+### Pre-Allocated Buffers
+
+Inflate pre-allocates its output buffer and resizes only when necessary, minimizing allocation overhead during frequent framebuffer updates.
+
+### Stream Reuse
+
+Both classes reuse a single `ZStream` instance per object, avoiding repeated initialization costs.
+
+---
+
+## Security Considerations
+
+Because compression operates on untrusted remote data:
+
+- Inflate strictly enforces expected output size.
+- Errors are surfaced immediately.
+- No implicit buffer growth occurs beyond expected bounds.
+
+This reduces risk from:
+
+- Corrupted streams.
+- Malformed zlib payloads.
+- Resource exhaustion attacks.
+
+---
+
+## Summary
+
+The **Compression** module provides a focused, high-performance abstraction over zlib for the noVNC client in MeshCentral. By encapsulating `pako` stream handling inside the `Deflator` and `Inflate` classes, it:
+
+- Simplifies integration with RFB encodings.
+- Ensures protocol-compliant zlib handling.
+- Maintains predictable memory and error behavior.
+
+It forms a foundational layer beneath the Decoders and RFB modules, enabling efficient and reliable remote desktop rendering over WebSocket connections.

@@ -1,0 +1,5 @@
+flowchart LR
+    Viewport["Visible Rows"] --> Storage
+    Storage --> ForEachRow["Scan Row Cells"]
+    ForEachRow --> DrawTile["Draw Tile"]
+    DrawTile --> CanvasLayer["Overlay Canvas"]

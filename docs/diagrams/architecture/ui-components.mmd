@@ -1,13 +1,12 @@
 flowchart TD
-    Templates["Handlebars Templates"] --> UiComponents["Ui Components Module"]
+    AppLogic["Application Page Logic"] -->|"createModernModal()"| ModernModalClass["ModernModal"]
+    AppLogic -->|"createModernCard()"| ModernCardClass["ModernCard"]
+    AppLogic -->|"createIconUploadComponent()"| IconUploadClass["IconUploadComponent"]
 
-    UiComponents --> ModernModal["ModernModal"]
-    UiComponents --> ModernCard["ModernCard"]
-    UiComponents --> IconUpload["IconUploadComponent"]
+    ModernModalClass -->|"setModalContent()"| LegacyModalHelpers["Legacy Modal Helpers"]
+    ModernModalClass -->|"showModal()"| LegacyModalHelpers
 
-    ModernModal --> BootstrapModal["Bootstrap Modal"]
-    ModernCard --> BootstrapCard["Bootstrap Card Styles"]
-    IconUpload --> DOMAPI["DOM APIs"]
+    ModernCardClass -->|"Bootstrap classes"| BootstrapLayer["Bootstrap UI"]
+    IconUploadClass -->|"Bootstrap + DOM"| BootstrapLayer
 
-    UiComponents --> BootstrapComponents["Bootstrap Components"]
-    UiComponents --> Localization["Localization"]
+    IconUploadClass -->|"onUpload / onRemove"| AppLogic

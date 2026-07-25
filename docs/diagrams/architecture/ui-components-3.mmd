@@ -1,7 +1,11 @@
-flowchart LR
-    Options["Card Options"] --> ModernCard
-    ModernCard --> Header["Card Header"]
-    ModernCard --> Body["Card Body"]
-    ModernCard --> Footer["Card Footer (Optional)"]
+flowchart TD
+    Card["ModernCard"] --> Header["Card Header"]
+    Card --> Body["Card Body"]
+    Card --> Footer["Optional Footer"]
 
-    ModernCard --> StatusClasses["Status CSS Classes"]
+    Header --> Icon["Icon"]
+    Header --> Title["Title"]
+    Header --> Status["Status Badge"]
+
+    Status --> StatusIcon["Status Icon"]
+    Status --> StatusText["Status Text"]

@@ -1,0 +1,6 @@
+flowchart TD
+    LayoutEngine["Layout Engine"] --> RegisterBoxes["Register Scale Boxes"]
+    RegisterBoxes --> Measure["Measure Tick Labels"]
+    Measure --> AllocateSpace["Allocate Chart Area"]
+    AllocateSpace --> DrawGrid["Draw Grid Lines"]
+    DrawGrid --> DrawLabels["Draw Axis Labels"]

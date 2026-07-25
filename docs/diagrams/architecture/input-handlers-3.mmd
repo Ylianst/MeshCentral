@@ -1,8 +1,6 @@
 flowchart TD
-    KeyDown["keydown"] --> NormalizeCode["Normalize Key Code"]
-    NormalizeCode --> TranslateKeysym["Translate to Keysym"]
-    TranslateKeysym --> PlatformFixes["Apply Platform Fixes"]
-    PlatformFixes --> SendEvent["Send Key Event"]
-
-    KeyUp["keyup"] --> ReleaseEvent["Release Key"]
-    ReleaseEvent --> SendEvent
+    KeyDown["keydown"] --> GetCode["Resolve Key Code"]
+    GetCode --> GetKeysym["Map to Keysym"]
+    GetKeysym --> PlatformFix["Apply Platform Fixes"]
+    PlatformFix --> SendEvent["Send Key Event"]
+    SendEvent --> RFB["Forward to RFB"]

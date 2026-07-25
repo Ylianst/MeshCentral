@@ -1,0 +1,5 @@
+flowchart TD
+    Chart --> Animations["Animations (Os)"]
+    Animations --> AnimationItems["Animation Instances (Cs)"]
+    AnimationItems --> AnimatorLoop["Animator (xt)"]
+    AnimatorLoop --> RequestFrame["requestAnimationFrame"]

@@ -1,6 +1,0 @@
-flowchart TD
-    Source["Markdown Source"] --> BlockTokens["blockTokens()"]
-    BlockTokens --> BlockRules["Block Grammar Rules"]
-    BlockRules --> Tokens["Block Tokens"]
-    Tokens --> InlineQueue["Inline Queue"]
-    InlineQueue --> InlineTokens["inlineTokens()"]

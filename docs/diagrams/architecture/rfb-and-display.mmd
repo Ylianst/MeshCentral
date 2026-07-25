@@ -1,15 +1,10 @@
 flowchart LR
-    User["User Browser"] --> RFB["RFB"]
-    RFB --> Websock["Websock Transport"]
+    User["User Input"] --> RFB["RFB"]
+    RFB --> Websock["Websock"]
     Websock --> Server["VNC Server"]
 
-    RFB --> Auth["RSAAESAuthenticationState"]
-    Auth --> Crypto["RA2Cipher"]
-
+    Server --> Websock
+    Websock --> RFB
     RFB --> Decoders["Framebuffer Decoders"]
     Decoders --> Display["Display"]
     Display --> Canvas["HTML5 Canvas"]
-
-    RFB --> Keyboard["Keyboard Handler"]
-    RFB --> Gesture["Gesture Handler"]
-    RFB --> Cursor["Cursor Utility"]

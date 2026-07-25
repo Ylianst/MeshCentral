@@ -1,0 +1,15 @@
+flowchart TD
+    OSC["OSC 1337"]
+    Core["Image Core Handler"]
+    Header["Header Parser"]
+    Base64["Base64 Decoder"]
+    Bitmap["ImageBitmap Creation"]
+    Store["Image Storage"]
+    Render["Renderer Overlay"]
+
+    OSC --> Core
+    Core --> Header
+    Header --> Base64
+    Base64 --> Bitmap
+    Bitmap --> Store
+    Store --> Render

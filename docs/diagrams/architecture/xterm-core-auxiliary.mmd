@@ -1,0 +1,14 @@
+flowchart TD
+    Browser["Browser DOM"] --> Terminal["Terminal (Public API)"]
+    Terminal --> RenderService["Render Service"]
+    Terminal --> SelectionService["Selection Service"]
+    Terminal --> Linkifier["Linkifier"]
+    Terminal --> AccessibilityManager["Accessibility Manager"]
+    Terminal --> Viewport["Viewport"]
+
+    RenderService --> DomRenderer["DOM Renderer"]
+    RenderService --> ThemeService["Theme Service"]
+    RenderService --> CharSizeService["Char Size Service"]
+
+    Terminal --> CoreTerminal["Core Terminal Engine"]
+    CoreTerminal --> Buffer["Buffer Service"]

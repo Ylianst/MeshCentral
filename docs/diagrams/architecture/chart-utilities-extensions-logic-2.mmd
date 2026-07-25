@@ -1,0 +1,8 @@
+flowchart LR
+    Config["Chart Configuration"] --> Logic["Extensions Logic"]
+    Logic --> Core["Logic Core"]
+    Logic --> Auxiliary["Logic Auxiliary"]
+    Core --> Dataset["Dataset Controllers"]
+    Auxiliary --> Runtime["Chart Runtime"]
+    Dataset --> Runtime
+    Runtime --> Canvas["Canvas Output"]

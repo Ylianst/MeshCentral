@@ -1,16 +1,13 @@
-sequenceDiagram
-    participant Chart
-    participant PluginService
-    participant Plugin
+flowchart TD
+    RawData["Raw Dataset"]
+    Parse["Controller.parse()"]
+    ScaleMap["Scale.getPixelForValue()"]
+    Geometry["Element Geometry"]
+    Animate["Animation Layer"]
+    Draw["Element.draw()"]
 
-    Chart->>PluginService: beforeInit
-    PluginService->>Plugin: beforeInit()
-
-    Chart->>PluginService: beforeUpdate
-    PluginService->>Plugin: beforeUpdate()
-
-    Chart->>PluginService: beforeDraw
-    PluginService->>Plugin: beforeDraw()
-
-    Chart->>PluginService: afterDraw
-    PluginService->>Plugin: afterDraw()
+    RawData --> Parse
+    Parse --> ScaleMap
+    ScaleMap --> Geometry
+    Geometry --> Animate
+    Animate --> Draw

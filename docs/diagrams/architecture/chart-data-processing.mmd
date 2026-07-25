@@ -1,7 +1,0 @@
-flowchart TD
-    RawData["Raw Dataset Input"] --> Parser["Dataset Parsing"]
-    Parser --> ParsedMeta["Parsed Metadata Cache"]
-    ParsedMeta --> StackProcessor["Stack Processing"]
-    StackProcessor --> ScaleMapping["Scale Value Mapping"]
-    ScaleMapping --> AnimationPrep["Animation State Preparation"]
-    AnimationPrep --> Downstream["Transformation / Rendering Modules"]

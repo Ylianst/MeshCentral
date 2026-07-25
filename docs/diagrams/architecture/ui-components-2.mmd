@@ -1,10 +1,10 @@
 sequenceDiagram
-    participant Page
-    participant ModernModal
-    participant Bootstrap
+    participant Page as Application Page
+    participant Modal as ModernModal
+    participant Legacy as Legacy Helpers
+    participant Bootstrap as Bootstrap.Modal
 
-    Page->>ModernModal: show(title, content, callback)
-    ModernModal->>Page: setModalContent(...)
-    ModernModal->>Page: showModal(...)
-    Page->>Bootstrap: Initialize Modal Instance
-    Bootstrap-->>Page: Modal Displayed
+    Page->>Modal: show(title, content, okCallback)
+    Modal->>Legacy: setModalContent(modalId, title, content, size)
+    Modal->>Legacy: showModal(modalId, okButtonId, okCallback)
+    Legacy->>Bootstrap: Display modal instance

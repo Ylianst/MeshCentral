@@ -1,130 +1,140 @@
 # Localization
 
-The **Localization** module provides client-side internationalization (i18n) capabilities for the MeshCentral web interface, specifically within the noVNC-based application layer. It is responsible for:
+The **Localization** module provides internationalization (i18n) support for the MeshCentral web client, specifically within the noVNC application layer. It is responsible for:
 
 - Detecting the user’s preferred language
-- Selecting the best supported language
+- Selecting the best matching supported language
 - Loading translation dictionaries dynamically
-- Resolving translation keys at runtime
-- Translating DOM elements and attributes automatically
+- Translating UI strings at runtime
+- Traversing and updating the DOM to reflect localized content
 
-At the core of this module is the `Localizer` class (`meshcentral.public.novnc.app.localization.Localizer`), which encapsulates language negotiation, dictionary management, and DOM traversal logic.
+At its core, this module is implemented by the `Localizer` class (`meshcentral.public.novnc.app.localization.Localizer`) and exposes a singleton instance used throughout the UI.
 
 ---
 
 ## 1. Purpose and Responsibilities
 
-The Localization module ensures that user-facing text in the browser UI is presented in the most appropriate language available. It acts as a thin but powerful abstraction layer between:
+The Localization module ensures that the user interface adapts to the end user’s language preferences without requiring separate builds per language.
 
-- The browser environment (`window.navigator`)
-- Translation JSON files
-- The DOM tree
-- UI components rendered by the noVNC application
-
-### Key Responsibilities
+### Primary Responsibilities
 
 - ✅ Language negotiation using browser preferences
-- ✅ Fallback handling (regional → generic → English)
-- ✅ Dynamic loading of language dictionaries
-- ✅ Key-based translation lookup
+- ✅ Dynamic dictionary loading via HTTP (`fetch`)
+- ✅ Key-based string lookup
 - ✅ Automatic DOM traversal and translation
+- ✅ Graceful fallback to English or source strings
 
 ---
 
-## 2. High-Level Architecture
+## 2. Core Component: Localizer
 
-The Localization module operates entirely on the client side and integrates directly with the browser and UI layer.
+**Namespace:** `meshcentral.public.novnc.app.localization.Localizer`  
+**Exports:**
+- `Localizer` (class)
+- `l10n` (singleton instance)
+- Default export: `l10n.get.bind(l10n)` (translation function)
+
+### High-Level Structure
 
 ```mermaid
 flowchart TD
-    Browser["Browser Environment"] -->|"navigator.languages"| Localizer["Localizer"]
-    Localizer -->|"fetch language.json"| TranslationFiles["Translation JSON Files"]
-    Localizer -->|"get(id)"| ApplicationCode["Application UI Code"]
-    Localizer -->|"translateDOM()"| DOMTree["Document Object Model"]
-    DOMTree --> UI["Rendered User Interface"]
+    App["Application UI"] -->|"uses"| GetFunction["l10n.get(id)"]
+    App -->|"calls"| TranslateDOM["translateDOM()"]
+
+    GetFunction --> Localizer["Localizer Instance"]
+    TranslateDOM --> Localizer
+
+    Localizer --> Language["Language Selection"]
+    Localizer --> Dictionary["Translation Dictionary"]
+    Dictionary --> JSON["language.json"]
 ```
 
-### Core Component
-
-- `Localizer` — Manages language selection, dictionary loading, and translation resolution.
-
-Additionally:
-
-- `l10n` — Singleton instance of `Localizer`
-- Default export — Bound `get()` method for simplified key lookup
+The module is designed around a **singleton pattern** so that all UI components share the same language context and dictionary.
 
 ---
 
-## 3. Language Negotiation Process
+## 3. Language Detection and Negotiation
 
-The language selection process occurs during `setup()` and follows a structured fallback strategy.
-
-### Entry Point
+### Setup Entry Point
 
 ```javascript
-await localizer.setup(supportedLanguages, baseURL);
+await l10n.setup(supportedLanguages, baseURL);
 ```
 
-### Selection Algorithm
+This performs two steps:
 
-The `_setupLanguage()` method:
+1. `_setupLanguage(supportedLanguages)`
+2. `_setupDictionary(baseURL)`
 
-1. Reads `navigator.languages` (or `navigator.language` fallback)
-2. Normalizes language codes (e.g., `en_US` → `en-us`)
-3. Attempts matching in three passes:
-   - Perfect match (language + region)
-   - English fallback
-   - Language-only fallback
+---
+
+### 3.1 Language Selection Algorithm
+
+The module determines the best language match using the browser’s preferences:
+
+- `window.navigator.languages` (preferred)
+- Fallback: `navigator.language` or `navigator.userLanguage`
+
+#### Matching Strategy
+
+The matching process is performed in three passes:
 
 ```mermaid
 flowchart TD
-    Start["User Opens Application"] --> ReadPrefs["Read navigator.languages"]
-    ReadPrefs --> PerfectMatch{"Perfect Match?"}
-    PerfectMatch -->|"Yes"| UseLang["Use Matched Language"]
-    PerfectMatch -->|"No"| EnglishCheck{"English?"}
-    EnglishCheck -->|"Yes"| UseDefault["Use Default en"]
-    EnglishCheck -->|"No"| GenericMatch{"Language Only Match?"}
-    GenericMatch -->|"Yes"| UseGeneric["Use Generic Language"]
-    GenericMatch -->|"No"| UseDefault
+    Start["Browser Languages"] --> Perfect["Perfect Match (lang + region)"]
+    Perfect -->|"Found"| Select1["Set Language"]
+    Perfect -->|"Not Found"| EnglishCheck["Is English?"]
+    EnglishCheck -->|"Yes"| DefaultEN["Keep en"]
+    EnglishCheck -->|"No"| Partial["Language Only Match"]
+    Partial -->|"Found"| Select2["Set Language"]
+    Partial -->|"Not Found"| Fallback["Fallback to en"]
 ```
 
-### Default Behavior
+### Pass Breakdown
 
-If no supported language matches, the system defaults to:
+1. **Perfect match**  
+   Example: `en-US` matches `en-US`
+
+2. **English fallback**  
+   If the user language is English but no regional match exists, remain on `en`.
+
+3. **Language-only match**  
+   Example: `fr-CA` matches `fr`.
+
+If no match is found, the system defaults to:
 
 ```text
 en
 ```
 
-English (`en`) requires no external dictionary file.
-
 ---
 
 ## 4. Dictionary Loading
 
-After language selection, `_setupDictionary()` is responsible for loading the translation file.
+After language selection, `_setupDictionary(baseURL)` loads a JSON dictionary file:
+
+```text
+<baseURL>/<language>.json
+```
 
 ### Behavior
 
-- Appends `/` to `baseURL` if necessary
-- Skips loading if language is `en`
-- Fetches `<language>.json`
-- Parses JSON into `_dictionary`
+- If language is `en`, no dictionary is loaded (English is treated as source language).
+- If language is not `en`, a JSON file is fetched.
+- If the request fails, an error is thrown.
+
+### Data Flow
 
 ```mermaid
 flowchart TD
-    Setup["setup()"] --> CheckLang{"Language = en?"}
-    CheckLang -->|"Yes"| Skip["Skip Dictionary Load"]
-    CheckLang -->|"No"| Fetch["Fetch baseURL + language.json"]
-    Fetch --> CheckResponse{"Response OK?"}
-    CheckResponse -->|"Yes"| Parse["Parse JSON"]
-    CheckResponse -->|"No"| Error["Throw Error"]
-    Parse --> Store["Store in _dictionary"]
+    Setup["setup()"] --> CheckLang["language != en?"]
+    CheckLang -->|"No"| Skip["Skip dictionary"]
+    CheckLang -->|"Yes"| Fetch["fetch(language.json)"]
+    Fetch --> Parse["response.json()"]
+    Parse --> Store["_dictionary = JSON"]
 ```
 
-### Dictionary Format
-
-Translation files are expected to be simple key-value JSON objects:
+The dictionary structure is expected to be:
 
 ```json
 {
@@ -133,181 +143,223 @@ Translation files are expected to be simple key-value JSON objects:
 }
 ```
 
-If a key is missing, the original identifier is returned.
+Keys must match the source UI text.
 
 ---
 
-## 5. Runtime Translation Lookup
+## 5. Translation Lookup
 
-The `get(id)` method provides key-based translation resolution.
+### Method: `get(id)`
 
-### Logic
+```javascript
+l10n.get("Connect");
+```
+
+### Behavior
+
+- If a dictionary is loaded and contains the key → return translated value.
+- Otherwise → return the original string (`id`).
 
 ```mermaid
 flowchart TD
     Request["get(id)"] --> HasDict{"Dictionary Loaded?"}
-    HasDict -->|"No"| ReturnId["Return id"]
+    HasDict -->|"No"| ReturnID["Return id"]
     HasDict -->|"Yes"| HasKey{"Key Exists?"}
     HasKey -->|"Yes"| ReturnValue["Return Translation"]
-    HasKey -->|"No"| ReturnId
+    HasKey -->|"No"| ReturnID
 ```
 
-### Fallback Guarantee
+This guarantees:
 
-The module guarantees:
-
-- No undefined return values
-- Original key returned if no translation exists
-
-This ensures UI stability even with incomplete dictionaries.
+- No UI crashes due to missing translations
+- Safe fallback to source strings
 
 ---
 
 ## 6. DOM Translation Engine
 
-The `translateDOM()` method recursively traverses the DOM starting at `document.body` and translates:
+### Method: `translateDOM()`
+
+This method recursively traverses `document.body` and updates:
 
 - Text nodes
-- Selected attributes
-- Elements with `translate="yes"` or no attribute
-- Skips elements with `translate="no"`
+- Translatable attributes
 
-### Supported Attributes
+It respects the HTML `translate` attribute as defined by the HTML specification.
 
-The module translates attributes such as:
+---
 
-- `title`
-- `placeholder`
-- `alt`
-- `label`
-- `download`
-- `abbr` (for `TH` elements)
-- `value` (for specific input types)
-
-### DOM Traversal Flow
+### 6.1 Traversal Strategy
 
 ```mermaid
 flowchart TD
-    Start["translateDOM()"] --> Body["document.body"]
-    Body --> Process["process(element, enabled)"]
-    Process --> CheckAttr{"translate Attribute?"}
-    CheckAttr --> UpdateFlag["Update enabled Flag"]
-    UpdateFlag --> TranslateAttrs["Translate Attributes"]
-    TranslateAttrs --> IterateChildren["Iterate Child Nodes"]
-    IterateChildren --> ElementNode{"Element Node?"}
-    ElementNode -->|"Yes"| Process
-    ElementNode -->|"No"| TextNode{"Text Node & enabled?"}
-    TextNode -->|"Yes"| TranslateText["Translate Text Content"]
-    TextNode -->|"No"| Continue["Continue"]
+    Body["document.body"] --> Process["process(element, enabled)"]
+    Process --> CheckAttr["Check translate attribute"]
+    Process --> Attributes["Translate attributes"]
+    Process --> Children["Iterate childNodes"]
+    Children -->|"ELEMENT_NODE"| Recurse["process(child)"]
+    Children -->|"TEXT_NODE"| TranslateText["Translate text"]
 ```
 
-### Text Normalization
+### 6.2 Attribute Handling
 
-Before translation:
+The module selectively translates specific attributes based on tag type:
 
-- Line breaks are trimmed
-- Whitespace is normalized
-- Surrounding spaces removed
+| Attribute     | Elements                                 |
+|--------------|-------------------------------------------|
+| `abbr`       | `TH`                                      |
+| `alt`        | `AREA`, `IMG`, `INPUT`                    |
+| `download`   | `A`, `AREA`                               |
+| `label`      | `MENUITEM`, `MENU`, `OPTGROUP`, etc.      |
+| `placeholder`| `INPUT`, `TEXTAREA`                       |
+| `title`      | All elements                              |
+| `value`      | `INPUT` (`reset`, `button`, `submit`)     |
 
-This ensures dictionary keys match predictable string patterns.
+### 6.3 Whitespace Normalization
+
+Before lookup, text is normalized:
+
+- Line breaks trimmed
+- Whitespace collapsed
+- Surrounding whitespace removed
+
+This ensures dictionary keys remain stable even if formatted across multiple lines in HTML.
 
 ---
 
-## 7. Integration with the UI Layer
+## 7. Singleton Export Pattern
 
-The Localization module integrates with the noVNC application layer and indirectly supports UI components rendered in the browser.
-
-Typical integration pattern:
-
-```javascript
-import l10n from './localization.js';
-
-button.textContent = l10n("Connect");
-```
-
-Or globally:
-
-```javascript
-import { l10n } from './localization.js';
-
-await l10n.setup(["en", "de", "fr"], "/locales/");
-l10n.translateDOM();
-```
-
-### Interaction with Other Modules
-
-- **UI Components** — Provide DOM elements that are translated.
-- **RFB and Display** — May surface user-facing messages requiring localization.
-- **Input Handlers** — UI labels and hints can be localized.
-
-The Localization module remains decoupled from rendering logic and focuses strictly on language resolution.
-
----
-
-## 8. Singleton Pattern
-
-At the bottom of the module:
+The module exports:
 
 ```javascript
 export const l10n = new Localizer();
 export default l10n.get.bind(l10n);
 ```
 
-This provides:
+This allows two usage patterns:
 
-- A single shared instance across the application
-- A convenient default export for translation lookups
+### Pattern 1: Direct Function Import
 
-### Benefits
+```javascript
+import _ from './localization.js';
 
-- Centralized language state
-- Consistent dictionary usage
-- Minimal boilerplate for consumers
+button.textContent = _("Connect");
+```
 
----
+### Pattern 2: Full Instance Access
 
-## 9. Error Handling Strategy
+```javascript
+import { l10n } from './localization.js';
 
-The module uses explicit failure behavior during dictionary loading:
+await l10n.setup([...], '/locales/');
+l10n.translateDOM();
+```
 
-- If `fetch()` fails → throws an error
-- If dictionary key missing → returns original ID
-
-This creates:
-
-- Fail-fast behavior for missing translation files
-- Graceful degradation for missing keys
+This design keeps translation usage concise while preserving configurability.
 
 ---
 
-## 10. Design Characteristics
+## 8. Integration with Other Modules
 
-| Characteristic | Description |
-|---------------|-------------|
-| Client-Side Only | No server-side dependency |
-| Lazy Dictionary Loading | Only loads non-English dictionaries |
-| Graceful Fallback | Defaults to English or key |
-| DOM-Aware | Traverses and updates live DOM |
-| Framework-Agnostic | Works without dependency on UI frameworks |
+The Localization module operates at the **UI layer** and integrates primarily with:
+
+- UI components (buttons, labels, modals)
+- noVNC display and connection views
+- Bootstrap components (tooltips, modals, forms)
+
+### Architectural Context
+
+```mermaid
+flowchart LR
+    UI["UI Components"] --> Localization["Localization"]
+    Bootstrap["Bootstrap Components"] --> Localization
+    RFB["RFB and Display"] --> UI
+    Input["Input Handlers"] --> UI
+
+    Localization --> DOM["Translated DOM"]
+```
+
+It does **not** directly interact with:
+
+- Crypto components
+- Compression
+- WebSocket layer
+- Decoders
+
+Localization is strictly presentation-layer logic.
 
 ---
 
-## 11. Summary
+## 9. Error Handling and Fallback Strategy
 
-The **Localization** module provides a lightweight yet robust internationalization system for the MeshCentral web client. Through:
+### Network Errors
 
-- Intelligent language negotiation
-- Dynamic dictionary loading
-- Safe key-based lookups
-- Recursive DOM translation
+If dictionary fetch fails:
 
-It enables multi-language support without introducing heavy framework dependencies or complex configuration.
+- An exception is thrown
+- The application may catch and handle this
+- English remains the active fallback
 
-Its design emphasizes:
+### Missing Keys
 
-- Simplicity
-- Predictability
-- Runtime safety
-- Minimal integration overhead
+If a key does not exist in the dictionary:
 
-This makes it a foundational utility module that enhances usability across global deployments of the MeshCentral web interface.
+- The original source string is returned
+- UI remains readable
+- Missing translations are non-fatal
+
+---
+
+## 10. Extension and Customization
+
+### Adding a New Language
+
+1. Add language code to `supportedLanguages`
+2. Create JSON file:
+
+```text
+/locales/<language>.json
+```
+
+3. Ensure keys exactly match source strings
+
+### Best Practices
+
+- Use full sentences as keys for clarity
+- Avoid dynamic string concatenation
+- Keep formatting consistent to prevent mismatches
+
+---
+
+## 11. Design Characteristics
+
+### ✅ Strengths
+
+- Lightweight and dependency-free
+- Browser-native language negotiation
+- Standards-compliant DOM translation
+- Safe fallback behavior
+- Singleton architecture ensures consistency
+
+### ⚠ Limitations
+
+- No pluralization rules
+- No parameter interpolation (e.g., "Hello {name}")
+- No ICU message formatting
+- Dictionary loaded as a single JSON file
+
+---
+
+# Summary
+
+The **Localization** module provides a simple yet robust internationalization system for the MeshCentral noVNC UI layer.
+
+It:
+
+- Detects user language
+- Selects the best supported match
+- Dynamically loads translations
+- Performs safe string lookup
+- Recursively translates the DOM
+
+By isolating translation logic in a single `Localizer` class and exporting a shared singleton instance, the system ensures consistent multilingual behavior across the entire web client while remaining lightweight and easy to maintain.

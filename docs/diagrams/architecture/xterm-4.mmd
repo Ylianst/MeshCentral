@@ -1,0 +1,5 @@
+flowchart LR
+    ImageEscape["Image Escape Sequence"] --> Parser
+    Parser --> ImageAddon
+    ImageAddon --> Renderer
+    Renderer --> DOM

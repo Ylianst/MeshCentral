@@ -1,0 +1,19 @@
+flowchart TD
+    UI["UI Dashboard Components"] --> CoreMain["Chart Extensions Core Main"]
+
+    CoreMain --> ChartEngine["Chart Engine (Chart.js Runtime)"]
+    CoreMain --> PluginRegistry["Plugin Registry"]
+    CoreMain --> DatasetController["Dataset Controllers"]
+    CoreMain --> ScaleSystem["Scale System"]
+    CoreMain --> AnimationEngine["Animation Engine"]
+
+    PluginRegistry --> BuiltInPlugins["Built-in Plugins"]
+    PluginRegistry --> CustomExtensions["Custom Extensions"]
+
+    DatasetController --> LineController["Line Controller"]
+    DatasetController --> BarController["Bar Controller"]
+    DatasetController --> PieController["Pie / Doughnut Controller"]
+
+    ScaleSystem --> LinearScale["Linear Scale"]
+    ScaleSystem --> TimeScale["Time Scale"]
+    ScaleSystem --> CategoryScale["Category Scale"]

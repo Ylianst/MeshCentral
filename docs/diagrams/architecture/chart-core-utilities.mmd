@@ -1,9 +1,12 @@
 flowchart TD
-    ChartCore["Chart Core"] --> Utilities["Chart Core Utilities"]
-    Utilities --> Anim["Cs Animation Engine"]
-    Utilities --> Tooltip["Fa Tooltip Engine"]
-    Utilities --> Helpers["Geometry and Parsing Helpers"]
+    ChartCore["Chart Core"] --> ChartCoreLogic["Chart Core Logic"]
+    ChartCore --> ChartCoreExtensions["Chart Core Extensions"]
+    ChartCore --> ChartCoreUtilities["Chart Core Utilities"]
 
-    Anim --> Controllers["Dataset Controllers"]
-    Tooltip --> Interaction["Interaction System"]
-    Tooltip --> Rendering["Rendering Layer"]
+    ChartCoreUtilities --> AnimationPrimitive["Cs - Animation"]
+    ChartCoreUtilities --> TooltipEngine["Fa - Tooltip"]
+    ChartCoreUtilities --> DoughnutController["Hn - Doughnut Controller"]
+    ChartCoreUtilities --> BaseElement["Hs - Base Element"]
+
+    BaseElement --> CanvasAPI["Canvas Rendering Context"]
+    AnimationPrimitive --> Animator["Global Animator (xt)"]

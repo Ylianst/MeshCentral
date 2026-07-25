@@ -1,0 +1,5 @@
+flowchart TD
+    Textarea["Hidden Textarea"] --> CompositionHelper
+    CompositionHelper --> CoreService["Core Service"]
+    CoreService --> Buffer
+    CompositionHelper --> RenderService

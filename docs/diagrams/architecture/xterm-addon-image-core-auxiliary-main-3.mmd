@@ -1,0 +1,7 @@
+flowchart TD
+    Start["Decode Request"] --> CheckSize["Required Memory > Current?"]
+    CheckSize -->|Yes| Grow["Grow WASM Memory"]
+    CheckSize -->|No| Reuse["Reuse Existing Memory"]
+    Grow --> Continue["Continue Decoding"]
+    Reuse --> Continue
+    Continue --> Done["Decoded Data Available"]

@@ -1,0 +1,9 @@
+flowchart TD
+    UpdateCall["update() called"] --> UpdateConfig["Resolve configuration"]
+    UpdateConfig --> UpdateScales["Build/Update Scales"]
+    UpdateScales --> UpdateControllers["Build/Update Controllers"]
+    UpdateControllers --> LayoutPass["Layout Engine"]
+    LayoutPass --> UpdateDatasets["Update Dataset Elements"]
+    UpdateDatasets --> NotifyPlugins["Plugin Hooks"]
+    NotifyPlugins --> Render["render()"]
+    Render --> DrawLayers["Draw Layers + Datasets"]

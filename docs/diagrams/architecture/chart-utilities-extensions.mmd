@@ -1,0 +1,7 @@
+flowchart TD
+    UI["UI Layer"] --> ChartExtensions["Chart Extensions"]
+    ChartExtensions --> ChartUtilities["Chart Utilities"]
+    ChartUtilities --> ChartUtilitiesExtensions["Chart Utilities Extensions"]
+    ChartUtilitiesExtensions --> Core["Extensions Core"]
+    ChartUtilitiesExtensions --> Logic["Extensions Logic"]
+    ChartUtilitiesExtensions --> Auxiliary["Extensions Auxiliary"]

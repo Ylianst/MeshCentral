@@ -1,0 +1,6 @@
+flowchart TD
+    MouseEvent["Mouse Event"] --> Normalize["Normalize Position"]
+    Normalize --> Mode["Interaction Mode"]
+    Mode --> ActiveElements["Resolve Active Elements"]
+    ActiveElements --> TooltipUpdate["Tooltip.update()"]
+    TooltipUpdate --> Render["Redraw Chart"]

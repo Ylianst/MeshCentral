@@ -1,0 +1,7 @@
+flowchart LR
+    XtermCore["Xterm Core"] --> Parser["Escape Sequence Parser"]
+    Parser --> ImageCore["Xterm Addon Image Core"]
+    ImageCore --> Decoder["Image Decoder Layer"]
+    ImageCore --> Storage["Image Storage"]
+    Storage --> Renderer["Image Renderer"]
+    Renderer --> Viewport["Terminal Viewport"]

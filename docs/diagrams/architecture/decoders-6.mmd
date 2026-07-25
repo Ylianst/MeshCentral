@@ -1,8 +1,0 @@
-flowchart TD
-    ZRLE["ZRLE Decoder"] --> Inflate["Inflate Zlib Block"]
-    Inflate --> TileLoop["Iterate 64x64 Tiles"]
-    TileLoop --> SubEnc["Read Subencoding"]
-    SubEnc --> Raw["Raw Tile"]
-    SubEnc --> Solid["Solid Color"]
-    SubEnc --> Palette["Palette Mode"]
-    SubEnc --> RLE["Run Length Mode"]

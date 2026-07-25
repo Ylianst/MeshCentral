@@ -1,0 +1,6 @@
+flowchart TD
+    SixelHandler["Sixel Handler"] --> CoreDecoder["Core Auxiliary Main Decoder"]
+    IIPHandler["IIP Handler"] --> CoreDecoder
+    CoreDecoder --> BinaryImage["Decoded Binary Data"]
+    BinaryImage --> ImageTypeDetect["Image Type Detection"]
+    ImageTypeDetect --> CanvasRender["Canvas / ImageBitmap Rendering"]

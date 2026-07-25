@@ -1,0 +1,6 @@
+flowchart TD
+    Chart["Chart"] --> Meta["Dataset Meta"]
+    Meta --> Controller["Dataset Controller"]
+    Controller --> Parse["parse()"]
+    Controller --> UpdateElements["updateElements()"]
+    Controller --> Draw["draw()"]

@@ -1,0 +1,5 @@
+flowchart TD
+    RdpCore["RDP Core"] --> ChannelManager["Virtual Channel Manager"]
+    ChannelManager --> CliprdrChannel["Cliprdr Channel"]
+    CliprdrChannel --> ClientState["Cliprdr Client State Machine"]
+    ClientState --> AppLayer["Application Integration"]

@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Mouse
+    participant Linkifier
+    participant LinkProvider
+    participant RenderService
+
+    Mouse->>Linkifier: mousemove
+    Linkifier->>LinkProvider: provideLinks(row)
+    LinkProvider-->>Linkifier: link ranges
+    Linkifier->>RenderService: underline event
+    Mouse->>Linkifier: mouseup
+    Linkifier->>LinkProvider: activate(link)

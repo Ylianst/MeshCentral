@@ -1,0 +1,6 @@
+flowchart TD
+    Controller["Dataset Controller"] --> ParseData["Parse Data"]
+    ParseData --> LinearScale
+    LinearScale --> ComputePixels["Compute Pixel Positions"]
+    ComputePixels --> Elements["Chart Elements"]
+    Elements --> Canvas["Canvas Rendering"]

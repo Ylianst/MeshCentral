@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant App as Application
+    participant Terminal as Terminal
+    participant Core as Core Terminal
+    participant Renderer as Render Service
+    participant Viewport as Viewport
+
+    App->>Terminal: new Terminal(options)
+    Terminal->>Core: initialize core engine
+    Terminal->>Renderer: create renderer
+    Terminal->>Viewport: attach scroll viewport
+    Terminal->>Terminal: bind DOM events
+    App->>Terminal: open(container)
+    Terminal->>Renderer: render initial rows

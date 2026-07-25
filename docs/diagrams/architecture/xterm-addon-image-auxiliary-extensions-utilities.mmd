@@ -1,0 +1,13 @@
+flowchart TD
+    Terminal["Xterm Terminal"] --> Addon["ImageAddon"]
+    Addon --> Storage["ImageStorage"]
+    Addon --> Renderer["ImageRenderer"]
+    Addon --> Handlers["Protocol Handlers"]
+
+    Handlers --> Sixel["SixelHandler"]
+    Handlers --> IIP["IIPHandler"]
+
+    Sixel --> Decoder["WASM Decoder"]
+    IIP --> Decoder
+
+    Decoder --> Utilities["Auxiliary Extensions Utilities"]

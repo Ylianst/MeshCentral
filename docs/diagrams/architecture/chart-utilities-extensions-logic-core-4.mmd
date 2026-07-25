@@ -1,0 +1,6 @@
+flowchart TD
+    Update["Update Trigger"] --> Resolve["Resolve Animations"]
+    Resolve --> Animator["Global Animator"]
+    Animator --> Tick["Animation Tick"]
+    Tick --> Interpolate["Interpolate Properties"]
+    Interpolate --> Redraw["Redraw Frame"]

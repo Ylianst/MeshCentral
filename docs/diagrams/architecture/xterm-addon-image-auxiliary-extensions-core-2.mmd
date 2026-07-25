@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Terminal
+    participant ImageAddon
+    participant Storage
+    participant Renderer
+
+    Terminal->>ImageAddon: activate(terminal)
+    ImageAddon->>Renderer: create ImageRenderer
+    ImageAddon->>Storage: create ImageStorage
+    ImageAddon->>Terminal: register CSI/DCS/OSC handlers
+    Terminal-->>ImageAddon: render events
+    ImageAddon->>Storage: render(range)

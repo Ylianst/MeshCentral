@@ -1,0 +1,5 @@
+flowchart TD
+    RenderService --> RowFactory["DomRendererRowFactory"]
+    RowFactory --> DOM["DOM <div class='xterm-rows'>"]
+    RenderService --> SelectionLayer["Selection Overlay"]
+    RenderService --> CursorLayer["Cursor Rendering"]

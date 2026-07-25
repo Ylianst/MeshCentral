@@ -1,0 +1,5 @@
+flowchart TD
+    Update["State Update"] --> CreateAnim["Create Animation Object"]
+    CreateAnim --> Animator["Animator (Frame Loop)"]
+    Animator --> Interpolate["Interpolate Values"]
+    Interpolate --> Draw["Redraw Canvas"]

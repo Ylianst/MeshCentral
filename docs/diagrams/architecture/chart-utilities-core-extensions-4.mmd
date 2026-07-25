@@ -1,0 +1,5 @@
+flowchart TD
+    Application["Application"] --> Extensions["Core Extensions (bn)"]
+    Extensions --> CoreMain["Core Main"]
+    CoreMain --> Runtime["Chart Runtime"]
+    Runtime --> Extensions

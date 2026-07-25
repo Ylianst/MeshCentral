@@ -1,4 +1,11 @@
-flowchart TD
-    Resize["Container Resize"] --> UpdateClip["Update Clip"]
-    UpdateClip --> UpdateScale["Update Scale"]
-    UpdateScale --> CanvasStyle["Adjust CSS Width/Height"]
+sequenceDiagram
+    participant Server
+    participant RFB
+    participant Decoder
+    participant Display
+
+    Server->>RFB: FramebufferUpdate
+    RFB->>Decoder: decodeRect()
+    Decoder->>Display: draw operations
+    Display->>Display: track damage
+    RFB->>Display: flip()

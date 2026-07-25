@@ -1,5 +1,25 @@
-flowchart TD
-    RFB["RFB Core"] -->|"selects encoding"| Decoder["Decoder Implementation"]
-    Decoder -->|"reads bytes"| Websock["Websock"]
-    Decoder -->|"inflate data"| Compression["Compression Module"]
-    Decoder -->|"render operations"| Display["Display"]
+flowchart LR
+    Websock["Websock Receive Queue"] --> RFB["RFB Core"]
+    RFB --> Decoders["Decoders Module"]
+    Decoders --> Display["Display Renderer"]
+    Display --> Canvas["HTML5 Canvas"]
+
+    subgraph decoder_types["Supported Encoding Types"]
+        Raw["RawDecoder"]
+        CopyRect["CopyRectDecoder"]
+        RRE["RREDecoder"]
+        Hextile["HextileDecoder"]
+        Tight["TightDecoder"]
+        TightPNG["TightPNGDecoder"]
+        ZRLE["ZRLEDecoder"]
+        JPEG["JPEGDecoder"]
+    end
+
+    Decoders --> Raw
+    Decoders --> CopyRect
+    Decoders --> RRE
+    Decoders --> Hextile
+    Decoders --> Tight
+    Decoders --> TightPNG
+    Decoders --> ZRLE
+    Decoders --> JPEG

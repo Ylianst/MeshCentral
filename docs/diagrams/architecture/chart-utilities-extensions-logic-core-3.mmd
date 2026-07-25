@@ -1,0 +1,10 @@
+flowchart LR
+    Dataset["Dataset"] --> Controller["Controller"]
+    Controller --> Meta["Cached Meta"]
+    Meta --> Elements["Element Instances"]
+    Controller --> ScaleX["Index Scale"]
+    Controller --> ScaleY["Value Scale"]
+    ScaleX --> Pixels["Pixel Coordinates"]
+    ScaleY --> Pixels
+    Pixels --> Elements
+    Elements --> Draw["Canvas Draw"]

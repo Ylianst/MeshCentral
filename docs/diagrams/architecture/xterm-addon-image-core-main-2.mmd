@@ -1,0 +1,8 @@
+flowchart TD
+    Start["activate() called"] --> InitRenderer["Create ImageRenderer"]
+    InitRenderer --> InitStorage["Create ImageStorage"]
+    InitStorage --> RegisterCSI["Register CSI Handlers"]
+    RegisterCSI --> RegisterDCS["Register DCS Handler (SIXEL)"]
+    RegisterDCS --> RegisterOSC["Register OSC Handler (IIP)"]
+    RegisterOSC --> AttachHooks["Attach Render & Resize Hooks"]
+    AttachHooks --> Ready["Image Addon Active"]

@@ -1,18 +1,24 @@
 flowchart TD
-    Browser["Browser Environment"] --> UI["UI Components"]
-    UI --> RFB["RFB Protocol Engine"]
-    UI --> Xterm["Terminal Engine"]
-    UI --> Charts["Charts Components"]
-    UI --> Markdown["Marked Components"]
+    RemoteDevice["Remote Device (Agent / RDP / VNC)"]
+    Server["MeshCentral Server"]
+    WebSocket["WebSocket Transport"]
+    RFB["RFB Protocol Engine"]
+    Decoders["Framebuffer Decoders"]
+    Display["Display Renderer"]
+    Canvas["HTML5 Canvas"]
+    InputHandlers["Input Handlers"]
+    Xterm["Xterm Terminal Engine"]
+    UI["Web UI Components"]
 
-    RFB --> Websock["Websock Transport"]
-    Websock --> Server["Remote Server"]
+    RemoteDevice --> Server
+    Server --> WebSocket
+    WebSocket --> RFB
+    RFB --> Decoders
+    Decoders --> Display
+    Display --> Canvas
 
-    RFB --> Decoders["Framebuffer Decoders"]
-    Decoders --> Display["Canvas Display"]
+    UI --> InputHandlers
+    InputHandlers --> RFB
 
-    RFB --> Crypto["Crypto Components"]
-    RFB --> Compression["Compression"]
-    RFB --> Input["Input Handlers"]
-
-    Display --> Utility["Utility Layer"]
+    UI --> Xterm
+    Xterm --> WebSocket

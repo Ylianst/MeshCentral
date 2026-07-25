@@ -1,6 +1,10 @@
-flowchart TD
-    Center["Chart Center (xCenter, yCenter)"]
-    Value["Numeric Value"] --> Radius["Distance From Center"]
-    Angle["Index Angle"] --> Position["Polar Position (x,y)"]
-    Radius --> Position
-    Center --> Position
+sequenceDiagram
+    participant Application
+    participant Extensions
+    participant CoreMain
+    participant Runtime
+
+    Application->>Extensions: Provide configuration
+    Extensions->>CoreMain: Normalize & enrich
+    CoreMain->>Runtime: Provide utilities
+    Runtime-->>Extensions: Lifecycle hooks

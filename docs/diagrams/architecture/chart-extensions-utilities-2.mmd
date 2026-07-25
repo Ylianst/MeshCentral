@@ -1,9 +1,15 @@
-flowchart LR
-    RegisterCall["Chart.register(...)"] --> Registry["Registry Manager"]
+flowchart TD
+    Registry["Component Registry (tn)"]
+    Runtime["Chart Runtime (wo)"]
+
     Registry --> Controllers["Controllers"]
-    Registry --> Elements["Elements"]
     Registry --> Scales["Scales"]
+    Registry --> Elements["Elements"]
     Registry --> Plugins["Plugins"]
 
-    Plugins --> PluginHooks["Lifecycle Hooks"]
-    Controllers --> DatasetMeta["Dataset Metadata"]
+    Runtime --> Animation["Animation Engine"]
+    Runtime --> Layout["Layout Engine"]
+    Runtime --> Interaction["Interaction Engine"]
+
+    Controllers --> Animation
+    Layout --> Canvas["Canvas Context"]

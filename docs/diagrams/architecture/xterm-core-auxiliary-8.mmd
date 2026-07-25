@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant User
+    participant DOM
+    participant Terminal
+    participant Core
+    participant RenderService
+    participant Renderer
+
+    User->>DOM: keydown
+    DOM->>Terminal: textarea event
+    Terminal->>Core: triggerDataEvent
+    Core->>Buffer: update state
+    Core->>RenderService: request refresh
+    RenderService->>Renderer: render rows

@@ -1,0 +1,7 @@
+flowchart TD
+    RegisterDecoration["registerDecoration()"] --> DecorationService
+    DecorationService --> BufferDecorationRenderer
+    BufferDecorationRenderer --> DOMOverlay["DOM Overlay Layer"]
+
+    DecorationService --> OverviewRulerRenderer
+    OverviewRulerRenderer --> CanvasRuler["Canvas Overview Ruler"]

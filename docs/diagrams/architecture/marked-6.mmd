@@ -1,0 +1,8 @@
+flowchart TD
+    A[Input] --> B[Preprocess Promise]
+    B --> C[Lex Promise]
+    C --> D[processAllTokens Promise]
+    D --> E[walkTokens Promise]
+    E --> F[Parse Promise]
+    F --> G[Postprocess Promise]
+    G --> H[Resolved HTML]

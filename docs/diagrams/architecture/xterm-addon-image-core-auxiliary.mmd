@@ -1,0 +1,6 @@
+flowchart TD
+    Terminal["Xterm Terminal Core"] --> ImageAddon["Xterm Addon Image"]
+    ImageAddon --> Core["Image Core"]
+    Core --> CoreAux["Xterm Addon Image Core Auxiliary"]
+    CoreAux --> CoreAuxMain["Core Auxiliary Main"]
+    CoreAux --> CoreAuxExt["Core Auxiliary Extensions"]

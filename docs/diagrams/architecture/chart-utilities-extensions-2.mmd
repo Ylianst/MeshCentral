@@ -1,0 +1,6 @@
+flowchart TD
+    Config["User Configuration"] --> CoreLayer["Extensions Core"]
+    CoreLayer --> LogicLayer["Extensions Logic"]
+    LogicLayer --> Runtime["Chart.js Runtime"]
+    Runtime --> Canvas["Canvas Rendering"]
+    AuxiliaryLayer["Extensions Auxiliary"] --> Runtime

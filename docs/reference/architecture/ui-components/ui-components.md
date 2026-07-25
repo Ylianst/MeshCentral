@@ -1,163 +1,126 @@
 # Ui Components
 
-The **Ui Components** module provides reusable, client-side user interface building blocks for the MeshCentral web application. It centralizes modal dialogs, cards, and icon upload workflows into standardized JavaScript classes, reducing duplication and improving consistency across templates such as `default3.handlebars`.
+The **Ui Components** module provides reusable, modernized front-end building blocks for the MeshCentral web interface. It centralizes common UI patterns such as modals, cards, and icon uploads into structured, composable JavaScript classes.
 
-This module plays a critical role in:
-- Standardizing modal invocation patterns
-- Providing status-aware card components
-- Encapsulating icon upload and preview logic
-- Reducing template-level duplication and inline scripting
+The primary goals of this module are:
 
-At a system level, Ui Components sits above foundational UI and utility modules such as Bootstrap integrations, localization, and browser-level APIs.
+- Reduce duplication in template files (notably modal logic in `default3.handlebars`)
+- Standardize UI behaviors across the application
+- Encapsulate DOM manipulation behind reusable abstractions
+- Improve maintainability and extensibility of the front-end layer
+
+At its core, the module defines three main components:
+
+- `ModernModal`
+- `ModernCard`
+- `IconUploadComponent`
+
+It also provides helper factory functions to simplify instantiation and migration from legacy modal usage.
 
 ---
 
-## Architectural Overview
+## 1. Architectural Overview
 
-The Ui Components module exposes three primary classes:
-
-- **ModernModal** – Standardized modal dialog abstraction
-- **ModernCard** – Status-aware card component
-- **IconUploadComponent** – Reusable icon upload + preview component
-
-It also provides factory helpers:
-
-- `createModernModal()`
-- `createModernCard()`
-- `createIconUploadComponent()`
-- `openModal()` (migration helper for legacy modal usage)
-
-### High-Level Architecture
+The Ui Components module acts as a thin abstraction layer above Bootstrap and existing global helpers (`setModalContent`, `showModal`). It does not replace the rendering system but standardizes interaction patterns.
 
 ```mermaid
 flowchart TD
-    Templates["Handlebars Templates"] --> UiComponents["Ui Components Module"]
+    AppLogic["Application Page Logic"] -->|"createModernModal()"| ModernModalClass["ModernModal"]
+    AppLogic -->|"createModernCard()"| ModernCardClass["ModernCard"]
+    AppLogic -->|"createIconUploadComponent()"| IconUploadClass["IconUploadComponent"]
 
-    UiComponents --> ModernModal["ModernModal"]
-    UiComponents --> ModernCard["ModernCard"]
-    UiComponents --> IconUpload["IconUploadComponent"]
+    ModernModalClass -->|"setModalContent()"| LegacyModalHelpers["Legacy Modal Helpers"]
+    ModernModalClass -->|"showModal()"| LegacyModalHelpers
 
-    ModernModal --> BootstrapModal["Bootstrap Modal"]
-    ModernCard --> BootstrapCard["Bootstrap Card Styles"]
-    IconUpload --> DOMAPI["DOM APIs"]
+    ModernCardClass -->|"Bootstrap classes"| BootstrapLayer["Bootstrap UI"]
+    IconUploadClass -->|"Bootstrap + DOM"| BootstrapLayer
 
-    UiComponents --> BootstrapComponents["Bootstrap Components"]
-    UiComponents --> Localization["Localization"]
+    IconUploadClass -->|"onUpload / onRemove"| AppLogic
 ```
 
-**Related Modules:**
-- [Bootstrap Components](bootstrap-components/bootstrap-components.md)
-- [Localization](localization/localization.md)
+### Key Characteristics
+
+- **Encapsulation**: Each component manages its own DOM generation and updates.
+- **Extensibility**: Options objects allow behavior customization without modifying internal code.
+- **Migration-friendly**: The `openModal()` helper reduces legacy modal invocation patterns.
 
 ---
 
-## Design Goals
+## 2. ModernModal
 
-### 1. Reduce Template Duplication
+### Purpose
 
-The legacy UI relied heavily on repeated patterns such as:
+`ModernModal` standardizes modal dialog creation and display while leveraging existing global helpers. It reduces repetitive `setModalContent()` + `showModal()` usage patterns into a single structured call.
 
-- `setModalContent(...)`
-- `showModal(...)`
+### Constructor
 
-By encapsulating modal logic in `ModernModal` and `openModal()`, repeated modal setup can be reduced to a single standardized call.
-
-### 2. Standardize Interaction Patterns
-
-All reusable UI elements:
-
-- Encapsulate their DOM generation
-- Maintain consistent CSS usage
-- Expose minimal, predictable APIs
-- Avoid business logic coupling
-
-### 3. Isolate UI State from Page Logic
-
-Ui Components own rendering and visual state transitions, while:
-
-- Persistence
-- API calls
-- Server communication
-
-remain outside the component layer.
-
----
-
-# Core Components
-
-## ModernModal
-
-The **ModernModal** class standardizes Bootstrap modal usage across the application.
-
-### Responsibilities
-
-- Construct modal markup dynamically
-- Inject header, body, footer
-- Support size variants
-- Handle optional OK callback wiring
-- Provide programmatic hide control
-
-### Configuration Options
-
-```text
-size: "medium" | "large" | "extra-large"
-showCloseButton: boolean
-backdrop: boolean
-keyboard: boolean
+```javascript
+new ModernModal(modalId, options)
 ```
 
-### Modal Flow
+**Options:**
+
+- `size`: `medium`, `large`, or `extra-large`
+- `showCloseButton`: boolean
+- `backdrop`: boolean
+- `keyboard`: boolean
+
+### Show Flow
 
 ```mermaid
 sequenceDiagram
-    participant Page
-    participant ModernModal
-    participant Bootstrap
+    participant Page as Application Page
+    participant Modal as ModernModal
+    participant Legacy as Legacy Helpers
+    participant Bootstrap as Bootstrap.Modal
 
-    Page->>ModernModal: show(title, content, callback)
-    ModernModal->>Page: setModalContent(...)
-    ModernModal->>Page: showModal(...)
-    Page->>Bootstrap: Initialize Modal Instance
-    Bootstrap-->>Page: Modal Displayed
+    Page->>Modal: show(title, content, okCallback)
+    Modal->>Legacy: setModalContent(modalId, title, content, size)
+    Modal->>Legacy: showModal(modalId, okButtonId, okCallback)
+    Legacy->>Bootstrap: Display modal instance
 ```
-
-### Key Methods
-
-- `show(title, content, okCallback, okButtonText)`
-- `hide()`
-
-### Migration Helper: openModal
-
-The `openModal()` function provides a backward-compatible abstraction for legacy modal invocation.
-
-```text
-openModal({
-  modalId,
-  title,
-  body,
-  size,
-  okButtonId,
-  onOk
-})
-```
-
-This enables incremental migration away from repeated modal boilerplate.
-
----
-
-## ModernCard
-
-The **ModernCard** component renders status-aware cards with optional action buttons.
 
 ### Responsibilities
 
-- Render consistent card structure
-- Apply status-based styling
-- Support icon + title header
-- Provide dynamic status updates
-- Attach configurable footer actions
+- Determines Bootstrap size class (`modal-lg`, `modal-xl`)
+- Injects header, body, and footer structure
+- Optionally binds OK callback
+- Delegates rendering and lifecycle to Bootstrap
 
-### Status Model
+### Hide Logic
+
+The `hide()` method retrieves the Bootstrap modal instance and invokes `modal.hide()` safely.
+
+---
+
+## 3. ModernCard
+
+### Purpose
+
+`ModernCard` provides a reusable card UI pattern with:
+
+- Status visualization
+- Icon support
+- Dynamic content injection
+- Optional action buttons
+
+### Rendering Structure
+
+```mermaid
+flowchart TD
+    Card["ModernCard"] --> Header["Card Header"]
+    Card --> Body["Card Body"]
+    Card --> Footer["Optional Footer"]
+
+    Header --> Icon["Icon"]
+    Header --> Title["Title"]
+    Header --> Status["Status Badge"]
+
+    Status --> StatusIcon["Status Icon"]
+    Status --> StatusText["Status Text"]
+```
+
+### Status System
 
 Supported statuses:
 
@@ -166,177 +129,175 @@ Supported statuses:
 - `warning`
 - `danger`
 
-Each status controls:
+Each status maps to:
 
-- Border color
-- Status icon
-- Text color
+- Border class
+- Text color class
+- FontAwesome icon
 
-### Card Rendering Architecture
+### Dynamic Updates
+
+`updateStatus(status)`:
+
+- Removes existing border and color classes
+- Applies new classes
+- Updates icon and text
+- Avoids full re-render
+
+This ensures lightweight UI updates without DOM reconstruction.
+
+---
+
+## 4. IconUploadComponent
+
+### Purpose
+
+`IconUploadComponent` abstracts icon selection logic including:
+
+- Manual URL input
+- File upload
+- Live preview
+- Remove/reset functionality
+- Asynchronous upload callbacks
+
+Unlike other components, it separates UI ownership from persistence logic.
+
+### High-Level Interaction Flow
+
+```mermaid
+flowchart TD
+    User["User"] -->|"Enter URL"| UrlInput["handleUrlInput()"]
+    User -->|"Upload File"| FileUpload["handleFileUpload()"]
+    User -->|"Remove"| Remove["removeIcon()"]
+
+    FileUpload -->|"await onUpload()"| Callback["Application Callback"]
+    UrlInput -->|"onUrlInput()"| Callback
+    Remove -->|"onRemove()"| Callback
+
+    FileUpload --> Preview["Preview Update"]
+    UrlInput --> Preview
+    Remove --> Preview
+```
+
+### Component Responsibilities
+
+- Generates full input + preview HTML
+- Registers instance in `window.iconUploadComponents`
+- Manages loading, success, and error button states
+- Updates preview dynamically
+- Delegates storage to provided callbacks
+
+### Callback Design
+
+The component accepts:
+
+- `onUpload(iconKey, file)` → async
+- `onUrlInput(iconKey, value)`
+- `onRemove(iconKey)`
+- `normalizePreviewUrl(value)`
+
+This inversion-of-control pattern keeps it reusable across different pages.
+
+---
+
+## 5. Utility Functions
+
+To simplify usage and migration, helper functions are provided:
+
+```javascript
+createModernModal(modalId, options)
+createModernCard(container, options)
+createIconUploadComponent(iconKey, container, options)
+openModal(options)
+```
+
+### openModal Helper
+
+`openModal()` reduces legacy modal patterns into a single call:
 
 ```mermaid
 flowchart LR
-    Options["Card Options"] --> ModernCard
-    ModernCard --> Header["Card Header"]
-    ModernCard --> Body["Card Body"]
-    ModernCard --> Footer["Card Footer (Optional)"]
-
-    ModernCard --> StatusClasses["Status CSS Classes"]
+    LegacyPattern["setModalContent() + showModal()"] --> UnifiedCall["openModal(options)"]
 ```
 
-### Runtime Status Update
+It internally delegates to:
+
+- `setModalContent()`
+- `showModal()`
+
+This provides backward compatibility while enabling gradual migration.
+
+---
+
+## 6. Design Patterns Used
+
+### 1. Factory Pattern
+
+Helper functions encapsulate object creation.
+
+### 2. Options Object Pattern
+
+Each component merges defaults with user-supplied configuration.
+
+### 3. Inversion of Control
+
+IconUploadComponent delegates business logic to injected callbacks.
+
+### 4. Progressive Migration Strategy
+
+The module allows incremental refactoring of existing UI code without breaking legacy behavior.
+
+---
+
+## 7. Integration Within the Front-End Stack
+
+Ui Components sits within the browser layer and interacts with:
+
+- Bootstrap (styling + modal lifecycle)
+- FontAwesome (icons)
+- Legacy global modal helpers
+- Page-specific logic scripts
 
 ```mermaid
 flowchart TD
-    UpdateCall["updateStatus(status)"] --> RemoveOld["Remove Old Classes"]
-    RemoveOld --> AddNew["Add New Classes"]
-    AddNew --> UpdateIcon["Update Status Icon"]
-    UpdateIcon --> UpdateText["Update Status Text"]
+    Browser["Browser"] --> UiComponents["Ui Components Module"]
+    UiComponents --> Bootstrap["Bootstrap Framework"]
+    UiComponents --> FontAwesome["FontAwesome Icons"]
+    UiComponents --> GlobalHelpers["Global Modal Helpers"]
+    UiComponents --> PageLogic["Page-Specific Logic"]
 ```
 
-### Key Methods
-
-- `render()`
-- `updateStatus(status)`
+It does not directly depend on back-end modules, but it can trigger application-level actions through callback injection.
 
 ---
 
-## IconUploadComponent
+## 8. Extensibility Strategy
 
-The **IconUploadComponent** encapsulates:
+The file is structured to allow:
 
-- URL-based icon input
-- File-based upload
-- Preview rendering
-- Removal/reset handling
+- Migration to one-component-per-file organization
+- Additional reusable UI primitives
+- Replacement of legacy modal helpers in the future
+- Gradual decoupling from global window state
 
-It is reusable across any page requiring icon configuration.
-
-### Separation of Concerns
-
-The component owns:
-
-- Input rendering
-- Preview state
-- Button states (loading, success, error)
-
-The page logic owns:
-
-- Upload persistence
-- Server communication
-- Validation
-
-### Upload Flow
+Potential evolution path:
 
 ```mermaid
-sequenceDiagram
-    participant User
-    participant Component
-    participant PageLogic
-
-    User->>Component: Select File
-    Component->>Component: Show Loading State
-    Component->>PageLogic: onUpload(iconKey, file)
-    PageLogic-->>Component: { path }
-    Component->>Component: Update Preview
-    Component->>Component: Show Success State
+flowchart LR
+    SingleFile["Single ui-components.js"] --> Modularized["Dedicated Components Directory"]
+    Modularized --> TypedLayer["TypeScript or Strong Typing"]
+    TypedLayer --> FrameworkIntegration["Framework Integration (Optional)"]
 ```
-
-### URL Input Flow
-
-```mermaid
-flowchart TD
-    UrlInput["User Types URL"] --> Validate["Normalize Preview URL"]
-    Validate --> ShowPreview["Show Preview"]
-    ShowPreview --> NotifyPage["onUrlInput(iconKey, value)"]
-```
-
-### Global Registry Pattern
-
-The component stores instances in:
-
-```text
-window.iconUploadComponents[iconKey]
-```
-
-This allows inline HTML event bindings to reference instance methods safely.
-
-### Key Methods
-
-- `render()`
-- `triggerFileUpload()`
-- `handleUrlInput(input)`
-- `handleFileUpload(input)`
-- `removeIcon()`
-
----
-
-# Interaction with Other Modules
-
-## Bootstrap Components
-
-Ui Components rely heavily on:
-
-- Bootstrap modal infrastructure
-- Button styling
-- Card layout utilities
-- Spinner/loading indicators
-
-See: [Bootstrap Components](bootstrap-components/bootstrap-components.md)
-
----
-
-## Localization
-
-Text labels such as modal titles, button labels, and status strings can integrate with the localization system.
-
-See: [Localization](localization/localization.md)
-
----
-
-# System Placement
-
-Ui Components operate purely on the client side and do not directly interact with:
-
-- Cryptography
-- RFB rendering
-- WebSocket communication
-- Clipboard redirection
-
-Those responsibilities belong to modules such as:
-
-- [Crypto Components](crypto-components/crypto-components.md)
-- [Rfb And Display](rfb-and-display/rfb-and-display.md)
-- [Websock](websock/websock.md)
-- [Cliprdr](cliprdr/cliprdr.md)
-
-Ui Components may wrap or visually represent the state of those systems, but never implement their logic.
-
----
-
-# Extension Strategy
-
-The file is intentionally structured to allow:
-
-- Gradual migration toward one-component-per-file
-- Expansion into a dedicated components directory
-- Continued reduction of template duplication
-
-Future candidates for inclusion:
-
-- Standardized form components
-- Toast abstraction layer
-- Reusable confirmation dialogs
 
 ---
 
 # Summary
 
-The **Ui Components** module provides a lightweight, structured abstraction over common UI patterns in the MeshCentral web interface. By encapsulating modal logic, card rendering, and icon upload workflows, it:
+The **Ui Components** module modernizes MeshCentral's UI layer by:
 
-- Reduces code duplication
-- Improves consistency
-- Centralizes UI behavior
-- Simplifies template maintenance
+- Consolidating repetitive UI logic
+- Standardizing modal and card behaviors
+- Providing reusable, callback-driven upload controls
+- Supporting incremental refactoring
 
-It serves as a reusable presentation layer that complements foundational modules like Bootstrap Components and Localization while remaining independent from lower-level communication, cryptographic, and rendering subsystems.
+It serves as a foundational abstraction layer that improves consistency, reduces duplication, and prepares the front-end for future modularization and scalability.

@@ -1,0 +1,16 @@
+flowchart TD
+    Create["new Terminal(options)"]
+    Open["open(container)"]
+    Init["Initialize Services"]
+    Write["write(data)"]
+    Parse["Parse + Update Buffer"]
+    Render["Render Dirty Rows"]
+    Dispose["dispose()"]
+
+    Create --> Open
+    Open --> Init
+    Init --> Write
+    Write --> Parse
+    Parse --> Render
+    Render --> Write
+    Open --> Dispose

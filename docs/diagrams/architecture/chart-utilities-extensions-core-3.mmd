@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant User
+    participant Chart
+    participant Resolver as Defaults Resolver (de)
+    participant Animator as Animation Engine (bt)
+    participant Frame as Browser Frame Loop
+
+    User->>Chart: Update data / config
+    Chart->>Resolver: Resolve options
+    Resolver-->>Chart: Merged configuration
+    Chart->>Animator: Register animation items
+    Animator->>Frame: requestAnimationFrame()
+    Frame-->>Animator: Frame tick
+    Animator->>Chart: draw()
+    Animator->>Chart: notify(progress/complete)

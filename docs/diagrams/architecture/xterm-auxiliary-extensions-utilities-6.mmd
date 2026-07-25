@@ -1,0 +1,5 @@
+flowchart TD
+    DecorationService["Decoration Service"] --> BufferDecorationRenderer
+    BufferDecorationRenderer --> ScreenLayer["Overlay Layer"]
+    DecorationService --> OverviewRulerRenderer
+    OverviewRulerRenderer --> Canvas["Overview Canvas"]

@@ -1,0 +1,15 @@
+flowchart TD
+    ChartCore["Chart Core Modules"] --> ChartUtilsCore["Chart Utilities Core"]
+    ChartUtilsCore --> ChartUtilsCoreMain["Chart Utilities Core Main"]
+
+    ChartUtilsCoreMain --> UtilityFramework["Utility Framework (Wo)"]
+    ChartUtilsCoreMain --> ColorEngine["Color Engine (Zt)"]
+
+    UtilityFramework --> MathHelpers["Math & Geometry"]
+    UtilityFramework --> AnimationHelpers["Animation & Timing"]
+    UtilityFramework --> CanvasHelpers["Canvas Rendering Helpers"]
+    UtilityFramework --> ScaleHelpers["Scale & Tick Utilities"]
+
+    ColorEngine --> ColorParsing["Color Parsing"]
+    ColorEngine --> ColorTransform["Color Transformations"]
+    ColorEngine --> ColorInterpolation["Color Interpolation"]

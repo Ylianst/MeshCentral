@@ -1,0 +1,27 @@
+flowchart TD
+    ChartAPI["Chart API (Chart)"] --> Registry["Registry"]
+    Registry --> Controllers["Dataset Controllers"]
+    Registry --> Elements["Visual Elements"]
+    Registry --> Scales["Scales"]
+    Registry --> Plugins["Plugins"]
+
+    Controllers --> LineController["Line Controller"]
+    Controllers --> BarController["Bar Controller"]
+    Controllers --> DoughnutController["Doughnut Controller"]
+
+    Elements --> LineElement["Line Element"]
+    Elements --> PointElement["Point Element"]
+    Elements --> ArcElement["Arc Element"]
+    Elements --> BarElement["Bar Element"]
+
+    Scales --> LinearScale["Linear Scale"]
+    Scales --> CategoryScale["Category Scale"]
+    Scales --> TimeScale["Time Scale"]
+    Scales --> RadialScale["Radial Linear Scale"]
+
+    Plugins --> TooltipPlugin["Tooltip Plugin"]
+    Plugins --> LegendPlugin["Legend Plugin"]
+    Plugins --> TitlePlugin["Title / Subtitle Plugin"]
+    Plugins --> FillerPlugin["Filler Plugin"]
+    Plugins --> DecimationPlugin["Decimation Plugin"]
+    Plugins --> ColorsPlugin["Colors Plugin"]

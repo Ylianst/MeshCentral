@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Mouse
+    participant Linkifier
+    participant Provider
+    participant Render
+
+    Mouse->>Linkifier: mousemove
+    Linkifier->>Provider: provideLinks(row)
+    Provider-->>Linkifier: link ranges
+    Linkifier->>Render: underline link
+    Mouse->>Linkifier: mouseup
+    Linkifier->>Provider: activate(link)

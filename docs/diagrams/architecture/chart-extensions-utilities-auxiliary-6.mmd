@@ -1,0 +1,5 @@
+flowchart TD
+    MouseEvent["Mouse / Pointer Event"] --> InteractionModes["Interaction Modes"]
+    InteractionModes --> ActiveElements["Active Elements"]
+    ActiveElements --> TooltipUpdate["Tooltip.update()"]
+    ActiveElements --> HoverStyles["Controller.setHoverStyle()"]

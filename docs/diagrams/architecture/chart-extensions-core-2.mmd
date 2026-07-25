@@ -1,9 +1,18 @@
 flowchart LR
-    Registry["Registry"] --> Controllers["Controllers"]
-    Registry --> Elements["Elements"]
-    Registry --> Scales["Scales"]
-    Registry --> Plugins["Plugins"]
+    Chart["Chart Class"] --> Controllers["Dataset Controllers"]
+    Chart --> Scales["Scale Registry"]
+    Chart --> Elements["Chart Elements"]
+    Chart --> Plugins["Plugin System"]
+    Chart --> Animator["Animation Engine"]
 
-    Controllers --> LineController["Line Controller"]
-    Controllers --> BarController["Bar Controller"]
-    Controllers --> DoughnutController["Doughnut Controller"]
+    Controllers --> LineCtrl["Line Controller"]
+    Controllers --> BarCtrl["Bar Controller"]
+    Controllers --> PieCtrl["Pie Controller"]
+
+    Scales --> LinearScale["Linear Scale"]
+    Scales --> TimeScale["Time Scale"]
+    Scales --> CategoryScale["Category Scale"]
+
+    Plugins --> TooltipPlugin["Tooltip Plugin"]
+    Plugins --> LegendPlugin["Legend Plugin"]
+    Plugins --> TitlePlugin["Title Plugin"]

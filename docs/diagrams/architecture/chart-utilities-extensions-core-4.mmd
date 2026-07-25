@@ -1,0 +1,9 @@
+flowchart TD
+    UserConfig["User Configuration"] --> Merge["Deep Merge"]
+    GlobalDefaults["Global Defaults (de)"] --> Merge
+    Merge --> Routing["Option Routing"]
+    Routing --> ScriptableCheck{"Function?"}
+    ScriptableCheck -->|Yes| Execute["Execute with Context"]
+    ScriptableCheck -->|No| Static["Return Static Value"]
+    Execute --> FinalOptions["Resolved Options"]
+    Static --> FinalOptions

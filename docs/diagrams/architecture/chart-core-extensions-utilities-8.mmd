@@ -1,0 +1,8 @@
+flowchart TD
+    Init["Initialize Chart"] --> BuildScales
+    BuildScales --> BuildControllers
+    BuildControllers --> LayoutPass
+    LayoutPass --> UpdateDatasets
+    UpdateDatasets --> Animate
+    Animate --> Draw
+    Draw --> PluginsAfterDraw

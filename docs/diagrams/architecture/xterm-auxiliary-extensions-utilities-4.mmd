@@ -1,0 +1,6 @@
+flowchart LR
+    UserCopy["User Copy"] --> CopyHandler["copyHandler()"]
+    CopyHandler --> Clipboard["Clipboard"]
+
+    UserPaste["User Paste"] --> PasteHandler["handlePasteEvent()"]
+    PasteHandler --> TerminalInput["Terminal Input Buffer"]

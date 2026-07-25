@@ -1,0 +1,16 @@
+flowchart TD
+    RemoteDevice["Remote Device"]
+    WebSocket["WebSocket Transport"]
+    Terminal["Terminal API"]
+    CoreEngine["Core Engine"]
+    Renderer["DOM Renderer"]
+    User["Browser User"]
+
+    RemoteDevice --> WebSocket
+    WebSocket --> Terminal
+    Terminal --> CoreEngine
+    CoreEngine --> Renderer
+    Renderer --> User
+
+    User --> Terminal
+    Terminal --> WebSocket

@@ -1,0 +1,6 @@
+flowchart TD
+    Animator["bt Animation Engine"] --> Controllers["Dataset Controllers"]
+    Controllers --> Elements["Chart Elements"]
+    Controllers --> Scales["Scales"]
+    Animator --> Plugins["Plugins"]
+    Animator --> ChartDraw["Chart.draw()"]

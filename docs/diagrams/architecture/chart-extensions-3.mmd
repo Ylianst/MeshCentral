@@ -1,8 +1,12 @@
-flowchart TD
-    Init["Initialize Chart"] --> BuildScales["Build Scales"]
-    BuildScales --> BuildControllers["Build Controllers"]
-    BuildControllers --> ParseData["Parse Data"]
-    ParseData --> Layout["Layout Phase"]
-    Layout --> Render["Render Phase"]
-    Render --> Animate["Animation Engine"]
-    Animate --> Events["Interaction Handling"]
+sequenceDiagram
+    participant UI as UI Component
+    participant Extensions as Chart Extensions
+    participant Core as Extensions Core
+    participant Runtime as Chart Runtime
+    participant Canvas as Canvas
+
+    UI->>Extensions: Provide Config + Data
+    Extensions->>Core: Normalize Config
+    Core->>Runtime: new Chart(ctx, config)
+    Runtime->>Runtime: Build Controllers & Scales
+    Runtime->>Canvas: Render Frame

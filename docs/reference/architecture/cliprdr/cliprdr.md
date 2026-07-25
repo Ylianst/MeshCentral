@@ -1,107 +1,127 @@
 # Cliprdr
 
-The Cliprdr module implements the Remote Desktop Protocol (RDP) Clipboard Virtual Channel (CLIPRDR). It enables bi-directional clipboard synchronization between a local client and a remote RDP server.
+The **Cliprdr** module implements the RDP Clipboard Virtual Channel (CLIPRDR) for MeshCentral. It enables bidirectional clipboard synchronization between the RDP client and the remote server by exchanging Clipboard Protocol Data Units (PDUs) over a virtual channel.
 
-Within the MeshCentral RDP protocol stack, Cliprdr is responsible for:
+At its core, the module provides:
 
-- Exchanging clipboard capabilities
-- Advertising supported clipboard formats
-- Requesting clipboard data
-- Responding with clipboard content
-- Emitting clipboard events to higher-level consumers
+- A base **Cliprdr** channel abstraction
+- A **Client** state machine that handles clipboard capability negotiation and data exchange
+- Encoding and decoding of Clipboard PDUs
+- Event-driven clipboard updates via Node.js `EventEmitter`
 
-The module is built around two core classes:
-
-- `Cliprdr` – Base event-driven channel abstraction
-- `Client` – Client-side clipboard channel automaton
+This module operates within the RDP protocol stack and communicates over an abstract `transport` that delivers channel data.
 
 ---
 
-## 1. Architectural Overview
+## 1. Purpose and Responsibilities
 
-Cliprdr operates as a virtual channel layered on top of the RDP transport. It relies on:
+The Cliprdr module is responsible for:
 
-- The RDP transport for message delivery
-- The core type system for PDU serialization
-- Clipboard PDU definitions for protocol structure
-- Node.js EventEmitter for event propagation
+1. Establishing the clipboard virtual channel after RDP connection setup
+2. Negotiating clipboard capabilities between client and server
+3. Exchanging supported clipboard formats
+4. Requesting and responding with clipboard data
+5. Emitting clipboard change events to higher-level components
 
-### High-Level Architecture
-
-```mermaid
-flowchart TD
-    RDPTransport["RDP Transport"] -->|"cliprdr channel"| CliprdrBase["Cliprdr Base Class"]
-    CliprdrBase --> ClientAutomata["Client Automata"]
-    ClientAutomata --> ClipboardState["Clipboard Content State"]
-    ClientAutomata --> EventLayer["EventEmitter"]
-    EventLayer --> Application["Application Layer"]
-```
-
-### Layered Responsibility
-
-- **Transport Layer** – Handles channel framing and raw byte delivery
-- **Protocol Layer (Cliprdr)** – Encodes and decodes clipboard PDUs
-- **Automation Layer (Client)** – Implements RDP clipboard state machine
-- **Application Layer** – Consumes clipboard events
+It strictly handles protocol-level logic and does not directly interact with UI components or operating system clipboards. Instead, it exposes events and methods for integration.
 
 ---
 
-## 2. Core Classes
+## 2. Core Components
 
 ### 2.1 Cliprdr (Base Channel)
 
-The `Cliprdr` class extends `EventEmitter` and provides the foundational channel abstraction.
+`meshcentral.rdp.protocol.pdu.cliprdr.Cliprdr`
 
-#### Responsibilities
+**Responsibilities:**
 
-- Store channel metadata (`userId`, `channelId`)
-- Maintain capability state
-- Provide shared structure for client implementation
-- Hold reference to transport
+- Extends `EventEmitter`
+- Stores transport reference
+- Maintains user and capability state
 
-#### Key Properties
+**Key Properties:**
 
-- `transport` – RDP channel transport
+- `transport` – Underlying RDP virtual channel transport
 - `userId` – RDP user identifier
-- `serverCapabilities` – Server capability list
-- `clientCapabilities` – Client capability list
+- `serverCapabilities` – Capabilities received from server
+- `clientCapabilities` – Capabilities advertised by client
 
-This class does not implement protocol automation. That responsibility is delegated to `Client`.
+This class provides the foundational structure for clipboard channel communication.
 
 ---
 
-### 2.2 Client (Clipboard Automaton)
+### 2.2 Client (Clipboard State Machine)
 
-The `Client` class extends `Cliprdr` and implements the clipboard virtual channel state machine.
+`meshcentral.rdp.protocol.pdu.cliprdr.Client`
 
-It binds to transport events and processes clipboard PDUs sequentially.
+Extends **Cliprdr** and implements the full client-side clipboard protocol automaton.
+
+**Key Responsibilities:**
+
+- Subscribes to transport lifecycle events
+- Parses incoming PDUs
+- Sends clipboard-related PDUs
+- Manages clipboard content buffer
+- Emits `clipboard` events when new content is received
+
+**Important Fields:**
+
+- `content` – Internal clipboard text buffer
+- `channelId` – Assigned RDP channel identifier
+- `gccCore` – RDP GCC core information
+
+---
+
+## 3. High-Level Architecture
 
 ```mermaid
-flowchart TD
-    TransportConnect["Transport Connect Event"] --> Init["Client.connect()"]
-    Init --> WaitCliprdr["Wait for cliprdr PDU"]
-    WaitCliprdr --> Recv["recv() Dispatcher"]
-    Recv --> HandleType["Switch on msgType"]
-    HandleType --> Next["Register next cliprdr listener"]
+flowchart LR
+    RdpTransport["RDP Transport"] --> CliprdrClient["Cliprdr Client"]
+    CliprdrClient --> PduParser["Clipboard PDU Parser"]
+    CliprdrClient --> PduBuilder["Clipboard PDU Builder"]
+    CliprdrClient --> EventEmitter["EventEmitter"]
+    EventEmitter --> AppLayer["Application Layer"]
+```
+
+### Flow Explanation
+
+1. The RDP transport delivers `cliprdr` channel messages.
+2. The Client parses the incoming PDU.
+3. Based on message type, it triggers the appropriate handler.
+4. Outgoing PDUs are constructed using typed components.
+5. Clipboard updates are emitted to the application layer.
+
+---
+
+## 4. Clipboard Protocol Lifecycle
+
+The clipboard handshake follows a defined RDP sequence.
+
+### 4.1 Connection Phase
+
+When the transport emits a `connect` event:
+
+- The client stores `gccCore`, `userId`, and `channelId`
+- It begins listening for `cliprdr` channel messages
+
+```mermaid
+sequenceDiagram
+    participant Transport
+    participant Client
+
+    Transport->>Client: connect(gccCore, userId, channelId)
+    Client->>Client: store connection context
+    Transport->>Client: cliprdr(CB_MONITOR_READY)
 ```
 
 ---
 
-## 3. Clipboard Protocol Flow
+### 4.2 Monitor Ready → Capability Negotiation
 
-The RDP clipboard exchange follows a defined handshake and data flow.
+When the server sends `CB_MONITOR_READY`:
 
-### 3.1 Connection Sequence
-
-When the transport emits `connect`:
-
-1. Client stores `gccCore`, `userId`, `channelId`
-2. Registers listener for `cliprdr` PDUs
-3. Waits for server PDUs
-
----
-
-### 3.2 Monitor Ready → Capability Exchange
+1. Client sends `CB_CLIP_CAPS`
+2. Client sends `CB_FORMAT_LIST`
 
 ```mermaid
 sequenceDiagram
@@ -113,204 +133,218 @@ sequenceDiagram
     Client->>Server: CB_FORMAT_LIST
 ```
 
-#### Explanation
-
-- Server signals readiness with `CB_MONITOR_READY`
-- Client responds with:
-  - Clipboard capability PDU
-  - Supported format list PDU
-
 ---
 
-### 3.3 Format Negotiation Flow
+### 4.3 Format Negotiation
+
+After format list exchange:
+
+- Server responds with `CB_FORMAT_LIST_RESPONSE`
+- Client may request clipboard data with `CB_FORMAT_DATA_REQUEST`
 
 ```mermaid
 sequenceDiagram
     participant Server
     participant Client
 
-    Server->>Client: CB_FORMAT_LIST
-    Client->>Server: CB_FORMAT_LIST_RESPONSE
+    Client->>Server: CB_FORMAT_LIST
+    Server->>Client: CB_FORMAT_LIST_RESPONSE
     Client->>Server: CB_FORMAT_DATA_REQUEST
-    Server->>Client: CB_FORMAT_DATA_RESPONSE
 ```
-
-#### Key Steps
-
-1. Format list exchange
-2. Response acknowledgment
-3. Data request for selected format
-4. Data transmission
 
 ---
 
-## 4. PDU Handling and Dispatch
+### 4.4 Data Transfer
 
-All incoming PDUs are handled by `recv()`.
+When clipboard data is requested:
+
+- Request via `CB_FORMAT_DATA_REQUEST`
+- Response via `CB_FORMAT_DATA_RESPONSE`
+
+```mermaid
+sequenceDiagram
+    participant Requester
+    participant Responder
+
+    Requester->>Responder: CB_FORMAT_DATA_REQUEST
+    Responder->>Requester: CB_FORMAT_DATA_RESPONSE
+```
+
+On receiving `CB_FORMAT_DATA_RESPONSE`, the Client:
+
+- Decodes UCS-2 string
+- Updates internal `content`
+- Emits `clipboard` event
+
+---
+
+## 5. PDU Processing Pipeline
+
+Incoming messages are handled by `recv()`.
 
 ```mermaid
 flowchart TD
-    RecvStart["recv(stream)"] --> Parse["Parse clipPDU()"]
-    Parse --> Switch["Switch msgType"]
-    Switch --> Monitor["CB_MONITOR_READY"]
-    Switch --> FormatList["CB_FORMAT_LIST"]
-    Switch --> FormatListResp["CB_FORMAT_LIST_RESPONSE"]
-    Switch --> DataReq["CB_FORMAT_DATA_REQUEST"]
-    Switch --> DataResp["CB_FORMAT_DATA_RESPONSE"]
-    DataResp --> Emit["Emit clipboard event"]
+    Receive["Transport cliprdr event"] --> Parse["Parse Clipboard PDU"]
+    Parse --> Switch["Switch on msgType"]
+    Switch --> MonitorReady["Handle Monitor Ready"]
+    Switch --> FormatList["Handle Format List"]
+    Switch --> FormatDataReq["Handle Format Data Request"]
+    Switch --> FormatDataResp["Handle Format Data Response"]
+    FormatDataResp --> Emit["Emit clipboard event"]
 ```
 
-After each message, the client re-registers a one-time listener for the next `cliprdr` event, ensuring ordered sequential processing.
+### Message Types Handled
+
+- `CB_MONITOR_READY`
+- `CB_CLIP_CAPS`
+- `CB_FORMAT_LIST`
+- `CB_FORMAT_LIST_RESPONSE`
+- `CB_FORMAT_DATA_REQUEST`
+- `CB_FORMAT_DATA_RESPONSE`
+- `CB_TEMP_DIRECTORY` (placeholder)
 
 ---
 
-## 5. Supported Clipboard Formats
+## 6. Outgoing PDU Construction
 
-The client advertises several clipboard formats in `sendFormatListPDU()`.
+All outgoing messages are wrapped as:
 
-Examples include:
-
-- Native format
-- Text format identifiers (0x0d, 0x10, 0x01)
-- Additional predefined identifiers
-
-Each format entry consists of:
-
-- `formatId`
-- `formatName` (optional UTF-16 string)
-
-The implementation currently focuses primarily on Unicode text transfers.
-
----
-
-## 6. Clipboard Data Flow
-
-### 6.1 Sending Clipboard Data
-
-When local clipboard content changes:
-
-```text
-setClipboardData(content)
-    ↓
-Update internal state
-    ↓
-sendFormatListPDU()
-```
-
-Eventually, when the server requests format data:
-
-```text
-sendFormatDataResponsePDU()
-    ↓
-Encode UTF-16 content
-    ↓
-Transmit CB_FORMAT_DATA_RESPONSE
-```
-
-### 6.2 Receiving Clipboard Data
-
-Upon receiving `CB_FORMAT_DATA_RESPONSE`:
-
-- Decode UTF-16 string from buffer
-- Store in `this.content`
-- Emit `clipboard` event
+1. Channel PDU Header
+2. Channel flags
+3. Clipboard PDU payload
 
 ```mermaid
-flowchart TD
-    ServerData["CB_FORMAT_DATA_RESPONSE"] --> Decode["Decode UCS2 string"]
-    Decode --> Store["Update content"]
-    Store --> EmitEvent["Emit clipboard event"]
-    EmitEvent --> Application["Application consumes data"]
+flowchart LR
+    AppCall["Application Action"] --> BuildPdu["Build Clipboard PDU"]
+    BuildPdu --> WrapChannel["Wrap Channel Header"]
+    WrapChannel --> TransportSend["Transport send cliprdr"]
 ```
 
----
+The module uses typed components such as:
 
-## 7. Internal State Management
-
-The client maintains minimal state:
-
-- `content` – Current clipboard string
-- `userId` – RDP session user
-- `channelId` – Virtual channel identifier
-- Capability metadata
-
-This lightweight design keeps the module focused strictly on protocol translation rather than UI or persistence concerns.
-
----
-
-## 8. Transport Integration
-
-Cliprdr relies on the transport layer for:
-
-- Channel framing
-- Delivery guarantees
-- Multiplexing over RDP
-
-Messages are wrapped using:
-
-- `type.Component`
-- `UInt16Le`, `UInt32Le`
+- `UInt16Le`
+- `UInt32Le`
 - `BinaryString`
 
-This ensures correct little-endian encoding and structured PDU serialization.
+These ensure correct little-endian encoding and structured serialization.
 
 ---
 
-## 9. Event Model
+## 7. Clipboard Content Handling
 
-Cliprdr uses an event-driven model.
+### 7.1 Setting Local Clipboard
+
+`setClipboardData(content)`:
+
+1. Updates internal `content`
+2. Sends `CB_FORMAT_LIST` to notify server
+
+```mermaid
+flowchart TD
+    SetData["setClipboardData"] --> Store["Update internal content"]
+    Store --> Notify["Send CB_FORMAT_LIST"]
+```
+
+---
+
+### 7.2 Receiving Remote Clipboard
+
+When `CB_FORMAT_DATA_RESPONSE` arrives:
+
+- Buffer decoded as UCS-2
+- Null terminator removed
+- `clipboard` event emitted
+
+```mermaid
+flowchart TD
+    Incoming["CB_FORMAT_DATA_RESPONSE"] --> Decode["Decode UCS2 string"]
+    Decode --> Update["Update content"]
+    Update --> EmitEvent["Emit clipboard event"]
+```
+
+---
+
+## 8. Event Model
+
+The Client inherits from `EventEmitter`.
 
 ### Emitted Events
 
-- `clipboard` – Emitted when clipboard content is received
+- `clipboard` – Triggered when new clipboard content is received from server
 
-Consumers can subscribe:
-
-```javascript
-client.on('clipboard', (data) => {
-    console.log(data);
-});
-```
-
-This decouples protocol handling from UI or higher-level logic.
+This allows higher-level components (e.g., UI or session manager) to subscribe and synchronize system clipboard state.
 
 ---
 
-## 10. Error Handling and Extensibility
+## 9. Integration Within RDP Stack
 
-The current implementation:
-
-- Ignores several optional PDU types (e.g., temporary directory)
-- Provides placeholder capability handling
-- Supports text clipboard transfer
-
-Future enhancements may include:
-
-- Rich text formats
-- File transfer support
-- Extended capability negotiation
-- Robust error propagation
-
----
-
-## 11. Complete Clipboard Lifecycle Summary
+Cliprdr operates as a **virtual channel module** in the RDP protocol stack.
 
 ```mermaid
 flowchart TD
-    Connect["Transport Connected"] --> MonitorReady["Receive CB_MONITOR_READY"]
-    MonitorReady --> SendCaps["Send Capabilities"]
-    SendCaps --> SendFormats["Send Format List"]
-    SendFormats --> ServerFormats["Receive Server Format List"]
-    ServerFormats --> Ack["Send Format List Response"]
-    Ack --> Request["Send Format Data Request"]
-    Request --> ReceiveData["Receive Format Data Response"]
-    ReceiveData --> EmitClipboard["Emit Clipboard Event"]
+    RdpCore["RDP Core"] --> ChannelManager["Virtual Channel Manager"]
+    ChannelManager --> CliprdrChannel["Cliprdr Channel"]
+    CliprdrChannel --> ClientState["Cliprdr Client State Machine"]
+    ClientState --> AppLayer["Application Integration"]
 ```
+
+### Responsibilities by Layer
+
+- **RDP Core** – Manages session and channel creation
+- **Virtual Channel Manager** – Routes channel-specific data
+- **Cliprdr Channel** – Encodes/decodes clipboard PDUs
+- **Application Layer** – Consumes clipboard events
 
 ---
 
-# Conclusion
+## 10. Capability Negotiation
 
-The Cliprdr module provides a focused implementation of the RDP clipboard virtual channel. It bridges low-level RDP PDU encoding with high-level clipboard events, enabling seamless clipboard synchronization in remote desktop sessions.
+During initialization, the client advertises:
 
-Its event-driven structure, structured PDU serialization, and clear state machine make it easy to extend and integrate into the broader MeshCentral RDP protocol stack.
+- Clipboard capability version
+- Supported flags
+
+The server responds with its own capability sets. Although capability parsing is currently minimal, the structure allows future expansion.
+
+---
+
+## 11. Design Characteristics
+
+### Event-Driven
+
+The module is fully asynchronous and event-driven:
+
+- Transport events trigger PDU parsing
+- Clipboard updates trigger application events
+
+### Stateful Automaton
+
+The Client behaves as a protocol automaton:
+
+- Reacts to specific PDU types
+- Sends corresponding responses
+- Maintains clipboard synchronization state
+
+### Extensible
+
+The structure allows future support for:
+
+- File clipboard transfers
+- Extended format lists
+- Additional capability sets
+- Enhanced security validation
+
+---
+
+## 12. Summary
+
+The Cliprdr module provides a focused implementation of the RDP Clipboard Virtual Channel.
+
+It:
+
+- Negotiates clipboard capabilities
+- Exchanges format lists
+- Requests and provides clipboard data
+- Emits events for application-level integration
+
+By encapsulating clipboard protocol complexity within a dedicated state machine, Cliprdr cleanly separates RDP channel logic from higher-level session and UI concerns, making it modular, maintainable, and extensible.

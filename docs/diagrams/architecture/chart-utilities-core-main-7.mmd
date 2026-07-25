@@ -1,0 +1,6 @@
+flowchart TD
+    RawData["Dataset"] --> Parse["Parse & Normalize"]
+    Parse --> ScaleCalc["Scale Calculations"]
+    ScaleCalc --> Geometry["Geometry Computation"]
+    Geometry --> ColorResolve["Color Resolution"]
+    ColorResolve --> CanvasDraw["Canvas Drawing"]

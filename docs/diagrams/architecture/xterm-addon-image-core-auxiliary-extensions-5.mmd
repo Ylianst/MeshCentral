@@ -1,0 +1,6 @@
+flowchart TD
+    AddImage["Add Image"] --> AssignID["Assign Image ID"]
+    AssignID --> WriteCells["Write Buffer Cells"]
+    WriteCells --> DirtyRows["Mark Dirty Rows"]
+    DirtyRows --> RenderPass["Render Pass"]
+    RenderPass --> CanvasLayer["Canvas Overlay"]

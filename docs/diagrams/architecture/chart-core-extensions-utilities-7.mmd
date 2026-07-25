@@ -1,0 +1,4 @@
+flowchart TD
+    ChartLifecycle["Chart Lifecycle"] --> PluginService
+    PluginService --> BeforeHooks["before* Hooks"]
+    PluginService --> AfterHooks["after* Hooks"]

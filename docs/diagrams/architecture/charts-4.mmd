@@ -1,0 +1,11 @@
+sequenceDiagram
+    participant UI as UI Component
+    participant Extensions as Chart Extensions
+    participant Core as Chart Core
+    participant Runtime as Chart Runtime
+    participant Canvas as Canvas
+
+    UI->>Extensions: Provide Config + Data
+    Extensions->>Core: Normalize Config
+    Core->>Runtime: Initialize Chart
+    Runtime->>Canvas: Render Frame

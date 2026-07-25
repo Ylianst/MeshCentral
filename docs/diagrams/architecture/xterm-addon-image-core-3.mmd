@@ -1,0 +1,6 @@
+flowchart TD
+    DCS["DCS q Sequence"] --> Core["Image Core Handler"]
+    Core --> Decoder["SIXEL Decoder"]
+    Decoder --> PixelBuffer["RGBA Buffer"]
+    PixelBuffer --> Storage["Image Storage"]
+    Storage --> Renderer["Renderer Overlay"]

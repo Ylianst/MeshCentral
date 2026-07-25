@@ -1,0 +1,4 @@
+flowchart TD
+    BufferUpdate["Buffer Update"] --> Debouncer
+    Debouncer -->|"requestAnimationFrame"| RenderService
+    RenderService --> DOM["DOM Renderer"]

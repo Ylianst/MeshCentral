@@ -1,0 +1,5 @@
+flowchart LR
+    UserScroll["Wheel / Touch"] --> Viewport
+    Viewport --> BufferService["Buffer Service"]
+    BufferService --> Viewport
+    Viewport --> ScrollEvent["Scroll Event Emission"]

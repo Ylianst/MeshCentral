@@ -1,0 +1,5 @@
+flowchart TD
+    RenderEvent["Render Request"] --> Debouncer
+    Debouncer --> Frame["Animation Frame"]
+    Frame --> RenderRows["Render Rows"]
+    RenderRows --> ViewportUpdate["Viewport Update"]

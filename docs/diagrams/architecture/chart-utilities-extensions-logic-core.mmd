@@ -1,0 +1,9 @@
+flowchart TD
+    Config["Chart Configuration"] --> Controller["Dataset Controller Logic"]
+    Controller --> Scale["Scale Resolution"]
+    Controller --> Elements["Rendering Elements"]
+    Controller --> Animation["Animation Engine"]
+    Controller --> Plugins["Plugin Pipeline"]
+    Elements --> Canvas["Canvas Rendering Context"]
+    Animation --> Canvas
+    Plugins --> Canvas

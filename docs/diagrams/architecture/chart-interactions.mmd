@@ -1,8 +1,0 @@
-flowchart TD
-    BrowserEvent["Browser Event"] --> PlatformAdapter["Platform Adapter (ls)"]
-    PlatformAdapter --> InteractionHandlers["Interaction Handlers (mo, rs)"]
-    InteractionHandlers --> InteractionUtilities["Interaction Utilities (sn, so)"]
-    InteractionUtilities --> DatasetControllers["Dataset Controllers"]
-    DatasetControllers --> Elements["Chart Elements"]
-    InteractionHandlers --> TooltipPlugin["Tooltip Plugin"]
-    Elements --> RenderCycle["Render Cycle"]

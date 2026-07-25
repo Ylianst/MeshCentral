@@ -1,0 +1,9 @@
+flowchart TD
+    ChartEngine["Chart Engine"] --> ScaleBase["Js - Base Scale"]
+    ChartEngine --> DateAdapter["Ln - Date Adapter"]
+    ScaleBase --> LinearScale["Linear / Log / Category"]
+    ScaleBase --> RadialScale["Radial / Polar"]
+    ScaleBase --> TimeScale["Time / TimeSeries"]
+    DateAdapter --> TimeScale
+    ChartEngine --> DatasetControllers["Dataset Controllers"]
+    DatasetControllers --> ScaleBase

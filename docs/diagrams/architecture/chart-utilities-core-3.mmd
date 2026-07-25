@@ -1,4 +1,6 @@
 flowchart LR
-    TimeScale["Time Scale"] --> DateAdapter["Date Adapter Base"]
-    DateAdapter --> ConcreteAdapter["Concrete Adapter Implementation"]
-    ConcreteAdapter --> NativeDate["Date / External Library"]
+    Dataset["Dataset Values"] --> DetermineLimits["Determine Min/Max"]
+    DetermineLimits --> GenerateTicks["Generate Ticks"]
+    DetermineLimits --> NormalizeRange["Normalize Range"]
+    NormalizeRange --> ValueToPixel["Value to Pixel Mapping"]
+    ValueToPixel --> Render["Render Elements"]

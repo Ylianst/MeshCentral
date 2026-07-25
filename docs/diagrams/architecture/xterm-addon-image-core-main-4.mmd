@@ -1,0 +1,7 @@
+flowchart TD
+    AddImage["addImage()"] --> WriteCells["Write Tile Metadata to Buffer"]
+    WriteCells --> MarkDirty["Mark Rows Dirty"]
+    MarkDirty --> RenderEvent["onRender()"]
+    RenderEvent --> ScanRows["Scan Visible Rows"]
+    ScanRows --> DrawTiles["Renderer.draw()"]
+    DrawTiles --> Canvas["Overlay Canvas"]

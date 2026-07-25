@@ -1,4 +1,11 @@
 flowchart TD
-    RDPTransport["RDP Transport"] --> Cliprdr
-    Cliprdr --> Client
-    Client --> ClipboardEvent["clipboard event"]
+    RdpCore["RDP Core"]
+    ChannelManager["Virtual Channel Manager"]
+    Cliprdr["Cliprdr Client"]
+    Transport["Transport Layer"]
+    AppLayer["Application Layer"]
+
+    RdpCore --> ChannelManager
+    ChannelManager --> Cliprdr
+    Cliprdr --> Transport
+    Cliprdr --> AppLayer

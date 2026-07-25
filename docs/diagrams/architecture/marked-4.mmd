@@ -1,0 +1,7 @@
+flowchart LR
+    A[Input Markdown] --> B[preprocess]
+    B --> C[Lexer]
+    C --> D[processAllTokens]
+    D --> E[Parser]
+    E --> F[postprocess]
+    F --> G[Final HTML]

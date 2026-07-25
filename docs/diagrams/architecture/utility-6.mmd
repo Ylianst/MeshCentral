@@ -1,0 +1,7 @@
+flowchart TD
+    Websock["Websock"] --> RFB["RFB Core"]
+    RFB --> Display["Display"]
+    RFB --> Cursor
+    RFB --> EventMixin
+    Display --> EventMixin
+    InputHandlers["Input Handlers"] --> RFB

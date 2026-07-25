@@ -1,0 +1,11 @@
+flowchart TD
+    TerminalEvents["Terminal Events"] --> RenderEvent["onRender"]
+    TerminalEvents --> ResizeEvent["onResize"]
+    TerminalEvents --> ScrollEvent["onScroll"]
+    TerminalEvents --> A11yChar["onA11yChar"]
+
+    RenderEvent --> RefreshRows["Refresh ARIA Rows"]
+    ResizeEvent --> AdjustStructure["Adjust Tree Structure"]
+    A11yChar --> LiveRegionUpdate["Update Live Region"]
+
+    RefreshRows --> ARIARows["ARIA Row Nodes"]

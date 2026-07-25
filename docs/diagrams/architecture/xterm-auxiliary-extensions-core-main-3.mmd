@@ -1,0 +1,7 @@
+flowchart LR
+    WriteBuffer --> InputHandler
+    InputHandler --> EscapeParser["EscapeSequenceParser"]
+    EscapeParser --> Buffer["Buffer"]
+    Buffer --> DirtyRows["Dirty Row Tracker"]
+    DirtyRows --> RenderService
+    RenderService --> DomRenderer

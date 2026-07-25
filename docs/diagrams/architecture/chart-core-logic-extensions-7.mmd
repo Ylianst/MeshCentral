@@ -1,0 +1,5 @@
+flowchart TD
+    CollectBoxes["Collect Layout Boxes"] --> ComputeSizes["Compute Dimensions"]
+    ComputeSizes --> AdjustMargins
+    AdjustMargins --> AssignChartArea
+    AssignChartArea --> FinalLayout

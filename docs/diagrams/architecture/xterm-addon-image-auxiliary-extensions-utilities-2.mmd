@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant Terminal as Xterm Terminal
+    participant Addon as ImageAddon
+    participant Handler as Protocol Handler
+    participant Decoder as WASM Decoder
+    participant Utilities as Auxiliary Extensions Utilities
+    participant Storage as ImageStorage
+
+    Terminal->>Addon: Image escape sequence
+    Addon->>Handler: Delegate payload
+    Handler->>Decoder: decode(chunk)
+    Decoder->>Utilities: Memory + WASM ops
+    Decoder-->>Handler: Decoded pixels
+    Handler->>Storage: addImage(canvas)

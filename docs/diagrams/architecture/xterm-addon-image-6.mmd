@@ -1,0 +1,12 @@
+flowchart TD
+    Incoming["Decoded Image"]
+    Budget["Pixel Budget Check"]
+    Store["Store Image"]
+    Evict["Evict Oldest Images"]
+    Abort["Abort Operation"]
+
+    Incoming --> Budget
+    Budget -->|Within Limit| Store
+    Budget -->|Exceeded| Evict
+    Evict --> Store
+    Budget -->|Invalid Size| Abort

@@ -1,5 +1,6 @@
-flowchart TD
-    ChartInstance["Chart Core (On)"] --> DatasetController["Dataset Controller (Ns)"]
-    ChartInstance --> AnimationManager["Animation Manager (Os)"]
-    DatasetController --> Elements["Chart Elements"]
-    AnimationManager --> Elements
+flowchart LR
+    Dataset["Dataset Values"] --> DetermineLimits["Determine Min/Max"]
+    DetermineLimits --> GenerateTicks["Generate Ticks"]
+    DetermineLimits --> NormalizeRange["Normalize Range"]
+    NormalizeRange --> MapToPixels["Value to Pixel Mapping"]
+    MapToPixels --> Render["Render Elements"]

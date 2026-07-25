@@ -1,0 +1,10 @@
+flowchart TD
+    Terminal["Terminal"] --> AccessibilityManager["Accessibility Manager"]
+    Terminal --> Linkifier["Linkifier"]
+    Terminal --> ColorContrastCache["Color Contrast Cache"]
+    Terminal --> DomListener["Disposable DOM Listener"]
+
+    AccessibilityManager --> ARIATree["ARIA Tree"]
+    Linkifier --> LinkProvider["Link Provider Service"]
+    ColorContrastCache --> RenderService["Render Service"]
+    DomListener --> BrowserDOM["Browser DOM"]

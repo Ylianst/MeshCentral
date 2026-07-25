@@ -1,0 +1,17 @@
+flowchart TD
+    Terminal["Xterm Terminal"] -->|"activate()"| ImageAddon["ImageAddon"]
+
+    ImageAddon --> Renderer["ImageRenderer"]
+    ImageAddon --> Storage["ImageStorage"]
+    ImageAddon --> SixelHandler["SixelHandler"]
+    ImageAddon --> IIPHandler["IIPHandler"]
+
+    Terminal --> Parser["Terminal Parser"]
+    Parser -->|"DCS q"| SixelHandler
+    Parser -->|"OSC 1337"| IIPHandler
+
+    SixelHandler --> Storage
+    IIPHandler --> Storage
+
+    Storage --> Renderer
+    Renderer --> DOMLayer["Canvas Overlay Layer"]

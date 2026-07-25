@@ -1,11 +1,15 @@
-sequenceDiagram
-    participant App
-    participant Legacy as LegacyCrypto
-    participant Cipher
+flowchart LR
+    Key["Raw AES Key"] --> Init["Import CTR + CBC Keys"]
+    Init --> CMACInit["Generate CMAC Subkeys"]
 
-    App->>Legacy: importKey("raw", keyData, algorithm)
-    Legacy->>Cipher: static importKey(...)
-    Cipher-->>Legacy: Cipher Instance
-    App->>Legacy: encrypt(algorithm, key, data)
-    Legacy->>Cipher: key.encrypt(...)
-    Cipher-->>App: Encrypted Data
+    Nonce["Nonce"] --> NCMAC["CMAC(Nonce)"]
+    Data["Plaintext"] --> CTR["AES-CTR Encrypt"]
+    NCMAC --> CTR
+
+    CTR --> ENC["Encrypted Data"]
+    ENC --> MACCalc["CMAC(Encrypted)"]
+    AD["Additional Data"] --> ADCMAC["CMAC(AD)"]
+
+    MACCalc --> FinalMAC["Combine MACs"]
+    ADCMAC --> FinalMAC
+    NCMAC --> FinalMAC

@@ -1,0 +1,4 @@
+flowchart TD
+    CoreEvents["Terminal Events"] --> AuxCore["Auxiliary Core"]
+    AuxCore --> Extensions["Extensions Layer"]
+    Extensions --> BrowserAPIs["Browser DOM & APIs"]

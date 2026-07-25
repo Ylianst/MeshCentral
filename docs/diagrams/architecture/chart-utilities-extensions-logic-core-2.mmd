@@ -1,0 +1,9 @@
+flowchart TD
+    Init["Chart Initialization"] --> Parse["Parse Dataset"]
+    Parse --> Limits["Determine Data Limits"]
+    Limits --> Scales["Configure Scales"]
+    Scales --> Layout["Compute Layout"]
+    Layout --> UpdateElements["Update Elements"]
+    UpdateElements --> Animate["Apply Animations"]
+    Animate --> Draw["Render to Canvas"]
+    Draw --> Plugins["Run Plugin Hooks"]

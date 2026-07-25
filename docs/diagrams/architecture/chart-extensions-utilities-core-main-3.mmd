@@ -1,0 +1,4 @@
+flowchart LR
+    Controller["Controller Update"] --> Animations["Animations Manager"]
+    Animations --> Animator["Global Animator"]
+    Animator --> Render["Canvas Render Loop"]

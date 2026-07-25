@@ -1,4 +1,6 @@
 flowchart TD
-    UrlInput["User Types URL"] --> Validate["Normalize Preview URL"]
-    Validate --> ShowPreview["Show Preview"]
-    ShowPreview --> NotifyPage["onUrlInput(iconKey, value)"]
+    Browser["Browser"] --> UiComponents["Ui Components Module"]
+    UiComponents --> Bootstrap["Bootstrap Framework"]
+    UiComponents --> FontAwesome["FontAwesome Icons"]
+    UiComponents --> GlobalHelpers["Global Modal Helpers"]
+    UiComponents --> PageLogic["Page-Specific Logic"]

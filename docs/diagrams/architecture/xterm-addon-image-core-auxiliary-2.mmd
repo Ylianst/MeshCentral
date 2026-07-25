@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant Handler
+    participant Decoder
+    participant WASM
+    participant Output
+
+    Handler->>Decoder: init(size)
+    Handler->>Decoder: put(chunk)
+    Decoder->>WASM: decode()
+    WASM-->>Decoder: binary data
+    Handler->>Decoder: end()
+    Decoder-->>Handler: data8 buffer

@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant User
+    participant Terminal
+    participant ExtensionsCore
+    participant Utilities
+    participant Browser
+
+    User->>Terminal: Input / Interaction
+    Terminal->>ExtensionsCore: Dispatch lifecycle events
+    ExtensionsCore->>Utilities: Invoke enhancement services
+    Utilities->>Browser: DOM / Clipboard / Accessibility APIs
+    Browser-->>Terminal: Event callbacks

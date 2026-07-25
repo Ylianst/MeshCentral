@@ -1,0 +1,7 @@
+flowchart TD
+    RawData["Raw Dataset"] --> Parse["Dataset Parsing"]
+    Parse --> ScaleTransform["Scale Transformation"]
+    ScaleTransform --> Elements["Renderable Elements"]
+    Elements --> Layout["Layout Engine"]
+    Layout --> CanvasDraw["Canvas Rendering"]
+    CanvasDraw --> TooltipLegend["Tooltip & Legend Updates"]

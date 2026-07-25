@@ -1,0 +1,6 @@
+flowchart TD
+    Update["Controller Update"] --> CreateAnim["Create Animations"]
+    CreateAnim --> Animator["Global Animator (xt)"]
+    Animator --> Tick["Animation Tick"]
+    Tick --> UpdateProps["Update Element Properties"]
+    UpdateProps --> Render["Redraw Chart"]

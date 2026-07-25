@@ -1,0 +1,15 @@
+flowchart LR
+    Terminal["Xterm Terminal"]
+    Parser["Escape Sequence Parser"]
+    ImageAddon["Xterm Addon Image"]
+    Decoder["Image Decoder Layer"]
+    Storage["Image Storage"]
+    Renderer["Renderer Overlay"]
+    Viewport["Terminal Viewport"]
+
+    Terminal --> Parser
+    Parser --> ImageAddon
+    ImageAddon --> Decoder
+    Decoder --> Storage
+    Storage --> Renderer
+    Renderer --> Viewport

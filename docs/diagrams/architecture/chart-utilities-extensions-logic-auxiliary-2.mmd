@@ -1,0 +1,13 @@
+flowchart TD
+    A[Chart Instance] --> B[Configuration Resolver]
+    B --> C[Dataset Controllers]
+    C --> D[Elements]
+    D --> E[Canvas Context]
+
+    A --> F[Scales]
+    A --> G[Layout Engine]
+    A --> H[Plugin Service]
+    A --> I[Animator]
+
+    I --> D
+    H --> A

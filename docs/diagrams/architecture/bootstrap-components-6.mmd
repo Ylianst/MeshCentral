@@ -1,0 +1,5 @@
+flowchart TD
+    A["Modal.show()"] --> B["ScrollBarHelper.hide()"]
+    B --> C["Backdrop.show()"]
+    C --> D["Display modal"]
+    D --> E["Activate FocusTrap"]

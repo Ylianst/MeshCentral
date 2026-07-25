@@ -1,0 +1,7 @@
+# VoltAgent temp files
+temp/
+
+# JSON intermediate files (except schema/config)
+*.json
+!*-schema.json
+!*-config.json

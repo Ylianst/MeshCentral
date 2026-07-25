@@ -1,0 +1,8 @@
+flowchart TD
+    TimeScale["Time Scale"] --> DateAdapter["Ln Adapter"]
+    DateAdapter --> Parse["parse()"]
+    DateAdapter --> Format["format()"]
+    DateAdapter --> Add["add()"]
+    DateAdapter --> Diff["diff()"]
+    DateAdapter --> StartOf["startOf()"]
+    DateAdapter --> EndOf["endOf()"]

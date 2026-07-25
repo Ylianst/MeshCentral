@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant User as User Config
+    participant Chart as Chart
+    participant Resolver as Defaults Resolver (de)
+    participant Scale as Scale
+    participant Animator as Animator
+
+    User->>Chart: new Chart(config)
+    Chart->>Resolver: apply defaults
+    Resolver->>Resolver: merge + route options
+    Resolver-->>Chart: resolved options
+    Chart->>Scale: initialize scales
+    Chart->>Animator: configure animations

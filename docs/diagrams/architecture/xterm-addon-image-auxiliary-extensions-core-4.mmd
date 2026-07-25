@@ -1,0 +1,7 @@
+flowchart TD
+    OSC["OSC 1337"] --> HeaderParser["Header Parser"]
+    HeaderParser --> Validate["Validate Fields"]
+    Validate --> Base64Decode["WASM Base64 Decoder"]
+    Base64Decode --> DetectType["Detect MIME + Dimensions"]
+    DetectType --> Resize["Resize to Cell Geometry"]
+    Resize --> Storage["Add Image to Storage"]

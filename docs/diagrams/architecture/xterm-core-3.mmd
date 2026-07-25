@@ -1,0 +1,5 @@
+flowchart LR
+    Input["Core Buffer Update"] --> RenderService
+    RenderService --> Debouncer["Render Debouncer"]
+    Debouncer --> DomRenderer
+    DomRenderer --> Screen["Terminal DOM"]

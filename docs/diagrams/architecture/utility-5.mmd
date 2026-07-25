@@ -1,0 +1,8 @@
+sequenceDiagram
+    participant App
+    participant RFB
+    participant Listener
+
+    App->>RFB: addEventListener("connect", callback)
+    RFB->>RFB: dispatchEvent({ type: "connect" })
+    RFB->>Listener: callback(event)

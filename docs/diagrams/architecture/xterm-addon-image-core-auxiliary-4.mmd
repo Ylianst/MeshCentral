@@ -1,0 +1,7 @@
+flowchart TD
+    Start["Decode Request"] --> Check["Enough Memory?"]
+    Check -->|No| Grow["Grow WASM Memory"]
+    Check -->|Yes| Reuse["Reuse Existing Buffer"]
+    Grow --> Decode["Perform Decode"]
+    Reuse --> Decode
+    Decode --> Output["Expose Uint8Array"]

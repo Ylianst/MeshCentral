@@ -1,0 +1,6 @@
+flowchart TD
+    TerminalInput["Terminal Input Stream"] --> HandlerLayer["Image Handlers (SIXEL / IIP)"]
+    HandlerLayer --> DecoderCore["Xterm Addon Image Core Auxiliary Main"]
+    DecoderCore --> WasmDecoder["WebAssembly Base64 Engine"]
+    WasmDecoder --> DecodedBytes["Decoded Binary Image Data"]
+    DecodedBytes --> RendererLayer["Image Renderer / Storage"]

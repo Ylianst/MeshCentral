@@ -1,0 +1,16 @@
+flowchart TD
+    ChartConstructor["Chart Constructor"] --> Registry["Component Registry (tn)"]
+    Registry --> Controllers["Dataset Controllers"]
+    Registry --> Elements["Visual Elements"]
+    Registry --> Scales["Scale Implementations"]
+    Registry --> Plugins["Core Plugins"]
+
+    Controllers --> Animator["Animator (Animations)"]
+    Controllers --> Layout["Layout Engine"]
+
+    Plugins --> Tooltip["Tooltip Plugin"]
+    Plugins --> Legend["Legend Plugin"]
+    Plugins --> Filler["Filler Plugin"]
+
+    ChartConstructor --> Platform["Platform Abstraction"]
+    Platform --> Canvas["Canvas Context"]

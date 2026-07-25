@@ -1,0 +1,11 @@
+flowchart TD
+    Terminal["Xterm Terminal"] --> Parser["Parser (CSI / DCS / OSC)"]
+    Parser --> ImageAddon["ImageAddon"]
+    ImageAddon --> SixelHandler["Sixel Handler"]
+    ImageAddon --> IIPHandler["IIP Handler"]
+    SixelHandler --> Decoder["WASM Decoder"]
+    IIPHandler --> Base64Decoder["Base64 / Header Parser"]
+    Decoder --> ImageStorage["Image Storage"]
+    Base64Decoder --> ImageStorage
+    ImageStorage --> ImageRenderer["Image Renderer Layer"]
+    ImageRenderer --> Canvas["Overlay Canvas"]
