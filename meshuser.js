@@ -1036,7 +1036,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if (url.searchParams.get('p') == '4') { requiredNonRights = MESHRIGHT_NOREGISTRY; }
                         else if (url.searchParams.get('p') == '5') { requiredNonRights = MESHRIGHT_NOFILES; }
-                        else if (url.searchParams.get('p') == '6') { requiredNonRights = MESHRIGHT_NOSOFTWARE || MESHRIGHT_SOFTWAREREAD; }
+                        else if (url.searchParams.get('p') == '6') { requiredNonRights = MESHRIGHT_NOSOFTWARE; requiredRights = MESHRIGHT_SOFTWAREREAD; }
 
                         // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
                         if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.searchParams.get('p') == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }
