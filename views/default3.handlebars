@@ -15876,6 +15876,7 @@
                 x += searchTerm ? "No applications matching" + '"' + EscapeHtml(searchTerm) + '"' : "No desktop applications found";
                 x += '</td></tr>';
             } else {
+                var userRights = GetNodeRights(currentNode);
                 for (var i = 0; i < desktopApps.length; i++) {
                     var app = desktopApps[i];
                     var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
@@ -15887,10 +15888,7 @@
                     x += '<td>' + EscapeHtml(app.date || '-') + '</td>';
                     x += '<td>' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center">';
-                    var userRights = GetNodeRights(currentNode);
-                    console.log('User rights for current node:', userRights);		
 					if (hasUninstall && (userRights == 0xFFFFFFFF || ((userRights & 8) && !(userRights & 16777216)))) {
-                    //if (hasUninstall ) {
 						x += '<button class="btn btn-sm btn-secondary" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')">Uninstall</button>';
 					} else {
 						x += '<span style="color:var(--bs-secondary)">-</span>';
@@ -15920,6 +15918,7 @@
 					x += searchTerm ? "No store apps matching" + '"' + EscapeHtml(searchTerm) + '"' : "No store apps found";
 					x += '</td></tr>';
 				} else {
+                    var userRights = GetNodeRights(currentNode);
 					for (var i = 0; i < storeApps.length; i++) {
 						var app = storeApps[i];
 						var uninstallCmd = app.uninstall ? encodeURIComponent(app.uninstall) : '';
@@ -15943,8 +15942,7 @@
 						x += '<td title="' + EscapeHtml(app.packageFullName || '') + '">' + EscapeHtml(app.publisher || '-') + '</td>';
 						x += '<td style="text-align:center">' + scopeBadge + '</td>';
 						x += '<td style="text-align:center">';
-						var userRights = GetNodeRights(currentNode);
-						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+						if (hasUninstall && (userRights == 0xFFFFFFFF || ((userRights & 8) && !(userRights & 16777216)))) {
 							x += '<button class="btn btn-sm btn-secondary" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')">Remove</button>';
 						} else {
 							x += '<span style="color:var(--bs-secondary)">-</span>';
