@@ -9594,7 +9594,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 4194304) str1.push("No Registry");
                 if (rights & 8388608) str1.push("No Software");
-                if (rights & 16777216) str1.push("Software Read Only");
+                if (rights & 16777216) str1.push("Software View Only");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -9630,7 +9630,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 4194304) str1.push("No Registry");
                 if (rights & 8388608) str1.push("No Software");
-                if (rights & 16777216) str1.push("Software Read Only");
+                if (rights & 16777216) str1.push("Software View Only");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -15887,8 +15887,10 @@
                     x += '<td>' + EscapeHtml(app.date || '-') + '</td>';
                     x += '<td>' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center">';
-                    var userRights = GetNodeRights(currentNode);				
-					if (hasUninstall && (userRights != 0x01600000)) {
+                    var userRights = GetNodeRights(currentNode);
+                    console.log('User rights for current node:', userRights);		
+					if (hasUninstall && (userRights == 0xFFFFFFFF || ((userRights & 8) && !(userRights & 16777216)))) {
+                    //if (hasUninstall ) {
 						x += '<button class="btn btn-sm btn-secondary" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')">Uninstall</button>';
 					} else {
 						x += '<span style="color:var(--bs-secondary)">-</span>';
@@ -18375,7 +18377,7 @@
                     if (((meshrights & 8) != 0) && (meshrights & 1024) != 0) r.push("No Files");
                     if (((meshrights & 8) != 0) && (meshrights & 4194304) != 0) r.push("No Registry");
                     if (((meshrights & 8) != 0) && (meshrights & 8388608) != 0) r.push("No Software");
-                    if (((meshrights & 8) != 0) && (meshrights & 16777216) != 0) r.push("Software Read Only");
+                    if (((meshrights & 8) != 0) && (meshrights & 16777216) != 0) r.push("Software View Only");
                     if (((meshrights & 8) != 0) && (meshrights & 2048) != 0) r.push("No Intel&reg; AMT");
                     if (((meshrights & 8) != 0) && ((meshrights & 4096) != 0) && ((meshrights & 256) == 0)) r.push("Limited Input");
                     if ((meshrights & 8192) != 0) r.push("Self Events Only");
@@ -20766,7 +20768,7 @@
                     if ((user.removeRights & 0x00000400) != 0) { userFeatures.push("No Files"); }
                     if ((user.removeRights & 0x00400000) != 0) { userFeatures.push("No Registry"); }
                     if ((user.removeRights & 0x00800000) != 0) { userFeatures.push("No Software"); }
-                    if ((user.removeRights & 0x01600000) != 0) { userFeatures.push("Software Read Only"); }
+                    if ((user.removeRights & 0x01600000) != 0) { userFeatures.push("Software View Only"); }
                 }
                 if ((user.removeRights & 0x00000010) != 0) { userFeatures.push("No Console"); }
                 if ((user.removeRights & 0x00008000) != 0) { userFeatures.push("No Uninstall"); }
@@ -24045,7 +24047,7 @@
             if ((userinfo.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
             if ((userinfo.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
             if ((userinfo.removeRights & 0x00800000) != 0) { add += 0x00800000; } // No Software
-            if ((userinfo.removeRights & 0x00800000) != 0) { add += 0x01600000; } // Software Read Only
+            if ((userinfo.removeRights & 0x00800000) != 0) { add += 0x01600000; } // Software View Only
             if ((userinfo.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
             if ((userinfo.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
             if ((userinfo.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command
