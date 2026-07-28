@@ -6068,6 +6068,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var newuserid = command.userids[i], newuser = null;
             if (newuserid.startsWith('user/')) { newuser = parent.users[newuserid]; }
             else if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
+            else { newuserid = 'user/' + domain.id + '/' + newuserid; newuser = parent.users[newuserid]; }
     
             // Search for a user name in that windows domain is the username starts with *\
             if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
