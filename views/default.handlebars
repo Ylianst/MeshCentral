@@ -17085,34 +17085,18 @@
             x += '<div class=bar>';
             x += '<div class=baricon><input class=UserCheckbox value=' + encodeURIComponentEx(user._id) + ' onclick=p3updateInfo() type=checkbox' + ((user._id == userinfo._id)?' disabled':'') + '></div><div style=cursor:pointer onclick=gotoUser("' + encodeURIComponentEx(user._id) + '",false,event)>';
             if ((user.flags != null) && ((user.flags & 1) != 0)) {
-                if (user.accountImageRnd == null) {
-                    user.accountImageRnd = Math.floor(Math.random() * 9999999999);
-                }
-
-                var userImageUrl =
-                    'userimage.ashx?id=' +
-                    encodeURIComponent(user._id.split('/')[2]) +
-                    '&rnd=' +
-                    user.accountImageRnd;
-
-                x += '<div class=baricon style="width:30px">' +
-                    '<img' +
-                    ' src="' + userImageUrl + '"' +
-                    ' alt=""' +
-                    ' class="' + gray.trim() + '"' +
-                    ' width="24"' +
-                    ' height="24"' +
-                    ' loading="lazy"' +
+                if (user.accountImageRnd == null) { user.accountImageRnd = Math.floor(Math.random() * 9999999999); }
+                var userImageUrl = 'userimage.ashx?id=' + encodeURIComponent(user._id.split('/')[2]) + '&rnd=' + user.accountImageRnd;
+                x += '<div class=baricon>' +
+                    '<img src="' + userImageUrl + '" alt="" class="' + gray.trim() + '"' +
+                    ' width="24" height="24" loading="lazy"' +
                     ' onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'block\';"' +
                     ' style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle"' +
                     ' />' +
-                    '<div class="' + icon + gray + '"' +
-                    ' style="display:none"></div>' +
+                    '<div class="' + icon + gray + '" style="display:none"></div>' +
                     '</div>';
             } else {
-                x += '<div class=baricon>' +
-                    '<div class="' + icon + gray + '"></div>' +
-                    '</div>';
+                x += '<div class=baricon><div class="' + icon + gray + '"></div></div>';
             }
             x += '<div class=g1></div><div class=g2></div><div>';
             x += '<div><span style=line-height:24px>' + username + '</span>' + msg + '</div></div><td style=text-align:center>' + groups + '<td style=text-align:center>' + lastAccess + '<td style=text-align:center>' + permissions;
