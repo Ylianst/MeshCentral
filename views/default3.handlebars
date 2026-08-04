@@ -15299,7 +15299,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", str);
                 }
-                if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2])); }
+                if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2]), true); }
                 if (node.firstconnect) { x += addDetailItem("First agent connection", printDateTime(new Date(node.firstconnect))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
@@ -24333,7 +24333,7 @@
         function printFlexDateTime(d) { if (printDate(new Date()) == printDate(d)) { return printTime(d); } else { return printDateTime(d); } }
 
         function addDetailItem(title, value, state, classNames = []) {
-            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-7'}"> ${nobreak(title)} </div><div class="${classNames[1] || 'col-md-5 text-end'}"> ${value} </div></div>`;
+            return `<div class="row mb-1"><div class="${classNames[0] || 'col-md-7'}">${nobreak(title)}</div><div class="${classNames[1] || 'col-md-5 text-end'}" ${state === true ? 'style=word-break:break-all' : ''}>${value}</div></div>`;
         }
 
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? EscapeHtml(args[number]) : match; }); };

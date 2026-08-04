@@ -6940,7 +6940,7 @@
                     if (node.agent.id == 14) { str = node.agent.core; }
                     x += addDetailItem("Mesh Agent", EscapeHtml(str));
                 }
-                if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2])); }
+                if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2]), true); }
                 if (node.firstconnect) { x += addDetailItem("First agent connection", EscapeHtml(printDateTime(new Date(node.firstconnect)))); }
                 if ((node.conn & 1) != 0) {
                     x += addDetailItem("Last agent connection", "Connected now");
@@ -8339,7 +8339,7 @@
             if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
             return (useridsplit[2] + guestname);
         }
-        function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
+        function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right' + (state === true ? ';word-break:break-all' : '') + '>' + value + '</table>'; }
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
