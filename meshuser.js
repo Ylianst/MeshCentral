@@ -61,7 +61,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
     const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
-    const MESHRIGHT_SOFTWAREREAD        = 0x01600000; // 16777216
+    const MESHRIGHT_SOFTWAREREAD        = 0x01600000; // 23068672
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights

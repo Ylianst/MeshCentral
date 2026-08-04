@@ -1669,7 +1669,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
-                if (args.softwareread) { meshrights |= 16777216; }
+                if (args.softwareread) { meshrights |= 23068672; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
@@ -1699,7 +1699,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
-                if (args.softwareread) { meshrights |= 16777216; }
+                if (args.softwareread) { meshrights |= 23068672; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
