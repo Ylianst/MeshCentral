@@ -8291,6 +8291,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                     if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                     if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
+                    if (typeof domain.authstrategies.saml.acceptedClockSkewMs == 'number') { options.acceptedClockSkewMs = domain.authstrategies.saml.acceptedClockSkewMs; }
+                    if (typeof domain.authstrategies.saml.maxAssertionAgeMs == 'number') { options.maxAssertionAgeMs = domain.authstrategies.saml.maxAssertionAgeMs; }
                     parent.authLog('setupDomainAuthStrategy', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                     const SamlStrategy = require('passport-saml').Strategy;
