@@ -5918,8 +5918,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'openurl': {
-                if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
-                else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
+                if (args['_'].length != 1) { // Display usage
+					response = 'Proper usage: openurl (url)'; 
+				} else {
+					// Check if URL is valid (http or https only)
+					if (!isValidHttpUrl(args['_'][0])) {
+						response = "Invalid URL.";
+						break;
+					}
+
+					if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; }
+				}
                 break;
             }
             case 'openfile': {
