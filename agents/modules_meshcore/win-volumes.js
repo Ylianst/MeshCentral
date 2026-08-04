@@ -200,10 +200,42 @@ function windows_volumes_wmi()
                     });
             } finally { sess.release(); }
         }
+        var networkdrives = network_drives();
+        for (var letter in networkdrives) { drives[letter] = networkdrives[letter]; }
         p1._res({ error: null, drives: drives });
     } catch (e) { console.log('windows_volumes error: ' + (e && e.message ? e.message : e)); p1._res({ error: e, drives: drives }); } // just return what we got
 
     return (p1);
+}
+
+function network_drives () {
+    var drives = {};
+    try {
+        var u = require('user-sessions');
+        var reg = require('win-registry');
+        var activeUid = u.consoleUid();
+        if (activeUid != null) {
+            var uname = u.getUsername(activeUid);
+            if (uname) {
+                var domain = u.getDomain(activeUid);
+                var sid = reg.usernameToUserKey({ domain: domain, user: uname });
+                if (sid) {
+                    var networkPath = sid + '\\Network';
+                    var netData = reg.QueryKey(reg.HKEY.Users, networkPath);
+                    if (netData && netData.subkeys && netData.subkeys.length > 0) {
+                        for (var i = 0; i < netData.subkeys.length; i++) {
+                            var letter = netData.subkeys[i]; 
+                            var remotePath = reg.QueryKey(reg.HKEY.Users, networkPath + '\\' + letter, 'RemotePath');   
+                            if (remotePath) { drives[letter] = { name: remotePath, type: "Network Drive" }; }
+                        }
+                    }
+                }
+            }
+        }
+    } catch(e) {
+        // wont work for domain users but ok for local users
+    }
+    return (drives);
 }
 
 module.exports = {
