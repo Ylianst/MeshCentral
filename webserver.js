@@ -6741,7 +6741,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
 		require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(async function (installer) {
-			setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
 			const { Writable } = require('node:stream');
 			const zip = require('@zip.js/zip.js');
 
