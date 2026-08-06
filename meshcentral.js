@@ -3678,7 +3678,7 @@ function CreateMeshCentralServer(config, args) {
 						// Compress the agent using ZIP
 						const x = this.meshAgentBinary;
 
-						const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9 });
+						const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9, zip64: false });
 
 						zipWriter.add(
 							'meshagent',
@@ -3718,7 +3718,7 @@ function CreateMeshCentralServer(config, args) {
 					// Compress the agent using ZIP
 					const zip = require('@zip.js/zip.js');
 					const x = objx.meshAgentBinaries[archid];
-					const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9 });
+					const zipWriter = new zip.ZipWriter(new zip.Uint8ArrayWriter(), { level: 9, zip64: false });
 
 					zipWriter.add(
 						'meshagent',
