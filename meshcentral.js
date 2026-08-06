@@ -3682,8 +3682,7 @@ function CreateMeshCentralServer(config, args) {
 
 						zipWriter.add(
 							'meshagent',
-							new zip.Uint8ArrayReader(x.data),
-							{ level: 9 }
+							new zip.Uint8ArrayReader(x.data)
 						).then(function () {
 							return zipWriter.close();
 						}).then(function (zipData) {
@@ -3723,8 +3722,7 @@ function CreateMeshCentralServer(config, args) {
 
 					zipWriter.add(
 						'meshagent',
-						new zip.Uint8ArrayReader(x.data),
-						{ level: 9 }
+						new zip.Uint8ArrayReader(x.data)
 					).then(function () {
 						return zipWriter.close();
 					}).then(function (zipData) {
