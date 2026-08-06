@@ -3763,32 +3763,38 @@ module.exports.CreateDB = function (parent, func) {
 			const ignoreFiles = options.ignoreFiles || [];
 			const skipFolders = options.skipFolders || [];
 
-			async function walk(currentFsPath, currentZipPath) {
-				const stat = await fs.promises.stat(currentFsPath);
-				const currentZipName = zipName(currentZipPath);
+			const exclude = (name) => {
+				const currentZipName = zipName(path.join(archiveRoot, name));
+				if (shouldSkipDirectory(currentZipName, skipFolders)) return true;
+				if (matchesGlob(currentZipName, ignoreFiles)) return true;
+				return false;
+			};
 
-				if (matchesGlob(currentZipName, ignoreFiles)) return;
+			const rootStat = await fs.promises.stat(sourceDir);
+			const rootZipName = zipName(archiveRoot);
+			if (!shouldSkipDirectory(rootZipName, skipFolders) && !matchesGlob(rootZipName, ignoreFiles)) {
+				await zipWriter.add(rootZipName.endsWith('/') ? rootZipName : rootZipName + '/', undefined, {
+					directory: true,
+					lastModDate: rootStat.mtime
+				});
+			}
+
+			for await (const file of fs.promises.glob('**/*', { cwd: sourceDir, exclude })) {
+				const fullFsPath = path.join(sourceDir, file);
+				const currentZipName = zipName(path.join(archiveRoot, file));
+				const stat = await fs.promises.stat(fullFsPath);
 
 				if (stat.isDirectory()) {
-					if (shouldSkipDirectory(currentZipName, skipFolders)) return;
-
 					await zipWriter.add(currentZipName.endsWith('/') ? currentZipName : currentZipName + '/', undefined, {
 						directory: true,
 						lastModDate: stat.mtime
 					});
-
-					const entries = await fs.promises.readdir(currentFsPath, { withFileTypes: true });
-					for (const entry of entries) {
-						await walk(path.join(currentFsPath, entry.name), path.join(currentZipPath, entry.name));
-					}
 				} else if (stat.isFile()) {
-					await zipWriter.add(currentZipName, Readable.toWeb(fs.createReadStream(currentFsPath)), {
+					await zipWriter.add(currentZipName, Readable.toWeb(fs.createReadStream(fullFsPath)), {
 						lastModDate: stat.mtime
 					});
 				}
 			}
-
-			await walk(sourceDir, archiveRoot);
 		}
 
 		async function cleanupAfterZip() {
@@ -3945,39 +3951,39 @@ module.exports.CreateDB = function (parent, func) {
         if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.keeplastdaysbackup == 'number')) {
             let cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - parent.config.settings.autobackup.keeplastdaysbackup);
-            fs.readdir(parent.backuppath, function (err, dir) {
+
+            (async () => {
                 try {
-                    if (err == null) {
-                        if (dir.length > 0) {
-                            let fileName = parent.config.settings.autobackup.backupname;
-                            let checked = 0;
-                            let removed = 0;
-                            for (var i in dir) {
-                                var name = dir[i];
-                                parent.debug('backup', "checking file: ", path.join(parent.backuppath, name));
-                                if (name.startsWith(fileName) && name.endsWith('.zip')) {
-                                    var timex = name.substring(fileName.length, name.length - 4).split('-');
-                                    if (timex.length == 5) {
-                                        checked++;
-                                        var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
-                                        if (fileDate && (cutoffDate > fileDate)) {
-                                            console.log("Removing expired backup file: ", path.join(parent.backuppath, name));
-                                            fs.unlink(path.join(parent.backuppath, name), function (err) { if (err) { console.error(err.message); if (func) {func('Error removing: ' + err.message); } } });
-                                            removed++;
-                                        }
-                                    }
-                                    else { parent.debug('backup', "file: " + name + " timestamp failure: ", timex); }
+                    let fileName = parent.config.settings.autobackup.backupname;
+                    let checked = 0;
+                    let removed = 0;
+                    for await (const name of fs.promises.glob(fileName + '*.zip', { cwd: parent.backuppath })) {
+                        parent.debug('backup', "checking file: ", path.join(parent.backuppath, name));
+                        var timex = name.substring(fileName.length, name.length - 4).split('-');
+                        if (timex.length == 5) {
+                            checked++;
+                            var fileDate = new Date(parseInt(timex[0]), parseInt(timex[1]) - 1, parseInt(timex[2]), parseInt(timex[3]), parseInt(timex[4]));
+                            if (fileDate && (cutoffDate > fileDate)) {
+                                console.log("Removing expired backup file: ", path.join(parent.backuppath, name));
+                                try {
+                                    await fs.promises.unlink(path.join(parent.backuppath, name));
+                                    removed++;
+                                } catch (err) {
+                                    console.error(err.message); if (func) { func('Error removing: ' + err.message); }
                                 }
                             }
-                            let mesg= 'Checked ' + checked + ' candidates in ' + parent.backuppath + '. Removed ' + removed + ' expired backupfiles using cutoffDate: '+ cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' });
-                            parent.debug (mesg);
-                            if (func) { func(mesg); }
-                        } else { console.error('No files found in ' + parent.backuppath + '. There should be at least one.')}
+                        } else {
+                            parent.debug('backup', "file: " + name + " timestamp failure: ", timex);
+                        }
                     }
-                    else
-                    { console.error(err); parent.addServerWarning( 'Reading files in backup directory ' + parent.backuppath + ' failed, check errorlog: ' + err.message, true); }
-                } catch (ex) { console.error(ex); parent.addServerWarning( 'Something went wrong during removeExpiredBackupfiles, check errorlog: ' +ex.message, true); }
-            });
+                    let mesg = 'Checked ' + checked + ' candidates in ' + parent.backuppath + '. Removed ' + removed + ' expired backupfiles using cutoffDate: ' + cutoffDate.toLocaleString('default', { dateStyle: 'short', timeStyle: 'short' });
+                    parent.debug(mesg);
+                    if (func) { func(mesg); }
+                } catch (err) {
+                    console.error(err);
+                    parent.addServerWarning('Reading files in backup directory ' + parent.backuppath + ' failed, check errorlog: ' + err.message, true);
+                }
+            })();
         }
     }
 
