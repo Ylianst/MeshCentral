@@ -167,6 +167,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_REMOTECOMMAND = 0x00020000;
     const MESHRIGHT_RESETOFF = 0x00040000;
     const MESHRIGHT_GUESTSHARING = 0x00080000;
+    const MESHRIGHT_DEVICEDETAILS = 0x00100000;
+    const MESHRIGHT_RELAY = 0x00200000;
+    const MESHRIGHT_NOREGISTRY = 0x00400000;
+    const MESHRIGHT_NOSOFTWARE = 0x00800000;
     const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
@@ -481,7 +485,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
-    obj.setAgentIssue = function (agent, issue) { obj.agentIssues.push([new Date().toLocaleString(), agent.remoteaddrport, issue]); while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); } }
+    obj.setAgentIssue = function (agent, issue) {
+        var addrport = agent.remoteaddrport || '';
+        if (!addrport) {
+            var addr = agent.remoteaddr || '';
+            if (!addr && agent.ws && agent.ws._socket && agent.ws._socket.remoteAddress) {
+                addr = agent.ws._socket.remoteAddress;
+            }
+            if (addr) {
+                var port = '';
+                if (agent.ws && agent.ws._socket && agent.ws._socket.remotePort) {
+                    port = ':' + agent.ws._socket.remotePort;
+                }
+                addrport = addr + port;
+            }
+        }
+        obj.agentIssues.push([new Date().toLocaleString(), addrport, issue]);
+        while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); }
+    }
     obj.agentIssues = [];
 
     // Authenticate the user
@@ -4010,7 +4031,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
                 try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
             } else {
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filename, filesize: stat.size }, req, domain));
+                // The download page puts the filename inside a JavaScript string (var filename = '...'),
+                // so escape backslashes and single quotes to keep it inside that string.
+                var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
             }
         } else {
             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
@@ -8288,6 +8312,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (typeof domain.authstrategies.saml.callbackurl == 'string') { options.callbackUrl = domain.authstrategies.saml.callbackurl; } else { options.callbackUrl = url + 'auth-saml-callback'; }
                     if (domain.authstrategies.saml.disablerequestedauthncontext != null) { options.disableRequestedAuthnContext = domain.authstrategies.saml.disablerequestedauthncontext; }
                     if (typeof domain.authstrategies.saml.entityid == 'string') { options.issuer = domain.authstrategies.saml.entityid; }
+                    if (typeof domain.authstrategies.saml.acceptedClockSkewMs == 'number') { options.acceptedClockSkewMs = domain.authstrategies.saml.acceptedClockSkewMs; }
+                    if (typeof domain.authstrategies.saml.maxAssertionAgeMs == 'number') { options.maxAssertionAgeMs = domain.authstrategies.saml.maxAssertionAgeMs; }
                     parent.authLog('setupDomainAuthStrategy', 'Adding SAML SSO with options: ' + JSON.stringify(options));
                     options.cert = cert.toString().split('-----BEGIN CERTIFICATE-----').join('').split('-----END CERTIFICATE-----').join('');
                     const SamlStrategy = require('passport-saml').Strategy;
@@ -9509,6 +9535,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((user.removeRights & 0x00000100) != 0) { add += 0x00000100; } // Desktop View Only
         if ((user.removeRights & 0x00000200) != 0) { add += 0x00000200; } // No Terminal
         if ((user.removeRights & 0x00000400) != 0) { add += 0x00000400; } // No Files
+        if ((user.removeRights & 0x00400000) != 0) { add += 0x00400000; } // No Registry
+        if ((user.removeRights & 0x00800000) != 0) { add += 0x00800000; } // No Software
         if ((user.removeRights & 0x00000010) != 0) { substract += 0x00000010; } // No Console
         if ((user.removeRights & 0x00008000) != 0) { substract += 0x00008000; } // No Uninstall
         if ((user.removeRights & 0x00020000) != 0) { substract += 0x00020000; } // No Remote Command

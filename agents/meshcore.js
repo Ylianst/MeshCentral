@@ -310,9 +310,11 @@ function getCoreTranslation() {
     setDefaultCoreTranslation(ret, 'terminalConsent', '{0} requesting remote terminal access. Grant access?');
     setDefaultCoreTranslation(ret, 'desktopConsent', '{0} requesting remote desktop access. Grant access?');
     setDefaultCoreTranslation(ret, 'fileConsent', '{0} requesting remote file Access. Grant access?');
+    setDefaultCoreTranslation(ret, 'registryConsent', '{0} requesting remote registry access. Grant access?');
     setDefaultCoreTranslation(ret, 'terminalNotify', '{0} started a remote terminal session.');
     setDefaultCoreTranslation(ret, 'desktopNotify', '{0} started a remote desktop session.');
     setDefaultCoreTranslation(ret, 'fileNotify', '{0} started a remote file session.');
+    setDefaultCoreTranslation(ret, 'registryNotify', '{0} started a remote registry session.');
     setDefaultCoreTranslation(ret, 'privacyBar', 'Sharing desktop with: {0}');
 
     return (ret);
@@ -822,7 +824,7 @@ function onUserSessionChanged(user, locked) {
                 if(userobj && userobj.length > 0){
                     for (var j = 0; j < userobj.length; j++) {
                         if (userobj[j] && userobj[j].SAM && userobj[j].SAM[0].trim() === a[i].Username) {
-                            meshCoreObj.upnusers.push(userobj[j].UPN);
+                            if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                             break;
                         }
                     }
@@ -839,7 +841,7 @@ function onUserSessionChanged(user, locked) {
                     if(userobj && userobj.length > 0){
                         for (var j = 0; j < userobj.length; j++) {
                             if (userobj[j] && userobj[j].SAM && userobj[j].SAM.length == 0 && userobj[j].UPN && userobj[j].UPN != '') {
-                                meshCoreObj.upnusers.push(userobj[j].UPN);
+                                if (meshCoreObj.upnusers.indexOf(userobj[j].UPN) === -1) { meshCoreObj.upnusers.push(userobj[j].UPN); }
                                 break;
                             }
                         }
@@ -877,7 +879,211 @@ var wifiScanner = null;
 var networkMonitor = null;
 var nextTunnelIndex = 1;
 var apftunnel = null;
-var tunnelUserCount = { terminal: {}, files: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files and TCP/UDP routing
+var tunnelUserCount = { terminal: {}, files: {}, registry: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files, registry and TCP/UDP routing
+
+function getRegistryRoots() {
+    return ['HKEY_LOCAL_MACHINE', 'HKEY_CURRENT_USER', 'HKEY_USERS', 'HKEY_CLASSES_ROOT', 'HKEY_CURRENT_CONFIG'];
+}
+
+function getRegistryHiveEnum(hiveName) {
+    var registry = require('win-registry');
+    switch (hiveName) {
+        case 'HKEY_LOCAL_MACHINE': return registry.HKEY.LocalMachine;
+        case 'HKEY_CURRENT_USER': return registry.HKEY.CurrentUser;
+        case 'HKEY_USERS': return registry.HKEY.Users;
+        case 'HKEY_CLASSES_ROOT': return registry.HKEY.ClassesRoot;
+        case 'HKEY_CURRENT_CONFIG': return registry.HKEY.CurrentConfig;
+        default: return null;
+    }
+}
+
+function guessRegistryValueType(value) {
+    if (value == null) { return 'REG_NONE'; }
+    if (typeof value == 'number') { return ((Math.floor(value) === value) && (value >= 0) && (value <= 0xFFFFFFFF)) ? 'REG_DWORD' : 'REG_QWORD'; }
+    if (typeof value == 'string') { return 'REG_SZ'; }
+    if (Array.isArray(value)) { return 'REG_MULTI_SZ'; }
+    if (Buffer.isBuffer(value)) { return 'REG_BINARY'; }
+    return 'REG_UNKNOWN';
+}
+
+function getRegistryValueType(hiveName, path, valueName, fallbackValue) {
+    try {
+        var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
+        var args = ['query', fullPath];
+        if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
+        var output = runRegistryCommand(args, true);
+        if (typeof output == 'string') {
+            var lines = output.split(/\r?\n/);
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
+                var parts = line.split(/\s{2,}/);
+                if ((parts.length >= 2) && (parts[1].indexOf('REG_') == 0)) { return parts[1]; }
+            }
+        }
+    } catch (ex) { }
+    return guessRegistryValueType(fallbackValue);
+}
+
+function listRegistryKey(hiveName, path) {
+    var registry = require('win-registry');
+    var hive = getRegistryHiveEnum(hiveName);
+    if (hive == null) { throw ('Unknown registry hive: ' + hiveName); }
+
+    var result = registry.QueryKey(hive, path);
+    if (result == null) { return { hive: hiveName, path: path, subkeys: [], values: [] }; }
+
+    var response = { hive: hiveName, path: path, subkeys: (result.subkeys || []), values: [] };
+    if (result.values != null) {
+        for (var i = 0; i < result.values.length; i++) {
+            var valueName = result.values[i], valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
+            try { valueData = registry.QueryKey(hive, path, valueName); } catch (ex) { valueData = null; }
+            valueType = getRegistryValueType(hiveName, path, valueName, valueData);
+            if (valueData == null) { valueText = ''; }
+            else if (typeof valueData == 'object') {
+                try { valueText = JSON.stringify(valueData); } catch (ex) { valueText = String(valueData); }
+            } else {
+                valueText = String(valueData);
+            }
+            response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
+        }
+    }
+    return response;
+}
+
+function getRegistryFullPath(hiveName, path) {
+    return hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
+}
+
+function getRegistryExecutableCandidates() {
+    return ['C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
+}
+
+function runRegistryCommand(args, returnOutput) {
+    var fs = require('fs');
+    var child = null, childProcess = require('child_process'), lastExecError = null, executable = null, candidates = getRegistryExecutableCandidates(), execArgs = null;
+    for (var i = 0; i < candidates.length; i++) {
+        executable = candidates[i];
+        if ((executable.indexOf('\\') >= 0) && (fs.existsSync(executable) == false)) { continue; }
+        try {
+            execArgs = ['reg.exe'].concat(args);
+            child = childProcess.execFile(executable, execArgs);
+            break;
+        } catch (ex) {
+            lastExecError = ex;
+            child = null;
+        }
+    }
+    if (child == null) {
+        if (lastExecError != null) { throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + '] (' + lastExecError + ')'); }
+        throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + ']');
+    }
+    child.stdout.str = '';
+    child.stderr.str = '';
+    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+    child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
+    child.waitExit();
+    if ((child.exitCode != null) && (child.exitCode !== 0)) {
+        if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
+        if ((child.stdout.str != null) && (child.stdout.str.trim() != '')) { throw (child.stdout.str.trim()); }
+        throw ('Registry command failed with exit code ' + child.exitCode + ' using ' + executable + '.');
+    }
+    if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
+    if (returnOutput === true) { return child.stdout.str || ''; }
+    return child.stdout.str || '';
+}
+
+function createRegistrySubKey(hiveName, path, keyName) {
+    if ((keyName == null) || (keyName === '')) { throw ('Registry key name is required.'); }
+    if (keyName.indexOf('\\') >= 0) { throw ('Registry key name cannot contain backslashes.'); }
+    runRegistryCommand(['add', getRegistryFullPath(hiveName, ((path != null) && (path !== '')) ? (path + '\\' + keyName) : keyName), '/f']);
+}
+
+function deleteRegistryEntries(items) {
+    if ((items == null) || (items.length == 0)) { throw ('Nothing selected for deletion.'); }
+    for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if ((item == null) || (item.hive == null)) { continue; }
+        if (item.kind == 'key') {
+            runRegistryCommand(['delete', getRegistryFullPath(item.hive, ((item.path != null) && (item.path !== '')) ? (item.path + '\\' + item.name) : item.name), '/f']);
+        } else if (item.kind == 'value') {
+            var args = ['delete', getRegistryFullPath(item.hive, item.path || '')];
+            if ((item.name == null) || (item.name === '')) { args.push('/ve'); } else { args.push('/v', item.name); }
+            args.push('/f');
+            runRegistryCommand(args);
+        } else {
+            throw ('Deleting registry hives is not allowed.');
+        }
+    }
+}
+
+function setRegistryValue(hiveName, path, valueName, valueType, valueData) {
+    if ((valueType == null) || (valueType === '')) { throw ('Registry value type is required.'); }
+    valueType = valueType.toUpperCase();
+    if ((valueType == 'REG_DWORD') || (valueType == 'REG_QWORD')) {
+        if ((typeof valueData != 'string') || (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(valueData.trim()) == false)) { throw ('Only decimal or 0x-prefixed numeric data is supported for ' + valueType + '.'); }
+        valueData = valueData.trim();
+    } else if (valueData == null) {
+        valueData = '';
+    } else {
+        valueData = String(valueData);
+    }
+    var args = ['add', getRegistryFullPath(hiveName, path || '')];
+    if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
+    args.push('/t', valueType, '/d', valueData, '/f');
+    runRegistryCommand(args);
+}
+
+function renameRegistryEntry(item, newName) {
+    if ((item == null) || (item.hive == null)) { throw ('Nothing selected for rename.'); }
+    if ((newName == null) || (newName === '')) { throw ('A new registry name is required.'); }
+    if (newName.indexOf('\\') >= 0) { throw ('Registry names cannot contain backslashes.'); }
+    if (item.kind == 'key') {
+        var oldKeyPath = ((item.path != null) && (item.path !== '')) ? (item.path + '\\' + item.name) : item.name;
+        var newKeyPath = ((item.path != null) && (item.path !== '')) ? (item.path + '\\' + newName) : newName;
+        runRegistryCommand(['copy', getRegistryFullPath(item.hive, oldKeyPath), getRegistryFullPath(item.hive, newKeyPath), '/s', '/f']);
+        runRegistryCommand(['delete', getRegistryFullPath(item.hive, oldKeyPath), '/f']);
+        return;
+    }
+    if (item.kind == 'value') {
+        if ((item.name == null) || (item.name === '')) { throw ('The default registry value cannot be renamed in this increment.'); }
+        var hive = getRegistryHiveEnum(item.hive), valueData = null, valueType = 'REG_UNKNOWN';
+        if (hive == null) { throw ('Unknown registry hive: ' + item.hive); }
+        try { valueData = require('win-registry').QueryKey(hive, item.path || '', item.name); } catch (ex) { valueData = null; }
+        valueType = getRegistryValueType(item.hive, item.path || '', item.name, valueData);
+        setRegistryValue(item.hive, item.path || '', newName, valueType, valueData);
+        deleteRegistryEntries([{ kind: 'value', hive: item.hive, path: item.path || '', name: item.name }]);
+        return;
+    }
+    throw ('Registry hives cannot be renamed.');
+}
+
+// reg.exe writes .reg files as UTF-16LE with a BOM, the agent has no utf16 decoder.
+// Decode in chunks, a per-char string concat would be O(n^2) on a large export (HKLM\SOFTWARE is tens of MB).
+function utf16leToString(buf) {
+    var start = ((buf.length > 1) && (buf[0] == 0xFF) && (buf[1] == 0xFE)) ? 2 : 0;
+    var parts = [], chunk = [];
+    for (var i = start; (i + 1) < buf.length; i += 2) {
+        chunk.push(buf[i] + (buf[i + 1] * 256));
+        if (chunk.length == 8192) { parts.push(String.fromCharCode.apply(null, chunk)); chunk = []; }
+    }
+    if (chunk.length > 0) { parts.push(String.fromCharCode.apply(null, chunk)); }
+    return parts.join('');
+}
+
+function exportRegistryKey(hiveName, path) {
+    if ((path == null) || (path === '')) { throw ('Select a registry key to export.'); }
+    var fs = require('fs');
+    // Write to the agent folder, not to a shared temp folder, the export can hold sensitive keys
+    var tmpFolder = (process.cwd() != '//') ? process.cwd() : ((process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent\\');
+    var tmpFile = tmpFolder + 'mesh-registry-export-' + Date.now() + '.reg';
+    try {
+        runRegistryCommand(['export', getRegistryFullPath(hiveName, path), tmpFile, '/y']);
+        return utf16leToString(fs.readFileSync(tmpFile));
+    } finally {
+        try { fs.unlinkSync(tmpFile); } catch (ex) { }
+    }
+}
 
 // Add to the server event log
 function MeshServerLog(msg, state) {
@@ -3357,6 +3563,96 @@ function files_tunnel_endhandler()
     if (this._consentpromise && this._consentpromise.close) { this._consentpromise.close(); }
 }
 
+function registry_consent_ok(ws){
+    if (ws.httprequest.consent && (ws.httprequest.consent & 0x0080)) {
+        MeshServerLogEx(165, null, "Started remote registry with toast notification (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
+        var notifyMessage = currentTranslation['registryNotify'].replace(/\{0\}/g, ws.httprequest.realname);
+        var notifyTitle = "MeshCentral";
+        if (ws.httprequest.soptions != null) {
+            if (ws.httprequest.soptions.notifyTitle != null) { notifyTitle = ws.httprequest.soptions.notifyTitle; }
+            if (ws.httprequest.soptions.notifyMsgRegistry != null) { notifyMessage = ws.httprequest.soptions.notifyMsgRegistry.replace(/\{0\}/g, ws.httprequest.realname).replace(/\{1\}/g, ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+    } else {
+        MeshServerLogEx(166, null, "Started remote registry without notification (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
+    }
+    ws.resume();
+}
+
+function registry_consent_ask(ws){
+    ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
+    var consentMessage = currentTranslation['registryConsent'].replace(/\{0\}/g, ws.httprequest.realname).replace(/\{1\}/g, ws.httprequest.username);
+    var consentTitle = 'MeshCentral';
+    if (ws.httprequest.soptions != null) {
+        if (ws.httprequest.soptions.consentTitle != null) { consentTitle = ws.httprequest.soptions.consentTitle; }
+        if (ws.httprequest.soptions.consentMsgRegistry != null) { consentMessage = ws.httprequest.soptions.consentMsgRegistry.replace(/\{0\}/g, ws.httprequest.realname).replace(/\{1\}/g, ws.httprequest.username); }
+    }
+    var pr;
+    if (process.platform == 'win32') {
+        var enhanced = false;
+        if (ws.httprequest.oldStyle === false) { try { require('win-userconsent'); enhanced = true; } catch (ex) { } }
+        if (enhanced) {
+            var ipr = server_getUserImage(ws.httprequest.userid);
+            ipr.consentTitle = consentTitle;
+            ipr.consentMessage = consentMessage;
+            ipr.consentTimeout = ws.httprequest.consentTimeout;
+            ipr.consentAutoAccept = ws.httprequest.consentAutoAccept;
+            ipr.username = ws.httprequest.realname;
+            ipr.tsid = ws.tsid;
+            ipr.translations = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
+            pr = ipr.then(function (img) {
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: this.consentAutoAccept, translations: this.translations, background: color_options.background, foreground: color_options.foreground });
+                this.__childPromise.close = this.consent.close.bind(this.consent);
+                return (this.consent);
+            });
+        } else {
+            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+        }
+    } else {
+        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+    }
+    pr.ws = ws;
+    ws.pause();
+    ws._consentpromise = pr;
+    ws.prependOnceListener('end', files_tunnel_endhandler);
+    pr.then(registry_consentpromise_resolved, registry_consentpromise_rejected);
+}
+
+function registry_consentpromise_resolved(always)
+{
+    if (always && process.platform == 'win32') { server_set_consentTimer(this.ws.httprequest.userid); }
+    this.ws._consentpromise = null;
+    MeshServerLogEx(163, null, "Starting remote registry after local user accepted (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null }));
+    if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x0080)) {
+        var notifyMessage = currentTranslation['registryNotify'].replace(/\{0\}/g, this.ws.httprequest.realname);
+        var notifyTitle = "MeshCentral";
+        if (this.ws.httprequest.soptions != null) {
+            if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
+            if (this.ws.httprequest.soptions.notifyMsgRegistry != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgRegistry.replace(/\{0\}/g, this.ws.httprequest.realname).replace(/\{1\}/g, this.ws.httprequest.username); }
+        }
+        try { require('toaster').Toast(notifyTitle, notifyMessage); } catch (ex) { }
+    }
+    this.ws.resume();
+    this.ws = null;
+}
+
+function registry_consentpromise_rejected(e)
+{
+    if (this.ws) {
+        if (this.ws.httprequest) {
+            if ((this.ws.httprequest.oldStyle === true) && (this.ws.httprequest.consentAutoAccept === true) && (e.toString() != "7")) {
+                registry_consentpromise_resolved.call(this);
+                return;
+            }
+            MeshServerLogEx(164, null, "Failed to start remote registry after local user rejected (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
+        }
+        this.ws._consentpromise = null;
+        this.ws.end(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+        this.ws = null;
+    }
+}
+
 function onTunnelData(data)
 {
     //sendConsoleText('OnTunnelData, ' + data.length + ', ' + typeof data + ', ' + data);
@@ -3386,7 +3682,7 @@ function onTunnelData(data)
     }
     else {
         // Handle tunnel data
-        if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
+        if (this.httprequest.protocol == 0) { // 1 = Terminal (admin), 2 = Desktop, 4 = Registry, 5 = Files, 6 = PowerShell (admin), 7 = Plugin Data Exchange, 8 = Terminal (user), 9 = PowerShell (user), 10 = FileTransfer
             // Take a look at the protocol
             if ((data.length > 3) && (data[0] == '{')) { onTunnelControlData(data, this); return; }
             this.httprequest.protocol = parseInt(data);
@@ -3656,6 +3952,46 @@ function onTunnelData(data)
                 this.removeAllListeners('data');
                 this.on('data', onTunnelControlData);
                 //this.write('MeshCore KVM Hello!1');
+            } else if (this.httprequest.protocol == 4) {
+                //
+                // Remote Registry
+                //
+
+                // Check user access rights for registry
+                if ((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) {
+                    // Disengage this tunnel, user does not have the rights to do this!!
+                    this.httprequest.protocol = 999999;
+                    this.httprequest.s.end();
+                    sendConsoleText("Error: No registry control rights.");
+                    return;
+                }
+
+                this.descriptorMetadata = "Remote Registry";
+
+                // Add the registry session to the count to update the server
+                if (this.httprequest.userid != null) {
+                    var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+                    if (tunnelUserCount.registry[userid] == null) { tunnelUserCount.registry[userid] = 1; } else { tunnelUserCount.registry[userid]++; }
+                    try { mesh.SendCommand({ action: 'sessions', type: 'registry', value: tunnelUserCount.registry }); } catch (ex) { }
+                    broadcastSessionsToRegisteredApps();
+                }
+
+                this.end = function ()
+                {
+                    // Remove the registry session from the count to update the server
+                    if (this.httprequest.userid != null) {
+                        var userid = getUserIdAndGuestNameFromHttpRequest(this.httprequest);
+                        if (tunnelUserCount.registry[userid] != null) { tunnelUserCount.registry[userid]--; if (tunnelUserCount.registry[userid] <= 0) { delete tunnelUserCount.registry[userid]; } }
+                        try { mesh.SendCommand({ action: 'sessions', type: 'registry', value: tunnelUserCount.registry }); } catch (ex) { }
+                        broadcastSessionsToRegisteredApps();
+                    }
+                };
+
+                if (this.httprequest.consent && (this.httprequest.consent & 0x0100)) {
+                    registry_consent_ask(this);
+                } else {
+                    registry_consent_ok(this);
+                }
             } else if (this.httprequest.protocol == 5) {
                 //
                 // Remote Files
@@ -3764,6 +4100,103 @@ function onTunnelData(data)
                 this.httprequest.desktop.state = 1;
             } else {
                 this.httprequest.desktop.write(data);
+            }
+        } else if (this.httprequest.protocol == 4) {
+            // Process registry commands
+            var cmd = null;
+            try { cmd = JSON.parse(data); } catch (ex) { };
+            if (cmd == null) { return; }
+            if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { onTunnelControlData(cmd, this); return; } // If this is control data, handle it now.
+            if (cmd.action == undefined) { return; }
+
+            switch (cmd.action) {
+                case 'listroots': {
+                    var response = { action: 'listroots', reqid: cmd.reqid, roots: [] };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        response.roots = getRegistryRoots();
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'list': {
+                    var response = { action: 'list', reqid: cmd.reqid, hive: cmd.hive, path: cmd.path, subkeys: [], values: [] };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try {
+                            var listResponse = listRegistryKey(cmd.hive, cmd.path || '');
+                            response.hive = listResponse.hive;
+                            response.path = listResponse.path;
+                            response.subkeys = listResponse.subkeys;
+                            response.values = listResponse.values;
+                        } catch (ex) {
+                            response.error = (ex && ex.message) ? ex.message : String(ex);
+                        }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'createkey': {
+                    var response = { action: 'createkey', reqid: cmd.reqid, hive: cmd.hive, path: cmd.path, name: cmd.name };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try { createRegistrySubKey(cmd.hive, cmd.path || '', cmd.name); response.success = true; }
+                        catch (ex) { response.error = (ex && ex.message) ? ex.message : String(ex); }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'delete': {
+                    var response = { action: 'delete', reqid: cmd.reqid };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try { deleteRegistryEntries(cmd.items || []); response.success = true; }
+                        catch (ex) { response.error = (ex && ex.message) ? ex.message : String(ex); }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'setvalue': {
+                    var response = { action: 'setvalue', reqid: cmd.reqid, hive: cmd.hive, path: cmd.path, name: cmd.name, type: cmd.type };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try { setRegistryValue(cmd.hive, cmd.path || '', cmd.name, cmd.type, cmd.value); response.success = true; }
+                        catch (ex) { response.error = (ex && ex.message) ? ex.message : String(ex); }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'rename': {
+                    var response = { action: 'rename', reqid: cmd.reqid };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try { renameRegistryEntry(cmd.item, cmd.newName); response.success = true; }
+                        catch (ex) { response.error = (ex && ex.message) ? ex.message : String(ex); }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                case 'export': {
+                    var response = { action: 'export', reqid: cmd.reqid, hive: cmd.hive, path: cmd.path };
+                    if (process.platform != 'win32') {
+                        response.error = 'Registry is currently supported on Windows agents only.';
+                    } else {
+                        try { response.success = true; response.content = exportRegistryKey(cmd.hive, cmd.path || ''); }
+                        catch (ex) { response.error = (ex && ex.message) ? ex.message : String(ex); }
+                    }
+                    this.write(JSON.stringify(response));
+                    break;
+                }
+                default: {
+                    this.write(JSON.stringify({ action: cmd.action, reqid: cmd.reqid, error: 'Unknown registry action.' }));
+                    break;
+                }
             }
         } else if (this.httprequest.protocol == 5) {
             // Process files commands
@@ -4533,72 +4966,23 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (process.platform != 'win32') {
                     response = 'Unknown command "printers", type "help" for list of available commands.';
                 } else {
-                    var wmi = require('win-wmi-fixed');
-                    var printers = wmi.query('ROOT\\CIMV2', 'SELECT * FROM Win32_Printer');
-                    trimResults(printers);
-                    var tcpPorts = wmi.query('ROOT\\CIMV2', 'SELECT Name, HostAddress, PortNumber FROM Win32_TCPIPPrinterPort');
-                    trimResults(tcpPorts);
-                    var portMap = {};
-                    for (var j = 0; j < tcpPorts.length; ++j) { portMap[tcpPorts[j].Name] = tcpPorts[j].HostAddress + ':' + tcpPorts[j].PortNumber; }
-                    // For vendor ports not covered by Win32_TCPIPPrinterPort, walk the registry under Print\Monitors
-                    try {
-                        var reg = require('win-registry');
-                        var HKLM = reg.HKEY.LocalMachine;
-                        var monitorsKey = 'SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors';
-                        var monitors = reg.QueryKey(HKLM, monitorsKey);
-                        if (monitors && monitors.keys) {
-                            for (var m = 0; m < monitors.keys.length; ++m) {
-                                var portsKey = monitorsKey + '\\' + monitors.keys[m] + '\\Ports';
-                                try {
-                                    var portsNode = reg.QueryKey(HKLM, portsKey);
-                                    if (portsNode && portsNode.keys) {
-                                        for (var p = 0; p < portsNode.keys.length; ++p) {
-                                            var portName = portsNode.keys[p];
-                                            if (portMap[portName]) continue;
-                                            var portKey = portsKey + '\\' + portName;
-                                            var ip = null;
-                                            try { ip = reg.QueryKey(HKLM, portKey, 'IPAddress'); } catch (e) {}
-                                            if (!ip) { try { ip = reg.QueryKey(HKLM, portKey, 'HostName'); } catch (e) {} }
-                                            if (ip) { portMap[portName] = ip; }
-                                        }
-                                    }
-                                } catch (e) {}
-                            }
-                        }
-                    } catch (e) {}
-                    // For Epson and other vendor ports still missing, query ROOT\StandardCimv2\MSFT_PrinterPort
-                    try {
-                        var msftPorts = wmi.query('ROOT\\StandardCimv2', 'SELECT Name, Description FROM MSFT_PrinterPort');
-                        trimResults(msftPorts);
-                        for (var j = 0; j < msftPorts.length; ++j) {
-                            if (!portMap[msftPorts[j].Name] && msftPorts[j].Description) {
-                                portMap[msftPorts[j].Name] = msftPorts[j].Description;
-                            }
-                        }
-                    } catch (e) {}
-                    var printJobs = wmi.query('ROOT\\CIMV2', 'SELECT Name FROM Win32_PrintJob');
-                    trimResults(printJobs);
-                    var jobCount = {};
-                    for (var j = 0; j < printJobs.length; ++j) {
-                        var jobPrinter = printJobs[j].Name.split(',')[0];
-                        jobCount[jobPrinter] = (jobCount[jobPrinter] || 0) + 1;
-                    }
-                    var printerStatusMap = { 1: 'Other', 2: 'Unknown', 3: 'Idle', 4: 'Printing', 5: 'Warmup', 6: 'Stopped', 7: 'Offline' };
-                    var errorStateMap = { 0: 'Unknown', 1: 'Other', 2: 'No Error', 3: 'Low Paper', 4: 'No Paper', 5: 'Low Toner', 6: 'No Toner', 7: 'Door Open', 8: 'Jammed', 9: 'Offline', 10: 'Service Requested', 11: 'Output Bin Full' };
+                    var winInfo = require('win-info');
+                    var printers = winInfo.printers();
                     for (var i = 0; i < printers.length; ++i) {
-                        var portDesc = portMap[printers[i].PortName];
-                        var jobs = jobCount[printers[i].Name] || 0;
-                        var status = printerStatusMap[printers[i].PrinterStatus] || 'Unknown';
-                        var errors = [];
-                        var err = parseInt(printers[i].DetectedErrorState) || 0;
-                        if (err > 2) { errors.push(errorStateMap[err] || ('Error ' + err)); }
-                        var line = printers[i].Name +
-                            ' - ' + printers[i].PortName +
-                            (portDesc ? ' (' + portDesc + ')' : '') +
-                            ' [' + status + ']' +
-                            (errors.length > 0 ? ' [' + errors.join(', ') + ']' : '') +
-                            (jobs > 0 ? ' [' + jobs + ' job' + (jobs > 1 ? 's' : '') + ' queued]' : '');
-                        sendConsoleText(line, sessionid);
+                        var p = printers[i];
+                        if (p.type === 'system') {
+                            var line = p.name + ' - ' + p.port;
+                            if (p.portDesc) { line += ' (' + p.portDesc + ')'; }
+                            line += ' [' + p.status + ']';
+                            if (p.errors.length > 0) { line += ' [' + p.errors.join(', ') + ']'; }
+                            if (p.jobCount > 0) { line += ' [' + p.jobCount + ' job' + (p.jobCount > 1 ? 's' : '') + ' queued]'; }
+                            sendConsoleText(line, sessionid);
+                        } else if (p.type === 'adgpo') {
+                            var line = p.name + ' [User/AD-GPO]';
+                            if (p.portDesc) { line += ' - ' + p.portDesc; }
+                            line += ' (source: ' + p.label + ')';
+                            sendConsoleText(line, sessionid);
+                        }
                     }
                 }
                 break;
@@ -7014,9 +7398,6 @@ function handleServerConnection(state) {
             sendAgentMessage("This is an old agent version, consider updating.", 3, 117);
         }
 
-        var oldNodeId = db.Get('OldNodeId');
-        if (oldNodeId != null) { mesh.SendCommand({ action: 'mc1migration', oldnodeid: oldNodeId }); }
-
         // Send SMBios tables if present
         if (SMBiosTablesRaw != null) { mesh.SendCommand({ action: 'smbios', value: SMBiosTablesRaw }); }
 
@@ -7345,7 +7726,6 @@ function sendPeriodicServerUpdate(flags, force) {
         if ((flags & 4) && (process.platform == 'win32')) {
             // Windows Command: "wmic /Namespace:\\root\SecurityCenter2 Path AntiVirusProduct get /FORMAT:CSV"
             try { meshCoreObj.av = require('win-info').av(); meshCoreObjChanged(); } catch (ex) { av = null; } // Antivirus
-            //if (process.platform == 'win32') { try { meshCoreObj.pr = require('win-info').pendingReboot(); meshCoreObjChanged(); } catch (ex) { meshCoreObj.pr = null; } } // Pending reboot
         }
         // Update Linux AV/Firewall information. av()/firewall() are asynchronous (they
         // spawn child processes), so they don't block this periodic update with a nested
@@ -7380,6 +7760,13 @@ function sendPeriodicServerUpdate(flags, force) {
                     });
                 } catch (ex) { }
             }
+
+            // Pending reboot
+            try {
+                meshCoreObj.pr = require('win-info').pendingReboot();
+                meshCoreObjChanged();
+            } catch (ex) { }
+
 
             // Get Defender Information
             try {

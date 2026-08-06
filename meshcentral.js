@@ -683,7 +683,32 @@ function CreateMeshCentralServer(config, args) {
             else if (data.indexOf('Server Ctrl-C exit...') >= 0) { childProcess.xrestart = 2; }
             else if (data.indexOf('Starting self upgrade...') >= 0) { childProcess.xrestart = 3; }
             else if (data.indexOf('Server restart...') >= 0) { childProcess.xrestart = 1; }
-            else if (data.indexOf('Starting self upgrade to: ') >= 0) { obj.args.specificupdate = data.substring(26).split('\r')[0].split('\n')[0]; childProcess.xrestart = 3; }
+            else if (data.indexOf('Starting self upgrade to: ') >= 0) {
+                const specificupdate = data.substring(data.indexOf('Starting self upgrade to: ') + 26).split('\r')[0].split('\n')[0];
+                if (/^[0-9\.\-]+$/i.test(specificupdate)) {
+                    var isUpgrade = false;
+                    try {
+                        var currentVersion = getCurrentVersion();
+                        if (currentVersion) {
+                            var sVer = specificupdate.split('-')[0].split('.');
+                            var cVer = currentVersion.split('-')[0].split('.');
+                            for (var i = 0; i <= 2; i++) {
+                                var sVal = parseInt(sVer[i] || 0);
+                                var cVal = parseInt(cVer[i] || 0);
+                                if (sVal > cVal) { isUpgrade = true; break; }
+                                else if (sVal < cVal) { break; }
+                            }
+                        }
+                    } catch (ex) { }
+                    if (isUpgrade) {
+                        obj.args.specificupdate = specificupdate;
+                        childProcess.xrestart = 3;
+                    } else {
+                        data += '\nERROR: Downgrade from ' + currentVersion + ' to ' + specificupdate + ' is not allowed.';
+                        childProcess.xrestart = 1;
+                    }
+                }
+            }
             var datastr = data;
             while (datastr.endsWith('\r') || datastr.endsWith('\n')) { datastr = datastr.substring(0, datastr.length - 1); }
             logFromChildProcess(datastr);
@@ -3306,11 +3331,22 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.agenttimestampproxy == 'string') { timeStampProxy = obj.args.agenttimestampproxy; }
         else if ((obj.args.agenttimestampproxy !== false) && (typeof obj.args.npmproxy == 'string')) { timeStampProxy = obj.args.npmproxy; }
 
-        // Setup the pending operations counter
-        var pendingOperations = 1;
-
+        // Collect architectures that need signing
+        var archIds = [];
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             if (obj.meshAgentsArchitectureNumbers[archid].codesign !== true) continue;
+            archIds.push(archid);
+        }
+
+        if (archIds.length === 0) { func(); return; }
+
+        var currentArchIndex = 0;
+
+        function signNextAgent() {
+            if (currentArchIndex >= archIds.length) { func(); return; }
+
+            var archid = archIds[currentArchIndex];
+            currentArchIndex++;
 
             var agentpath;
             if (domain.id == '') {
@@ -3321,7 +3357,7 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // When processing an extra domain, only load agents that are specific to that domain
                 agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
+                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { signNextAgent(); return; } // If the agent is not present in "meshcentral-data/agents" skip.
             }
 
             // Open the original agent with authenticode
@@ -3454,9 +3490,10 @@ function CreateMeshCentralServer(config, args) {
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
                         obj.callExternalSignJob(agentSignedFunc.signingArguments); // Call external signing job regardless of success or failure
-                        if (--pendingOperations === 0) { agentSignedFunc.func(); }
+                        // Wait 2 seconds between each codesign to avoid rate limiting from Sectigo's timestamp server
+                        // https://www.sectigo.com/resource-library/time-stamping-server
+                        setTimeout(signNextAgent, 2000);
                     }
-                    pendingOperations++;
                     xagentSignedFunc.func = func;
                     xagentSignedFunc.objx = objx;
                     xagentSignedFunc.archid = archid;
@@ -3525,13 +3562,15 @@ function CreateMeshCentralServer(config, args) {
                 } else {
                     // Signed agent is already ok, use it.
                     originalAgent.close();
+                    signNextAgent();
                 }
 
-                
+            } else {
+                signNextAgent();
             }
         }
 
-        if (--pendingOperations === 0) { func(); }
+        signNextAgent();
     }
 
     obj.callExternalSignJob = function (signingArguments) {
@@ -4154,7 +4193,12 @@ function InstallModules(modules, args, func) {
                     var modulePath = null;
                     // This is the first way to test if a module is already installed.
                     try { versionMatch = (require(`${moduleName}/package.json`).version == moduleVersion) } catch (ex) {
-                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { modulePath = ("" + ex).split(' ').at(-1); } else { throw new Error(); }
+                        if (ex.code == "ERR_PACKAGE_PATH_NOT_EXPORTED") { 
+                            var rootPath = __dirname;
+                            if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { rootPath = require('path').join(__dirname, '../..'); }
+                            var pkgPath = require('path').join(rootPath, 'node_modules', moduleName, 'package.json');
+                            if (require('fs').existsSync(pkgPath)) { modulePath = pkgPath; }
+                        } else { throw new Error(); }
                     }
                     // If the module is not installed, but we get the ERR_PACKAGE_PATH_NOT_EXPORTED error, try a second way.
                     if ((versionMatch == false) && (modulePath != null)) {
@@ -4333,7 +4377,7 @@ function mainStart() {
 
         // Build the list of required modules
         // NOTE: ALL MODULES MUST HAVE A VERSION NUMBER AND THE VERSION MUST MATCH THAT USED IN Dockerfile
-        var modules = ['cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.0', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
+        var modules = ['cbor@5.2.0', 'compression@1.8.1', 'cookie-session@2.1.1', 'express@4.22.2', 'express-handlebars@7.1.3', 'express-ws@5.0.2', 'ipcheck@0.1.0', 'minimist@1.2.8', 'multiparty@4.3.0', '@seald-io/nedb@4.1.2', 'node-forge@1.4.0', 'ua-parser-js@1.0.40', 'ua-client-hints-js@0.1.2', 'ws@8.21.1', 'yauzl@2.10.0', '@zip.js/zip.js@2.8.26']; // Base modules
         if (require('os').platform() == 'win32') { modules.push('node-windows@0.1.14'); modules.push('loadavg-windows@1.1.1'); if (sspi == true) { modules.push('node-sspi@0.2.10'); } } // Add Windows modules
         if (ldap == true) { modules.push('ldapauth-fork@5.0.5'); }
         if (ssh == true) { modules.push('ssh2@1.17.0'); }

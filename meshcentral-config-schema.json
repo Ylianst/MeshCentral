@@ -1458,11 +1458,6 @@
               }
             }
           },
-          "softwareInventory": {
-              "type": "boolean",
-              "default": false,
-              "description": "When set to true, the Software Inventory feature is enabled."
-            },
           "autoRemoveInactiveDevices": {
             "type": "integer",
             "default": 0,
@@ -3588,6 +3583,15 @@
                     "type": "string",
                     "format": "uri",
                     "description": "Then set, the user will be redirected to this URL when hitting the logout link."
+                  },
+                  "acceptedClockSkewMs": {
+                    "type": "number",
+                    "description": "Time in milliseconds of skew acceptable between client and server when checking NotBefore and NotOnOrAfter assertion condition validity timestamps. Setting to -1 disables checking these conditions entirely.",
+                    "default": 0
+                  },
+                  "maxAssertionAgeMs": {
+                    "type": "number",
+                    "description": "Amount of time in milliseconds after which the framework considers an assertion expired. If stricter than NotOnOrAfter, this limit is used when determining if an assertion is expired."
                   }
                 },
                 "required": [

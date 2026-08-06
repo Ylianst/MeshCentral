@@ -43,6 +43,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.pressedKeys = [];
     obj._altGrArmed = false;       // Windows AltGr detection
     obj._altGrTimeout = 0;
+    obj._altGrDeferredDown = false; // a ControlLeft keydown is held back pending AltGr detection
     obj.isWindowsBrowser = isWindowsBrowser();
 
     obj.sessionid = 0;
@@ -452,19 +453,33 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj._altGrArmed) {
             obj._altGrArmed = false;
             clearTimeout(obj._altGrTimeout);
+            var deferredCtrlDown = obj._altGrDeferredDown;
+            obj._altGrDeferredDown = false;
 
             if ((event.code === "AltRight") &&  ((event.timeStamp - obj._altGrCtrlTime) < 50)) {
                 //AltGr detected.
                 obj.SendKeyMsgKC( action, AltGrKc, false);
                 return true;
             } 
+
+            // Not an AltGr sequence: flush the deferred ControlLeft keydown BEFORE processing
+            // this event, so the remote sees Ctrl go down first. Previously it was dropped
+            // here, which lost fast Left-Ctrl taps and delivered "C before Ctrl" on a quick
+            // Ctrl+C (issue #6491).
+            if (deferredCtrlDown) {
+                obj.SendKeyMsgKC( 1, ControlLeftKc, false);
+            }
         }
 
         // Possible start of AltGr sequence? 
-        if ((event.code === "ControlLeft") && !(ControlLeftKc in obj.pressedKeys)) {
+        // NOTE: `in` on an array tests INDICES, not membership — must be indexOf. Arming on
+        // keyup (no timer, falls through to return false so the keyup still sends) is
+        // intentional: it lets the AltRight keyup that follows merge into an AltGr keyup.
+        if ((event.code === "ControlLeft") && (obj.pressedKeys.indexOf(ControlLeftKc) == -1)) {
           obj._altGrArmed = true;
             obj._altGrCtrlTime = event.timeStamp;
           if( action == 1 ) {
+            obj._altGrDeferredDown = true;
             obj._altGrTimeout = setTimeout(obj._handleAltGrTimeout.bind(obj), 100);
             return true;
           }
@@ -474,6 +489,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj._handleAltGrTimeout = function () { //Windows and no Ctrl+Alt -> send only Ctrl.
         obj._altGrArmed = false;
+        obj._altGrDeferredDown = false;
         clearTimeout(obj._altGrTimeout);
         obj.SendKeyMsgKC( 1, ControlLeftKc, false); // (KeyDown, "ControlLeft", false)
     }

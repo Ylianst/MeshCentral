@@ -439,7 +439,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 socket.tag.first = false;
 
                 // Setup this node with certificate authentication
-                if (socket.tag.clientCert && socket.tag.clientCert.subject && socket.tag.clientCert.subject.O && socket.tag.clientCert.subject.O.length == 64) {
+                // Note: getPeerCertificate() returns subject.O as an array when the certificate
+                // carries repeated O attributes; require a string so the .split() below cannot throw.
+                if (socket.tag.clientCert && socket.tag.clientCert.subject && (typeof socket.tag.clientCert.subject.O == 'string') && socket.tag.clientCert.subject.O.length == 64) {
                     // This is a node where the MeshID is indicated within the CIRA certificate
                     var domainid = '', meshid;
                     var xx = socket.tag.clientCert.subject.O.split('/');
@@ -678,6 +680,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                         return -1;
                     }
                 }
+
+                // A real Intel AMT device always sends PROTOCOLVERSION before USERAUTH. Without it,
+                // socket.tag.SystemId is undefined and SystemId.split() below (including inside the
+                // async DNS/DB callbacks) throws uncaught and terminates the server process.
+                if (typeof socket.tag.SystemId != 'string') { SendUserAuthFail(socket); return -1; }
 
                 // If this is a agent-less mesh, use the device guid 3 times as ID.
                 if (initialMesh.mtype == 1) {
@@ -1111,7 +1118,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (len < 9) return 0;
                     var RecipientChannel = common.ReadInt(data, 1);
                     var LengthOfData = common.ReadInt(data, 5);
-                    if (SourceLen > 1048576) return -1;
+                    if (LengthOfData > 1048576) return -1;
                     if (len < (9 + LengthOfData)) return 0;
                     parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];

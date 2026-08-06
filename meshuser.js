@@ -59,6 +59,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_GUESTSHARING        = 0x00080000; // 524288
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
+    const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
+    const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -652,7 +654,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
                 serverinfo.preConfiguredScripts = r;
             }
-            serverinfo.softwareinventory = domain?.softwareinventory === true;
+            
             if (domain.maxdeviceview != null) { serverinfo.maxdeviceview = domain.maxdeviceview; } // Maximum number of devices a user can view at any given time
 
             // Send server information
@@ -985,13 +987,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                if (domain.softwareinventory !== true) { 
-                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                    break;
-                }
+                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                     var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_DEVICEDETAILS) != 0)) {
+                    if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
                         var agent = parent.wsagents[command.nodeid];
                         if (agent != null) {
                             routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
@@ -1033,7 +1033,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Check rights
                         if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
-                        else if ((url.searchParams.get('p') == '4') || (url.searchParams.get('p') == '5')) { requiredNonRights = MESHRIGHT_NOFILES; }
+                        else if (url.searchParams.get('p') == '4') { requiredNonRights = MESHRIGHT_NOREGISTRY; }
+                        else if (url.searchParams.get('p') == '5') { requiredNonRights = MESHRIGHT_NOFILES; }
+                        else if (url.searchParams.get('p') == '6') { requiredNonRights = MESHRIGHT_NOSOFTWARE; }
 
                         // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
                         if (((parent.parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (url.searchParams.get('p') == '2')) { routingOptions = { removeViewOnlyLimitation: true }; }
@@ -3065,7 +3067,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var mesh = parent.meshes[node.meshid];
                             if (mesh && mesh.relayid) { relayid = mesh.relayid; addr = node.host; }
                         }
-                        var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : obj.getWebServerName(domain, req);
+                        var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : parent.getWebServerName(domain, req);
                         var webRelayPort = ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0));
                         if (webRelayPort == 0) { try { ws.send(JSON.stringify({ action: 'webrelay',  responseid: command.responseid, result: 'WebRelay Disabled' })); return; } catch (ex) { } }
                         const authRelayCookie = parent.parent.encodeCookie({ ruserid: user._id, x: req.session.x }, parent.parent.loginCookieEncryptionKey);
@@ -5000,6 +5002,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'meshToolInfo': {
                 if (typeof command.name != 'string') break;
                 var info = parent.parent.meshToolsBinaries[command.name];
+                if (info == null) break;
                 var responseCmd = { action: 'meshToolInfo', name: command.name, hash: info.hash, size: info.size, url: info.url };
                 if (parent.webCertificateHashs[domain.id] != null) { responseCmd.serverhash = Buffer.from(parent.webCertificateHashs[domain.id], 'binary').toString('hex'); }
                 try { ws.send(JSON.stringify(responseCmd)); } catch (ex) { }
@@ -6065,6 +6068,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var newuserid = command.userids[i], newuser = null;
             if (newuserid.startsWith('user/')) { newuser = parent.users[newuserid]; }
             else if (newuserid.startsWith('ugrp/')) { newuser = parent.userGroups[newuserid]; }
+            else { newuserid = 'user/' + domain.id + '/' + newuserid; newuser = parent.users[newuserid]; }
     
             // Search for a user name in that windows domain is the username starts with *\
             if ((newuser == null) && (newuserid.startsWith('user/' + domain.id + '/*\\')) == true) {
@@ -7126,12 +7130,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     }
 
     function serverCommandServerVersion(command) {
-        // Do not allow this command when logged in using a login token
-        if (req.session.loginToken != null) return;
-
         // Check the server version
-        if (userHasSiteUpdate() && domainHasMyServerUpgrade())
+        if (command.responseid != null) {
+            if (userHasSiteUpdate() && domainHasMyServerUpgrade()) {
+                parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', responseid: command.responseid, result: 'OK', tags: tags }); });
+            }
+            else { obj.send({ action: 'serverversion', responseid: command.responseid, result: 'Permission denied' }); }
+        }
+        else if (userHasSiteUpdate() && domainHasMyServerUpgrade()) {
             parent.parent.getServerTags(function (tags, err) { obj.send({ action: 'serverversion', tags: tags }); });
+        }
     }
 
     function serverCommandSetClip(command) {

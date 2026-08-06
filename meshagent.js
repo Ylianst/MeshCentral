@@ -826,7 +826,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     db.Set(device);
 
                     // If this is a temporary device, don't log changes
-                    if (obj.agentInfo.capabilities & 0x20) { log = 0; }
+                    if ((obj.agentInfo) && (obj.agentInfo.capabilities & 0x20)) { log = 0; }
 
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device) };
@@ -873,7 +873,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         db.Set(device);
 
         // Event the new node
-        if (obj.agentInfo.capabilities & 0x20) {
+        if ((obj.agentInfo) && (obj.agentInfo.capabilities & 0x20)) {
             // This is a temporary agent, don't log.
             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, { etype: 'node', action: 'addnode', node: device, domain: domain.id, nolog: 1 });
         } else {
@@ -1325,30 +1325,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
-                case 'mc1migration':
-                    {
-                        if (command.oldnodeid.length != 64) break;
-                        const oldNodeKey = 'node//' + command.oldnodeid.toLowerCase();
-                        db.Get(oldNodeKey, function (err, nodes) {
-                            if ((nodes == null) || (nodes.length != 1)) return;
-                            const node = nodes[0];
-                            if (node.meshid == obj.dbMeshKey) {
-                                // Update the device name & host
-                                const newNode = { "name": node.name };
-                                if (node.intelamt != null) { newNode.intelamt = node.intelamt; }
-                                ChangeAgentCoreInfo(newNode);
-
-                                // Delete this node including network interface information and events
-                                db.Remove(node._id);
-                                db.Remove('if' + node._id);
-
-                                // Event node deletion
-                                const change = 'Migrated device ' + node.name;
-                                parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(node.meshid, [obj.dbNodeKey]), obj, { etype: 'node', action: 'removenode', nodeid: node._id, msg: change, domain: node.domain });
-                            }
-                        });
-                        break;
-                    }
                 case 'openUrl':
                     {
                         // Sent by the agent to return the status of a open URL action.
@@ -1382,7 +1358,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
                                     if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
                                     const device = nodes[0];
-                                    if (typeof device.name == 'string') { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device.meshid, device._id, device.name, command.msgArgs[0], command.msgArgs[1]); }
+                                    if ((typeof device.name == 'string') && Array.isArray(command.msgArgs) && (command.msgArgs.length >= 2)) { parent.parent.NotifyUserOfDeviceHelpRequest(domain, device.meshid, device._id, device.name, command.msgArgs[0], command.msgArgs[1]); }
                                 });
                             }
                         }
@@ -1515,6 +1491,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
                         else if (command.type == 'terminal') { obj.sessions.terminal = command.value; }
                         else if (command.type == 'files') { obj.sessions.files = command.value; }
+                        else if (command.type == 'registry') { obj.sessions.registry = command.value; }
                         else if (command.type == 'help') { obj.sessions.help = command.value; }
                         else if (command.type == 'tcp') { obj.sessions.tcp = command.value; }
                         else if (command.type == 'udp') { obj.sessions.udp = command.value; }
@@ -1600,6 +1577,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Information includes file hash and download location URL
                     if (typeof command.name != 'string') break;
                     var info = parent.parent.meshToolsBinaries[command.name];
+                    if (info == null) break;
                     if ((command.hash != null) && (info.hash == command.hash)) return;
 
                     // To build the connection URL, if we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
@@ -1970,6 +1948,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.lsc) { device.lsc = {}; }
                     if (JSON.stringify(device.lsc) != JSON.stringify(command.lsc)) { /*changes.push('Linux Security Center status');*/ device.lsc = command.lsc; change = 1; log = 1; }
                 }
+                if (command.pr != null) { // Pending Reboot
+                    if (!device.pr) { device.pr = {}; }
+                    if (JSON.stringify(device.pr) != JSON.stringify(command.pr)) { /*changes.push('Pending Reboot status');*/ device.pr = command.pr; change = 1; log = 1; }
+                }
                 if (command.defender != null) { // Defender For Windows Server
                     if (!device.defender) { device.defender = {}; }
                     if (JSON.stringify(device.defender) != JSON.stringify(command.defender)) { /*changes.push('Defender status');*/ device.defender = command.defender; change = 1; log = 1; }
@@ -2065,7 +2047,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     // Event the node change
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msgid: 59, msgArgs: [device.name, mesh.name, changes.join(', ')], msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': ' + changes.join(', ') };
-                    if (obj.agentInfo.capabilities & 0x20) { event.nolog = 1; } // If this is a temporary device, don't log changes
+                    if ((obj.agentInfo) && (obj.agentInfo.capabilities & 0x20)) { event.nolog = 1; } // If this is a temporary device, don't log changes
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
                 }
@@ -2174,7 +2156,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     // Return 0 is no update needed, 1 update using native system, 2 update using meshcore system
     function compareAgentBinaryHash(agentExeInfo, agentHash) {
         // If this is a temporary agent and the server is set to not update temporary agents, don't update the agent.
-        if ((obj.agentInfo.capabilities & 0x20) && (args.temporaryagentupdate === false)) return 0;
+        if ((obj.agentInfo) && (obj.agentInfo.capabilities & 0x20) && (args.temporaryagentupdate === false)) return 0;
         // If we are testing the agent update system, always return true
         if ((args.agentupdatetest === true) || (args.agentupdatetest === 1)) return 1;
         if (args.agentupdatetest === 2) return 2;
