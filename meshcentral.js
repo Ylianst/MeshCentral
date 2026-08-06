@@ -3659,7 +3659,7 @@ function CreateMeshCentralServer(config, args) {
 							x.zdata = concatData;
 							x.zsize = concatData.length;
 						}).catch(function (err) {
-							console.log('ZIP compression failed', err);
+							console.error('ZIP compression failed', err);
 						});
                     })
                     obj.exeHandler.streamExeWithMeshPolicy(
@@ -3701,8 +3701,7 @@ function CreateMeshCentralServer(config, args) {
 
 						//console.log('Packed', x.size, x.zsize);
 					}).catch(function (err) {
-						// Keep this silent if the old code ignored ZIP errors.
-						// parent.debug('web', 'ZIP compression failed: ' + err);
+						console.error('ZIP compression failed', err);
 					});
                 }
             }
