@@ -29,12 +29,21 @@ spec:
         {{- include "meshcentral.selectorLabels" . | nindent 8 }}
 
     spec:
+      serviceAccountName: {{ include "meshcentral.serviceAccountName" . }}
+      automountServiceAccountToken: false
+
+      {{- with .Values.podSecurityContext }}
       securityContext:
-        fsGroup: 1000
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 
       initContainers:
         - name: wait-mongodb
           image: "{{ .Values.initImage.registry }}/{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
+          {{- with .Values.initImage.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           # MC_MONGO_URI is assembled by the kubelet via $(VAR) substitution against
           # envFrom-sourced parts (see pkg/kubelet/kubelet_pods.go makeEnvironmentVariables:
           # envFrom is processed first, then env[]). bash only sees a fully-resolved URI,
@@ -48,10 +57,19 @@ spec:
           env:
             - name: MC_MONGO_URI
               value: "mongodb://$(MC_MONGO_USER):$(MC_MONGO_PASSWORD)@$(MC_MONGO_HOSTS)/$(MC_MONGO_DATABASE)?replicaSet=$(MC_MONGO_REPLICA_SET)&authSource=$(MC_MONGO_AUTH_SOURCE)$(MC_MONGO_URI_OPTIONS)"
+            - name: HOME
+              value: /tmp/mongosh
+          volumeMounts:
+            - name: mongosh
+              mountPath: /tmp/mongosh
 
         - name: meshcentral-init
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command: ["/bin/bash", "-c"]
           args:
             - |
@@ -102,11 +120,17 @@ spec:
         - name: meshcentral
           image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           command: ["node"]
           args:
             - "/opt/meshcentral/meshcentral/meshcentral.js"
             - "--datapath"
             - "/opt/mesh/meshcentral-data"
+            - "--filespath"
+            - "/opt/mesh/meshcentral-files"
             - "--configfile"
             - "/tmp/config/config.json"
             - "--configkey"
@@ -138,6 +162,8 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.credentials.existingSecret | default (printf "%s-credentials" .Chart.Name) }}
                   key: {{ .Values.credentials.meshConfigKeyKey }}
+            - name: TMPDIR
+              value: /tmp/work
 
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -169,6 +195,8 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /opt/mesh
+            - name: work
+              mountPath: /tmp/work
             - name: config
               mountPath: /tmp/config
               readOnly: true
@@ -177,4 +205,8 @@ spec:
           secret:
             secretName: {{ .Chart.Name }}-config
         - name: data
+          emptyDir: {}
+        - name: work
+          emptyDir: {}
+        - name: mongosh
           emptyDir: {}

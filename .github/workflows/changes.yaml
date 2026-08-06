@@ -1,0 +1,111 @@
+name: Detect Changes
+
+on:
+  workflow_call:
+    outputs:
+      images_matrix:
+        description: "Images matrix configuration for all components"
+        value: ${{ jobs.collect.outputs.images_matrix }}
+      changes:
+        description: "JSON object mapping each component key to true/false"
+        value: ${{ jobs.collect.outputs.changes }}
+      timestamp:
+        value: ${{ jobs.collect.outputs.timestamp }}
+      commit_sha:
+        value: ${{ jobs.collect.outputs.commit_sha }}
+      test_commit_sha:
+        value: ${{ jobs.collect.outputs.test_commit_sha }}
+
+jobs:
+  collect:
+    name: Changes and Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      images_matrix: ${{ steps.define.outputs.images_matrix }}
+      changes: ${{ steps.changes.outputs.changes }}
+      timestamp: ${{ steps.setup_env.outputs.timestamp }}
+      commit_sha: ${{ steps.setup_env.outputs.commit_sha }}
+      test_commit_sha: ${{ steps.setup_env.outputs.test_commit_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up environment
+        id: setup_env
+        run: |
+          set -euo pipefail
+          echo "timestamp=$(date +%s)" >> "$GITHUB_OUTPUT"
+          echo "commit_sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+          echo "test_commit_sha=test-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
+      - name: Define components
+        id: define
+        run: |
+          set -euo pipefail
+
+          IMAGES='[
+            {
+              "name": "meshcentral",
+              "paths": [
+                "./docker/**",
+                "./.dockerignore",
+                "./package.json",
+                "./package-lock.json",
+                "./*.js",
+                "./plugins/**",
+                "./agents/**",
+                "./emails/**",
+                "./translate/**",
+                "./views/**",
+                "./public/**"
+              ]
+            }
+          ]'
+
+          ADDONS='{
+            "helm": ["./charts/**"]
+          }'
+
+          images_matrix=$(jq -c '[ .[] | {
+            name,
+            path:    (.path    // "./docker"),
+            context: (.context // ".")
+          } ]' <<< "$IMAGES")
+
+          filters=$(jq -nc \
+            --argjson images "$IMAGES" \
+            --argjson addons "$ADDONS" '
+            ( [ $images[] | { key: .name, value: (.paths // ["./\(.name)/**"]) } ]
+              | from_entries )
+            + $addons
+          ')
+
+          keys=$(jq -nc --argjson f "$filters" '$f | keys')
+
+          # fail fast if the matrix or filters came out empty
+          [ "$(jq 'length' <<< "$images_matrix")" -gt 0 ] || { echo "images_matrix is empty" >&2; exit 1; }
+          [ "$(jq 'length' <<< "$keys")"          -gt 0 ] || { echo "no change filters"       >&2; exit 1; }
+
+          {
+            echo "images_matrix=$images_matrix"
+            echo "filters=$filters"
+            echo "keys=$keys"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: dorny/paths-filter@v4.0.2
+        id: filter
+        with:
+          filters: ${{ steps.define.outputs.filters }}
+
+      - name: Build changes map
+        id: changes
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes || '[]' }}
+          KEYS: ${{ steps.define.outputs.keys }}
+        run: |
+          set -euo pipefail
+          changes=$(jq -nc --argjson changed "$CHANGED" --argjson keys "$KEYS" '
+            reduce $keys[] as $k ({}; .[$k] = ((($changed | index($k)) != null) | tostring))
+          ')
+          echo "changes=$changes" >> "$GITHUB_OUTPUT"

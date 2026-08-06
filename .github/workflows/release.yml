@@ -41,29 +41,37 @@ jobs:
 
   changes:
     name: Detect Changes
-    uses: ./.github/workflows/changes.yml
+    uses: ./.github/workflows/changes.yaml
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push'
 
 
   build:
-    name: "Build meshcentral"
+    name: "Build: ${{ matrix.name }}"
     needs: [version, changes]
     runs-on: ubuntu-latest
-    if: |
-      (github.event_name == 'push' && needs.changes.outputs.docker == 'true') ||
-      (github.event_name == 'workflow_dispatch' && needs.version.outputs.version != '')
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.changes.outputs.images_matrix) }}
     steps:
+      - name: Check if build should run
+        id: should_run
+        run: echo "run=${{ (github.event_name == 'workflow_dispatch' && needs.version.outputs.version != '') || (github.event_name == 'push' && fromJSON(needs.changes.outputs.changes || '{}')[matrix.name] == 'true') }}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout
         uses: actions/checkout@v4
+        if: steps.should_run.outputs.run == 'true'
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
+        if: steps.should_run.outputs.run == 'true'
         with:
           node-version: "24.x"
 
       - name: Run translations
+        if: steps.should_run.outputs.run == 'true'
         working-directory: translate
         run: |
           node translate.js || true
@@ -73,6 +81,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
+        if: steps.should_run.outputs.run == 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -80,17 +89,20 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+        if: steps.should_run.outputs.run == 'true'
         with:
           platforms: linux/amd64,linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        if: steps.should_run.outputs.run == 'true'
 
       - name: Generate metadata
         id: meta
         uses: docker/metadata-action@v5
+        if: steps.should_run.outputs.run == 'true'
         with:
-          images: ${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/meshcentral
+          images: ${{ env.REGISTRY }}/${{ env.ORGANISATION }}/${{ env.REPOSITORY }}/${{ matrix.name }}
           tags: |
             type=ref,event=tag
             type=raw,value=latest,enable={{is_default_branch}}
@@ -103,9 +115,10 @@ jobs:
       - name: Build and push image
         id: docker_build
         uses: docker/build-push-action@v6
+        if: steps.should_run.outputs.run == 'true'
         with:
-          context: .
-          file: ./docker/Dockerfile
+          context: ${{ matrix.context }}
+          file: ${{ matrix.path }}/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           provenance: false
@@ -118,7 +131,7 @@ jobs:
         uses: dataaxiom/ghcr-cleanup-action@v1
         continue-on-error: true
         with:
-          package: ${{ env.REPOSITORY }}/meshcentral
+          package: ${{ env.REPOSITORY }}/${{ matrix.name }}
           delete-ghost-images: true
           delete-tags: '.*'
           exclude-tags: '^(?:[0-9]+\.[0-9]+\.[0-9]+|latest|test-.*)$'
@@ -130,7 +143,7 @@ jobs:
     needs: [version, changes]
     runs-on: ubuntu-latest
     if: |
-      (github.event_name == 'push' && needs.changes.outputs.helm == 'true') ||
+      (github.event_name == 'push' && fromJSON(needs.changes.outputs.changes || '{}').helm == 'true') ||
       (github.event_name == 'workflow_dispatch' && needs.version.outputs.version != '')
     steps:
       - name: Checkout
@@ -153,7 +166,7 @@ jobs:
 
   release:
     name: "Create Release"
-    needs: [version, build, build_helm]
+    needs: [version, changes, build, build_helm]
     if: ${{ !failure() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
@@ -163,9 +176,11 @@ jobs:
       - name: Generate release header
         run: |
           VERSION="${{ needs.version.outputs.version }}"
+          IMAGES=$(echo '${{ needs.changes.outputs.images_matrix }}' | jq -r '.[] | "- `${{ env.REGISTRY }}/${{ github.repository }}/\(.name):'"${VERSION}"'`"')
+
           cat > RELEASE_HEADER.md <<EOF
           ## Images
-          - \`${{ env.REGISTRY }}/${{ github.repository }}/meshcentral:${VERSION}\`
+          ${IMAGES}
 
           ## Helm Chart
           - \`oci://${{ env.REGISTRY }}/${{ github.repository }}/helm-charts/meshcentral:${VERSION}\`

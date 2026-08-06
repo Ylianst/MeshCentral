@@ -13,3 +13,4 @@ docker/
 *.md
 examples
 tests
+charts/
