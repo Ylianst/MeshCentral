@@ -78,6 +78,8 @@ config:
     # Required for stateless (emptyDir) deployments so server identity survives
     # pod restarts. Needs credentials.meshConfigKey set (becomes --configkey).
     autoSyncConfigFiles: true
+    # MeshCentral's own backup dumps the same database the mongodb cronjob already sends to GCS
+    autobackup: false
     plugins:
       enabled: true
       list:
