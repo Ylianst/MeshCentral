@@ -1896,7 +1896,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.parent.firebase == null) { try { ws.close(); } catch (e) { } return; }
         if (obj.parent.firebase.setupRelay == null) { try { ws.close(); } catch (e) { } return; }
         if (obj.parent.config.firebase.relayserver == null) { try { ws.close(); } catch (e) { } return; }
-        if ((typeof obj.parent.config.firebase.relayserver == 'string') && (req.query.key != obj.parent.config.firebase.relayserver)) { res.sendStatus(404); try { ws.close(); } catch (e) { } return; }
+        if ((typeof obj.parent.config.firebase.relayserver == 'string') && (req.query.key != obj.parent.config.firebase.relayserver)) { try { ws.close(); } catch (e) { } return; }
         obj.parent.firebase.setupRelay(ws);
     }
 
