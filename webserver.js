@@ -1591,11 +1591,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleCheckAccountEmailRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
+        if (!emailAccountUtils.hasAccountEmailRequest(req)) { parent.debug('web', 'handleCheckAccountEmailRequest: missing session or body.'); res.sendStatus(404); return; }
         if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-
         // Always lowercase the email address
         if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
 

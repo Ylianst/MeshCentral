@@ -12,6 +12,7 @@ const hasDatabaseFailure = require('../webserver/email-account-utils.js').hasDat
 const createTemporaryPassword = require('../webserver/email-account-utils.js').createTemporaryPassword;
 const getActiveUser = require('../webserver/email-account-utils.js').getActiveUser;
 const hasEmailLinkCookie = require('../webserver/email-account-utils.js').hasEmailLinkCookie;
+const hasAccountEmailRequest = require('../webserver/email-account-utils.js').hasAccountEmailRequest;
 
 test('the current account does not conflict with its own verified email', function () {
     assert.equal(hasOtherVerifiedUser([{ _id: 'user/tenant/alice' }], 'user/tenant/alice'), false);
@@ -70,4 +71,12 @@ test('email link cookie presence distinguishes absent and supplied parameters', 
     assert.equal(hasEmailLinkCookie({ c: null }), false);
     assert.equal(hasEmailLinkCookie({ c: '' }), true);
     assert.equal(hasEmailLinkCookie({ c: 'cookie' }), true);
+});
+
+test('account email requests require both session and parsed body', function () {
+    assert.equal(hasAccountEmailRequest(null), false);
+    assert.equal(hasAccountEmailRequest({}), false);
+    assert.equal(hasAccountEmailRequest({ session: {} }), false);
+    assert.equal(hasAccountEmailRequest({ body: {} }), false);
+    assert.equal(hasAccountEmailRequest({ session: {}, body: {} }), true);
 });

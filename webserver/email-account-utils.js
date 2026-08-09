@@ -21,6 +21,10 @@ module.exports.hasEmailLinkCookie = function (query) {
     return (query != null) && (query.c != null);
 };
 
+module.exports.hasAccountEmailRequest = function (request) {
+    return (request != null) && (request.session != null) && (request.body != null);
+};
+
 module.exports.createTemporaryPassword = function (crypto, hashPassword, callback) {
     crypto.randomBytes(16, function (error, buffer) {
         if ((error != null) || (buffer == null)) { callback(error || new Error('Unable to generate a temporary password.')); return; }
