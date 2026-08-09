@@ -25,6 +25,7 @@ require('./webserver-custom-icons.test.js');
 require('./webserver-core-middleware.test.js');
 require('./webserver-external-groups.test.js');
 require('./webserver-domain-startup.test.js');
+require('./webserver-duo-routes.test.js');
 require('./webserver-network-access.test.js');
 require('./webserver-not-found.test.js');
 require('./webserver-push-notifications.test.js');
