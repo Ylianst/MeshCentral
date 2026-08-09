@@ -13,6 +13,8 @@ module.exports.createAgentSettings = function (options) {
     const state = options.state;
     const parent = options.parent;
     const checkAgentColorString = options.checkAgentColorString;
+    const getDomain = options.getDomain;
+    const setContentDispositionHeader = options.setContentDispositionHeader;
 
     function getMshFromRequest(req, res, domain) {
         const settings = parent.config.settings;
@@ -59,5 +61,18 @@ module.exports.createAgentSettings = function (options) {
         return meshsettings;
     }
 
-    return { getMshFromRequest: getMshFromRequest };
+    function handleMeshSettingsRequest(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { return; }
+
+        const meshsettings = getMshFromRequest(req, res, domain);
+        if (meshsettings == null) { res.sendStatus(401); return; }
+
+        var meshagentFilename = 'meshagent';
+        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
+        setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.msh', null, 'meshagent.msh');
+        res.send(meshsettings);
+    }
+
+    return { getMshFromRequest: getMshFromRequest, handleMeshSettingsRequest: handleMeshSettingsRequest };
 };

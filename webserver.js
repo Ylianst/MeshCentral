@@ -168,8 +168,9 @@ const pluginRequestsModule = require('./webserver/plugin-requests.js');
     const setContentDispositionHeader = requestUtils.setContentDispositionHeader;
     const isIPMatch = requestUtils.isIPMatch;
     const checkAgentColorString = requestUtils.checkAgentColorString;
-    const agentSettings = agentSettingsModule.createAgentSettings({ state: obj, parent: parent, checkAgentColorString: checkAgentColorString });
+    const agentSettings = agentSettingsModule.createAgentSettings({ state: obj, parent: parent, checkAgentColorString: checkAgentColorString, getDomain: getDomain, setContentDispositionHeader: setContentDispositionHeader });
     const getMshFromRequest = agentSettings.getMshFromRequest;
+    obj.handleMeshSettingsRequest = agentSettings.handleMeshSettingsRequest;
     const checkCookieIp = requestUtils.checkCookieIp;
     const assembleStringFromObject = requestUtils.assembleStringFromObject;
     const EscapeHtml = requestUtils.escapeHtml;
@@ -3528,24 +3529,6 @@ const pluginRequestsModule = require('./webserver/plugin-requests.js');
             try { res.sendStatus(500); } catch (ex) { }
         });
     }
-
-    // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
-    // Handle a request to download a mesh settings
-    obj.handleMeshSettingsRequest = function (req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { return; }
-        //if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-
-        var meshsettings = getMshFromRequest(req, res, domain);
-        if (meshsettings == null) { res.sendStatus(401); return; }
-
-        // Get the agent filename
-        var meshagentFilename = 'meshagent';
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
-
-        setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename + '.msh', null, 'meshagent.msh');
-        res.send(meshsettings);
-    };
 
     if (parent.pluginHandler != null) {
         const pluginRequests = pluginRequestsModule.createPluginRequests({ state: obj, pluginHandler: parent.pluginHandler, checkUserIpAddress: checkUserIpAddress });

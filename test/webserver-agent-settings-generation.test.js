@@ -21,7 +21,19 @@ function createFixture(locked) {
         GetMeshRights: function () { return 1; }
     };
     const parent = { config: { settings: { lockagentdownload: locked } }, decodeCookie: function () { return null; } };
-    return { service: createAgentSettings({ state: state, parent: parent, checkAgentColorString: function () { return ''; } }), meshId: meshId, domain: domain };
+    const downloads = [];
+    return {
+        service: createAgentSettings({
+            state: state,
+            parent: parent,
+            checkAgentColorString: function () { return ''; },
+            getDomain: function () { return domain; },
+            setContentDispositionHeader: function (res, type, filename) { downloads.push({ type: type, filename: filename }); }
+        }),
+        meshId: meshId,
+        domain: domain,
+        downloads: downloads
+    };
 }
 
 test('locked agent settings reject requests without a session', function () {
@@ -36,4 +48,20 @@ test('agent settings include mesh identity, server URL and validated options', f
     assert.match(result, /MeshServer=wss:\/\/server\.example\.com:443\/tenant\/agent\.ashx/);
     assert.match(result, /Tag=branch1/);
     assert.match(result, /InstallFlags=2/);
+});
+
+test('mesh settings downloads use the customized agent filename', function () {
+    const fixture = createFixture(false);
+    fixture.domain.agentcustomization = { filename: 'company-agent' };
+    const res = { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } };
+    fixture.service.handleMeshSettingsRequest({ query: { id: fixture.meshId }, session: {} }, res);
+    assert.equal(fixture.downloads[0].filename, 'company-agent.msh');
+    assert.match(res.body, /MeshName=Main/);
+});
+
+test('mesh settings downloads reject unknown device groups', function () {
+    const fixture = createFixture(false);
+    const res = { sendStatus: function (status) { this.status = status; }, send: function () { } };
+    fixture.service.handleMeshSettingsRequest({ query: { id: 'unknown' }, session: {} }, res);
+    assert.equal(res.status, 401);
 });
