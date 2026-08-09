@@ -3107,7 +3107,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                 var nodeIdSplit = req.query.nodeid.split('/');
                 if ((nodeIdSplit[0] != 'node') || (nodeIdSplit[1] != domain.id)) { try { res.sendStatus(401); } catch (ex) { } return; }
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
-                    if ((err != null) || (nodes.length != 1)) { try { res.sendStatus(401); } catch (ex) { } return; }
+                    if (agentDownloadsModule.hasDatabaseFailure(err, nodes) || (nodes.length != 1)) { try { res.sendStatus(401); } catch (ex) { } return; }
                     var node = nodes[0];
 
                     // Create the meshaction.txt file for meshcmd.exe
