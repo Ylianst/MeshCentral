@@ -5,6 +5,26 @@
 
 'use strict';
 
+module.exports.getRemoteCredentialType = function (node, userId, page) {
+    const credentials = (page == 'ssh') ? node.ssh : node.rdp;
+    if ((credentials == null) || (typeof credentials != 'object')) return 0;
+    const userCredentials = credentials[userId];
+    if (page == 'ssh') {
+        if ((typeof credentials.u == 'string') && (typeof credentials.p == 'string')) return 1;
+        if ((typeof credentials.k == 'string') && (typeof credentials.kp == 'string')) return 2;
+        if (typeof credentials.k == 'string') return 3;
+        if ((userCredentials != null) && (typeof userCredentials == 'object')) {
+            if ((typeof userCredentials.u == 'string') && (typeof userCredentials.p == 'string')) return 1;
+            if ((typeof userCredentials.k == 'string') && (typeof userCredentials.kp == 'string')) return 2;
+            if (typeof userCredentials.k == 'string') return 3;
+        }
+    } else {
+        if ((typeof credentials.d == 'string') && (typeof credentials.u == 'string') && (typeof credentials.p == 'string')) return 1;
+        if ((userCredentials != null) && (typeof userCredentials == 'object') && (typeof userCredentials.d == 'string') && (typeof userCredentials.u == 'string') && (typeof userCredentials.p == 'string')) return 1;
+    }
+    return 0;
+};
+
 module.exports.createRemotePages = function (options) {
     const state = options.state;
     const parent = options.parent;

@@ -8,6 +8,18 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const createRemotePages = require('../webserver/remote-pages.js').createRemotePages;
+const getRemoteCredentialType = require('../webserver/remote-pages.js').getRemoteCredentialType;
+
+test('remote credential detection safely handles null and supported credential forms', function () {
+    const userId = 'user/tenant/alice';
+    assert.equal(getRemoteCredentialType({ ssh: null }, userId, 'ssh'), 0);
+    assert.equal(getRemoteCredentialType({ rdp: null }, userId, 'rdp'), 0);
+    assert.equal(getRemoteCredentialType({ ssh: { u: 'user', p: 'pass' } }, userId, 'ssh'), 1);
+    assert.equal(getRemoteCredentialType({ ssh: { k: 'key', kp: 'pass' } }, userId, 'ssh'), 2);
+    assert.equal(getRemoteCredentialType({ ssh: { k: 'key' } }, userId, 'ssh'), 3);
+    assert.equal(getRemoteCredentialType({ ssh: { [userId]: null } }, userId, 'ssh'), 0);
+    assert.equal(getRemoteCredentialType({ rdp: { [userId]: { d: 'domain', u: 'user', p: 'pass' } } }, userId, 'rdp'), 1);
+});
 
 function createFixture(rights) {
     const renders = [], cookies = [];

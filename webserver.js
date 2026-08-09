@@ -1813,17 +1813,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Check if we have SSH/RDP credentials for this device
                     var serverCredentials = 0;
                     if (domain.allowsavingdevicecredentials !== false) {
-                        if (page == 'ssh') {
-                            if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
-                            else if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
-                            else if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
-                            else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].u == 'string') && (typeof node.ssh[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
-                            else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp == 'string')) { serverCredentials = 2; } // Username, key and password in per user format
-                            else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string')) { serverCredentials = 3; } // Username and key. No password. in per user format
-                        } else {
-                            if ((node.rdp != null) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password in legacy format
-                            if ((node.rdp != null) && (typeof node.rdp == 'object') && (node.rdp[user._id] != null) && (typeof node.rdp[user._id] == 'object') && (typeof node.rdp[user._id].d == 'string') && (typeof node.rdp[user._id].u == 'string') && (typeof node.rdp[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
-                        }
+                        serverCredentials = remotePagesModule.getRemoteCredentialType(node, user._id, page);
                     }
 
                     // Render the page
@@ -1864,24 +1854,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof node.sshport == 'number') { port = node.sshport; }
 
                 // Check if we have SSH credentials for this device
-                if (domain.allowsavingdevicecredentials !== false) {
-                    if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.u == 'string') && (typeof node.ssh.p == 'string')) { serverCredentials = 1; } // Username and password
-                    else if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.k == 'string') && (typeof node.ssh.kp == 'string')) { serverCredentials = 2; } // Username, key and password
-                    else if ((node.ssh != null) && (typeof node.ssh == 'object') && (typeof node.ssh.k == 'string')) { serverCredentials = 3; } // Username and key. No password.
-                    else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].u == 'string') && (typeof node.ssh[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
-                    else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string') && (typeof node.ssh[user._id].kp == 'string')) { serverCredentials = 2; } // Username, key and password in per user format
-                    else if ((node.ssh != null) && (typeof node.ssh == 'object') && (node.ssh[user._id] != null) && (typeof node.ssh[user._id] == 'object') && (typeof node.ssh[user._id].k == 'string')) { serverCredentials = 3; } // Username and key. No password. in per user format
-                }
+                if (domain.allowsavingdevicecredentials !== false) serverCredentials = remotePagesModule.getRemoteCredentialType(node, user._id, page);
             } else {
                 // RDP port
                 port = 3389;
                 if (typeof node.rdpport == 'number') { port = node.rdpport; }
 
                 // Check if we have RDP credentials for this device
-                if (domain.allowsavingdevicecredentials !== false) {
-                    if ((node.rdp != null) && (typeof node.rdp == 'object') && (typeof node.rdp.d == 'string') && (typeof node.rdp.u == 'string') && (typeof node.rdp.p == 'string')) { serverCredentials = 1; } // Username and password
-                    if ((node.rdp != null) && (typeof node.rdp == 'object') && (node.rdp[user._id] != null) && (typeof node.rdp[user._id] == 'object') && (typeof node.rdp[user._id].d == 'string') && (typeof node.rdp[user._id].u == 'string') && (typeof node.rdp[user._id].p == 'string')) { serverCredentials = 1; } // Username and password in per user format
-                }
+                if (domain.allowsavingdevicecredentials !== false) serverCredentials = remotePagesModule.getRemoteCredentialType(node, user._id, page);
             }
             if (req.query.port != null) { var qport = 0; try { qport = parseInt(req.query.port); } catch (ex) { } if ((typeof qport == 'number') && (qport > 0) && (qport < 65536)) { port = qport; } }
 
