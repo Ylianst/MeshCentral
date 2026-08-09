@@ -85,6 +85,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const websocketAuthModule = require('./webserver/websocket-auth.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
+    const passwordHistoryModule = require('./webserver/password-history.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -1982,80 +1983,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
-    // Check a user's password
-    obj.checkUserPassword = function (domain, user, password, func) {
-        // Check the old password
-        if (user.passtype != null) {
-            // IIS default clear or weak password hashing (SHA-1)
-            require('./pass').iishash(user.passtype, password, user.salt, function (err, hash) {
-                if (err) { parent.debug('web', 'checkUserPassword: SHA-1 fail.'); return func(false); }
-                if (hash == user.hash) {
-                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: SHA-1 locked.'); return func(false); } // Account is locked
-                    parent.debug('web', 'checkUserPassword: SHA-1 ok.');
-                    return func(true); // Allow password change
-                }
-                func(false);
-            });
-        } else {
-            // Default strong password hashing (pbkdf2 SHA384)
-            require('./pass').hash(password, user.salt, function (err, hash, tag) {
-                if (err) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 fail.'); return func(false); }
-                if (hash == user.hash) {
-                    if ((user.siteadmin) && (user.siteadmin != 0xFFFFFFFF) && (user.siteadmin & 32) != 0) { parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 locked.'); return func(false); } // Account is locked
-                    parent.debug('web', 'checkUserPassword: pbkdf2 SHA384 ok.');
-                    return func(true); // Allow password change
-                }
-                func(false);
-            }, 0);
-        }
-    }
-
-    // Check a user's old passwords
-    // Callback: 0=OK, 1=OldPass, 2=CommonPass
-    obj.checkOldUserPasswords = function (domain, user, password, func) {
-        // Check how many old passwords we need to check
-        if ((domain.passwordrequirements != null) && (typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
-            if (user.oldpasswords != null) {
-                const extraOldPasswords = user.oldpasswords.length - domain.passwordrequirements.oldpasswordban;
-                if (extraOldPasswords > 0) { user.oldpasswords.splice(0, extraOldPasswords); }
-            }
-        } else {
-            delete user.oldpasswords;
-        }
-
-        // If there is no old passwords, exit now.
-        var oldPassCount = 1;
-        if (user.oldpasswords != null) { oldPassCount += user.oldpasswords.length; }
-        var oldPassCheckState = { response: 0, count: oldPassCount, user: user, func: func };
-
-        // Test against common passwords if this feature is enabled
-        // Example of common passwords: 123456789, password123
-        if ((domain.passwordrequirements != null) && (domain.passwordrequirements.bancommonpasswords == true)) {
-            oldPassCheckState.count++;
-            require('wildleek')(password).then(function (wild) {
-                if (wild == true) { oldPassCheckState.response = 2; }
-                if (--oldPassCheckState.count == 0) { oldPassCheckState.func(oldPassCheckState.response); }
-            });
-        }
-
-        // Try current password
-        require('./pass').hash(password, user.salt, function oldPassCheck(err, hash, tag) {
-            if ((err == null) && (hash == tag.user.hash)) { tag.response = 1; }
-            if (--tag.count == 0) { tag.func(tag.response); }
-        }, oldPassCheckState);
-
-        // Try each old password
-        if (user.oldpasswords != null) {
-            for (var i in user.oldpasswords) {
-                const oldpassword = user.oldpasswords[i];
-                // Default strong password hashing (pbkdf2 SHA384)
-                require('./pass').hash(password, oldpassword.salt, function oldPassCheck(err, hash, tag) {
-                    if ((err == null) && (hash == tag.oldPassword.hash)) { tag.state.response = 1; }
-                    if (--tag.state.count == 0) { tag.state.func(tag.state.response); }
-                }, { oldPassword: oldpassword, state: oldPassCheckState });
-            }
-        }
-    }
+    Object.assign(obj, passwordHistoryModule.createPasswordHistory({ debug: function (source, message) { parent.debug(source, message); }, require: require }));
 
     // Handle password changes
     function handlePasswordChangeRequest(req, res, direct) {
