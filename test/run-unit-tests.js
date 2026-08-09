@@ -49,6 +49,7 @@ require('./webserver-request-context.test.js');
 require('./webserver-request-middleware.test.js');
 require('./webserver-throttling.test.js');
 require('./webserver-translations.test.js');
+require('./webserver-upload-quota.test.js');
 require('./webserver-telemetry.test.js');
 require('./webserver-terms.test.js');
 require('./webserver-tls-configuration.test.js');

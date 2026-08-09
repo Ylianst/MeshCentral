@@ -95,6 +95,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const auxiliaryWebSocketsModule = require('./webserver/auxiliary-websockets.js');
     const messengerModule = require('./webserver/messenger.js');
     const guestSharingModule = require('./webserver/guest-sharing.js');
+    const uploadQuotaModule = require('./webserver/upload-quota.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -3260,6 +3261,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (xfile == null) { res.sendStatus(404); return; }
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
+            const uploadQuota = uploadQuotaModule.createUploadQuota(totalsize, xfile.quota);
             if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
                 if (fields.name != null) {
 
@@ -3278,7 +3280,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             var safeName = obj.path.basename(originalName);
                             if ((safeName !== originalName) || (obj.common.IsFilenameValid(safeName) == false)) { res.sendStatus(404); return; }
                             var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
-                            if ((xfile.quota == null) || ((totalsize + filedata.length) < xfile.quota)) { // Check if quota would not be broken if we add this file
+                            if (uploadQuota.tryReserve(filedata.length)) { // Reserve quota for this file and all earlier files in the request.
                                 // Create the user folder if needed
                                 (function (fullpath, filename, filedata) {
                                     obj.fs.mkdir(xfile.fullpath, function () {
@@ -3303,7 +3305,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var isFilenameAcceptable = (safeOriginalFilename === originalFilename) && obj.common.IsFilenameValid(safeOriginalFilename);
                         const uploadTempPath = resolveSafeUploadTempPath(file.path);
                         if (uploadTempPath == null) { res.sendStatus(400); return; }
-                        if (isFilenameAcceptable && ((xfile.quota == null) || ((totalsize + file.size) < xfile.quota))) { // Check if quota would not be broken if we add this file
+                        if (isFilenameAcceptable && uploadQuota.tryReserve(file.size)) { // Reserve quota for this file and all earlier files in the request.
                             var fpath = obj.path.join(xfile.fullpath, safeOriginalFilename);
 
                             // See if we need to create the folder
