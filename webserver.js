@@ -3397,6 +3397,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     case 'start': {
                         // Perform an async file open
                         var callback = function onFileOpen(err, fd) {
+                            if ((err != null) || (fd == null)) {
+                                parent.debug('web', 'Unable to open agent core dump file: ' + ((err != null) ? err.toString() : 'invalid file descriptor'));
+                                try { onFileOpen.xws.close(); } catch (ex) { }
+                                return;
+                            }
                             onFileOpen.xws.xfile = fd;
                             try { onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); } catch (ex) { } // Ask for a directory (test)
                         };
