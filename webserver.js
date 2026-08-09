@@ -191,6 +191,7 @@ const amtEventsModule = require('./webserver/amt-events.js');
     const handleDevicePowerEvents = powerEventsModule.createPowerEventsHandler({ state: obj, checkUserIpAddress: checkUserIpAddress, setContentDispositionHeader: setContentDispositionHeader });
     obj.handleDevicePowerEvents = handleDevicePowerEvents;
     const getDomain = networkAccess.getDomain;
+    obj.handleAmtEventRequest = amtEventsModule.createAmtEventHandler({ state: obj, parent: parent, getDomain: getDomain });
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
     const captcha = captchaModule.createCaptcha({ parent: parent, checkUserIpAddress: checkUserIpAddress });
     const handleNewAccountCaptchaRequest = captcha.handleNewAccount;
@@ -2820,91 +2821,6 @@ const amtEventsModule = require('./webserver/amt-events.js');
             }
         });
     }
-
-    // Handle Intel AMT events
-    // To subscribe, add "http://server:port/amtevents.ashx" to Intel AMT subscriptions.
-    obj.handleAmtEventRequest = function (req, res) {
-        const domain = getDomain(req);
-        try {
-            if (req.headers.authorization) {
-                var authstr = req.headers.authorization;
-                if (authstr.substring(0, 7) == 'Digest ') {
-                    var auth = obj.common.parseNameValueList(obj.common.quoteSplit(authstr.substring(7)));
-                    if ((req.url === auth.uri) && (obj.httpAuthRealm === auth.realm) && (auth.opaque === obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(auth.nonce).digest('hex'))) {
-
-                        // Read the data, we need to get the arg field
-                        var eventData = '';
-                        req.on('data', function (chunk) { eventData += chunk; });
-                        req.on('end', function () {
-
-                            // Completed event read, let get the argument that must contain the nodeid
-                            var i = eventData.indexOf('<m:arg xmlns:m="http://x.com">');
-                            if (i > 0) {
-                                var nodeid = eventData.substring(i + 30, i + 30 + 64);
-                                if (nodeid.length == 64) {
-                                    var nodekey = 'node/' + domain.id + '/' + nodeid;
-
-                                    // See if this node exists in the database
-                                    obj.db.Get(nodekey, function (err, nodes) {
-                                        if (!amtEventsModule.hasDatabaseFailure(err, nodes) && (nodes.length == 1)) {
-                                            // Yes, the node exists, compute Intel AMT digest password
-                                            var node = nodes[0];
-                                            var amtpass = obj.crypto.createHash('sha384').update(auth.username.toLowerCase() + ':' + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest('base64').substring(0, 12).split('/').join('x').split('\\').join('x');
-
-                                            // Check the MD5 hash
-                                            if (auth.response === obj.common.ComputeDigesthash(auth.username, amtpass, auth.realm, 'POST', auth.uri, auth.qop, auth.nonce, auth.nc, auth.cnonce)) {
-
-                                                // This is an authenticated Intel AMT event, update the host address
-                                                var amthost = req.clientIp;
-                                                if (amthost.substring(0, 7) === '::ffff:') { amthost = amthost.substring(7); }
-                                                if (node.host != amthost) {
-                                                    // Get the mesh for this device
-                                                    var mesh = obj.meshes[node.meshid];
-                                                    if (mesh) {
-                                                        // Update the database
-                                                        var oldname = node.host;
-                                                        node.host = amthost;
-                                                        obj.db.Set(obj.cleanDevice(node));
-
-                                                        // Event the node change
-                                                        var event = { etype: 'node', action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Intel(R) AMT host change ' + node.name + ' from group ' + mesh.name + ': ' + oldname + ' to ' + amthost };
-
-                                                        // Remove the Intel AMT password before eventing this.
-                                                        event.node = node;
-                                                        if (event.node.intelamt && event.node.intelamt.pass) {
-                                                            event.node = Object.assign({}, event.node); // Shallow clone
-                                                            event.node.intelamt = Object.assign({}, event.node.intelamt); // Shallow clone
-                                                            delete event.node.intelamt.pass;
-                                                        }
-
-                                                        if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
-                                                        obj.parent.DispatchEvent(['*', node.meshid], obj, event);
-                                                    }
-                                                }
-
-                                                if (parent.amtEventHandler) { parent.amtEventHandler.handleAmtEvent(eventData, nodeid, amthost); }
-                                                //res.send('OK');
-
-                                                return;
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-        } catch (e) { console.log(e); }
-
-        // Send authentication response
-        obj.crypto.randomBytes(48, function (err, buf) {
-            if (amtEventsModule.hasRandomBytesFailure(err, buf)) { res.sendStatus(500); return; }
-            var nonce = buf.toString('hex'), opaque = obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(nonce).digest('hex');
-            res.set({ 'WWW-Authenticate': 'Digest realm="' + obj.httpAuthRealm + '", qop="auth,auth-int", nonce="' + nonce + '", opaque="' + opaque + '"' });
-            res.sendStatus(401);
-        });
-    };
 
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
