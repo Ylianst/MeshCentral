@@ -79,6 +79,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const requestMiddlewareModule = require('./webserver/request-middleware.js');
     const domainStartupModule = require('./webserver/domain-startup.js');
     const notFoundModule = require('./webserver/not-found.js');
+    const basicRoutesModule = require('./webserver/basic-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6773,6 +6774,54 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         function setupHTTPHandlers() {
             // Setup all HTTP handlers
+            const basicRoutes = basicRoutesModule.createBasicRoutes({
+                state: obj,
+                urlencoded: obj.bodyParser.urlencoded,
+                handlers: {
+                    rootRedirect: handleRootRedirect,
+                    rootRequest: handleRootRequest,
+                    rootPostRequest: handleRootPostRequest,
+                    refresh: function (req, res) { res.sendStatus(200); },
+                    backupRequest: handleBackupRequest,
+                    restoreRequest: handleRestoreRequest,
+                    termsRequest: handleTermsRequest,
+                    xtermRequest: handleXTermRequest,
+                    loginRequest: handleLoginRequest,
+                    logoutRequest: handleLogoutRequest,
+                    rootCertRequest: handleRootCertRequest,
+                    manifestRequest: handleManifestRequest,
+                    passwordChangeRequest: handlePasswordChangeRequest,
+                    deleteAccountRequest: handleDeleteAccountRequest,
+                    createAccountRequest: handleCreateAccountRequest,
+                    resetPasswordRequest: handleResetPasswordRequest,
+                    resetAccountRequest: handleResetAccountRequest,
+                    checkMailRequest: handleCheckMailRequest,
+                    agentInviteRequest: handleAgentInviteRequest,
+                    userImageRequest: handleUserImageRequest,
+                    amtEventRequest: obj.handleAmtEventRequest,
+                    meshAgentRequest: obj.handleMeshAgentRequest,
+                    messengerRequest: handleMessengerRequest,
+                    messengerImageRequest: handleMessengerImageRequest,
+                    meshOsxAgentRequest: obj.handleMeshOsxAgentRequest,
+                    meshSettingsRequest: obj.handleMeshSettingsRequest,
+                    devicePowerEvents: obj.handleDevicePowerEvents,
+                    downloadFile: handleDownloadFile,
+                    meshCommander: handleMeshCommander,
+                    uploadFile: handleUploadFile,
+                    uploadFileBatch: handleUploadFileBatch,
+                    customIconUpload: handleCustomIconUpload,
+                    customIconDelete: handleCustomIconDelete,
+                    customIconDownload: handleCustomIconDownload,
+                    uploadMeshCoreFile: handleUploadMeshCoreFile,
+                    oneClickRecoveryFile: handleOneClickRecoveryFile,
+                    downloadUserFiles: handleDownloadUserFiles,
+                    echoWebSocket: handleEchoWebSocket,
+                    twoFactorHoldWebSocket: handle2faHoldWebSocket,
+                    apfWebSocket: function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); },
+                    websocketExpected: function (req, res) { res.send('Websocket connection expected'); },
+                    health: function (req, res) { res.send('ok'); }
+                }
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6781,55 +6830,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((parent.config.domains[i].dns != null) || (parent.config.domains[i].share != null)) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
                 var domain = parent.config.domains[i];
                 var url = domain.url;
-                if (typeof domain.rootredirect == 'string') {
-                    // Root page redirects the user to a different URL
-                    obj.app.get(url, handleRootRedirect);
-                } else {
-                    // Present the login page as the root page
-                    obj.app.get(url, handleRootRequest);
-                    obj.app.post(url, obj.bodyParser.urlencoded({ extended: false }), handleRootPostRequest);
-                }
-                obj.app.get(url + 'refresh.ashx', function (req, res) { res.sendStatus(200); });
-                if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.backup === true))) { obj.app.get(url + 'backup.zip', handleBackupRequest); }
-                if ((domain.myserver !== false) && ((domain.myserver == null) || (domain.myserver.restore === true))) { obj.app.post(url + 'restoreserver.ashx', obj.bodyParser.urlencoded({ extended: false }), handleRestoreRequest); }
-                obj.app.get(url + 'terms', handleTermsRequest);
-                obj.app.get(url + 'xterm', handleXTermRequest);
-                obj.app.get(url + 'login', handleRootRequest);
-                obj.app.post(url + 'login', obj.bodyParser.urlencoded({ extended: false }), handleRootPostRequest);
-                obj.app.post(url + 'tokenlogin', obj.bodyParser.urlencoded({ extended: false }), handleLoginRequest);
-                obj.app.get(url + 'logout', handleLogoutRequest);
-                obj.app.get(url + 'MeshServerRootCert.cer', handleRootCertRequest);
-                obj.app.get(url + 'manifest.json', handleManifestRequest);
-                obj.app.post(url + 'changepassword', obj.bodyParser.urlencoded({ extended: false }), handlePasswordChangeRequest);
-                obj.app.post(url + 'deleteaccount', obj.bodyParser.urlencoded({ extended: false }), handleDeleteAccountRequest);
-                obj.app.post(url + 'createaccount', obj.bodyParser.urlencoded({ extended: false }), handleCreateAccountRequest);
-                obj.app.post(url + 'resetpassword', obj.bodyParser.urlencoded({ extended: false }), handleResetPasswordRequest);
-                obj.app.post(url + 'resetaccount', obj.bodyParser.urlencoded({ extended: false }), handleResetAccountRequest);
-                obj.app.get(url + 'checkmail', handleCheckMailRequest);
-                obj.app.get(url + 'agentinvite', handleAgentInviteRequest);
-                obj.app.get(url + 'userimage.ashx', handleUserImageRequest);
-                obj.app.post(url + 'amtevents.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handleAmtEventRequest);
-                obj.app.get(url + 'meshagents', obj.handleMeshAgentRequest);
-                obj.app.get(url + 'messenger', handleMessengerRequest);
-                obj.app.get(url + 'messenger.png', handleMessengerImageRequest);
-                obj.app.get(url + 'meshosxagent', obj.handleMeshOsxAgentRequest);
-                obj.app.get(url + 'meshsettings', obj.handleMeshSettingsRequest);
-                obj.app.get(url + 'devicepowerevents.ashx', obj.handleDevicePowerEvents);
-                obj.app.get(url + 'downloadfile.ashx', handleDownloadFile);
-                obj.app.get(url + 'commander.ashx', handleMeshCommander);
-                obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
-                obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
-                obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
-                obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
-                obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
-                obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
-                obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
-                obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
-                obj.app.ws(url + 'echo.ashx', handleEchoWebSocket);
-                obj.app.ws(url + '2fahold.ashx', handle2faHoldWebSocket);
-                obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
-                obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
-                obj.app.get(url + 'health.ashx', function (req, res) { res.send('ok'); }); // TODO: Perform more server checking.
+                basicRoutes.register(domain);
                 obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
                 obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie, authData) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
                 obj.app.ws(url + 'control.ashx', function (ws, req) {
