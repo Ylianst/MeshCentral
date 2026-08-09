@@ -18,6 +18,7 @@ require('./webserver-storage.test.js');
 require('./webserver-sso-strategies.test.js');
 require('./webserver-sso-login-groups.test.js');
 require('./webserver-sso-login-response.test.js');
+require('./webserver-sso-accounts.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');

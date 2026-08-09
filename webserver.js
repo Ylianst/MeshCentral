@@ -87,6 +87,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
+    const ssoAccountsModule = require('./webserver/sso-accounts.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -369,6 +370,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getWebServerName: function (domain, req) { return obj.getWebServerName(domain, req); },
         safeDecodeURIComponent: requestUtils.safeDecodeURIComponent
     });
+    const ssoAccounts = ssoAccountsModule.createSsoAccounts({ state: obj, parent: parent, setSessionRandom: setSessionRandom });
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
     Object.assign(obj, sessionCountsModule.createSessionCounts({
         state: obj,
@@ -1879,15 +1881,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     parent.DispatchEvent(targets, obj, event);
 
-                    req.session.userid = userid;
-                    setSessionRandom(req);
-
-                    // Notify account login using SSO
-                    var targets = ['*', 'server-users', user._id];
-                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-                    const ua = obj.getUserAgentInfo(req);
-                    const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
-                    obj.parent.DispatchEvent(targets, obj, loginEvent);
+                    ssoAccounts.completeSsoLogin(req, domain, user);
                 } else {
                     // New users not allowed
                     parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: "${req.user.sid}" New accounts are not allowed`);
@@ -1931,15 +1925,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                     parent.DispatchEvent(targets, obj, event);
                 }
-                req.session.userid = userid;
-                setSessionRandom(req);
-
-                // Notify account login using SSO
-                var targets = ['*', 'server-users', user._id];
-                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-                const ua = obj.getUserAgentInfo(req);
-                const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
-                obj.parent.DispatchEvent(targets, obj, loginEvent);
+                ssoAccounts.completeSsoLogin(req, domain, user);
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
         } else if (req.session && req.session.userid && obj.users[req.session.userid]) {
