@@ -37,3 +37,19 @@ test('trusted certificates do not show a root certificate link', function () {
     const service = createRootRequests({ checkUserIpAddress: function () { }, getQueryPortion: function () { return ''; }, isTrustedCert: function () { return true; } });
     assert.equal(service.getRootCertLink({ id: 'tenant' }), '');
 });
+
+test('root request checks reject invalid login keys and required headers', function () {
+    const statuses = [];
+    const service = createRootRequests({ state: { args: {} }, debug: function () { }, now: function () { return 100; } });
+    const res = { sendStatus: function (status) { statuses.push(status); } };
+    assert.equal(service.checkRootRequest({ query: { key: 'wrong' }, headers: {} }, res, { loginkey: ['expected'] }), false);
+    assert.equal(service.checkRootRequest({ query: {}, headers: { authorization: 'wrong' } }, res, { userrequiredhttpheader: { authorization: 'expected' } }), false);
+    assert.deepEqual(statuses, [404, 404]);
+});
+
+test('expired root sessions are cleared before rendering', function () {
+    const service = createRootRequests({ state: { args: {} }, debug: function () { }, now: function () { return 100; } });
+    const req = { query: {}, headers: {}, session: { userid: 'user/tenant/alice', expire: 99, other: true } };
+    assert.equal(service.checkRootRequest(req, { sendStatus: function () { } }, {}), true);
+    assert.deepEqual(req.session, {});
+});

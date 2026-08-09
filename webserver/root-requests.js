@@ -9,6 +9,21 @@ module.exports.createRootRequests = function (options) {
     const checkUserIpAddress = options.checkUserIpAddress;
     const getQueryPortion = options.getQueryPortion;
     const isTrustedCert = options.isTrustedCert;
+    const state = options.state;
+    const debug = options.debug;
+    const now = options.now || Date.now;
+
+    function checkRootRequest(req, res, domain) {
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
+        if (!state.args) { debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return false; }
+        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) {
+            var ok = false;
+            for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } }
+            if (ok == false) { res.sendStatus(404); return false; }
+        }
+        if ((req.session != null) && (typeof req.session.expire == 'number') && ((req.session.expire - now()) <= 0)) { for (var i in req.session) { delete req.session[i]; } }
+        return true;
+    }
 
     function handleRootRedirect(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -25,5 +40,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { handleRootRedirect: handleRootRedirect, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, getRootCertLink: getRootCertLink };
 };

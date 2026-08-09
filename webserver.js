@@ -1763,14 +1763,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleRootRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (!obj.args) { parent.debug('web', 'handleRootRequest: no obj.args.'); res.sendStatus(500); return; }
-
-        // If a HTTP header is required, check new UserRequiredHttpHeader
-        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
-
-        // If the session is expired, clear it.
-        if ((req.session != null) && (typeof req.session.expire == 'number') && ((req.session.expire - Date.now()) <= 0)) { for (var i in req.session) { delete req.session[i]; } }
+        if (rootRequests.checkRootRequest(req, res, domain) == false) { return; }
 
         // Check if we are in maintenance mode
         if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
@@ -2520,7 +2513,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return true; // This is a guess
     }
 
-    const rootRequests = rootRequestsModule.createRootRequests({ checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, isTrustedCert: obj.isTrustedCert });
+    const rootRequests = rootRequestsModule.createRootRequests({
+        state: obj,
+        debug: function (source, message) { parent.debug(source, message); },
+        checkUserIpAddress: checkUserIpAddress,
+        getQueryPortion: getQueryPortion,
+        isTrustedCert: obj.isTrustedCert
+    });
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;
 
