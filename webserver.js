@@ -98,6 +98,7 @@ const powerEventsModule = require('./webserver/power-events.js');
 const pluginRequestsModule = require('./webserver/plugin-requests.js');
 const deviceCleanupModule = require('./webserver/device-cleanup.js');
 const amtEventsModule = require('./webserver/amt-events.js');
+const agentDownloadsModule = require('./webserver/agent-downloads.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -3058,7 +3059,7 @@ const amtEventsModule = require('./webserver/amt-events.js');
             return;
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            var user = obj.users[req.session.userid];
+            var user = agentDownloadsModule.getSessionUser(obj.users, req);
             if (user == null) {
                 // Check if we have an authentication cookie
                 var c = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey);
