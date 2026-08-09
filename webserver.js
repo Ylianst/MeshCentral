@@ -77,6 +77,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const securityHeadersModule = require('./webserver/security-headers.js');
     const requestContextModule = require('./webserver/request-context.js');
     const requestMiddlewareModule = require('./webserver/request-middleware.js');
+    const domainStartupModule = require('./webserver/domain-startup.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6790,31 +6791,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         requestMiddleware.setup();
 
-        // Setup all sharing domains and check if auth strategies need setup
-        var setupSSO = false
-        for (var i in parent.config.domains) {
-            if ((parent.config.domains[i].dns == null) && (parent.config.domains[i].share != null)) { obj.app.use(parent.config.domains[i].url, obj.express.static(parent.config.domains[i].share)); }
-            if (typeof parent.config.domains[i].authstrategies == 'object') { setupSSO = true };
-        }
+        domainStartupModule.createDomainStartup({
+            domains: parent.config.domains,
+            app: obj.app,
+            staticMiddleware: obj.express.static,
+            setupDomainAuthStrategy: setupDomainAuthStrategy,
+            finalizeWebserver: finalizeWebserver
+        }).setup();
 
-        if (setupSSO) {
-            setupAllDomainAuthStrategies().then(() => finalizeWebserver());
-        } else {
-            finalizeWebserver()
-        }
-
-        // Setup all domain auth strategy passport.js
-        async function setupAllDomainAuthStrategies() {
-            for (var i in parent.config.domains) {
-                if (parent.config.domains[i].dns != null) {
-                    if (typeof parent.config.domains[''].authstrategies != 'object') { parent.config.domains[''].authstrategies = { 'authStrategyFlags': 0 }; }
-                    parent.config.domains[''].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
-                } else {
-                    if (typeof parent.config.domains[i].authstrategies != 'object') { parent.config.domains[i].authstrategies = { 'authStrategyFlags': 0 }; }
-                    parent.config.domains[i].authstrategies.authStrategyFlags |= await setupDomainAuthStrategy(parent.config.domains[i]);
-                }
-            }
-        }
         function setupHTTPHandlers() {
             // Setup all HTTP handlers
             if (parent.pluginHandler != null) {

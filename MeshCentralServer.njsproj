@@ -251,6 +251,7 @@
     <Compile Include="webserver\custom-icons.js" />
     <Compile Include="webserver\core-middleware.js" />
     <Compile Include="webserver\external-groups.js" />
+    <Compile Include="webserver\domain-startup.js" />
     <Compile Include="webserver\network-access.js" />
     <Compile Include="webserver\push-notifications.js" />
     <Compile Include="webserver\rendering.js" />
