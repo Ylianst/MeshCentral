@@ -12,6 +12,7 @@ module.exports.createSsoAccounts = function (options) {
     const setSessionRandom = options.setSessionRandom;
     const syncExternalUserGroups = options.syncExternalUserGroups;
     const isEmailVerified = options.isEmailVerified;
+    const now = options.now || Date.now;
 
     function getNewAccountSettings(domain, strategy) {
         const settings = { allowed: false, realms: null, rights: domain.newaccountsrights, userGroups: null };
@@ -25,6 +26,52 @@ module.exports.createSsoAccounts = function (options) {
             if (typeof strategy.newaccountsusergroups == 'object') { settings.userGroups = strategy.newaccountsusergroups; }
         }
         return settings;
+    }
+
+    function createAccount(domain, strategy, requestUser, groups, settings) {
+        const userid = 'user/' + domain.id + '/' + requestUser.sid;
+        parent.authLog('handleStrategyLogin', `${requestUser.strategy.toUpperCase()}: USER: "${requestUser.sid}" Creating new login user: "${userid}"`);
+        const timestamp = Math.floor(now() / 1000);
+        const user = { type: 'user', _id: userid, name: requestUser.name, email: requestUser.email, creation: timestamp, login: timestamp, access: timestamp, domain: domain.id };
+        if (requestUser.email != null) { user.email = requestUser.email; user.emailVerified = isEmailVerified(requestUser); }
+        if (settings.rights) { user.siteadmin = settings.rights; }
+        if (settings.realms) { user.groups = settings.realms; }
+        state.users[userid] = user;
+
+        if (settings.userGroups) {
+            for (var i in settings.userGroups) {
+                var ugrpid = settings.userGroups[i];
+                if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                var ugroup = state.userGroups[ugrpid];
+                if (ugroup != null) {
+                    if (user.links == null) { user.links = {}; }
+                    user.links[ugroup._id] = { rights: 1 };
+                    ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                    state.db.Set(ugroup);
+                    var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                    if (state.db.changeStream) { event.noact = 1; }
+                    parent.DispatchEvent(['*', ugroup._id, user._id], state, event);
+                }
+            }
+        }
+
+        if (groups.enabled === true) {
+            if (groups.syncEnabled === true) {
+                const groupType = strategy.custom?.preset ? strategy.custom.preset : requestUser.strategy;
+                syncExternalUserGroups(domain, user, groups.syncMemberships, groupType);
+            }
+            if (groups.grantAdmin === true) {
+                parent.authLog('handleStrategyLogin', `${requestUser.strategy.toUpperCase()}: GROUPS: USER: "${requestUser.sid}" Granting site admin privilages`);
+                user.siteadmin = 0xFFFFFFFF;
+            }
+        }
+
+        state.db.SetUser(user);
+        var targets = ['*', 'server-users'];
+        var event = { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, username is ' + user.name, domain: domain.id };
+        if (state.db.changeStream) { event.noact = 1; }
+        parent.DispatchEvent(targets, state, event);
+        return user;
     }
 
     function updateExistingAccount(domain, user, requestUser, groups) {
@@ -68,5 +115,5 @@ module.exports.createSsoAccounts = function (options) {
         parent.DispatchEvent(targets, state, loginEvent);
     }
 
-    return { getNewAccountSettings: getNewAccountSettings, updateExistingAccount: updateExistingAccount, completeSsoLogin: completeSsoLogin };
+    return { getNewAccountSettings: getNewAccountSettings, createAccount: createAccount, updateExistingAccount: updateExistingAccount, completeSsoLogin: completeSsoLogin };
 };

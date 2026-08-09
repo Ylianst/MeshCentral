@@ -1821,61 +1821,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const newAccountSettings = ssoAccounts.getNewAccountSettings(domain, strategy);
 
                 if (newAccountSettings.allowed === true) {
-                    // Create the user
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: "${req.user.sid}" Creating new login user: "${userid}"`);
-                    user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
-                    if (req.user.email != null) { user.email = req.user.email; user.emailVerified = ssoStrategiesModule.isEmailVerified(req.user); }
-                    if (newAccountSettings.rights) { user.siteadmin = newAccountSettings.rights; }
-                    if (newAccountSettings.realms) { user.groups = newAccountSettings.realms; }
-                    obj.users[userid] = user;
-
-                    // Auto-join any user groups
-                    var newaccountsusergroups = newAccountSettings.userGroups;
-                    if (newaccountsusergroups) {
-                        for (var i in newaccountsusergroups) {
-                            var ugrpid = newaccountsusergroups[i];
-                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
-                            var ugroup = obj.userGroups[ugrpid];
-                            if (ugroup != null) {
-                                // Add group to the user
-                                if (user.links == null) { user.links = {}; }
-                                user.links[ugroup._id] = { rights: 1 };
-
-                                // Add user to the group
-                                ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
-                                db.Set(ugroup);
-
-                                // Notify user group change
-                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
-                            }
-                        }
-                    }
-
-                    if (groups.enabled === true) {
-                        // Sync the user groups if enabled
-                        if (groups.syncEnabled === true) {
-                            // Set groupType to the preset name if it exists, otherwise use the strategy name
-                            const groupType = domain.authstrategies[req.user.strategy].custom?.preset ? domain.authstrategies[req.user.strategy].custom.preset : req.user.strategy;
-                            syncExternalUserGroups(domain, user, groups.syncMemberships, groupType);
-                        }
-                        // See if the user is a member of the site admin group.
-                        if (groups.grantAdmin === true) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Granting site admin privilages`);
-                            user.siteadmin = 0xFFFFFFFF;
-                        }
-                    }
-
-                    // Save the user
-                    obj.db.SetUser(user);
-
-                    // Event user creation
-                    var targets = ['*', 'server-users'];
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, username is ' + user.name, domain: domain.id };
-                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                    parent.DispatchEvent(targets, obj, event);
-
+                    user = ssoAccounts.createAccount(domain, strategy, req.user, groups, newAccountSettings);
                     ssoAccounts.completeSsoLogin(req, domain, user);
                 } else {
                     // New users not allowed

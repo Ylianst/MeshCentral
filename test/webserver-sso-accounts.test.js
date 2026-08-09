@@ -76,3 +76,43 @@ test('strategy-specific SSO account settings override domain defaults', function
     const strategy = { newaccounts: true, newaccountrealms: ['strategy'], newaccountsrights: ['manageusers', 'fileaccess'], newaccountsusergroups: ['strategy-group'] };
     assert.deepEqual(accounts.getNewAccountSettings(domain, strategy), { allowed: true, realms: ['strategy'], rights: 20, userGroups: ['strategy-group'] });
 });
+
+test('new SSO accounts join configured groups and persist creation events', function () {
+    const writes = [], userWrites = [], events = [], syncs = [];
+    const ugroup = { _id: 'ugrp/tenant/operators', name: 'Operators', links: {} };
+    const state = {
+        users: {},
+        userGroups: { [ugroup._id]: ugroup },
+        db: { changeStream: false, Set: function (value) { writes.push(value); }, SetUser: function (value) { userWrites.push(value); } },
+        CloneSafeUser: function (user) { return { _id: user._id, name: user.name }; }
+    };
+    const parent = {
+        authLog: function () { },
+        DispatchEvent: function (targets, source, event) { events.push(event); }
+    };
+    const accounts = createSsoAccounts({
+        state: state,
+        parent: parent,
+        common: {},
+        syncExternalUserGroups: function (domain, user, memberships, groupType) { syncs.push([memberships, groupType]); },
+        isEmailVerified: function (requestUser) { return requestUser.email_verified !== false; },
+        now: function () { return 5000; }
+    });
+    const domain = { id: 'tenant' };
+    const strategy = { custom: { preset: 'azure' } };
+    const requestUser = { sid: 'alice', strategy: 'oidc', name: 'Alice', email: 'alice@example.com', email_verified: false };
+    const groups = { enabled: true, syncEnabled: true, syncMemberships: ['external'], grantAdmin: false };
+    const settings = { rights: 7, realms: ['west'], userGroups: ['operators'] };
+
+    const user = accounts.createAccount(domain, strategy, requestUser, groups, settings);
+
+    assert.equal(user.creation, 5);
+    assert.equal(user.emailVerified, false);
+    assert.deepEqual(user.groups, ['west']);
+    assert.equal(user.links[ugroup._id].rights, 1);
+    assert.equal(ugroup.links[user._id].name, 'Alice');
+    assert.equal(writes.length, 1);
+    assert.equal(userWrites.length, 1);
+    assert.deepEqual(syncs, [[['external'], 'azure']]);
+    assert.deepEqual(events.map(function (event) { return event.action; }), ['usergroupchange', 'accountcreate']);
+});
