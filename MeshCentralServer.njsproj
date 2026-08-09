@@ -251,6 +251,7 @@
     <Compile Include="webserver\resource-routes.js" />
     <Compile Include="webserver\relay-routes.js" />
     <Compile Include="webserver\passport-routes.js" />
+    <Compile Include="webserver\password-authentication.js" />
     <Compile Include="webserver\agent-routing.js" />
     <Compile Include="webserver\agent-routes.js" />
     <Compile Include="webserver\agent-control.js" />

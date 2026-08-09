@@ -21,6 +21,7 @@ require('./webserver-basic-routes.test.js');
 require('./webserver-resource-routes.test.js');
 require('./webserver-relay-routes.test.js');
 require('./webserver-passport-routes.test.js');
+require('./webserver-password-authentication.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-routes.test.js');
 require('./webserver-agent-control.test.js');
