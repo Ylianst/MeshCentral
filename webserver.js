@@ -74,6 +74,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
+    const securityHeadersModule = require('./webserver/security-headers.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -448,6 +449,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         cookieSession: require('cookie-session'),
         dnsLookup: require('dns').lookup,
         handleWebRelayWebSocket: function (ws, req) { handleWebRelayWebSocket(ws, req); }
+    });
+    const securityHeaders = securityHeadersModule.createSecurityHeaders({
+        getSettings: function () { return parent.config.settings; },
+        getWebRelayServer: function () { return parent.webrelayserver; },
+        isTrustedCert: function (domain) { return obj.isTrustedCert(domain); }
     });
 
     // Setup randoms
@@ -6882,60 +6888,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Skip the rest if this is an agent connection
             if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
 
-            // Setup security headers
-            const geourl = (domain.geolocation ? ' *.openstreetmap.org' : '');
-            var selfurl = ' wss://' + req.headers.host;
-            if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { selfurl += ' wss://' + xforwardedhost; }
-            const extraScriptSrc = (parent.config.settings.extrascriptsrc != null) ? (' ' + parent.config.settings.extrascriptsrc) : '';
-            const extraImgSrc = (parent.config.settings.extraimgsrc != null) ? (' ' + parent.config.settings.extraimgsrc) : '';
-            const allowedFramingOriginsValue = (domain.allowedframingorigins != null) ? domain.allowedframingorigins : parent.config.settings.allowedframingorigins;
-            const hasAllowedFramingOrigins = (allowedFramingOriginsValue != null);
-            var framingOrigins = [];
-            if (typeof allowedFramingOriginsValue === 'string') {
-                framingOrigins = allowedFramingOriginsValue.split(/[,\s]+/).map(function (v) { return v.trim(); }).filter(function (v) { return v.length > 0; });
-            } else if (Array.isArray(allowedFramingOriginsValue)) {
-                framingOrigins = allowedFramingOriginsValue.filter(function (v) { return (typeof v === 'string') && (v.trim().length > 0); }).map(function (v) { return v.trim(); });
-            }
-
-            // If the web relay port is enabled, allow the web page to redirect to it
-            var extraFrameSrc = '';
-            if ((parent.webrelayserver != null) && (parent.webrelayserver.port != 0)) {
-                extraFrameSrc = ' https://' + req.headers.host + ':' + parent.webrelayserver.port;
-                if ((xforwardedhost != null) && (xforwardedhost != req.headers.host)) { extraFrameSrc += ' https://' + xforwardedhost + ':' + parent.webrelayserver.port; }
-            }
-
-
-            // If using duo add apihostname to CSP
-            var duoSrc = '';
-            if ((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.apihostname == 'string')) {
-                duoSrc = domain.duo2factor.apihostname;
-            }
-
-            // Finish setup security headers
-            var cspBase = "default-src 'none'; font-src 'self' fonts.gstatic.com data:; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' " + extraScriptSrc + "; connect-src 'self'" + geourl + selfurl + "; img-src 'self' blob: data:" + geourl + extraImgSrc + " data:; style-src 'self' 'unsafe-inline' fonts.googleapis.com; frame-src 'self' blob: mcrouter:" + extraFrameSrc + "; media-src 'self'; form-action 'self' " + duoSrc + "; manifest-src 'self'";
-            if (hasAllowedFramingOrigins) {
-                var frameAncestors = "'self'" + (framingOrigins.length > 0 ? ' ' + framingOrigins.join(' ') : '');
-                cspBase += "; frame-ancestors " + frameAncestors;
-            }
-            const headers = {
-                'Referrer-Policy': 'no-referrer',
-                'X-XSS-Protection': '1; mode=block',
-                'X-Content-Type-Options': 'nosniff',
-                'Content-Security-Policy': cspBase
-            };
-            if (req.headers['user-agent'] && (req.headers['user-agent'].indexOf('Chrome') >= 0)) { headers['Permissions-Policy'] = 'interest-cohort=()'; } // Remove Google's FLoC Network, only send this if Chrome browser
-            if (hasAllowedFramingOrigins) {
-                if (framingOrigins.length === 0) { headers['X-Frame-Options'] = 'sameorigin'; }
-            } else if ((parent.config.settings.allowframing !== true) && (typeof parent.config.settings.allowframing !== 'string')) {
-                headers['X-Frame-Options'] = 'sameorigin';
-            }
-            if ((parent.config.settings.stricttransportsecurity === true) || ((parent.config.settings.stricttransportsecurity !== false) && (obj.isTrustedCert(domain)))) { if (typeof parent.config.settings.stricttransportsecurity == 'string') { headers['Strict-Transport-Security'] = parent.config.settings.stricttransportsecurity; } else { headers['Strict-Transport-Security'] = 'max-age=63072000'; } }
-
-            // If this domain has configured headers, add them. If a header is set to null, remove it.
-            if ((domain != null) && (domain.httpheaders != null) && (typeof domain.httpheaders == 'object')) {
-                for (var i in domain.httpheaders) { if (domain.httpheaders[i] === null) { delete headers[i]; } else { headers[i] = domain.httpheaders[i]; } }
-            }
-            res.set(headers);
+            res.set(securityHeaders.build(domain, req, xforwardedhost));
 
             // Check the session if bound to the external IP address
             if ((req.session.ip != null) && (req.clientIp != null) && !checkCookieIp(req.session.ip, req.clientIp)) { req.session = {}; }
