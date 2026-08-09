@@ -17,6 +17,7 @@ require('./webserver-authorization.test.js');
 require('./webserver-application-routes.test.js');
 require('./webserver-basic-routes.test.js');
 require('./webserver-resource-routes.test.js');
+require('./webserver-relay-routes.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-control.test.js');
 require('./webserver-custom-icons.test.js');

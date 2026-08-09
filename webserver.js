@@ -82,6 +82,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const basicRoutesModule = require('./webserver/basic-routes.js');
     const resourceRoutesModule = require('./webserver/resource-routes.js');
     const applicationRoutesModule = require('./webserver/application-routes.js');
+    const relayRoutesModule = require('./webserver/relay-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6863,6 +6864,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     firebaseRelayRequest: handleFirebaseRelayRequest
                 }
             });
+            const relayRoutes = relayRoutesModule.createRelayRoutes({
+                state: obj,
+                parent: parent,
+                getDomain: getDomain,
+                getWebSocketArgs: getWebsocketArgs,
+                authorizeWebSocket: PerformWSSessionAuth,
+                authorizeInnerWebSocket: PerformWSSessionInnerAuth,
+                relayWebSocket: handleRelayWebSocket
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6872,56 +6882,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var domain = parent.config.domains[i];
                 var url = domain.url;
                 basicRoutes.register(domain);
-                obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
-                obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie, authData) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
-                obj.app.ws(url + 'control.ashx', function (ws, req) {
-                    getWebsocketArgs(ws, req, function (ws, req) {
-                        const domain = getDomain(req);
-                        if (obj.CheckWebServerOriginName(domain, req) == false) {
-                            try { ws.send(JSON.stringify({ action: 'close', cause: 'invalidorigin', msg: 'invalidorigin' })); } catch (ex) { }
-                            try { ws.close(); } catch (ex) { }
-                            return;
-                        }
-                        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { // Check 3FA URL key
-                            try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'nokey' })); } catch (ex) { }
-                            try { ws.close(); } catch (ex) { }
-                            return;
-                        }
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                            if (user == null) { // User is not authenticated, perform inner server authentication
-                                if (req.headers['x-meshauth'] === '*') {
-                                    PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user, authData); }); // User is authenticated
-                                } else {
-                                    try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth' })); } catch (ex) { }
-                                    try { ws.close(); } catch (ex) { } // user is not authenticated and inner authentication was not requested, disconnect now.
-                                }
-                            } else {
-                                obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user, authData); // User is authenticated
-                            }
-                        });
-                    });
-                });
-                obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
-                obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
-                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                        if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
-                            obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
-                        } else {
-                            obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
-                        }
-                    });
-                });
-                if (obj.args.wanonly != true) { // If the server is not in WAN mode, allow server relayed connections.
-                    obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                            if ((user == null) || (cookie == null)) {
-                                try { ws1.close(); } catch (ex) { }
-                            } else {
-                                obj.meshRelayHandler.CreateLocalRelay(obj, ws1, req1, domain, user, cookie); // Local relay
-                            }
-                        });
-                    });
-                }
+                relayRoutes.register(domain);
                 resourceRoutes.register(domain);
                 applicationRoutes.register(domain);
 
