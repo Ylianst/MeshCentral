@@ -584,6 +584,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         hashPassword: function (password, callback) { require('./pass').hash(password, callback, 0); }
     });
     const handlePasswordChangeRequest = accountManagement.handlePasswordChangeRequest;
+    const handleDeleteAccountRequest = accountManagement.handleDeleteAccountRequest;
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -1872,115 +1873,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Generate a cookie and respond
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
             render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
-        });
-    }
-
-    function handleDeleteAccountRequest(req, res, direct) {
-        parent.debug('web', 'handleDeleteAccountRequest()');
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handleDeleteAccountRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-
-        var user = null;
-        if (req.body.authcookie) {
-            // If a authentication cookie is provided, decode it here
-            var loginCookie = obj.parent.decodeCookie(req.body.authcookie, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { user = obj.users[loginCookie.userid]; }
-        } else {
-            // Check if the user is logged and we have all required parameters
-            if (!req.session || !req.session.userid || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.userid.split('/')[1] != domain.id)) {
-                parent.debug('web', 'handleDeleteAccountRequest: required parameters not present.');
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                return;
-            } else {
-                user = obj.users[req.session.userid];
-            }
-        }
-        if (!user) { parent.debug('web', 'handleDeleteAccountRequest: user not found.'); res.sendStatus(404); return; }
-        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) { parent.debug('web', 'handleDeleteAccountRequest: account settings locked.'); res.sendStatus(404); return; }
-
-        // Check if the password is correct
-        obj.authenticate(user._id.split('/')[2], req.body.apassword1, domain, function (err, userid, passhint, loginOptions) {
-            var deluser = obj.users[userid];
-            if ((userid != null) && (deluser != null)) {
-                // Remove all links to this user
-                if (deluser.links != null) {
-                    for (var i in deluser.links) {
-                        if (i.startsWith('mesh/')) {
-                            // Get the device group
-                            var mesh = obj.meshes[i];
-                            if (mesh) {
-                                // Remove user from the mesh
-                                if (mesh.links[deluser._id] != null) { delete mesh.links[deluser._id]; parent.db.Set(mesh); }
-
-                                // Notify mesh change
-                                var change = 'Removed user ' + deluser.name + ' from group ' + mesh.name;
-                                var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: change, domain: domain.id, invite: mesh.invite };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                parent.DispatchEvent(['*', mesh._id, deluser._id, user._id], obj, event);
-                            }
-                        } else if (i.startsWith('node/')) {
-                            // Get the node and the rights for this node
-                            obj.GetNodeWithRights(domain, deluser, i, function (node, rights, visible) {
-                                if ((node == null) || (node.links == null) || (node.links[deluser._id] == null)) return;
-
-                                // Remove the link and save the node to the database
-                                delete node.links[deluser._id];
-                                if (Object.keys(node.links).length == 0) { delete node.links; }
-                                db.Set(obj.cleanDevice(node));
-
-                                // Event the node change
-                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: ('Removed user device rights for ' + node.name), node: obj.CloneSafeNode(node) }
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
-                                parent.DispatchEvent(['*', node.meshid, node._id], obj, event);
-                            });
-                        } else if (i.startsWith('ugrp/')) {
-                            // Get the device group
-                            var ugroup = obj.userGroups[i];
-                            if (ugroup) {
-                                // Remove user from the user group
-                                if (ugroup.links[deluser._id] != null) { delete ugroup.links[deluser._id]; parent.db.Set(ugroup); }
-
-                                // Notify user group change
-                                var change = 'Removed user ' + deluser.name + ' from user group ' + ugroup.name;
-                                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                parent.DispatchEvent(['*', ugroup._id, user._id, deluser._id], obj, event);
-                            }
-                        }
-                    }
-                }
-
-                obj.db.Remove('ws' + deluser._id);  // Remove user web state
-                obj.db.Remove('nt' + deluser._id);  // Remove notes for this user
-                obj.db.Remove('ntp' + deluser._id); // Remove personal notes for this user
-                obj.db.Remove('im' + deluser._id);  // Remove image for this user
-
-                // Delete any login tokens
-                parent.db.GetAllTypeNodeFiltered(['logintoken-' + deluser._id], domain.id, 'logintoken', null, function (err, docs) {
-                    if ((err == null) && (docs != null)) { for (var i = 0; i < docs.length; i++) { parent.db.Remove(docs[i]._id, function () { }); } }
-                });
-
-                // Delete all files on the server for this account
-                try {
-                    var deluserpath = obj.getServerRootFilePath(deluser);
-                    if (deluserpath != null) { obj.deleteFolderRec(deluserpath); }
-                } catch (e) { }
-
-                // Remove the user
-                obj.db.Remove(deluser._id);
-                delete obj.users[deluser._id];
-                req.session = null;
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: deluser._id, username: deluser.name, action: 'accountremove', msg: 'Account removed', domain: domain.id });
-                parent.debug('web', 'handleDeleteAccountRequest: removed user.');
-            } else {
-                parent.debug('web', 'handleDeleteAccountRequest: auth failed.');
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            }
         });
     }
 
