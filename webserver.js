@@ -66,6 +66,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const externalGroupsModule = require('./webserver/external-groups.js');
     const serverIdentityModule = require('./webserver/server-identity.js');
     const sessionCountsModule = require('./webserver/session-counts.js');
+    const agentRoutingModule = require('./webserver/agent-routing.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -229,6 +230,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     Object.assign(obj, sessionCountsModule.createSessionCounts({
         state: obj,
         dispatchEvent: function (targets, source, event) { parent.DispatchEvent(targets, source, event); }
+    }));
+    Object.assign(obj, agentRoutingModule.createAgentRouting({
+        state: obj,
+        getNodeRights: function (userId, meshId, nodeId) { return obj.GetNodeRights(userId, meshId, nodeId); },
+        getMultiServer: function () { return parent.multiServer; }
     }));
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
@@ -9243,78 +9249,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
         obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
     */
-
-    // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
-    obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
-        // Route a message.
-        // If this command has a sessionid, that is the target.
-        if (command.sessionid != null) {
-            if (typeof command.sessionid != 'string') return;
-            var splitsessionid = command.sessionid.split('/');
-            // Check that we are in the same domain and the user has rights over this node.
-            if ((splitsessionid.length == 4) && (splitsessionid[0] == 'user') && (splitsessionid[1] == domainid)) {
-                // Check if this user has rights to get this message
-                if (obj.GetNodeRights(splitsessionid[0] + '/' + splitsessionid[1] + '/' + splitsessionid[2], meshid, nodeid) == 0) return; // TODO: Check if this is ok
-
-                // See if the session is connected. If so, go ahead and send this message to the target node
-                var ws = obj.wssessions2[command.sessionid];
-                if (ws != null) {
-                    command.nodeid = nodeid;  // Set the nodeid, required for responses.
-                    delete command.sessionid; // Remove the sessionid, since we are sending to that sessionid, so it's implyed.
-                    try { ws.send(JSON.stringify(command)); } catch (ex) { }
-                } else if (parent.multiServer != null) {
-                    // See if we can send this to a peer server
-                    var serverid = obj.wsPeerSessions2[command.sessionid];
-                    if (serverid != null) {
-                        command.fromNodeid = nodeid;
-                        parent.multiServer.DispatchMessageSingleServer(command, serverid);
-                    }
-                }
-            }
-        } else if (command.userid != null) { // If this command has a userid, that is the target.
-            if (typeof command.userid != 'string') return;
-            var splituserid = command.userid.split('/');
-            // Check that we are in the same domain and the user has rights over this node.
-            if ((splituserid[0] == 'user') && (splituserid[1] == domainid)) {
-                // Check if this user has rights to get this message
-                if (obj.GetNodeRights(command.userid, meshid, nodeid) == 0) return; // TODO: Check if this is ok
-
-                // See if the session is connected
-                var sessions = obj.wssessions[command.userid];
-
-                // Go ahead and send this message to the target node
-                if (sessions != null) {
-                    command.nodeid = nodeid; // Set the nodeid, required for responses.
-                    delete command.userid;   // Remove the userid, since we are sending to that userid, so it's implyed.
-                    for (i in sessions) { sessions[i].send(JSON.stringify(command)); }
-                }
-
-                if (parent.multiServer != null) {
-                    // TODO: Add multi-server support
-                }
-            }
-        } else { // Route this command to all users with MESHRIGHT_AGENTCONSOLE rights to this device group
-            command.nodeid = nodeid;
-            var cmdstr = JSON.stringify(command);
-
-            // Find all connected user sessions with access to this device
-            for (var userid in obj.wssessions) {
-                var xsessions = obj.wssessions[userid];
-                if (obj.GetNodeRights(userid, meshid, nodeid) != 0) {
-                    // Send the message to all sessions for this user on this server
-                    for (i in xsessions) { try { xsessions[i].send(cmdstr); } catch (e) { } }
-                }
-            }
-
-            // Send the message to all users of other servers
-            if (parent.multiServer != null) {
-                delete command.nodeid;
-                command.fromNodeid = nodeid;
-                command.meshid = meshid;
-                parent.multiServer.DispatchMessage(command);
-            }
-        }
-    }
 
     // Perform a web push to a user
     // If any of the push fail, remove the subscription from the user's webpush subscription list.
