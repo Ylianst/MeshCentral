@@ -184,6 +184,8 @@ const powerEventsModule = require('./webserver/power-events.js');
     const checkIpAddressEx = networkAccess.checkIpAddressEx;
     const checkUserIpAddress = networkAccess.checkUserIpAddress;
     const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
+    const handleDevicePowerEvents = powerEventsModule.createPowerEventsHandler({ state: obj, checkUserIpAddress: checkUserIpAddress, setContentDispositionHeader: setContentDispositionHeader });
+    obj.handleDevicePowerEvents = handleDevicePowerEvents;
     const getDomain = networkAccess.getDomain;
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
     const captcha = captchaModule.createCaptcha({ parent: parent, checkUserIpAddress: checkUserIpAddress });
@@ -3544,71 +3546,6 @@ const powerEventsModule = require('./webserver/power-events.js');
         res.send(meshsettings);
     };
 
-    // Handle a request for power events
-    obj.handleDevicePowerEvents = function (req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((domain.id !== '') || (!req.session) || (req.session == null) || (!req.session.userid) || (req.query.id == null) || (typeof req.query.id != 'string')) { res.sendStatus(401); return; }
-        var x = req.query.id.split('/');
-        var user = obj.users[req.session.userid];
-        if ((x.length != 3) || (x[0] != 'node') || (x[1] != domain.id) || (user == null) || (user.links == null)) { res.sendStatus(401); return; }
-
-        obj.db.Get(req.query.id, function (err, docs) {
-            if (powerEventsModule.hasDatabaseFailure(err, docs)) {
-                res.sendStatus(500);
-            } else if (docs.length != 1) {
-                res.sendStatus(401);
-            } else {
-                var node = docs[0];
-
-                // Check if we have right to this node
-                if (obj.GetNodeRights(user, node.meshid, node._id) == 0) { res.sendStatus(401); return; }
-
-                // See how we will convert UTC time to local time
-                var localTimeOffset = 0;
-                var timeConversionSystem = 0;
-                if ((req.query.l != null) && (req.query.tz != null)) {
-                    timeConversionSystem = 1;
-                } else if (req.query.tf != null) {
-                    // Get local time offset (bad way)
-                    timeConversionSystem = 2;
-                    localTimeOffset = parseInt(req.query.tf);
-                    if (isNaN(localTimeOffset)) { localTimeOffset = 0; }
-                }
-
-                // Get the list of power events and send them
-                setContentDispositionHeader(res, 'application/octet-stream', 'powerevents.csv', null, 'powerevents.csv');
-                obj.db.getPowerTimeline(node._id, function (err, docs) {
-                    if (powerEventsModule.hasDatabaseFailure(err, docs)) { res.sendStatus(500); return; }
-                    var xevents = ['UTC Time, Local Time, State, Previous State'], prevState = 0;
-                    for (var i in docs) {
-                        if (docs[i].power != prevState) {
-                            var timedoc = docs[i].time;
-                            if (typeof timedoc == 'string') {
-                                timedoc = new Date(timedoc);
-                            }
-                            prevState = docs[i].power;
-                            var localTime = '';
-                            if (timeConversionSystem == 1) { // Good way
-                                localTime = new Date(timedoc.getTime()).toLocaleString(req.query.l, { timeZone: req.query.tz })
-                            } else if (timeConversionSystem == 2) { // Bad way
-                                localTime = new Date(timedoc.getTime() + (localTimeOffset * 60000)).toISOString();
-                                localTime = localTime.substring(0, localTime.length - 1);
-                            }
-                            if (docs[i].oldPower != null) {
-                                xevents.push('\"' + timedoc.toISOString() + '\",\"' + localTime + '\",' + docs[i].power + ',' + docs[i].oldPower);
-                            } else {
-                                xevents.push('\"' + timedoc.toISOString() + '\",\"' + localTime + '\",' + docs[i].power);
-                            }
-                        }
-                    }
-                    res.send(xevents.join('\r\n'));
-                });
-            }
-        });
-    }
-
     if (parent.pluginHandler != null) {
         // Handle a plugin admin request
         obj.handlePluginAdminReq = function (req, res) {
@@ -3690,7 +3627,7 @@ const powerEventsModule = require('./webserver/power-events.js');
                     messengerImageRequest: handleMessengerImageRequest,
                     meshOsxAgentRequest: obj.handleMeshOsxAgentRequest,
                     meshSettingsRequest: obj.handleMeshSettingsRequest,
-                    devicePowerEvents: obj.handleDevicePowerEvents,
+                    devicePowerEvents: handleDevicePowerEvents,
                     downloadFile: handleDownloadFile,
                     meshCommander: handleMeshCommander,
                     uploadFile: handleUploadFile,
