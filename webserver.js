@@ -63,6 +63,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const customIconsModule = require('./webserver/custom-icons.js');
     const storageModule = require('./webserver/storage.js');
     const sessionsModule = require('./webserver/sessions.js');
+    const externalGroupsModule = require('./webserver/external-groups.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -212,6 +213,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const getWebsocketArgs = sessions.getWebsocketArgs;
     const setSessionRandom = sessions.setSessionRandom;
     const clearDestroyedSessions = sessions.clearDestroyedSessions;
+    const externalGroups = externalGroupsModule.createExternalGroups({
+        crypto: obj.crypto,
+        userGroups: obj.userGroups,
+        db: db,
+        dispatchEvent: function (targets, source, event) { parent.DispatchEvent(targets, source, event); },
+        authLog: function (source, message) { parent.authLog(source, message); },
+        cloneSafeUser: obj.CloneSafeUser,
+        eventSource: obj
+    });
+    const syncExternalUserGroups = externalGroups.syncExternalUserGroups;
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
     const safeUploadTempRoots = (function () {
@@ -9511,101 +9522,5 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Sync an account with an external user group.
     // Return true if the user was changed
-    function syncExternalUserGroups(domain, user, userMemberships, userMembershipType) {
-        var userChanged = false;
-        if (user.links == null) { user.links = {}; }
-
-        // Create a user of memberships for this user that type
-        var existingUserMemberships = {};
-        for (var i in user.links) {
-            if (i.startsWith('ugrp/') && (obj.userGroups[i] != null) && (obj.userGroups[i].membershipType == userMembershipType)) { existingUserMemberships[i] = obj.userGroups[i]; }
-        }
-
-        // Go thru the list user memberships and create and add to any user groups as needed
-        for (var i in userMemberships) {
-            const membership = userMemberships[i];
-            var ugrpid = 'ugrp/' + domain.id + '/' + obj.crypto.createHash('sha384').update(membership).digest('base64').replace(/\+/g, '@').replace(/\//g, '$');
-            var ugrp = obj.userGroups[ugrpid];
-            if (ugrp == null) {
-                // This user group does not exist, create it
-                ugrp = { type: 'ugrp', _id: ugrpid, name: membership, domain: domain.id, membershipType: userMembershipType, links: {} };
-
-                // Save the new group
-                db.Set(ugrp);
-                if (db.changeStream == false) { obj.userGroups[ugrpid] = ugrp; }
-
-                // Event the user group creation
-                var event = { etype: 'ugrp', ugrpid: ugrpid, name: ugrp.name, action: 'createusergroup', links: ugrp.links, msgid: 69, msgArgv: [ugrp.name], msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
-                parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
-
-                // Log in the auth log
-                parent.authLog('https', userMembershipType.toUpperCase() + ': Created user group ' + ugrp.name);
-            }
-
-            if (existingUserMemberships[ugrpid] == null) {
-                // This user is not part of the user group, add it.
-                if (user.links == null) { user.links = {}; }
-                user.links[ugrp._id] = { rights: 1 };
-                userChanged = true;
-                db.SetUser(user);
-                parent.DispatchEvent([user._id], obj, 'resubscribe');
-
-                // Notify user change
-                var targets = ['*', 'server-users', user._id];
-                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 67, msgArgs: [user.name], msg: 'User group membership changed: ' + user.name, domain: domain.id };
-                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                parent.DispatchEvent(targets, obj, event);
-
-                // Add a user to the user group
-                ugrp.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
-                db.Set(ugrp);
-
-                // Notify user group change
-                var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrp._id, name: ugrp.name, desc: ugrp.desc, action: 'usergroupchange', links: ugrp.links, msgid: 71, msgArgs: [user.name, ugrp.name], msg: 'Added user(s) ' + user.name + ' to user group ' + ugrp.name, addUserDomain: domain.id };
-                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                parent.DispatchEvent(['*', ugrp._id, user._id], obj, event);
-
-                // Log in the auth log
-                parent.authLog('https', userMembershipType.toUpperCase() + ': Adding ' + user.name + ' to user group ' + userMemberships[i] + '.');
-            } else {
-                // User is already part of this user group
-                delete existingUserMemberships[ugrpid];
-            }
-        }
-
-        // Remove the user from any memberships they don't belong to anymore
-        for (var ugrpid in existingUserMemberships) {
-            var ugrp = obj.userGroups[ugrpid];
-            parent.authLog('https', userMembershipType.toUpperCase() + ': Removing ' + user.name + ' from user group ' + ugrp.name + '.');
-            if ((user.links != null) && (user.links[ugrpid] != null)) {
-                delete user.links[ugrpid];
-
-                // Notify user change
-                var targets = ['*', 'server-users', user._id, user._id];
-                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msgid: 67, msgArgs: [user.name], msg: 'User group membership changed: ' + user.name, domain: domain.id };
-                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                parent.DispatchEvent(targets, obj, event);
-
-                db.SetUser(user);
-                parent.DispatchEvent([user._id], obj, 'resubscribe');
-            }
-
-            if (ugrp != null) {
-                // Remove the user from the group
-                if ((ugrp.links != null) && (ugrp.links[user._id] != null)) {
-                    delete ugrp.links[user._id];
-                    db.Set(ugrp);
-
-                    // Notify user group change
-                    var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrp._id, name: ugrp.name, desc: ugrp.desc, action: 'usergroupchange', links: ugrp.links, msgid: 72, msgArgs: [user.name, ugrp.name], msg: 'Removed user ' + user.name + ' from user group ' + ugrp.name, domain: domain.id };
-                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                    parent.DispatchEvent(['*', ugrp._id, user._id], obj, event);
-                }
-            }
-        }
-
-        return userChanged;
-    }
-
     return obj;
 };
