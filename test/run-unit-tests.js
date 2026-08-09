@@ -24,6 +24,7 @@ require('./webserver-push-notifications.test.js');
 require('./webserver-rendering.test.js');
 require('./webserver-request-utils.test.js');
 require('./webserver-request-context.test.js');
+require('./webserver-request-middleware.test.js');
 require('./webserver-throttling.test.js');
 require('./webserver-tls-configuration.test.js');
 require('./webserver-user-agent.test.js');

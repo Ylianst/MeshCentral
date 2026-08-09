@@ -76,6 +76,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
     const securityHeadersModule = require('./webserver/security-headers.js');
     const requestContextModule = require('./webserver/request-context.js');
+    const requestMiddlewareModule = require('./webserver/request-middleware.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -457,6 +458,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         isTrustedCert: function (domain) { return obj.isTrustedCert(domain); }
     });
     const requestContext = requestContextModule.createRequestContext({ state: obj, isIPMatch: isIPMatch });
+    const requestMiddleware = requestMiddlewareModule.createRequestMiddleware({
+        state: obj,
+        parent: parent,
+        sessions: sessions,
+        requestContext: requestContext,
+        getDomain: getDomain,
+        securityHeaders: securityHeaders
+    });
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -6779,81 +6788,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         coreMiddleware.setupCoreMiddleware();
 
-        // Add HTTP security headers to all responses
-        obj.app.use(async function (req, res, next) {
-            sessions.prepareSession(req);
-
-            // Useful for debugging reverse proxy issues
-            parent.debug('httpheaders', req.method, req.url, req.headers);
-
-            // If this request came over HTTP, redirect to HTTPS
-            if (req.headers['x-forwarded-proto'] == 'http') {
-                var host = req.headers.host;
-                if (typeof host == 'string') { host = host.split(':')[0]; }
-                if ((host == null) && (obj.certificates != null)) { host = obj.certificates.CommonName; if (obj.certificates.CommonName.indexOf('.') == -1) { host = req.headers.host; } }
-                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                res.redirect('https://' + host + ':' + httpsPort + req.url);
-                return;
-            }
-
-            requestContext.accountTraffic(req);
-            const xforwardedhost = requestContext.resolveClientAddress(req, true, true);
-
-            // If this is a web relay connection, handle it here.
-            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
-                if (['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
-            }
-
-            // Get the domain for this request
-            const domain = req.xdomain = getDomain(req);
-            parent.debug('webrequest', '(' + req.clientIp + ') ' + req.url);
-
-            // Skip the rest if this is an agent connection
-            if ((req.url.indexOf('/meshrelay.ashx/.websocket') >= 0) || (req.url.indexOf('/agent.ashx/.websocket') >= 0) || (req.url.indexOf('/localrelay.ashx/.websocket') >= 0)) { next(); return; }
-
-            res.set(securityHeaders.build(domain, req, xforwardedhost));
-
-            sessions.refreshSession(req);
-
-            // Check CrowdSec Bounser if configured
-            if ((parent.crowdSecBounser != null) && (req.headers['upgrade'] != 'websocket') && (req.session.userid == null)) { if ((await parent.crowdSecBounser.process(domain, req, res, next)) == true) { return; } }
-
-            // Debugging code, this will stop the agent from crashing if two responses are made to the same request.
-            const render = res.render;
-            const send = res.send;
-            res.render = function renderWrapper(...args) {
-                Error.captureStackTrace(this);
-                return render.apply(this, args);
-            };
-            res.send = function sendWrapper(...args) {
-                try {
-                    send.apply(this, args);
-                } catch (err) {
-                    console.error(`Error in res.send | ${err.code} | ${err.message} | ${res.stack}`);
-                    try {
-                        var errlogpath = null;
-                        if (typeof parent.args.mesherrorlogpath == 'string') { errlogpath = parent.path.join(parent.args.mesherrorlogpath, 'mesherrors.txt'); } else { errlogpath = parent.getConfigFilePath('mesherrors.txt'); }
-                        parent.fs.appendFileSync(errlogpath, new Date().toLocaleString() + ': ' + `Error in res.send | ${err.code} | ${err.message} | ${res.stack}` + '\r\n');
-                    } catch (ex) { parent.debug('error', 'Unable to write to mesherrors.txt.'); }
-                }
-            };
-
-            // Continue processing the request
-            return next();
-        });
-
-        if (obj.agentapp) {
-            // Add HTTP security headers to all responses
-            obj.agentapp.use(function (req, res, next) {
-                requestContext.resolveClientAddress(req, false, false);
-
-                // Get the domain for this request
-                const domain = req.xdomain = getDomain(req);
-                parent.debug('webrequest', '(' + req.clientIp + ') AgentPort: ' + req.url);
-                res.removeHeader('X-Powered-By');
-                return next();
-            });
-        }
+        requestMiddleware.setup();
 
         // Setup all sharing domains and check if auth strategies need setup
         var setupSSO = false

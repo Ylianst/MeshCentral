@@ -256,6 +256,7 @@
     <Compile Include="webserver\rendering.js" />
     <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\request-context.js" />
+    <Compile Include="webserver\request-middleware.js" />
     <Compile Include="webserver\sanitization.js" />
     <Compile Include="webserver\sessions.js" />
     <Compile Include="webserver\server-identity.js" />
