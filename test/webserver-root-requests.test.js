@@ -168,3 +168,19 @@ test('removed login tokens clear the session before continuing', function () {
     assert.equal(service.handleLoginToken(req, {}, {}, false), true);
     assert.deepEqual(req.session, {});
 });
+
+test('plain root requests reach the extended root handler', function () {
+    const resumed = [];
+    const domain = { id: 'tenant' };
+    const service = createRootRequests({
+        state: { args: {} },
+        debug: function () { },
+        checkUserIpAddress: function () { return domain; },
+        getMaintenanceMode: function () { return null; },
+        getLoginCookieEncryptionKey: function () { return null; },
+        getQueryPortion: function () { return ''; },
+        handleRootRequestEx: function (req, res, requestDomain, direct) { resumed.push([requestDomain, direct]); }
+    });
+    service.handleRootRequest({ query: {}, headers: {}, url: '/tenant/', session: {} }, {}, true);
+    assert.deepEqual(resumed, [[domain, true]]);
+});

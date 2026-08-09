@@ -112,5 +112,17 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, getRootCertLink: getRootCertLink };
+    function handleRootRequest(req, res, direct) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (checkRootRequest(req, res, domain) == false) { return; }
+        if (handleMaintenance(req, res, domain)) { return; }
+        if (redirectUnknownUser(req, res, domain)) { return; }
+        if (handleSspi(req, res, domain, direct)) { return; }
+        if (handleUrlCredentials(req, res, domain, direct)) { return; }
+        if (handleLoginToken(req, res, domain, direct)) { return; }
+        handleRootRequestEx(req, res, domain, direct);
+    }
+
+    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, getRootCertLink: getRootCertLink };
 };

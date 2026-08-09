@@ -1760,21 +1760,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     Object.assign(obj, passwordHistoryModule.createPasswordHistory({ debug: function (source, message) { parent.debug(source, message); }, require: require }));
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
-    function handleRootRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (rootRequests.checkRootRequest(req, res, domain) == false) { return; }
-
-        if (rootRequests.handleMaintenance(req, res, domain)) { return; }
-
-        if (rootRequests.redirectUnknownUser(req, res, domain)) { return; }
-
-        if (rootRequests.handleSspi(req, res, domain, direct)) { return; }
-        if (rootRequests.handleUrlCredentials(req, res, domain, direct)) { return; }
-        if (rootRequests.handleLoginToken(req, res, domain, direct)) { return; }
-        handleRootRequestEx(req, res, domain, direct);
-    }
-
     function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null;
         res.set({ 'Cache-Control': 'no-store' });
@@ -2484,6 +2469,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getRenderPage: getRenderPage,
         getRenderArgs: getRenderArgs
     });
+    const handleRootRequest = rootRequests.handleRootRequest;
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;
 
