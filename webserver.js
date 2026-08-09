@@ -1772,11 +1772,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             return;
         }
 
-        // If set and there is no user logged in, redirect the root page. Make sure not to redirect if /login is used
-        if ((typeof domain.unknownuserrootredirect == 'string') && ((req.session == null) || (req.session.userid == null))) {
-            var q = new URL(req.url, 'http://localhost');
-            if (!q.pathname.endsWith('/login')) { res.redirect(domain.unknownuserrootredirect + getQueryPortion(req)); return; }
-        }
+        if (rootRequests.redirectUnknownUser(req, res, domain)) { return; }
 
         if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
             // Login using SSPI

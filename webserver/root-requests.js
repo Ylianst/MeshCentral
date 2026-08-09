@@ -31,6 +31,14 @@ module.exports.createRootRequests = function (options) {
         res.redirect(domain.rootredirect + getQueryPortion(req));
     }
 
+    function redirectUnknownUser(req, res, domain) {
+        if ((typeof domain.unknownuserrootredirect != 'string') || ((req.session != null) && (req.session.userid != null))) { return false; }
+        const requestUrl = new URL(req.url, 'http://localhost');
+        if (requestUrl.pathname.endsWith('/login')) { return false; }
+        res.redirect(domain.unknownuserrootredirect + getQueryPortion(req));
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -40,5 +48,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, getRootCertLink: getRootCertLink };
 };

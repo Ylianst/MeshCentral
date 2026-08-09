@@ -53,3 +53,18 @@ test('expired root sessions are cleared before rendering', function () {
     assert.equal(service.checkRootRequest(req, { sendStatus: function () { } }, {}), true);
     assert.deepEqual(req.session, {});
 });
+
+test('anonymous root requests use the configured external redirect', function () {
+    const redirects = [];
+    const service = createRootRequests({ getQueryPortion: function () { return '?viewmode=2'; } });
+    const redirected = service.redirectUnknownUser({ url: '/tenant/', session: {} }, { redirect: function (url) { redirects.push(url); } }, { unknownuserrootredirect: 'https://portal.example/' });
+    assert.equal(redirected, true);
+    assert.deepEqual(redirects, ['https://portal.example/?viewmode=2']);
+});
+
+test('login pages and authenticated sessions skip anonymous redirects', function () {
+    const service = createRootRequests({ getQueryPortion: function () { return ''; } });
+    const res = { redirect: function () { throw new Error('Unexpected redirect'); } };
+    assert.equal(service.redirectUnknownUser({ url: '/tenant/login', session: {} }, res, { unknownuserrootredirect: 'https://portal.example/' }), false);
+    assert.equal(service.redirectUnknownUser({ url: '/tenant/', session: { userid: 'user/tenant/alice' } }, res, { unknownuserrootredirect: 'https://portal.example/' }), false);
+});
