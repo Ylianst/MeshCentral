@@ -96,6 +96,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 const agentSettingsModule = require('./webserver/agent-settings.js');
 const powerEventsModule = require('./webserver/power-events.js');
 const pluginRequestsModule = require('./webserver/plugin-requests.js');
+const deviceCleanupModule = require('./webserver/device-cleanup.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -778,19 +779,7 @@ const pluginRequestsModule = require('./webserver/plugin-requests.js');
         });
     });
 
-    // Clean up a device, used before saving it in the database
-    obj.cleanDevice = function (device) {
-        // Check device links, if a link points to an unknown user, remove it.
-        if (device.links != null) {
-            for (var j in device.links) {
-                if ((obj.users[j] == null) && (obj.userGroups[j] == null)) {
-                    delete device.links[j];
-                    if (Object.keys(device.links).length == 0) { delete device.links; }
-                }
-            }
-        }
-        return device;
-    }
+    obj.cleanDevice = deviceCleanupModule.createDeviceCleaner(obj);
 
     Object.assign(obj, telemetryModule.createTelemetry({ state: obj, tlsConfiguration: tlsConfiguration, calcDelta: calcDelta }));
 
