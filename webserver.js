@@ -2047,6 +2047,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         }, 0);
                     }
                 });
+            } else {
+                parent.debug('web', 'handlePasswordChangeRequest: invalid current password.');
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             }
         });
     }
