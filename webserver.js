@@ -97,6 +97,7 @@ const agentSettingsModule = require('./webserver/agent-settings.js');
 const powerEventsModule = require('./webserver/power-events.js');
 const pluginRequestsModule = require('./webserver/plugin-requests.js');
 const deviceCleanupModule = require('./webserver/device-cleanup.js');
+const amtEventsModule = require('./webserver/amt-events.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -2845,7 +2846,7 @@ const deviceCleanupModule = require('./webserver/device-cleanup.js');
 
                                     // See if this node exists in the database
                                     obj.db.Get(nodekey, function (err, nodes) {
-                                        if (nodes.length == 1) {
+                                        if (!amtEventsModule.hasDatabaseFailure(err, nodes) && (nodes.length == 1)) {
                                             // Yes, the node exists, compute Intel AMT digest password
                                             var node = nodes[0];
                                             var amtpass = obj.crypto.createHash('sha384').update(auth.username.toLowerCase() + ':' + nodeid + ":" + obj.parent.dbconfig.amtWsEventSecret).digest('base64').substring(0, 12).split('/').join('x').split('\\').join('x');

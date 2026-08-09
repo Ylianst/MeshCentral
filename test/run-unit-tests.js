@@ -29,6 +29,7 @@ require('./webserver-agent-settings-generation.test.js');
 require('./webserver-power-events.test.js');
 require('./webserver-plugin-requests.test.js');
 require('./webserver-device-cleanup.test.js');
+require('./webserver-amt-events.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
