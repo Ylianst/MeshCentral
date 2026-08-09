@@ -78,6 +78,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const requestContextModule = require('./webserver/request-context.js');
     const requestMiddlewareModule = require('./webserver/request-middleware.js');
     const domainStartupModule = require('./webserver/domain-startup.js');
+    const notFoundModule = require('./webserver/not-found.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -467,6 +468,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getDomain: getDomain,
         securityHeaders: securityHeaders
     });
+    const nice404 = notFoundModule.createNotFound({
+        args: obj.args,
+        crypto: obj.crypto,
+        getDomain: getDomain,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs,
+        debug: function (source, message) { parent.debug(source, message); }
+    }).nice404;
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -7623,17 +7632,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // We are done starting the web server.
             if (doneFunc) doneFunc();
         }
-    }
-
-    function nice404(req, res) {
-        parent.debug('web', '404 Error ' + req.url);
-        var domain = getDomain(req);
-        if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
-        if (obj.args.nice404 == false) { res.sendStatus(404); return; }
-        const cspNonce = obj.crypto.randomBytes(15).toString('base64');
-        res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
-        res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
     }
 
     // Auth strategy flags
