@@ -299,6 +299,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         escapeHtml: EscapeHtml,
         createTemporaryPassword: emailAccountUtils.createTemporaryPassword,
         getActiveUser: emailAccountUtils.getActiveUser,
+        hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure,
+        hasOtherVerifiedUser: emailAccountUtils.hasOtherVerifiedUser,
         hashPassword: function (password, callback, iterations) { require('./pass').hash(password, callback, iterations); }
     });
     const getRenderList = rendering.getRenderList;
@@ -1686,48 +1688,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                             } else {
                                 if (cookie.a == 1) {
-                                    // Account email verification
-                                    if (user.emailVerified == true) {
-                                        parent.debug('web', 'handleCheckMailRequest: email already verified.');
-                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
-                                    } else {
-                                        obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
-                                            if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
-                                                parent.debug('web', 'handleCheckMailRequest: Database error checking verified email.');
-                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                            } else if (emailAccountUtils.hasOtherVerifiedUser(docs, user._id)) {
-                                                parent.debug('web', 'handleCheckMailRequest: email already in use.');
-                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
-                                            } else {
-                                                parent.debug('web', 'handleCheckMailRequest: email verification success.');
-
-                                                // Set the verified flag
-                                                var activeUser = emailAccountUtils.getActiveUser(obj.users, user._id);
-                                                if (activeUser == null) {
-                                                    parent.debug('web', 'handleCheckMailRequest: Account removed during email verification.');
-                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                                    return;
-                                                }
-                                                activeUser.emailVerified = true;
-                                                user.emailVerified = true;
-                                                obj.db.SetUser(user);
-
-                                                // Event the change
-                                                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Verified email of user ' + EscapeHtml(user.name) + ' (' + EscapeHtml(user.email) + ')', domain: domain.id };
-                                                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-
-                                                // Send the confirmation page
-                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 6, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
-
-                                                // Send a notification
-                                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: 'Email verified', value: user.email, nolog: 1, id: Math.random() });
-
-                                                // Send to authLog
-                                                obj.parent.authLog('https', 'Verified email address ' + user.email + ' for user ' + user.name, { useragent: req.headers['user-agent'] });
-                                            }
-                                        });
-                                    }
+                                    emailAccountActions.handleEmailVerification(req, res, domain, user);
                                 } else if (cookie.a == 2) {
                                     emailAccountActions.handlePasswordReset(req, res, domain, user);
                                 } else {

@@ -26,6 +26,8 @@ function createFixture(user) {
         escapeHtml: function (value) { return value; },
         createTemporaryPassword: function (crypto, hash, callback) { callback(null, { password: 'temporary', salt: 'salt', hash: 'hash' }); },
         getActiveUser: function (users, id) { return users[id] || null; },
+        hasDatabaseFailure: function (error, users) { return (error != null) || !Array.isArray(users); },
+        hasOtherVerifiedUser: function (users, id) { return users.some(function (value) { return value._id !== id; }); },
         hashPassword: function () { },
         now: function () { return 5000; }
     });
@@ -38,6 +40,27 @@ test('password reset links require confirmation before changing credentials', fu
     fixture.service.handlePasswordReset({ query: {} }, {}, { id: 'tenant', url: '/tenant/' }, user);
     assert.equal(fixture.renders[0].msgid, 14);
     assert.equal(fixture.writes.length, 0);
+});
+
+test('email verification persists and announces the verified account', function () {
+    const user = { _id: 'user/tenant/alice', name: 'Alice', email: 'alice@example.com', emailVerified: false };
+    const fixture = createFixture(user);
+    fixture.state.db.GetUserWithVerifiedEmail = function (domainId, email, callback) { callback(null, []); };
+    fixture.service.handleEmailVerification({ headers: { 'user-agent': 'test' } }, {}, { id: 'tenant', url: '/tenant/' }, user);
+    assert.equal(user.emailVerified, true);
+    assert.equal(fixture.writes.length, 1);
+    assert.deepEqual(fixture.events.map(function (event) { return event.action; }), ['accountchange', 'notify']);
+    assert.equal(fixture.renders[0].msgid, 6);
+});
+
+test('email verification rejects an address used by another account', function () {
+    const user = { _id: 'user/tenant/alice', name: 'Alice', email: 'shared@example.com', emailVerified: false };
+    const fixture = createFixture(user);
+    fixture.state.db.GetUserWithVerifiedEmail = function (domainId, email, callback) { callback(null, [{ _id: 'user/tenant/bob' }]); };
+    fixture.service.handleEmailVerification({ headers: {} }, {}, { id: 'tenant', url: '/tenant/' }, user);
+    assert.equal(user.emailVerified, false);
+    assert.equal(fixture.writes.length, 0);
+    assert.equal(fixture.renders[0].msgid, 5);
 });
 
 test('confirmed password resets persist the temporary credentials', function () {
