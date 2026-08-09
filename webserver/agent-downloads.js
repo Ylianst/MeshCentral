@@ -18,3 +18,8 @@ module.exports.getAgentInfo = function (defaultBinaries, domainBinaries, agentId
     if ((domainBinaries != null) && (domainBinaries[agentId] != null)) { return domainBinaries[agentId]; }
     return defaultBinaries[agentId];
 };
+
+module.exports.getMeshRelayUrl = function (state, domain, request) {
+    const httpsPort = (state.args.aliasport == null) ? state.args.port : state.args.aliasport;
+    return 'wss://' + state.getWebServerName(domain, request) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : (domain.id + '/')) + 'meshrelay.ashx';
+};

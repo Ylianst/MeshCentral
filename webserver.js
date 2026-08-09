@@ -3143,8 +3143,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                 };
                 if (user != null) { meshaction.username = user.name; }
                 if (req.query.key != null) { meshaction.loginKey = req.query.key; }
-                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : ('/' + domain.id)) + 'meshrelay.ashx'; }
+                if (obj.args.lanonly != true) { meshaction.serverUrl = agentDownloadsModule.getMeshRelayUrl(obj, domain, req); }
                 setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
                 return;
