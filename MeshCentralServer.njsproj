@@ -251,6 +251,7 @@
     <Compile Include="webserver\rendering.js" />
     <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\sanitization.js" />
+    <Compile Include="webserver\storage.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="winservice.js" />
     <Content Include="agents\codesign.cer" />

@@ -61,6 +61,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const requestUtilsModule = require('./webserver/request-utils.js');
     const networkAccessModule = require('./webserver/network-access.js');
     const customIconsModule = require('./webserver/custom-icons.js');
+    const storageModule = require('./webserver/storage.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -145,6 +146,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         meshes: obj.meshes,
         userGroups: obj.userGroups
     }));
+    const storage = storageModule.createStorage({
+        fs: obj.fs,
+        path: obj.path,
+        filespath: obj.filespath,
+        common: obj.common,
+        users: obj.users,
+        meshes: obj.meshes,
+        getMeshRights: function (user, meshId) { return obj.GetMeshRights(user, meshId); }
+    });
+    Object.assign(obj, storage);
+    const readTotalFileSize = storage.readTotalFileSize;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -4558,39 +4570,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
-    obj.getServerFilePath = function (user, domain, path) {
-        var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
-        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
-        var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
-        if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
-        if (splitpath[0] == 'mesh') { if ((obj.GetMeshRights(user, objid) & 32) == 0) { return null; } } // Check mesh server file rights
-        if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
-        serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
-        for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
-        return { fullpath: obj.path.resolve(obj.filespath, serverpath), path: serverpath, name: filename, quota: obj.getQuota(objid, domain) };
-    };
-
-    // Return the maximum number of bytes allowed in the user account "My Files".
-    obj.getQuota = function (objid, domain) {
-        if (objid == null) return 0;
-        if (objid.startsWith('user/')) {
-            var user = obj.users[objid];
-            if (user == null) return 0;
-            if (user.siteadmin == 0xFFFFFFFF) return null; // Administrators have no user limit
-            if ((user.quota != null) && (typeof user.quota == 'number')) { return user.quota; }
-            if ((domain != null) && (domain.userquota != null) && (typeof domain.userquota == 'number')) { return domain.userquota; }
-            return null; // By default, the user will have no limit
-        } else if (objid.startsWith('mesh/')) {
-            var mesh = obj.meshes[objid];
-            if (mesh == null) return 0;
-            if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
-            if ((domain != null) && (domain.meshquota != null) && (typeof domain.meshquota == 'number')) { return domain.meshquota; }
-            return null; // By default, the mesh will have no limit
-        }
-        return 0;
-    };
-
     // Download a file from the server
     function handleDownloadFile(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -5822,29 +5801,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             });
         } catch (ex) { console.log(ex); }
-    }
-
-    // Get the total size of all files in a folder and all sub-folders. (TODO: try to make all async version)
-    function readTotalFileSize(path) {
-        var r = 0, dir;
-        try { dir = obj.fs.readdirSync(path); } catch (e) { return 0; }
-        for (var i in dir) {
-            var stat = obj.fs.statSync(path + '/' + dir[i]);
-            if ((stat.mode & 0x004000) == 0) { r += stat.size; } else { r += readTotalFileSize(path + '/' + dir[i]); }
-        }
-        return r;
-    }
-
-    // Delete a folder and all sub items.  (TODO: try to make all async version)
-    function deleteFolderRec(path) {
-        if (obj.fs.existsSync(path) == false) return;
-        try {
-            obj.fs.readdirSync(path).forEach(function (file, index) {
-                var pathx = path + '/' + file;
-                if (obj.fs.lstatSync(pathx).isDirectory()) { deleteFolderRec(pathx); } else { obj.fs.unlinkSync(pathx); }
-            });
-            obj.fs.rmdirSync(path);
-        } catch (ex) { }
     }
 
     // Handle Intel AMT events
@@ -9282,15 +9238,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
     };
-
-    // Get the server path of a user or mesh object
-    function getServerRootFilePath(obj) {
-        if ((typeof obj != 'object') || (obj.domain == null) || (obj._id == null)) return null;
-        var domainname = 'domain', splitname = obj._id.split('/');
-        if (splitname.length != 3) return null;
-        if (obj.domain !== '') domainname = 'domain-' + obj.domain;
-        return obj.path.join(obj.filespath, domainname + "/" + splitname[0] + "-" + splitname[2]);
-    }
 
 
     /*

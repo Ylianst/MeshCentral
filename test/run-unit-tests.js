@@ -6,6 +6,7 @@
 "use strict";
 
 require('./webserver-sanitization.test.js');
+require('./webserver-storage.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-custom-icons.test.js');
 require('./webserver-network-access.test.js');
