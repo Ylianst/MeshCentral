@@ -1824,7 +1824,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // Create the user
                     parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: "${req.user.sid}" Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
-                    if (req.user.email != null) { user.email = req.user.email; user.emailVerified = req.user.email_verified ? req.user.email_verified : true; }
+                    if (req.user.email != null) { user.email = req.user.email; user.emailVerified = ssoStrategiesModule.isEmailVerified(req.user); }
                     if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
                     if (domain.authstrategies[req.user.strategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
                     if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
@@ -1900,7 +1900,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Check for basic changes
                 var userChanged = false;
                 if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChanged = true; }
-                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = true; userChanged = true; }
+                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = ssoStrategiesModule.isEmailVerified(req.user); userChanged = true; }
 
                 if (groups.enabled === true) {
                     // Sync the user groups if enabled

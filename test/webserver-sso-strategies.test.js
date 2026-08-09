@@ -59,6 +59,12 @@ test('explicit false disables revoking SSO administrator rights', function () {
     assert.equal(ssoStrategies.shouldRevokeAdmin({ revokeAdmin: false }), false);
 });
 
+test('SSO email verification respects an explicit false value', function () {
+    assert.equal(ssoStrategies.isEmailVerified({}), true);
+    assert.equal(ssoStrategies.isEmailVerified({ email_verified: true }), true);
+    assert.equal(ssoStrategies.isEmailVerified({ email_verified: false }), false);
+});
+
 test('domains without authentication strategies require no provider modules', async function () {
     const fixture = createFixture();
     const result = await fixture.setup({ id: 'tenant', url: '/tenant/' });

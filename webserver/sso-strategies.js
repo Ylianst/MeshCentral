@@ -20,6 +20,7 @@
 module.exports.constants = domainAuthStrategyConsts;
 module.exports.isGroupConfiguration = function (value) { return (value != null) && (typeof value == 'object'); };
 module.exports.shouldRevokeAdmin = function (groups) { return groups.revokeAdmin !== false; };
+module.exports.isEmailVerified = function (requestUser) { return requestUser.email_verified !== false; };
 module.exports.createSsoStrategies = function (options) {
     const obj = options.state;
     const parent = options.parent;
