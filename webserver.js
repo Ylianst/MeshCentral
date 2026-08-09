@@ -94,6 +94,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const specialUploadsModule = require('./webserver/special-uploads.js');
     const auxiliaryWebSocketsModule = require('./webserver/auxiliary-websockets.js');
     const messengerModule = require('./webserver/messenger.js');
+    const guestSharingModule = require('./webserver/guest-sharing.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -292,6 +293,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const messenger = messengerModule.createMessenger({ state: obj, parent: parent, args: args, getDomain: getDomain, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs });
     const handleMessengerRequest = messenger.handlePage;
     const handleMessengerImageRequest = messenger.handleImage;
+    const guestSharing = guestSharingModule.createGuestSharing({ state: obj, parent: parent, args: args, getDomain: getDomain, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs });
+    const handleSharingRequest = guestSharing.handleRequest;
     obj.getLanguageCodes = rendering.getLanguageCodes;
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
@@ -3227,137 +3230,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.redirect(domain.url + getQueryPortion(req));
             return;
         }
-    }
-
-    // Serve the guest sharing page
-    function handleSharingRequest(req, res) {
-        const domain = getDomain(req, res);
-        if (domain == null) { return; }
-        if (req.query.c == null) { res.sendStatus(404); return; }
-        if (domain.guestdevicesharing === false) { res.sendStatus(404); return; } // This feature is not allowed.
-
-        // Check the inbound guest sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey, 9999999999); // Decode cookies with unlimited time.
-        if (c == null) { res.sendStatus(404); return; }
-
-        if (c.a === 5) {
-            // This is the older style sharing cookie with everything encoded within it.
-            // This cookie style gives a very large URL, so it's not used anymore.
-            if ((typeof c.p !== 'number') || (c.p < 1) || (c.p > 7) || (typeof c.uid != 'string') || (typeof c.nid != 'string') || (typeof c.gn != 'string') || (typeof c.cf != 'number') || (typeof c.pid != 'string')) { res.sendStatus(404); return; }
-            handleSharingRequestEx(req, res, domain, c);
-            return;
-        }
-        if (c.a === 6) {
-            // This is the new style sharing cookie, just encodes the pointer to the sharing information in the database.
-            // Gives a much more compact URL.
-            if (typeof c.pid != 'string') { res.sendStatus(404); return; }
-
-            // Check the expired time, expire message.
-            if ((c.e != null) && (c.e <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            obj.db.Get('deviceshare-' + c.pid, function (err, docs) {
-                if ((err != null) || (docs == null) || (docs.length != 1)) { res.sendStatus(404); return; }
-                const doc = docs[0];
-
-                // If this is a recurrent share, check if we are at the correct time to make use of it
-                if (typeof doc.recurring == 'number') {
-                    const now = Date.now();
-                    if (now >= doc.startTime) { // We don't want to move the validity window before the start time
-                        const deltaTime = (now - doc.startTime);
-                        if (doc.recurring === 1) {
-                            // This moves the start time to the next valid daily window
-                            const oneDay = (24 * 60 * 60 * 1000);
-                            var addition = Math.floor(deltaTime / oneDay);
-                            if ((deltaTime - (addition * oneDay)) > (doc.duration * 60000)) { addition++; } // If we are passed the current windows, move to the next one. This will show link as not being valid yet.
-                            doc.startTime += (addition * oneDay);
-                        } else if (doc.recurring === 2) {
-                            // This moves the start time to the next valid weekly window
-                            const oneWeek = (7 * 24 * 60 * 60 * 1000);
-                            var addition = Math.floor(deltaTime / oneWeek);
-                            if ((deltaTime - (addition * oneWeek)) > (doc.duration * 60000)) { addition++; } // If we are passed the current windows, move to the next one. This will show link as not being valid yet.
-                            doc.startTime += (addition * oneWeek);
-                        }
-                    }
-                }
-
-                // Generate an old style cookie from the information in the database
-                var cookie = { a: 5, p: doc.p, gn: doc.guestName, nid: doc.nodeid, cf: doc.consent, pid: doc.publicid, k: doc.extrakey ? doc.extrakey : null, port: doc.port };
-                if (doc.userid) { cookie.uid = doc.userid; }
-                if ((cookie.userid == null) && (cookie.pid.startsWith('AS:node/'))) { cookie.nouser = 1; }
-                if (doc.startTime != null) {
-                    if (doc.expireTime != null) { cookie.start = doc.startTime; cookie.expire = doc.expireTime; }
-                    else if (doc.duration != null) { cookie.start = doc.startTime; cookie.expire = doc.startTime + (doc.duration * 60000); }
-                }
-                if (doc.viewOnly === true) { cookie.vo = 1; }
-                handleSharingRequestEx(req, res, domain, cookie);
-            });
-            return;
-        }
-        res.sendStatus(404); return;
-    }
-
-    // Serve the guest sharing page
-    function handleSharingRequestEx(req, res, domain, c) {
-        // Check the expired time, expire message.
-        if ((c.expire != null) && (c.expire <= Date.now())) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-        // Check the public id
-        obj.db.GetAllTypeNodeFiltered([c.nid], domain.id, 'deviceshare', null, function (err, docs) {
-            // Check if any sharing links are present, expire message.
-            if ((err != null) || (docs.length == 0)) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Search for the device share public identifier, expire message.
-            var found = false;
-            for (var i = 0; i < docs.length; i++) { if ((docs[i].publicid == c.pid) && ((docs[i].extrakey == null) || (docs[i].extrakey === c.k))) { found = true; } }
-            if (found == false) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 12, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-            // Get information about this node
-            obj.db.Get(c.nid, function (err, nodes) {
-                if ((err != null) || (nodes == null) || (nodes.length != 1)) { res.sendStatus(404); return; }
-                var node = nodes[0];
-
-                // Check the start time, not yet valid message.
-                if ((c.start != null) && (c.expire != null) && ((c.start > Date.now()) || (c.start > c.expire))) { res.status(404); render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 2, msgid: 11, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain)); return; }
-
-                // If this is a web relay share, check if this feature is active
-                if ((c.p == 8) || (c.p == 16)) {
-                    // This is a HTTP or HTTPS share
-                    var webRelayPort = ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0));
-                    if (webRelayPort == 0) { res.sendStatus(404); return; }
-
-                    // Create the authentication cookie
-                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, r: 8, expire: c.expire, pid: c.pid, port: c.port };
-                    if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
-                    const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
-
-                    // Redirect to a URL
-                    var webRelayDns = (args.relaydns != null) ? args.relaydns[0] : obj.getWebServerName(domain, req);
-                    var url = 'https://' + webRelayDns + ':' + webRelayPort + '/control-redirect.ashx?n=' + c.nid + '&p=' + c.port + '&appid=' + c.p + '&c=' + authCookie;
-                    if (c.addr != null) { url += '&addr=' + c.addr; }
-                    if (c.pid != null) { url += '&relayid=' + c.pid; }
-                    parent.debug('web', 'handleSharingRequest: Redirecting guest to HTTP relay page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
-                    res.redirect(url);
-                } else {
-                    // Looks good, let's create the outbound session cookies.
-                    // This is a desktop, terminal or files share. We need to display the sharing page.
-                    // Consent flags are 1 = Notify, 8 = Prompt, 64 = Privacy Bar.
-                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: c.cf, r: 8, expire: c.expire, pid: c.pid, vo: c.vo };
-                    if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
-                    if (c.k != null) { authCookieData.k = c.k; }
-                    const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
-
-                    // Server features
-                    var features2 = 0;
-                    if (obj.args.allowhighqualitydesktop !== false) { features2 += 1; } // Enable AllowHighQualityDesktop (Default true)
-
-                    // Lets respond by sending out the desktop viewer.
-                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                    parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
-                    res.set({ 'Cache-Control': 'no-store' });
-                    render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
-                }
-            });
-        });
     }
 
     // Handle domain redirection
