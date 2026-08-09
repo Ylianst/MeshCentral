@@ -3376,10 +3376,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         ws.send('c'); // Indicate connection of the tunnel. In this case, we are the termination point.
         ws.send('5'); // Indicate we want to perform file transfers (5 = Files).
         if (ws.xcmd == 'coredump') {
+            const coreDumpName = (typeof ws.xarg == 'string') ? obj.common.makeFilename(ws.xarg) : '';
+            if (coreDumpName.length == 0) { parent.debug('web', 'Got agent core dump transfer with an invalid filename from ' + req.clientIp + ', dropping.'); ws.close(); return; }
             // Check the agent core dump folder if not already present.
             var coreDumpPath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps');
             if (obj.fs.existsSync(coreDumpPath) == false) { try { obj.fs.mkdirSync(coreDumpPath); } catch (ex) { } }
-            ws.xfilepath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', ws.xarg);
+            ws.xfilepath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', coreDumpName);
             ws.xid = 'coredump';
             ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a core dump file
         }
