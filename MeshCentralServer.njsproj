@@ -265,6 +265,7 @@
     <Compile Include="webserver\domain-static.js" />
     <Compile Include="webserver\domain-assets.js" />
     <Compile Include="webserver\file-downloads.js" />
+    <Compile Include="webserver\file-uploads.js" />
     <Compile Include="webserver\guest-sharing.js" />
     <Compile Include="webserver\messenger.js" />
     <Compile Include="webserver\duo-routes.js" />

@@ -96,6 +96,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const messengerModule = require('./webserver/messenger.js');
     const guestSharingModule = require('./webserver/guest-sharing.js');
     const uploadQuotaModule = require('./webserver/upload-quota.js');
+    const fileUploadsModule = require('./webserver/file-uploads.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -233,6 +234,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     });
     const handleUploadMeshCoreFile = specialUploads.uploadMeshCore;
     const handleOneClickRecoveryFile = specialUploads.uploadOneClickRecovery;
+    const fileUploads = fileUploadsModule.createFileUploads({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath, readTotalFileSize: readTotalFileSize, createUploadQuota: uploadQuotaModule.createUploadQuota });
+    const handleUploadFile = fileUploads.handleUpload;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -3234,116 +3237,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    function handleUploadFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (domain.userQuota == -1) { res.sendStatus(401); return; }
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-        const multiparty = require('multiparty');
-        const form = new multiparty.Form();
-        form.parse(req, function (err, fields, files) {
-            // If an authentication cookie is embedded in the form, use that.
-            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
-                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
-                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
-            }
-            if (authUserid == null) { res.sendStatus(401); return; }
-
-            // Get the user
-            const user = obj.users[authUserid];
-            if ((user == null) || (user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
-
-            if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ console.log('err4'); res.sendStatus(404); return; }
-            var xfile = null;
-            try { xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0])); } catch (ex) { }
-            if (xfile == null) { res.sendStatus(404); return; }
-            // Get total bytes in the path
-            var totalsize = readTotalFileSize(xfile.fullpath);
-            const uploadQuota = uploadQuotaModule.createUploadQuota(totalsize, xfile.quota);
-            if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
-                if (fields.name != null) {
-
-                    // See if we need to create the folder
-                    var domainx = 'domain';
-                    if (domain.id.length > 0) { domainx = 'domain-' + domain.id; }
-                    try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
-                    try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (ex) { }
-                    try { obj.fs.mkdirSync(xfile.fullpath); } catch (ex) { }
-
-                    // Upload method where all the file data is within the fields.
-                    var names = fields.name[0].split('*'), sizes = fields.size[0].split('*'), types = fields.type[0].split('*'), datas = fields.data[0].split('*');
-                    if ((names.length == sizes.length) && (types.length == datas.length) && (names.length == types.length)) {
-                        for (var i = 0; i < names.length; i++) {
-                            var originalName = names[i];
-                            var safeName = obj.path.basename(originalName);
-                            if ((safeName !== originalName) || (obj.common.IsFilenameValid(safeName) == false)) { res.sendStatus(404); return; }
-                            var filedata = Buffer.from(datas[i].split(',')[1], 'base64');
-                            if (uploadQuota.tryReserve(filedata.length)) { // Reserve quota for this file and all earlier files in the request.
-                                // Create the user folder if needed
-                                (function (fullpath, filename, filedata) {
-                                    obj.fs.mkdir(xfile.fullpath, function () {
-                                        // Write the file
-                                        obj.fs.writeFile(obj.path.join(xfile.fullpath, filename), filedata, function () {
-                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
-                                        });
-                                    });
-                                })(xfile.fullpath, safeName, filedata);
-                            } else {
-                                // Send a notification
-                                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: names[i], nolog: 1, id: Math.random() });
-                            }
-                        }
-                    }
-                } else {
-                    // More typical upload method, the file data is in a multipart mime post.
-                    for (var i in files.files) {
-                        var file = files.files[i];
-                        var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
-                        var safeOriginalFilename = obj.path.basename(originalFilename);
-                        var isFilenameAcceptable = (safeOriginalFilename === originalFilename) && obj.common.IsFilenameValid(safeOriginalFilename);
-                        const uploadTempPath = resolveSafeUploadTempPath(file.path);
-                        if (uploadTempPath == null) { res.sendStatus(400); return; }
-                        if (isFilenameAcceptable && uploadQuota.tryReserve(file.size)) { // Reserve quota for this file and all earlier files in the request.
-                            var fpath = obj.path.join(xfile.fullpath, safeOriginalFilename);
-
-                            // See if we need to create the folder
-                            var domainx = 'domain';
-                            if (domain.id.length > 0) { domainx = 'domain-' + domain.id; }
-                            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (e) { }
-                            try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (e) { }
-                            try { obj.fs.mkdirSync(xfile.fullpath); } catch (e) { }
-
-                            // Rename the file
-                            obj.fs.rename(uploadTempPath, fpath, function (err) {
-                                if (err && (err.code === 'EXDEV')) {
-                                    // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                                    obj.common.copyFile(uploadTempPath, fpath, function (err) {
-                                        obj.fs.unlink(uploadTempPath, function (err) {
-                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
-                                        });
-                                    });
-                                } else {
-                                    obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
-                                }
-                            });
-                        } else {
-                            // Send a notification
-                            obj.parent.DispatchEvent([user._id], obj, { action: 'notify', title: "Disk quota exceed", value: file.originalFilename, nolog: 1, id: Math.random() });
-                            try { obj.fs.unlink(uploadTempPath, function (err) { }); } catch (e) { }
-                        }
-                    }
-                }
-            } else {
-                // Send a notification
-                obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: "Disk quota exceed", nolog: 1, id: Math.random() });
-            }
-            res.send('');
-        });
-    }
-
-    // Upload a file to the server and then batch upload to many agents
     function handleUploadFileBatch(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }

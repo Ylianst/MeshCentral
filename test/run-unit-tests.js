@@ -36,6 +36,7 @@ require('./webserver-domain-startup.test.js');
 require('./webserver-domain-static.test.js');
 require('./webserver-domain-assets.test.js');
 require('./webserver-file-downloads.test.js');
+require('./webserver-file-uploads.test.js');
 require('./webserver-messenger.test.js');
 require('./webserver-guest-sharing.test.js');
 require('./webserver-duo-routes.test.js');
