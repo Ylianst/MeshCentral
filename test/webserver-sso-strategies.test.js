@@ -53,6 +53,12 @@ test('null is not treated as a group configuration', function () {
     assert.equal(ssoStrategies.isGroupConfiguration({}), true);
 });
 
+test('explicit false disables revoking SSO administrator rights', function () {
+    assert.equal(ssoStrategies.shouldRevokeAdmin({}), true);
+    assert.equal(ssoStrategies.shouldRevokeAdmin({ revokeAdmin: true }), true);
+    assert.equal(ssoStrategies.shouldRevokeAdmin({ revokeAdmin: false }), false);
+});
+
 test('domains without authentication strategies require no provider modules', async function () {
     const fixture = createFixture();
     const result = await fixture.setup({ id: 'tenant', url: '/tenant/' });
