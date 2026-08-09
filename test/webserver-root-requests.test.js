@@ -146,3 +146,25 @@ test('URL credentials do not establish a session when 2FA is required', function
     assert.equal(service.handleUrlCredentials(req, {}, {}, false), true);
     assert.equal(req.session.userid, undefined);
 });
+
+test('valid login token sessions continue unchanged', function () {
+    const resumed = [];
+    const service = createRootRequests({
+        database: { Get: function (id, callback) { callback(null, [{ tokenUser: 'token' }]); } },
+        handleRootRequestEx: function () { resumed.push(true); }
+    });
+    const req = { session: { userid: 'user/tenant/alice', loginToken: 'token' } };
+    assert.equal(service.handleLoginToken(req, {}, {}, false), true);
+    assert.equal(req.session.userid, 'user/tenant/alice');
+    assert.equal(resumed.length, 1);
+});
+
+test('removed login tokens clear the session before continuing', function () {
+    const service = createRootRequests({
+        database: { Get: function (id, callback) { callback(null, []); } },
+        handleRootRequestEx: function () { }
+    });
+    const req = { session: { userid: 'user/tenant/alice', loginToken: 'removed', other: true } };
+    assert.equal(service.handleLoginToken(req, {}, {}, false), true);
+    assert.deepEqual(req.session, {});
+});

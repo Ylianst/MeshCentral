@@ -1771,16 +1771,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         if (rootRequests.handleSspi(req, res, domain, direct)) { return; }
         if (rootRequests.handleUrlCredentials(req, res, domain, direct)) { return; }
-        if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
-            // Check if the loginToken is still valid
-            obj.db.Get('logintoken-' + req.session.loginToken, function (err, docs) {
-                if ((err != null) || (docs == null) || (docs.length != 1) || (docs[0].tokenUser != req.session.loginToken)) { for (var i in req.session) { delete req.session[i]; } }
-                handleRootRequestEx(req, res, domain, direct); // Login using a different system
-            });
-        } else {
-            // Login using a different system
-            handleRootRequestEx(req, res, domain, direct);
-        }
+        if (rootRequests.handleLoginToken(req, res, domain, direct)) { return; }
+        handleRootRequestEx(req, res, domain, direct);
     }
 
     function handleRootRequestEx(req, res, domain, direct) {
@@ -2486,6 +2478,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         users: obj.users,
         checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired,
         setSessionRandom: setSessionRandom,
+        database: obj.db,
         getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
         render: render,
         getRenderPage: getRenderPage,

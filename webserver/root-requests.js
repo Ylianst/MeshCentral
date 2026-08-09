@@ -23,6 +23,7 @@ module.exports.createRootRequests = function (options) {
     const users = options.users;
     const checkUserOneTimePasswordRequired = options.checkUserOneTimePasswordRequired;
     const setSessionRandom = options.setSessionRandom;
+    const database = options.database;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -93,6 +94,15 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function handleLoginToken(req, res, domain, direct) {
+        if ((req.session == null) || (typeof req.session.loginToken != 'string')) { return false; }
+        database.Get('logintoken-' + req.session.loginToken, function (err, docs) {
+            if ((err != null) || (docs == null) || (docs.length != 1) || (docs[0].tokenUser != req.session.loginToken)) { for (var i in req.session) { delete req.session[i]; } }
+            handleRootRequestEx(req, res, domain, direct);
+        });
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -102,5 +112,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, getRootCertLink: getRootCertLink };
 };
