@@ -31,6 +31,7 @@ require('./webserver-password-history.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-routes.test.js');
 require('./webserver-agent-control.test.js');
+require('./webserver-agent-file-transfer.test.js');
 require('./webserver-agent-invitations.test.js');
 require('./webserver-custom-icons.test.js');
 require('./webserver-core-middleware.test.js');

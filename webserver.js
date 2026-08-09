@@ -65,6 +65,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const accountManagementModule = require('./webserver/account-management.js');
     const remotePagesModule = require('./webserver/remote-pages.js');
     const serverBackupsModule = require('./webserver/server-backups.js');
+    const agentFileTransferModule = require('./webserver/agent-file-transfer.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
@@ -245,6 +246,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const serverBackups = serverBackupsModule.createServerBackups({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath });
     const handleBackupRequest = serverBackups.handleBackupRequest;
     const handleRestoreRequest = serverBackups.handleRestoreRequest;
+    const agentFileTransfer = agentFileTransferModule.createAgentFileTransfer({ state: obj, parent: parent, checkAgentIpAddress: checkAgentIpAddress });
+    const handleAgentFileTransfer = agentFileTransfer.handleAgentFileTransfer;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -3361,110 +3364,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.parent.DispatchEvent(targets, obj, message);
                     }
                 }
-            }
-        });
-    }
-
-    // Setup agent to/from server file transfer handler
-    function handleAgentFileTransfer(ws, req) {
-        var domain = checkAgentIpAddress(ws, req);
-        if (domain == null) { parent.debug('web', 'Got agent file transfer connection with bad domain or blocked IP address ' + req.clientIp + ', dropping.'); ws.close(); return; }
-        if (req.query.c == null) { parent.debug('web', 'Got agent file transfer connection without a cookie from ' + req.clientIp + ', dropping.'); ws.close(); return; }
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
-        if ((c == null) || (c.a != 'aft')) { parent.debug('web', 'Got agent file transfer connection with invalid cookie from ' + req.clientIp + ', dropping.'); ws.close(); return; }
-        ws.xcmd = c.b; ws.xarg = c.c, ws.xfilelen = 0;
-        ws.send('c'); // Indicate connection of the tunnel. In this case, we are the termination point.
-        ws.send('5'); // Indicate we want to perform file transfers (5 = Files).
-        if (ws.xcmd == 'coredump') {
-            const coreDumpName = (typeof ws.xarg == 'string') ? obj.common.makeFilename(ws.xarg) : '';
-            if (coreDumpName.length == 0) { parent.debug('web', 'Got agent core dump transfer with an invalid filename from ' + req.clientIp + ', dropping.'); ws.close(); return; }
-            // Check the agent core dump folder if not already present.
-            var coreDumpPath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps');
-            if (obj.fs.existsSync(coreDumpPath) == false) { try { obj.fs.mkdirSync(coreDumpPath); } catch (ex) { } }
-            ws.xfilepath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', coreDumpName);
-            ws.xid = 'coredump';
-            ws.send(JSON.stringify({ action: 'download', sub: 'start', ask: 'coredump', id: 'coredump' })); // Ask for a core dump file
-        }
-
-        // When data is received from the web socket, echo it back
-        ws.on('message', function (data) {
-            if (typeof data == 'string') {
-                // Control message
-                var cmd = null;
-                try { cmd = JSON.parse(data); } catch (ex) { }
-                if ((cmd == null) || (cmd.action != 'download') || (cmd.sub == null)) return;
-                switch (cmd.sub) {
-                    case 'start': {
-                        // Perform an async file open
-                        var callback = function onFileOpen(err, fd) {
-                            if ((err != null) || (fd == null)) {
-                                parent.debug('web', 'Unable to open agent core dump file: ' + ((err != null) ? err.toString() : 'invalid file descriptor'));
-                                try { onFileOpen.xws.close(); } catch (ex) { }
-                                return;
-                            }
-                            onFileOpen.xws.xfile = fd;
-                            try { onFileOpen.xws.send(JSON.stringify({ action: 'download', sub: 'startack', id: onFileOpen.xws.xid, ack: 1 })); } catch (ex) { } // Ask for a directory (test)
-                        };
-                        callback.xws = this;
-                        obj.fs.open(this.xfilepath + '.part', 'w', callback);
-                        break;
-                    }
-                }
-            } else {
-                // Binary message
-                if (data.length < 4) return;
-                var flags = data.readInt32BE(0);
-                if ((data.length > 4)) {
-                    // Write the file
-                    this.xfilelen += (data.length - 4);
-                    try {
-                        var callback = function onFileDataWritten(err, bytesWritten, buffer) {
-                            if (onFileDataWritten.xflags & 1) {
-                                // End of file
-                                parent.debug('web', "Completed downloads of agent dumpfile, " + onFileDataWritten.xws.xfilelen + " bytes.");
-                                if (onFileDataWritten.xws.xfile) {
-                                    obj.fs.close(onFileDataWritten.xws.xfile, function (err) { });
-                                    obj.fs.rename(onFileDataWritten.xws.xfilepath + '.part', onFileDataWritten.xws.xfilepath, function (err) { });
-                                    onFileDataWritten.xws.xfile = null;
-                                }
-                                try { onFileDataWritten.xws.send(JSON.stringify({ action: 'markcoredump' })); } catch (ex) { } // Ask to delete the core dump file
-                                try { onFileDataWritten.xws.close(); } catch (ex) { }
-                            } else {
-                                // Send ack
-                                try { onFileDataWritten.xws.send(JSON.stringify({ action: 'download', sub: 'ack', id: onFileDataWritten.xws.xid })); } catch (ex) { } // Ask for a directory (test)
-                            }
-                        };
-                        callback.xws = this;
-                        callback.xflags = flags;
-                        obj.fs.write(this.xfile, data, 4, data.length - 4, callback);
-                    } catch (ex) { }
-                } else {
-                    if (flags & 1) {
-                        // End of file
-                        parent.debug('web', "Completed downloads of agent dumpfile, " + this.xfilelen + " bytes.");
-                        if (this.xfile) {
-                            obj.fs.close(this.xfile, function (err) { });
-                            obj.fs.rename(this.xfilepath + '.part', this.xfilepath, function (err) { });
-                            this.xfile = null;
-                        }
-                        this.send(JSON.stringify({ action: 'markcoredump' })); // Ask to delete the core dump file
-                        try { this.close(); } catch (ex) { }
-                    } else {
-                        // Send ack
-                        this.send(JSON.stringify({ action: 'download', sub: 'ack', id: this.xid })); // Ask for a directory (test)
-                    }
-                }
-            }
-        });
-
-        // If error, do nothing.
-        ws.on('error', function (err) { console.log('Agent file transfer server error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.'); });
-
-        // If closed, do nothing
-        ws.on('close', function (req) {
-            if (this.xfile) {
-                obj.fs.close(this.xfile, function (err) { });
-                obj.fs.unlink(this.xfilepath + '.part', function (err) { }); // Remove a partial file
             }
         });
     }
