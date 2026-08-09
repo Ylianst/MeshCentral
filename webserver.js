@@ -64,6 +64,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const agentInvitationsModule = require('./webserver/agent-invitations.js');
     const accountManagementModule = require('./webserver/account-management.js');
     const remotePagesModule = require('./webserver/remote-pages.js');
+    const serverBackupsModule = require('./webserver/server-backups.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
@@ -241,6 +242,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const fileUploads = fileUploadsModule.createFileUploads({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath, readTotalFileSize: readTotalFileSize, createUploadQuota: uploadQuotaModule.createUploadQuota, getRandomPassword: getRandomPassword, remoteControlRight: MESHRIGHT_REMOTECONTROL });
     const handleUploadFile = fileUploads.handleUpload;
     const handleUploadFileBatch = fileUploads.handleBatchUpload;
+    const serverBackups = serverBackupsModule.createServerBackups({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath });
+    const handleBackupRequest = serverBackups.handleBackupRequest;
+    const handleRestoreRequest = serverBackups.handleRestoreRequest;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -3541,69 +3545,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.sendStatus(401);
         });
     };
-
-    // Handle a server backup request
-    async function handleBackupRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.backup !== true))) { res.sendStatus(401); return; }
-
-        var user = obj.users[req.session.userid];
-        if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
-
-        // start a new backup and async wait for it to finish with a timeout
-        if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
-        obj.db.performBackup();
-        const waitFor = ms => new Promise(res => setTimeout(res, ms));
-        var backupStart = Date.now();
-        while ((obj.db.performingBackup) && ((Date.now() - backupStart) < 120 * 1000)) {
-            await waitFor(2000);
-        }
-        if (obj.fs.existsSync(obj.db.newAutoBackupFile) && obj.db.performingBackup == false) {
-            res.setHeader('Content-Type', 'application/x-zip-compressed');
-            res.download(obj.db.newAutoBackupFile);
-        } else {
-            obj.parent.addServerWarning('handleBackupRequest: Backup error', true);
-            res.status(500).send("Backup error.");
-        }
-    }
-
-    // Handle a server restore request
-    function handleRestoreRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.restore !== true))) { res.sendStatus(401); return; }
-
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-        const multiparty = require('multiparty');
-        const form = new multiparty.Form();
-        form.parse(req, function (err, fields, files) {
-            if (err) { res.sendStatus(400); return; }
-            // If an authentication cookie is embedded in the form, use that.
-            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
-                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
-                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
-            }
-            if (authUserid == null) { res.sendStatus(401); return; }
-
-            // Get the user
-            const user = obj.users[authUserid];
-            if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
-
-            const restorePath = ((files != null) && Array.isArray(files.datafile) && (files.datafile.length == 1) && (files.datafile[0] != null)) ? resolveSafeUploadTempPath(files.datafile[0].path) : null;
-            if (restorePath == null) { res.sendStatus(400); return; }
-
-            res.set('Content-Type', 'text/html');
-            const rootUrl = req.protocol + '://' + req.get('host') + (req.query.key ? '/?key=' + req.query.key : '/');
-            res.end('<html><body><script>setTimeout(function(){window.location.replace("' + rootUrl + '");}, 10000);</script>Server will be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
-            parent.Stop(restorePath);
-        });
-    }
 
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
