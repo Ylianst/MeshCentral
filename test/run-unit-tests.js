@@ -26,6 +26,7 @@ require('./webserver-email-account-utils.test.js');
 require('./webserver-email-account-actions.test.js');
 require('./webserver-agent-settings.test.js');
 require('./webserver-agent-settings-generation.test.js');
+require('./webserver-power-events.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');

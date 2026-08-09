@@ -93,7 +93,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const rootRequestsModule = require('./webserver/root-requests.js');
     const emailAccountUtils = require('./webserver/email-account-utils.js');
     const emailAccountActionsModule = require('./webserver/email-account-actions.js');
-    const agentSettingsModule = require('./webserver/agent-settings.js');
+const agentSettingsModule = require('./webserver/agent-settings.js');
+const powerEventsModule = require('./webserver/power-events.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -3554,7 +3555,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((x.length != 3) || (x[0] != 'node') || (x[1] != domain.id) || (user == null) || (user.links == null)) { res.sendStatus(401); return; }
 
         obj.db.Get(req.query.id, function (err, docs) {
-            if (docs.length != 1) {
+            if (powerEventsModule.hasDatabaseFailure(err, docs)) {
+                res.sendStatus(500);
+            } else if (docs.length != 1) {
                 res.sendStatus(401);
             } else {
                 var node = docs[0];
@@ -3577,6 +3580,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // Get the list of power events and send them
                 setContentDispositionHeader(res, 'application/octet-stream', 'powerevents.csv', null, 'powerevents.csv');
                 obj.db.getPowerTimeline(node._id, function (err, docs) {
+                    if (powerEventsModule.hasDatabaseFailure(err, docs)) { res.sendStatus(500); return; }
                     var xevents = ['UTC Time, Local Time, State, Previous State'], prevState = 0;
                     for (var i in docs) {
                         if (docs[i].power != prevState) {
