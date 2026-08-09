@@ -3582,6 +3582,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const multiparty = require('multiparty');
         const form = new multiparty.Form();
         form.parse(req, function (err, fields, files) {
+            if (err) { res.sendStatus(400); return; }
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
@@ -3591,13 +3592,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (authUserid == null) { res.sendStatus(401); return; }
 
             // Get the user
-            const user = obj.users[req.session.userid];
+            const user = obj.users[authUserid];
             if ((user == null) || ((user.siteadmin & 4) == 0)) { res.sendStatus(401); return; } // Check if we have server restore rights
+
+            const restorePath = ((files != null) && Array.isArray(files.datafile) && (files.datafile.length == 1) && (files.datafile[0] != null)) ? resolveSafeUploadTempPath(files.datafile[0].path) : null;
+            if (restorePath == null) { res.sendStatus(400); return; }
 
             res.set('Content-Type', 'text/html');
             const rootUrl = req.protocol + '://' + req.get('host') + (req.query.key ? '/?key=' + req.query.key : '/');
             res.end('<html><body><script>setTimeout(function(){window.location.replace("' + rootUrl + '");}, 10000);</script>Server will be restarted, <a href="' + domain.url + '">click here to login</a>.</body></html>');
-            parent.Stop(files.datafile[0].path);
+            parent.Stop(restorePath);
         });
     }
 
