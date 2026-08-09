@@ -286,6 +286,7 @@
     <Compile Include="webserver\subscriptions.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="webserver\telemetry.js" />
+    <Compile Include="webserver\terms.js" />
     <Compile Include="webserver\tls-configuration.js" />
     <Compile Include="webserver\translations.js" />
     <Compile Include="webserver\two-factor-authentication.js" />

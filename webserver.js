@@ -89,6 +89,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const fileDownloadsModule = require('./webserver/file-downloads.js');
     const translationsModule = require('./webserver/translations.js');
     const captchaModule = require('./webserver/captcha.js');
+    const termsModule = require('./webserver/terms.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -248,6 +249,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const render = rendering.render;
     const getRenderList = rendering.getRenderList;
     const getEmailLanguageList = rendering.getEmailLanguageList;
+    const terms = termsModule.createTerms({
+        state: obj,
+        parent: parent,
+        checkUserIpAddress: checkUserIpAddress,
+        getQueryPortion: getQueryPortion,
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs
+    });
+    const handleTermsRequest = terms.handleRequest;
     obj.getLanguageCodes = rendering.getLanguageCodes;
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
@@ -3182,64 +3193,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    function handleTermsRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-        // See if term.txt was loaded from the database
-        if ((parent.configurationFiles != null) && (parent.configurationFiles['terms.txt'] != null)) {
-            // Send the terms from the database
-            res.set({ 'Cache-Control': 'no-store' });
-            if (req.session && req.session.userid) {
-                if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
-                var user = obj.users[req.session.userid];
-                var logoutcontrols = { name: user.name };
-                var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
-                if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
-            } else {
-                render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(parent.configurationFiles['terms.txt'].toString()).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, req, domain));
-            }
-        } else {
-            // See if there is a terms.txt file in meshcentral-data
-            var p = obj.path.join(obj.parent.datapath, 'terms.txt');
-            if (obj.fs.existsSync(p)) {
-                obj.fs.readFile(p, 'utf8', function (err, data) {
-                    if (err != null) { parent.debug('web', 'handleTermsRequest: no terms.txt'); res.sendStatus(404); return; }
-
-                    // Send the terms from terms.txt
-                    res.set({ 'Cache-Control': 'no-store' });
-                    if (req.session && req.session.userid) {
-                        if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
-                        var user = obj.users[req.session.userid];
-                        var logoutcontrols = { name: user.name };
-                        var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
-                        if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
-                    } else {
-                        render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ terms: encodeURIComponent(data).split('\'').join('\\\''), logoutControls: encodeURIComponent('{}') }, req, domain));
-                    }
-                });
-            } else {
-                // Send the default terms
-                parent.debug('web', 'handleTermsRequest: sending default terms');
-                res.set({ 'Cache-Control': 'no-store' });
-                if (req.session && req.session.userid) {
-                    if (req.session.userid.split('/')[1] != domain.id) { req.session = null; res.redirect(domain.url + getQueryPortion(req)); return; } // Check if the session is for the correct domain
-                    var user = obj.users[req.session.userid];
-                    var logoutcontrols = { name: user.name };
-                    var extras = (req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : '';
-                    if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27') }, req, domain));
-                } else {
-                    render(req, res, getRenderPage('terms', req, domain), getRenderArgs({ logoutControls: encodeURIComponent('{}') }, req, domain));
-                }
-            }
-        }
-    }
-
-    // Render the messenger application.
     function handleMessengerRequest(req, res) {
         const domain = getDomain(req);
         if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
