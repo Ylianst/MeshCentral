@@ -36,6 +36,11 @@ test('database failures and invalid result collections are detected', function (
     assert.equal(hasDatabaseFailure(null, []), false);
 });
 
+test('invalid verified-email query results cannot be mistaken for no conflict', function () {
+    assert.equal(hasDatabaseFailure(null, null) || hasOtherVerifiedUser(null, 'user/tenant/alice'), true);
+    assert.equal(hasDatabaseFailure(null, []) || hasOtherVerifiedUser([], 'user/tenant/alice'), false);
+});
+
 test('temporary password creation returns random and hash failures', async function () {
     const randomError = new Error('random failed');
     const randomResult = await new Promise(function (resolve) {

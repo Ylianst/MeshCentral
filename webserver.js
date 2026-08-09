@@ -1627,13 +1627,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             // Check is email already exists
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
-                if ((err != null) || emailAccountUtils.hasOtherVerifiedUser(docs, req.session.cuserid)) {
+                if (emailAccountUtils.hasDatabaseFailure(err, docs) || emailAccountUtils.hasOtherVerifiedUser(docs, req.session.cuserid)) {
                     // Email already exists
                     req.session.messageid = 102; // Existing account with this email address.
                 } else {
                     // Update the user and notify of user email address change
-                    var user = obj.users[req.session.cuserid];
-                    if (user.email != email) {
+                    var user = emailAccountUtils.getActiveUser(obj.users, req.session.cuserid);
+                    if (user == null) {
+                        req.session.messageid = 100; // Unable to create account.
+                    } else if (user.email != email) {
                         user.email = email;
                         db.SetUser(user);
                         var targets = ['*', 'server-users', user._id];
@@ -1643,11 +1645,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         parent.DispatchEvent(targets, obj, event);
                     }
 
-                    // Send the verification email
-                    domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
+                    if (user != null) {
+                        // Send the verification email
+                        domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
 
-                    // Send the response
-                    req.session.messageid = 2; // Email sent.
+                        // Send the response
+                        req.session.messageid = 2; // Email sent.
+                    }
                 }
                 req.session.loginmode = 7;
                 delete req.session.cuserid;
