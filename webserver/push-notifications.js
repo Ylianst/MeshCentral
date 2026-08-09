@@ -5,6 +5,19 @@
 
 'use strict';
 
+module.exports.isValidFirebaseRelayData = function (data) {
+    if ((data == null) || (typeof data != 'object')) return false;
+    if (typeof data.pmt != 'string') return false;
+    if ((data.payload == null) || (typeof data.payload != 'object')) return false;
+    if ((data.payload.notification == null) || (typeof data.payload.notification != 'object')) return false;
+    if (typeof data.payload.notification.title != 'string') return false;
+    if (typeof data.payload.notification.body != 'string') return false;
+    if ((data.options == null) || (typeof data.options != 'object')) return false;
+    if ((data.options.priority != 'Normal') && (data.options.priority != 'High')) return false;
+    if ((typeof data.options.timeToLive != 'number') || (data.options.timeToLive < 1)) return false;
+    return true;
+};
+
 module.exports.createPushNotifications = function (options) {
     const db = options.db;
     const getWebPush = options.getWebPush;

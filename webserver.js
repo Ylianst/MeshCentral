@@ -1875,15 +1875,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((typeof obj.parent.config.firebase.pushrelayserver == 'string') && (req.query.key != obj.parent.config.firebase.pushrelayserver)) { res.sendStatus(404); return; }
         var data = null;
         try { data = JSON.parse(req.body.msg) } catch (ex) { res.sendStatus(404); return; }
-        if (typeof data != 'object') { res.sendStatus(404); return; }
-        if (typeof data.pmt != 'string') { res.sendStatus(404); return; }
-        if (typeof data.payload != 'object') { res.sendStatus(404); return; }
-        if (typeof data.payload.notification != 'object') { res.sendStatus(404); return; }
-        if (typeof data.payload.notification.title != 'string') { res.sendStatus(404); return; }
-        if (typeof data.payload.notification.body != 'string') { res.sendStatus(404); return; }
-        if (typeof data.options != 'object') { res.sendStatus(404); return; }
-        if ((data.options.priority != 'Normal') && (data.options.priority != 'High')) { res.sendStatus(404); return; }
-        if ((typeof data.options.timeToLive != 'number') || (data.options.timeToLive < 1)) { res.sendStatus(404); return; }
+        if (pushNotificationsModule.isValidFirebaseRelayData(data) === false) { res.sendStatus(404); return; }
         parent.debug('email', 'handleFirebasePushOnlyRelayRequest - ok');
         obj.parent.firebase.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err, errdesc) {
             if (err == null) { res.sendStatus(200); } else { res.sendStatus(500); }

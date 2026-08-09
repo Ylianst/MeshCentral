@@ -8,6 +8,16 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const createPushNotifications = require('../webserver/push-notifications.js').createPushNotifications;
+const isValidFirebaseRelayData = require('../webserver/push-notifications.js').isValidFirebaseRelayData;
+
+test('Firebase relay validation safely rejects null nested objects', function () {
+    const valid = { pmt: 'token', payload: { notification: { title: 'Title', body: 'Body' } }, options: { priority: 'Normal', timeToLive: 60 } };
+    assert.equal(isValidFirebaseRelayData(valid), true);
+    assert.equal(isValidFirebaseRelayData(null), false);
+    assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: null, options: valid.options }), false);
+    assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: { notification: null }, options: valid.options }), false);
+    assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: valid.payload, options: null }), false);
+});
 
 test('failed web push subscriptions are removed after all sends complete', async function () {
     const writes = [];
