@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const path = require('path');
 const createFileUploads = require('../webserver/file-uploads.js').createFileUploads;
+const prepareBatchUploadFiles = require('../webserver/file-uploads.js').prepareBatchUploadFiles;
 const createUploadQuota = require('../webserver/upload-quota.js').createUploadQuota;
 
 function createFixture(fields) {
@@ -72,4 +73,33 @@ test('embedded uploads use the non-root domain directory and write validated dat
     assert.equal(fixture.writes.length, 1);
     assert.equal(fixture.writes[0].data.toString(), 'hello');
     assert.ok(fixture.directories.includes(path.join('files', 'domain-tenant')));
+});
+
+test('batch uploads reject requests without files', function () {
+    const result = prepareBatchUploadFiles({ files: {}, path: path, common: { IsFilenameValid: function () { return true; } }, fs: {}, resolveSafeUploadTempPath: function () { return null; } });
+    assert.equal(result.error, 'missing-files');
+});
+
+test('batch uploads reject traversal filenames and remove their temporary file', function () {
+    const removed = [];
+    const result = prepareBatchUploadFiles({
+        files: { files: [{ originalFilename: '../escape.txt', path: 'temp/upload' }] },
+        path: path,
+        common: { IsFilenameValid: function () { return true; } },
+        fs: { unlink: function (file, callback) { removed.push(file); callback(); } },
+        resolveSafeUploadTempPath: function () { return 'temp/upload'; }
+    });
+    assert.equal(result.error, 'invalid-filename');
+    assert.deepEqual(removed, ['temp/upload']);
+});
+
+test('batch uploads retain only validated safe filenames and temporary paths', function () {
+    const result = prepareBatchUploadFiles({
+        files: { files: [{ originalFilename: 'update.bin', path: 'temp/upload' }] },
+        path: path,
+        common: { IsFilenameValid: function (name) { return name === 'update.bin'; } },
+        fs: {},
+        resolveSafeUploadTempPath: function () { return 'safe/temp/upload'; }
+    });
+    assert.deepEqual(result, { files: [{ name: 'update.bin', tempPath: 'safe/temp/upload' }] });
 });

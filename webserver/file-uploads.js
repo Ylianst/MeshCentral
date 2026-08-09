@@ -5,6 +5,25 @@
 
 'use strict';
 
+module.exports.prepareBatchUploadFiles = function (options) {
+    const uploads = options.files && options.files.files;
+    if (!Array.isArray(uploads) || (uploads.length === 0)) return { error: 'missing-files' };
+    const prepared = [];
+    for (var i = 0; i < uploads.length; i++) {
+        const file = uploads[i];
+        const originalName = (file && (typeof file.originalFilename === 'string')) ? file.originalFilename : '';
+        const safeName = options.path.basename(originalName);
+        const tempPath = (file && (typeof file.path === 'string')) ? options.resolveSafeUploadTempPath(file.path) : null;
+        if ((safeName !== originalName) || (options.common.IsFilenameValid(safeName) !== true)) {
+            if (tempPath != null) { try { options.fs.unlink(tempPath, function () { }); } catch (ex) { } }
+            return { error: 'invalid-filename' };
+        }
+        if (tempPath == null) return { error: 'invalid-temp-path' };
+        prepared.push({ name: safeName, tempPath: tempPath });
+    }
+    return { files: prepared };
+};
+
 module.exports.createFileUploads = function (options) {
     const state = options.state;
     const parent = options.parent;

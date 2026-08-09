@@ -3272,19 +3272,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 return;
             }
 
+            const preparedUploads = fileUploadsModule.prepareBatchUploadFiles({ files: files, path: obj.path, common: obj.common, fs: obj.fs, resolveSafeUploadTempPath: resolveSafeUploadTempPath });
+            if (preparedUploads.error != null) { res.sendStatus(400); return; }
+
             // Get server temporary path
             var serverpath = obj.path.join(obj.filespath, 'tmp')
             try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
             try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
 
             // More typical upload method, the file data is in a multipart mime post.
-            for (var i in files.files) {
-                var file = files.files[i];
-                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+            for (var i in preparedUploads.files) {
+                const file = preparedUploads.files[i];
+                const ftarget = getRandomPassword() + '-' + file.name;
                 const targetPath = obj.path.join(serverpath, ftarget);
-                const uploadTempPath = resolveSafeUploadTempPath(file.path);
-                if (uploadTempPath == null) { res.sendStatus(400); return; }
-                cmd.files.push({ name: file.originalFilename, target: ftarget });
+                const uploadTempPath = file.tempPath;
+                cmd.files.push({ name: file.name, target: ftarget });
                 // Rename the file
                 obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
