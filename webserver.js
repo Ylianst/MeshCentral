@@ -166,6 +166,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const setContentDispositionHeader = requestUtils.setContentDispositionHeader;
     const isIPMatch = requestUtils.isIPMatch;
     const checkAgentColorString = requestUtils.checkAgentColorString;
+    const agentSettings = agentSettingsModule.createAgentSettings({ state: obj, parent: parent, checkAgentColorString: checkAgentColorString });
+    const getMshFromRequest = agentSettings.getMshFromRequest;
     const checkCookieIp = requestUtils.checkCookieIp;
     const assembleStringFromObject = requestUtils.assembleStringFromObject;
     const EscapeHtml = requestUtils.escapeHtml;
@@ -3524,60 +3526,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
-    function getMshFromRequest(req, res, domain) {
-        // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && !agentSettingsModule.hasUserSession(req)) { return null; }
-
-        // Check if the meshid is a time limited, encrypted cookie
-        var meshcookie = obj.parent.decodeCookie(req.query.id, obj.parent.invitationLinkEncryptionKey);
-        if ((meshcookie != null) && (meshcookie.m != null)) { req.query.id = meshcookie.m; }
-
-        // Fetch the mesh object
-        var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.id];
-        if (mesh == null) { return null; }
-
-        // If needed, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { return null; }
-        }
-
-        var meshidhex = Buffer.from(req.query.id.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-        var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-
-        // Get the agent connection server name
-        var serverName = obj.getWebServerName(domain, req);
-        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
-
-        // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-        var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += '/';
-        var meshsettings = '\r\nMeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
-        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
-            meshsettings += 'MeshServer=local\r\n';
-            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
-        }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
-        if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
-        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
-        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
-        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
-        if (domain.agentcustomization != null) { // Add agent customization
-            if (domain.agentcustomization.displayname != null) { meshsettings += 'displayName=' + domain.agentcustomization.displayname + '\r\n'; }
-            if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
-            if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
-            if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
-            if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
-            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
-            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
-            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
-        }
-        if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
-        return meshsettings;
-    }
-
     // Handle a request to download a mesh settings
     obj.handleMeshSettingsRequest = function (req, res) {
         const domain = getDomain(req);
