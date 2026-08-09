@@ -15,6 +15,7 @@ require('./webserver-agent-routing.test.js');
 require('./webserver-custom-icons.test.js');
 require('./webserver-external-groups.test.js');
 require('./webserver-network-access.test.js');
+require('./webserver-push-notifications.test.js');
 require('./webserver-rendering.test.js');
 require('./webserver-request-utils.test.js');
 require('./webserver-throttling.test.js');
