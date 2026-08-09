@@ -41,6 +41,8 @@ function createFixture(settings) {
     const state = {
         path: path,
         fs: parent.fs,
+        users: settings.users || {},
+        db: settings.db || { Get: function (id, callback) { callback(null, []); } },
         certificates: { root: { cert: settings.rootCertificate || '' } },
         common: { joinPath: function () { return Array.from(arguments).join('/'); } },
         express: { static: function (folder) { return 'static:' + folder; } },
@@ -63,7 +65,17 @@ function createFixture(settings) {
 }
 
 function findRoute(fixture, path) { return fixture.routes.find(function (route) { return route[0] === path; }); }
-function response() { return { set: function (headers) { this.headers = headers; }, send: function (body) { this.body = body; }, sendFile: function (path) { this.file = path; }, sendStatus: function (status) { this.status = status; } }; }
+function response() {
+    return {
+        set: function (name, value) {
+            if (this.headers == null) this.headers = {};
+            if (typeof name == 'object') { Object.assign(this.headers, name); } else { this.headers[name] = value; }
+        },
+        send: function (body) { this.body = body; },
+        sendFile: function (path) { this.file = path; },
+        sendStatus: function (status) { this.status = status; }
+    };
+}
 
 test('registers public redirects and ignores metadata keys', function () {
     const fixture = createFixture();
@@ -180,4 +192,46 @@ test('domain redirects preserve URL arguments and support version responses', fu
     const hidden = response();
     fixture.service.handleRedirect({ originalUrl: '/_private' }, hidden);
     assert.equal(hidden.status, 404);
+});
+
+test('user images require a session and deny cross-user access without permission', function () {
+    var reads = 0;
+    const userId = 'user/tenant/alice';
+    const fixture = createFixture({
+        users: { [userId]: { siteadmin: 0 } },
+        db: { Get: function () { reads++; } }
+    });
+    const noSession = response();
+    fixture.service.handleUserImage({ query: {} }, noSession);
+    assert.equal(noSession.status, 404);
+
+    const denied = response();
+    fixture.service.handleUserImage({ session: { userid: userId }, query: { id: 'bob' } }, denied);
+    assert.equal(denied.status, 404);
+    assert.equal(reads, 0);
+});
+
+test('user images return stored PNG data without caching', function () {
+    const userId = 'user/tenant/alice';
+    const image = Buffer.from('png-data');
+    const fixture = createFixture({
+        db: { Get: function (id, callback) { assert.equal(id, 'im' + userId); callback(null, [{ image: 'data:image/png;base64,' + image.toString('base64') }]); } }
+    });
+    const res = response();
+    fixture.service.handleUserImage({ session: { userid: userId }, query: {} }, res);
+    assert.deepEqual(res.headers, { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' });
+    assert.deepEqual(res.body, image);
+});
+
+test('user administrators can request another user JPEG image', function () {
+    const userId = 'user/tenant/admin';
+    const image = Buffer.from('jpeg-data');
+    const fixture = createFixture({
+        users: { [userId]: { siteadmin: 2 } },
+        db: { Get: function (id, callback) { assert.equal(id, 'imuser/tenant/bob'); callback(null, [{ image: 'data:image/jpeg;base64,' + image.toString('base64') }]); } }
+    });
+    const res = response();
+    fixture.service.handleUserImage({ session: { userid: userId }, query: { id: 'bob' } }, res);
+    assert.deepEqual(res.headers, { 'Content-Type': 'image/jpeg', 'Cache-Control': 'no-store' });
+    assert.deepEqual(res.body, image);
 });

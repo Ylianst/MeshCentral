@@ -163,6 +163,33 @@ module.exports.createDomainAssets = function (options) {
         }
     }
 
+    function handleUserImage(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleUserImageRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((req.session == null) || (req.session.userid == null)) { parent.debug('web', 'handleUserImageRequest: failed checks 2.'); res.sendStatus(404); return; }
+        var imageUserId = req.session.userid;
+        if (req.query.id != null) {
+            const user = state.users[req.session.userid];
+            if (module.exports.canAccessOtherUserImage(user) === false) { res.sendStatus(404); return; }
+            imageUserId = 'user/' + domain.id + '/' + req.query.id;
+        }
+        state.db.Get('im' + imageUserId, function (err, docs) {
+            if ((err != null) || (docs == null) || (docs.length != 1) || (typeof docs[0].image != 'string')) { res.sendStatus(404); return; }
+            const imageBase64 = docs[0].image;
+            if (imageBase64.startsWith('data:image/png;base64,')) {
+                res.set('Content-Type', 'image/png');
+                res.set({ 'Cache-Control': 'no-store' });
+                res.send(Buffer.from(imageBase64.substring(22), 'base64'));
+            } else if (imageBase64.startsWith('data:image/jpeg;base64,')) {
+                res.set('Content-Type', 'image/jpeg');
+                res.set({ 'Cache-Control': 'no-store' });
+                res.send(Buffer.from(imageBase64.substring(23), 'base64'));
+            } else {
+                res.sendStatus(404);
+            }
+        });
+    }
+
     return {
         register: register,
         handleLogo: handleLogo,
@@ -172,6 +199,7 @@ module.exports.createDomainAssets = function (options) {
         getRootCertBase64: getRootCertBase64,
         handleRootCertificate: handleRootCertificate,
         handleManifest: handleManifest,
-        handleRedirect: handleRedirect
+        handleRedirect: handleRedirect,
+        handleUserImage: handleUserImage
     };
 };

@@ -192,6 +192,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleWelcomeImageRequest = domainAssets.handleWelcomeImage;
     const handleRootCertRequest = domainAssets.handleRootCertificate;
     const handleManifestRequest = domainAssets.handleManifest;
+    const handleUserImageRequest = domainAssets.handleUserImage;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -1924,34 +1925,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
             render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, showagents: showagents, magenturl: magenturl, assistanttype: (domain.assistanttypeagentinvite ? domain.assistanttypeagentinvite : 0) }, req, domain));
         }
-    }
-
-    // Called to process an agent invite request
-    function handleUserImageRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleUserImageRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((req.session == null) || (req.session.userid == null)) { parent.debug('web', 'handleUserImageRequest: failed checks 2.'); res.sendStatus(404); return; }
-        var imageUserId = req.session.userid;
-        if ((req.query.id != null)) {
-            var user = obj.users[req.session.userid];
-            if (domainAssetsModule.canAccessOtherUserImage(user) === false) { res.sendStatus(404); return; }
-            imageUserId = 'user/' + domain.id + '/' + req.query.id;
-        }
-        obj.db.Get('im' + imageUserId, function (err, docs) {
-            if ((err != null) || (docs == null) || (docs.length != 1) || (typeof docs[0].image != 'string')) { res.sendStatus(404); return; }
-            var imagebase64 = docs[0].image;
-            if (imagebase64.startsWith('data:image/png;base64,')) {
-                res.set('Content-Type', 'image/png');
-                res.set({ 'Cache-Control': 'no-store' });
-                res.send(Buffer.from(imagebase64.substring(22), 'base64'));
-            } else if (imagebase64.startsWith('data:image/jpeg;base64,')) {
-                res.set('Content-Type', 'image/jpeg');
-                res.set({ 'Cache-Control': 'no-store' });
-                res.send(Buffer.from(imagebase64.substring(23), 'base64'));
-            } else {
-                res.sendStatus(404);
-            }
-        });
     }
 
     function handleDeleteAccountRequest(req, res, direct) {
