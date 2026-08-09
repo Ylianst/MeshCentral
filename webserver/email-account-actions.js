@@ -19,6 +19,9 @@ module.exports.createEmailAccountActions = function (options) {
     const hasOtherVerifiedUser = options.hasOtherVerifiedUser;
     const getActiveUser = options.getActiveUser;
     const random = options.random || Math.random;
+    const checkUserIpAddress = options.checkUserIpAddress;
+    const decodeCookie = options.decodeCookie;
+    const hasEmailLinkCookie = options.hasEmailLinkCookie;
 
     function renderMessage(req, res, domain, args) {
         render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs(args, req, domain));
@@ -99,5 +102,45 @@ module.exports.createEmailAccountActions = function (options) {
         });
     }
 
-    return { handlePasswordReset: handlePasswordReset, handleEmailVerification: handleEmailVerification };
+    function handleCheckMailRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (domain.mailserver == null)) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; }
+
+        const domainurl = encodeURIComponent(domain.url).replace(/'/g, '%27');
+        if (!hasEmailLinkCookie(req.query)) { renderMessage(req, res, domain, { titleid: 1, msgid: 10, domainurl: domainurl }); return; }
+        const cookie = decodeCookie(req.query.c, domain.mailserver.mailCookieEncryptionKey, 30);
+        if ((cookie == null) || (cookie.u == null) || !cookie.u.startsWith('user/') || (cookie.e == null)) { renderMessage(req, res, domain, { titleid: 1, msgid: 10, domainurl: domainurl }); return; }
+
+        const idsplit = cookie.u.split('/');
+        if ((idsplit.length != 3) || (idsplit[1] != domain.id)) {
+            parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
+            renderMessage(req, res, domain, { titleid: 1, msgid: 1, domainurl: domainurl });
+            return;
+        }
+        state.db.Get(cookie.u, function (error, users) {
+            if (hasDatabaseFailure(error, users)) {
+                parent.debug('web', 'handleCheckMailRequest: Database error.');
+                renderMessage(req, res, domain, { titleid: 1, msgid: 10, domainurl: domainurl });
+            } else if (users.length == 0) {
+                parent.debug('web', 'handleCheckMailRequest: Invalid username.');
+                renderMessage(req, res, domain, { titleid: 1, msgid: 2, domainurl: domainurl, arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') });
+            } else {
+                const user = users[0];
+                if (user.email != cookie.e) {
+                    parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
+                    renderMessage(req, res, domain, { titleid: 1, msgid: 3, domainurl: domainurl, arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') });
+                } else if (cookie.a == 1) {
+                    handleEmailVerification(req, res, domain, user);
+                } else if (cookie.a == 2) {
+                    handlePasswordReset(req, res, domain, user);
+                } else {
+                    renderMessage(req, res, domain, { titleid: 1, msgid: 9, domainurl: domainurl });
+                }
+            }
+        });
+    }
+
+    return { handleCheckMailRequest: handleCheckMailRequest, handlePasswordReset: handlePasswordReset, handleEmailVerification: handleEmailVerification };
 };

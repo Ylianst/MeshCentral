@@ -301,8 +301,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getActiveUser: emailAccountUtils.getActiveUser,
         hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure,
         hasOtherVerifiedUser: emailAccountUtils.hasOtherVerifiedUser,
+        hasEmailLinkCookie: emailAccountUtils.hasEmailLinkCookie,
+        checkUserIpAddress: checkUserIpAddress,
+        decodeCookie: function (cookie, key, age) { return obj.parent.decodeCookie(cookie, key, age); },
         hashPassword: function (password, callback, iterations) { require('./pass').hash(password, callback, iterations); }
     });
+    const handleCheckMailRequest = emailAccountActions.handleCheckMailRequest;
     const getRenderList = rendering.getRenderList;
     const getEmailLanguageList = rendering.getEmailLanguageList;
     const remotePages = remotePagesModule.createRemotePages({
@@ -1656,53 +1660,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 delete req.session.cuserid;
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             });
-        }
-    }
-
-    // Called to process a web based email verification request
-    function handleCheckMailRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (domain.mailserver == null)) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-        if (emailAccountUtils.hasEmailLinkCookie(req.query)) {
-            var cookie = obj.parent.decodeCookie(req.query.c, domain.mailserver.mailCookieEncryptionKey, 30);
-            if ((cookie != null) && (cookie.u != null) && (cookie.u.startsWith('user/')) && (cookie.e != null)) {
-                var idsplit = cookie.u.split('/');
-                if ((idsplit.length != 3) || (idsplit[1] != domain.id)) {
-                    parent.debug('web', 'handleCheckMailRequest: Invalid domain.');
-                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                } else {
-                    obj.db.Get(cookie.u, function (err, docs) {
-                        if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
-                            parent.debug('web', 'handleCheckMailRequest: Database error.');
-                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                        } else if (docs.length == 0) {
-                            parent.debug('web', 'handleCheckMailRequest: Invalid username.');
-                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') }, req, domain));
-                        } else {
-                            var user = docs[0];
-                            if (user.email != cookie.e) {
-                                parent.debug('web', 'handleCheckMailRequest: Invalid e-mail.');
-                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 3, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
-                            } else {
-                                if (cookie.a == 1) {
-                                    emailAccountActions.handleEmailVerification(req, res, domain, user);
-                                } else if (cookie.a == 2) {
-                                    emailAccountActions.handlePasswordReset(req, res, domain, user);
-                                } else {
-                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                }
-                            }
-                        }
-                });
-                }
-            } else {
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-            }
-        } else {
-            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
         }
     }
 

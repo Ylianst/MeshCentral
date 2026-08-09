@@ -28,6 +28,9 @@ function createFixture(user) {
         getActiveUser: function (users, id) { return users[id] || null; },
         hasDatabaseFailure: function (error, users) { return (error != null) || !Array.isArray(users); },
         hasOtherVerifiedUser: function (users, id) { return users.some(function (value) { return value._id !== id; }); },
+        hasEmailLinkCookie: function (query) { return (query != null) && (query.c != null); },
+        checkUserIpAddress: function () { return { id: 'tenant', url: '/tenant/', mailserver: { mailCookieEncryptionKey: 'key' } }; },
+        decodeCookie: function () { return null; },
         hashPassword: function () { },
         now: function () { return 5000; }
     });
@@ -40,6 +43,13 @@ test('password reset links require confirmation before changing credentials', fu
     fixture.service.handlePasswordReset({ query: {} }, {}, { id: 'tenant', url: '/tenant/' }, user);
     assert.equal(fixture.renders[0].msgid, 14);
     assert.equal(fixture.writes.length, 0);
+});
+
+test('missing email cookies render the invalid link page', function () {
+    const user = { _id: 'user/tenant/alice' };
+    const fixture = createFixture(user);
+    fixture.service.handleCheckMailRequest({ query: {}, headers: {} }, { sendStatus: function () { } });
+    assert.equal(fixture.renders[0].msgid, 10);
 });
 
 test('email verification persists and announces the verified account', function () {
