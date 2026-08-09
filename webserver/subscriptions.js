@@ -21,7 +21,7 @@ module.exports.createSubscriptions = function (options) {
                 if ((user.groups == null) || (user.groups.length == 0)) {
                     subscriptions.push('server-users');
                 } else {
-                    for (var groupId in user.groups) subscriptions.push('server-users:' + groupId);
+                    for (var groupId in user.groups) subscriptions.push('server-users:' + user.groups[groupId]);
                 }
             }
         }

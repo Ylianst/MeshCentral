@@ -13,7 +13,7 @@ function createFixture() {
     const userId = 'user/domain/alice';
     const events = [];
     const state = {
-        users: { [userId]: { _id: userId, groups: { operators: 1 } } },
+        users: { [userId]: { _id: userId, groups: ['operators'] } },
         wssessions: {},
         wsPeerSessions3: {},
         sessionsCount: {}

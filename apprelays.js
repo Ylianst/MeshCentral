@@ -2063,7 +2063,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                         // Event the file delete
                         const targets = ['*', 'server-users'];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 44, msgArgs: [requestedPath], msg: 'Create folder: \"' + requestedPath + '\"', domain: domain.id });
                         break;
                     }
@@ -2080,7 +2080,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                                     obj.sftp.close(obj.uploadHandle, function () {
                                         // Event the file create
                                         const targets = ['*', 'server-users'];
-                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 164, msgArgs: [requestedPath], msg: 'Create file: \"' + requestedPath + '\"', domain: domain.id });    
                                     });
                                     delete obj.uploadHandle;
@@ -2100,7 +2100,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                             // Event the file delete
                             const targets = ['*', 'server-users'];
-                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                            if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                             parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 45, msgArgs: [ul], msg: 'Delete: \"' + ul + '\"', domain: domain.id });
                         }
 
@@ -2116,7 +2116,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                         // Event the file rename
                         const targets = ['*', 'server-users'];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 48, msgArgs: [oldpath, msg.newname], msg: 'Rename: \"' + oldpath + '\" to \"' + msg.newname + '\"', domain: domain.id });
                         break;
                     }
@@ -2137,7 +2137,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                                 // Event the file upload
                                 const targets = ['*', 'server-users'];
-                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                                 parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 105, msgArgs: [obj.uploadFullpath, obj.uploadSize], msg: 'Upload: ' + obj.uploadFullpath + ', Size: ' + obj.uploadSize, domain: domain.id });
                             }
                         });
@@ -2189,7 +2189,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
 
                                         // Event the file download
                                         const targets = ['*', 'server-users'];
-                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                                         parent.parent.DispatchEvent(targets, obj, { etype: 'node', action: 'agentlog', nodeid: obj.nodeid, userid: user._id, username: user.name, msgid: 49, msgArgs: [obj.downloadFullpath], msg: 'Download: ' + obj.downloadFullpath, domain: domain.id });
                                     }
                                 });

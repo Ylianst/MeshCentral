@@ -82,7 +82,7 @@ test('failed web push subscriptions are removed after all sends complete', async
         cloneSafeNode: function (node) { return node; },
         eventSource: {}
     });
-    const user = { _id: 'user/domain/alice', name: 'alice', webpush: [good, bad], groups: { operators: 1 } };
+    const user = { _id: 'user/domain/alice', name: 'alice', webpush: [good, bad], groups: ['operators'] };
     service.performWebPush({ id: 'domain' }, user, { message: 'hello' }, {});
     await new Promise(function (resolve) { setImmediate(resolve); });
     assert.deepEqual(user.webpush, [good]);

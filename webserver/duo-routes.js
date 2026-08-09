@@ -80,7 +80,7 @@ module.exports.createDuoRoutes = function (options) {
                 user.otpduo = {};
                 state.db.SetUser(user);
                 const targets = ['*', 'server-users', user._id];
-                if (user.groups) for (const group in user.groups) targets.push('server-users:' + group);
+                if (user.groups) for (const group in user.groups) targets.push('server-users:' + user.groups[group]);
                 const event = { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'accountchange', msgid: 160, msg: 'Enabled duo two-factor authentication.', domain: domain.id };
                 if (state.db.changeStream) event.noact = 1;
                 parent.DispatchEvent(targets, state, event);
@@ -114,7 +114,7 @@ module.exports.createDuoRoutes = function (options) {
                 clearDuoState(req, ['duostate', 'tuser', 'tpass']);
                 parent.authLog('https', 'Accepted Duo authentication for ' + userid + ' from ' + req.clientIp + ':' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
                 const targets = ['*', 'server-users', user._id];
-                if (user.groups) for (const group in user.groups) targets.push('server-users:' + group);
+                if (user.groups) for (const group in user.groups) targets.push('server-users:' + user.groups[group]);
                 const ua = state.getUserAgentInfo(req);
                 parent.DispatchEvent(targets, state, { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'duo' });
                 res.redirect(domain.url + getQueryPortion(req));

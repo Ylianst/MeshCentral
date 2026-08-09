@@ -42,7 +42,7 @@ module.exports.createPushNotifications = function (options) {
                 const message = { etype: 'user', userid: user._id, username: user.name, account: cloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
                 if (db.changeStream) message.noact = 1;
                 const targets = ['*', 'server-users', user._id];
-                if (user.groups) { for (var groupId in user.groups) targets.push('server-users:' + groupId); }
+                if (user.groups) { for (var groupId in user.groups) targets.push('server-users:' + user.groups[groupId]); }
                 dispatchEvent(targets, eventSource, message);
             }
         };

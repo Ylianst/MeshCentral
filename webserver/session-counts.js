@@ -14,7 +14,7 @@ module.exports.createSessionCounts = function (options) {
         const user = state.users[userId];
         if (!user) return;
         const targets = ['*', 'server-users'];
-        if (user.groups) { for (var groupId in user.groups) targets.push('server-users:' + groupId); }
+        if (user.groups) { for (var groupId in user.groups) targets.push('server-users:' + user.groups[groupId]); }
         dispatchEvent(allTargets === true ? ['*'] : targets, state, { action: 'wssessioncount', userid: userId, username: parts[2], count: count, domain: parts[1], nolog: 1, nopeers: 1 });
     }
 

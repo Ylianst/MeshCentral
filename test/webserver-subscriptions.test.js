@@ -29,7 +29,7 @@ test('full administrators subscribe to all events and linked objects', function 
 });
 
 test('user managers with scoped groups subscribe only to those groups', function () {
-    const fixture = createFixture({ siteadmin: 2, groups: { west: 1, east: 1 } });
+    const fixture = createFixture({ siteadmin: 2, groups: ['west', 'east'] });
     assert.deepEqual(fixture.service.subscribe(fixture.userId, {}), [fixture.userId, 'server-allusers', 'server-users:west', 'server-users:east']);
 });
 

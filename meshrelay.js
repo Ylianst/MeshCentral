@@ -611,7 +611,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                                 var message = { etype: 'user', userid: obj.user._id, username: obj.user.name, account: parent.CloneSafeUser(obj.user), action: 'accountchange', domain: domain.id, nolog: 1 };
                                 if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 var targets = ['*', 'server-users', obj.user._id];
-                                if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + i); } }
+                                if (obj.user.groups) { for (var i in obj.user.groups) { targets.push('server-users:' + obj.user.groups[i]); } }
                                 parent.parent.DispatchEvent(targets, obj, message);
                             }
                         }

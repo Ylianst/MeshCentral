@@ -1109,7 +1109,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Notify account login
         const targets = ['*', 'server-users', user._id];
-        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
         const ua = obj.getUserAgentInfo(req);
         const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login from ' + req.clientIp + ', ' + ua.browserStr + ', ' + ua.osStr, domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], rport: req.connection.remotePort };
         if (loginOptions != null) {
@@ -1655,7 +1655,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         user.email = email;
                         db.SetUser(user);
                         var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed: ' + user.name, domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.DispatchEvent(targets, obj, event);
@@ -1884,7 +1884,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Notify account login using SSO
                     var targets = ['*', 'server-users', user._id];
-                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                    if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                     const ua = obj.getUserAgentInfo(req);
                     const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                     obj.parent.DispatchEvent(targets, obj, loginEvent);
@@ -1936,7 +1936,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Notify account login using SSO
                 var targets = ['*', 'server-users', user._id];
-                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                 const ua = obj.getUserAgentInfo(req);
                 const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'sso' };
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
@@ -2680,7 +2680,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var user = obj.users[cookie.u];
                         // Notify account login
                         var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         const ua = obj.getUserAgentInfo(req);
                         const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'pushlogin' };
                         obj.parent.DispatchEvent(targets, obj, loginEvent);
@@ -3270,7 +3270,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         var message = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
                         if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         obj.parent.DispatchEvent(targets, obj, message);
                     }
                 }
