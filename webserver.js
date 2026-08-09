@@ -85,6 +85,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const webRelayModule = require('./webserver/web-relay.js');
     const domainStaticModule = require('./webserver/domain-static.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
+    const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -357,6 +358,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         eventSource: obj
     });
     const syncExternalUserGroups = externalGroups.syncExternalUserGroups;
+    const prepareSsoLoginGroups = ssoLoginGroupsModule.createSsoLoginGroups({
+        common: obj.common,
+        authLog: function (source, message) { parent.authLog(source, message); },
+        isGroupConfiguration: ssoStrategiesModule.isGroupConfiguration,
+        shouldRevokeAdmin: ssoStrategiesModule.shouldRevokeAdmin
+    });
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
     Object.assign(obj, sessionCountsModule.createSessionCounts({
         state: obj,
@@ -1784,79 +1791,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
             const strategy = domain.authstrategies[req.user.strategy];
-            const groups = { 'enabled': ssoStrategiesModule.isGroupConfiguration(strategy.groups) }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
-            if (groups.enabled) { // Groups only available for OIDC strategy currently
-                groups.userMemberships = obj.common.convertStrArray(req.user.groups);
-                groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false;
-                groups.syncMemberships = [];
-                groups.siteAdminEnabled = strategy.groups.siteadmin ? true : false;
-                groups.grantAdmin = false;
-                groups.revokeAdmin = ssoStrategiesModule.shouldRevokeAdmin(strategy.groups);
-                groups.requiredGroups = obj.common.convertStrArray(strategy.groups.required);
-                groups.siteAdmin = obj.common.convertStrArray(strategy.groups.siteadmin);
-                groups.syncFilter = obj.common.convertStrArray(strategy.groups.sync?.filter);
-
-                // Fancy Logs
-                let groupMessage = '';
-                if (groups.userMemberships.length == 1) { groupMessage = ` Found membership: "${groups.userMemberships[0]}"` }
-                else { groupMessage = ` Found ${groups.userMemberships.length} memberships: ["${groups.userMemberships.join('", "')}"]` }
-                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}"` + groupMessage);
-
-                // Check user membership in required groups
-                if (groups.requiredGroups.length > 0) {
-                    let match = false
-                    for (var i in groups.requiredGroups) {
-                        if (groups.userMemberships.indexOf(groups.requiredGroups[i]) != -1) {
-                            match = true;
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Membership to required group found: "${groups.requiredGroups[i]}"`);
-                        }
-                    }
-                    if (match === false) {
-                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Login denied. No membership to required group.`);
-                        req.session.loginmode = 1;
-                        req.session.messageid = 111; // Access Denied.
-                        res.redirect(domain.url + getQueryPortion(req));
-                        return;
-                    }
-                }
-
-                // Check user membership in admin groups
-                if (groups.siteAdminEnabled === true) {
-                    groups.grantAdmin = false;
-                    for (var i in strategy.groups.siteadmin) {
-                        if (groups.userMemberships.indexOf(strategy.groups.siteadmin[i]) >= 0) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" User membership found in site admin group: "${strategy.groups.siteadmin[i]}"`);
-                            groups.siteAdmin = strategy.groups.siteadmin[i];
-                            groups.grantAdmin = true;
-                            break;
-                        }
-                    }
-                }
-
-                // Check if we need to sync user-memberships (IdP) with user-groups (meshcentral)
-                if (groups.syncEnabled === true) {
-                    if (groups.syncFilter.length > 0){ // config.json has specified sync.filter so loop and use it
-                        for (var i in groups.syncFilter) {
-                            if (groups.userMemberships.indexOf(groups.syncFilter[i]) >= 0) { groups.syncMemberships.push(groups.syncFilter[i]); }
-                        }
-                    } else { // config.json doesnt have sync.filter specified so we are going to sync all the users groups from oidc instead
-                        for (var i in groups.userMemberships) {
-                            groups.syncMemberships.push(groups.userMemberships[i]);
-                        }
-                    }
-                    if (groups.syncMemberships.length > 0) {
-                        parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" User memberships to sync: ${groups.syncMemberships.join(', ')}`);
-                    } else {
-                        groups.syncMemberships = null;
-                        groups.syncEnabled = false;
-                        if (groups.syncFilter.length > 0){
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found using filters: ${groups.syncFilter.join(', ')}`);
-                        } else {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" No sync memberships found`);
-                        }
-                    }
-                }
+            const groups = prepareSsoLoginGroups(strategy, req.user);
+            if (groups.loginDenied === true) {
+                req.session.loginmode = 1;
+                req.session.messageid = 111; // Access Denied.
+                res.redirect(domain.url + getQueryPortion(req));
+                return;
             }
 
             // Check if the user already exists

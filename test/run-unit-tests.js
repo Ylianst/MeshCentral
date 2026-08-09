@@ -16,6 +16,7 @@ require('./webserver-security-headers.test.js');
 require('./webserver-session-counts.test.js');
 require('./webserver-storage.test.js');
 require('./webserver-sso-strategies.test.js');
+require('./webserver-sso-login-groups.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
