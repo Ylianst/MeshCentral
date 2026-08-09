@@ -27,6 +27,32 @@ test('destroyed sessions expire after two hours', function () {
     assert.deepEqual(destroyed, { boundary: now - 7200000, recent: now - 1000 });
 });
 
+test('session preparation invalidates destroyed sessions and removes legacy values', function () {
+    const destroyed = { 'user/domain/alice/random': 1 };
+    const sessions = createSessions({ crypto: {}, destroyedSessions: destroyed });
+    const req = { session: { userid: 'user/domain/alice', x: 'random', ip: '192.0.2.1', t: 1, tokenpassword: 'secret', u2f: {} } };
+    sessions.prepareSession(req);
+    assert.deepEqual(req.session, {});
+});
+
+test('legacy sessions receive a random identifier', function () {
+    const sessions = createSessions({ crypto: { randomBytes: function () { return Buffer.from('random'); } }, destroyedSessions: {} });
+    const req = { session: { userid: 'user/domain/alice' } };
+    sessions.prepareSession(req);
+    assert.equal(req.session.x, Buffer.from('random').toString('base64'));
+});
+
+test('session refresh enforces IP binding and updates active timestamps', function () {
+    const now = 600000;
+    const sessions = createSessions({ crypto: {}, destroyedSessions: {}, now: function () { return now; }, checkCookieIp: function (cookieIp, requestIp) { return cookieIp == requestIp; } });
+    const active = { clientIp: '192.0.2.1', session: { userid: 'user/domain/alice', ip: '192.0.2.1' } };
+    sessions.refreshSession(active);
+    assert.equal(active.session.t, 10);
+    const changed = { clientIp: '192.0.2.2', session: { userid: 'user/domain/alice', ip: '192.0.2.1' } };
+    sessions.refreshSession(changed);
+    assert.deepEqual(changed.session, {});
+});
+
 test('WebSocket arguments pass immediately when no extension is requested', function () {
     const sessions = createSessions({ crypto: {}, destroyedSessions: {} });
     const ws = {};

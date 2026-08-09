@@ -9,6 +9,8 @@ module.exports.createSessions = function (options) {
     const crypto = options.crypto;
     const destroyedSessions = options.destroyedSessions;
     const now = options.now || Date.now;
+    const checkCookieIp = options.checkCookieIp || function (cookieIp, requestIp) { return cookieIp == requestIp; };
+    const legacySessionKeys = ['u2f', 'domainid', 'nowInMinutes', 'tokenuserid', 'tokenusername', 'tokenpassword', 'tokenemail', 'tokensms', 'tokenpush', 'tusername', 'tpassword'];
 
     function getWebsocketArgs(ws, req, callback) {
         if (req.query.moreargs != '1') { callback(ws, req); return; }
@@ -41,9 +43,32 @@ module.exports.createSessions = function (options) {
         for (var i in toRemove) delete destroyedSessions[toRemove[i]];
     }
 
+    function prepareSession(req) {
+        if (typeof req.session.userid == 'string') {
+            if (typeof req.session.x == 'string') {
+                if (destroyedSessions[req.session.userid + '/' + req.session.x] != null) {
+                    delete req.session.userid;
+                    delete req.session.ip;
+                    delete req.session.t;
+                    delete req.session.x;
+                }
+            } else {
+                setSessionRandom(req);
+            }
+        }
+        for (var i in legacySessionKeys) delete req.session[legacySessionKeys[i]];
+    }
+
+    function refreshSession(req) {
+        if ((req.session.ip != null) && (req.clientIp != null) && !checkCookieIp(req.session.ip, req.clientIp)) req.session = {};
+        if (req.session.userid != null) { req.session.t = Math.floor(now() / 60000); } else { delete req.session.t; }
+    }
+
     return {
         getWebsocketArgs: getWebsocketArgs,
         setSessionRandom: setSessionRandom,
-        clearDestroyedSessions: clearDestroyedSessions
+        clearDestroyedSessions: clearDestroyedSessions,
+        prepareSession: prepareSession,
+        refreshSession: refreshSession
     };
 };

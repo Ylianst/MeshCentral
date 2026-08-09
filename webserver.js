@@ -221,7 +221,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
-    const sessions = sessionsModule.createSessions({ crypto: obj.crypto, destroyedSessions: obj.destroyedSessions });
+    const sessions = sessionsModule.createSessions({ crypto: obj.crypto, destroyedSessions: obj.destroyedSessions, checkCookieIp: checkCookieIp });
     const getWebsocketArgs = sessions.getWebsocketArgs;
     const setSessionRandom = sessions.setSessionRandom;
     const clearDestroyedSessions = sessions.clearDestroyedSessions;
@@ -6781,33 +6781,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Add HTTP security headers to all responses
         obj.app.use(async function (req, res, next) {
-            // Check if a session is destroyed
-            if (typeof req.session.userid == 'string') {
-                if (typeof req.session.x == 'string') {
-                    if (obj.destroyedSessions[req.session.userid + '/' + req.session.x] != null) {
-                        delete req.session.userid;
-                        delete req.session.ip;
-                        delete req.session.t;
-                        delete req.session.x;
-                    }
-                } else {
-                    // Legacy session without a random, add one.
-                    setSessionRandom(req);
-                }
-            }
-
-            // Remove legacy values from the session to keep the session as small as possible
-            delete req.session.u2f;
-            delete req.session.domainid;
-            delete req.session.nowInMinutes;
-            delete req.session.tokenuserid;
-            delete req.session.tokenusername;
-            delete req.session.tokenpassword;
-            delete req.session.tokenemail;
-            delete req.session.tokensms;
-            delete req.session.tokenpush;
-            delete req.session.tusername;
-            delete req.session.tpassword;
+            sessions.prepareSession(req);
 
             // Useful for debugging reverse proxy issues
             parent.debug('httpheaders', req.method, req.url, req.headers);
@@ -6839,11 +6813,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             res.set(securityHeaders.build(domain, req, xforwardedhost));
 
-            // Check the session if bound to the external IP address
-            if ((req.session.ip != null) && (req.clientIp != null) && !checkCookieIp(req.session.ip, req.clientIp)) { req.session = {}; }
-
-            // Extend the session time by forcing a change to the session every minute.
-            if (req.session.userid != null) { req.session.t = Math.floor(Date.now() / 60e3); } else { delete req.session.t; }
+            sessions.refreshSession(req);
 
             // Check CrowdSec Bounser if configured
             if ((parent.crowdSecBounser != null) && (req.headers['upgrade'] != 'websocket') && (req.session.userid == null)) { if ((await parent.crowdSecBounser.process(domain, req, res, next)) == true) { return; } }
