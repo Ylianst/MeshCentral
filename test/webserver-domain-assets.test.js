@@ -21,6 +21,7 @@ function createFixture(settings) {
         webPublicPath: 'public',
         webPublicOverridePath: settings.overridePath,
         configurationFiles: settings.configurationFiles,
+        currentVer: '1.2.3',
         debug: function () { },
         path: path,
         fs: {
@@ -33,7 +34,6 @@ function createFixture(settings) {
         fs: parent.fs,
         certificates: { root: { cert: settings.rootCertificate || '' } },
         common: { joinPath: function () { return Array.from(arguments).join('/'); } },
-        handleDomainRedirect: function () { },
         express: { static: function (folder) { return 'static:' + folder; } },
         app: {
             get: function () { routes.push(Array.from(arguments)); },
@@ -47,7 +47,8 @@ function createFixture(settings) {
         checkUserIpAddress: function () { return domain; },
         checkIpAddressEx: function () { return true; },
         certificates: { RootName: settings.rootName || 'MeshRoot' },
-        setContentDispositionHeader: function (res, type, name) { res.disposition = { type: type, name: name }; }
+        setContentDispositionHeader: function (res, type, name) { res.disposition = { type: type, name: name }; },
+        getQueryPortion: function () { return '&key=value'; }
     });
     return { service: service, routes: routes, mounts: mounts, state: state, domain: domain };
 }
@@ -59,7 +60,7 @@ test('registers public redirects and ignores metadata keys', function () {
     const fixture = createFixture();
     const domain = { id: 'tenant', url: '/tenant/', redirects: { docs: '/documentation', _notes: 'private' } };
     fixture.service.register(domain);
-    assert.equal(findRoute(fixture, '/tenant/docs')[1], fixture.state.handleDomainRedirect);
+    assert.equal(findRoute(fixture, '/tenant/docs')[1], fixture.service.handleRedirect);
     assert.equal(findRoute(fixture, '/tenant/_notes'), undefined);
 });
 
@@ -152,4 +153,22 @@ test('PWA manifests use the domain title and stable application metadata', funct
     assert.equal(res.body.name, 'Example Console');
     assert.equal(res.body.short_name, 'Example Console');
     assert.deepEqual(res.body.icons, [{ src: 'pwalogo.png', sizes: '512x512', type: 'image/png' }]);
+});
+
+test('domain redirects preserve URL arguments and support version responses', function () {
+    const redirects = { docs: '/documentation', version: '~showversion', _private: '/hidden' };
+    const fixture = createFixture({ requestDomain: { redirects: redirects } });
+    const redirected = response();
+    redirected.redirect = function (url) { this.redirectUrl = url; };
+    fixture.service.handleRedirect({ originalUrl: '/docs?section=api' }, redirected);
+    assert.equal(redirected.redirectUrl, '/documentation?section=api&key=value');
+
+    const version = response();
+    version.end = function (body) { this.body = body; };
+    fixture.service.handleRedirect({ originalUrl: '/version' }, version);
+    assert.equal(version.body, 'MeshCentral v1.2.3');
+
+    const hidden = response();
+    fixture.service.handleRedirect({ originalUrl: '/_private' }, hidden);
+    assert.equal(hidden.status, 404);
 });

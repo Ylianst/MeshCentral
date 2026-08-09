@@ -181,7 +181,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getDomain: getDomain,
         checkUserIpAddress: checkUserIpAddress,
         checkIpAddressEx: checkIpAddressEx,
-        setContentDispositionHeader: setContentDispositionHeader
+        setContentDispositionHeader: setContentDispositionHeader,
+        getQueryPortion: getQueryPortion
     });
     const handleLogoRequest = domainAssets.handleLogo;
     const handleLoginLogoRequest = domainAssets.handleLoginLogo;
@@ -3229,24 +3230,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             res.redirect(domain.url + getQueryPortion(req));
             return;
-        }
-    }
-
-    // Handle domain redirection
-    obj.handleDomainRedirect = function (req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (domain.redirects == null) { res.sendStatus(404); return; }
-        var urlArgs = '', urlName = null, splitUrl = req.originalUrl.split('?');
-        if (splitUrl.length > 1) { urlArgs = '?' + splitUrl[1]; }
-        if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) { urlName = splitUrl[0].substring(1).toLowerCase(); }
-        if ((urlName == null) || (domain.redirects[urlName] == null) || (urlName[0] == '_')) { res.sendStatus(404); return; }
-        if (domain.redirects[urlName] == '~showversion') {
-            // Show the current version
-            res.end('MeshCentral v' + obj.parent.currentVer);
-        } else {
-            // Perform redirection
-            res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
         }
     }
 

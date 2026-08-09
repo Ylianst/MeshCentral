@@ -13,12 +13,13 @@ module.exports.createDomainAssets = function (options) {
     const checkIpAddressEx = options.checkIpAddressEx;
     const setContentDispositionHeader = options.setContentDispositionHeader;
     const certificates = options.certificates;
+    const getQueryPortion = options.getQueryPortion;
 
     function register(domain) {
         const url = domain.url;
         if (domain.redirects) {
             for (const path in domain.redirects) {
-                if (path[0] != '_') state.app.get(url + path, state.handleDomainRedirect);
+                if (path[0] != '_') state.app.get(url + path, handleRedirect);
             }
         }
         state.app.get(url + 'serverpic.ashx', handleServerPicture);
@@ -142,6 +143,22 @@ module.exports.createDomainAssets = function (options) {
         });
     }
 
+    function handleRedirect(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if (domain.redirects == null) { res.sendStatus(404); return; }
+        var urlArgs = '', urlName = null;
+        const splitUrl = req.originalUrl.split('?');
+        if (splitUrl.length > 1) urlArgs = '?' + splitUrl[1];
+        if ((splitUrl.length > 0) && (splitUrl[0].length > 1)) urlName = splitUrl[0].substring(1).toLowerCase();
+        if ((urlName == null) || (domain.redirects[urlName] == null) || (urlName[0] === '_')) { res.sendStatus(404); return; }
+        if (domain.redirects[urlName] === '~showversion') {
+            res.end('MeshCentral v' + parent.currentVer);
+        } else {
+            res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
+        }
+    }
+
     return {
         register: register,
         handleLogo: handleLogo,
@@ -150,6 +167,7 @@ module.exports.createDomainAssets = function (options) {
         handleWelcomeImage: handleWelcomeImage,
         getRootCertBase64: getRootCertBase64,
         handleRootCertificate: handleRootCertificate,
-        handleManifest: handleManifest
+        handleManifest: handleManifest,
+        handleRedirect: handleRedirect
     };
 };
