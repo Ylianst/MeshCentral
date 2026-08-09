@@ -88,6 +88,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
     const translationsModule = require('./webserver/translations.js');
+    const captchaModule = require('./webserver/captcha.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -160,6 +161,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
     const getDomain = networkAccess.getDomain;
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
+    const captcha = captchaModule.createCaptcha({ parent: parent, checkUserIpAddress: checkUserIpAddress });
+    const handleNewAccountCaptchaRequest = captcha.handleNewAccount;
+    const handleCaptchaGetRequest = captcha.handleGet;
+    const handleCaptchaPostRequest = captcha.handlePost;
     const domainAssets = domainAssetsModule.createDomainAssets({
         state: obj,
         parent: parent,
@@ -2961,7 +2966,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Setup CAPTCHA if needed
         var newAccountCaptcha = '', newAccountCaptchaImage = '';
         if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
-            newAccountCaptcha = obj.parent.encodeCookie({ type: 'newAccount', captcha: require('svg-captcha').randomText(5) }, obj.parent.loginCookieEncryptionKey);
+            newAccountCaptcha = captcha.createNewAccountCookie();
             newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
         }
 
@@ -3177,35 +3182,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Handle new account Captcha GET
-    function handleNewAccountCaptchaRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.newaccountscaptcha == null) || (domain.newaccountscaptcha === false) || (req.query.x == null)) { res.sendStatus(404); return; }
-        const c = obj.parent.decodeCookie(req.query.x, obj.parent.loginCookieEncryptionKey);
-        if ((c == null) || (c.type !== 'newAccount') || (typeof c.captcha != 'string')) { res.sendStatus(404); return; }
-        res.type('svg');
-        res.status(200).end(require('svg-captcha')(c.captcha, {}));
-    }
-
-    // Handle Captcha GET
-    function handleCaptchaGetRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (parent.crowdSecBounser == null) { res.sendStatus(404); return; }
-        parent.crowdSecBounser.applyCaptcha(req, res, function () { res.redirect((((domain.id == '') && (domain.dns == null)) ? '/' : ('/' + domain.id))); });
-    }
-
-    // Handle Captcha POST
-    function handleCaptchaPostRequest(req, res) {
-        if (parent.crowdSecBounser == null) { res.sendStatus(404); return; }
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        req.originalUrl = (((domain.id == '') && (domain.dns == null)) ? '/' : ('/' + domain.id));
-        parent.crowdSecBounser.applyCaptcha(req, res, function () { res.redirect(req.originalUrl); });
-    }
-
-    // Render the terms of service.
     function handleTermsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }

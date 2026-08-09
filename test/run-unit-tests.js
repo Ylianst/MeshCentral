@@ -18,6 +18,7 @@ require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-application-routes.test.js');
 require('./webserver-basic-routes.test.js');
+require('./webserver-captcha.test.js');
 require('./webserver-resource-routes.test.js');
 require('./webserver-relay-routes.test.js');
 require('./webserver-passport-routes.test.js');

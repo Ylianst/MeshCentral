@@ -248,6 +248,7 @@
     <Compile Include="webserver\authorization.js" />
     <Compile Include="webserver\application-routes.js" />
     <Compile Include="webserver\basic-routes.js" />
+    <Compile Include="webserver\captcha.js" />
     <Compile Include="webserver\resource-routes.js" />
     <Compile Include="webserver\relay-routes.js" />
     <Compile Include="webserver\passport-routes.js" />
