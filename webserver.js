@@ -370,7 +370,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getWebServerName: function (domain, req) { return obj.getWebServerName(domain, req); },
         safeDecodeURIComponent: requestUtils.safeDecodeURIComponent
     });
-    const ssoAccounts = ssoAccountsModule.createSsoAccounts({ state: obj, parent: parent, setSessionRandom: setSessionRandom });
+    const ssoAccounts = ssoAccountsModule.createSsoAccounts({
+        state: obj,
+        parent: parent,
+        setSessionRandom: setSessionRandom,
+        syncExternalUserGroups: syncExternalUserGroups,
+        isEmailVerified: ssoStrategiesModule.isEmailVerified
+    });
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
     Object.assign(obj, sessionCountsModule.createSessionCounts({
         state: obj,
@@ -1891,40 +1897,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     return;
                 }
             } else { // Login success
-                // Check for basic changes
-                var userChanged = false;
-                if ((req.user.name != null) && (req.user.name != user.name)) { user.name = req.user.name; userChanged = true; }
-                if ((req.user.email != null) && (req.user.email != user.email)) { user.email = req.user.email; user.emailVerified = ssoStrategiesModule.isEmailVerified(req.user); userChanged = true; }
-
-                if (groups.enabled === true) {
-                    // Sync the user groups if enabled
-                    if (groups.syncEnabled === true) {
-                        syncExternalUserGroups(domain, user, groups.syncMemberships, req.user.strategy)
-                    }
-                    // See if the user is a member of the site admin group.
-                    if (groups.siteAdminEnabled === true) {
-                        if (groups.grantAdmin === true) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Granting site admin privilages`);
-                            if (user.siteadmin !== 0xFFFFFFFF) { user.siteadmin = 0xFFFFFFFF; userChanged = true; }
-                        } else if ((groups.revokeAdmin === true) && (user.siteadmin === 0xFFFFFFFF)) {
-                            parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: GROUPS: USER: "${req.user.sid}" Revoking site admin privilages.`);
-                            delete user.siteadmin;
-                            userChanged = true;
-                        }
-                    }
-                }
-
-                // Update db record for user if there are changes detected
-                if (userChanged) {
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: CHANGED: USER: "${req.user.sid}" Updating user database entry`);
-                    obj.db.SetUser(user);
-
-                    // Event user change
-                    var targets = ['*', 'server-users'];
-                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed', domain: domain.id };
-                    if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                    parent.DispatchEvent(targets, obj, event);
-                }
+                ssoAccounts.updateExistingAccount(domain, user, req.user, groups);
                 ssoAccounts.completeSsoLogin(req, domain, user);
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
