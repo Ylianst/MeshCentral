@@ -81,6 +81,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const notFoundModule = require('./webserver/not-found.js');
     const basicRoutesModule = require('./webserver/basic-routes.js');
     const resourceRoutesModule = require('./webserver/resource-routes.js');
+    const applicationRoutesModule = require('./webserver/application-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6850,6 +6851,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     captchaPostRequest: handleCaptchaPostRequest
                 }
             });
+            const applicationRoutes = applicationRoutesModule.createApplicationRoutes({
+                state: obj,
+                parent: parent,
+                getDomain: getDomain,
+                authorizeWebSocket: PerformWSSessionAuth,
+                urlencoded: obj.bodyParser.urlencoded,
+                handlers: {
+                    mstscRequest: handleMSTSCRequest,
+                    firebasePushOnlyRelayRequest: handleFirebasePushOnlyRelayRequest,
+                    firebaseRelayRequest: handleFirebaseRelayRequest
+                }
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6910,60 +6923,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     });
                 }
                 resourceRoutes.register(domain);
-
-                // Setup IP-KVM relay if supported
-                if (domain.ipkvm) {
-                    obj.app.ws(url + 'ipkvm.ashx/*', function (ws, req) {
-                        const domain = getDomain(req);
-                        if (domain == null) { parent.debug('web', 'ipkvm: failed domain checks.'); try { ws.close(); } catch (ex) { } return; }
-                        parent.ipKvmManager.handleIpKvmWebSocket(domain, ws, req);
-                    });
-                    obj.app.get(url + 'ipkvm.ashx/*', function (req, res, next) {
-                        const domain = getDomain(req);
-                        if (domain == null) return;
-                        parent.ipKvmManager.handleIpKvmGet(domain, req, res, next);
-                    });
-                }
-
-                // Setup RDP unless indicated as disabled
-                if (domain.mstsc !== false) {
-                    obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
-                    obj.app.ws(url + 'mstscrelay.ashx', function (ws, req) {
-                        const domain = getDomain(req);
-                        if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                        // If no user is logged in and we have a default user, set it now.
-                        if ((req.session.userid == null) && (typeof obj.args.user == 'string') && (obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()])) { req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase(); }
-                        try { require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
-                    });
-                }
-
-                // Setup SSH if needed
-                if (domain.ssh === true) {
-                    obj.app.get(url + 'ssh.html', function (req, res) { handleMSTSCRequest(req, res, 'ssh'); });
-                    obj.app.ws(url + 'sshrelay.ashx', function (ws, req) {
-                        const domain = getDomain(req);
-                        if (domain == null) { parent.debug('web', 'ssh: failed checks.'); try { ws.close(); } catch (e) { } return; }
-                        // If no user is logged in and we have a default user, set it now.
-                        if ((req.session.userid == null) && (typeof obj.args.user == 'string') && (obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()])) { req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase(); }
-                        try { require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
-                    });
-                    obj.app.ws(url + 'sshterminalrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                            require('./apprelays.js').CreateSshTerminalRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
-                        });
-                    });
-                    obj.app.ws(url + 'sshfilesrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                            require('./apprelays.js').CreateSshFilesRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
-                        });
-                    });
-                }
-
-                // Setup firebase push only server
-                if ((obj.parent.firebase != null) && (obj.parent.config.firebase)) {
-                    if (obj.parent.config.firebase.pushrelayserver) { parent.debug('email', 'Firebase-pushrelay-handler'); obj.app.post(url + 'firebaserelay.aspx', obj.bodyParser.urlencoded({ extended: false }), handleFirebasePushOnlyRelayRequest); }
-                    if (obj.parent.config.firebase.relayserver) { parent.debug('email', 'Firebase-relay-handler'); obj.app.ws(url + 'firebaserelay.aspx', handleFirebaseRelayRequest); }
-                }
+                applicationRoutes.register(domain);
 
                 // Setup auth strategies using passport if needed
                 if (typeof domain.authstrategies == 'object') {
