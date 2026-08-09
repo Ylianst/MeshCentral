@@ -68,6 +68,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const sessionCountsModule = require('./webserver/session-counts.js');
     const agentRoutingModule = require('./webserver/agent-routing.js');
     const pushNotificationsModule = require('./webserver/push-notifications.js');
+    const userAgentModule = require('./webserver/user-agent.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -245,6 +246,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         cloneSafeNode: obj.CloneSafeNode,
         eventSource: obj
     }));
+    Object.assign(obj, userAgentModule.createUserAgent({ parse: obj.uaparser, ClientHints: obj.uaclienthints.UAClientHints }));
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
     const safeUploadTempRoots = (function () {
@@ -9258,33 +9260,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
         obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
     */
-
-    // Return decoded user agent information
-    obj.getUserAgentInfo = function (req) {
-        var browser = 'Unknown', os = 'Unknown';
-        try {
-            const ua = obj.uaparser((typeof req == 'string') ? req : req.headers['user-agent']);
-            // Add client hints if available
-            if((typeof req != 'string')){
-                const ch = new obj.uaclienthints.UAClientHints().setValuesFromHeaders(req.headers);
-                Object.assign(ua, ch);
-            }
-            if (ua.browser && ua.browser.name) { ua.browserStr = ua.browser.name; if (ua.browser.version) { ua.browserStr += '/' + ua.browser.version } }
-            if (ua.os && ua.os.name) { ua.osStr = ua.os.name; if (ua.os.version) { ua.osStr += '/' + ua.os.version } }
-            // If the platform is set, use that instead of the OS
-            if (ua.platform) {
-                ua.osStr = ua.platform;
-                // Special case for Windows 11
-                if (ua.platformVersion) {
-                    if (ua.platform == 'Windows' && parseInt(ua.platformVersion) >= 13) {
-                        ua.platformVersion = '11';
-                    }
-                    ua.osStr += '/' + ua.platformVersion
-                }
-            }
-            return ua;
-        } catch (ex) { return { browserStr: browser, osStr: os } }
-    }
 
     if (parent.config.settings == null) { parent.config.settings = {}; }
     const throttling = throttlingModule.createThrottling(parent.config.settings, require('ipcheck'));
