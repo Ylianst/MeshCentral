@@ -8,3 +8,7 @@
 module.exports.hasDatabaseFailure = function (error, nodes) {
     return (error != null) || !Array.isArray(nodes);
 };
+
+module.exports.hasRandomBytesFailure = function (error, buffer) {
+    return (error != null) || !Buffer.isBuffer(buffer);
+};

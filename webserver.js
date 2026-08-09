@@ -2899,6 +2899,7 @@ const amtEventsModule = require('./webserver/amt-events.js');
 
         // Send authentication response
         obj.crypto.randomBytes(48, function (err, buf) {
+            if (amtEventsModule.hasRandomBytesFailure(err, buf)) { res.sendStatus(500); return; }
             var nonce = buf.toString('hex'), opaque = obj.crypto.createHmac('SHA384', obj.httpAuthRandom).update(nonce).digest('hex');
             res.set({ 'WWW-Authenticate': 'Digest realm="' + obj.httpAuthRealm + '", qop="auth,auth-int", nonce="' + nonce + '", opaque="' + opaque + '"' });
             res.sendStatus(401);
