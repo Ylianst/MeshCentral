@@ -23,6 +23,7 @@ function createFixture(fs) {
         common: { IsFilenameValid: function (name) { return (name.length > 0) && !name.includes('..') && !name.includes('\\'); } },
         users: users,
         meshes: meshes,
+        os: { platform: function () { return 'win32'; }, tmpdir: function () { return path.resolve('system-temp'); } },
         getMeshRights: function () { return 32; }
     });
 }
@@ -50,6 +51,15 @@ test('root paths are available through the public storage API', function () {
     const storage = createFixture();
     assert.equal(storage.getServerRootFilePath({ _id: 'user/domain/alice', domain: 'domain' }), path.join(path.resolve('files'), 'domain-domain', 'user-alice'));
     assert.equal(storage.getServerRootFilePath({ _id: 'invalid', domain: 'domain' }), null);
+});
+
+test('upload temp paths are constrained to configured temporary roots', function () {
+    const storage = createFixture();
+    const systemTempFile = path.join(path.resolve('system-temp'), 'upload.tmp');
+    const filesTempFile = path.join(path.resolve('files'), 'tmp', 'upload.tmp');
+    assert.equal(storage.resolveSafeUploadTempPath(systemTempFile), path.normalize(systemTempFile));
+    assert.equal(storage.resolveSafeUploadTempPath(filesTempFile), path.normalize(filesTempFile));
+    assert.equal(storage.resolveSafeUploadTempPath(path.resolve('outside', 'upload.tmp')), null);
 });
 
 test('recursive size and deletion operate through the injected filesystem', function () {

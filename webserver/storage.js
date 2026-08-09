@@ -13,6 +13,36 @@ module.exports.createStorage = function (options) {
     const users = options.users;
     const meshes = options.meshes;
     const getMeshRights = options.getMeshRights;
+    const os = options.os;
+    const isWindowsPlatform = (os.platform() === 'win32');
+    const safeUploadTempRoots = [];
+
+    function addSafeUploadRoot(rootPath) {
+        if (typeof rootPath !== 'string') return;
+        var resolved;
+        try { resolved = path.normalize(path.resolve(rootPath)); } catch (ex) { return; }
+        if (resolved.length === 0) return;
+        if ((resolved.length > 1) && resolved.endsWith(path.sep)) resolved = resolved.slice(0, -1);
+        const comparison = isWindowsPlatform ? resolved.toLowerCase() : resolved;
+        safeUploadTempRoots.push({ comparison: comparison, comparisonWithSep: comparison + path.sep });
+    }
+
+    addSafeUploadRoot(os.tmpdir());
+    addSafeUploadRoot(path.join(filespath, 'tmp'));
+
+    function resolveSafeUploadTempPath(tempPath) {
+        if (typeof tempPath !== 'string') return null;
+        var resolvedPath;
+        try { resolvedPath = path.normalize(path.resolve(tempPath)); } catch (ex) { return null; }
+        const comparisonPath = isWindowsPlatform ? resolvedPath.toLowerCase() : resolvedPath;
+        var comparisonPathNoTrailing = comparisonPath;
+        if ((comparisonPathNoTrailing.length > 1) && comparisonPathNoTrailing.endsWith(path.sep)) comparisonPathNoTrailing = comparisonPathNoTrailing.slice(0, -1);
+        for (var i = 0; i < safeUploadTempRoots.length; i++) {
+            const root = safeUploadTempRoots[i];
+            if ((comparisonPathNoTrailing === root.comparison) || comparisonPath.startsWith(root.comparisonWithSep)) return resolvedPath;
+        }
+        return null;
+    }
 
     function getQuota(objectId, domain) {
         if (objectId == null) return 0;
@@ -83,6 +113,7 @@ module.exports.createStorage = function (options) {
         getServerFilePath: getServerFilePath,
         getServerRootFilePath: getServerRootFilePath,
         readTotalFileSize: readTotalFileSize,
-        deleteFolderRec: deleteFolderRec
+        deleteFolderRec: deleteFolderRec,
+        resolveSafeUploadTempPath: resolveSafeUploadTempPath
     };
 };

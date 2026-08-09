@@ -170,10 +170,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         common: obj.common,
         users: obj.users,
         meshes: obj.meshes,
+        os: obj.os,
         getMeshRights: function (user, meshId) { return obj.GetMeshRights(user, meshId); }
     });
     Object.assign(obj, storage);
     const readTotalFileSize = storage.readTotalFileSize;
+    const resolveSafeUploadTempPath = storage.resolveSafeUploadTempPath;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -261,37 +263,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const CheckListenPort = serverLifecycle.CheckListenPort;
     const StartWebServer = serverLifecycle.StartWebServer;
     const StartAltWebServer = serverLifecycle.StartAltWebServer;
-
-    const isWindowsPlatform = (obj.os.platform() === 'win32');
-    const safeUploadTempRoots = (function () {
-        const roots = [];
-        const addRoot = function (p) {
-            if (typeof p !== 'string') { return; }
-            var resolved;
-            try { resolved = obj.path.normalize(obj.path.resolve(p)); } catch (ex) { return; }
-            if (resolved.length === 0) { return; }
-            if ((resolved.length > 1) && resolved.endsWith(obj.path.sep)) { resolved = resolved.slice(0, -1); }
-            const comparison = isWindowsPlatform ? resolved.toLowerCase() : resolved;
-            const comparisonWithSep = comparison + obj.path.sep;
-            roots.push({ comparison: comparison, comparisonWithSep: comparisonWithSep });
-        };
-        addRoot(obj.os.tmpdir());
-        if (typeof obj.parent.filespath === 'string') { addRoot(obj.path.join(obj.parent.filespath, 'tmp')); }
-        return roots;
-    })();
-    function resolveSafeUploadTempPath(tempPath) {
-        if (typeof tempPath !== 'string') { return null; }
-        var resolvedPath;
-        try { resolvedPath = obj.path.normalize(obj.path.resolve(tempPath)); } catch (ex) { return null; }
-        var comparisonPath = isWindowsPlatform ? resolvedPath.toLowerCase() : resolvedPath;
-        var comparisonPathNoTrailing = comparisonPath;
-        if ((comparisonPathNoTrailing.length > 1) && comparisonPathNoTrailing.endsWith(obj.path.sep)) { comparisonPathNoTrailing = comparisonPathNoTrailing.slice(0, -1); }
-        for (var i = 0; i < safeUploadTempRoots.length; i++) {
-            var root = safeUploadTempRoots[i];
-            if ((comparisonPathNoTrailing === root.comparison) || comparisonPath.startsWith(root.comparisonWithSep)) { return resolvedPath; }
-        }
-        return null;
-    }
 
     // Web relay sessions
     var webRelayNextSessionId = 1;
