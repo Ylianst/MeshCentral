@@ -253,6 +253,7 @@
     <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\sanitization.js" />
     <Compile Include="webserver\sessions.js" />
+    <Compile Include="webserver\server-identity.js" />
     <Compile Include="webserver\storage.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="winservice.js" />

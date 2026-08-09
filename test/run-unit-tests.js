@@ -7,6 +7,7 @@
 
 require('./webserver-sanitization.test.js');
 require('./webserver-sessions.test.js');
+require('./webserver-server-identity.test.js');
 require('./webserver-storage.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-custom-icons.test.js');

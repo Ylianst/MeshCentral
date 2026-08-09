@@ -64,6 +64,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const storageModule = require('./webserver/storage.js');
     const sessionsModule = require('./webserver/sessions.js');
     const externalGroupsModule = require('./webserver/external-groups.js');
+    const serverIdentityModule = require('./webserver/server-identity.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -223,6 +224,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         eventSource: obj
     });
     const syncExternalUserGroups = externalGroups.syncExternalUserGroups;
+    Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
     const safeUploadTempRoots = (function () {
@@ -6451,33 +6453,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             return;
         }
     };
-
-    // generate the server url
-    obj.generateBaseURL = function (domain, req) {
-        var serverName = obj.getWebServerName(domain, req);
-        var httpsPort = ((args.aliasport == null) ? args.port : args.aliasport); // Use HTTPS alias port is specified
-        var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += '/';
-        return ('https://' + serverName + ':' + httpsPort + '/' + xdomain);
-    }
-
-    // Get the web server hostname. This may change if using a domain with a DNS name.
-    obj.getWebServerName = function (domain, req) {
-        if (domain.dns != null) return domain.dns;
-        if ((obj.certificates.CommonName == 'un-configured') && (req != null) && (req.headers != null) && (typeof req.headers.host == 'string')) { return req.headers.host.split(':')[0]; }
-        return obj.certificates.CommonName;
-    }
-
-    // Return true if this is an allowed HTTP request origin hostname.
-    obj.CheckWebServerOriginName = function (domain, req) {
-        if (domain.allowedorigin === true) return true; // Ignore origin
-        if (typeof req.headers.origin != 'string') return true; // No origin in the header, this is a desktop app
-        let originUrl; try { originUrl = new URL(req.headers.origin); } catch (ex) { return false; }
-        if (!originUrl.hostname) return false; // Origin hostname is not valid
-        if (Array.isArray(domain.allowedorigin)) return (domain.allowedorigin.indexOf(originUrl.hostname) >= 0); // Check if this is an allowed origin from an explicit list
-        if (domain.dns != null) return (domain.dns == originUrl.hostname); // Match the domain DNS
-        return (obj.getWebServerName(domain, req) == originUrl.hostname); // Match the server hostname
-    }
 
     // Create a OSX mesh agent installer
     obj.handleMeshOsxAgentRequest = function (req, res) {
