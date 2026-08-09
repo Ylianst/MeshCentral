@@ -80,6 +80,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainStartupModule = require('./webserver/domain-startup.js');
     const notFoundModule = require('./webserver/not-found.js');
     const basicRoutesModule = require('./webserver/basic-routes.js');
+    const resourceRoutesModule = require('./webserver/resource-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6822,6 +6823,33 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     health: function (req, res) { res.send('ok'); }
                 }
             });
+            const resourceRoutes = resourceRoutesModule.createResourceRoutes({
+                state: obj,
+                urlencoded: obj.bodyParser.urlencoded,
+                hasPlugins: parent.pluginHandler != null,
+                hasCrowdSec: parent.crowdSecBounser != null,
+                handlers: {
+                    deviceFile: handleDeviceFile,
+                    agentDownloadFile: handleAgentDownloadFile,
+                    logoRequest: handleLogoRequest,
+                    loginLogoRequest: handleLoginLogoRequest,
+                    pwaLogoRequest: handlePWALogoRequest,
+                    translationsRequest: handleTranslationsRequest,
+                    welcomeImageRequest: handleWelcomeImageRequest,
+                    getRecordings: handleGetRecordings,
+                    getRecordingsWebSocket: handleGetRecordingsWebSocket,
+                    playerRequest: handlePlayerRequest,
+                    sharingRequest: handleSharingRequest,
+                    agentFileTransfer: handleAgentFileTransfer,
+                    inviteRequest: handleInviteRequest,
+                    pluginAdminRequest: obj.handlePluginAdminReq,
+                    pluginAdminPostRequest: obj.handlePluginAdminPostReq,
+                    pluginScript: obj.handlePluginJS,
+                    newAccountCaptchaRequest: handleNewAccountCaptchaRequest,
+                    captchaGetRequest: handleCaptchaGetRequest,
+                    captchaPostRequest: handleCaptchaPostRequest
+                }
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6861,20 +6889,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     });
                 });
                 obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
-                obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
-                obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
-                obj.app.get(url + 'logo.png', handleLogoRequest);
-                obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
-                obj.app.get(url + 'pwalogo.png', handlePWALogoRequest);
-                obj.app.post(url + 'translations', obj.bodyParser.urlencoded({ extended: false }), handleTranslationsRequest);
-                obj.app.get(url + 'welcome.jpg', handleWelcomeImageRequest);
-                obj.app.get(url + 'welcome.png', handleWelcomeImageRequest);
-                obj.app.get(url + 'recordings.ashx', handleGetRecordings);
-                obj.app.ws(url + 'recordings.ashx', handleGetRecordingsWebSocket);
-                obj.app.get(url + 'player.htm', handlePlayerRequest);
-                obj.app.get(url + 'player', handlePlayerRequest);
-                obj.app.get(url + 'sharing', handleSharingRequest);
-                obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
                 obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
                     PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                         if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
@@ -6895,25 +6909,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                     });
                 }
-                obj.app.get(url + 'invite', handleInviteRequest);
-                obj.app.post(url + 'invite', obj.bodyParser.urlencoded({ extended: false }), handleInviteRequest);
-
-                if (parent.pluginHandler != null) {
-                    obj.app.get(url + 'pluginadmin.ashx', obj.handlePluginAdminReq);
-                    obj.app.post(url + 'pluginadmin.ashx', obj.bodyParser.urlencoded({ extended: false }), obj.handlePluginAdminPostReq);
-                    obj.app.get(url + 'pluginHandler.js', obj.handlePluginJS);
-                }
-
-                // New account CAPTCHA request
-                if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
-                    obj.app.get(url + 'newAccountCaptcha.ashx', handleNewAccountCaptchaRequest);
-                }
-
-                // Check CrowdSec Bounser if configured
-                if (parent.crowdSecBounser != null) {
-                    obj.app.get(url + 'captcha.ashx', handleCaptchaGetRequest);
-                    obj.app.post(url + 'captcha.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCaptchaPostRequest);
-                }
+                resourceRoutes.register(domain);
 
                 // Setup IP-KVM relay if supported
                 if (domain.ipkvm) {

@@ -15,6 +15,7 @@ require('./webserver-storage.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-basic-routes.test.js');
+require('./webserver-resource-routes.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-control.test.js');
 require('./webserver-custom-icons.test.js');
