@@ -340,14 +340,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getNodeRights: function (userId, meshId, nodeId) { return obj.GetNodeRights(userId, meshId, nodeId); },
         getMultiServer: function () { return parent.multiServer; }
     }));
-    Object.assign(obj, pushNotificationsModule.createPushNotifications({
+    const pushNotifications = pushNotificationsModule.createPushNotifications({
+        parent: parent,
         db: db,
         getWebPush: function () { return parent.webpush; },
         dispatchEvent: function (targets, source, event) { parent.DispatchEvent(targets, source, event); },
         cloneSafeUser: obj.CloneSafeUser,
         cloneSafeNode: obj.CloneSafeNode,
         eventSource: obj
-    }));
+    });
+    Object.assign(obj, pushNotifications);
+    const handleFirebasePushOnlyRelayRequest = pushNotifications.handleFirebasePushOnlyRelayRequest;
+    const handleFirebaseRelayRequest = pushNotifications.handleFirebaseRelayRequest;
     Object.assign(obj, userAgentModule.createUserAgent({ parse: obj.uaparser, ClientHints: obj.uaclienthints.UAClientHints }));
     const serverLifecycle = serverLifecycleModule.createServerLifecycle({ state: obj, parent: parent, args: args, certificates: certificates, os: obj.os });
     const CheckListenPort = serverLifecycle.CheckListenPort;
@@ -1865,31 +1869,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
             render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
         });
-    }
-
-    // Called to handle push-only requests
-    function handleFirebasePushOnlyRelayRequest(req, res) {
-        parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
-        if ((req.body == null) || (req.body.msg == null) || (obj.parent.firebase == null)) { res.sendStatus(404); return; }
-        if (obj.parent.config.firebase.pushrelayserver == null) { res.sendStatus(404); return; }
-        if ((typeof obj.parent.config.firebase.pushrelayserver == 'string') && (req.query.key != obj.parent.config.firebase.pushrelayserver)) { res.sendStatus(404); return; }
-        var data = null;
-        try { data = JSON.parse(req.body.msg) } catch (ex) { res.sendStatus(404); return; }
-        if (pushNotificationsModule.isValidFirebaseRelayData(data) === false) { res.sendStatus(404); return; }
-        parent.debug('email', 'handleFirebasePushOnlyRelayRequest - ok');
-        obj.parent.firebase.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err, errdesc) {
-            if (err == null) { res.sendStatus(200); } else { res.sendStatus(500); }
-        });
-    }
-
-    // Called to handle two-way push notification relay request
-    function handleFirebaseRelayRequest(ws, req) {
-        parent.debug('email', 'handleFirebaseRelayRequest');
-        if (obj.parent.firebase == null) { try { ws.close(); } catch (e) { } return; }
-        if (obj.parent.firebase.setupRelay == null) { try { ws.close(); } catch (e) { } return; }
-        if (obj.parent.config.firebase.relayserver == null) { try { ws.close(); } catch (e) { } return; }
-        if ((typeof obj.parent.config.firebase.relayserver == 'string') && (req.query.key != obj.parent.config.firebase.relayserver)) { try { ws.close(); } catch (e) { } return; }
-        obj.parent.firebase.setupRelay(ws);
     }
 
     // Called to process an agent invite request

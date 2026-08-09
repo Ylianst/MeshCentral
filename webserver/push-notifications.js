@@ -19,6 +19,7 @@ module.exports.isValidFirebaseRelayData = function (data) {
 };
 
 module.exports.createPushNotifications = function (options) {
+    const parent = options.parent;
     const db = options.db;
     const getWebPush = options.getWebPush;
     const dispatchEvent = options.dispatchEvent;
@@ -81,5 +82,33 @@ module.exports.createPushNotifications = function (options) {
         });
     }
 
-    return { performWebPush: performWebPush, removePmtFromAllOtherNodes: removePmtFromAllOtherNodes };
+    function handleFirebasePushOnlyRelayRequest(req, res) {
+        parent.debug('email', 'handleFirebasePushOnlyRelayRequest');
+        if ((req.body == null) || (req.body.msg == null) || (parent.firebase == null)) { res.sendStatus(404); return; }
+        if (parent.config.firebase.pushrelayserver == null) { res.sendStatus(404); return; }
+        if ((typeof parent.config.firebase.pushrelayserver == 'string') && (req.query.key != parent.config.firebase.pushrelayserver)) { res.sendStatus(404); return; }
+        var data = null;
+        try { data = JSON.parse(req.body.msg); } catch (ex) { res.sendStatus(404); return; }
+        if (module.exports.isValidFirebaseRelayData(data) === false) { res.sendStatus(404); return; }
+        parent.debug('email', 'handleFirebasePushOnlyRelayRequest - ok');
+        parent.firebase.sendToDevice({ pmt: data.pmt }, data.payload, data.options, function (id, err) {
+            if (err == null) { res.sendStatus(200); } else { res.sendStatus(500); }
+        });
+    }
+
+    function handleFirebaseRelayRequest(ws, req) {
+        parent.debug('email', 'handleFirebaseRelayRequest');
+        if (parent.firebase == null) { try { ws.close(); } catch (ex) { } return; }
+        if (parent.firebase.setupRelay == null) { try { ws.close(); } catch (ex) { } return; }
+        if (parent.config.firebase.relayserver == null) { try { ws.close(); } catch (ex) { } return; }
+        if ((typeof parent.config.firebase.relayserver == 'string') && (req.query.key != parent.config.firebase.relayserver)) { try { ws.close(); } catch (ex) { } return; }
+        parent.firebase.setupRelay(ws);
+    }
+
+    return {
+        performWebPush: performWebPush,
+        removePmtFromAllOtherNodes: removePmtFromAllOtherNodes,
+        handleFirebasePushOnlyRelayRequest: handleFirebasePushOnlyRelayRequest,
+        handleFirebaseRelayRequest: handleFirebaseRelayRequest
+    };
 };

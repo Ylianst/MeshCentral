@@ -10,6 +10,28 @@ const test = require('node:test');
 const createPushNotifications = require('../webserver/push-notifications.js').createPushNotifications;
 const isValidFirebaseRelayData = require('../webserver/push-notifications.js').isValidFirebaseRelayData;
 
+function createRelayFixture(config) {
+    const sends = [], relays = [];
+    const parent = {
+        config: { firebase: config },
+        debug: function () { },
+        firebase: {
+            sendToDevice: function (target, payload, options, callback) { sends.push({ target: target, payload: payload, options: options }); callback('id', null); },
+            setupRelay: function (ws) { relays.push(ws); }
+        }
+    };
+    const service = createPushNotifications({
+        parent: parent,
+        db: {},
+        getWebPush: function () { return null; },
+        dispatchEvent: function () { },
+        cloneSafeUser: function (user) { return user; },
+        cloneSafeNode: function (node) { return node; },
+        eventSource: {}
+    });
+    return { service: service, sends: sends, relays: relays };
+}
+
 test('Firebase relay validation safely rejects null nested objects', function () {
     const valid = { pmt: 'token', payload: { notification: { title: 'Title', body: 'Body' } }, options: { priority: 'Normal', timeToLive: 60 } };
     assert.equal(isValidFirebaseRelayData(valid), true);
@@ -17,6 +39,33 @@ test('Firebase relay validation safely rejects null nested objects', function ()
     assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: null, options: valid.options }), false);
     assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: { notification: null }, options: valid.options }), false);
     assert.equal(isValidFirebaseRelayData({ pmt: 'token', payload: valid.payload, options: null }), false);
+});
+
+test('Firebase push-only relay rejects malformed payloads and forwards valid messages', function () {
+    const fixture = createRelayFixture({ pushrelayserver: 'secret' });
+    const invalidResponse = { sendStatus: function (status) { this.status = status; } };
+    fixture.service.handleFirebasePushOnlyRelayRequest({ body: { msg: 'null' }, query: { key: 'secret' } }, invalidResponse);
+    assert.equal(invalidResponse.status, 404);
+    assert.equal(fixture.sends.length, 0);
+
+    const message = { pmt: 'token', payload: { notification: { title: 'Title', body: 'Body' } }, options: { priority: 'High', timeToLive: 60 } };
+    const validResponse = { sendStatus: function (status) { this.status = status; } };
+    fixture.service.handleFirebasePushOnlyRelayRequest({ body: { msg: JSON.stringify(message) }, query: { key: 'secret' } }, validResponse);
+    assert.equal(validResponse.status, 200);
+    assert.deepEqual(fixture.sends[0], { target: { pmt: 'token' }, payload: message.payload, options: message.options });
+});
+
+test('Firebase WebSocket relay closes invalid keys and accepts configured keys', function () {
+    const fixture = createRelayFixture({ relayserver: 'secret' });
+    const rejected = { close: function () { this.closed = true; } };
+    fixture.service.handleFirebaseRelayRequest(rejected, { query: { key: 'wrong' } });
+    assert.equal(rejected.closed, true);
+    assert.equal(fixture.relays.length, 0);
+
+    const accepted = { close: function () { this.closed = true; } };
+    fixture.service.handleFirebaseRelayRequest(accepted, { query: { key: 'secret' } });
+    assert.equal(accepted.closed, undefined);
+    assert.deepEqual(fixture.relays, [accepted]);
 });
 
 test('failed web push subscriptions are removed after all sends complete', async function () {
