@@ -60,6 +60,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const throttlingModule = require('./webserver/throttling.js');
     const requestUtilsModule = require('./webserver/request-utils.js');
     const networkAccessModule = require('./webserver/network-access.js');
+    const customIconsModule = require('./webserver/custom-icons.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -129,6 +130,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
     const getDomain = networkAccess.getDomain;
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
+    const customIcons = customIconsModule.createCustomIcons({ crypto: obj.crypto, path: obj.path, fs: obj.fs, datapath: parent.datapath });
+    const customIconMaxFileSize = customIcons.maxFileSize;
+    const customIconAllowedExtensions = customIcons.allowedExtensions;
+    const getCustomIconUserKey = customIcons.getUserKey;
+    const getCustomIconUserDir = customIcons.getUserDir;
+    const getCustomIconMimeType = customIcons.getMimeType;
+    const validateCustomIconFile = customIcons.validateFile;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -4702,160 +4710,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     //try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { } // TODO: Remove this file after 30 minutes.
                 }
                 res.send('');
-            });
-        });
-    }
-
-    // Upload a file to the server
-    function getCustomIconUserKey(user) {
-        if ((user == null) || (typeof user._id !== 'string') || (user._id.length === 0)) { return null; }
-        return obj.crypto.createHash('sha256').update(user._id).digest('hex');
-    }
-
-    function getCustomIconUserDir(user) {
-        const userKey = getCustomIconUserKey(user);
-        if (userKey == null) { return null; }
-        return obj.path.join(obj.parent.datapath, 'icons', 'custom', userKey);
-    }
-
-    // Maximum accepted custom icon upload size, in bytes.
-    const customIconMaxFileSize = 10485760;
-    // Maximum accepted width or height for uploaded PNG/JPEG sidebar icons, in pixels.
-    const customIconMaxDimension = 64;
-    // Image extensions accepted for uploaded custom sidebar icons.
-    const customIconAllowedExtensions = new Set(['.svg', '.png', '.jpg', '.jpeg']);
-
-    /**
-     * Return the HTTP response MIME type for a stored custom icon filename.
-     *
-     * @param {string} iconName Filename or path segment for the stored custom icon.
-     * @returns {string|null} MIME type for supported icons, or null for unsupported extensions.
-     */
-    function getCustomIconMimeType(iconName) {
-        const lower = iconName.toLowerCase();
-        if (lower.endsWith('.svg')) { return 'image/svg+xml'; }
-        if (lower.endsWith('.png')) { return 'image/png'; }
-        if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) { return 'image/jpeg'; }
-        return null;
-    }
-
-    /**
-     * Reject SVG content that can execute script or load external content.
-     *
-     * @param {string} svgContent Raw UTF-8 SVG content from the uploaded file.
-     * @returns {string|null} SVG content safe to store, or null if it is invalid or unsafe.
-     */
-    function cleanSvg(svgContent) {
-        if (typeof svgContent !== 'string') { return null; }
-        const cleaned = (svgContent.charCodeAt(0) === 0xFEFF) ? svgContent.substring(1) : svgContent;
-        if (cleaned.search(/<svg[\s>]/i) < 0) { return null; }
-        if (cleaned.search(/<\s*(script|foreignObject|iframe|object|embed|applet|link|meta)\b/i) >= 0) { return null; }
-        if (cleaned.search(/\s+on[a-z0-9_-]+\s*=/i) >= 0) { return null; }
-        if (cleaned.search(/\s+(href|xlink:href|src)\s*=\s*(['"]?)\s*(?!#)/i) >= 0) { return null; }
-        return cleaned;
-    }
-
-    /**
-     * Check if a JPEG marker is a Start Of Frame marker that contains image dimensions.
-     *
-     * @param {number} marker JPEG marker byte after the 0xFF prefix.
-     * @returns {boolean} True when the marker segment contains width and height fields.
-     */
-    function isJpegStartOfFrameMarker(marker) {
-        return ((marker >= 0xC0) && (marker <= 0xC3)) || ((marker >= 0xC5) && (marker <= 0xC7)) || ((marker >= 0xC9) && (marker <= 0xCB)) || ((marker >= 0xCD) && (marker <= 0xCF));
-    }
-
-    /**
-     * Read JPEG dimensions from header bytes without fully decoding the image.
-     *
-     * @param {Buffer} data Initial bytes from the uploaded JPEG file.
-     * @returns {{width:number,height:number}|null} Parsed dimensions, or null if the JPEG header is invalid or incomplete.
-     */
-    function getJpegDimensions(data) {
-        // JPEG files must start with the SOI marker.
-        if ((data.length < 4) || (data[0] !== 0xFF) || (data[1] !== 0xD8)) { return null; }
-        // Start scanning after the SOI marker.
-        var offset = 2;
-        while (offset + 9 < data.length) {
-            // Each JPEG segment starts with a marker prefix.
-            if (data[offset] !== 0xFF) { return null; }
-            // Skip fill bytes before the marker value.
-            while ((offset < data.length) && (data[offset] === 0xFF)) { offset++; }
-            const marker = data[offset++];
-            // SOI/EOI and restart markers do not carry segment lengths.
-            if ((marker === 0xD8) || (marker === 0xD9)) { continue; }
-            if ((marker >= 0xD0) && (marker <= 0xD7)) { continue; }
-            // Remaining markers should include a two-byte segment length.
-            if (offset + 2 > data.length) { return null; }
-            const segmentLength = data.readUInt16BE(offset);
-            if (segmentLength < 2) { return null; }
-            if (isJpegStartOfFrameMarker(marker)) {
-                // SOF payload layout: precision, height, width.
-                if (offset + 7 > data.length) { return null; }
-                return { width: data.readUInt16BE(offset + 5), height: data.readUInt16BE(offset + 3) };
-            }
-            // Move to the next marker segment.
-            offset += segmentLength;
-        }
-        return null;
-    }
-
-    /**
-     * Validate the raster image signature and extract dimensions for supported custom icon formats.
-     *
-     * @param {Buffer} data Initial bytes from the uploaded icon file.
-     * @param {string} extension Lowercase extension from the original uploaded filename.
-     * @returns {{width:number,height:number}|null} Parsed raster dimensions, or null if the signature/type is invalid.
-     */
-    function getCustomIconDimensions(data, extension) {
-        // PNG dimensions are fixed in the IHDR chunk at byte offsets 16 and 20.
-        if ((extension === '.png') && (data.length >= 24) && (data[0] === 0x89) && (data[1] === 0x50) && (data[2] === 0x4E) && (data[3] === 0x47) && (data[4] === 0x0D) && (data[5] === 0x0A) && (data[6] === 0x1A) && (data[7] === 0x0A)) {
-            return { width: data.readUInt32BE(16), height: data.readUInt32BE(20) };
-        }
-        // JPEG dimensions are stored in the first SOF marker segment.
-        if (((extension === '.jpg') || (extension === '.jpeg')) && (data.length >= 3) && (data[0] === 0xFF) && (data[1] === 0xD8) && (data[2] === 0xFF)) {
-            return getJpegDimensions(data);
-        }
-        return null;
-    }
-
-    /**
-     * Enforce custom icon upload policy before moving the temp file into persistent storage.
-     * SVG files are checked for active content; PNG/JPEG files are signature and dimension checked.
-     *
-     * @param {string} iconTempPath Safe resolved path to the uploaded temp file.
-     * @param {string} extension Lowercase extension from the original uploaded filename.
-     * @param {function(string|null):void} callback Called with null on success, or a user-safe error message on failure.
-     */
-    function validateCustomIconFile(iconTempPath, extension, callback) {
-        obj.fs.stat(iconTempPath, function (statErr, stats) {
-            if (statErr) { callback('Unable to read uploaded icon.'); return; }
-            if ((stats == null) || (stats.isFile() !== true)) { callback('Invalid icon file.'); return; }
-            // Reject empty and oversized uploads before reading any file content.
-            if ((stats.size < 4) || (stats.size > customIconMaxFileSize)) { callback('Icon files must be non-empty and ' + (customIconMaxFileSize / 1048576) + ' MB or smaller.'); return; }
-            if (extension === '.svg') {
-                obj.fs.readFile(iconTempPath, 'utf8', function (readErr, svgContent) {
-                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
-                    const cleanedSvg = cleanSvg(svgContent);
-                    if (cleanedSvg == null) { callback('Invalid SVG icon file.'); return; }
-                    obj.fs.writeFile(iconTempPath, cleanedSvg, 'utf8', function (writeErr) {
-                        callback(writeErr ? 'Unable to clean uploaded SVG icon.' : null);
-                    });
-                });
-                return;
-            }
-            obj.fs.open(iconTempPath, 'r', function (openErr, fd) {
-                if (openErr) { callback('Unable to read uploaded icon.'); return; }
-                // Reading the first 64 KB is enough for normal PNG headers and JPEG SOF markers.
-                const header = Buffer.alloc(Math.min(stats.size, 65536));
-                obj.fs.read(fd, header, 0, header.length, 0, function (readErr, bytesRead) {
-                    obj.fs.close(fd, function () { });
-                    if (readErr) { callback('Unable to read uploaded icon.'); return; }
-                    const dimensions = getCustomIconDimensions(header.slice(0, bytesRead), extension);
-                    if (dimensions == null) { callback('The uploaded icon does not match its file type.'); return; }
-                    if ((dimensions.width < 1) || (dimensions.height < 1) || (dimensions.width > customIconMaxDimension) || (dimensions.height > customIconMaxDimension)) { callback('Icon images must be ' + customIconMaxDimension + ' x ' + customIconMaxDimension + ' pixels or smaller.'); return; }
-                    callback(null);
-                });
             });
         });
     }
