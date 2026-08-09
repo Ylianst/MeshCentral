@@ -18,7 +18,7 @@
   "author": "Ylian Saint-Hilaire <ylianst@gmail.com>",
   "main": "meshcentral.js",
   "scripts": {
-    "test:unit": "node test/webserver-sanitization.test.js"
+    "test:unit": "node test/run-unit-tests.js"
   },
   "bin": {
     "meshcentral": "bin/meshcentral"
