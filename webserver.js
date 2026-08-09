@@ -1592,20 +1592,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
         if (!emailAccountUtils.hasAccountEmailRequest(req)) { parent.debug('web', 'handleCheckAccountEmailRequest: missing session or body.'); res.sendStatus(404); return; }
-        if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(req.body.email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
+        var email = emailAccountUtils.resolveAccountEmail(req);
+        if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        // Always lowercase the email address
-        if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
-
-        // Get the email from the body or session.
-        var email = req.body.email;
-        if ((email == null) || (email == '')) { email = req.session.temail; }
-
         // Check if this request is for an allows email domain
         if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains)) {
             var i = -1;
-            if (typeof req.body.email == 'string') { i = req.body.email.indexOf('@'); }
+            if (typeof email == 'string') { i = email.indexOf('@'); }
             if (i == -1) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
                 req.session.loginmode = 7;
@@ -1613,7 +1607,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                 return;
             }
-            var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
+            var emailok = false, emaildomain = email.substring(i + 1).toLowerCase();
             for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
             if (emailok == false) {
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');

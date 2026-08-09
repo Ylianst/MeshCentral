@@ -13,6 +13,7 @@ const createTemporaryPassword = require('../webserver/email-account-utils.js').c
 const getActiveUser = require('../webserver/email-account-utils.js').getActiveUser;
 const hasEmailLinkCookie = require('../webserver/email-account-utils.js').hasEmailLinkCookie;
 const hasAccountEmailRequest = require('../webserver/email-account-utils.js').hasAccountEmailRequest;
+const resolveAccountEmail = require('../webserver/email-account-utils.js').resolveAccountEmail;
 
 test('the current account does not conflict with its own verified email', function () {
     assert.equal(hasOtherVerifiedUser([{ _id: 'user/tenant/alice' }], 'user/tenant/alice'), false);
@@ -79,4 +80,15 @@ test('account email requests require both session and parsed body', function () 
     assert.equal(hasAccountEmailRequest({ session: {} }), false);
     assert.equal(hasAccountEmailRequest({ body: {} }), false);
     assert.equal(hasAccountEmailRequest({ session: {}, body: {} }), true);
+});
+
+test('account email resolution prefers and normalizes the submitted address', function () {
+    const request = { body: { email: 'Alice@Example.COM' }, session: { temail: 'fallback@example.com' } };
+    assert.equal(resolveAccountEmail(request), 'alice@example.com');
+    assert.equal(request.body.email, 'alice@example.com');
+});
+
+test('account email resolution falls back to the session address', function () {
+    assert.equal(resolveAccountEmail({ body: {}, session: { temail: 'fallback@example.com' } }), 'fallback@example.com');
+    assert.equal(resolveAccountEmail({ body: { email: '' }, session: { temail: 'fallback@example.com' } }), 'fallback@example.com');
 });

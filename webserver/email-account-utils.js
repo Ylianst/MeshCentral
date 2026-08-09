@@ -25,6 +25,17 @@ module.exports.hasAccountEmailRequest = function (request) {
     return (request != null) && (request.session != null) && (request.body != null);
 };
 
+module.exports.resolveAccountEmail = function (request) {
+    var email = request.body.email;
+    if (typeof email == 'string' && email.length > 0) {
+        email = email.toLowerCase();
+        request.body.email = email;
+    } else {
+        email = request.session.temail;
+    }
+    return email;
+};
+
 module.exports.createTemporaryPassword = function (crypto, hashPassword, callback) {
     crypto.randomBytes(16, function (error, buffer) {
         if ((error != null) || (buffer == null)) { callback(error || new Error('Unable to generate a temporary password.')); return; }
