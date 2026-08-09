@@ -85,6 +85,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const relayRoutesModule = require('./webserver/relay-routes.js');
     const passportRoutesModule = require('./webserver/passport-routes.js');
     const duoRoutesModule = require('./webserver/duo-routes.js');
+    const agentRoutesModule = require('./webserver/agent-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6890,6 +6891,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 getQueryPortion: getQueryPortion,
                 setSessionRandom: setSessionRandom
             });
+            const agentRoutes = agentRoutesModule.createAgentRoutes({
+                state: obj,
+                parent: parent,
+                checkAgentIpAddress: checkAgentIpAddress,
+                authorizeWebSocket: PerformWSSessionAuth,
+                createSerialTunnel: SerialTunnel,
+                handlers: {
+                    agentFileTransfer: handleAgentFileTransfer,
+                    meshAgentRequest: obj.handleMeshAgentRequest,
+                    agentDownloadFile: handleAgentDownloadFile
+                }
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6938,73 +6951,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     }
                 });
 
-                // Receive mesh agent connections
-                obj.app.ws(url + 'agent.ashx', function (ws, req) {
-                    var domain = checkAgentIpAddress(ws, req);
-                    if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                    if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
-                    //console.log('Agent connect: ' + req.clientIp);
-                    try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
-                });
-
-                // Setup MQTT broker over websocket
-                if (obj.parent.mqttbroker != null) {
-                    obj.app.ws(url + 'mqtt.ashx', function (ws, req) {
-                        var domain = checkAgentIpAddress(ws, req);
-                        if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                        var serialtunnel = SerialTunnel();
-                        serialtunnel.xtransport = 'ws';
-                        serialtunnel.xdomain = domain;
-                        serialtunnel.xip = req.clientIp;
-                        ws.on('message', function (b) { serialtunnel.updateBuffer(Buffer.from(b, 'binary')) });
-                        serialtunnel.forwardwrite = function (b) { ws.send(b, 'binary') }
-                        ws.on('close', function () { serialtunnel.emit('end'); });
-                        obj.parent.mqttbroker.handle(serialtunnel); // Pass socket wrapper to MQTT broker
-                    });
-                }
+                agentRoutes.register(domain);
 
                 // Setup any .well-known folders
                 var p = obj.parent.path.join(obj.parent.datapath, '.well-known' + ((parent.config.domains[i].id == '') ? '' : ('-' + parent.config.domains[i].id)));
                 if (obj.parent.fs.existsSync(p)) { obj.app.use(url + '.well-known', obj.express.static(p)); }
-
-                // Setup the alternative agent-only port
-                if (obj.agentapp) {
-                    // Receive mesh agent connections on alternate port
-                    obj.agentapp.ws(url + 'agent.ashx', function (ws, req) {
-                        var domain = checkAgentIpAddress(ws, req);
-                        if (domain == null) { parent.debug('web', 'Got agent connection with bad domain or blocked IP address ' + req.clientIp + ', holding.'); return; }
-                        if (domain.agentkey && ((req.query.key == null) || (domain.agentkey.indexOf(req.query.key) == -1))) { return; } // If agent key is required and not provided or not valid, just hold the websocket and do nothing.
-                        try { obj.meshAgentHandler.CreateMeshAgent(obj, obj.db, ws, req, obj.args, domain); } catch (e) { console.log(e); }
-                    });
-
-                    // Setup mesh relay on alternative agent-only port
-                    obj.agentapp.ws(url + 'meshrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
-                            if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
-                                obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
-                            } else {
-                                obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
-                            }
-                        });
-                    });
-
-                    // Allows agents to transfer files
-                    obj.agentapp.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
-
-                    // Setup agent to/from server file transfer handler
-                    obj.agentapp.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
-
-                    // Setup agent downloads for meshcore updates
-                    obj.agentapp.get(url + 'meshagents', obj.handleMeshAgentRequest);
-
-                    // Setup agent file downloads
-                    obj.agentapp.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
-
-                    // Setup APF.ashx for AMT communication
-                    if (obj.parent.mpsserver != null) {
-                        obj.agentapp.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
-                    }
-                }
 
                 // Setup web relay on this web server if needed
                 // We set this up when a DNS name is used as a web relay instead of a port
