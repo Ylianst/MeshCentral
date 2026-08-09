@@ -43,3 +43,4 @@ require('./webserver-telemetry.test.js');
 require('./webserver-tls-configuration.test.js');
 require('./webserver-user-agent.test.js');
 require('./webserver-web-relay.test.js');
+require('./webserver-websocket-auth.test.js');

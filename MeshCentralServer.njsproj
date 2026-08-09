@@ -273,6 +273,7 @@
     <Compile Include="webserver\server-identity.js" />
     <Compile Include="webserver\serial-tunnel.js" />
     <Compile Include="webserver\web-relay.js" />
+    <Compile Include="webserver\websocket-auth.js" />
     <Compile Include="webserver\server-lifecycle.js" />
     <Compile Include="webserver\security-headers.js" />
     <Compile Include="webserver\session-counts.js" />
