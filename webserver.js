@@ -75,6 +75,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
     const securityHeadersModule = require('./webserver/security-headers.js');
+    const requestContextModule = require('./webserver/request-context.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -455,6 +456,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getWebRelayServer: function () { return parent.webrelayserver; },
         isTrustedCert: function (domain) { return obj.isTrustedCert(domain); }
     });
+    const requestContext = requestContextModule.createRequestContext({ state: obj, isIPMatch: isIPMatch });
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -6820,61 +6822,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 return;
             }
 
-            // Perform traffic accounting
-            if (req.headers.upgrade == 'websocket') {
-                // We don't count traffic on WebSockets since it's counted by the handling modules.
-                obj.trafficStats.httpWebSocketCount++;
-            } else {
-                // Normal HTTP traffic is counted
-                obj.trafficStats.httpRequestCount++;
-                if (typeof req.socket.xbytesRead != 'number') {
-                    req.socket.xbytesRead = 0;
-                    req.socket.xbytesWritten = 0;
-                    req.socket.on('close', function () {
-                        // Perform final accounting
-                        obj.trafficStats.httpIn += (this.bytesRead - this.xbytesRead);
-                        obj.trafficStats.httpOut += (this.bytesWritten - this.xbytesWritten);
-                        this.xbytesRead = this.bytesRead;
-                        this.xbytesWritten = this.bytesWritten;
-                    });
-                } else {
-                    // Update counters
-                    obj.trafficStats.httpIn += (req.socket.bytesRead - req.socket.xbytesRead);
-                    obj.trafficStats.httpOut += (req.socket.bytesWritten - req.socket.xbytesWritten);
-                    req.socket.xbytesRead = req.socket.bytesRead;
-                    req.socket.xbytesWritten = req.socket.bytesWritten;
-                }
-            }
-
-            // Set the real IP address of the request
-            // If a trusted reverse-proxy is sending us the remote IP address, use it.
-            var ipex = '0.0.0.0', xforwardedhost = req.headers.host;
-            if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
-            if (
-                (obj.args.trustedproxy === true) || (obj.args.tlsoffload === true) ||
-                ((typeof obj.args.trustedproxy == 'object') && (isIPMatch(ipex, obj.args.trustedproxy))) ||
-                ((typeof obj.args.tlsoffload == 'object') && (isIPMatch(ipex, obj.args.tlsoffload)))
-            ) {
-                // Get client IP
-                if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
-                    req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
-                } else if (req.headers['x-forwarded-for']) {
-                    req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
-                } else if (req.headers['x-real-ip']) {
-                    req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
-                } else {
-                    req.clientIp = ipex;
-                }
-
-                // If there is a port number, remove it. This will only work for IPv4, but nice for people that have a bad reverse proxy config.
-                const clientIpSplit = req.clientIp.split(':');
-                if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
-
-                // Get server host
-                if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host'].split(',')[0]; } // If multiple hosts are specified with a comma, take the first one.
-            } else {
-                req.clientIp = ipex;
-            }
+            requestContext.accountTraffic(req);
+            const xforwardedhost = requestContext.resolveClientAddress(req, true, true);
 
             // If this is a web relay connection, handle it here.
             if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
@@ -6926,27 +6875,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.agentapp) {
             // Add HTTP security headers to all responses
             obj.agentapp.use(function (req, res, next) {
-                // Set the real IP address of the request
-                // If a trusted reverse-proxy is sending us the remote IP address, use it.
-                var ipex = '0.0.0.0';
-                if (typeof req.connection.remoteAddress == 'string') { ipex = (req.connection.remoteAddress.startsWith('::ffff:')) ? req.connection.remoteAddress.substring(7) : req.connection.remoteAddress; }
-                if (
-                    (obj.args.trustedproxy === true) || (obj.args.tlsoffload === true) ||
-                    ((typeof obj.args.trustedproxy == 'object') && (isIPMatch(ipex, obj.args.trustedproxy))) ||
-                    ((typeof obj.args.tlsoffload == 'object') && (isIPMatch(ipex, obj.args.tlsoffload)))
-                ) {
-                    if (req.headers['cf-connecting-ip']) { // Use CloudFlare IP address if present
-                        req.clientIp = req.headers['cf-connecting-ip'].split(',')[0].trim();
-                    } else if (req.headers['x-forwarded-for']) {
-                        req.clientIp = req.headers['x-forwarded-for'].split(',')[0].trim();
-                    } else if (req.headers['x-real-ip']) {
-                        req.clientIp = req.headers['x-real-ip'].split(',')[0].trim();
-                    } else {
-                        req.clientIp = ipex;
-                    }
-                } else {
-                    req.clientIp = ipex;
-                }
+                requestContext.resolveClientAddress(req, false, false);
 
                 // Get the domain for this request
                 const domain = req.xdomain = getDomain(req);
