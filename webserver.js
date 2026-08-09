@@ -3224,8 +3224,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                                 if (fileSplit.length == 3) {
                                     var agentid = parseInt(fileSplit[0]);
                                     if ((isNaN(agentid) == false) && (obj.parent.meshAgentBinaries[agentid] != null)) {
-                                        var agentinfo = obj.parent.meshAgentBinaries[agentid];
-                                        if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
+                                        var agentinfo = agentDownloadsModule.getAgentInfo(obj.parent.meshAgentBinaries, domain.meshAgentBinaries, agentid);
                                         var filestats = obj.fs.statSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', file));
                                         coredumps.push({
                                             fileSplit: fileSplit,
@@ -3292,8 +3291,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             var originalUrl = req.originalUrl.split('?')[0];
             for (var agentid in obj.parent.meshAgentBinaries) {
                 if ((agentid >= 10000) && (agentid != 10005)) continue;
-                var agentinfo = obj.parent.meshAgentBinaries[agentid];
-                if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
+                var agentinfo = agentDownloadsModule.getAgentInfo(obj.parent.meshAgentBinaries, domain.meshAgentBinaries, agentid);
                 response += '<tr><td>' + agentinfo.id + '</td><td>' + agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
                 response += '<td><a download href="' + originalUrl + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname + '</a>';
                 if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {

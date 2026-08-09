@@ -13,3 +13,8 @@ module.exports.getSessionUser = function (users, request) {
 module.exports.hasDatabaseFailure = function (error, documents) {
     return (error != null) || !Array.isArray(documents);
 };
+
+module.exports.getAgentInfo = function (defaultBinaries, domainBinaries, agentId) {
+    if ((domainBinaries != null) && (domainBinaries[agentId] != null)) { return domainBinaries[agentId]; }
+    return defaultBinaries[agentId];
+};

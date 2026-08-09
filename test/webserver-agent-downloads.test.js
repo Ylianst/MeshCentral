@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const getSessionUser = require('../webserver/agent-downloads.js').getSessionUser;
 const hasDatabaseFailure = require('../webserver/agent-downloads.js').hasDatabaseFailure;
+const getAgentInfo = require('../webserver/agent-downloads.js').getAgentInfo;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -25,4 +26,12 @@ test('agent action node lookups reject database failures and missing arrays', fu
     assert.equal(hasDatabaseFailure(null, null), true);
     assert.equal(hasDatabaseFailure(null, undefined), true);
     assert.equal(hasDatabaseFailure(null, []), false);
+});
+
+test('agent listings prefer binaries customized for the domain', function () {
+    const defaults = { 3: { name: 'default' }, 4: { name: 'default-64' } };
+    const domain = { 3: { name: 'custom' } };
+    assert.equal(getAgentInfo(defaults, domain, 3), domain[3]);
+    assert.equal(getAgentInfo(defaults, domain, 4), defaults[4]);
+    assert.equal(getAgentInfo(defaults, null, 3), defaults[3]);
 });
