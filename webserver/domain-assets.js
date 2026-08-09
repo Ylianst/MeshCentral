@@ -5,6 +5,10 @@
 
 'use strict';
 
+module.exports.canAccessOtherUserImage = function (user) {
+    return (user != null) && (user.siteadmin != null) && ((user.siteadmin & 2) != 0);
+};
+
 module.exports.createDomainAssets = function (options) {
     const state = options.state;
     const parent = options.parent;

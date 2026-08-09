@@ -8,6 +8,15 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const createDomainAssets = require('../webserver/domain-assets.js').createDomainAssets;
+const canAccessOtherUserImage = require('../webserver/domain-assets.js').canAccessOtherUserImage;
+
+test('only user administrators can request another user image', function () {
+    assert.equal(canAccessOtherUserImage(null), false);
+    assert.equal(canAccessOtherUserImage({ siteadmin: 0 }), false);
+    assert.equal(canAccessOtherUserImage({ siteadmin: 1 }), false);
+    assert.equal(canAccessOtherUserImage({ siteadmin: 2 }), true);
+    assert.equal(canAccessOtherUserImage({ siteadmin: 3 }), true);
+});
 
 function createFixture(settings) {
     settings = settings || {};

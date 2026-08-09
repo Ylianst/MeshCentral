@@ -1934,7 +1934,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var imageUserId = req.session.userid;
         if ((req.query.id != null)) {
             var user = obj.users[req.session.userid];
-            if ((user == null) || (user.siteadmin == null) && ((user.siteadmin & 2) == 0)) { res.sendStatus(404); return; }
+            if (domainAssetsModule.canAccessOtherUserImage(user) === false) { res.sendStatus(404); return; }
             imageUserId = 'user/' + domain.id + '/' + req.query.id;
         }
         obj.db.Get('im' + imageUserId, function (err, docs) {
