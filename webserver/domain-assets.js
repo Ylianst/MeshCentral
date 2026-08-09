@@ -10,6 +10,9 @@ module.exports.createDomainAssets = function (options) {
     const parent = options.parent;
     const getDomain = options.getDomain;
     const checkUserIpAddress = options.checkUserIpAddress;
+    const checkIpAddressEx = options.checkIpAddressEx;
+    const setContentDispositionHeader = options.setContentDispositionHeader;
+    const certificates = options.certificates;
 
     function register(domain) {
         const url = domain.url;
@@ -101,11 +104,52 @@ module.exports.createDomainAssets = function (options) {
         state.fs.exists(customImage, function (exists) { sendFile(res, exists ? customImage : defaultImage); });
     }
 
+    function getRootCertBase64() {
+        var rootCert = state.certificates.root.cert;
+        var start = rootCert.indexOf('-----BEGIN CERTIFICATE-----\r\n');
+        if (start >= 0) rootCert = rootCert.substring(start + 29);
+        const end = rootCert.indexOf('-----END CERTIFICATE-----');
+        if (end >= 0) rootCert = rootCert.substring(0, end);
+        return Buffer.from(rootCert, 'base64').toString('base64');
+    }
+
+    function handleRootCertificate(req, res) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleRootCertRequest: no domain'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) === -1)) { res.sendStatus(404); return; }
+        if ((state.userAllowedIp != null) && (checkIpAddressEx(req, res, state.userAllowedIp, false) === false)) { parent.debug('web', 'handleRootCertRequest: invalid ip'); return; }
+        parent.debug('web', 'handleRootCertRequest()');
+        setContentDispositionHeader(res, 'application/octet-stream', certificates.RootName + '.cer', null, 'rootcert.cer');
+        res.send(Buffer.from(getRootCertBase64(), 'base64'));
+    }
+
+    function handleManifest(req, res) {
+        const domain = checkUserIpAddress(req);
+        if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
+        parent.debug('web', 'handleManifestRequest()');
+        const title = (domain.title != null) ? domain.title : 'MeshCentral';
+        res.json({
+            name: title,
+            short_name: title,
+            description: 'Open source web based, remote computer management.',
+            scope: '.',
+            start_url: '/',
+            display: 'fullscreen',
+            orientation: 'any',
+            theme_color: '#ffffff',
+            background_color: '#ffffff',
+            icons: [{ src: 'pwalogo.png', sizes: '512x512', type: 'image/png' }]
+        });
+    }
+
     return {
         register: register,
         handleLogo: handleLogo,
         handleLoginLogo: handleLoginLogo,
         handlePwaLogo: handlePwaLogo,
-        handleWelcomeImage: handleWelcomeImage
+        handleWelcomeImage: handleWelcomeImage,
+        getRootCertBase64: getRootCertBase64,
+        handleRootCertificate: handleRootCertificate,
+        handleManifest: handleManifest
     };
 };

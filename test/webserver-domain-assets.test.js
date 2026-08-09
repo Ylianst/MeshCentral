@@ -21,6 +21,7 @@ function createFixture(settings) {
         webPublicPath: 'public',
         webPublicOverridePath: settings.overridePath,
         configurationFiles: settings.configurationFiles,
+        debug: function () { },
         path: path,
         fs: {
             existsSync: function (value) { return existing.has(value); },
@@ -30,6 +31,7 @@ function createFixture(settings) {
     const state = {
         path: path,
         fs: parent.fs,
+        certificates: { root: { cert: settings.rootCertificate || '' } },
         common: { joinPath: function () { return Array.from(arguments).join('/'); } },
         handleDomainRedirect: function () { },
         express: { static: function (folder) { return 'static:' + folder; } },
@@ -42,7 +44,10 @@ function createFixture(settings) {
         state: state,
         parent: parent,
         getDomain: function () { return domain; },
-        checkUserIpAddress: function () { return domain; }
+        checkUserIpAddress: function () { return domain; },
+        checkIpAddressEx: function () { return true; },
+        certificates: { RootName: settings.rootName || 'MeshRoot' },
+        setContentDispositionHeader: function (res, type, name) { res.disposition = { type: type, name: name }; }
     });
     return { service: service, routes: routes, mounts: mounts, state: state, domain: domain };
 }
@@ -125,4 +130,26 @@ test('domain logos and welcome images fall back through public folders', functio
     const welcomeResponse = response();
     fixture.service.handleWelcomeImage({}, welcomeResponse);
     assert.equal(welcomeResponse.file, 'domain-public/images/login/back.png');
+});
+
+test('root certificate responses decode PEM data and set a download name', function () {
+    const encoded = Buffer.from('certificate-bytes').toString('base64');
+    const fixture = createFixture({
+        rootName: 'ExampleRoot',
+        rootCertificate: '-----BEGIN CERTIFICATE-----\r\n' + encoded + '\r\n-----END CERTIFICATE-----'
+    });
+    const res = response();
+    fixture.service.handleRootCertificate({ query: {} }, res);
+    assert.equal(res.body.toString(), 'certificate-bytes');
+    assert.deepEqual(res.disposition, { type: 'application/octet-stream', name: 'ExampleRoot.cer' });
+});
+
+test('PWA manifests use the domain title and stable application metadata', function () {
+    const fixture = createFixture({ requestDomain: { title: 'Example Console' } });
+    const res = response();
+    res.json = function (value) { this.body = value; };
+    fixture.service.handleManifest({}, res);
+    assert.equal(res.body.name, 'Example Console');
+    assert.equal(res.body.short_name, 'Example Console');
+    assert.deepEqual(res.body.icons, [{ src: 'pwalogo.png', sizes: '512x512', type: 'image/png' }]);
 });

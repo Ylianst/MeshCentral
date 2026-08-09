@@ -158,11 +158,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
     const getDomain = networkAccess.getDomain;
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
-    const domainAssets = domainAssetsModule.createDomainAssets({ state: obj, parent: parent, getDomain: getDomain, checkUserIpAddress: checkUserIpAddress });
+    const domainAssets = domainAssetsModule.createDomainAssets({
+        state: obj,
+        parent: parent,
+        certificates: certificates,
+        getDomain: getDomain,
+        checkUserIpAddress: checkUserIpAddress,
+        checkIpAddressEx: checkIpAddressEx,
+        setContentDispositionHeader: setContentDispositionHeader
+    });
     const handleLogoRequest = domainAssets.handleLogo;
     const handleLoginLogoRequest = domainAssets.handleLoginLogo;
     const handlePWALogoRequest = domainAssets.handlePwaLogo;
     const handleWelcomeImageRequest = domainAssets.handleWelcomeImage;
+    const handleRootCertRequest = domainAssets.handleRootCertificate;
+    const handleManifestRequest = domainAssets.handleManifest;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -3318,51 +3328,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Use the default logo picture
             try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
         }
-    }
-
-    // Returns the server root certificate encoded in base64
-    function getRootCertBase64() {
-        var rootcert = obj.certificates.root.cert;
-        var i = rootcert.indexOf('-----BEGIN CERTIFICATE-----\r\n');
-        if (i >= 0) { rootcert = rootcert.substring(i + 29); }
-        i = rootcert.indexOf('-----END CERTIFICATE-----');
-        if (i >= 0) { rootcert = rootcert.substring(i, 0); }
-        return Buffer.from(rootcert, 'base64').toString('base64');
-    }
-
-    // Returns the mesh server root certificate
-    function handleRootCertRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleRootCertRequest: no domain'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { parent.debug('web', 'handleRootCertRequest: invalid ip'); return; } // Check server-wide IP filter only.
-        parent.debug('web', 'handleRootCertRequest()');
-        setContentDispositionHeader(res, 'application/octet-stream', certificates.RootName + '.cer', null, 'rootcert.cer');
-        res.send(Buffer.from(getRootCertBase64(), 'base64'));
-    }
-
-    // Return a customised mainifest.json for PWA
-    function handleManifestRequest(req, res){
-        const domain = checkUserIpAddress(req);
-        if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
-        parent.debug('web', 'handleManifestRequest()');
-        var manifest = {
-            "name": (domain.title != null) ? domain.title : 'MeshCentral',
-            "short_name": (domain.title != null) ? domain.title : 'MeshCentral',
-            "description": "Open source web based, remote computer management.",
-            "scope": ".",
-            "start_url": "/",
-            "display": "fullscreen",
-            "orientation": "any",
-            "theme_color": "#ffffff",
-            "background_color": "#ffffff",
-            "icons": [{
-                "src": "pwalogo.png",
-                "sizes": "512x512",
-                "type": "image/png"
-            }]
-        };
-        res.json(manifest);
     }
 
     // Handle user public file downloads
