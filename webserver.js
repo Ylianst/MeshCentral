@@ -70,6 +70,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const pushNotificationsModule = require('./webserver/push-notifications.js');
     const userAgentModule = require('./webserver/user-agent.js');
     const serverLifecycleModule = require('./webserver/server-lifecycle.js');
+    const agentControlModule = require('./webserver/agent-control.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -306,6 +307,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_MANAGECOMPUTERS = 0x00000004;
     const MESHRIGHT_REMOTECONTROL = 0x00000008;
     const MESHRIGHT_AGENTCONSOLE = 0x00000010;
+    Object.assign(obj, agentControlModule.createAgentControl({
+        state: obj,
+        common: obj.common,
+        crypto: obj.crypto,
+        getMeshRights: function (user, meshId) { return obj.GetMeshRights(user, meshId); },
+        agentConsoleRight: MESHRIGHT_AGENTCONSOLE
+    }));
     const MESHRIGHT_SERVERFILES = 0x00000020;
     const MESHRIGHT_WAKEDEVICE = 0x00000040;
     const MESHRIGHT_SETNOTES = 0x00000080;
@@ -9137,56 +9145,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         } catch (e) { console.log(e); }
     }
-
-    // Force mesh agent disconnection
-    obj.forceMeshAgentDisconnect = function (user, domain, nodeid, disconnectMode) {
-        if (nodeid == null) return;
-        var splitnode = nodeid.split('/');
-        if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
-        var agent = obj.wsagents[nodeid];
-        if (agent == null) return;
-
-        // Check we have agent rights
-        if (((obj.GetMeshRights(user, agent.dbMeshKey) & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) { agent.close(disconnectMode); }
-    };
-
-    // Send the core module to the mesh agent
-    obj.sendMeshAgentCore = function (user, domain, nodeid, coretype, coredata) {
-        if (nodeid == null) return;
-        const splitnode = nodeid.split('/');
-        if ((splitnode.length != 3) || (splitnode[1] != domain.id)) return; // Check that nodeid is valid and part of our domain
-
-        // TODO: This command only works if the agent is connected on the same server. Will not work with multi server peering.
-        const agent = obj.wsagents[nodeid];
-        if (agent == null) return;
-
-        // Check we have agent rights
-        if (((obj.GetMeshRights(user, agent.dbMeshKey) & MESHRIGHT_AGENTCONSOLE) != 0) || (user.siteadmin == 0xFFFFFFFF)) {
-            if (coretype == 'clear') {
-                // Clear the mesh agent core
-                agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
-                agent.send(obj.common.ShortToStr(10) + obj.common.ShortToStr(0));
-            } else if (coretype == 'default') {
-                // Reset to default code
-                agent.agentCoreCheck = 0; // Tell the agent object we are using a default code
-                agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-            } else if (coretype == 'recovery') {
-                // Reset to recovery core
-                agent.agentCoreCheck = 1001; // Tell the agent object we are using the recovery core.
-                agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-            } else if (coretype == 'tiny') {
-                // Reset to tiny core
-                agent.agentCoreCheck = 1011; // Tell the agent object we are using the tiny core.
-                agent.send(obj.common.ShortToStr(11) + obj.common.ShortToStr(0)); // Command 11, ask for mesh core hash.
-            } else if (coretype == 'custom') {
-                agent.agentCoreCheck = 1000; // Tell the agent object we are using a custom core.
-                var buf = Buffer.from(coredata, 'utf8');
-                const hash = obj.crypto.createHash('sha384').update(buf).digest().toString('binary'); // Perform a SHA384 hash on the core module
-                agent.sendBinary(obj.common.ShortToStr(10) + obj.common.ShortToStr(0) + hash + buf.toString('binary')); // Send the code module to the agent
-            }
-        }
-    };
-
 
     /*
         obj.wssessions = {};         // UserId --> Array Of Sessions
