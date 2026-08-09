@@ -62,6 +62,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const serverLifecycleModule = require('./webserver/server-lifecycle.js');
     const agentControlModule = require('./webserver/agent-control.js');
     const agentInvitationsModule = require('./webserver/agent-invitations.js');
+    const accountManagementModule = require('./webserver/account-management.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
@@ -574,6 +575,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     });
     const handleInviteRequest = agentInvitations.handleInviteRequest;
     const handleAgentInviteRequest = agentInvitations.handleAgentInviteRequest;
+    const accountManagement = accountManagementModule.createAccountManagement({
+        state: obj,
+        parent: parent,
+        checkUserIpAddress: checkUserIpAddress,
+        getQueryPortion: getQueryPortion,
+        renderRoot: function (req, res, domain) { handleRootRequestEx(req, res, domain); },
+        hashPassword: function (password, callback) { require('./pass').hash(password, callback, 0); }
+    });
+    const handlePasswordChangeRequest = accountManagement.handlePasswordChangeRequest;
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -1975,84 +1985,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     Object.assign(obj, passwordHistoryModule.createPasswordHistory({ debug: function (source, message) { parent.debug(source, message); }, require: require }));
-
-    // Handle password changes
-    function handlePasswordChangeRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.auth == 'sspi') || (domain.auth == 'ldap')) { parent.debug('web', 'handlePasswordChangeRequest: failed checks (1).'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-
-        // Check if the user is logged and we have all required parameters
-        if (!req.session || !req.session.userid || !req.body.apassword0 || !req.body.apassword1 || (req.body.apassword1 != req.body.apassword2) || (req.session.userid.split('/')[1] != domain.id)) {
-            parent.debug('web', 'handlePasswordChangeRequest: failed checks (2).');
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            return;
-        }
-
-        // Get the current user
-        var user = obj.users[req.session.userid];
-        if (!user) {
-            parent.debug('web', 'handlePasswordChangeRequest: user not found.');
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            return;
-        }
-
-        // Check account settings locked
-        if ((user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)) {
-            parent.debug('web', 'handlePasswordChangeRequest: account settings locked.');
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            return;
-        }
-
-        // Check old password
-        obj.checkUserPassword(domain, user, req.body.apassword0, function (result) {
-            if (result == true) {
-                // Check if the new password is allowed, only do this if this feature is enabled.
-                obj.checkOldUserPasswords(domain, user, req.body.apassword1, function (result) {
-                    if (result == 1) {
-                        parent.debug('web', 'handlePasswordChangeRequest: old password reuse attempt.');
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    } else if (result == 2) {
-                        parent.debug('web', 'handlePasswordChangeRequest: commonly used password use attempt.');
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    } else {
-                        // Update the password
-                        require('./pass').hash(req.body.apassword1, function (err, salt, hash, tag) {
-                            const nowSeconds = Math.floor(Date.now() / 1000);
-                            if (err) { parent.debug('web', 'handlePasswordChangeRequest: hash error.'); throw err; }
-                            if (domain.passwordrequirements != null) {
-                                // Save password hint if this feature is enabled
-                                if ((domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) hint = hint.substring(0, 250); user.passhint = hint; } else { delete user.passhint; }
-
-                                // Save previous password if this feature is enabled
-                                if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
-                                    if (user.oldpasswords == null) { user.oldpasswords = []; }
-                                    user.oldpasswords.push({ salt: user.salt, hash: user.hash, start: user.passchange, end: nowSeconds });
-                                    const extraOldPasswords = user.oldpasswords.length - domain.passwordrequirements.oldpasswordban;
-                                    if (extraOldPasswords > 0) { user.oldpasswords.splice(0, extraOldPasswords); }
-                                }
-                            }
-                            user.salt = salt;
-                            user.hash = hash;
-                            user.passchange = user.access = nowSeconds;
-                            delete user.passtype;
-
-                            obj.db.SetUser(user);
-                            req.session.viewmode = 2;
-                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                            obj.parent.DispatchEvent(['*', 'server-users'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'passchange', msg: 'Account password changed: ' + user.name, domain: domain.id });
-                        }, 0);
-                    }
-                });
-            } else {
-                parent.debug('web', 'handlePasswordChangeRequest: invalid current password.');
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            }
-        });
-    }
 
     // Called when a strategy login occurred
     // This is called after a successful Oauth to Twitter, Google, GitHub...
