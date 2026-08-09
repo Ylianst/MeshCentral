@@ -22,12 +22,18 @@ function createFixture(settings) {
             validateString: function (value) { return typeof value === 'string'; },
             IsFilenameValid: function (value) { return /^[a-zA-Z0-9_.-]+$/.test(value) && (value !== '..'); }
         },
-        fs: { statSync: function () { return { mode: 0, size: 42 }; } },
+        fs: {
+            statSync: function () { return { mode: 0, size: 42 }; },
+            exists: function (file, callback) { callback(settings.fileExists !== false); }
+        },
+        getServerFilePath: settings.getServerFilePath || function () { return null; },
         GetNodeWithRights: settings.getNodeWithRights || function (d, user, nodeId, callback) { callback({ _id: nodeId, meshid: 'mesh/tenant/1' }, 8, true); },
         meshDeviceFileHandler: { CreateMeshDeviceFile: function () { transfers.push(Array.from(arguments)); } }
     };
     const parent = {
         loginCookieEncryptionKey: 'key',
+        path: path,
+        webPublicPath: 'public',
         decodeCookie: settings.decodeCookie || function () { return null; }
     };
     const service = createFileDownloads({
@@ -43,7 +49,8 @@ function createFixture(settings) {
         getRenderPage: function (page) { return page; },
         getRenderArgs: function (args) { return args; },
         getRootCertLink: function () { return 'certificate'; },
-        remoteControlRight: 8
+        remoteControlRight: 8,
+        getLanguageCodes: function () { return settings.languages || ['en']; }
     });
     return { service: service, state: state, domain: domain, transfers: transfers };
 }
@@ -91,4 +98,23 @@ test('agent downloads accept only scoped temporary-file cookies', function () {
     const invalidResponse = response();
     invalid.service.downloadAgentFile({ query: { c: 'cookie' } }, invalidResponse);
     assert.equal(invalidResponse.status, 404);
+});
+
+test('authenticated server-file downloads use resolved storage paths', function () {
+    const userId = 'user/tenant/alice';
+    const fixture = createFixture({
+        users: { [userId]: { _id: userId } },
+        getServerFilePath: function () { return { name: 'report.txt', fullpath: path.join('files', 'report.txt') }; }
+    });
+    const res = response();
+    fixture.service.downloadServerFile({ query: { link: 'link' }, session: { userid: userId } }, res);
+    assert.deepEqual(res.disposition, { type: 'application/octet-stream', name: 'report.txt' });
+    assert.equal(res.file, path.join('files', 'report.txt'));
+});
+
+test('MeshCommander selects the first supported requested language', function () {
+    const fixture = createFixture({ languages: ['xx', 'es'] });
+    const res = response();
+    fixture.service.meshCommander({ session: { userid: 'user/tenant/alice' } }, res);
+    assert.equal(res.file, path.join('public', 'commander-es.htm'));
 });

@@ -19,6 +19,7 @@ module.exports.createFileDownloads = function (options) {
     const getRenderArgs = options.getRenderArgs;
     const getRootCertLink = options.getRootCertLink;
     const remoteControlRight = options.remoteControlRight;
+    const getLanguageCodes = options.getLanguageCodes;
 
     function downloadUserFile(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -81,5 +82,39 @@ module.exports.createFileDownloads = function (options) {
         try { res.sendFile(state.path.join(state.filespath, 'tmp', cookie.f)); } catch (ex) { res.sendStatus(404); }
     }
 
-    return { downloadUserFile: downloadUserFile, downloadDeviceFile: downloadDeviceFile, downloadAgentFile: downloadAgentFile };
+    function downloadServerFile(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain.userQuota === -1)) { res.sendStatus(404); return; }
+        const user = state.users[req.session.userid];
+        if (user == null) { res.sendStatus(404); return; }
+        const file = state.getServerFilePath(user, domain, req.query.link);
+        if (file == null) { res.sendStatus(404); return; }
+        setContentDispositionHeader(res, 'application/octet-stream', file.name, null, 'file.bin');
+        state.fs.exists(file.fullpath, function (exists) { if (exists === true) res.sendFile(file.fullpath); else res.sendStatus(404); });
+    }
+
+    function meshCommander(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        if ((req.session == null) || (req.session.userid == null)) { res.sendStatus(404); return; }
+        const translations = { en: '', de: '-de', es: '-es', fr: '-fr', it: '-it', ja: '-ja', ko: '-ko', nl: '-nl', pt: '-pt', ru: '-ru', 'zh-chs': '-zh-chs', 'zh-cht': '-zh-chs' };
+        const languages = getLanguageCodes(req);
+        for (var i in languages) {
+            const suffix = translations[languages[i]];
+            if (suffix != null) {
+                try { res.sendFile(parent.path.join(parent.webPublicPath, 'commander' + suffix + '.htm')); } catch (ex) { }
+                return;
+            }
+        }
+        try { res.sendFile(parent.path.join(parent.webPublicPath, 'commander.htm')); } catch (ex) { }
+    }
+
+    return {
+        downloadUserFile: downloadUserFile,
+        downloadDeviceFile: downloadDeviceFile,
+        downloadAgentFile: downloadAgentFile,
+        downloadServerFile: downloadServerFile,
+        meshCommander: meshCommander
+    };
 };

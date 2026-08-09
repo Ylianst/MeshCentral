@@ -352,11 +352,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getRenderPage: getRenderPage,
         getRenderArgs: getRenderArgs,
         getRootCertLink: getRootCertLink,
-        remoteControlRight: MESHRIGHT_REMOTECONTROL
+        remoteControlRight: MESHRIGHT_REMOTECONTROL,
+        getLanguageCodes: obj.getLanguageCodes
     });
     const handleDownloadUserFiles = fileDownloads.downloadUserFile;
     const handleDeviceFile = fileDownloads.downloadDeviceFile;
     const handleAgentDownloadFile = fileDownloads.downloadAgentFile;
+    const handleDownloadFile = fileDownloads.downloadServerFile;
+    const handleMeshCommander = fileDownloads.meshCommander;
     const translations = translationsModule.createTranslations({
         state: obj,
         parent: parent,
@@ -3451,41 +3454,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Download a file from the server
-    function handleDownloadFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
-        const user = obj.users[req.session.userid];
-        if (user == null) { res.sendStatus(404); return; }
-        const file = obj.getServerFilePath(user, domain, req.query.link);
-        if (file == null) { res.sendStatus(404); return; }
-        setContentDispositionHeader(res, 'application/octet-stream', file.name, null, 'file.bin');
-        obj.fs.exists(file.fullpath, function (exists) { if (exists == true) { res.sendFile(file.fullpath); } else { res.sendStatus(404); } });
-    }
-
-    // Download the MeshCommander web page
-    function handleMeshCommander(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((req.session == null) || (req.session.userid == null)) { res.sendStatus(404); return; }
-
-        // Find the correct MeshCommander language to send
-        const acceptableLanguages = obj.getLanguageCodes(req);
-        const commandLanguageTranslations = { 'en': '', 'de': '-de', 'es': '-es', 'fr': '-fr', 'it': '-it', 'ja': '-ja', 'ko': '-ko', 'nl': '-nl', 'pt': '-pt', 'ru': '-ru', 'zh-chs': '-zh-chs', 'zh-cht': '-zh-chs' };
-        for (var i in acceptableLanguages) {
-            const meshCommanderLanguage = commandLanguageTranslations[acceptableLanguages[i]];
-            if (meshCommanderLanguage != null) {
-                try { res.sendFile(obj.parent.path.join(parent.webPublicPath, 'commander' + meshCommanderLanguage + '.htm')); } catch (ex) { }
-                return;
-            }
-        }
-
-        // Send out the default english MeshCommander
-        try { res.sendFile(obj.parent.path.join(parent.webPublicPath, 'commander.htm')); } catch (ex) { }
-    }
-
-    // Upload a MeshCore.js file to the server
     function handleUploadMeshCoreFile(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
