@@ -1666,7 +1666,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((domain.auth == 'sspi') || (domain.auth == 'ldap') || (domain.mailserver == null)) { parent.debug('web', 'handleCheckMailRequest: failed checks.'); res.sendStatus(404); return; }
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
 
-        if (req.query.c != null) {
+        if (emailAccountUtils.hasEmailLinkCookie(req.query)) {
             var cookie = obj.parent.decodeCookie(req.query.c, domain.mailserver.mailCookieEncryptionKey, 30);
             if ((cookie != null) && (cookie.u != null) && (cookie.u.startsWith('user/')) && (cookie.e != null)) {
                 var idsplit = cookie.u.split('/');
@@ -1701,6 +1701,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else {
                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
             }
+        } else {
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
         }
     }
 

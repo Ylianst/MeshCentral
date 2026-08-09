@@ -11,6 +11,7 @@ const hasOtherVerifiedUser = require('../webserver/email-account-utils.js').hasO
 const hasDatabaseFailure = require('../webserver/email-account-utils.js').hasDatabaseFailure;
 const createTemporaryPassword = require('../webserver/email-account-utils.js').createTemporaryPassword;
 const getActiveUser = require('../webserver/email-account-utils.js').getActiveUser;
+const hasEmailLinkCookie = require('../webserver/email-account-utils.js').hasEmailLinkCookie;
 
 test('the current account does not conflict with its own verified email', function () {
     assert.equal(hasOtherVerifiedUser([{ _id: 'user/tenant/alice' }], 'user/tenant/alice'), false);
@@ -61,4 +62,12 @@ test('active account lookup detects users removed during asynchronous work', fun
     assert.equal(getActiveUser({ [user._id]: user }, user._id), user);
     assert.equal(getActiveUser({}, user._id), null);
     assert.equal(getActiveUser(null, user._id), null);
+});
+
+test('email link cookie presence distinguishes absent and supplied parameters', function () {
+    assert.equal(hasEmailLinkCookie(null), false);
+    assert.equal(hasEmailLinkCookie({}), false);
+    assert.equal(hasEmailLinkCookie({ c: null }), false);
+    assert.equal(hasEmailLinkCookie({ c: '' }), true);
+    assert.equal(hasEmailLinkCookie({ c: 'cookie' }), true);
 });
