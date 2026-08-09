@@ -91,6 +91,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const ssoLoginModule = require('./webserver/sso-login.js');
     const sessionLogoutModule = require('./webserver/session-logout.js');
     const rootRequestsModule = require('./webserver/root-requests.js');
+    const emailAccountUtils = require('./webserver/email-account-utils.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -1615,7 +1616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             // Check is email already exists
             obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
-                if ((err != null) || ((docs.length > 0) && (docs.find(function (u) { return (u._id === req.session.cuserid); }) < 0))) {
+                if ((err != null) || emailAccountUtils.hasOtherVerifiedUser(docs, req.session.cuserid)) {
                     // Email already exists
                     req.session.messageid = 102; // Existing account with this email address.
                 } else {
@@ -1676,7 +1677,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
-                                            if ((docs.length > 0) && (docs.find(function (u) { return (u._id === user._id); }) < 0)) {
+                                            if (emailAccountUtils.hasOtherVerifiedUser(docs, user._id)) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
                                                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
                                             } else {
