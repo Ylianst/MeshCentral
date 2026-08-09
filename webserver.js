@@ -65,6 +65,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const sessionsModule = require('./webserver/sessions.js');
     const externalGroupsModule = require('./webserver/external-groups.js');
     const serverIdentityModule = require('./webserver/server-identity.js');
+    const sessionCountsModule = require('./webserver/session-counts.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -225,6 +226,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     });
     const syncExternalUserGroups = externalGroups.syncExternalUserGroups;
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
+    Object.assign(obj, sessionCountsModule.createSessionCounts({
+        state: obj,
+        dispatchEvent: function (targets, source, event) { parent.DispatchEvent(targets, source, event); }
+    }));
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
     const safeUploadTempRoots = (function () {
@@ -9238,79 +9243,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         obj.wsPeerSessions2 = {};    // "UserId + SessionRnd" --> ServerId
         obj.wsPeerSessions3 = {};    // ServerId --> UserId --> [ SessionId ]
     */
-
-    // Count sessions and event any changes
-    obj.recountSessions = function (changedSessionId) {
-        var userid, oldcount, newcount, x, serverid;
-        if (changedSessionId == null) {
-            // Recount all sessions
-
-            // Calculate the session count for all userid's
-            var newSessionsCount = {};
-            for (userid in obj.wssessions) { newSessionsCount[userid] = obj.wssessions[userid].length; }
-            for (serverid in obj.wsPeerSessions3) {
-                for (userid in obj.wsPeerSessions3[serverid]) {
-                    x = obj.wsPeerSessions3[serverid][userid].length;
-                    if (newSessionsCount[userid] == null) { newSessionsCount[userid] = x; } else { newSessionsCount[userid] += x; }
-                }
-            }
-
-            // See what session counts have changed, event any changes
-            for (userid in newSessionsCount) {
-                newcount = newSessionsCount[userid];
-                oldcount = obj.sessionsCount[userid];
-                if (oldcount == null) { oldcount = 0; } else { delete obj.sessionsCount[userid]; }
-                if (newcount != oldcount) {
-                    x = userid.split('/');
-                    var u = obj.users[userid];
-                    if (u) {
-                        var targets = ['*', 'server-users'];
-                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                        obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', userid: userid, username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
-                    }
-                }
-            }
-
-            // If there are any counts left in the old counts, event to zero
-            for (userid in obj.sessionsCount) {
-                oldcount = obj.sessionsCount[userid];
-                if ((oldcount != null) && (oldcount != 0)) {
-                    x = userid.split('/');
-                    var u = obj.users[userid];
-                    if (u) {
-                        var targets = ['*', 'server-users'];
-                        if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                        obj.parent.DispatchEvent(['*'], obj, { action: 'wssessioncount', userid: userid, username: x[2], count: 0, domain: x[1], nolog: 1, nopeers: 1 })
-                    }
-                }
-            }
-
-            // Set the new session counts
-            obj.sessionsCount = newSessionsCount;
-        } else {
-            // Figure out the userid
-            userid = changedSessionId.split('/').slice(0, 3).join('/');
-
-            // Recount only changedSessionId
-            newcount = 0;
-            if (obj.wssessions[userid] != null) { newcount = obj.wssessions[userid].length; }
-            for (serverid in obj.wsPeerSessions3) { if (obj.wsPeerSessions3[serverid][userid] != null) { newcount += obj.wsPeerSessions3[serverid][userid].length; } }
-            oldcount = obj.sessionsCount[userid];
-            if (oldcount == null) { oldcount = 0; }
-
-            // If the count changed, update and event
-            if (newcount != oldcount) {
-                x = userid.split('/');
-                var u = obj.users[userid];
-                if (u) {
-                    var targets = ['*', 'server-users'];
-                    if (u.groups) { for (var i in u.groups) { targets.push('server-users:' + i); } }
-                    obj.parent.DispatchEvent(targets, obj, { action: 'wssessioncount', userid: userid, username: x[2], count: newcount, domain: x[1], nolog: 1, nopeers: 1 });
-                    obj.sessionsCount[userid] = newcount;
-                }
-            }
-        }
-    };
 
     // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
     obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
