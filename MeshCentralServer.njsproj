@@ -256,6 +256,7 @@
     <Compile Include="webserver\sanitization.js" />
     <Compile Include="webserver\sessions.js" />
     <Compile Include="webserver\server-identity.js" />
+    <Compile Include="webserver\server-lifecycle.js" />
     <Compile Include="webserver\session-counts.js" />
     <Compile Include="webserver\storage.js" />
     <Compile Include="webserver\throttling.js" />
