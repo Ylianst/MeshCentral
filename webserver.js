@@ -1784,7 +1784,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
             const strategy = domain.authstrategies[req.user.strategy];
-            const groups = { 'enabled': typeof strategy.groups == 'object' }
+            const groups = { 'enabled': ssoStrategiesModule.isGroupConfiguration(strategy.groups) }
             parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups);

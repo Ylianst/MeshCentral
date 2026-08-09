@@ -18,6 +18,7 @@
     };
 
 module.exports.constants = domainAuthStrategyConsts;
+module.exports.isGroupConfiguration = function (value) { return (value != null) && (typeof value == 'object'); };
 module.exports.createSsoStrategies = function (options) {
     const obj = options.state;
     const parent = options.parent;
@@ -256,7 +257,7 @@ module.exports.createSsoStrategies = function (options) {
             } else {
                 strategy.options.params = Object.assign(strategy.options.params || {}, { 'scope': ['openid', 'profile', 'email'] });
             }
-            if (typeof strategy.groups == 'object') {
+            if (module.exports.isGroupConfiguration(strategy.groups)) {
                 strategy.custom.authorities = obj.common.convertStrArray(strategy.custom.authorities, ' ')
                 // Check if authorities does not exist or includes groups
                 if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
@@ -617,4 +618,3 @@ module.exports.createSsoStrategies = function (options) {
 
     return setupDomainAuthStrategy;
 };
-

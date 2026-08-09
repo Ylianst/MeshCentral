@@ -47,6 +47,12 @@ test('exports stable strategy flag values', function () {
     assert.deepEqual(ssoStrategies.constants, { twitter: 1, google: 2, github: 4, reddit: 8, azure: 16, oidc: 32, saml: 64, intelSaml: 128, jumpCloudSaml: 256 });
 });
 
+test('null is not treated as a group configuration', function () {
+    assert.equal(ssoStrategies.isGroupConfiguration(null), false);
+    assert.equal(ssoStrategies.isGroupConfiguration(undefined), false);
+    assert.equal(ssoStrategies.isGroupConfiguration({}), true);
+});
+
 test('domains without authentication strategies require no provider modules', async function () {
     const fixture = createFixture();
     const result = await fixture.setup({ id: 'tenant', url: '/tenant/' });
