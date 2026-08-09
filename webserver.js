@@ -234,8 +234,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     });
     const handleUploadMeshCoreFile = specialUploads.uploadMeshCore;
     const handleOneClickRecoveryFile = specialUploads.uploadOneClickRecovery;
-    const fileUploads = fileUploadsModule.createFileUploads({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath, readTotalFileSize: readTotalFileSize, createUploadQuota: uploadQuotaModule.createUploadQuota });
+    const fileUploads = fileUploadsModule.createFileUploads({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkCookieIp: checkCookieIp, resolveSafeUploadTempPath: resolveSafeUploadTempPath, readTotalFileSize: readTotalFileSize, createUploadQuota: uploadQuotaModule.createUploadQuota, getRandomPassword: getRandomPassword, remoteControlRight: MESHRIGHT_REMOTECONTROL });
     const handleUploadFile = fileUploads.handleUpload;
+    const handleUploadFileBatch = fileUploads.handleBatchUpload;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -3235,118 +3236,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.redirect(domain.url + getQueryPortion(req));
             return;
         }
-    }
-
-    function handleUploadFileBatch(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-        const multiparty = require('multiparty');
-        const form = new multiparty.Form();
-        form.parse(req, function (err, fields, files) {
-            // If an authentication cookie is embedded in the form, use that.
-            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
-                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
-                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
-            }
-            if (authUserid == null) { res.sendStatus(401); return; }
-
-            // Get the user
-            const user = obj.users[authUserid];
-            if (user == null) { parent.debug('web', 'Batch upload error, invalid user.'); res.sendStatus(401); return; } // Check if user exists
-
-            // Get fields
-            if ((fields == null) || (fields.nodeIds == null) || (fields.nodeIds.length != 1)) { res.sendStatus(404); return; }
-            var cmd = { nodeids: fields.nodeIds[0].split(','), files: [], user: user, domain: domain, overwrite: false, createFolder: false };
-            if ((fields.winpath != null) && (fields.winpath.length == 1)) { cmd.windowsPath = fields.winpath[0]; }
-            if ((fields.linuxpath != null) && (fields.linuxpath.length == 1)) { cmd.linuxPath = fields.linuxpath[0]; }
-            if ((fields.overwriteFiles != null) && (fields.overwriteFiles.length == 1) && (fields.overwriteFiles[0] == 'on')) { cmd.overwrite = true; }
-            if ((fields.createFolder != null) && (fields.createFolder.length == 1) && (fields.createFolder[0] == 'on')) { cmd.createFolder = true; }
-
-            // Check if we have at least one target path
-            if ((cmd.windowsPath == null) && (cmd.linuxPath == null)) {
-                parent.debug('web', 'Batch upload error, invalid fields: ' + JSON.stringify(fields));
-                res.send('');
-                return;
-            }
-
-            const preparedUploads = fileUploadsModule.prepareBatchUploadFiles({ files: files, path: obj.path, common: obj.common, fs: obj.fs, resolveSafeUploadTempPath: resolveSafeUploadTempPath });
-            if (preparedUploads.error != null) { res.sendStatus(400); return; }
-
-            // Get server temporary path
-            var serverpath = obj.path.join(obj.filespath, 'tmp')
-            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
-            try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
-
-            // More typical upload method, the file data is in a multipart mime post.
-            for (var i in preparedUploads.files) {
-                const file = preparedUploads.files[i];
-                const ftarget = getRandomPassword() + '-' + file.name;
-                const targetPath = obj.path.join(serverpath, ftarget);
-                const uploadTempPath = file.tempPath;
-                cmd.files.push({ name: file.name, target: ftarget });
-                // Rename the file
-                obj.fs.rename(uploadTempPath, targetPath, function (err) {
-                    if (err && (err.code === 'EXDEV')) {
-                        // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
-                        obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function (err) { }); });
-                    }
-                });
-            }
-
-            // Instruct one of more agents to download a URL to a given local drive location.
-            var tlsCertHash = null;
-            if ((parent.args.ignoreagenthashcheck == null) || (parent.args.ignoreagenthashcheck === false)) { // TODO: If ignoreagenthashcheck is an array of IP addresses, not sure how to handle this.
-                tlsCertHash = obj.webCertificateFullHashs[cmd.domain.id];
-                if (tlsCertHash != null) { tlsCertHash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
-            }
-            for (var i in cmd.nodeids) {
-                obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
-                    if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
-                    var agentPath = (((node.agent.id > 0) && (node.agent.id < 5)) || (node.agent.id == 34)) ? cmd.windowsPath : cmd.linuxPath;
-                    if (agentPath == null) return;
-
-                    // Compute user consent
-                    var consent = 0;
-                    var mesh = obj.meshes[node.meshid];
-                    if (typeof domain.userconsentflags == 'number') { consent |= domain.userconsentflags; } // Add server required consent flags
-                    if ((mesh != null) && (typeof mesh.consent == 'number')) { consent |= mesh.consent; } // Add device group user consent
-                    if (typeof node.consent == 'number') { consent |= node.consent; } // Add node user consent
-                    if (typeof user.consent == 'number') { consent |= user.consent; } // Add user consent
-
-                    // Check if we need to add consent flags because of a user group link
-                    if ((mesh != null) && (user.links != null) && (user.links[mesh._id] == null) && (user.links[node._id] == null)) {
-                        // This user does not have a direct link to the device group or device. Find all user groups the would cause the link.
-                        for (var i in user.links) {
-                            var ugrp = obj.userGroups[i];
-                            if ((ugrp != null) && (ugrp.consent != null) && (ugrp.links != null) && ((ugrp.links[mesh._id] != null) || (ugrp.links[node._id] != null))) {
-                                consent |= ugrp.consent; // Add user group consent flags
-                            }
-                        }
-                    }
-
-                    // Event that this operation is being performed.
-                    var targets = obj.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', cmd.user._id]);
-                    var msgid = 103; // "Batch upload of {0} file(s) to folder {1}"
-                    var event = { etype: 'node', userid: cmd.user._id, username: cmd.user.name, nodeid: node._id, action: 'batchupload', msg: 'Performing batch upload of ' + cmd.files.length + ' file(s) to ' + agentPath, msgid: msgid, msgArgs: [cmd.files.length, agentPath], domain: cmd.domain.id };
-                    parent.DispatchEvent(targets, obj, event);
-
-                    // Send the agent commands to perform the batch upload operation
-                    for (var f in cmd.files) {
-                        if (cmd.files[f].name != null) {
-                            const acmd = { action: 'wget', userid: user._id, username: user.name, realname: user.realname, remoteaddr: req.clientIp, consent: consent, rights: rights, overwrite: cmd.overwrite, createFolder: cmd.createFolder, urlpath: '/agentdownload.ashx?c=' + obj.parent.encodeCookie({ a: 'tmpdl', d: cmd.domain.id, nid: node._id, f: cmd.files[f].target }, obj.parent.loginCookieEncryptionKey), path: obj.path.join(agentPath, cmd.files[f].name), folder: agentPath, servertlshash: tlsCertHash };
-                            var agent = obj.wsagents[node._id];
-                            if (agent != null) { try { agent.send(JSON.stringify(acmd)); } catch (ex) { } }
-                            // TODO: Add support for peer servers.
-                        }
-                    }
-                });
-            }
-
-            res.send('');
-        });
     }
 
     // Handle a web socket relay request

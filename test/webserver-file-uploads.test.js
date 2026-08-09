@@ -47,6 +47,56 @@ function createFixture(fields) {
     return { service: service, userId: userId, writes: writes, directories: directories };
 }
 
+function createBatchFixture(fields, files, rights) {
+    const sent = [], events = [], renames = [], cookies = [];
+    function Form() { }
+    Form.prototype.parse = function (req, callback) { callback(null, fields, files); };
+    const userId = 'user/tenant/alice';
+    const parent = {
+        args: {},
+        filespath: 'files',
+        loginCookieEncryptionKey: 'key',
+        debug: function () { },
+        decodeCookie: function () { return null; },
+        encodeCookie: function (cookie) { cookies.push(cookie); return 'encoded'; },
+        DispatchEvent: function (targets, state, event) { events.push({ targets: targets, event: event }); }
+    };
+    const state = {
+        parent: parent,
+        path: path,
+        filespath: 'files',
+        users: { [userId]: { _id: userId, name: 'Alice', realname: 'Alice Example', consent: 8, links: {} } },
+        meshes: { 'mesh/tenant/one': { _id: 'mesh/tenant/one', consent: 2 } },
+        userGroups: {},
+        wsagents: { 'node/tenant/one': { send: function (message) { sent.push(JSON.parse(message)); } } },
+        webCertificateFullHashs: {},
+        common: {
+            IsFilenameValid: function (name) { return /^[a-zA-Z0-9_.-]+$/.test(name); },
+            copyFile: function () { }
+        },
+        fs: {
+            mkdirSync: function () { },
+            unlink: function () { },
+            rename: function (source, target, callback) { renames.push({ source: source, target: target }); callback(); }
+        },
+        GetNodeWithRights: function (domain, user, nodeId, callback) { callback({ _id: nodeId, meshid: 'mesh/tenant/one', agent: { id: 1 }, consent: 4 }, rights, true); },
+        CreateNodeDispatchTargets: function () { return ['target']; }
+    };
+    const service = createFileUploads({
+        state: state,
+        parent: parent,
+        checkUserIpAddress: function () { return { id: 'tenant', userconsentflags: 1 }; },
+        checkCookieIp: function () { return true; },
+        resolveSafeUploadTempPath: function () { return 'safe/temp/upload'; },
+        readTotalFileSize: function () { return 0; },
+        createUploadQuota: createUploadQuota,
+        getRandomPassword: function () { return 'random'; },
+        remoteControlRight: 8,
+        multiparty: { Form: Form }
+    });
+    return { service: service, userId: userId, sent: sent, events: events, renames: renames, cookies: cookies };
+}
+
 function response() { return { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } }; }
 
 test('embedded uploads reject missing companion fields', function () {
@@ -102,4 +152,39 @@ test('batch uploads retain only validated safe filenames and temporary paths', f
         resolveSafeUploadTempPath: function () { return 'safe/temp/upload'; }
     });
     assert.deepEqual(result, { files: [{ name: 'update.bin', tempPath: 'safe/temp/upload' }] });
+});
+
+test('batch upload handler ignores requests without a target path', function () {
+    const fixture = createBatchFixture({ nodeIds: ['node/tenant/one'] }, { files: [{ originalFilename: 'update.bin', path: 'temp/upload' }] }, 8);
+    const res = response();
+    fixture.service.handleBatchUpload({ session: { userid: fixture.userId }, clientIp: '127.0.0.1' }, res);
+    assert.equal(res.body, '');
+    assert.equal(fixture.renames.length, 0);
+    assert.equal(fixture.events.length, 0);
+    assert.equal(fixture.sent.length, 0);
+});
+
+test('batch upload handler stages files and instructs authorized Windows agents', function () {
+    const fixture = createBatchFixture({ nodeIds: ['node/tenant/one'], winpath: ['C:\\Target'], overwriteFiles: ['on'], createFolder: ['on'] }, { files: [{ originalFilename: 'update.bin', path: 'temp/upload' }] }, 8);
+    const res = response();
+    fixture.service.handleBatchUpload({ session: { userid: fixture.userId }, clientIp: '127.0.0.1' }, res);
+    assert.equal(res.body, '');
+    assert.deepEqual(fixture.renames, [{ source: 'safe/temp/upload', target: path.join('files', 'tmp', 'random-update.bin') }]);
+    assert.equal(fixture.events.length, 1);
+    assert.equal(fixture.sent.length, 1);
+    assert.equal(fixture.sent[0].action, 'wget');
+    assert.equal(fixture.sent[0].path, path.join('C:\\Target', 'update.bin'));
+    assert.equal(fixture.sent[0].consent, 15);
+    assert.equal(fixture.sent[0].overwrite, true);
+    assert.equal(fixture.sent[0].createFolder, true);
+    assert.deepEqual(fixture.cookies, [{ a: 'tmpdl', d: 'tenant', nid: 'node/tenant/one', f: 'random-update.bin' }]);
+});
+
+test('batch upload handler does not instruct agents without remote-control rights', function () {
+    const fixture = createBatchFixture({ nodeIds: ['node/tenant/one'], winpath: ['C:\\Target'] }, { files: [{ originalFilename: 'update.bin', path: 'temp/upload' }] }, 0);
+    const res = response();
+    fixture.service.handleBatchUpload({ session: { userid: fixture.userId }, clientIp: '127.0.0.1' }, res);
+    assert.equal(res.body, '');
+    assert.equal(fixture.events.length, 0);
+    assert.equal(fixture.sent.length, 0);
 });
