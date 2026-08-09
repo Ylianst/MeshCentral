@@ -93,6 +93,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const recordingsModule = require('./webserver/recordings.js');
     const specialUploadsModule = require('./webserver/special-uploads.js');
     const auxiliaryWebSocketsModule = require('./webserver/auxiliary-websockets.js');
+    const messengerModule = require('./webserver/messenger.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -288,6 +289,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleGetRecordings = recordings.download;
     const handleGetRecordingsWebSocket = recordings.stream;
     const handlePlayerRequest = recordings.player;
+    const messenger = messengerModule.createMessenger({ state: obj, parent: parent, args: args, getDomain: getDomain, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs });
+    const handleMessengerRequest = messenger.handlePage;
+    const handleMessengerImageRequest = messenger.handleImage;
     obj.getLanguageCodes = rendering.getLanguageCodes;
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
@@ -3222,100 +3226,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             res.redirect(domain.url + getQueryPortion(req));
             return;
-        }
-    }
-
-    function handleMessengerRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleMessengerRequest: no domain'); res.sendStatus(404); return; }
-        parent.debug('web', 'handleMessengerRequest()');
-
-        // Check if we are in maintenance mode
-        if (parent.config.settings.maintenancemode != null) {
-            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-            return;
-        }
-
-        // Check if this session is for a user
-        if (req.query.id == null) { res.sendStatus(404); return; }
-        var idSplit = decodeURIComponent(req.query.id).split('/');
-        if ((idSplit.length != 7) || (idSplit[0] != 'meshmessenger')) { res.sendStatus(404); return; }
-        if ((idSplit[1] == 'user') && (idSplit[4] == 'user')) {
-            // This is a user to user conversation, both users must be logged in.
-            var user1 = idSplit[1] + '/' + idSplit[2] + '/' + idSplit[3]
-            var user2 = idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]
-            if (!req.session || !req.session.userid) {
-                // Redirect to login page
-                if (req.query.key != null) { res.redirect(domain.url + '?key=' + encodeURIComponent(req.query.key) + '&meshmessengerid=' + encodeURIComponent(req.query.id)); } else { res.redirect(domain.url + '?meshmessengerid=' + encodeURIComponent(req.query.id)); }
-                return;
-            }
-            if ((req.session.userid != user1) && (req.session.userid != user2)) { res.sendStatus(404); return; }
-        }
-
-        // Get WebRTC configuration
-        var webRtcConfig = null;
-        if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
-        else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
-
-        // Setup other options
-        var options = { webrtcconfig: webRtcConfig };
-        if (typeof domain.meshmessengertitle == 'string') { options.meshMessengerTitle = domain.meshmessengertitle; } else { options.meshMessengerTitle = '!'; }
-
-        // Get the userid and name
-        if ((domain.meshmessengertitle != null) && (req.query.id != null) && (req.query.id.startsWith('meshmessenger/node'))) {
-            if (idSplit.length == 7) {
-                const user = obj.users[idSplit[4] + '/' + idSplit[5] + '/' + idSplit[6]];
-                if (user != null) {
-                    if (domain.meshmessengertitle.indexOf('{0}') >= 0) { options.username = encodeURIComponent(user.realname ? user.realname : user.name).replace(/'/g, '%27'); }
-                    if (domain.meshmessengertitle.indexOf('{1}') >= 0) { options.userid = encodeURIComponent(user.name).replace(/'/g, '%27'); }
-                }
-            }
-        }
-
-        // Render the page
-        res.set({ 'Cache-Control': 'no-store' });
-        render(req, res, getRenderPage('messenger', req, domain), getRenderArgs(options, req, domain));
-    }
-
-    // Handle messenger image request
-    function handleMessengerImageRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleMessengerImageRequest: no domain'); res.sendStatus(404); return; }
-        parent.debug('web', 'handleMessengerImageRequest()');
-
-        // Check if we are in maintenance mode
-        if (parent.config.settings.maintenancemode != null) { res.sendStatus(404); return; }
-
-        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if (domain.meshmessengerpicture) {
-            // Use the configured messenger logo picture
-            try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.meshmessengerpicture)); return; } catch (ex) { }
-        }
-
-        var imagefile = 'images/messenger.png';
-        if (domain.webpublicpath != null) {
-            obj.fs.exists(obj.path.join(domain.webpublicpath, imagefile), function (exists) {
-                if (exists) {
-                    // Use the domain logo picture
-                    try { res.sendFile(obj.path.join(domain.webpublicpath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                } else {
-                    // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                }
-            });
-        } else if (parent.webPublicOverridePath) {
-            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, imagefile), function (exists) {
-                if (exists) {
-                    // Use the override logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                } else {
-                    // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                }
-            });
-        } else {
-            // Use the default logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
         }
     }
 
