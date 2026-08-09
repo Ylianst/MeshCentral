@@ -284,6 +284,7 @@
     <Compile Include="webserver\session-counts.js" />
     <Compile Include="webserver\storage.js" />
     <Compile Include="webserver\sso-strategies.js" />
+    <Compile Include="webserver\special-uploads.js" />
     <Compile Include="webserver\subscriptions.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="webserver\telemetry.js" />

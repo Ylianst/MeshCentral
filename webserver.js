@@ -91,6 +91,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const captchaModule = require('./webserver/captcha.js');
     const termsModule = require('./webserver/terms.js');
     const recordingsModule = require('./webserver/recordings.js');
+    const specialUploadsModule = require('./webserver/special-uploads.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -215,6 +216,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleCustomIconUpload = customIconHandlers.upload;
     const handleCustomIconDelete = customIconHandlers.remove;
     const handleCustomIconDownload = customIconHandlers.download;
+    const specialUploads = specialUploadsModule.createSpecialUploads({
+        state: obj,
+        parent: parent,
+        checkUserIpAddress: checkUserIpAddress,
+        checkCookieIp: checkCookieIp,
+        resolveSafeUploadTempPath: resolveSafeUploadTempPath
+    });
+    const handleUploadMeshCoreFile = specialUploads.uploadMeshCore;
+    const handleOneClickRecoveryFile = specialUploads.uploadOneClickRecovery;
     const rendering = renderingModule.createRendering({
         path: obj.path,
         fs: obj.fs,
@@ -3452,94 +3462,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Perform redirection
             res.redirect(domain.redirects[urlName] + urlArgs + getQueryPortion(req));
         }
-    }
-
-    function handleUploadMeshCoreFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (domain.id !== '') { res.sendStatus(401); return; }
-
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-
-        const multiparty = require('multiparty');
-        const form = new multiparty.Form();
-        form.parse(req, function (err, fields, files) {
-            // If an authentication cookie is embedded in the form, use that.
-            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
-                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
-                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
-            }
-            if (authUserid == null) { res.sendStatus(401); return; }
-            if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
-
-            // Get the user
-            const user = obj.users[authUserid];
-            if (user == null) { res.sendStatus(401); return; } // Check this user exists
-
-            // Get the node and check node rights
-            const nodeid = fields.attrib[0];
-            obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
-                if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
-                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
-                    if (uploadTempPath == null) { res.sendStatus(400); return; }
-                    obj.fs.readFile(uploadTempPath, 'utf8', function (err, data) {
-                        if (err != null) return;
-                        data = obj.common.IntToStr(0) + data; // Add the 4 bytes encoding type & flags (Set to 0 for raw)
-                        obj.sendMeshAgentCore(user, domain, fields.attrib[0], 'custom', data); // Upload the core
-                        try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { }
-                    });
-                }
-                res.send('');
-            });
-        });
-    }
-
-    // Upload a MeshCore.js file to the server
-    function handleOneClickRecoveryFile(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (domain.id !== '') { res.sendStatus(401); return; }
-
-        var authUserid = null;
-        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
-
-        const multiparty = require('multiparty');
-        const form = new multiparty.Form();
-        form.parse(req, function (err, fields, files) {
-            // If an authentication cookie is embedded in the form, use that.
-            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
-                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
-                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
-            }
-            if (authUserid == null) { res.sendStatus(401); return; }
-            if ((fields == null) || (fields.attrib == null) || (fields.attrib.length != 1)) { res.sendStatus(404); return; }
-
-            // Get the user
-            const user = obj.users[authUserid];
-            if (user == null) { res.sendStatus(401); return; } // Check this user exists
-
-            // Get the node and check node rights
-            const nodeid = fields.attrib[0];
-            obj.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
-                if ((node == null) || (rights != 0xFFFFFFFF) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-                for (var i in files.files) {
-                    var file = files.files[i];
-                    const uploadTempPath = resolveSafeUploadTempPath(file.path);
-                    if (uploadTempPath == null) { res.sendStatus(400); return; }
-
-                    // Event Intel AMT One Click Recovery, this will cause Intel AMT wake operations on this and other servers.
-                    parent.DispatchEvent('*', obj, { action: 'oneclickrecovery', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, file: uploadTempPath });
-
-                    //try { obj.fs.unlinkSync(uploadTempPath); } catch (e) { } // TODO: Remove this file after 30 minutes.
-                }
-                res.send('');
-            });
-        });
     }
 
     function handleUploadFile(req, res) {
