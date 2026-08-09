@@ -2405,7 +2405,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             case 'pushlogin': {
                 if (req.body.hwstate) {
                     var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 1);
-                    if ((cookie != null) && (typeof cookie.u == 'string') && (cookie.d == domain.id) && (cookie.a == 'pushAuth')) {
+                    var user = rootRequests.findPushAuthUser(cookie, domain);
+                    if (user != null) {
                         // Push authentication is a success, login the user
                         req.session = { userid: cookie.u };
 
@@ -2416,7 +2417,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             const twoFactorCookie = obj.parent.encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
                             res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: parent.config.settings.sessionsamesite, secure: true });
                         }
-                        var user = obj.users[cookie.u];
                         // Notify account login
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }

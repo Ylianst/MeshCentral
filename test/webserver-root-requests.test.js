@@ -184,3 +184,15 @@ test('plain root requests reach the extended root handler', function () {
     service.handleRootRequest({ query: {}, headers: {}, url: '/tenant/', session: {} }, {}, true);
     assert.deepEqual(resumed, [[domain, true]]);
 });
+
+test('push authentication rejects cookies for deleted users', function () {
+    const service = createRootRequests({ users: {} });
+    assert.equal(service.findPushAuthUser({ u: 'user/tenant/deleted', d: 'tenant', a: 'pushAuth' }, { id: 'tenant' }), null);
+});
+
+test('push authentication returns an existing same-domain user', function () {
+    const user = { _id: 'user/tenant/alice' };
+    const service = createRootRequests({ users: { [user._id]: user } });
+    assert.equal(service.findPushAuthUser({ u: user._id, d: 'tenant', a: 'pushAuth' }, { id: 'tenant' }), user);
+    assert.equal(service.findPushAuthUser({ u: user._id, d: 'other', a: 'pushAuth' }, { id: 'tenant' }), null);
+});

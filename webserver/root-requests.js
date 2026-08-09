@@ -103,6 +103,11 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function findPushAuthUser(cookie, domain) {
+        if ((cookie == null) || (typeof cookie.u != 'string') || (cookie.d != domain.id) || (cookie.a != 'pushAuth')) { return null; }
+        return users[cookie.u] || null;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -124,5 +129,5 @@ module.exports.createRootRequests = function (options) {
         handleRootRequestEx(req, res, domain, direct);
     }
 
-    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, getRootCertLink: getRootCertLink };
+    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, getRootCertLink: getRootCertLink };
 };
