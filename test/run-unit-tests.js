@@ -23,6 +23,7 @@ require('./webserver-sso-login.test.js');
 require('./webserver-session-logout.test.js');
 require('./webserver-root-requests.test.js');
 require('./webserver-email-account-utils.test.js');
+require('./webserver-email-account-actions.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');

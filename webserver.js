@@ -92,6 +92,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const sessionLogoutModule = require('./webserver/session-logout.js');
     const rootRequestsModule = require('./webserver/root-requests.js');
     const emailAccountUtils = require('./webserver/email-account-utils.js');
+    const emailAccountActionsModule = require('./webserver/email-account-actions.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -289,6 +290,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const getRenderPage = rendering.getRenderPage;
     const getRenderArgs = rendering.getRenderArgs;
     const render = rendering.render;
+    const emailAccountActions = emailAccountActionsModule.createEmailAccountActions({
+        state: obj,
+        parent: parent,
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs,
+        escapeHtml: EscapeHtml,
+        createTemporaryPassword: emailAccountUtils.createTemporaryPassword,
+        getActiveUser: emailAccountUtils.getActiveUser,
+        hashPassword: function (password, callback, iterations) { require('./pass').hash(password, callback, iterations); }
+    });
     const getRenderList = rendering.getRenderList;
     const getEmailLanguageList = rendering.getEmailLanguageList;
     const remotePages = remotePagesModule.createRemotePages({
@@ -1717,53 +1729,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         });
                                     }
                                 } else if (cookie.a == 2) {
-                                    // Account reset
-                                    if (user.emailVerified != true) {
-                                        parent.debug('web', 'handleCheckMailRequest: email not verified.');
-                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 7, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.email), arg2: EscapeHtml(user.name) }, req, domain));
-                                    } else {
-                                        if (req.query.confirm == 1) {
-                                            // Set a temporary password
-                                            emailAccountUtils.createTemporaryPassword(obj.crypto, require('./pass').hash, function (err, temporaryPassword) {
-                                                if (err != null) {
-                                                    parent.debug('web', 'handleCheckMailRequest: Unable to create temporary password: ' + err.message);
-                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                                    return;
-                                                }
-                                                var newpass = temporaryPassword.password;
-
-                                                    // Change the password
-                                                    var userinfo = emailAccountUtils.getActiveUser(obj.users, user._id);
-                                                    if (userinfo == null) {
-                                                        parent.debug('web', 'handleCheckMailRequest: Account removed during password reset.');
-                                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                                        return;
-                                                    }
-                                                    userinfo.salt = temporaryPassword.salt;
-                                                    userinfo.hash = temporaryPassword.hash;
-                                                    delete userinfo.passtype;
-                                                    userinfo.passchange = userinfo.access = Math.floor(Date.now() / 1000);
-                                                    delete userinfo.passhint;
-                                                    obj.db.SetUser(userinfo);
-
-                                                    // Event the change
-                                                    var event = { etype: 'user', userid: user._id, username: userinfo.name, account: obj.CloneSafeUser(userinfo), action: 'accountchange', msg: 'Password reset for user ' + EscapeHtml(user.name), domain: domain.id };
-                                                    if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                                    obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-
-                                                    // Send the new password
-                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 8, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: EscapeHtml(user.name), arg2: EscapeHtml(newpass) }, req, domain));
-                                                    parent.debug('web', 'handleCheckMailRequest: send temporary password.');
-
-                                                    // Send to authLog
-                                                    obj.parent.authLog('https', 'Performed account reset for user ' + user.name);
-                                            });
-                                        } else {
-                                            // Display a link for the user to confirm password reset
-                                            // We must do this because GMail will also load this URL a few seconds after the user does and we don't want to cause two password resets.
-                                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 14, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-                                        }
-                                    }
+                                    emailAccountActions.handlePasswordReset(req, res, domain, user);
                                 } else {
                                     render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 9, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                                 }
