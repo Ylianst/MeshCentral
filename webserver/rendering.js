@@ -87,6 +87,8 @@ module.exports.generateCustomJSTags = generateCustomJSTags;
 module.exports.createRendering = function (options) {
     const path = options.path;
     const fs = options.fs;
+    var renderPages = null;
+    var renderLanguages = [];
 
     function getRenderPage(pagename, req, domain) {
         var mobile = options.isMobileBrowser(req), minify = (domain.minify == true), p;
@@ -218,9 +220,139 @@ module.exports.createRendering = function (options) {
         return xargs;
     }
 
+    function getLanguageCodes(req) {
+        if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
+            var user = options.users[req.session.userid];
+            if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
+        }
+
+        var acceptLanguages = [];
+        if (req.query.lang != null) {
+            acceptLanguages.push(req.query.lang.toLowerCase());
+        } else if (req.headers['accept-language'] != null) {
+            var acceptLanguageSplit = req.headers['accept-language'].split(';');
+            for (var i in acceptLanguageSplit) {
+                var acceptLanguageSplitEx = acceptLanguageSplit[i].split(',');
+                for (var j in acceptLanguageSplitEx) { if (acceptLanguageSplitEx[j].startsWith('q=') == false) { acceptLanguages.push(acceptLanguageSplitEx[j].toLowerCase()); } }
+            }
+        }
+        return acceptLanguages;
+    }
+
+    function render(req, res, filename, args, user) {
+        if (renderPages != null) {
+            var acceptLanguages = getLanguageCodes(req);
+            var domain = options.getDomain(req);
+            var fileOptions = renderPages[domain.id][path.basename(filename)];
+            if (fileOptions != null) {
+                for (var i in acceptLanguages) {
+                    if (acceptLanguages[i] == 'zh-tw') { acceptLanguages[i] = 'zh-cht'; }
+                    if (acceptLanguages[i] == 'zh-cn') { acceptLanguages[i] = 'zh-chs'; }
+                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
+                        args.lang = 'en';
+                        if (user && user.llang) { delete user.llang; options.db.SetUser(user); }
+                        break;
+                    }
+
+                    var foundLanguage = null;
+                    if (fileOptions[acceptLanguages[i]] != null) { foundLanguage = acceptLanguages[i]; } else {
+                        const ptr = acceptLanguages[i].indexOf('-');
+                        if (ptr >= 0) {
+                            const shortAcceptedLanguage = acceptLanguages[i].substring(0, ptr);
+                            if (fileOptions[shortAcceptedLanguage] != null) { foundLanguage = shortAcceptedLanguage; }
+                        }
+                    }
+
+                    if (foundLanguage != null) {
+                        fs.exists(fileOptions[foundLanguage] + '.handlebars', function (exists) {
+                            if (exists) { args.lang = foundLanguage; res.render(fileOptions[foundLanguage], args); } else { args.lang = 'en'; res.render(filename, args); }
+                        });
+                        if (user && (user.llang != foundLanguage)) { user.llang = foundLanguage; options.db.SetUser(user); }
+                        return;
+                    }
+                }
+            }
+        }
+        res.render(filename, args);
+    }
+
+    function addRenderFiles(domain, translateFolder) {
+        var files = fs.readdirSync(translateFolder);
+        for (var i in files) {
+            var name = files[i];
+            if (name.endsWith('.handlebars')) {
+                name = name.substring(0, name.length - 11);
+                var xname = name.split('_');
+                if (xname.length == 2) {
+                    if (renderPages[domain][xname[0]] == null) { renderPages[domain][xname[0]] = {}; }
+                    renderPages[domain][xname[0]][xname[1]] = path.join(translateFolder, name);
+                    if (renderLanguages.indexOf(xname[1]) == -1) { renderLanguages.push(xname[1]); }
+                }
+            }
+        }
+    }
+
+    function getRenderList() {
+        var translateFolder = null;
+        if (fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
+        if (fs.existsSync(path.join(options.serverRoot, 'views', 'translations'))) { translateFolder = path.join(options.serverRoot, 'views', 'translations'); }
+
+        if (translateFolder != null) {
+            renderPages = {};
+            renderLanguages = ['en'];
+            for (var i in options.domains) {
+                if (fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
+                if (fs.existsSync(path.join(options.serverRoot, 'views', 'translations'))) { translateFolder = path.join(options.serverRoot, 'views', 'translations'); }
+                var domain = options.domains[i].id;
+                renderPages[domain] = {};
+                addRenderFiles(domain, translateFolder);
+
+                if ((options.webViewsOverridePath != null) && (fs.existsSync(path.join(options.webViewsOverridePath, 'translations')))) {
+                    translateFolder = path.join(options.webViewsOverridePath, 'translations');
+                    addRenderFiles(domain, translateFolder);
+                }
+
+                const domainTranslateFolder = path.join(options.serverRoot, '..', 'meshcentral-web-' + domain, 'views', 'translations');
+                if (fs.existsSync(domainTranslateFolder)) { addRenderFiles(domain, domainTranslateFolder); }
+            }
+            options.setRenderState(renderPages, renderLanguages);
+        }
+    }
+
+    function addEmailLanguages(emailLanguages, translateFolder) {
+        var files = fs.readdirSync(translateFolder);
+        for (var i in files) {
+            var name = files[i];
+            if (name.endsWith('.html')) {
+                name = name.substring(0, name.length - 5);
+                var xname = name.split('_');
+                if ((xname.length == 2) && (emailLanguages.indexOf(xname[1]) == -1)) { emailLanguages.push(xname[1]); }
+            }
+        }
+    }
+
+    function getEmailLanguageList() {
+        var translateFolder = null;
+        if (fs.existsSync('emails/translations')) { translateFolder = 'emails/translations'; }
+        if (fs.existsSync(path.join(options.serverRoot, 'emails', 'translations'))) { translateFolder = path.join(options.serverRoot, 'emails', 'translations'); }
+
+        if (translateFolder != null) {
+            const emailLanguages = ['en'];
+            addEmailLanguages(emailLanguages, translateFolder);
+            if ((options.webEmailsOverridePath != null) && (fs.existsSync(path.join(options.webEmailsOverridePath, 'translations')))) {
+                addEmailLanguages(emailLanguages, path.join(options.webEmailsOverridePath, 'translations'));
+            }
+            options.setEmailLanguages(emailLanguages);
+        }
+    }
+
     return {
         getRenderPage: getRenderPage,
         getRenderArgs: getRenderArgs,
+        getLanguageCodes: getLanguageCodes,
+        render: render,
+        getRenderList: getRenderList,
+        getEmailLanguageList: getEmailLanguageList,
         generateThemePackCSSTags: generateThemePackCSSTags,
         generateThemePackJSTags: generateThemePackJSTags
     };

@@ -105,10 +105,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         path: obj.path,
         fs: obj.fs,
         datapath: parent.datapath,
+        serverRoot: __dirname,
         webViewsPath: parent.webViewsPath,
         webViewsOverridePath: parent.webViewsOverridePath,
+        webEmailsOverridePath: parent.webEmailsOverridePath,
+        domains: parent.config.domains,
+        users: obj.users,
+        db: obj.db,
         isMobileBrowser: isMobileBrowser,
         isWebPageLengthRandomizationEnabled: function () { return args.webpagelengthrandomization !== false; },
+        getDomain: getDomain,
         replacePlaceholders: obj.common.replacePlaceholders,
         randomBytes: function (size) { return parent.crypto.randomBytes(size); },
         getCurrentVersion: function () { return parent.currentVer; },
@@ -121,10 +127,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 relaysessions: obj.relaySessionCount,
                 relaycount: Object.keys(obj.wsrelays).length
             };
-        }
+        },
+        setRenderState: function (pages, languages) { obj.renderPages = pages; obj.renderLanguages = languages; },
+        setEmailLanguages: function (languages) { obj.emailLanguages = languages; }
     });
     const getRenderPage = rendering.getRenderPage;
     const getRenderArgs = rendering.getRenderArgs;
+    const render = rendering.render;
+    const getRenderList = rendering.getRenderList;
+    const getEmailLanguageList = rendering.getEmailLanguageList;
+    obj.getLanguageCodes = rendering.getLanguageCodes;
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
     obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
@@ -9612,182 +9624,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 command.fromNodeid = nodeid;
                 command.meshid = meshid;
                 parent.multiServer.DispatchMessage(command);
-            }
-        }
-    }
-
-    // Returns a list of acceptable languages in order
-    obj.getLanguageCodes = function (req) {
-        // If a user set a localization, use that
-        if ((req.query.lang == null) && (req.session != null) && (req.session.userid)) {
-            var user = obj.users[req.session.userid];
-            if ((user != null) && (user.lang != null)) { req.query.lang = user.lang; }
-        };
-
-        // Get a list of acceptable languages in order
-        var acceptLanguages = [];
-        if (req.query.lang != null) {
-            acceptLanguages.push(req.query.lang.toLowerCase());
-        } else {
-            if (req.headers['accept-language'] != null) {
-                var acceptLanguageSplit = req.headers['accept-language'].split(';');
-                for (var i in acceptLanguageSplit) {
-                    var acceptLanguageSplitEx = acceptLanguageSplit[i].split(',');
-                    for (var j in acceptLanguageSplitEx) { if (acceptLanguageSplitEx[j].startsWith('q=') == false) { acceptLanguages.push(acceptLanguageSplitEx[j].toLowerCase()); } }
-                }
-            }
-        }
-
-        return acceptLanguages;
-    }
-
-    // Render a page using the proper language
-    function render(req, res, filename, args, user) {
-        if (obj.renderPages != null) {
-            // Get the list of acceptable languages in order
-            var acceptLanguages = obj.getLanguageCodes(req);
-            var domain = getDomain(req);
-            // Take a look at the options we have for this file
-            var fileOptions = obj.renderPages[domain.id][obj.path.basename(filename)];
-            if (fileOptions != null) {
-                for (var i in acceptLanguages) {
-                    if (acceptLanguages[i] == 'zh-tw') { acceptLanguages[i] = 'zh-cht'; } // Change newer "zh-tw" to legacy "zh-cht" Chinese (Traditional) for now
-                    if (acceptLanguages[i] == 'zh-cn') { acceptLanguages[i] = 'zh-chs'; } // Change newer "zh-ch" to legacy "zh-chs" Chinese (Simplified) for now
-                    if ((acceptLanguages[i] == 'en') || (acceptLanguages[i].startsWith('en-'))) {
-                        // English requested
-                        args.lang = 'en';
-                        if (user && user.llang) { delete user.llang; obj.db.SetUser(user); } // Clear user 'last language' used if needed. Since English is the default, remove "last language".
-                        break;
-                    }
-
-                    // See if a language (like "fr-ca") or short-language (like "fr") matches an available translation file.
-                    var foundLanguage = null;
-                    if (fileOptions[acceptLanguages[i]] != null) { foundLanguage = acceptLanguages[i]; } else {
-                        const ptr = acceptLanguages[i].indexOf('-');
-                        if (ptr >= 0) {
-                            const shortAcceptedLanguage = acceptLanguages[i].substring(0, ptr);
-                            if (fileOptions[shortAcceptedLanguage] != null) { foundLanguage = shortAcceptedLanguage; }
-                        }
-                    }
-
-                    // If a language is found, render it.
-                    if (foundLanguage != null) {
-                        // Found a match. If the file no longer exists, default to English.
-                        obj.fs.exists(fileOptions[foundLanguage] + '.handlebars', function (exists) {
-                            if (exists) { args.lang = foundLanguage; res.render(fileOptions[foundLanguage], args); } else { args.lang = 'en'; res.render(filename, args); }
-                        });
-                        if (user && (user.llang != foundLanguage)) { user.llang = foundLanguage; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
-                        return;
-                    }
-                }
-            }
-        }
-
-        // No matches found, render the default English page.
-        res.render(filename, args);
-    }
-
-    // Get the list of pages with different languages that can be rendered
-    function getRenderList() {
-        // Fetch default rendeing pages
-        var translateFolder = null;
-        if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
-        if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
-
-        if (translateFolder != null) {
-            obj.renderPages = {};
-            obj.renderLanguages = ['en'];
-            for (var i in parent.config.domains) {
-                if (obj.fs.existsSync('views/translations')) { translateFolder = 'views/translations'; }
-                if (obj.fs.existsSync(obj.path.join(__dirname, 'views', 'translations'))) { translateFolder = obj.path.join(__dirname, 'views', 'translations'); }
-                var files = obj.fs.readdirSync(translateFolder);
-                var domain = parent.config.domains[i].id;
-                obj.renderPages[domain] = {};
-                for (var i in files) {
-                    var name = files[i];
-                    if (name.endsWith('.handlebars')) {
-                        name = name.substring(0, name.length - 11);
-                        var xname = name.split('_');
-                        if (xname.length == 2) {
-                            if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                            obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                            if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                        }
-                    }
-                }
-                // See if there are any custom rending pages that will override the default ones
-                if ((obj.parent.webViewsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webViewsOverridePath, 'translations')))) {
-                    translateFolder = obj.path.join(obj.parent.webViewsOverridePath, 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                            }
-                        }
-                    }
-                }
-                // See if there is a custom meshcentral-web-domain folder as that will override the default ones
-                if (obj.fs.existsSync(obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations'))) {
-                    translateFolder = obj.path.join(__dirname, '..', 'meshcentral-web-' + domain, 'views', 'translations');
-                    var files = obj.fs.readdirSync(translateFolder);
-                    for (var i in files) {
-                        var name = files[i];
-                        if (name.endsWith('.handlebars')) {
-                            name = name.substring(0, name.length - 11);
-                            var xname = name.split('_');
-                            if (xname.length == 2) {
-                                if (obj.renderPages[domain][xname[0]] == null) { obj.renderPages[domain][xname[0]] = {}; }
-                                obj.renderPages[domain][xname[0]][xname[1]] = obj.path.join(translateFolder, name);
-                                if (obj.renderLanguages.indexOf(xname[1]) == -1) { obj.renderLanguages.push(xname[1]); }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Get the list of pages with different languages that can be rendered
-    function getEmailLanguageList() {
-        // Fetch default rendeing pages
-        var translateFolder = null;
-        if (obj.fs.existsSync('emails/translations')) { translateFolder = 'emails/translations'; }
-        if (obj.fs.existsSync(obj.path.join(__dirname, 'emails', 'translations'))) { translateFolder = obj.path.join(__dirname, 'emails', 'translations'); }
-
-        if (translateFolder != null) {
-            obj.emailLanguages = ['en'];
-            var files = obj.fs.readdirSync(translateFolder);
-            for (var i in files) {
-                var name = files[i];
-                if (name.endsWith('.html')) {
-                    name = name.substring(0, name.length - 5);
-                    var xname = name.split('_');
-                    if (xname.length == 2) {
-                        if (obj.emailLanguages.indexOf(xname[1]) == -1) { obj.emailLanguages.push(xname[1]); }
-                    }
-                }
-            }
-
-            // See if there are any custom rending pages that will override the default ones
-            if ((obj.parent.webEmailsOverridePath != null) && (obj.fs.existsSync(obj.path.join(obj.parent.webEmailsOverridePath, 'translations')))) {
-                translateFolder = obj.path.join(obj.parent.webEmailsOverridePath, 'translations');
-                var files = obj.fs.readdirSync(translateFolder);
-                for (var i in files) {
-                    var name = files[i];
-                    if (name.endsWith('.html')) {
-                        name = name.substring(0, name.length - 5);
-                        var xname = name.split('_');
-                        if (xname.length == 2) {
-                            if (obj.emailLanguages.indexOf(xname[1]) == -1) { obj.emailLanguages.push(xname[1]); }
-                        }
-                    }
-                }
             }
         }
     }
