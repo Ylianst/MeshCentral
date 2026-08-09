@@ -262,6 +262,7 @@
     <Compile Include="webserver\domain-startup.js" />
     <Compile Include="webserver\domain-static.js" />
     <Compile Include="webserver\domain-assets.js" />
+    <Compile Include="webserver\file-downloads.js" />
     <Compile Include="webserver\duo-routes.js" />
     <Compile Include="webserver\network-access.js" />
     <Compile Include="webserver\not-found.js" />

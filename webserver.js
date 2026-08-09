@@ -86,6 +86,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
+    const fileDownloadsModule = require('./webserver/file-downloads.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -306,6 +307,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const MESHRIGHT_MANAGECOMPUTERS = 0x00000004;
     const MESHRIGHT_REMOTECONTROL = 0x00000008;
     const MESHRIGHT_AGENTCONSOLE = 0x00000010;
+    const fileDownloads = fileDownloadsModule.createFileDownloads({
+        state: obj,
+        parent: parent,
+        serverRoot: __dirname,
+        checkUserIpAddress: checkUserIpAddress,
+        getDomain: getDomain,
+        checkAgentIpAddress: checkAgentIpAddress,
+        getRandomLowerCase: getRandomLowerCase,
+        setContentDispositionHeader: setContentDispositionHeader,
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs,
+        getRootCertLink: getRootCertLink,
+        remoteControlRight: MESHRIGHT_REMOTECONTROL
+    });
+    const handleDownloadUserFiles = fileDownloads.downloadUserFile;
+    const handleDeviceFile = fileDownloads.downloadDeviceFile;
+    const handleAgentDownloadFile = fileDownloads.downloadAgentFile;
     Object.assign(obj, agentControlModule.createAgentControl({
         state: obj,
         common: obj.common,
@@ -3330,82 +3349,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Handle user public file downloads
-    function handleDownloadUserFiles(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-        if (obj.common.validateString(req.path, 1, 4096) == false) { res.sendStatus(404); return; }
-        var domainname = 'domain', spliturl = decodeURIComponent(req.path).split('/'), filename = '';
-        if (spliturl[1] != 'userfiles') { spliturl.splice(1,1); } // remove domain.id from url for domains without dns
-        if ((spliturl.length < 3) || (obj.common.IsFilenameValid(spliturl[2]) == false) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
-        if (domain.id != '') { domainname = 'domain-' + domain.id; }
-        var path = obj.path.join(obj.filespath, domainname + '/user-' + spliturl[2] + '/Public');
-        for (var i = 3; i < spliturl.length; i++) { if (obj.common.IsFilenameValid(spliturl[i]) == true) { path += '/' + spliturl[i]; filename = spliturl[i]; } else { res.sendStatus(404); return; } }
-
-        var stat = null;
-        try { stat = obj.fs.statSync(path); } catch (e) { }
-        if ((stat != null) && ((stat.mode & 0x004000) == 0)) {
-            if (req.query.download == 1) {
-                setContentDispositionHeader(res, 'application/octet-stream', filename, null, 'file.bin');
-                try { res.sendFile(obj.path.resolve(__dirname, path)); } catch (e) { res.sendStatus(404); }
-            } else {
-                // The download page puts the filename inside a JavaScript string (var filename = '...'),
-                // so escape backslashes and single quotes to keep it inside that string.
-                var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
-            }
-        } else {
-            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
-        }
-    }
-
-    // Handle device file request
-    function handleDeviceFile(req, res) {
-        const domain = getDomain(req, res);
-        if (domain == null) { return; }
-        if ((req.query.c == null) || (req.query.f == null)) { res.sendStatus(404); return; }
-
-        // Check the inbound desktop sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-        if ((c == null) || (c.domainid !== domain.id)) { res.sendStatus(404); return; }
-
-        // Check userid
-        const user = obj.users[c.userid];
-        if ((c == user)) { res.sendStatus(404); return; }
-
-        // If this cookie has restricted usages, check that it's allowed to perform downloads
-        if (Array.isArray(c.usages) && (c.usages.indexOf(10) < 0)) { res.sendStatus(404); return; } // Check protocol #10
-
-        if (c.nid != null) { req.query.n = c.nid.split('/')[2]; } // This cookie is restricted to a specific nodeid.
-        if (req.query.n == null) { res.sendStatus(404); return; }
-
-        // Check if this user has permission to manage this computer
-        obj.GetNodeWithRights(domain, user, 'node/' + domain.id + '/' + req.query.n, function (node, rights, visible) {
-            if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
-
-            // All good, start the file transfer
-            req.query.id = getRandomLowerCase(12);
-            obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, null, res, req, domain, user, node.meshid, node._id);
-        });
-    }
-
-    // Handle download of a server file by an agent
-    function handleAgentDownloadFile(req, res) {
-        const domain = checkAgentIpAddress(req, res);
-        if (domain == null) { return; }
-        if (req.query.c == null) { res.sendStatus(404); return; }
-
-        // Check the inbound desktop sharing cookie
-        var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 5); // 5 minute timeout
-        if ((c == null) || (c.a != 'tmpdl') || (c.d != domain.id) || (c.nid == null) || (c.f == null) || (obj.common.IsFilenameValid(c.f) == false)) { res.sendStatus(404); return; }
-
-        // Send the file back
-        try { res.sendFile(obj.path.join(obj.filespath, 'tmp', c.f)); return; } catch (ex) { res.sendStatus(404); }
-    }
-
-    // Handle translation request
     function handleTranslationsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
