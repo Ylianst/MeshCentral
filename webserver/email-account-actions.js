@@ -22,6 +22,13 @@ module.exports.createEmailAccountActions = function (options) {
     const checkUserIpAddress = options.checkUserIpAddress;
     const decodeCookie = options.decodeCookie;
     const hasEmailLinkCookie = options.hasEmailLinkCookie;
+    const hasAccountEmailRequest = options.hasAccountEmailRequest;
+    const resolveAccountEmail = options.resolveAccountEmail;
+    const validateEmail = options.validateEmail;
+    const checkEmail = options.checkEmail;
+    const getQueryPortion = options.getQueryPortion;
+    const handleRootRequestEx = options.handleRootRequestEx;
+    const getLanguageCodes = options.getLanguageCodes;
 
     function renderMessage(req, res, domain, args) {
         render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs(args, req, domain));
@@ -142,5 +149,64 @@ module.exports.createEmailAccountActions = function (options) {
         });
     }
 
-    return { handleCheckMailRequest: handleCheckMailRequest, handlePasswordReset: handlePasswordReset, handleEmailVerification: handleEmailVerification };
+    function finishAccountEmailRequest(req, res, domain, direct) {
+        req.session.loginmode = 7;
+        delete req.session.cuserid;
+        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+    }
+
+    function handleCheckAccountEmailRequest(req, res, direct) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (!hasAccountEmailRequest(req)) { parent.debug('web', 'handleCheckAccountEmailRequest: missing session or body.'); res.sendStatus(404); return; }
+        const email = resolveAccountEmail(req);
+        if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (state.users[req.session.cuserid] == null) || !validateEmail(email, 1, 256)) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; }
+        if (req.session.loginToken != null) { res.sendStatus(404); return; }
+
+        if (Array.isArray(domain.newaccountemaildomains)) {
+            const separator = email.indexOf('@');
+            const emailDomain = separator >= 0 ? email.substring(separator + 1).toLowerCase() : null;
+            const emailAllowed = (emailDomain != null) && domain.newaccountemaildomains.some(function (allowedDomain) { return emailDomain == allowedDomain.toLowerCase(); });
+            if (!emailAllowed) {
+                parent.debug('web', 'handleCreateAccountRequest: unable to create account (email domain)');
+                req.session.messageid = 106;
+                finishAccountEmailRequest(req, res, domain, direct);
+                return;
+            }
+        }
+
+        if (!email || (checkEmail(email) == false)) {
+            parent.debug('web', 'handleCheckAccountEmailRequest: Invalid email');
+            req.session.messageid = 106;
+            finishAccountEmailRequest(req, res, domain, direct);
+            return;
+        }
+
+        state.db.GetUserWithVerifiedEmail(domain.id, email, function (error, users) {
+            if (hasDatabaseFailure(error, users) || hasOtherVerifiedUser(users, req.session.cuserid)) {
+                req.session.messageid = 102;
+            } else {
+                const user = getActiveUser(state.users, req.session.cuserid);
+                if (user == null) {
+                    req.session.messageid = 100;
+                } else {
+                    if (user.email != email) {
+                        user.email = email;
+                        state.db.SetUser(user);
+                        var targets = ['*', 'server-users', user._id];
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
+                        var event = { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed: ' + user.name, domain: domain.id };
+                        if (state.db.changeStream) { event.noact = 1; }
+                        parent.DispatchEvent(targets, state, event);
+                    }
+                    domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, getLanguageCodes(req), req.query.key);
+                    req.session.messageid = 2;
+                }
+            }
+            finishAccountEmailRequest(req, res, domain, direct);
+        });
+    }
+
+    return { handleCheckMailRequest: handleCheckMailRequest, handleCheckAccountEmailRequest: handleCheckAccountEmailRequest, handlePasswordReset: handlePasswordReset, handleEmailVerification: handleEmailVerification };
 };

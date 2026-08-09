@@ -302,11 +302,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure,
         hasOtherVerifiedUser: emailAccountUtils.hasOtherVerifiedUser,
         hasEmailLinkCookie: emailAccountUtils.hasEmailLinkCookie,
+        hasAccountEmailRequest: emailAccountUtils.hasAccountEmailRequest,
+        resolveAccountEmail: emailAccountUtils.resolveAccountEmail,
+        validateEmail: function (email, min, max) { return obj.common.validateEmail(email, min, max); },
+        checkEmail: checkEmail,
+        getQueryPortion: getQueryPortion,
+        handleRootRequestEx: handleRootRequestEx,
+        getLanguageCodes: function (req) { return obj.getLanguageCodes(req); },
         checkUserIpAddress: checkUserIpAddress,
         decodeCookie: function (cookie, key, age) { return obj.parent.decodeCookie(cookie, key, age); },
         hashPassword: function (password, callback, iterations) { require('./pass').hash(password, callback, iterations); }
     });
     const handleCheckMailRequest = emailAccountActions.handleCheckMailRequest;
+    const handleCheckAccountEmailRequest = emailAccountActions.handleCheckAccountEmailRequest;
     const getRenderList = rendering.getRenderList;
     const getEmailLanguageList = rendering.getEmailLanguageList;
     const remotePages = remotePagesModule.createRemotePages({
@@ -1588,81 +1596,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Handle account email change and email verification request
-    function handleCheckAccountEmailRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (!emailAccountUtils.hasAccountEmailRequest(req)) { parent.debug('web', 'handleCheckAccountEmailRequest: missing session or body.'); res.sendStatus(404); return; }
-        var email = emailAccountUtils.resolveAccountEmail(req);
-        if ((domain.mailserver == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.session.cuserid != 'string') || (obj.users[req.session.cuserid] == null) || (!obj.common.validateEmail(email, 1, 256))) { parent.debug('web', 'handleCheckAccountEmailRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        // Check if this request is for an allows email domain
-        if ((domain.newaccountemaildomains != null) && Array.isArray(domain.newaccountemaildomains)) {
-            var i = -1;
-            if (typeof email == 'string') { i = email.indexOf('@'); }
-            if (i == -1) {
-                parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
-                req.session.loginmode = 7;
-                req.session.messageid = 106; // Invalid email.
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                return;
-            }
-            var emailok = false, emaildomain = email.substring(i + 1).toLowerCase();
-            for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
-            if (emailok == false) {
-                parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');
-                req.session.loginmode = 7;
-                req.session.messageid = 106; // Invalid email.
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                return;
-            }
-        }
-
-        // Check the email string format
-        if (!email || checkEmail(email) == false) {
-            parent.debug('web', 'handleCheckAccountEmailRequest: Invalid email');
-            req.session.loginmode = 7;
-            req.session.messageid = 106; // Invalid email.
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-        } else {
-            // Check is email already exists
-            obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
-                if (emailAccountUtils.hasDatabaseFailure(err, docs) || emailAccountUtils.hasOtherVerifiedUser(docs, req.session.cuserid)) {
-                    // Email already exists
-                    req.session.messageid = 102; // Existing account with this email address.
-                } else {
-                    // Update the user and notify of user email address change
-                    var user = emailAccountUtils.getActiveUser(obj.users, req.session.cuserid);
-                    if (user == null) {
-                        req.session.messageid = 100; // Unable to create account.
-                    } else if (user.email != email) {
-                        user.email = email;
-                        db.SetUser(user);
-                        var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-                        var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'Account changed: ' + user.name, domain: domain.id };
-                        if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                        parent.DispatchEvent(targets, obj, event);
-                    }
-
-                    if (user != null) {
-                        // Send the verification email
-                        domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
-
-                        // Send the response
-                        req.session.messageid = 2; // Email sent.
-                    }
-                }
-                req.session.loginmode = 7;
-                delete req.session.cuserid;
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            });
-        }
-    }
-
-    Object.assign(obj, passwordHistoryModule.createPasswordHistory({ debug: function (source, message) { parent.debug(source, message); }, require: require }));
-
-    // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null;
         res.set({ 'Cache-Control': 'no-store' });
