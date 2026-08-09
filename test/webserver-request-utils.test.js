@@ -54,6 +54,9 @@ policy = 'strict';
 assert.strictEqual(utils.checkCookieIp('1.1.1.1', '1.1.1.1'), true);
 assert.strictEqual(utils.checkCookieIp('1.1.1.1', '1.1.1.2'), false);
 assert.strictEqual(utils.assembleStringFromObject('Hello {{{name}}}!', { name: 'MeshCentral' }), 'Hello MeshCentral!');
+assert.strictEqual(utils.escapeHtml('<tag a="b">&\''), '&lt;tag a=&quot;b&quot;&gt;&amp;&apos;');
+assert.strictEqual(utils.escapeHtml(42), 42);
+assert.deepStrictEqual(utils.calcDelta({ requests: 4, nested: { bytes: 10 } }, { requests: 7, nested: { bytes: 16 }, ignored: 'text' }), { requests: 3, nested: { bytes: 6 } });
 
 let headers;
 utils.setContentDispositionHeader({ set: function (value) { headers = value; } }, 'text/plain', '../bad:name.txt', 4, 'file.txt');

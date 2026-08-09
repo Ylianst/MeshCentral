@@ -117,6 +117,20 @@ module.exports.createRequestUtils = function (options) {
         return result;
     }
 
+    function escapeHtml(value) {
+        if (typeof value == 'string') return value.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+        if ((typeof value == 'boolean') || (typeof value == 'number')) return value;
+    }
+
+    function calcDelta(oldData, newData) {
+        const result = {};
+        for (var key in newData) {
+            if (typeof newData[key] == 'object') result[key] = calcDelta(oldData[key] ? oldData[key] : {}, newData[key]);
+            if (typeof newData[key] == 'number') result[key] = (typeof oldData[key] == 'number') ? (newData[key] - oldData[key]) : newData[key];
+        }
+        return result;
+    }
+
     return {
         checkEmail: checkEmail,
         isMobileBrowser: isMobileBrowser,
@@ -132,6 +146,8 @@ module.exports.createRequestUtils = function (options) {
         checkAgentColorString: checkAgentColorString,
         isPrivateAddress: isPrivateAddress,
         checkCookieIp: checkCookieIp,
-        assembleStringFromObject: assembleStringFromObject
+        assembleStringFromObject: assembleStringFromObject,
+        escapeHtml: escapeHtml,
+        calcDelta: calcDelta
     };
 };

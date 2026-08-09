@@ -135,6 +135,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentColorString = requestUtils.checkAgentColorString;
     const checkCookieIp = requestUtils.checkCookieIp;
     const assembleStringFromObject = requestUtils.assembleStringFromObject;
+    const EscapeHtml = requestUtils.escapeHtml;
+    const calcDelta = requestUtils.calcDelta;
     const networkAccess = networkAccessModule.createNetworkAccess({
         config: parent.config,
         ipcheck: require('ipcheck'),
@@ -457,7 +459,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     getRenderList();
     getEmailLanguageList();
 
-    function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     // Fetch all users from the database, keep this in memory
     obj.db.GetAllType('user', function (err, docs) {
@@ -642,15 +643,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         delta.time = data.time;
         return { current: data, delta: delta }
     }
-    function calcDelta(oldData, newData) { // Recursive function that computes the difference of all numbers
-        const r = {};
-        for (var i in newData) {
-            if (typeof newData[i] == 'object') { r[i] = calcDelta(oldData[i] ? oldData[i] : {}, newData[i]); }
-            if (typeof newData[i] == 'number') { if (typeof oldData[i] == 'number') { r[i] = (newData[i] - oldData[i]); } else { r[i] = newData[i]; } }
-        }
-        return r;
-    }
-
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
     obj.setAgentIssue = function (agent, issue) {
