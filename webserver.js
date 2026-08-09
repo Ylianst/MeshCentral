@@ -1949,7 +1949,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // check for relaystate is set, test against configured server name and accepted query params
         if(req.body && req.body.RelayState !== undefined){
-                var relayState = decodeURIComponent(req.body.RelayState);
+                var relayState = requestUtils.safeDecodeURIComponent(req.body.RelayState);
                 var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
 
                 var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
@@ -1973,7 +1973,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 `viewmode=(\\d+)(?=[\\&]|\\b)))`;
 
                 var regex = new RegExp(regexstr);
-                if(regex.test(relayState)){
+                if((relayState != null) && regex.test(relayState)){
                         url = relayState;
                 }
         }

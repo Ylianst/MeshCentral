@@ -41,6 +41,8 @@ assert.strictEqual(utils.getQueryPortion({ url: '/?a=1&state=secret&duo_code=cod
 assert.strictEqual(utils.getQueryPortion({ url: '/', body: { urlargs: '?from=body' } }), '?from=body');
 assert.strictEqual(utils.cleanRemoteAddr('::ffff:192.0.2.1'), '192.0.2.1');
 assert.strictEqual(utils.cleanRemoteAddr(null), null);
+assert.strictEqual(utils.safeDecodeURIComponent('https%3A%2F%2Fexample.com'), 'https://example.com');
+assert.strictEqual(utils.safeDecodeURIComponent('%E0%A4%A'), null);
 assert.strictEqual(utils.getRandomLowerCase(3), 'abc');
 assert.strictEqual(utils.getRandomSixDigitInteger(), 0);
 assert.strictEqual(utils.checkAgentColorString('foreground=', '#102030'), 'foreground=16,32,48\r\n');

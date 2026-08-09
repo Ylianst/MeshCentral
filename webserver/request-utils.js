@@ -51,6 +51,8 @@ module.exports.createRequestUtils = function (options) {
 
     function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } return addr; }
 
+    function safeDecodeURIComponent(value) { try { return decodeURIComponent(value); } catch (ex) { return null; } }
+
     function setContentDispositionHeader(res, type, name, size, altname) {
         name = path.basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join('');
         try {
@@ -141,6 +143,7 @@ module.exports.createRequestUtils = function (options) {
         getRandomEightDigitInteger: getRandomEightDigitInteger,
         getRandomSixDigitInteger: getRandomSixDigitInteger,
         cleanRemoteAddr: cleanRemoteAddr,
+        safeDecodeURIComponent: safeDecodeURIComponent,
         setContentDispositionHeader: setContentDispositionHeader,
         isIPMatch: isIPMatch,
         checkAgentColorString: checkAgentColorString,
