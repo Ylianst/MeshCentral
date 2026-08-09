@@ -247,6 +247,7 @@
     <Compile Include="webserver.js" />
     <Compile Include="webserver\authorization.js" />
     <Compile Include="webserver\rendering.js" />
+    <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\sanitization.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="winservice.js" />

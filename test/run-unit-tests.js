@@ -8,4 +8,5 @@
 require('./webserver-sanitization.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-rendering.test.js');
+require('./webserver-request-utils.test.js');
 require('./webserver-throttling.test.js');

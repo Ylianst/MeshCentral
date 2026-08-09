@@ -58,6 +58,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const authorizationModule = require('./webserver/authorization.js');
     const renderingModule = require('./webserver/rendering.js');
     const throttlingModule = require('./webserver/throttling.js');
+    const requestUtilsModule = require('./webserver/request-utils.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -94,6 +95,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
+    const requestUtils = requestUtilsModule.createRequestUtils({
+        crypto: obj.crypto,
+        ipcheck: require('ipcheck'),
+        path: obj.path,
+        getCookieIpCheck: function () { return obj.args.cookieipcheck; }
+    });
+    const checkEmail = requestUtils.checkEmail;
+    const isMobileBrowser = requestUtils.isMobileBrowser;
+    const getQueryPortion = requestUtils.getQueryPortion;
+    const getRandomAmtPassword = requestUtils.getRandomAmtPassword;
+    const getRandomPassword = requestUtils.getRandomPassword;
+    const getRandomLowerCase = requestUtils.getRandomLowerCase;
+    const getRandomEightDigitInteger = requestUtils.getRandomEightDigitInteger;
+    const getRandomSixDigitInteger = requestUtils.getRandomSixDigitInteger;
+    const cleanRemoteAddr = requestUtils.cleanRemoteAddr;
+    const setContentDispositionHeader = requestUtils.setContentDispositionHeader;
+    const isIPMatch = requestUtils.isIPMatch;
+    const checkAgentColorString = requestUtils.checkAgentColorString;
+    const checkCookieIp = requestUtils.checkCookieIp;
+    const assembleStringFromObject = requestUtils.assembleStringFromObject;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -9468,13 +9489,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return obj.path.join(obj.filespath, domainname + "/" + splitname[0] + "-" + splitname[2]);
     }
 
-    // Return true is the input string looks like an email address
-    function checkEmail(str) {
-        var x = str.split('@');
-        var ok = ((x.length == 2) && (x[0].length > 0) && (x[1].split('.').length > 1) && (x[1].length > 2));
-        if (ok == true) { var y = x[1].split('.'); for (var i in y) { if (y[i].length == 0) { ok = false; } } }
-        return ok;
-    }
 
     /*
         obj.wssessions = {};         // UserId --> Array Of Sessions
@@ -9697,15 +9711,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
-    // Return true if a mobile browser is detected.
-    // This code comes from "http://detectmobilebrowsers.com/" and was modified, This is free and unencumbered software released into the public domain. For more information, please refer to the http://unlicense.org/
-    function isMobileBrowser(req) {
+    // Historical mobile-browser detection expression retained for reference.
         //var ua = req.headers['user-agent'].toLowerCase();
         //return (/(android|bb\d+|meego).+mobile|mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(ua) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(ua.substr(0, 4)));
-        if (typeof req.headers['user-agent'] != 'string') return false;
-        return (req.headers['user-agent'].toLowerCase().indexOf('mobile') >= 0);
-    }
-
     // Return decoded user agent information
     obj.getUserAgentInfo = function (req) {
         var browser = 'Unknown', os = 'Unknown';
@@ -9731,63 +9739,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
             return ua;
         } catch (ex) { return { browserStr: browser, osStr: os } }
-    }
-
-    // Return the query string portion of the URL, the ? and anything after BUT remove secret keys from authentication providers
-    function getQueryPortion(req) {
-        var removeKeys = ['duo_code', 'state']; // Keys to remove
-        var s = req.url.indexOf('?');
-        if (s == -1) {
-            if (req.body && req.body.urlargs) {
-                return req.body.urlargs;
-            }
-            return '';
-        }
-        var queryString = req.url.substring(s + 1);
-        var params = queryString.split('&');
-        var filteredParams = [];
-        for (var i = 0; i < params.length; i++) {
-            var key = params[i].split('=')[0];
-            if (removeKeys.indexOf(key) === -1) {
-                filteredParams.push(params[i]);
-            }
-        }
-        return (filteredParams.length > 0 ? ('?' + filteredParams.join('&')) : '');
-      }
-
-    // Generate a random Intel AMT password
-    function checkAmtPassword(p) { return (p.length > 7) && (/\d/.test(p)) && (/[a-z]/.test(p)) && (/[A-Z]/.test(p)) && (/\W/.test(p)); }
-    function getRandomAmtPassword() { var p; do { p = Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').split('/').join('@'); } while (checkAmtPassword(p) == false); return p; }
-    function getRandomPassword() { return Buffer.from(obj.crypto.randomBytes(9), 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'); }
-    function getRandomLowerCase(len) { var r = '', random = obj.crypto.randomBytes(len); for (var i = 0; i < len; i++) { r += String.fromCharCode(97 + (random[i] % 26)); } return r; }
-
-    // Generate a 8 digit integer with even random probability for each value.
-    function getRandomEightDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 100000000; }
-    function getRandomSixDigitInteger() { var bigInt; do { bigInt = parent.crypto.randomBytes(4).readUInt32BE(0); } while (bigInt >= 4200000000); return bigInt % 1000000; }
-
-    // Clean a IPv6 address that encodes a IPv4 address
-    function cleanRemoteAddr(addr) { if (typeof addr != 'string') { return null; } if (addr.indexOf('::ffff:') == 0) { return addr.substring(7); } else { return addr; } }
-
-    // Set the content disposition header for a HTTP response.
-    // Because the filename can't have any special characters in it, we need to be extra careful.
-    function setContentDispositionHeader(res, type, name, size, altname) {
-        var name = require('path').basename(name).split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split('\'').join('');
-        try {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + encodeURIComponent(name) + '"' };
-            if (typeof size == 'number') { x['Content-Length'] = size; }
-            res.set(x);
-        } catch (ex) {
-            var x = { 'Cache-Control': 'no-store', 'Content-Type': type, 'Content-Disposition': 'attachment; filename="' + altname + '"' };
-            if (typeof size == 'number') { x['Content-Length'] = size; }
-            res.set(x);
-        }
-    }
-
-    // Perform a IP match against a list
-    function isIPMatch(ip, matchList) {
-        const ipcheck = require('ipcheck');
-        for (var i in matchList) { if (ipcheck.match(ip, matchList[i]) == true) return true; }
-        return false;
     }
 
     if (parent.config.settings == null) { parent.config.settings = {}; }
@@ -9839,69 +9790,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         for (var i in toRemove) { delete obj.destroyedSessions[toRemove[i]]; }
     }
 
-    // Check and/or convert the agent color value into a correct string or return empty string.
-    function checkAgentColorString(header, value) {
-        if ((typeof header !== 'string') || (typeof value !== 'string')) return '';
-        if (value.startsWith('#') && (value.length == 7)) {
-            // Convert color in hex format
-            value = parseInt(value.substring(1, 3), 16) + ',' + parseInt(value.substring(3, 5), 16) + ',' + parseInt(value.substring(5, 7), 16);
-        } else {
-            // Check color in decimal format
-            const valueSplit = value.split(',');
-            if (valueSplit.length != 3) return '';
-            const r = parseInt(valueSplit[0]), g = parseInt(valueSplit[1]), b = parseInt(valueSplit[2]);
-            if (isNaN(r) || (r < 0) || (r > 255) || isNaN(g) || (g < 0) || (g > 255) || isNaN(b) || (b < 0) || (b > 255)) return '';
-            value = r + ',' + g + ',' + b;
-        }
-        return header + value + '\r\n';
-    }
-
     // Check that everything is cleaned up
     function checkWebRelaySessionsTimeout() {
         for (var i in webRelaySessions) { webRelaySessions[i].checkTimeout(); }
-    }
-
-    // Return true if this is a private IP address
-    function isPrivateAddress(ip_addr) {
-        // If this is a loopback address, return true
-        if ((ip_addr == '127.0.0.1') || (ip_addr == '::1')) return true;
-
-        // Check IPv4 private addresses
-        const ipcheck = require('ipcheck');
-        const IPv4PrivateRanges = ['0.0.0.0/8', '10.0.0.0/8', '100.64.0.0/10', '127.0.0.0/8', '169.254.0.0/16', '172.16.0.0/12', '192.0.0.0/24', '192.0.0.0/29', '192.0.0.8/32', '192.0.0.9/32', '192.0.0.10/32', '192.0.0.170/32', '192.0.0.171/32', '192.0.2.0/24', '192.31.196.0/24', '192.52.193.0/24', '192.88.99.0/24', '192.168.0.0/16', '192.175.48.0/24', '198.18.0.0/15', '198.51.100.0/24', '203.0.113.0/24', '240.0.0.0/4', '255.255.255.255/32']
-        for (var i in IPv4PrivateRanges) { if (ipcheck.match(ip_addr, IPv4PrivateRanges[i])) return true; }
-
-        // Check IPv6 private addresses
-        return /^::$/.test(ip_addr) ||
-            /^::1$/.test(ip_addr) ||
-            /^::f{4}:([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
-            /^::f{4}:0.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
-            /^64:ff9b::([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/.test(ip_addr) ||
-            /^100::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
-            /^2001::([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
-            /^2001:2[0-9a-fA-F]:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
-            /^2001:db8:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
-            /^2002:([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4}):?([0-9a-fA-F]{0,4})$/.test(ip_addr) ||
-            /^f[c-d]([0-9a-fA-F]{2,2}):/i.test(ip_addr) ||
-            /^fe[8-9a-bA-B][0-9a-fA-F]:/i.test(ip_addr) ||
-            /^ff([0-9a-fA-F]{2,2}):/i.test(ip_addr)
-    }
-
-    // Check that a cookie IP is within the correct range depending on the active policy
-    function checkCookieIp(cookieip, ip) {
-        if (obj.args.cookieipcheck == 'none') return true; // 'none' - No IP address checking
-        if (obj.args.cookieipcheck == 'strict') return (cookieip == ip); // 'strict' - Strict IP address checking, this can cause issues with HTTP proxies or load-balancers.
-        if (require('ipcheck').match(cookieip, ip + '/24')) return true; // 'lax' - IP address need to be in the some range
-        return (isPrivateAddress(cookieip) && isPrivateAddress(ip)); // 'lax' - If both IP addresses are private or loopback, accept it. This is needed because sometimes browsers will resolve IP addresses oddly on private networks.
-    }
-
-    // Takes a formating string like "this {{{a}}} is an {{{b}}} example" and fills the a and b with input o.a and o.b
-    function assembleStringFromObject(format, o) {
-        var r = '', i = format.indexOf('{{{');
-        if (i > 0) { r = format.substring(0, i); format = format.substring(i); }
-        const cmd = format.split('{{{');
-        for (var j in cmd) { if (j == 0) continue; i = cmd[j].indexOf('}}}'); r += o[cmd[j].substring(0, i)] + cmd[j].substring(i + 3); }
-        return r;
     }
 
     // Sync an account with an external user group.
