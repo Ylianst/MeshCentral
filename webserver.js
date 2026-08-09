@@ -90,6 +90,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const webRelayModule = require('./webserver/web-relay.js');
     const domainStaticModule = require('./webserver/domain-static.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
+    const telemetryModule = require('./webserver/telemetry.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -559,112 +560,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return device;
     }
 
-    // Return statistics about this web server
-    obj.getStats = function () {
-        return {
-            users: Object.keys(obj.users).length,
-            meshes: Object.keys(obj.meshes).length,
-            dnsDomains: Object.keys(obj.dnsDomains).length,
-            relaySessionCount: obj.relaySessionCount,
-            relaySessionErrorCount: obj.relaySessionErrorCount,
-            wsagents: Object.keys(obj.wsagents).length,
-            wsagentsDisconnections: Object.keys(obj.wsagentsDisconnections).length,
-            wsagentsDisconnectionsTimer: Object.keys(obj.wsagentsDisconnectionsTimer).length,
-            wssessions: Object.keys(obj.wssessions).length,
-            wssessions2: Object.keys(obj.wssessions2).length,
-            wsPeerSessions: Object.keys(obj.wsPeerSessions).length,
-            wsPeerSessions2: Object.keys(obj.wsPeerSessions2).length,
-            wsPeerSessions3: Object.keys(obj.wsPeerSessions3).length,
-            sessionsCount: Object.keys(obj.sessionsCount).length,
-            wsrelays: Object.keys(obj.wsrelays).length,
-            wsPeerRelays: Object.keys(obj.wsPeerRelays).length,
-            tlsSessionStore: tlsConfiguration.getSessionStoreSize(),
-            blockedUsers: obj.blockedUsers,
-            blockedAgents: obj.blockedAgents
-        };
-    }
-
-    // Agent counters
-    obj.agentStats = {
-        createMeshAgentCount: 0,
-        agentClose: 0,
-        agentBinaryUpdate: 0,
-        agentMeshCoreBinaryUpdate: 0,
-        coreIsStableCount: 0,
-        verifiedAgentConnectionCount: 0,
-        clearingCoreCount: 0,
-        updatingCoreCount: 0,
-        recoveryCoreIsStableCount: 0,
-        meshDoesNotExistCount: 0,
-        invalidPkcsSignatureCount: 0,
-        invalidRsaSignatureCount: 0,
-        invalidJsonCount: 0,
-        unknownAgentActionCount: 0,
-        agentBadWebCertHashCount: 0,
-        agentBadSignature1Count: 0,
-        agentBadSignature2Count: 0,
-        agentMaxSessionHoldCount: 0,
-        invalidDomainMeshCount: 0,
-        invalidMeshTypeCount: 0,
-        invalidDomainMesh2Count: 0,
-        invalidMeshType2Count: 0,
-        duplicateAgentCount: 0,
-        maxDomainDevicesReached: 0,
-        agentInTrouble: 0,
-        agentInBigTrouble: 0
-    }
-    obj.getAgentStats = function () { return obj.agentStats; }
-
-    // Traffic counters
-    obj.trafficStats = {
-        httpRequestCount: 0,
-        httpWebSocketCount: 0,
-        httpIn: 0,
-        httpOut: 0,
-        relayCount: {},
-        relayIn: {},
-        relayOut: {},
-        localRelayCount: {},
-        localRelayIn: {},
-        localRelayOut: {},
-        AgentCtrlIn: 0,
-        AgentCtrlOut: 0,
-        LMSIn: 0,
-        LMSOut: 0,
-        CIRAIn: 0,
-        CIRAOut: 0
-    }
-    obj.trafficStats.time = Date.now();
-    obj.getTrafficStats = function () { return obj.trafficStats; }
-    obj.getTrafficDelta = function (oldTraffic) { // Return the difference between the old and new data along with the delta time.
-        const data = obj.common.Clone(obj.trafficStats);
-        data.time = Date.now();
-        const delta = calcDelta(oldTraffic ? oldTraffic : {}, data);
-        if (oldTraffic && oldTraffic.time) { delta.delta = (data.time - oldTraffic.time); }
-        delta.time = data.time;
-        return { current: data, delta: delta }
-    }
-    // Keep a record of the last agent issues.
-    obj.getAgentIssues = function () { return obj.agentIssues; }
-    obj.setAgentIssue = function (agent, issue) {
-        var addrport = agent.remoteaddrport || '';
-        if (!addrport) {
-            var addr = agent.remoteaddr || '';
-            if (!addr && agent.ws && agent.ws._socket && agent.ws._socket.remoteAddress) {
-                addr = agent.ws._socket.remoteAddress;
-            }
-            if (addr) {
-                var port = '';
-                if (agent.ws && agent.ws._socket && agent.ws._socket.remotePort) {
-                    port = ':' + agent.ws._socket.remotePort;
-                }
-                addrport = addr + port;
-            }
-        }
-        obj.agentIssues.push([new Date().toLocaleString(), addrport, issue]);
-        while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); }
-    }
-    obj.agentIssues = [];
+    Object.assign(obj, telemetryModule.createTelemetry({ state: obj, tlsConfiguration: tlsConfiguration, calcDelta: calcDelta }));
 
     // Authenticate the user
     obj.authenticate = function (name, pass, domain, fn) {
