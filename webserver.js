@@ -95,6 +95,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const emailAccountActionsModule = require('./webserver/email-account-actions.js');
 const agentSettingsModule = require('./webserver/agent-settings.js');
 const powerEventsModule = require('./webserver/power-events.js');
+const pluginRequestsModule = require('./webserver/plugin-requests.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -3547,36 +3548,10 @@ const powerEventsModule = require('./webserver/power-events.js');
     };
 
     if (parent.pluginHandler != null) {
-        // Handle a plugin admin request
-        obj.handlePluginAdminReq = function (req, res) {
-            const domain = checkUserIpAddress(req, res);
-            if (domain == null) { return; }
-            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-            var user = obj.users[req.session.userid];
-            if (user == null) { res.sendStatus(401); return; }
-
-            parent.pluginHandler.handleAdminReq(req, res, user, obj);
-        }
-
-        obj.handlePluginAdminPostReq = function (req, res) {
-            const domain = checkUserIpAddress(req, res);
-            if (domain == null) { return; }
-            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-            var user = obj.users[req.session.userid];
-            if (user == null) { res.sendStatus(401); return; }
-
-            parent.pluginHandler.handleAdminPostReq(req, res, user, obj);
-        }
-
-        obj.handlePluginJS = function (req, res) {
-            const domain = checkUserIpAddress(req, res);
-            if (domain == null) { return; }
-            if ((!req.session) || (req.session == null) || (!req.session.userid)) { res.sendStatus(401); return; }
-            var user = obj.users[req.session.userid];
-            if (user == null) { res.sendStatus(401); return; }
-
-            parent.pluginHandler.refreshJS(req, res);
-        }
+        const pluginRequests = pluginRequestsModule.createPluginRequests({ state: obj, pluginHandler: parent.pluginHandler, checkUserIpAddress: checkUserIpAddress });
+        obj.handlePluginAdminReq = pluginRequests.handleAdminRequest;
+        obj.handlePluginAdminPostReq = pluginRequests.handleAdminPostRequest;
+        obj.handlePluginJS = pluginRequests.handleScript;
     }
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
