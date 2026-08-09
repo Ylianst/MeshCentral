@@ -225,3 +225,34 @@ test('push login establishes a session, remembered device and login event', func
     assert.equal(cookies[0][2].sameSite, 'strict');
     assert.equal(resumed.length, 1);
 });
+
+test('root POST requests dispatch account actions with direct rendering', function () {
+    const calls = [];
+    const handlers = {};
+    for (const name of ['login', 'changePassword', 'deleteAccount', 'createAccount', 'resetPassword', 'resetAccount', 'checkEmail']) {
+        handlers[name] = function (req, res, direct) { calls.push([name, direct]); };
+    }
+    const service = createRootRequests({
+        checkUserIpAddress: function () { return {}; },
+        debug: function () { },
+        postHandlers: handlers
+    });
+    service.handleRootPostRequest({ query: {}, headers: {}, body: { action: 'deleteaccount' } }, {});
+    assert.deepEqual(calls, [['deleteAccount', true]]);
+});
+
+test('token login restores encrypted hardware state before login', function () {
+    const calls = [];
+    const service = createRootRequests({
+        checkUserIpAddress: function () { return {}; },
+        debug: function () { },
+        decodeCookie: function () { return { u: 'alice', p: 'secret', c: 'challenge' }; },
+        getLoginCookieEncryptionKey: function () { return 'key'; },
+        encryptSessionData: function (value) { calls.push(value); return 'encrypted'; },
+        postHandlers: { login: function () { calls.push('login'); } }
+    });
+    const req = { query: {}, headers: {}, session: {}, body: { action: 'tokenlogin', hwstate: 'state' } };
+    service.handleRootPostRequest(req, {});
+    assert.equal(req.session.e, 'encrypted');
+    assert.deepEqual(calls, [{ tuser: 'alice', tpass: 'secret', u2f: 'challenge' }, 'login']);
+});

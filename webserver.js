@@ -2383,39 +2383,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Handle a post request on the root
-    function handleRootPostRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end("Not Found"); return; } // Check 3FA URL key
-        if (req.body == null) { req.body = {}; }
-        parent.debug('web', 'handleRootPostRequest, action: ' + req.body.action);
-
-        // If a HTTP header is required, check new UserRequiredHttpHeader
-        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
-
-        switch (req.body.action) {
-            case 'login': { handleLoginRequest(req, res, true); break; }
-            case 'tokenlogin': {
-                if (req.body.hwstate) {
-                    var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 10);
-                    if (cookie != null) { req.session.e = parent.encryptSessionData({ tuser: cookie.u, tpass: cookie.p, u2f: cookie.c }); }
-                }
-                handleLoginRequest(req, res, true); break;
-            }
-            case 'pushlogin': {
-                if (rootRequests.handlePushLogin(req, res, domain)) { return; }
-                handleLoginRequest(req, res, true); break;
-            }
-            case 'changepassword': { handlePasswordChangeRequest(req, res, true); break; }
-            case 'deleteaccount': { handleDeleteAccountRequest(req, res, true); break; }
-            case 'createaccount': { handleCreateAccountRequest(req, res, true); break; }
-            case 'resetpassword': { handleResetPasswordRequest(req, res, true); break; }
-            case 'resetaccount': { handleResetAccountRequest(req, res, true); break; }
-            case 'checkemail': { handleCheckAccountEmailRequest(req, res, true); break; }
-            default: { handleLoginRequest(req, res, true); break; }
-        }
-    }
-
     // Return true if it looks like we are using a real TLS certificate.
     obj.isTrustedCert = function (domain) {
         if ((domain != null) && (typeof domain.trustedcert == 'boolean')) return domain.trustedcert; // If the status of the cert specified, use that.
@@ -2445,12 +2412,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         encodeCookie: function (cookie, key) { return obj.parent.encodeCookie(cookie, key); },
         getSessionSameSite: function () { return parent.config.settings.sessionsamesite; },
         dispatchEvent: function (targets, source, event) { obj.parent.DispatchEvent(targets, source, event); },
+        encryptSessionData: function (data) { return parent.encryptSessionData(data); },
+        postHandlers: {
+            login: handleLoginRequest,
+            changePassword: handlePasswordChangeRequest,
+            deleteAccount: handleDeleteAccountRequest,
+            createAccount: handleCreateAccountRequest,
+            resetPassword: handleResetPasswordRequest,
+            resetAccount: handleResetAccountRequest,
+            checkEmail: handleCheckAccountEmailRequest
+        },
         getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
         render: render,
         getRenderPage: getRenderPage,
         getRenderArgs: getRenderArgs
     });
     const handleRootRequest = rootRequests.handleRootRequest;
+    const handleRootPostRequest = rootRequests.handleRootPostRequest;
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;
 

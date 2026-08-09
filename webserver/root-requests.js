@@ -28,6 +28,8 @@ module.exports.createRootRequests = function (options) {
     const encodeCookie = options.encodeCookie;
     const getSessionSameSite = options.getSessionSameSite;
     const dispatchEvent = options.dispatchEvent;
+    const encryptSessionData = options.encryptSessionData;
+    const postHandlers = options.postHandlers;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -134,6 +136,41 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function handleRootPostRequest(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.end('Not Found'); return; }
+        if (req.body == null) { req.body = {}; }
+        debug('web', 'handleRootPostRequest, action: ' + req.body.action);
+        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) {
+            var ok = false;
+            for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } }
+            if (ok == false) { res.sendStatus(404); return; }
+        }
+
+        switch (req.body.action) {
+            case 'login': { postHandlers.login(req, res, true); break; }
+            case 'tokenlogin': {
+                if (req.body.hwstate) {
+                    var cookie = decodeCookie(req.body.hwstate, getLoginCookieEncryptionKey(), 10);
+                    if (cookie != null) { req.session.e = encryptSessionData({ tuser: cookie.u, tpass: cookie.p, u2f: cookie.c }); }
+                }
+                postHandlers.login(req, res, true); break;
+            }
+            case 'pushlogin': {
+                if (handlePushLogin(req, res, domain)) { return; }
+                postHandlers.login(req, res, true); break;
+            }
+            case 'changepassword': { postHandlers.changePassword(req, res, true); break; }
+            case 'deleteaccount': { postHandlers.deleteAccount(req, res, true); break; }
+            case 'createaccount': { postHandlers.createAccount(req, res, true); break; }
+            case 'resetpassword': { postHandlers.resetPassword(req, res, true); break; }
+            case 'resetaccount': { postHandlers.resetAccount(req, res, true); break; }
+            case 'checkemail': { postHandlers.checkEmail(req, res, true); break; }
+            default: { postHandlers.login(req, res, true); break; }
+        }
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -155,5 +192,5 @@ module.exports.createRootRequests = function (options) {
         handleRootRequestEx(req, res, domain, direct);
     }
 
-    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, handlePushLogin: handlePushLogin, getRootCertLink: getRootCertLink };
+    return { handleRootRequest: handleRootRequest, handleRootPostRequest: handleRootPostRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, handlePushLogin: handlePushLogin, getRootCertLink: getRootCertLink };
 };
