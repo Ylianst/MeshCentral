@@ -2008,10 +2008,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
 
         // Check old password
-        obj.checkUserPassword(domain, user, req.body.apassword1, function (result) {
+        obj.checkUserPassword(domain, user, req.body.apassword0, function (result) {
             if (result == true) {
                 // Check if the new password is allowed, only do this if this feature is enabled.
-                parent.checkOldUserPasswords(domain, user, command.newpass, function (result) {
+                parent.checkOldUserPasswords(domain, user, req.body.apassword1, function (result) {
                     if (result == 1) {
                         parent.debug('web', 'handlePasswordChangeRequest: old password reuse attempt.');
                         if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
