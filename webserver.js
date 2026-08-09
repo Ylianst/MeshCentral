@@ -6817,15 +6817,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // Handle 404 error
             if (obj.args.nice404 !== false) {
-                obj.app.use(function (req, res, next) {
-                    parent.debug('web', '404 Error ' + req.url);
-                    var domain = getDomain(req);
-                    if ((domain == null) || (domain.auth == 'sspi')) { res.sendStatus(404); return; }
-                    if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL
-                    const cspNonce = obj.crypto.randomBytes(15).toString('base64');
-                    res.set({ 'Content-Security-Policy': "default-src 'none'; script-src 'self' 'nonce-" + cspNonce + "'; img-src 'self'; style-src 'self' 'nonce-" + cspNonce + "';" }); // This page supports very tight CSP policy
-                    res.status(404).render(getRenderPage((domain.sitestyle >= 2) ? 'error4042' : 'error404', req, domain), getRenderArgs({ cspNonce: cspNonce }, req, domain));
-                });
+                obj.app.use(nice404);
             }
 
             // Start server on a free port.
