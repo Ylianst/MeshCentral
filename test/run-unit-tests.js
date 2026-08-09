@@ -11,6 +11,7 @@ require('./webserver-server-identity.test.js');
 require('./webserver-server-lifecycle.test.js');
 require('./webserver-session-counts.test.js');
 require('./webserver-storage.test.js');
+require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-control.test.js');

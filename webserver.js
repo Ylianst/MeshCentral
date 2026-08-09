@@ -71,6 +71,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const userAgentModule = require('./webserver/user-agent.js');
     const serverLifecycleModule = require('./webserver/server-lifecycle.js');
     const agentControlModule = require('./webserver/agent-control.js');
+    const subscriptionsModule = require('./webserver/subscriptions.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -313,6 +314,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         crypto: obj.crypto,
         getMeshRights: function (user, meshId) { return obj.GetMeshRights(user, meshId); },
         agentConsoleRight: MESHRIGHT_AGENTCONSOLE
+    }));
+    Object.assign(obj, subscriptionsModule.createSubscriptions({
+        users: obj.users,
+        removeAllEventDispatch: function (target) { parent.RemoveAllEventDispatch(target); },
+        addEventDispatch: function (subscriptions, target) { parent.AddEventDispatch(subscriptions, target); }
     }));
     const MESHRIGHT_SERVERFILES = 0x00000020;
     const MESHRIGHT_WAKEDEVICE = 0x00000040;
@@ -5104,30 +5110,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             res.send('');
         });
     }
-
-    // Subscribe to all events we are allowed to receive
-    obj.subscribe = function (userid, target) {
-        const user = obj.users[userid];
-        if (user == null) return;
-        const subscriptions = [userid, 'server-allusers'];
-        if (user.siteadmin != null) {
-            // Allow full site administrators of users with all events rights to see all events.
-            if ((user.siteadmin == 0xFFFFFFFF) || ((user.siteadmin & 2048) != 0)) { subscriptions.push('*'); }
-            else if ((user.siteadmin & 2) != 0) {
-                if ((user.groups == null) || (user.groups.length == 0)) {
-                    // Subscribe to all user changes
-                    subscriptions.push('server-users');
-                } else {
-                    // Subscribe to user changes for some groups
-                    for (var i in user.groups) { subscriptions.push('server-users:' + i); }
-                }
-            }
-        }
-        if (user.links != null) { for (var i in user.links) { subscriptions.push(i); } }
-        obj.parent.RemoveAllEventDispatch(target);
-        obj.parent.AddEventDispatch(subscriptions, target);
-        return subscriptions;
-    };
 
     // Handle a web socket relay request
     function handleRelayWebSocket(ws, req, domain, user, cookie) {

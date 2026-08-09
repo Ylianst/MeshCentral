@@ -260,6 +260,7 @@
     <Compile Include="webserver\server-lifecycle.js" />
     <Compile Include="webserver\session-counts.js" />
     <Compile Include="webserver\storage.js" />
+    <Compile Include="webserver\subscriptions.js" />
     <Compile Include="webserver\throttling.js" />
     <Compile Include="webserver\user-agent.js" />
     <Compile Include="winservice.js" />
