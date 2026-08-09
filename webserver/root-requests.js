@@ -16,6 +16,9 @@ module.exports.createRootRequests = function (options) {
     const render = options.render;
     const getRenderPage = options.getRenderPage;
     const getRenderArgs = options.getRenderArgs;
+    const authLog = options.authLog;
+    const getLoginCookieEncryptionKey = options.getLoginCookieEncryptionKey;
+    const handleRootRequestEx = options.handleRootRequestEx;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -50,6 +53,21 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function handleSspi(req, res, domain, direct) {
+        if ((domain.sspi == null) || ((req.query.login != null) && (getLoginCookieEncryptionKey() != null))) { return false; }
+        domain.sspi.authenticate(req, res, function (err) {
+            if ((err != null) || (req.connection.user == null)) {
+                authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
+                debug('web', 'handleRootRequest: SSPI auth required.');
+                try { res.sendStatus(401); } catch (ex) { }
+            } else {
+                debug('web', 'handleRootRequest: SSPI auth ok.');
+                handleRootRequestEx(req, res, domain, direct);
+            }
+        });
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -59,5 +77,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, getRootCertLink: getRootCertLink };
 };

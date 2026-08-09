@@ -88,3 +88,26 @@ test('the explicit login screen bypasses maintenance rendering', function () {
     const service = createRootRequests({ getMaintenanceMode: function () { return 1; } });
     assert.equal(service.handleMaintenance({ query: { loginscreen: '1' } }, {}, {}), false);
 });
+
+test('successful SSPI authentication resumes the root request', function () {
+    const resumed = [];
+    const service = createRootRequests({
+        debug: function () { },
+        authLog: function () { },
+        getLoginCookieEncryptionKey: function () { return null; },
+        handleRootRequestEx: function (req, res, domain, direct) { resumed.push([domain, direct]); }
+    });
+    const domain = { sspi: { authenticate: function (req, res, callback) { req.connection.user = 'DOMAIN\\alice'; callback(null); } } };
+    const req = { query: {}, connection: { remotePort: 443 }, headers: {}, clientIp: '192.0.2.1' };
+    assert.equal(service.handleSspi(req, {}, domain, true), true);
+    assert.deepEqual(resumed, [[domain, true]]);
+});
+
+test('failed SSPI authentication returns unauthorized', function () {
+    const statuses = [];
+    const service = createRootRequests({ debug: function () { }, authLog: function () { }, getLoginCookieEncryptionKey: function () { return null; } });
+    const domain = { sspi: { authenticate: function (req, res, callback) { callback(new Error('denied')); } } };
+    const req = { query: {}, connection: { user: null, remotePort: 443 }, headers: {}, clientIp: '192.0.2.1' };
+    assert.equal(service.handleSspi(req, { sendStatus: function (status) { statuses.push(status); } }, domain, false), true);
+    assert.deepEqual(statuses, [401]);
+});

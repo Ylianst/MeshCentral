@@ -1769,19 +1769,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         if (rootRequests.redirectUnknownUser(req, res, domain)) { return; }
 
-        if ((domain.sspi != null) && ((req.query.login == null) || (obj.parent.loginCookieEncryptionKey == null))) {
-            // Login using SSPI
-            domain.sspi.authenticate(req, res, function (err) {
-                if ((err != null) || (req.connection.user == null)) {
-                    obj.parent.authLog('https', 'Failed SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
-                    parent.debug('web', 'handleRootRequest: SSPI auth required.');
-                    try { res.sendStatus(401); } catch (ex) { } // sspi.authenticate() should already have responded to this request.
-                } else {
-                    parent.debug('web', 'handleRootRequest: SSPI auth ok.');
-                    handleRootRequestEx(req, res, domain, direct);
-                }
-            });
-        } else if (req.query.user && req.query.pass) {
+        if (rootRequests.handleSspi(req, res, domain, direct)) { return; }
+        if (req.query.user && req.query.pass) {
             // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
             obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
                 // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
@@ -2510,6 +2499,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         checkUserIpAddress: checkUserIpAddress,
         getQueryPortion: getQueryPortion,
         isTrustedCert: obj.isTrustedCert,
+        authLog: function (source, message, details) { parent.authLog(source, message, details); },
+        getLoginCookieEncryptionKey: function () { return obj.parent.loginCookieEncryptionKey; },
+        handleRootRequestEx: handleRootRequestEx,
         getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
         render: render,
         getRenderPage: getRenderPage,
