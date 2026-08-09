@@ -13,7 +13,8 @@ test('configured root redirects retain the request query portion', function () {
     const redirects = [];
     const service = createRootRequests({
         checkUserIpAddress: function () { return { rootredirect: 'https://portal.example/' }; },
-        getQueryPortion: function () { return '?key=value'; }
+        getQueryPortion: function () { return '?key=value'; },
+        isTrustedCert: function () { return true; }
     });
     service.handleRootRedirect({}, { redirect: function (url) { redirects.push(url); } });
     assert.deepEqual(redirects, ['https://portal.example/?key=value']);
@@ -21,7 +22,18 @@ test('configured root redirects retain the request query portion', function () {
 
 test('root redirects stop when the request domain is rejected', function () {
     let redirected = false;
-    const service = createRootRequests({ checkUserIpAddress: function () { return null; }, getQueryPortion: function () { return ''; } });
+    const service = createRootRequests({ checkUserIpAddress: function () { return null; }, getQueryPortion: function () { return ''; }, isTrustedCert: function () { return true; } });
     service.handleRootRedirect({}, { redirect: function () { redirected = true; } });
     assert.equal(redirected, false);
+});
+
+test('root certificate links use path domains and skip DNS domains', function () {
+    const service = createRootRequests({ checkUserIpAddress: function () { }, getQueryPortion: function () { return ''; }, isTrustedCert: function () { return false; } });
+    assert.match(service.getRootCertLink({ id: 'tenant' }), /href=\/tenant\/MeshServerRootCert\.cer/);
+    assert.match(service.getRootCertLink({ id: 'tenant', dns: 'tenant.example.com' }), /href=\/MeshServerRootCert\.cer/);
+});
+
+test('trusted certificates do not show a root certificate link', function () {
+    const service = createRootRequests({ checkUserIpAddress: function () { }, getQueryPortion: function () { return ''; }, isTrustedCert: function () { return true; } });
+    assert.equal(service.getRootCertLink({ id: 'tenant' }), '');
 });

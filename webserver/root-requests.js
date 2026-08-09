@@ -8,6 +8,7 @@
 module.exports.createRootRequests = function (options) {
     const checkUserIpAddress = options.checkUserIpAddress;
     const getQueryPortion = options.getQueryPortion;
+    const isTrustedCert = options.isTrustedCert;
 
     function handleRootRedirect(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -15,5 +16,14 @@ module.exports.createRootRequests = function (options) {
         res.redirect(domain.rootredirect + getQueryPortion(req));
     }
 
-    return { handleRootRedirect: handleRootRedirect };
+    function getRootCertLink(domain) {
+        if (isTrustedCert(domain) == false) {
+            var xdomain = (domain.dns == null) ? domain.id : '';
+            if (xdomain != '') xdomain += '/';
+            return '<a href=/' + xdomain + 'MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>';
+        }
+        return '';
+    }
+
+    return { handleRootRedirect: handleRootRedirect, getRootCertLink: getRootCertLink };
 };

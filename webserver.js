@@ -360,8 +360,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         checkUserIpAddress: checkUserIpAddress,
         clearDestroyedSessions: clearDestroyedSessions
     });
-    const rootRequests = rootRequestsModule.createRootRequests({ checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion });
-    const handleRootRedirect = rootRequests.handleRootRedirect;
     const externalGroups = externalGroupsModule.createExternalGroups({
         crypto: obj.crypto,
         userGroups: obj.userGroups,
@@ -2522,17 +2520,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return true; // This is a guess
     }
 
-    // Get the link to the root certificate if needed
-    function getRootCertLink(domain) {
-        // Check if the HTTPS certificate is issued from MeshCentralRoot, if so, add download link to root certificate.
-        if (obj.isTrustedCert(domain) == false) {
-            // Get the domain suffix
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            if (xdomain != '') xdomain += '/';
-            return '<a href=/' + xdomain + 'MeshServerRootCert.cer title="Download the root certificate for this server">Root Certificate</a>';
-        }
-        return '';
-    }
+    const rootRequests = rootRequestsModule.createRootRequests({ checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, isTrustedCert: obj.isTrustedCert });
+    const handleRootRedirect = rootRequests.handleRootRedirect;
+    const getRootCertLink = rootRequests.getRootCertLink;
 
     // Handle a web socket relay request
     function handleRelayWebSocket(ws, req, domain, user, cookie) {
