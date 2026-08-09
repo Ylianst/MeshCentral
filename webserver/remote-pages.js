@@ -29,6 +29,7 @@ module.exports.createRemotePages = function (options) {
     const state = options.state;
     const parent = options.parent;
     const args = options.args;
+    const getDomain = options.getDomain;
     const checkUserIpAddress = options.checkUserIpAddress;
     const getQueryPortion = options.getQueryPortion;
     const render = options.render;
@@ -64,5 +65,68 @@ module.exports.createRemotePages = function (options) {
         });
     }
 
-    return { handleXTermRequest: handleXTermRequest };
+    function handleMSTSCRequest(req, res, page) {
+        const domain = getDomain(req);
+        if (domain == null) { parent.debug('web', 'handleMSTSCRequest: failed checks.'); res.sendStatus(404); return; }
+        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; }
+        if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
+            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+            return;
+        }
+        var features = 0;
+        if (domain.allowsavingdevicecredentials === false) features |= 1;
+        var user = null;
+        if (req.query.login != null) {
+            const userCookie = parent.decodeCookie(req.query.login, parent.loginCookieEncryptionKey, 60);
+            if ((userCookie != null) && (userCookie.a === 3) && (typeof userCookie.u == 'string')) user = state.users[userCookie.u];
+        }
+        if ((user == null) && (req.session.userid != null)) user = state.users[req.session.userid];
+        if ((user == null) && state.args.user) user = state.users['user/' + domain.id + '/' + state.args.user.toLowerCase()];
+        if (user == null) { res.sendStatus(401); return; }
+
+        if (req.query.ws != null) {
+            const relayCookie = parent.decodeCookie(req.query.ws, parent.loginCookieEncryptionKey, 60);
+            if ((relayCookie != null) && (relayCookie.domainid == domain.id) && (relayCookie.nodeid != null) && (relayCookie.tcpport != null)) {
+                state.db.Get(relayCookie.nodeid, function (err, nodes) {
+                    if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
+                    const node = nodes[0];
+                    var serverCredentials = 0;
+                    if (domain.allowsavingdevicecredentials !== false) serverCredentials = module.exports.getRemoteCredentialType(node, user._id, page);
+                    render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: req.query.ws, name: encodeURIComponent(req.query.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
+                });
+                return;
+            }
+        }
+
+        if (req.query.node != null) {
+            const nodeIdSplit = req.query.node.split('/');
+            if (nodeIdSplit.length == 1) {
+                req.query.node = 'node/' + domain.id + '/' + nodeIdSplit[0];
+            } else if (nodeIdSplit.length == 3) {
+                if ((nodeIdSplit[0] != 'node') || (nodeIdSplit[1] != domain.id)) req.query.node = null;
+            } else {
+                req.query.node = null;
+            }
+        }
+        if (req.query.node == null) { render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: '', name: '', features: features }, req, domain)); return; }
+
+        state.db.Get(req.query.node, function (err, nodes) {
+            if ((err != null) || (nodes.length != 1)) { res.sendStatus(404); return; }
+            const node = nodes[0];
+            if ((state.GetNodeRights(user, node.meshid, node._id) & remoteControlRight) == 0) { res.sendStatus(401); return; }
+            var port = (page == 'ssh') ? 22 : 3389;
+            if ((page == 'ssh') && (typeof node.sshport == 'number')) port = node.sshport;
+            if ((page != 'ssh') && (typeof node.rdpport == 'number')) port = node.rdpport;
+            var serverCredentials = false;
+            if (domain.allowsavingdevicecredentials !== false) serverCredentials = module.exports.getRemoteCredentialType(node, user._id, page);
+            if (req.query.port != null) {
+                const queryPort = parseInt(req.query.port);
+                if ((queryPort > 0) && (queryPort < 65536)) port = queryPort;
+            }
+            const cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
+            render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
+        });
+    }
+
+    return { handleXTermRequest: handleXTermRequest, handleMSTSCRequest: handleMSTSCRequest };
 };

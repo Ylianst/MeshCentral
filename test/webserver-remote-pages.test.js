@@ -25,21 +25,27 @@ function createFixture(rights) {
     const renders = [], cookies = [];
     const userId = 'user/tenant/alice';
     const domain = { id: 'tenant', url: '/tenant/' };
+    const node = { _id: 'node/tenant/one', meshid: 'mesh/tenant/one', name: '<Terminal>', ssh: null, rdp: null };
     const state = {
         args: { port: 443 },
-        users: { [userId]: { _id: userId, name: 'Alice' } },
+        users: { [userId]: { _id: userId, name: 'Alice', domain: 'tenant' } },
+        db: { Get: function (id, callback) { callback(null, [node]); } },
         getWebServerName: function () { return 'server.example.com'; },
-        GetNodeWithRights: function (requestDomain, user, nodeId, callback) { callback({ _id: nodeId, name: '<Terminal>' }, rights, true); }
+        GetNodeWithRights: function (requestDomain, user, nodeId, callback) { callback(node, rights, true); },
+        GetNodeRights: function () { return rights; }
     };
     const parent = {
+        config: { settings: {} },
         loginCookieEncryptionKey: 'key',
         debug: function () { },
+        decodeCookie: function () { return null; },
         encodeCookie: function (value) { cookies.push(value); return 'cookie-' + cookies.length; }
     };
     const service = createRemotePages({
         state: state,
         parent: parent,
         args: { redirport: 80 },
+        getDomain: function () { return domain; },
         checkUserIpAddress: function () { return domain; },
         getQueryPortion: function () { return '?key=value'; },
         render: function (req, res, page, renderArgs) { renders.push({ page: page, args: renderArgs }); },
@@ -50,7 +56,7 @@ function createFixture(rights) {
         noTerminalRight: 512,
         random: function () { return 0.5; }
     });
-    return { service: service, userId: userId, renders: renders, cookies: cookies };
+    return { service: service, userId: userId, node: node, parent: parent, renders: renders, cookies: cookies };
 }
 
 function response() {
@@ -92,4 +98,24 @@ test('xterm page renders authorized nodes with scoped authentication cookies', f
     assert.equal(fixture.renders[0].args.authRelayCookie, 'cookie-2');
     assert.equal(fixture.renders[0].args.name, '&lt;Terminal&gt;');
     assert.deepEqual(JSON.parse(decodeURIComponent(fixture.renders[0].args.logoutControls)), { name: 'Alice', logoutUrl: '/tenant/logout?0.5&key=login-key' });
+});
+
+test('remote desktop pages render an empty selector when no node is requested', function () {
+    const fixture = createFixture(8);
+    const res = response();
+    fixture.service.handleMSTSCRequest({ session: { userid: fixture.userId }, query: {} }, res, 'ssh');
+    assert.equal(fixture.renders[0].page, 'ssh');
+    assert.deepEqual(fixture.renders[0].args, { cookie: '', name: '', features: 0 });
+});
+
+test('remote desktop pages normalize node IDs and issue scoped relay cookies', function () {
+    const fixture = createFixture(8);
+    const res = response();
+    const req = { session: { userid: fixture.userId }, query: { node: 'one' } };
+    fixture.service.handleMSTSCRequest(req, res, 'ssh');
+    assert.equal(req.query.node, 'node/tenant/one');
+    assert.deepEqual(fixture.cookies[0], { userid: fixture.userId, domainid: 'tenant', nodeid: 'node/tenant/one', tcpport: 22 });
+    assert.equal(fixture.renders[0].args.cookie, 'cookie-1');
+    assert.equal(fixture.renders[0].args.serverCredentials, 0);
+    assert.equal(fixture.renders[0].args.name, '%3CTerminal%3E');
 });
