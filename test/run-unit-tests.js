@@ -17,6 +17,7 @@ require('./webserver-sso-strategies.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');
 require('./webserver-authorization.test.js');
+require('./webserver-auxiliary-websockets.test.js');
 require('./webserver-application-routes.test.js');
 require('./webserver-basic-routes.test.js');
 require('./webserver-captcha.test.js');

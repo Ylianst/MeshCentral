@@ -92,6 +92,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const termsModule = require('./webserver/terms.js');
     const recordingsModule = require('./webserver/recordings.js');
     const specialUploadsModule = require('./webserver/special-uploads.js');
+    const auxiliaryWebSocketsModule = require('./webserver/auxiliary-websockets.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -168,6 +169,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleNewAccountCaptchaRequest = captcha.handleNewAccount;
     const handleCaptchaGetRequest = captcha.handleGet;
     const handleCaptchaPostRequest = captcha.handlePost;
+    const auxiliaryWebSockets = auxiliaryWebSocketsModule.createAuxiliaryWebSockets({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress });
+    const handleEchoWebSocket = auxiliaryWebSockets.echo;
+    const handle2faHoldWebSocket = auxiliaryWebSockets.twoFactorHold;
     const domainAssets = domainAssetsModule.createDomainAssets({
         state: obj,
         parent: parent,
@@ -4333,81 +4337,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.fs.unlink(this.xfilepath + '.part', function (err) { }); // Remove a partial file
             }
         });
-    }
-
-    // Handle the web socket echo request, just echo back the data sent
-    function handleEchoWebSocket(ws, req) {
-        const domain = checkUserIpAddress(ws, req);
-        if (domain == null) { return; }
-        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
-
-        // When data is received from the web socket, echo it back
-        ws.on('message', function (data) {
-            if (data.toString('utf8') == 'close') {
-                try { ws.close(); } catch (e) { console.log(e); }
-            } else {
-                try { ws.send(data); } catch (e) { console.log(e); }
-            }
-        });
-
-        // If error, do nothing.
-        ws.on('error', function (err) { console.log('Echo server error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.'); });
-
-        // If closed, do nothing
-        ws.on('close', function (req) { });
-    }
-
-    // Handle the 2FA hold web socket
-    // Accept an hold a web socket connection until the 2FA response is received.
-    function handle2faHoldWebSocket(ws, req) {
-        const domain = checkUserIpAddress(ws, req);
-        if (domain == null) { return; }
-        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { ws.close(); return; } // Push 2FA is disabled
-        if (typeof req.query.c !== 'string') { ws.close(); return; }
-        const cookie = parent.decodeCookie(req.query.c, null, 1);
-        if ((cookie == null) || (cookie.d != domain.id)) { ws.close(); return; }
-        var user = obj.users[cookie.u];
-        if ((user == null) || (typeof user.otpdev != 'string')) { ws.close(); return; }
-        ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive
-
-        // 2FA event subscription
-        obj.parent.AddEventDispatch(['2fadev-' + cookie.s], ws);
-        ws.cookie = cookie;
-        ws.HandleEvent = function (source, event, ids, id) {
-            obj.parent.RemoveAllEventDispatch(this);
-            if ((event.approved === true) && (event.userid == this.cookie.u)) {
-                // Create a login cookie
-                const loginCookie = obj.parent.encodeCookie({ a: 'pushAuth', u: event.userid, d: event.domain }, obj.parent.loginCookieEncryptionKey);
-                try { ws.send(JSON.stringify({ approved: true, token: loginCookie })); } catch (ex) { }
-            } else {
-                // Reject the login
-                try { ws.send(JSON.stringify({ approved: false })); } catch (ex) { }
-            }
-        }
-
-        // We do not accept any data on this connection.
-        ws.on('message', function (data) { this.close(); });
-
-        // If error, do nothing.
-        ws.on('error', function (err) { });
-
-        // If closed, unsubscribe
-        ws.on('close', function (req) { obj.parent.RemoveAllEventDispatch(this); });
-
-        // Perform push notification to device
-        try {
-            const deviceCookie = parent.encodeCookie({ a: 'checkAuth', c: cookie.c, u: cookie.u, n: cookie.n, s: cookie.s });
-            var code = Buffer.from(cookie.c, 'base64').toString();
-            var payload = { notification: { title: (domain.title ? domain.title : 'MeshCentral'), body: "Authentication - " + code }, data: { url: '2fa://auth?code=' + cookie.c + '&c=' + deviceCookie } };
-            var options = { priority: 'High', timeToLive: 60 }; // TTL: 1 minute
-            parent.firebase.sendToDevice(user.otpdev, payload, options, function (id, err, errdesc) {
-                if (err == null) {
-                    try { ws.send(JSON.stringify({ sent: true, code: code })); } catch (ex) { }
-                } else {
-                    try { ws.send(JSON.stringify({ sent: false })); } catch (ex) { }
-                }
-            });
-        } catch (ex) { console.log(ex); }
     }
 
     // Handle Intel AMT events

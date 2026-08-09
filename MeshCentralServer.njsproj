@@ -246,6 +246,7 @@
     <Compile Include="webrelayserver.js" />
     <Compile Include="webserver.js" />
     <Compile Include="webserver\authorization.js" />
+    <Compile Include="webserver\auxiliary-websockets.js" />
     <Compile Include="webserver\application-routes.js" />
     <Compile Include="webserver\basic-routes.js" />
     <Compile Include="webserver\captcha.js" />
