@@ -42,6 +42,7 @@ require('./webserver-request-middleware.test.js');
 require('./webserver-throttling.test.js');
 require('./webserver-telemetry.test.js');
 require('./webserver-tls-configuration.test.js');
+require('./webserver-two-factor-authentication.test.js');
 require('./webserver-user-agent.test.js');
 require('./webserver-web-relay.test.js');
 require('./webserver-websocket-auth.test.js');

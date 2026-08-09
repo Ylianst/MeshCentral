@@ -284,6 +284,7 @@
     <Compile Include="webserver\throttling.js" />
     <Compile Include="webserver\telemetry.js" />
     <Compile Include="webserver\tls-configuration.js" />
+    <Compile Include="webserver\two-factor-authentication.js" />
     <Compile Include="webserver\user-agent.js" />
     <Compile Include="winservice.js" />
     <Content Include="agents\codesign.cer" />
