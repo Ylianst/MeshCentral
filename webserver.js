@@ -73,6 +73,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const agentControlModule = require('./webserver/agent-control.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
+    const coreMiddlewareModule = require('./webserver/core-middleware.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -439,6 +440,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         https: require('https'),
         expressWs: require('express-ws'),
         constants: constants
+    });
+    const coreMiddleware = coreMiddlewareModule.createCoreMiddleware({
+        state: obj,
+        parent: parent,
+        keygrip: require('keygrip'),
+        cookieSession: require('cookie-session'),
+        dnsLookup: require('dns').lookup,
+        handleWebRelayWebSocket: function (ws, req) { handleWebRelayWebSocket(ws, req); }
     });
 
     // Setup randoms
@@ -6760,79 +6769,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function serverStart() {
         tlsConfiguration.setupServers();
 
-        // Setup middleware
-        obj.app.engine('handlebars', obj.exphbs.engine({ defaultLayout: false }));
-        obj.app.set('view engine', 'handlebars');
-        if (obj.args.trustedproxy) {
-            // Reverse proxy should add the "X-Forwarded-*" headers
-            try {
-                obj.app.set('trust proxy', obj.args.trustedproxy);
-            } catch (ex) {
-                // If there is an error, try to resolve the string
-                if ((obj.args.trustedproxy.length == 1) && (typeof obj.args.trustedproxy[0] == 'string')) {
-                    require('dns').lookup(obj.args.trustedproxy[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.trustedproxy = [address]; } });
-                }
-            }
-        }
-        else if (typeof obj.args.tlsoffload == 'object') {
-            // Reverse proxy should add the "X-Forwarded-*" headers
-            try {
-                obj.app.set('trust proxy', obj.args.tlsoffload);
-            } catch (ex) {
-                // If there is an error, try to resolve the string
-                if ((Array.isArray(obj.args.tlsoffload)) && (obj.args.tlsoffload.length == 1) && (typeof obj.args.tlsoffload[0] == 'string')) {
-                    require('dns').lookup(obj.args.tlsoffload[0], function (err, address, family) { if (err == null) { obj.app.set('trust proxy', address); obj.args.tlsoffload = [address]; } });
-                }
-            }
-        }
-
-        // Setup a keygrip instance with higher default security, default hash is SHA1, we want to bump that up with SHA384
-        // If multiple instances of this server are behind a load-balancer, this secret must be the same for all instances
-        // If args.sessionkey is a string, use it as a single key, but args.sessionkey can also be used as an array of keys.
-        const keygrip = require('keygrip')((typeof obj.args.sessionkey == 'string') ? [obj.args.sessionkey] : obj.args.sessionkey, 'sha384', 'base64');
-
-        // Setup the cookie session
-        const sessionOptions = {
-            name: 'xid', // Recommended security practice to not use the default cookie name
-            httpOnly: true,
-            keys: keygrip,
-            secure: (obj.args.tlsoffload == null), // Use this cookie only over TLS (Check this: https://expressjs.com/en/guide/behind-proxies.html)
-            sameSite: (obj.args.sessionsamesite ? obj.args.sessionsamesite : 'lax')
-        }
-        if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
-        obj.app.use(require('cookie-session')(sessionOptions));
-        obj.app.use(function (request, response, next) { // Patch for passport 0.6.0 - https://github.com/jaredhanson/passport/issues/904
-            if (request.session && !request.session.regenerate) {
-                request.session.regenerate = function (cb) {
-                    cb()
-                }
-            }
-            if (request.session && !request.session.save) {
-                request.session.save = function (cb) {
-                    cb()
-                }
-            }
-            // Special Client Hint Headers for Browser Detection on every request - https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers#client_hints
-            // note: only works in a secure context (localhost or https://)
-            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(request.hostname) == -1)) {
-                const secCH = [
-                    'Sec-CH-UA-Arch', 'Sec-CH-UA-Bitness', 'Sec-CH-UA-Form-Factors', 'Sec-CH-UA-Full-Version',
-                    'Sec-CH-UA-Full-Version-List', 'Sec-CH-UA-Mobile', 'Sec-CH-UA-Model', 'Sec-CH-UA-Platform',
-                    'Sec-CH-UA-Platform-Version', 'Sec-CH-UA-WoW64'
-                ];
-                response.setHeader('Accept-CH', secCH.join(', '));
-                response.setHeader('Critical-CH', secCH.join(', '));
-            }
-            next();
-        });
-
-        // Handle all incoming web sockets, see if some need to be handled as web relays
-        obj.app.ws('/*', function (ws, req, next) {
-            // Global error catcher
-            ws.on('error', function (err) { parent.debug('web', 'GENERAL WSERR: ' + err); console.log(err); });
-            if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) { handleWebRelayWebSocket(ws, req); return; }
-            return next();
-        });
+        coreMiddleware.setupCoreMiddleware();
 
         // Add HTTP security headers to all responses
         obj.app.use(async function (req, res, next) {
