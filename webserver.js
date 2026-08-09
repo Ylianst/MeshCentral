@@ -86,6 +86,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const passportRoutesModule = require('./webserver/passport-routes.js');
     const duoRoutesModule = require('./webserver/duo-routes.js');
     const agentRoutesModule = require('./webserver/agent-routes.js');
+    const domainAssetsModule = require('./webserver/domain-assets.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6903,6 +6904,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     agentDownloadFile: handleAgentDownloadFile
                 }
             });
+            const domainAssets = domainAssetsModule.createDomainAssets({ state: obj, parent: parent, getDomain: getDomain });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6919,43 +6921,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 passportRoutes.register(domain);
 
                 duoRoutes.register(domain);
-
-                // Server redirects
-                if (parent.config.domains[i].redirects) { for (var j in parent.config.domains[i].redirects) { if (j[0] != '_') { obj.app.get(url + j, obj.handleDomainRedirect); } } }
-
-                // Server picture
-                obj.app.get(url + 'serverpic.ashx', function (req, res) {
-                    // Check if we have "server.jpg" in the data folder, if so, use that.
-                    if ((parent.configurationFiles != null) && (parent.configurationFiles['server.png'] != null)) {
-                        res.set({ 'Content-Type': 'image/png' });
-                        res.send(parent.configurationFiles['server.png']);
-                    } else {
-                        // Check if we have "server.jpg" in the data folder, if so, use that.
-                        var p = obj.path.join(obj.parent.datapath, 'server.png');
-                        if (obj.fs.existsSync(p)) {
-                            // Use the data folder server picture
-                            try { res.sendFile(p); } catch (ex) { res.sendStatus(404); }
-                        } else {
-                            var domain = getDomain(req);
-                            if ((domain != null) && (domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'images/server-256.png')))) {
-                                // Use the domain server picture
-                                try { res.sendFile(obj.path.join(domain.webpublicpath, 'images/server-256.png')); } catch (ex) { res.sendStatus(404); }
-                            } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/server-256.png'))) {
-                                // Use the override server picture
-                                try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/server-256.png')); } catch (ex) { res.sendStatus(404); }
-                            } else {
-                                // Use the default server picture
-                                try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/server-256.png')); } catch (ex) { res.sendStatus(404); }
-                            }
-                        }
-                    }
-                });
+                domainAssets.register(domain);
 
                 agentRoutes.register(domain);
-
-                // Setup any .well-known folders
-                var p = obj.parent.path.join(obj.parent.datapath, '.well-known' + ((parent.config.domains[i].id == '') ? '' : ('-' + parent.config.domains[i].id)));
-                if (obj.parent.fs.existsSync(p)) { obj.app.use(url + '.well-known', obj.express.static(p)); }
 
                 // Setup web relay on this web server if needed
                 // We set this up when a DNS name is used as a web relay instead of a port
