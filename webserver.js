@@ -90,6 +90,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const ssoAccountsModule = require('./webserver/sso-accounts.js');
     const ssoLoginModule = require('./webserver/sso-login.js');
     const sessionLogoutModule = require('./webserver/session-logout.js');
+    const rootRequestsModule = require('./webserver/root-requests.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -359,6 +360,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         checkUserIpAddress: checkUserIpAddress,
         clearDestroyedSessions: clearDestroyedSessions
     });
+    const rootRequests = rootRequestsModule.createRootRequests({ checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion });
+    const handleRootRedirect = rootRequests.handleRootRedirect;
     const externalGroups = externalGroupsModule.createExternalGroups({
         crypto: obj.crypto,
         userGroups: obj.userGroups,
@@ -785,13 +788,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkUserOneTimePasswordRequired = twoFactorAuthentication.checkUserOneTimePasswordRequired;
     const checkUserOneTimePassword = twoFactorAuthentication.checkUserOneTimePassword;
     const getHardwareKeyChallenge = twoFactorAuthentication.getHardwareKeyChallenge;
-
-    // Redirect a root request to a different page
-    function handleRootRedirect(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        res.redirect(domain.rootredirect + getQueryPortion(req));
-    }
 
     function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
