@@ -62,6 +62,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const networkAccessModule = require('./webserver/network-access.js');
     const customIconsModule = require('./webserver/custom-icons.js');
     const storageModule = require('./webserver/storage.js');
+    const sessionsModule = require('./webserver/sessions.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -207,6 +208,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
+    const sessions = sessionsModule.createSessions({ crypto: obj.crypto, destroyedSessions: obj.destroyedSessions });
+    const getWebsocketArgs = sessions.getWebsocketArgs;
+    const setSessionRandom = sessions.setSessionRandom;
+    const clearDestroyedSessions = sessions.clearDestroyedSessions;
 
     const isWindowsPlatform = (obj.os.platform() === 'win32');
     const safeUploadTempRoots = (function () {
@@ -9498,47 +9503,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         badLoginTableLastClean: { configurable: true, get: function () { return throttling.badLoginTableLastClean; }, set: function (value) { throttling.badLoginTableLastClean = value; } },
         bad2faTableLastClean: { configurable: true, get: function () { return throttling.bad2faTableLastClean; }, set: function (value) { throttling.bad2faTableLastClean = value; } }
     });
-
-    // Hold a websocket until additional arguments are provided within the socket.
-    // This is a generic function that can be used for any websocket to avoid passing arguments in the URL.
-    function getWebsocketArgs(ws, req, func) {
-        if (req.query.moreargs != '1') {
-            // No more arguments needed, pass the websocket thru
-            func(ws, req);
-        } else {
-            // More arguments are needed
-            delete req.query.moreargs;
-            const xfunc = function getWebsocketArgsEx(msg) {
-                var command = null;
-                try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
-                if ((command != null) && (command.action === 'urlargs') && (typeof command.args == 'object')) {
-                    for (var i in command.args) { getWebsocketArgsEx.req.query[i] = command.args[i]; }
-                    ws.removeEventListener('message', getWebsocketArgsEx);
-                    getWebsocketArgsEx.func(getWebsocketArgsEx.ws, getWebsocketArgsEx.req);
-                }
-            }
-            xfunc.ws = ws;
-            xfunc.req = req;
-            xfunc.func = func;
-            ws.on('message', xfunc);
-        }
-    }
-
-    // Set a random value to this session. Only works if the session has a userid.
-    // This random value along with the userid is used to destroy the session when logging out.
-    function setSessionRandom(req) {
-        if ((req.session == null) || (req.session.userid == null) || (req.session.x != null)) return;
-        var x = obj.crypto.randomBytes(6).toString('base64');
-        while (obj.destroyedSessions[req.session.userid + '/' + x] != null) { x = obj.crypto.randomBytes(6).toString('base64'); }
-        req.session.x = x;
-    }
-
-    // Remove all destroyed sessions after 2 hours, these sessions would have timed out anyway.
-    function clearDestroyedSessions() {
-        var toRemove = [], t = Date.now() - (2 * 60 * 60 * 1000);
-        for (var i in obj.destroyedSessions) { if (obj.destroyedSessions[i] < t) { toRemove.push(i); } }
-        for (var i in toRemove) { delete obj.destroyedSessions[toRemove[i]]; }
-    }
 
     // Check that everything is cleaned up
     function checkWebRelaySessionsTimeout() {
