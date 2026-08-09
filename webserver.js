@@ -56,6 +56,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.uaclienthints = require('ua-client-hints-js');
     const sanitization = require('./webserver/sanitization.js');
     const authorizationModule = require('./webserver/authorization.js');
+    const renderingModule = require('./webserver/rendering.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -100,6 +101,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         meshes: obj.meshes,
         userGroups: obj.userGroups
     }));
+    const rendering = renderingModule.createRendering({
+        path: obj.path,
+        fs: obj.fs,
+        datapath: parent.datapath,
+        webViewsPath: parent.webViewsPath,
+        webViewsOverridePath: parent.webViewsOverridePath,
+        isMobileBrowser: isMobileBrowser,
+        isWebPageLengthRandomizationEnabled: function () { return args.webpagelengthrandomization !== false; },
+        replacePlaceholders: obj.common.replacePlaceholders,
+        randomBytes: function (size) { return parent.crypto.randomBytes(size); },
+        getCurrentVersion: function () { return parent.currentVer; },
+        getWebServerName: function (domain, req) { return obj.getWebServerName(domain, req); },
+        getServerStats: function () {
+            return {
+                agentsessions: Object.keys(obj.wsagents).length,
+                connectedusers: Object.keys(obj.wssessions).length,
+                userssessions: Object.keys(obj.wssessions2).length,
+                relaysessions: obj.relaySessionCount,
+                relaycount: Object.keys(obj.wsrelays).length
+            };
+        }
+    });
+    const getRenderPage = rendering.getRenderPage;
+    const getRenderArgs = rendering.getRenderArgs;
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
     obj.tlsCiphers = args.tlsciphers;           // List of TLS ciphers to use
     obj.userAllowedIp = args.userallowedip;     // List of allowed IP addresses for users
@@ -9518,231 +9543,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
     };
-
-    // Return the correct render page given mobile, minify and override path.
-    function getRenderPage(pagename, req, domain) {
-        var mobile = isMobileBrowser(req), minify = (domain.minify == true), p;
-        if (req.query.mobile == '1') { mobile = true; } else if (req.query.mobile == '0') { mobile = false; }
-        if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
-        if ((domain != null) && (domain.mobilesite === false)) { mobile = false; }
-        if (mobile) {
-            if ((domain != null) && (domain.webviewspath != null)) { // If the domain has a web views path, use that first
-                if (minify) {
-                    p = obj.path.join(domain.webviewspath, pagename + '-mobile-min');
-                    if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Minify + Override document
-                }
-                p = obj.path.join(domain.webviewspath, pagename + '-mobile');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Override document
-            }
-            if (obj.parent.webViewsOverridePath != null) {
-                if (minify) {
-                    p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-mobile-min');
-                    if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Minify + Override document
-                }
-                p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-mobile');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Override document
-            }
-            if (minify) {
-                p = obj.path.join(obj.parent.webViewsPath, pagename + '-mobile-min');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile + Minify document
-            }
-            p = obj.path.join(obj.parent.webViewsPath, pagename + '-mobile');
-            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Mobile document
-        }
-        if ((domain != null) && (domain.webviewspath != null)) { // If the domain has a web views path, use that first
-            if (minify) {
-                p = obj.path.join(domain.webviewspath, pagename + '-min');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Minify + Override document
-            }
-            p = obj.path.join(domain.webviewspath, pagename);
-            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Override document
-        }
-        if (obj.parent.webViewsOverridePath != null) {
-            if (minify) {
-                p = obj.path.join(obj.parent.webViewsOverridePath, pagename + '-min');
-                if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Minify + Override document
-            }
-            p = obj.path.join(obj.parent.webViewsOverridePath, pagename);
-            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Override document
-        }
-        if (minify) {
-            p = obj.path.join(obj.parent.webViewsPath, pagename + '-min');
-            if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Minify document
-        }
-        p = obj.path.join(obj.parent.webViewsPath, pagename);
-        if (obj.fs.existsSync(p + '.handlebars')) { return p; } // Default document
-        return null;
-    }
-
-    function generateCustomCSSTags(customFilesObject, currentTemplate) {
-        var cssTags = '';
-        
-        cssTags += '<link keeplink=1 type="text/css" href="styles/custom.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
-        
-
-        if (customFilesObject) {
-            if (Array.isArray(customFilesObject)) {
-                // Legacy array support - convert to object format
-                for (var i = 0; i < customFilesObject.length; i++) {
-                    var customFileConfig = customFilesObject[i];
-                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
-                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
-                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
-                            for (var j = 0; j < customFileConfig.css.length; j++) {
-                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
-                            }
-                        }
-                    }
-                }
-            } else if (customFilesObject.css && Array.isArray(customFilesObject.css)) {
-                // Legacy single object support
-                for (var i = 0; i < customFilesObject.css.length; i++) {
-                    cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFilesObject.css[i] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
-                }
-            } else if (typeof customFilesObject === 'object') {
-                // New object format - iterate through each custom file configuration
-                for (var configName in customFilesObject) {
-                    var customFileConfig = customFilesObject[configName];
-                    if (customFileConfig && customFileConfig.css && Array.isArray(customFileConfig.css)) {
-                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
-                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
-                            for (var j = 0; j < customFileConfig.css.length; j++) {
-                                cssTags += '<link keeplink=1 type="text/css" href="styles/' + customFileConfig.css[j] + '" media="screen" rel="stylesheet" title="CSS" />\n    ';
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        return cssTags.trim();
-    }
-
-    function generateCustomJSTags(customFilesObject, currentTemplate) {
-        var jsTags = '';
-        
-        jsTags += '<script keeplink=1 type="text/javascript" src="scripts/custom.js"></script>\n    ';
-        
-        if (customFilesObject) {
-            if (Array.isArray(customFilesObject)) {
-                // Legacy array support - convert to object format
-                for (var i = 0; i < customFilesObject.length; i++) {
-                    var customFileConfig = customFilesObject[i];
-                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
-                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
-                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
-                            for (var j = 0; j < customFileConfig.js.length; j++) {
-                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
-                            }
-                        }
-                    }
-                }
-            } else if (customFilesObject.js && Array.isArray(customFilesObject.js)) {
-                // Legacy single object support
-                for (var i = 0; i < customFilesObject.js.length; i++) {
-                    jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFilesObject.js[i] + '"></script>\n    ';
-                }
-            } else if (typeof customFilesObject === 'object') {
-                // New object format - iterate through each custom file configuration
-                for (var configName in customFilesObject) {
-                    var customFileConfig = customFilesObject[configName];
-                    if (customFileConfig && customFileConfig.js && Array.isArray(customFileConfig.js)) {
-                        if ((customFileConfig.scope && customFileConfig.scope.indexOf('all') !== -1) || 
-                            (currentTemplate && customFileConfig.scope && customFileConfig.scope.indexOf(currentTemplate) !== -1)) {
-                            for (var j = 0; j < customFileConfig.js.length; j++) {
-                                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/' + customFileConfig.js[j] + '"></script>\n    ';
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        return jsTags.trim();
-    }
-
-    function generateThemePackCSSTags(domain, currentTemplate) {
-        var cssTags = '';
-        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
-        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
-        if (domain && domain.themepack && isModernUI) {
-            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
-            if (obj.fs.existsSync(obj.path.join(themePath, 'styles', 'theme.css'))) {
-                cssTags += '<link keeplink=1 type="text/css" href="styles/theme.css" media="screen" rel="stylesheet" title="CSS" />\n    ';
-            }
-        }
-        return cssTags;
-    }
-    function generateThemePackJSTags(domain, currentTemplate) {
-        var jsTags = '';
-        // Load theme pack if domain has one configured AND (domain forces sitestyle 3 OR user is viewing sitestyle 3)
-        var isModernUI = (currentTemplate === 'default3') || (domain.sitestyle === 3);
-        if (domain && domain.themepack && isModernUI) {
-            var themePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
-            if (obj.fs.existsSync(obj.path.join(themePath, 'scripts', 'theme.js'))) {
-                jsTags += '<script keeplink=1 type="text/javascript" src="scripts/theme.js"></script>\n    ';
-            }
-        }
-        return jsTags;
-    }
-
-    // Return the correct render page arguments.
-    function getRenderArgs(xargs, req, domain, page) {
-        var minify = (domain.minify == true);
-        if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
-        xargs.min = minify ? '-min' : '';
-        xargs.titlehtml = domain.titlehtml;
-        xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
-        if (
-            ((page == 'login2') && (domain.loginpicture == null) && (domain.titlehtml == null)) ||
-            ((page != 'login2') && (domain.titlepicture == null) && (domain.titlehtml == null))
-        ) {
-            if (domain.title == null) {
-                xargs.title1 = 'MeshCentral';
-                xargs.title2 = '';
-            } else {
-                xargs.title1 = domain.title;
-                xargs.title2 = domain.title2 ? domain.title2 : '';
-            }
-        } else {
-            xargs.title1 = domain.title1 ? domain.title1 : '';
-            xargs.title2 = (domain.title1 && domain.title2) ? domain.title2 : '';
-        }
-        xargs.title2 = obj.common.replacePlaceholders(xargs.title2, {
-            'serverversion': obj.parent.currentVer,
-            'servername': obj.getWebServerName(domain, req),
-            'agentsessions': Object.keys(parent.webserver.wsagents).length,
-            'connectedusers': Object.keys(parent.webserver.wssessions).length,
-            'userssessions': Object.keys(parent.webserver.wssessions2).length,
-            'relaysessions': parent.webserver.relaySessionCount,
-            'relaycount': Object.keys(parent.webserver.wsrelays).length
-        });
-        xargs.extitle = encodeURIComponent(xargs.title).split('\'').join('\\\'');
-        xargs.domainurl = domain.url;
-        xargs.autocomplete = (domain.autocomplete === false) ? 'autocomplete=off x' : 'autocomplete'; // This option allows autocomplete to be turned off on the login page.
-        if (typeof domain.hide == 'number') { xargs.hide = domain.hide; }
-
-        // To mitigate any possible BREACH attack, we generate a random 0 to 255 bytes length string here.
-        xargs.randomlength = (args.webpagelengthrandomization !== false) ? parent.crypto.randomBytes(parent.crypto.randomBytes(1)[0]).toString('base64') : '';
-
-        // Generate custom CSS and JS tags
-        if (xargs.customFiles) {
-            try {
-                var customFiles = JSON.parse(decodeURIComponent(xargs.customFiles));
-                xargs.customCSSTags = generateCustomCSSTags(customFiles, page);
-                xargs.customJSTags = generateCustomJSTags(customFiles, page);
-            } catch (ex) {
-                xargs.customCSSTags = generateCustomCSSTags(null, page);
-                xargs.customJSTags = generateCustomJSTags(null, page);
-            }
-        } else {
-            xargs.customCSSTags = generateCustomCSSTags(null, page);
-            xargs.customJSTags = generateCustomJSTags(null, page);
-        }
-        xargs.customCSSTags += generateThemePackCSSTags(domain, page);
-        xargs.customJSTags += generateThemePackJSTags(domain, page);
-        return xargs;
-    }
 
     // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
     obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
