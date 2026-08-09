@@ -88,6 +88,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
     const ssoAccountsModule = require('./webserver/sso-accounts.js');
+    const ssoLoginModule = require('./webserver/sso-login.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -377,6 +378,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         setSessionRandom: setSessionRandom,
         syncExternalUserGroups: syncExternalUserGroups,
         isEmailVerified: ssoStrategiesModule.isEmailVerified
+    });
+    const handleStrategyLogin = ssoLoginModule.createSsoLogin({
+        users: obj.users,
+        authLog: function (source, message) { parent.authLog(source, message); },
+        checkUserIpAddress: checkUserIpAddress,
+        getQueryPortion: getQueryPortion,
+        prepareSsoLoginGroups: prepareSsoLoginGroups,
+        ssoAccounts: ssoAccounts,
+        sendSsoLoginResponse: sendSsoLoginResponse
     });
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
     Object.assign(obj, sessionCountsModule.createSessionCounts({
@@ -1797,52 +1807,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     Object.assign(obj, passwordHistoryModule.createPasswordHistory({ debug: function (source, message) { parent.debug(source, message); }, require: require }));
-
-    // Called when a strategy login occurred
-    // This is called after a successful Oauth to Twitter, Google, GitHub...
-    function handleStrategyLogin(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
-            const strategy = domain.authstrategies[req.user.strategy];
-            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
-            const groups = prepareSsoLoginGroups(strategy, req.user);
-            if (groups.loginDenied === true) {
-                req.session.loginmode = 1;
-                req.session.messageid = 111; // Access Denied.
-                res.redirect(domain.url + getQueryPortion(req));
-                return;
-            }
-
-            // Check if the user already exists
-            const userid = 'user/' + domain.id + '/' + req.user.sid;
-            var user = obj.users[userid];
-            if (user == null) {
-                const newAccountSettings = ssoAccounts.getNewAccountSettings(domain, strategy);
-
-                if (newAccountSettings.allowed === true) {
-                    user = ssoAccounts.createAccount(domain, strategy, req.user, groups, newAccountSettings);
-                    ssoAccounts.completeSsoLogin(req, domain, user);
-                } else {
-                    // New users not allowed
-                    parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN FAILED: USER: "${req.user.sid}" New accounts are not allowed`);
-                    req.session.loginmode = 1;
-                    req.session.messageid = 100; // Unable to create account.
-                    res.redirect(domain.url + getQueryPortion(req));
-                    return;
-                }
-            } else { // Login success
-                ssoAccounts.updateExistingAccount(domain, user, req.user, groups);
-                ssoAccounts.completeSsoLogin(req, domain, user);
-                parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
-            }
-        } else if (req.session && req.session.userid && obj.users[req.session.userid]) {
-            parent.authLog('handleStrategyLogin', `User Already Authorised "${(req.session.passport && req.session.passport.user) ? req.session.passport.user : req.session.userid }"`);
-        } else {
-            parent.authLog('handleStrategyLogin', `LOGIN FAILED: REQUEST CONTAINS NO USER OR SID`);
-        }
-        sendSsoLoginResponse(req, res, domain);
-    }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
     function handleRootRequest(req, res, direct) {
