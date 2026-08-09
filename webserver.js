@@ -1661,7 +1661,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 1, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
                 } else {
                     obj.db.Get(cookie.u, function (err, docs) {
-                        if (docs.length == 0) {
+                        if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
+                            parent.debug('web', 'handleCheckMailRequest: Database error.');
+                            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                        } else if (docs.length == 0) {
                             parent.debug('web', 'handleCheckMailRequest: Invalid username.');
                             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 2, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(idsplit[1]).replace(/'/g, '%27') }, req, domain));
                         } else {
@@ -1677,7 +1680,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                         render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 4, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27'), arg2: encodeURIComponent(user.name).replace(/'/g, '%27') }, req, domain));
                                     } else {
                                         obj.db.GetUserWithVerifiedEmail(domain.id, user.email, function (err, docs) {
-                                            if (emailAccountUtils.hasOtherVerifiedUser(docs, user._id)) {
+                                            if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
+                                                parent.debug('web', 'handleCheckMailRequest: Database error checking verified email.');
+                                                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                            } else if (emailAccountUtils.hasOtherVerifiedUser(docs, user._id)) {
                                                 parent.debug('web', 'handleCheckMailRequest: email already in use.');
                                                 render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 5, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), arg1: encodeURIComponent(user.email).replace(/'/g, '%27') }, req, domain));
                                             } else {
