@@ -1765,12 +1765,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { return; }
         if (rootRequests.checkRootRequest(req, res, domain) == false) { return; }
 
-        // Check if we are in maintenance mode
-        if ((parent.config.settings.maintenancemode != null) && (req.query.loginscreen !== '1')) {
-            parent.debug('web', 'handleLoginRequest: Server under maintenance.');
-            render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
-            return;
-        }
+        if (rootRequests.handleMaintenance(req, res, domain)) { return; }
 
         if (rootRequests.redirectUnknownUser(req, res, domain)) { return; }
 
@@ -2514,7 +2509,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         debug: function (source, message) { parent.debug(source, message); },
         checkUserIpAddress: checkUserIpAddress,
         getQueryPortion: getQueryPortion,
-        isTrustedCert: obj.isTrustedCert
+        isTrustedCert: obj.isTrustedCert,
+        getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs
     });
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;

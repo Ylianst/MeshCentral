@@ -12,6 +12,10 @@ module.exports.createRootRequests = function (options) {
     const state = options.state;
     const debug = options.debug;
     const now = options.now || Date.now;
+    const getMaintenanceMode = options.getMaintenanceMode;
+    const render = options.render;
+    const getRenderPage = options.getRenderPage;
+    const getRenderArgs = options.getRenderArgs;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -39,6 +43,13 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function handleMaintenance(req, res, domain) {
+        if ((getMaintenanceMode() == null) || (req.query.loginscreen === '1')) { return false; }
+        debug('web', 'handleLoginRequest: Server under maintenance.');
+        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 3, msgid: 13, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -48,5 +59,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, getRootCertLink: getRootCertLink };
 };

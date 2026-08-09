@@ -68,3 +68,23 @@ test('login pages and authenticated sessions skip anonymous redirects', function
     assert.equal(service.redirectUnknownUser({ url: '/tenant/login', session: {} }, res, { unknownuserrootredirect: 'https://portal.example/' }), false);
     assert.equal(service.redirectUnknownUser({ url: '/tenant/', session: { userid: 'user/tenant/alice' } }, res, { unknownuserrootredirect: 'https://portal.example/' }), false);
 });
+
+test('maintenance mode renders the domain message page', function () {
+    const renders = [];
+    const service = createRootRequests({
+        debug: function () { },
+        getMaintenanceMode: function () { return 1; },
+        getRenderPage: function (page) { return page; },
+        getRenderArgs: function (args) { return args; },
+        render: function (req, res, page, args) { renders.push([page, args]); }
+    });
+    assert.equal(service.handleMaintenance({ query: {} }, {}, { sitestyle: 2, url: "/tenant's/" }), true);
+    assert.equal(renders[0][0], 'message2');
+    assert.equal(renders[0][1].msgid, 13);
+    assert.match(renders[0][1].domainurl, /%27/);
+});
+
+test('the explicit login screen bypasses maintenance rendering', function () {
+    const service = createRootRequests({ getMaintenanceMode: function () { return 1; } });
+    assert.equal(service.handleMaintenance({ query: { loginscreen: '1' } }, {}, {}), false);
+});
