@@ -86,6 +86,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainStaticModule = require('./webserver/domain-static.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
+    const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -363,6 +364,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         authLog: function (source, message) { parent.authLog(source, message); },
         isGroupConfiguration: ssoStrategiesModule.isGroupConfiguration,
         shouldRevokeAdmin: ssoStrategiesModule.shouldRevokeAdmin
+    });
+    const sendSsoLoginResponse = ssoLoginResponseModule.createSsoLoginResponse({
+        getWebServerName: function (domain, req) { return obj.getWebServerName(domain, req); },
+        safeDecodeURIComponent: requestUtils.safeDecodeURIComponent
     });
     Object.assign(obj, serverIdentityModule.createServerIdentity({ args: obj.args, certificates: obj.certificates }));
     Object.assign(obj, sessionCountsModule.createSessionCounts({
@@ -1942,43 +1947,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         } else {
             parent.authLog('handleStrategyLogin', `LOGIN FAILED: REQUEST CONTAINS NO USER OR SID`);
         }
-        //res.redirect(domain.url); // This does not handle cookie correctly.
-        res.set('Content-Type', 'text/html');
-        let url = domain.url;
-        if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
-
-        // check for relaystate is set, test against configured server name and accepted query params
-        if(req.body && req.body.RelayState !== undefined){
-                var relayState = requestUtils.safeDecodeURIComponent(req.body.RelayState);
-                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
-
-                var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
-                `.*((?<=([\\?&])gotodevicename=(.{64})|` +
-                `gotonode=(.{64})|` +
-                `gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|` +
-                `gotodeviceip=(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:)` +
-                `lang=(.{5})|` +
-                `sitestyle=(\\d+)|` +
-                `user=(.{64})|` +
-                `pass=(.{256})|` +
-                `key=|` +
-                `locale=|` +
-                `gotomesh=(.{64})|` +
-                `gotouser=(.{0,64})|` +
-                `gotougrp=(.{64})|` +
-                `debug=|` +
-                `filter=|` +
-                `webrtc=|` +
-                `hide=|` +
-                `viewmode=(\\d+)(?=[\\&]|\\b)))`;
-
-                var regex = new RegExp(regexstr);
-                if((relayState != null) && regex.test(relayState)){
-                        url = relayState;
-                }
-        }
-
-        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+        sendSsoLoginResponse(req, res, domain);
     }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
