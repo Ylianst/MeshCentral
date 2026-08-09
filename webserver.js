@@ -1909,7 +1909,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (req.query.f) { installflags = parseInt(req.query.f); }
             if (typeof installflags != 'number') { installflags = 0; }
             var showagents = 0;
-            if (req.query.f) { showagents = parseInt(req.query.ag); }
+            if (req.query.ag) { showagents = parseInt(req.query.ag); }
             if (typeof showagents != 'number') { showagents = 0; }
             parent.debug('web', 'handleAgentInviteRequest using meshid.');
 
