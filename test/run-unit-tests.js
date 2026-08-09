@@ -38,3 +38,4 @@ require('./webserver-request-middleware.test.js');
 require('./webserver-throttling.test.js');
 require('./webserver-tls-configuration.test.js');
 require('./webserver-user-agent.test.js');
+require('./webserver-web-relay.test.js');
