@@ -46,6 +46,7 @@ require('./webserver-network-access.test.js');
 require('./webserver-not-found.test.js');
 require('./webserver-push-notifications.test.js');
 require('./webserver-recordings.test.js');
+require('./webserver-remote-pages.test.js');
 require('./webserver-rendering.test.js');
 require('./webserver-request-utils.test.js');
 require('./webserver-request-context.test.js');
