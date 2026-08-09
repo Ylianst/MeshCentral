@@ -3265,7 +3265,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // See if we need to create the folder
                     var domainx = 'domain';
-                    if (domain.id.length > 0) { domainx = 'domain-' + usersplit[1]; }
+                    if (domain.id.length > 0) { domainx = 'domain-' + domain.id; }
                     try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
                     try { obj.fs.mkdirSync(obj.parent.path.join(obj.parent.filespath, domainx)); } catch (ex) { }
                     try { obj.fs.mkdirSync(xfile.fullpath); } catch (ex) { }
