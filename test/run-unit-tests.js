@@ -8,6 +8,7 @@
 require('./webserver-sanitization.test.js');
 require('./webserver-sessions.test.js');
 require('./webserver-server-identity.test.js');
+require('./webserver-serial-tunnel.test.js');
 require('./webserver-server-lifecycle.test.js');
 require('./webserver-security-headers.test.js');
 require('./webserver-session-counts.test.js');

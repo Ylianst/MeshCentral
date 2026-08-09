@@ -13,16 +13,6 @@
 /*jshint esversion: 6 */
 'use strict';
 
-// SerialTunnel object is used to embed TLS within another connection.
-function SerialTunnel(options) {
-    var obj = new require('stream').Duplex(options);
-    obj.forwardwrite = null;
-    obj.updateBuffer = function (chunk) { this.push(chunk); };
-    obj._write = function (chunk, encoding, callback) { if (obj.forwardwrite != null) { obj.forwardwrite(chunk); } else { console.err("Failed to fwd _write."); } if (callback) callback(); }; // Pass data written to forward
-    obj._read = function (size) { }; // Push nothing, anything to read should be pushed from updateBuffer()
-    return obj;
-}
-
 // ExpressJS login sample
 // https://github.com/expressjs/express/blob/master/examples/auth/index.js
 
@@ -91,6 +81,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainStaticModule = require('./webserver/domain-static.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const telemetryModule = require('./webserver/telemetry.js');
+    const serialTunnelModule = require('./webserver/serial-tunnel.js');
+    const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
