@@ -57,6 +57,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const sanitization = require('./webserver/sanitization.js');
     const authorizationModule = require('./webserver/authorization.js');
     const renderingModule = require('./webserver/rendering.js');
+    const throttlingModule = require('./webserver/throttling.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -9789,121 +9790,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return false;
     }
 
-    // This is the invalid login throttling code
-    obj.badLoginTable = {};
-    obj.badLoginTableLastClean = 0;
     if (parent.config.settings == null) { parent.config.settings = {}; }
-    if (parent.config.settings.maxinvalidlogin !== false) {
-        if (typeof parent.config.settings.maxinvalidlogin != 'object') { parent.config.settings.maxinvalidlogin = { time: 10, count: 10 }; }
-        if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
-        if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
-        if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
-    }
-    obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
-        if (parent.config.settings.maxinvalidlogin === false) return;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        if (parent.config.settings.maxinvalidlogin != null) {
-            if (typeof parent.config.settings.maxinvalidlogin.exclude == 'string') {
-                const excludeSplit = parent.config.settings.maxinvalidlogin.exclude.split(',');
-                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
-            } else if (Array.isArray(parent.config.settings.maxinvalidlogin.exclude)) {
-                for (var i in parent.config.settings.maxinvalidlogin.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalidlogin.exclude[i])) return; }
-            }
-        }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
-        if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
-        if (typeof obj.badLoginTable[ip] == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return; } }  // Check cooloff period
-        if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
-        if ((obj.badLoginTable[ip].length >= parent.config.settings.maxinvalidlogin.count) && (parent.config.settings.maxinvalidlogin.coolofftime != null)) {
-            obj.badLoginTable[ip] = Date.now() + (parent.config.settings.maxinvalidlogin.coolofftime * 60000); // Move to cooloff period
-        }
-    }
-    obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
-        if (parent.config.settings.maxinvalidlogin === false) return true;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
-        var ipTable = obj.badLoginTable[ip];
-        if (ipTable == null) return true;
-        if (typeof ipTable == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return false; } } // Check cooloff period
-        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-        if (ipTable.length == 0) { delete obj.badLoginTable[ip]; return true; }
-        return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
-    }
-    obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
-        if (parent.config.settings.maxinvalidlogin === false) return;
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
-        for (var ip in obj.badLoginTable) {
-            var ipTable = obj.badLoginTable[ip];
-            if (typeof ipTable == 'number') {
-                if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } // Check cooloff period
-            } else {
-                while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-                if (ipTable.length == 0) { delete obj.badLoginTable[ip]; }
-            }
-        }
-        obj.badLoginTableLastClean = 0;
-    }
-
-    // This is the invalid 2FA throttling code
-    obj.bad2faTable = {};
-    obj.bad2faTableLastClean = 0;
-    if (parent.config.settings == null) { parent.config.settings = {}; }
-    if (parent.config.settings.maxinvalid2fa !== false) {
-        if (typeof parent.config.settings.maxinvalid2fa != 'object') { parent.config.settings.maxinvalid2fa = { time: 10, count: 10 }; }
-        if (typeof parent.config.settings.maxinvalid2fa.time != 'number') { parent.config.settings.maxinvalid2fa.time = 10; }
-        if (typeof parent.config.settings.maxinvalid2fa.count != 'number') { parent.config.settings.maxinvalid2fa.count = 10; }
-        if ((typeof parent.config.settings.maxinvalid2fa.coolofftime != 'number') || (parent.config.settings.maxinvalid2fa.coolofftime < 1)) { parent.config.settings.maxinvalid2fa.coolofftime = null; }
-    }
-    obj.setbad2Fa = function (ip) { // Set an IP address that just did a bad 2FA request
-        if (parent.config.settings.maxinvalid2fa === false) return;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        if (parent.config.settings.maxinvalid2fa != null) {
-            if (typeof parent.config.settings.maxinvalid2fa.exclude == 'string') {
-                const excludeSplit = parent.config.settings.maxinvalid2fa.exclude.split(',');
-                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
-            } else if (Array.isArray(parent.config.settings.maxinvalid2fa.exclude)) {
-                for (var i in parent.config.settings.maxinvalid2fa.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalid2fa.exclude[i])) return; }
-            }
-        }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
-        if (++obj.bad2faTableLastClean > 100) { obj.cleanBad2faTable(); }
-        if (typeof obj.bad2faTable[ip] == 'number') { if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } else { return; } }  // Check cooloff period
-        if (obj.bad2faTable[ip] == null) { obj.bad2faTable[ip] = [Date.now()]; } else { obj.bad2faTable[ip].push(Date.now()); }
-        if ((obj.bad2faTable[ip].length >= parent.config.settings.maxinvalid2fa.count) && (parent.config.settings.maxinvalid2fa.coolofftime != null)) {
-            obj.bad2faTable[ip] = Date.now() + (parent.config.settings.maxinvalid2fa.coolofftime * 60000); // Move to cooloff period
-        }
-    }
-    obj.checkAllow2Fa = function (ip) { // Check if an IP address is allowed to perform 2FA
-        if (parent.config.settings.maxinvalid2fa === false) return true;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
-        var ipTable = obj.bad2faTable[ip];
-        if (ipTable == null) return true;
-        if (typeof ipTable == 'number') { if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } else { return false; } } // Check cooloff period
-        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-        if (ipTable.length == 0) { delete obj.bad2faTable[ip]; return true; }
-        return (ipTable.length < parent.config.settings.maxinvalid2fa.count); // No more than x bad 2FAs in x minutes
-    }
-    obj.cleanBad2faTable = function () { // Clean up the IP address 2FA blockage table, we do this occasionaly.
-        if (parent.config.settings.maxinvalid2fa === false) return;
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
-        for (var ip in obj.bad2faTable) {
-            var ipTable = obj.bad2faTable[ip];
-            if (typeof ipTable == 'number') {
-                if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } // Check cooloff period
-            } else {
-                while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-                if (ipTable.length == 0) { delete obj.bad2faTable[ip]; }
-            }
-        }
-        obj.bad2faTableLastClean = 0;
-    }
+    const throttling = throttlingModule.createThrottling(parent.config.settings, require('ipcheck'));
+    Object.assign(obj, throttling);
+    Object.defineProperties(obj, {
+        badLoginTableLastClean: { configurable: true, get: function () { return throttling.badLoginTableLastClean; }, set: function (value) { throttling.badLoginTableLastClean = value; } },
+        bad2faTableLastClean: { configurable: true, get: function () { return throttling.bad2faTableLastClean; }, set: function (value) { throttling.bad2faTableLastClean = value; } }
+    });
 
     // Hold a websocket until additional arguments are provided within the socket.
     // This is a generic function that can be used for any websocket to avoid passing arguments in the URL.

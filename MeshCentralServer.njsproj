@@ -248,6 +248,7 @@
     <Compile Include="webserver\authorization.js" />
     <Compile Include="webserver\rendering.js" />
     <Compile Include="webserver\sanitization.js" />
+    <Compile Include="webserver\throttling.js" />
     <Compile Include="winservice.js" />
     <Content Include="agents\codesign.cer" />
     <Content Include="agents\compressModules.bat" />
