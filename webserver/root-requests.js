@@ -19,6 +19,10 @@ module.exports.createRootRequests = function (options) {
     const authLog = options.authLog;
     const getLoginCookieEncryptionKey = options.getLoginCookieEncryptionKey;
     const handleRootRequestEx = options.handleRootRequestEx;
+    const authenticate = options.authenticate;
+    const users = options.users;
+    const checkUserOneTimePasswordRequired = options.checkUserOneTimePasswordRequired;
+    const setSessionRandom = options.setSessionRandom;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -68,6 +72,27 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function handleUrlCredentials(req, res, domain, direct) {
+        if (!(req.query.user && req.query.pass)) { return false; }
+        authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
+            var user = users[userid];
+            if ((err == null) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
+                handleRootRequestEx(req, res, domain, direct);
+            } else if ((userid != null) && (err == null)) {
+                debug('web', 'handleRootRequest: user/pass in URL auth ok.');
+                req.session.userid = userid;
+                delete req.session.currentNode;
+                req.session.ip = req.clientIp;
+                setSessionRandom(req);
+                authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
+                handleRootRequestEx(req, res, domain, direct);
+            } else {
+                handleRootRequestEx(req, res, domain, direct);
+            }
+        });
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -77,5 +102,5 @@ module.exports.createRootRequests = function (options) {
         return '';
     }
 
-    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, getRootCertLink: getRootCertLink };
+    return { checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, getRootCertLink: getRootCertLink };
 };

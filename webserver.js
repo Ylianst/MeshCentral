@@ -1770,28 +1770,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (rootRequests.redirectUnknownUser(req, res, domain)) { return; }
 
         if (rootRequests.handleSspi(req, res, domain, direct)) { return; }
-        if (req.query.user && req.query.pass) {
-            // User credentials are being passed in the URL. WARNING: Putting credentials in a URL is bad security... but people are requesting this option.
-            obj.authenticate(req.query.user, req.query.pass, domain, function (err, userid, passhint, loginOptions) {
-                // 2FA is not supported in URL authentication method. If user has 2FA enabled, this login method fails.
-                var user = obj.users[userid];
-                if ((err == null) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions) == true) {
-                    handleRootRequestEx(req, res, domain, direct);
-                } else if ((userid != null) && (err == null)) {
-                    // Login success
-                    parent.debug('web', 'handleRootRequest: user/pass in URL auth ok.');
-                    req.session.userid = userid;
-                    delete req.session.currentNode;
-                    req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                    setSessionRandom(req);
-                    obj.parent.authLog('https', 'Accepted password for ' + userid + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
-                    handleRootRequestEx(req, res, domain, direct);
-                } else {
-                    // Login failed
-                    handleRootRequestEx(req, res, domain, direct);
-                }
-            });
-        } else if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
+        if (rootRequests.handleUrlCredentials(req, res, domain, direct)) { return; }
+        if ((req.session != null) && (typeof req.session.loginToken == 'string')) {
             // Check if the loginToken is still valid
             obj.db.Get('logintoken-' + req.session.loginToken, function (err, docs) {
                 if ((err != null) || (docs == null) || (docs.length != 1) || (docs[0].tokenUser != req.session.loginToken)) { for (var i in req.session) { delete req.session[i]; } }
@@ -2502,6 +2482,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         authLog: function (source, message, details) { parent.authLog(source, message, details); },
         getLoginCookieEncryptionKey: function () { return obj.parent.loginCookieEncryptionKey; },
         handleRootRequestEx: handleRootRequestEx,
+        authenticate: function (username, password, domain, callback) { obj.authenticate(username, password, domain, callback); },
+        users: obj.users,
+        checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired,
+        setSessionRandom: setSessionRandom,
         getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
         render: render,
         getRenderPage: getRenderPage,

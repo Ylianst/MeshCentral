@@ -111,3 +111,38 @@ test('failed SSPI authentication returns unauthorized', function () {
     assert.equal(service.handleSspi(req, { sendStatus: function (status) { statuses.push(status); } }, domain, false), true);
     assert.deepEqual(statuses, [401]);
 });
+
+test('URL credentials establish an IP-bound session when 2FA is not required', function () {
+    const resumed = [], randomRequests = [], logs = [];
+    const userid = 'user/tenant/alice';
+    const service = createRootRequests({
+        users: { [userid]: { _id: userid } },
+        debug: function () { },
+        authLog: function () { logs.push(Array.from(arguments)); },
+        authenticate: function (username, password, domain, callback) { callback(null, userid, null, {}); },
+        checkUserOneTimePasswordRequired: function () { return false; },
+        setSessionRandom: function (req) { req.session.x = 'random'; randomRequests.push(req); },
+        handleRootRequestEx: function () { resumed.push(true); }
+    });
+    const req = { query: { user: 'alice', pass: 'secret' }, session: { currentNode: 'node' }, clientIp: '192.0.2.1', connection: { remotePort: 443 }, headers: {} };
+    assert.equal(service.handleUrlCredentials(req, {}, {}, false), true);
+    assert.equal(req.session.userid, userid);
+    assert.equal(req.session.currentNode, undefined);
+    assert.equal(req.session.ip, '192.0.2.1');
+    assert.equal(randomRequests.length, 1);
+    assert.equal(resumed.length, 1);
+    assert.equal(logs.length, 1);
+});
+
+test('URL credentials do not establish a session when 2FA is required', function () {
+    const userid = 'user/tenant/alice';
+    const service = createRootRequests({
+        users: { [userid]: { _id: userid } },
+        authenticate: function (username, password, domain, callback) { callback(null, userid, null, {}); },
+        checkUserOneTimePasswordRequired: function () { return true; },
+        handleRootRequestEx: function () { }
+    });
+    const req = { query: { user: 'alice', pass: 'secret' }, session: {} };
+    assert.equal(service.handleUrlCredentials(req, {}, {}, false), true);
+    assert.equal(req.session.userid, undefined);
+});
