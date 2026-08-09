@@ -87,6 +87,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
+    const translationsModule = require('./webserver/translations.js');
     const SerialTunnel = serialTunnelModule.createSerialTunnel;
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
@@ -325,6 +326,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleDownloadUserFiles = fileDownloads.downloadUserFile;
     const handleDeviceFile = fileDownloads.downloadDeviceFile;
     const handleAgentDownloadFile = fileDownloads.downloadAgentFile;
+    const translations = translationsModule.createTranslations({
+        state: obj,
+        parent: parent,
+        serverRoot: __dirname,
+        checkUserIpAddress: checkUserIpAddress,
+        checkIpAddressEx: checkIpAddressEx
+    });
+    const handleTranslationsRequest = translations.handleRequest;
     Object.assign(obj, agentControlModule.createAgentControl({
         state: obj,
         common: obj.common,
@@ -3347,74 +3356,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Use the default logo picture
             try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
         }
-    }
-
-    function handleTranslationsRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        //if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((obj.userAllowedIp != null) && (checkIpAddressEx(req, res, obj.userAllowedIp, false) === false)) { return; } // Check server-wide IP filter only.
-
-        var user = null;
-        if (obj.args.user != null) {
-            // A default user is active
-            user = obj.users['user/' + domain.id + '/' + obj.args.user];
-            if (!user) { parent.debug('web', 'handleTranslationsRequest: user not found.'); res.sendStatus(401); return; }
-        } else {
-            // Check if the user is logged and we have all required parameters
-            if (!req.session || !req.session.userid) { parent.debug('web', 'handleTranslationsRequest: failed checks (2).'); res.sendStatus(401); return; }
-
-            // Get the current user
-            user = obj.users[req.session.userid];
-            if (!user) { parent.debug('web', 'handleTranslationsRequest: user not found.'); res.sendStatus(401); return; }
-            if (user.siteadmin != 0xFFFFFFFF) { parent.debug('web', 'handleTranslationsRequest: user not site administrator.'); res.sendStatus(401); return; }
-        }
-
-        var data = '';
-        req.setEncoding('utf8');
-        req.on('data', function (chunk) { data += chunk; });
-        req.on('end', function () {
-            try { data = JSON.parse(data); } catch (ex) { data = null; }
-            if (data == null) { res.sendStatus(404); return; }
-            if (data.action == 'getTranslations') {
-                if (obj.fs.existsSync(obj.path.join(obj.parent.datapath, 'translate.json'))) {
-                    // Return the translation file (JSON)
-                    try { res.sendFile(obj.path.join(obj.parent.datapath, 'translate.json')); } catch (ex) { res.sendStatus(404); }
-                } else if (obj.fs.existsSync(obj.path.join(__dirname, 'translate', 'translate.json'))) {
-                    // Return the default translation file (JSON)
-                    try { res.sendFile(obj.path.join(__dirname, 'translate', 'translate.json')); } catch (ex) { res.sendStatus(404); }
-                } else { res.sendStatus(404); }
-            } else if (data.action == 'setTranslations') {
-                obj.fs.writeFile(obj.path.join(obj.parent.datapath, 'translate.json'), obj.common.translationsToJson({ strings: data.strings }), function (err) { if (err == null) { res.send(JSON.stringify({ response: 'ok' })); } else { res.send(JSON.stringify({ response: err })); } });
-            } else if (data.action == 'translateServer') {
-                if (obj.pendingTranslation === true) { res.send(JSON.stringify({ response: 'Server is already performing a translation.' })); return; }
-                const nodeVersion = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-                if (nodeVersion < 8) { res.send(JSON.stringify({ response: 'Server requires NodeJS 8.x or better.' })); return; }
-                var translateFile = obj.path.join(obj.parent.datapath, 'translate.json');
-                if (obj.fs.existsSync(translateFile) == false) { translateFile = obj.path.join(__dirname, 'translate', 'translate.json'); }
-                if (obj.fs.existsSync(translateFile) == false) { res.send(JSON.stringify({ response: 'Unable to find translate.js file on the server.' })); return; }
-                res.send(JSON.stringify({ response: 'ok' }));
-                console.log('Started server translation...');
-                obj.pendingTranslation = true;
-                var child = require('child_process').spawn(process.argv[0],['translate.js', 'translateall', translateFile], { timeout: 300000, cwd: obj.path.join(__dirname, 'translate') });
-                var stdout = '', stderr = '';
-                child.stdout.on('data', function(d) { stdout += d; });
-                child.stderr.on('data', function(d) { stderr += d; });
-                child.on('close', function(error) {
-                    delete obj.pendingTranslation;
-                    if (error) { console.log('Server translation error', error); }
-                    // console.log('stdout', stdout);
-                    if (stderr) { console.log('Server translation stderr', stderr); }
-                    //console.log('Server restart...'); // Perform a server restart
-                    //process.exit(0);
-                    console.log('Server translation completed.');
-                    stdout = null, stderr = null;
-                });
-            } else {
-                // Unknown request
-                res.sendStatus(404);
-            }
-        });
     }
 
     function handleGetRecordings(req, res) {
