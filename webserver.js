@@ -93,6 +93,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const rootRequestsModule = require('./webserver/root-requests.js');
     const emailAccountUtils = require('./webserver/email-account-utils.js');
     const emailAccountActionsModule = require('./webserver/email-account-actions.js');
+    const agentSettingsModule = require('./webserver/agent-settings.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -3525,7 +3526,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Return a .msh file from a given request, id is the device group identifier or encrypted cookie with the identifier.
     function getMshFromRequest(req, res, domain) {
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { return null; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && !agentSettingsModule.hasUserSession(req)) { return null; }
 
         // Check if the meshid is a time limited, encrypted cookie
         var meshcookie = obj.parent.decodeCookie(req.query.id, obj.parent.invitationLinkEncryptionKey);
