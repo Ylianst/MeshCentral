@@ -88,6 +88,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const agentRoutesModule = require('./webserver/agent-routes.js');
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
+    const domainStaticModule = require('./webserver/domain-static.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6896,6 +6897,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             });
             const domainAssets = domainAssetsModule.createDomainAssets({ state: obj, parent: parent, getDomain: getDomain });
+            const domainStatic = domainStaticModule.createDomainStatic({ state: obj, parent: parent, getDomain: getDomain });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6916,43 +6918,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 domainAssets.register(domain);
 
                 agentRoutes.register(domain);
-
-              // Theme Pack Override Middleware
-               obj.app.use(url, function (req, res, next) {
-                if (req.method !== 'GET') return next();
-                var domain = getDomain(req);
-                // Serve theme pack files if domain has a theme pack configured
-                if (domain && domain.themepack) {
-                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
-                    // Prevent directory traversal
-                    if (themeFilePath.indexOf('..') >= 0) return next();
-
-                    obj.fs.stat(themeFilePath, function (err, stats) {
-                        if (err || !stats.isFile()) return next();
-                        res.sendFile(themeFilePath);
-                    });
-                } else {
-                    next();
-                }
-            });
-
-                // Indicates to ExpressJS that the override public folder should be used to serve static files.
-                obj.app.use(url, function(req, res, next){
-                    var domain = getDomain(req);
-                    if (domain.webpublicpath != null) { // Use domain public path
-                        obj.express.static(domain.webpublicpath)(req, res, next);
-                    } else if (obj.parent.webPublicOverridePath != null) { // Use override path
-                        obj.express.static(obj.parent.webPublicOverridePath)(req, res, next);
-                    } else { // carry on and use default public path
-                        next();
-                    }
-                });
-                // Indicates to ExpressJS that the default public folder should be used to serve static files.
-                obj.app.use(url, obj.express.static(obj.parent.webPublicPath));
-
-                // Start regular disconnection list flush every 2 minutes.
-                obj.wsagentsDisconnectionsTimer = setInterval(function () { obj.wsagentsDisconnections = {}; }, 120000);
+                domainStatic.register(domain);
             }
+            domainStatic.startDisconnectionCleanup();
         }
         function finalizeWebserver() {
             // Setup all HTTP handlers

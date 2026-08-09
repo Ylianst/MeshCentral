@@ -258,6 +258,7 @@
     <Compile Include="webserver\core-middleware.js" />
     <Compile Include="webserver\external-groups.js" />
     <Compile Include="webserver\domain-startup.js" />
+    <Compile Include="webserver\domain-static.js" />
     <Compile Include="webserver\domain-assets.js" />
     <Compile Include="webserver\duo-routes.js" />
     <Compile Include="webserver\network-access.js" />
