@@ -59,6 +59,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const renderingModule = require('./webserver/rendering.js');
     const throttlingModule = require('./webserver/throttling.js');
     const requestUtilsModule = require('./webserver/request-utils.js');
+    const networkAccessModule = require('./webserver/network-access.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -115,6 +116,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentColorString = requestUtils.checkAgentColorString;
     const checkCookieIp = requestUtils.checkCookieIp;
     const assembleStringFromObject = requestUtils.assembleStringFromObject;
+    const networkAccess = networkAccessModule.createNetworkAccess({
+        config: parent.config,
+        ipcheck: require('ipcheck'),
+        getDnsDomains: function () { return obj.dnsDomains; },
+        onBlockedUser: function () { obj.blockedUsers++; },
+        onBlockedAgent: function () { obj.blockedAgents++; },
+        debug: function (source, message) { parent.debug(source, message); }
+    });
+    const checkIpAddressEx = networkAccess.checkIpAddressEx;
+    const checkUserIpAddress = networkAccess.checkUserIpAddress;
+    const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
+    const getDomain = networkAccess.getDomain;
+    const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -917,71 +931,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     };
     */
-
-    // Check if the source IP address is in the IP list, return false if not.
-    function checkIpAddressEx(req, res, ipList, closeIfThis, redirectUrl) {
-        try {
-            if (req.connection) {
-                // HTTP(S) request
-                if (req.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(req.clientIp, ipList[i])) { if (closeIfThis === true) { if (typeof redirectUrl == 'string') { res.redirect(redirectUrl); } else { res.sendStatus(401); } } return true; } } }
-                if (closeIfThis === false) { if (typeof redirectUrl == 'string') { res.redirect(redirectUrl); } else { res.sendStatus(401); } }
-            } else {
-                // WebSocket request
-                if (res.clientIp) { for (var i = 0; i < ipList.length; i++) { if (require('ipcheck').match(res.clientIp, ipList[i])) { if (closeIfThis === true) { try { req.close(); } catch (e) { } } return true; } } }
-                if (closeIfThis === false) { try { req.close(); } catch (e) { } }
-            }
-        } catch (e) { console.log(e); } // Should never happen
-        return false;
-    }
-
-    // Check if the source IP address is allowed, return domain if allowed
-    // If there is a fail and null is returned, the request or connection is closed already.
-    function checkUserIpAddress(req, res) {
-        if ((parent.config.settings.userblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userblockedip, true, parent.config.settings.ipblockeduserredirect) == true)) { obj.blockedUsers++; return null; }
-        if ((parent.config.settings.userallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.userallowedip, false, parent.config.settings.ipblockeduserredirect) == false)) { obj.blockedUsers++; return null; }
-        const domain = (req.url ? getDomain(req) : getDomain(res));
-        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
-        if ((domain.userblockedip != null) && (checkIpAddressEx(req, res, domain.userblockedip, true, domain.ipblockeduserredirect) == true)) { obj.blockedUsers++; return null; }
-        if ((domain.userallowedip != null) && (checkIpAddressEx(req, res, domain.userallowedip, false, domain.ipblockeduserredirect) == false)) { obj.blockedUsers++; return null; }
-        return domain;
-    }
-
-    // Check if the source IP address is allowed, return domain if allowed
-    // If there is a fail and null is returned, the request or connection is closed already.
-    function checkAgentIpAddress(req, res) {
-        if ((parent.config.settings.agentblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
-        if ((parent.config.settings.agentallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
-        const domain = (req.url ? getDomain(req) : getDomain(res));
-        if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
-        if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
-        return domain;
-    }
-
-    // Return the current domain of the request
-    // Request or connection says open regardless of the response
-    function getDomain(req) {
-        if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
-        if ((req.hostname == 'localhost') && (req.query.domainid != null)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // This is a localhost access with the domainid specified in the URL
-        if (req.hostname != null) { const d = obj.dnsDomains[req.hostname.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
-        const x = req.url.split('/');
-        if (x.length < 2) return parent.config.domains[''];
-        const y = parent.config.domains[x[1].toLowerCase()];
-        if ((y != null) && (y.dns == null)) { return parent.config.domains[x[1].toLowerCase()]; }
-        return parent.config.domains[''];
-    }
-
-    function parseAllowedFramingOrigins(val) {
-        if (val == null) return [];
-        var arr = [];
-        if (Array.isArray(val)) { arr = val.slice(); } else if (typeof val == 'string') { arr = val.split(',').map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 0; }); } else { return []; }
-        var out = [];
-        for (var i = 0; i < arr.length; i++) {
-            var o = arr[i].trim().replace(/\/+$/, '');
-            if (o.length === 0) continue;
-            if (o.indexOf('https://') === 0 || o.indexOf('http://') === 0) { out.push(o); }
-        }
-        return out;
-    }
 
     function handleLogoutRequest(req, res) {
         const domain = checkUserIpAddress(req, res);

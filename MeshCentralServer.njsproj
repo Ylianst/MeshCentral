@@ -246,6 +246,7 @@
     <Compile Include="webrelayserver.js" />
     <Compile Include="webserver.js" />
     <Compile Include="webserver\authorization.js" />
+    <Compile Include="webserver\network-access.js" />
     <Compile Include="webserver\rendering.js" />
     <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\sanitization.js" />
