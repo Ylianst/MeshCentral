@@ -72,6 +72,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const serverLifecycleModule = require('./webserver/server-lifecycle.js');
     const agentControlModule = require('./webserver/agent-control.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
+    const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -429,8 +430,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.wsrelays = {};                // Id -> Relay
     obj.desktoprelays = {};           // Id -> Desktop Multiplexer Relay
     obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
-    var tlsSessionStore = {};         // Store TLS session information for quick resume.
-    var tlsSessionStoreCount = 0;     // Number of cached TLS session information in store.
+    const tlsConfiguration = tlsConfigurationModule.createTlsConfiguration({
+        state: obj,
+        parent: parent,
+        args: args,
+        certificates: certificates,
+        tls: obj.tls,
+        https: require('https'),
+        expressWs: require('express-ws'),
+        constants: constants
+    });
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -440,22 +449,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Get non-english web pages and emails
     getRenderList();
     getEmailLanguageList();
-
-    // Setup DNS domain TLS SNI credentials
-    {
-        var dnscount = 0;
-        obj.tlsSniCredentials = {};
-        for (i in obj.certificates.dns) { if (obj.parent.config.domains[i].dns != null) { obj.dnsDomains[obj.parent.config.domains[i].dns.toLowerCase()] = obj.parent.config.domains[i]; obj.tlsSniCredentials[obj.parent.config.domains[i].dns] = obj.tls.createSecureContext(obj.certificates.dns[i]).context; dnscount++; } }
-        if (dnscount > 0) { obj.tlsSniCredentials[''] = obj.tls.createSecureContext({ cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca }).context; } else { obj.tlsSniCredentials = null; }
-    }
-    function TlsSniCallback(name, cb) {
-        var c = obj.tlsSniCredentials[name];
-        if (c != null) {
-            cb(null, c);
-        } else {
-            cb(null, obj.tlsSniCredentials['']);
-        }
-    }
 
     function EscapeHtml(x) { if (typeof x == 'string') return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); if (typeof x == 'boolean') return x; if (typeof x == 'number') return x; }
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
@@ -576,7 +569,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             sessionsCount: Object.keys(obj.sessionsCount).length,
             wsrelays: Object.keys(obj.wsrelays).length,
             wsPeerRelays: Object.keys(obj.wsPeerRelays).length,
-            tlsSessionStore: Object.keys(tlsSessionStore).length,
+            tlsSessionStore: tlsConfiguration.getSessionStoreSize(),
             blockedUsers: obj.blockedUsers,
             blockedAgents: obj.blockedAgents
         };
@@ -6765,85 +6758,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
-        // Start the server, only after users and meshes are loaded from the database.
-        if (obj.args.tlsoffload) {
-            // Setup the HTTP server without TLS
-            obj.expressWs = require('express-ws')(obj.app, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-        } else {
-            var ciphers = [
-                'TLS_AES_256_GCM_SHA384',
-                'TLS_AES_128_GCM_SHA256',
-                'TLS_AES_128_CCM_8_SHA256',
-                'TLS_AES_128_CCM_SHA256',
-                'TLS_CHACHA20_POLY1305_SHA256',
-                'ECDHE-RSA-AES256-GCM-SHA384',
-                'ECDHE-ECDSA-AES256-GCM-SHA384',
-                'ECDHE-RSA-AES128-GCM-SHA256',
-                'ECDHE-ECDSA-AES128-GCM-SHA256',
-                'DHE-RSA-AES128-GCM-SHA256',
-                'ECDHE-RSA-CHACHA20-POLY1305',      // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 (0xcca8)
-                'ECDHE-ARIA128-GCM-SHA256',
-                'ECDHE-ARIA256-GCM-SHA384',
-                'ECDHE-RSA-AES128-SHA256',          // SSLlabs considers this cipher suite weak, but it's needed for older browers.
-                'ECDHE-RSA-AES256-SHA384',          // SSLlabs considers this cipher suite weak, but it's needed for older browers.
-                '!aNULL',
-                '!eNULL',
-                '!EXPORT',
-                '!DES',
-                '!RC4',
-                '!MD5',
-                '!PSK',
-                '!SRP',
-                '!CAMELLIA'
-            ].join(':');
-
-            if (obj.useNodeDefaultTLSCiphers) {
-                ciphers = require("tls").DEFAULT_CIPHERS;
-            }
-
-            if (obj.tlsCiphers) {
-                ciphers = obj.tlsCiphers;
-                if (Array.isArray(obj.tlsCiphers)) {
-                    ciphers = obj.tlsCiphers.join(":");
-                }
-            }
-
-            // Setup the HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
-            //const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: "HIGH:!aNULL:!eNULL:!EXPORT:!RSA:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 }; // This does not work with TLS 1.3
-            const tlsOptions = { cert: obj.certificates.web.cert, key: obj.certificates.web.key, ca: obj.certificates.web.ca, rejectUnauthorized: true, ciphers: ciphers, secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
-            if (obj.tlsSniCredentials != null) { tlsOptions.SNICallback = TlsSniCallback; } // We have multiple web server certificate used depending on the domain name
-            obj.tlsServer = require('https').createServer(tlsOptions, obj.app);
-            obj.tlsServer.on('secureConnection', function () { /*console.log('tlsServer secureConnection');*/ });
-            obj.tlsServer.on('error', function (err) { console.log('tlsServer error', err); });
-            //obj.tlsServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
-            obj.tlsServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
-            obj.tlsServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-            obj.expressWs = require('express-ws')(obj.app, obj.tlsServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-        }
-
-        // Start a second agent-only server if needed
-        if (obj.args.agentport) {
-            var agentPortTls = true;
-            if (obj.args.tlsoffload != null && obj.args.tlsoffload != false) { agentPortTls = false; }
-            if (typeof obj.args.agentporttls == 'boolean') { agentPortTls = obj.args.agentporttls; }
-            if (obj.certificates.webdefault == null) { agentPortTls = false; }
-
-            if (agentPortTls == false) {
-                // Setup the HTTP server without TLS
-                obj.expressWsAlt = require('express-ws')(obj.agentapp, null, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-            } else {
-                // Setup the agent HTTP server with TLS, use only TLS 1.2 and higher with perfect forward secrecy (PFS).
-                // If TLS is used on the agent port, we always use the default TLS certificate.
-                const tlsOptions = { cert: obj.certificates.webdefault.cert, key: obj.certificates.webdefault.key, ca: obj.certificates.webdefault.ca, rejectUnauthorized: true, ciphers: "HIGH:TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_AES_128_CCM_8_SHA256:TLS_AES_128_CCM_SHA256:TLS_CHACHA20_POLY1305_SHA256", secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_NO_TLSv1 | constants.SSL_OP_NO_TLSv1_1 };
-                obj.tlsAltServer = require('https').createServer(tlsOptions, obj.agentapp);
-                obj.tlsAltServer.on('secureConnection', function () { /*console.log('tlsAltServer secureConnection');*/ });
-                obj.tlsAltServer.on('error', function (err) { console.log('tlsAltServer error', err); });
-                //obj.tlsAltServer.on('tlsClientError', function (err) { console.log('tlsClientError', err); });
-                obj.tlsAltServer.on('newSession', function (id, data, cb) { if (tlsSessionStoreCount > 1000) { tlsSessionStoreCount = 0; tlsSessionStore = {}; } tlsSessionStore[id.toString('hex')] = data; tlsSessionStoreCount++; cb(); });
-                obj.tlsAltServer.on('resumeSession', function (id, cb) { cb(null, tlsSessionStore[id.toString('hex')] || null); });
-                obj.expressWsAlt = require('express-ws')(obj.agentapp, obj.tlsAltServer, { wsOptions: { perMessageDeflate: (args.wscompression === true) } });
-            }
-        }
+        tlsConfiguration.setupServers();
 
         // Setup middleware
         obj.app.engine('handlebars', obj.exphbs.engine({ defaultLayout: false }));
