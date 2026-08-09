@@ -61,6 +61,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const userAgentModule = require('./webserver/user-agent.js');
     const serverLifecycleModule = require('./webserver/server-lifecycle.js');
     const agentControlModule = require('./webserver/agent-control.js');
+    const agentInvitationsModule = require('./webserver/agent-invitations.js');
     const subscriptionsModule = require('./webserver/subscriptions.js');
     const tlsConfigurationModule = require('./webserver/tls-configuration.js');
     const coreMiddlewareModule = require('./webserver/core-middleware.js');
@@ -561,6 +562,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         getRenderArgs: getRenderArgs,
         debug: function (source, message) { parent.debug(source, message); }
     }).nice404;
+    const agentInvitations = agentInvitationsModule.createAgentInvitations({
+        state: obj,
+        parent: parent,
+        args: args,
+        getDomain: getDomain,
+        nice404: nice404,
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs
+    });
+    const handleInviteRequest = agentInvitations.handleInviteRequest;
+    const handleAgentInviteRequest = agentInvitations.handleAgentInviteRequest;
 
     // Setup randoms
     obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
@@ -1727,26 +1740,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
-    // Called to process an agent invite GET/POST request
-    function handleInviteRequest(req, res) {
-        const domain = getDomain(req);
-        if (domain == null) { parent.debug('web', 'handleInviteRequest: failed checks.'); res.sendStatus(404); return; }
-        if (domain.agentinvitecodes != true) { nice404(req, res); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if ((req.body == null) || (req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, req, domain)); return; } // No invitation code
-
-        // Each for a device group that has this invite code.
-        for (var i in obj.meshes) {
-            if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
-                // Send invitation link, valid for 1 minute.
-                res.redirect(domain.url + 'agentinvite?c=' + parent.encodeCookie({ a: 4, mid: i, f: obj.meshes[i].invite.flags, ag: obj.meshes[i].invite.ag, expire: 1 }, parent.invitationLinkEncryptionKey) + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + (req.query.hide ? ('&hide=' + encodeURIComponent(req.query.hide)) : ''));
-                return;
-            }
-        }
-
-        render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); // Bad invitation code
-    }
-
     // Called to render the MSTSC (RDP) or SSH web page
     function handleMSTSCRequest(req, res, page) {
         const domain = getDomain(req);
@@ -1870,61 +1863,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var cookie = parent.encodeCookie({ userid: user._id, domainid: user.domain, nodeid: node._id, tcpport: port }, parent.loginCookieEncryptionKey);
             render(req, res, getRenderPage(page, req, domain), getRenderArgs({ cookie: cookie, name: encodeURIComponent(node.name).replace(/'/g, '%27'), serverCredentials: serverCredentials, features: features }, req, domain));
         });
-    }
-
-    // Called to process an agent invite request
-    function handleAgentInviteRequest(req, res) {
-        const domain = getDomain(req);
-        if ((domain == null) || ((req.query.m == null) && (req.query.c == null))) { parent.debug('web', 'handleAgentInviteRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-        if (req.query.c != null) {
-            // A cookie is specified in the query string, use that
-            var cookie = obj.parent.decodeCookie(req.query.c, obj.parent.invitationLinkEncryptionKey);
-            if (cookie == null) { res.sendStatus(404); return; }
-            var mesh = obj.meshes[cookie.mid];
-            if (mesh == null) { res.sendStatus(404); return; }
-            var installflags = cookie.f;
-            if (typeof installflags != 'number') { installflags = 0; }
-            var showagents = cookie.ag;
-            if (typeof showagents != 'number') { showagents = 0; }
-            parent.debug('web', 'handleAgentInviteRequest using cookie.');
-
-            // Build the mobile agent URL, this is used to connect mobile devices
-            var agentServerName = obj.getWebServerName(domain, req);
-            if (typeof obj.args.agentaliasdns == 'string') { agentServerName = obj.args.agentaliasdns; }
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            var agentHttpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            if (obj.args.agentport != null) { agentHttpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-            if (obj.args.agentaliasport != null) { agentHttpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-            var magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '') + ',' + obj.agentCertificateHashBase64 + ',' + mesh._id.split('/')[2];
-
-            var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, showagents: showagents, magenturl: magenturl, assistanttype: (domain.assistanttypeagentinvite ? domain.assistanttypeagentinvite : 0) }, req, domain));
-        } else if (req.query.m != null) {
-            // The MeshId is specified in the query string, use that
-            var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.m.toLowerCase()];
-            if (mesh == null) { res.sendStatus(404); return; }
-            var installflags = 0;
-            if (req.query.f) { installflags = parseInt(req.query.f); }
-            if (typeof installflags != 'number') { installflags = 0; }
-            var showagents = 0;
-            if (req.query.ag) { showagents = parseInt(req.query.ag); }
-            if (typeof showagents != 'number') { showagents = 0; }
-            parent.debug('web', 'handleAgentInviteRequest using meshid.');
-
-            // Build the mobile agent URL, this is used to connect mobile devices
-            var agentServerName = obj.getWebServerName(domain, req);
-            if (typeof obj.args.agentaliasdns == 'string') { agentServerName = obj.args.agentaliasdns; }
-            var xdomain = (domain.dns == null) ? domain.id : '';
-            var agentHttpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-            if (obj.args.agentport != null) { agentHttpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-            if (obj.args.agentaliasport != null) { agentHttpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-            var magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '') + ',' + obj.agentCertificateHashBase64 + ',' + mesh._id.split('/')[2];
-
-            var meshcookie = parent.encodeCookie({ m: mesh._id.split('/')[2] }, parent.invitationLinkEncryptionKey);
-            render(req, res, getRenderPage('agentinvite', req, domain), getRenderArgs({ meshid: meshcookie, serverport: ((args.aliasport != null) ? args.aliasport : args.port), serverhttps: 1, servernoproxy: ((domain.agentnoproxy === true) ? '1' : '0'), meshname: encodeURIComponent(mesh.name).replace(/'/g, '%27'), installflags: installflags, showagents: showagents, magenturl: magenturl, assistanttype: (domain.assistanttypeagentinvite ? domain.assistanttypeagentinvite : 0) }, req, domain));
-        }
     }
 
     function handleDeleteAccountRequest(req, res, direct) {
