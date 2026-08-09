@@ -3247,12 +3247,12 @@ body[data-bs-theme="light"] {
 .baricon {
     float: left;
     height: 24px;
-    width: 24px;
-    background-color: white;
+    width: 30px;
+    background: transparent
 }
 
 .night .baricon {
-    background-color: black;
+    background: transparent
 }
 
 .baricon div {
