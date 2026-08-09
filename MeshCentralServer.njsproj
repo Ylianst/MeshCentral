@@ -268,6 +268,7 @@
     <Compile Include="webserver\network-access.js" />
     <Compile Include="webserver\not-found.js" />
     <Compile Include="webserver\push-notifications.js" />
+    <Compile Include="webserver\recordings.js" />
     <Compile Include="webserver\rendering.js" />
     <Compile Include="webserver\request-utils.js" />
     <Compile Include="webserver\request-context.js" />
