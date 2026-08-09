@@ -22,11 +22,15 @@ function createFixture(settings) {
         webPublicOverridePath: settings.overridePath,
         configurationFiles: settings.configurationFiles,
         path: path,
-        fs: { existsSync: function (value) { return existing.has(value); } }
+        fs: {
+            existsSync: function (value) { return existing.has(value); },
+            exists: function (value, callback) { callback(existing.has(value)); }
+        }
     };
     const state = {
         path: path,
         fs: parent.fs,
+        common: { joinPath: function () { return Array.from(arguments).join('/'); } },
         handleDomainRedirect: function () { },
         express: { static: function (folder) { return 'static:' + folder; } },
         app: {
@@ -34,7 +38,12 @@ function createFixture(settings) {
             use: function () { mounts.push(Array.from(arguments)); }
         }
     };
-    const service = createDomainAssets({ state: state, parent: parent, getDomain: function () { return domain; } });
+    const service = createDomainAssets({
+        state: state,
+        parent: parent,
+        getDomain: function () { return domain; },
+        checkUserIpAddress: function () { return domain; }
+    });
     return { service: service, routes: routes, mounts: mounts, state: state, domain: domain };
 }
 
@@ -79,4 +88,41 @@ test('server image falls through domain, override and default locations', functi
     const defaultResponse = response();
     findRoute(defaultFixture, '/tenant/serverpic.ashx')[1]({}, defaultResponse);
     assert.equal(defaultResponse.file, 'public/images/server-256.png');
+});
+
+test('configured domain logos use stored bytes and inferred image types', function () {
+    const image = Buffer.from('logo');
+    const fixture = createFixture({
+        requestDomain: { titlepicture: 'brand.png', loginpicture: 'login.jpg', pwalogo: 'pwa.png' },
+        configurationFiles: { 'brand.png': image, 'login.jpg': image, 'pwa.png': image }
+    });
+
+    const logoResponse = response();
+    fixture.service.handleLogo({}, logoResponse);
+    assert.deepEqual(logoResponse.headers, { 'Content-Type': 'image/png' });
+    assert.equal(logoResponse.body, image);
+
+    const loginResponse = response();
+    fixture.service.handleLoginLogo({}, loginResponse);
+    assert.deepEqual(loginResponse.headers, { 'Content-Type': 'image/jpeg' });
+
+    const pwaResponse = response();
+    fixture.service.handlePwaLogo({}, pwaResponse);
+    assert.equal(pwaResponse.body, image);
+});
+
+test('domain logos and welcome images fall back through public folders', function () {
+    const fixture = createFixture({
+        requestDomain: { webpublicpath: 'domain-public', sitestyle: 2 },
+        overridePath: 'override',
+        existing: ['override/images/logoback.png', 'domain-public/images/login/back.png']
+    });
+
+    const logoResponse = response();
+    fixture.service.handleLogo({}, logoResponse);
+    assert.equal(logoResponse.file, 'override/images/logoback.png');
+
+    const welcomeResponse = response();
+    fixture.service.handleWelcomeImage({}, welcomeResponse);
+    assert.equal(welcomeResponse.file, 'domain-public/images/login/back.png');
 });

@@ -158,6 +158,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const checkAgentIpAddress = networkAccess.checkAgentIpAddress;
     const getDomain = networkAccess.getDomain;
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
+    const domainAssets = domainAssetsModule.createDomainAssets({ state: obj, parent: parent, getDomain: getDomain, checkUserIpAddress: checkUserIpAddress });
+    const handleLogoRequest = domainAssets.handleLogo;
+    const handleLoginLogoRequest = domainAssets.handleLoginLogo;
+    const handlePWALogoRequest = domainAssets.handlePwaLogo;
+    const handleWelcomeImageRequest = domainAssets.handleWelcomeImage;
     Object.assign(obj, authorizationModule.createAuthorization({
         db: db,
         common: obj.common,
@@ -3435,87 +3440,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         try { res.sendFile(obj.path.join(obj.filespath, 'tmp', c.f)); return; } catch (ex) { res.sendStatus(404); }
     }
 
-    // Handle logo request
-    function handleLogoRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-
-        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if (domain.titlepicture) {
-            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.titlepicture] != null)) {
-                // Use the logo in the database
-                res.set({ 'Content-Type': domain.titlepicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
-                res.send(parent.configurationFiles[domain.titlepicture]);
-                return;
-            } else {
-                // Use the logo on file
-                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.titlepicture)); return; } catch (ex) { }
-            }
-        }
-
-        if ((domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'images/logoback.png')))) {
-            // Use the domain logo picture
-            try { res.sendFile(obj.path.join(domain.webpublicpath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
-        } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'images/logoback.png'))) {
-            // Use the override logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
-        } else {
-            // Use the default logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'images/logoback.png')); } catch (ex) { res.sendStatus(404); }
-        }
-    }
-
-    // Handle login logo request
-    function handleLoginLogoRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-
-        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if (domain.loginpicture) {
-            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.loginpicture] != null)) {
-                // Use the logo in the database
-                res.set({ 'Content-Type': domain.loginpicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
-                res.send(parent.configurationFiles[domain.loginpicture]);
-                return;
-            } else {
-                // Use the logo on file
-                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.loginpicture)); return; } catch (ex) { res.sendStatus(404); }
-            }
-        } else {
-            res.sendStatus(404);
-        }
-    }
-
-    // Handle PWA logo request
-    function handlePWALogoRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-
-        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if (domain.pwalogo) {
-            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.pwalogo] != null)) {
-                // Use the logo in the database
-                res.set({ 'Content-Type': domain.pwalogo.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
-                res.send(parent.configurationFiles[domain.pwalogo]);
-                return;
-            } else {
-                // Use the logo on file
-                try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.pwalogo)); return; } catch (ex) { }
-            }
-        }
-
-        if ((domain.webpublicpath != null) && (obj.fs.existsSync(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')))) {
-            // Use the domain logo picture
-            try { res.sendFile(obj.path.join(domain.webpublicpath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
-        } else if (parent.webPublicOverridePath && obj.fs.existsSync(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png'))) {
-            // Use the override logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
-        } else {
-            // Use the default logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, 'android-chrome-512x512.png')); } catch (ex) { res.sendStatus(404); }
-        }
-    }
-
     // Handle translation request
     function handleTranslationsRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -3585,53 +3509,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
-    // Handle welcome image request
-    function handleWelcomeImageRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-
-        //res.set({ 'Cache-Control': 'max-age=86400' }); // 1 day
-        if (domain.welcomepicture) {
-            if ((parent.configurationFiles != null) && (parent.configurationFiles[domain.welcomepicture] != null)) {
-                // Use the welcome image in the database
-                res.set({ 'Content-Type': domain.welcomepicture.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg' });
-                res.send(parent.configurationFiles[domain.welcomepicture]);
-                return;
-            }
-
-            // Use the configured logo picture
-            try { res.sendFile(obj.common.joinPath(obj.parent.datapath, domain.welcomepicture)); return; } catch (ex) { }
-        }
-
-        var imagefile = 'images/mainwelcome.jpg';
-        if (domain.sitestyle >= 2) { imagefile = 'images/login/back.png'; }
-        if (domain.webpublicpath != null) {
-            obj.fs.exists(obj.path.join(domain.webpublicpath, imagefile), function (exists) {
-                if (exists) {
-                    // Use the domain logo picture
-                    try { res.sendFile(obj.path.join(domain.webpublicpath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                } else {
-                    // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                }
-            });
-        } else if (parent.webPublicOverridePath) {
-            obj.fs.exists(obj.path.join(obj.parent.webPublicOverridePath, imagefile), function (exists) {
-                if (exists) {
-                    // Use the override logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicOverridePath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                } else {
-                    // Use the default logo picture
-                    try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
-                }
-            });
-        } else {
-            // Use the default logo picture
-            try { res.sendFile(obj.path.join(obj.parent.webPublicPath, imagefile)); } catch (ex) { res.sendStatus(404); }
-        }
-    }
-
-    // Download a session recording
     function handleGetRecordings(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) return;
@@ -6011,7 +5888,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     agentDownloadFile: handleAgentDownloadFile
                 }
             });
-            const domainAssets = domainAssetsModule.createDomainAssets({ state: obj, parent: parent, getDomain: getDomain });
             const domainStatic = domainStaticModule.createDomainStatic({ state: obj, parent: parent, getDomain: getDomain });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
