@@ -12,3 +12,14 @@ module.exports.hasOtherVerifiedUser = function (users, userId) {
 module.exports.hasDatabaseFailure = function (error, users) {
     return (error != null) || !Array.isArray(users);
 };
+
+module.exports.createTemporaryPassword = function (crypto, hashPassword, callback) {
+    crypto.randomBytes(16, function (error, buffer) {
+        if ((error != null) || (buffer == null)) { callback(error || new Error('Unable to generate a temporary password.')); return; }
+        const password = buffer.toString('base64').split('=').join('').split('/').join('').split('+').join('');
+        hashPassword(password, function (hashError, salt, hash) {
+            if (hashError != null) { callback(hashError); return; }
+            callback(null, { password: password, salt: salt, hash: hash });
+        }, 0);
+    });
+};

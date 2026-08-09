@@ -1718,15 +1718,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     } else {
                                         if (req.query.confirm == 1) {
                                             // Set a temporary password
-                                            obj.crypto.randomBytes(16, function (err, buf) {
-                                                var newpass = buf.toString('base64').split('=').join('').split('/').join('').split('+').join('');
-                                                require('./pass').hash(newpass, function (err, salt, hash, tag) {
-                                                    if (err) throw err;
+                                            emailAccountUtils.createTemporaryPassword(obj.crypto, require('./pass').hash, function (err, temporaryPassword) {
+                                                if (err != null) {
+                                                    parent.debug('web', 'handleCheckMailRequest: Unable to create temporary password: ' + err.message);
+                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                                    return;
+                                                }
+                                                var newpass = temporaryPassword.password;
 
                                                     // Change the password
                                                     var userinfo = obj.users[user._id];
-                                                    userinfo.salt = salt;
-                                                    userinfo.hash = hash;
+                                                    userinfo.salt = temporaryPassword.salt;
+                                                    userinfo.hash = temporaryPassword.hash;
                                                     delete userinfo.passtype;
                                                     userinfo.passchange = userinfo.access = Math.floor(Date.now() / 1000);
                                                     delete userinfo.passhint;
@@ -1743,7 +1746,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                                                     // Send to authLog
                                                     obj.parent.authLog('https', 'Performed account reset for user ' + user.name);
-                                                }, 0);
                                             });
                                         } else {
                                             // Display a link for the user to confirm password reset
