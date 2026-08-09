@@ -187,6 +187,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAssets = domainAssetsModule.createDomainAssets({
         state: obj,
         parent: parent,
+        common: obj.common,
         certificates: certificates,
         getDomain: getDomain,
         checkUserIpAddress: checkUserIpAddress,
@@ -1817,31 +1818,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const userid = 'user/' + domain.id + '/' + req.user.sid;
             var user = obj.users[userid];
             if (user == null) {
-                var newAccountAllowed = false;
-                var newAccountRealms = null;
+                const newAccountSettings = ssoAccounts.getNewAccountSettings(domain, strategy);
 
-                if (domain.newaccounts === true) { newAccountAllowed = true; }
-                if (obj.common.validateStrArray(domain.newaccountrealms)) { newAccountRealms = domain.newaccountrealms; }
-
-                if (domain.authstrategies[req.user.strategy]) {
-                    if (domain.authstrategies[req.user.strategy].newaccounts === true) { newAccountAllowed = true; }
-                    if (obj.common.validateStrArray(domain.authstrategies[req.user.strategy].newaccountrealms)) { newAccountRealms = domain.authstrategies[req.user.strategy].newaccountrealms; }
-                }
-
-                if (newAccountAllowed === true) {
+                if (newAccountSettings.allowed === true) {
                     // Create the user
                     parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: USER: "${req.user.sid}" Creating new login user: "${userid}"`);
                     user = { type: 'user', _id: userid, name: req.user.name, email: req.user.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                     if (req.user.email != null) { user.email = req.user.email; user.emailVerified = ssoStrategiesModule.isEmailVerified(req.user); }
-                    if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; } // New accounts automatically assigned server rights.
-                    if (domain.authstrategies[req.user.strategy].newaccountsrights) { user.siteadmin = obj.common.meshServerRightsArrayToNumber(domain.authstrategies[req.user.strategy].newaccountsrights); } // If there are specific SSO server rights, use these instead.
-                    if (newAccountRealms) { user.groups = newAccountRealms; } // New accounts automatically part of some groups (Realms).
+                    if (newAccountSettings.rights) { user.siteadmin = newAccountSettings.rights; }
+                    if (newAccountSettings.realms) { user.groups = newAccountSettings.realms; }
                     obj.users[userid] = user;
 
                     // Auto-join any user groups
-                    var newaccountsusergroups = null;
-                    if (typeof domain.newaccountsusergroups == 'object') { newaccountsusergroups = domain.newaccountsusergroups; }
-                    if (typeof domain.authstrategies[req.user.strategy].newaccountsusergroups == 'object') { newaccountsusergroups = domain.authstrategies[req.user.strategy].newaccountsusergroups; }
+                    var newaccountsusergroups = newAccountSettings.userGroups;
                     if (newaccountsusergroups) {
                         for (var i in newaccountsusergroups) {
                             var ugrpid = newaccountsusergroups[i];

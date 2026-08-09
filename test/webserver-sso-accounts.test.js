@@ -16,7 +16,7 @@ test('completing an SSO login establishes the session and dispatches its event',
         CloneSafeUser: function (user) { return { _id: user._id, name: user.name }; }
     };
     const parent = { DispatchEvent: function (targets, source, event) { events.push({ targets: targets, source: source, event: event }); } };
-    const accounts = createSsoAccounts({ state: state, parent: parent, setSessionRandom: function (req) { randomRequests.push(req); } });
+    const accounts = createSsoAccounts({ state: state, parent: parent, common: {}, setSessionRandom: function (req) { randomRequests.push(req); } });
     const req = { session: {}, clientIp: '192.0.2.5', headers: { 'user-agent': 'test-agent' } };
     const user = { _id: 'user/tenant/alice', name: 'Alice', groups: ['staff', 'west'] };
 
@@ -43,6 +43,7 @@ test('existing SSO accounts apply profile, group and administrator changes', fun
     const accounts = createSsoAccounts({
         state: state,
         parent: parent,
+        common: {},
         setSessionRandom: function () { },
         syncExternalUserGroups: function (domain, user, memberships, strategy) { syncs.push([domain, user, memberships, strategy]); },
         isEmailVerified: function (requestUser) { return requestUser.email_verified !== false; }
@@ -60,4 +61,18 @@ test('existing SSO accounts apply profile, group and administrator changes', fun
     assert.deepEqual(syncs[0], [domain, user, ['staff'], 'oidc']);
     assert.equal(events[0].action, 'accountchange');
     assert.ok(logs.length >= 2);
+});
+
+test('strategy-specific SSO account settings override domain defaults', function () {
+    const accounts = createSsoAccounts({
+        state: {},
+        parent: {},
+        common: {
+            validateStrArray: function (value) { return Array.isArray(value); },
+            meshServerRightsArrayToNumber: function (value) { return value.length * 10; }
+        }
+    });
+    const domain = { newaccounts: false, newaccountrealms: ['domain'], newaccountsrights: 7, newaccountsusergroups: ['domain-group'] };
+    const strategy = { newaccounts: true, newaccountrealms: ['strategy'], newaccountsrights: ['manageusers', 'fileaccess'], newaccountsusergroups: ['strategy-group'] };
+    assert.deepEqual(accounts.getNewAccountSettings(domain, strategy), { allowed: true, realms: ['strategy'], rights: 20, userGroups: ['strategy-group'] });
 });

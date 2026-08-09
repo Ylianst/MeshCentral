@@ -8,9 +8,24 @@
 module.exports.createSsoAccounts = function (options) {
     const state = options.state;
     const parent = options.parent;
+    const common = options.common;
     const setSessionRandom = options.setSessionRandom;
     const syncExternalUserGroups = options.syncExternalUserGroups;
     const isEmailVerified = options.isEmailVerified;
+
+    function getNewAccountSettings(domain, strategy) {
+        const settings = { allowed: false, realms: null, rights: domain.newaccountsrights, userGroups: null };
+        if (domain.newaccounts === true) { settings.allowed = true; }
+        if (common.validateStrArray(domain.newaccountrealms)) { settings.realms = domain.newaccountrealms; }
+        if (typeof domain.newaccountsusergroups == 'object') { settings.userGroups = domain.newaccountsusergroups; }
+        if (strategy != null) {
+            if (strategy.newaccounts === true) { settings.allowed = true; }
+            if (common.validateStrArray(strategy.newaccountrealms)) { settings.realms = strategy.newaccountrealms; }
+            if (strategy.newaccountsrights) { settings.rights = common.meshServerRightsArrayToNumber(strategy.newaccountsrights); }
+            if (typeof strategy.newaccountsusergroups == 'object') { settings.userGroups = strategy.newaccountsusergroups; }
+        }
+        return settings;
+    }
 
     function updateExistingAccount(domain, user, requestUser, groups) {
         var userChanged = false;
@@ -53,5 +68,5 @@ module.exports.createSsoAccounts = function (options) {
         parent.DispatchEvent(targets, state, loginEvent);
     }
 
-    return { updateExistingAccount: updateExistingAccount, completeSsoLogin: completeSsoLogin };
+    return { getNewAccountSettings: getNewAccountSettings, updateExistingAccount: updateExistingAccount, completeSsoLogin: completeSsoLogin };
 };
