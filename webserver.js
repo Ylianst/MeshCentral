@@ -2403,30 +2403,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 handleLoginRequest(req, res, true); break;
             }
             case 'pushlogin': {
-                if (req.body.hwstate) {
-                    var cookie = obj.parent.decodeCookie(req.body.hwstate, obj.parent.loginCookieEncryptionKey, 1);
-                    var user = rootRequests.findPushAuthUser(cookie, domain);
-                    if (user != null) {
-                        // Push authentication is a success, login the user
-                        req.session = { userid: cookie.u };
-
-                        // Check if we need to remember this device
-                        if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
-                            var maxCookieAge = domain.twofactorcookiedurationdays;
-                            if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
-                            const twoFactorCookie = obj.parent.encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
-                            res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: parent.config.settings.sessionsamesite, secure: true });
-                        }
-                        // Notify account login
-                        var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-                        const ua = obj.getUserAgentInfo(req);
-                        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'pushlogin' };
-                        obj.parent.DispatchEvent(targets, obj, loginEvent);
-                        handleRootRequestEx(req, res, domain);
-                        return;
-                    }
-                }
+                if (rootRequests.handlePushLogin(req, res, domain)) { return; }
                 handleLoginRequest(req, res, true); break;
             }
             case 'changepassword': { handlePasswordChangeRequest(req, res, true); break; }
@@ -2464,6 +2441,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired,
         setSessionRandom: setSessionRandom,
         database: obj.db,
+        decodeCookie: function (cookie, key, age) { return obj.parent.decodeCookie(cookie, key, age); },
+        encodeCookie: function (cookie, key) { return obj.parent.encodeCookie(cookie, key); },
+        getSessionSameSite: function () { return parent.config.settings.sessionsamesite; },
+        dispatchEvent: function (targets, source, event) { obj.parent.DispatchEvent(targets, source, event); },
         getMaintenanceMode: function () { return parent.config.settings.maintenancemode; },
         render: render,
         getRenderPage: getRenderPage,

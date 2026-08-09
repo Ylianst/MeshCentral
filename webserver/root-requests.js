@@ -24,6 +24,10 @@ module.exports.createRootRequests = function (options) {
     const checkUserOneTimePasswordRequired = options.checkUserOneTimePasswordRequired;
     const setSessionRandom = options.setSessionRandom;
     const database = options.database;
+    const decodeCookie = options.decodeCookie;
+    const encodeCookie = options.encodeCookie;
+    const getSessionSameSite = options.getSessionSameSite;
+    const dispatchEvent = options.dispatchEvent;
 
     function checkRootRequest(req, res, domain) {
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return false; }
@@ -108,6 +112,28 @@ module.exports.createRootRequests = function (options) {
         return users[cookie.u] || null;
     }
 
+    function handlePushLogin(req, res, domain) {
+        if (!req.body.hwstate) { return false; }
+        const cookie = decodeCookie(req.body.hwstate, getLoginCookieEncryptionKey(), 1);
+        const user = findPushAuthUser(cookie, domain);
+        if (user == null) { return false; }
+
+        req.session = { userid: cookie.u };
+        if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
+            var maxCookieAge = domain.twofactorcookiedurationdays;
+            if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+            const twoFactorCookie = encodeCookie({ userid: cookie.u, expire: maxCookieAge * 24 * 60 }, getLoginCookieEncryptionKey());
+            res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: getSessionSameSite(), secure: true });
+        }
+        var targets = ['*', 'server-users', user._id];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
+        const ua = state.getUserAgentInfo(req);
+        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login', domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], twoFactorType: 'pushlogin' };
+        dispatchEvent(targets, state, loginEvent);
+        handleRootRequestEx(req, res, domain);
+        return true;
+    }
+
     function getRootCertLink(domain) {
         if (isTrustedCert(domain) == false) {
             var xdomain = (domain.dns == null) ? domain.id : '';
@@ -129,5 +155,5 @@ module.exports.createRootRequests = function (options) {
         handleRootRequestEx(req, res, domain, direct);
     }
 
-    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, getRootCertLink: getRootCertLink };
+    return { handleRootRequest: handleRootRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, handlePushLogin: handlePushLogin, getRootCertLink: getRootCertLink };
 };

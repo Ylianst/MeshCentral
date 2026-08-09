@@ -196,3 +196,32 @@ test('push authentication returns an existing same-domain user', function () {
     assert.equal(service.findPushAuthUser({ u: user._id, d: 'tenant', a: 'pushAuth' }, { id: 'tenant' }), user);
     assert.equal(service.findPushAuthUser({ u: user._id, d: 'other', a: 'pushAuth' }, { id: 'tenant' }), null);
 });
+
+test('push login establishes a session, remembered device and login event', function () {
+    const events = [], cookies = [], resumed = [];
+    const user = { _id: 'user/tenant/alice', name: 'Alice', groups: ['staff'] };
+    const state = {
+        args: {},
+        getUserAgentInfo: function () { return { browserStr: 'Browser', osStr: 'OS' }; },
+        CloneSafeUser: function (value) { return { _id: value._id }; }
+    };
+    const service = createRootRequests({
+        state: state,
+        users: { [user._id]: user },
+        decodeCookie: function () { return { u: user._id, d: 'tenant', a: 'pushAuth' }; },
+        encodeCookie: function (value) { return 'encoded-' + value.userid; },
+        getLoginCookieEncryptionKey: function () { return 'key'; },
+        getSessionSameSite: function () { return 'strict'; },
+        dispatchEvent: function (targets, source, event) { events.push([targets, event]); },
+        handleRootRequestEx: function () { resumed.push(true); }
+    });
+    const req = { body: { hwstate: 'state', remembertoken: 'on' }, clientIp: '192.0.2.1', headers: { 'user-agent': 'test' } };
+    const res = { cookie: function () { cookies.push(Array.from(arguments)); } };
+    assert.equal(service.handlePushLogin(req, res, { id: 'tenant' }), true);
+    assert.equal(req.session.userid, user._id);
+    assert.deepEqual(events[0][0], ['*', 'server-users', user._id, 'server-users:staff']);
+    assert.equal(events[0][1].twoFactorType, 'pushlogin');
+    assert.equal(cookies[0][0], 'twofactor');
+    assert.equal(cookies[0][2].sameSite, 'strict');
+    assert.equal(resumed.length, 1);
+});
