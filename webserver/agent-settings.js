@@ -9,6 +9,10 @@ module.exports.hasUserSession = function (request) {
     return (request != null) && (request.session != null) && (request.session.userid != null);
 };
 
+module.exports.isAgentDownloadLocked = function (settings, domain) {
+    return (settings != null) && ((settings.lockagentdownload == true) || (domain.lockagentdownload == true));
+};
+
 module.exports.createAgentSettings = function (options) {
     const state = options.state;
     const parent = options.parent;
@@ -18,7 +22,7 @@ module.exports.createAgentSettings = function (options) {
 
     function getMshFromRequest(req, res, domain) {
         const settings = parent.config.settings;
-        const downloadLocked = (settings != null) && ((settings.lockagentdownload == true) || (domain.lockagentdownload == true));
+        const downloadLocked = module.exports.isAgentDownloadLocked(settings, domain);
         if (downloadLocked && !module.exports.hasUserSession(req)) { return null; }
 
         var meshcookie = parent.decodeCookie(req.query.id, parent.invitationLinkEncryptionKey);
