@@ -10,6 +10,7 @@ const test = require('node:test');
 const hasOtherVerifiedUser = require('../webserver/email-account-utils.js').hasOtherVerifiedUser;
 const hasDatabaseFailure = require('../webserver/email-account-utils.js').hasDatabaseFailure;
 const createTemporaryPassword = require('../webserver/email-account-utils.js').createTemporaryPassword;
+const getActiveUser = require('../webserver/email-account-utils.js').getActiveUser;
 
 test('the current account does not conflict with its own verified email', function () {
     assert.equal(hasOtherVerifiedUser([{ _id: 'user/tenant/alice' }], 'user/tenant/alice'), false);
@@ -53,4 +54,11 @@ test('temporary password creation returns the generated password and hash', asyn
     assert.equal(result.password, 'AQEBAQEBAQEBAQEBAQEBAQ');
     assert.equal(result.salt, 'salt');
     assert.equal(result.hash, 'hash');
+});
+
+test('active account lookup detects users removed during asynchronous work', function () {
+    const user = { _id: 'user/tenant/alice' };
+    assert.equal(getActiveUser({ [user._id]: user }, user._id), user);
+    assert.equal(getActiveUser({}, user._id), null);
+    assert.equal(getActiveUser(null, user._id), null);
 });

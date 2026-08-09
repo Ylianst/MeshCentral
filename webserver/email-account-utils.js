@@ -13,6 +13,10 @@ module.exports.hasDatabaseFailure = function (error, users) {
     return (error != null) || !Array.isArray(users);
 };
 
+module.exports.getActiveUser = function (users, userId) {
+    return ((users != null) && (users[userId] != null)) ? users[userId] : null;
+};
+
 module.exports.createTemporaryPassword = function (crypto, hashPassword, callback) {
     crypto.randomBytes(16, function (error, buffer) {
         if ((error != null) || (buffer == null)) { callback(error || new Error('Unable to generate a temporary password.')); return; }

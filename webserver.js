@@ -1690,7 +1690,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 parent.debug('web', 'handleCheckMailRequest: email verification success.');
 
                                                 // Set the verified flag
-                                                obj.users[user._id].emailVerified = true;
+                                                var activeUser = emailAccountUtils.getActiveUser(obj.users, user._id);
+                                                if (activeUser == null) {
+                                                    parent.debug('web', 'handleCheckMailRequest: Account removed during email verification.');
+                                                    render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                                    return;
+                                                }
+                                                activeUser.emailVerified = true;
                                                 user.emailVerified = true;
                                                 obj.db.SetUser(user);
 
@@ -1727,7 +1733,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 var newpass = temporaryPassword.password;
 
                                                     // Change the password
-                                                    var userinfo = obj.users[user._id];
+                                                    var userinfo = emailAccountUtils.getActiveUser(obj.users, user._id);
+                                                    if (userinfo == null) {
+                                                        parent.debug('web', 'handleCheckMailRequest: Account removed during password reset.');
+                                                        render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'message2' : 'message', req, domain), getRenderArgs({ titleid: 1, msgid: 10, domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27') }, req, domain));
+                                                        return;
+                                                    }
                                                     userinfo.salt = temporaryPassword.salt;
                                                     userinfo.hash = temporaryPassword.hash;
                                                     delete userinfo.passtype;
