@@ -83,6 +83,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const resourceRoutesModule = require('./webserver/resource-routes.js');
     const applicationRoutesModule = require('./webserver/application-routes.js');
     const relayRoutesModule = require('./webserver/relay-routes.js');
+    const passportRoutesModule = require('./webserver/passport-routes.js');
     const constants = (obj.crypto.constants ? obj.crypto.constants : require('constants')); // require('constants') is deprecated in Node 11.10, use require('crypto').constants instead.
 
     // Public sanitization API. Keep these methods on the web server object for compatibility with existing callers.
@@ -6873,6 +6874,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 authorizeInnerWebSocket: PerformWSSessionInnerAuth,
                 relayWebSocket: handleRelayWebSocket
             });
+            const passportRoutes = passportRoutesModule.createPassportRoutes({
+                state: obj,
+                parent: parent,
+                flags: domainAuthStrategyConsts,
+                getDomain: getDomain,
+                strategyLogin: handleStrategyLogin,
+                urlencoded: obj.bodyParser.urlencoded
+            });
             if (parent.pluginHandler != null) {
                 parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
             }
@@ -6886,161 +6895,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 resourceRoutes.register(domain);
                 applicationRoutes.register(domain);
 
-                // Setup auth strategies using passport if needed
-                if (typeof domain.authstrategies == 'object') {
-                    parent.authLog('setupHTTPHandlers', `Setting up authentication strategies login and callback URLs for ${domain.id == '' ? 'root' : '"' + domain.id + '"'} domain.`);
-                    // Twitter
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.twitter) != 0) {
-                        obj.app.get(url + 'auth-twitter', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('twitter-' + domain.id)(req, res, function (err) { console.log('c1', err, req.session); next(); });
-                        });
-                        obj.app.get(url + 'auth-twitter-callback', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
-                                // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
-                                var url = req.url;
-                                if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
-                                res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
-                            } else {
-                                domain.passport.authenticate('twitter-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
-                            }
-                        }, handleStrategyLogin);
-                    }
-
-                    // Google
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.google) != 0) {
-                        obj.app.get(url + 'auth-google', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('google-' + domain.id, { scope: ['profile', 'email'] })(req, res, next);
-                        });
-                        obj.app.get(url + 'auth-google-callback', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('google-' + domain.id, { failureRedirect: domain.url })(req, res, function (err) { if (err != null) { console.log(err); } next(); });
-                        }, handleStrategyLogin);
-                    }
-
-                    // GitHub
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.github) != 0) {
-                        obj.app.get(url + 'auth-github', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('github-' + domain.id, { scope: ['user:email'] })(req, res, next);
-                        });
-                        obj.app.get(url + 'auth-github-callback', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('github-' + domain.id, { failureRedirect: domain.url })(req, res, next);
-                        }, handleStrategyLogin);
-                    }
-
-                    // Azure
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.azure) != 0) {
-                        obj.app.get(url + 'auth-azure', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('azure-' + domain.id, { state: obj.parent.encodeCookie({ 'p': 'azure' }, obj.parent.loginCookieEncryptionKey) })(req, res, next);
-                        });
-                        obj.app.get(url + 'auth-azure-callback', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            if ((Object.keys(req.session).length == 0) && (req.query.nmr == null)) {
-                                // This is an empty session likely due to the 302 redirection, redirect again (this is a bit of a hack).
-                                var url = req.url;
-                                if (url.indexOf('?') >= 0) { url += '&nmr=1'; } else { url += '?nmr=1'; } // Add this to the URL to prevent redirect loop.
-                                res.set('Content-Type', 'text/html');
-                                res.end('<html><head><meta http-equiv="refresh" content=0;url="' + encodeURIComponent(url) + '"></head><body></body></html>');
-                            } else {
-                                if (req.query.state != null) {
-                                    var c = obj.parent.decodeCookie(req.query.state, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout
-                                    if ((c != null) && (c.p == 'azure')) { domain.passport.authenticate('azure-' + domain.id, { failureRedirect: domain.url })(req, res, next); return; }
-                                }
-                                next();
-                            }
-                        }, handleStrategyLogin);
-                    }
-
-                    // Setup OpenID Connect URLs
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.oidc) != 0) {
-                        let authURL = url + 'auth-oidc'
-                        parent.authLog('setupHTTPHandlers', `OIDC: Authorization URL: ${authURL}`);
-                        obj.app.get(authURL, function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        });
-                        let redirectPath;
-                        if (typeof domain.authstrategies.oidc.client.redirect_uri == 'string') {
-                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uri)).pathname;
-                        } else if (Array.isArray(domain.authstrategies.oidc.client.redirect_uris)) {
-                            redirectPath = (new URL(domain.authstrategies.oidc.client.redirect_uris[0])).pathname;
-                        } else {
-                            redirectPath = url + 'auth-oidc-callback';
-                        }
-                        parent.authLog('setupHTTPHandlers', `OIDC: Callback URL: ${redirectPath}`);
-                        obj.app.get(redirectPath, obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            if (req.session && req.session.userid) { next(); return; } // already logged in so dont authenticate just carry on
-                            if (req.session && req.session['oidc-' + domain.id]) { // we have a request to login so do authenticate
-                                domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                            } else { // no idea so carry on
-                                next(); return;
-                            }
-                        }, handleStrategyLogin);
-                    }
-
-                    // Generic SAML
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.saml) != 0) {
-                        obj.app.get(url + 'auth-saml', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            //set RelayState when queries are passed
-                            if (Object.keys(req.query).length != 0){
-                                req.query.RelayState = encodeURIComponent(`${req.protocol}://${req.hostname}${req.originalUrl}`.replace('auth-saml/',''))
-                            }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        });
-                        obj.app.post(url + 'auth-saml-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        }, handleStrategyLogin);
-                    }
-
-                    // Intel SAML
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.intelSaml) != 0) {
-                        obj.app.get(url + 'auth-intel', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        });
-                        obj.app.post(url + 'auth-intel-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('isaml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        }, handleStrategyLogin);
-                    }
-
-                    // JumpCloud SAML
-                    if ((domain.authstrategies.authStrategyFlags & domainAuthStrategyConsts.jumpCloudSaml) != 0) {
-                        obj.app.get(url + 'auth-jumpcloud', function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        });
-                        obj.app.post(url + 'auth-jumpcloud-callback', obj.bodyParser.urlencoded({ extended: false }), function (req, res, next) {
-                            var domain = getDomain(req);
-                            if (domain.passport == null) { next(); return; }
-                            domain.passport.authenticate('jumpcloud-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
-                        }, handleStrategyLogin);
-                    }
-                }
+                passportRoutes.register(domain);
 
                 // Setup Duo HTTP handlers if supported
                 if ((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) {
