@@ -89,6 +89,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
     const ssoAccountsModule = require('./webserver/sso-accounts.js');
     const ssoLoginModule = require('./webserver/sso-login.js');
+    const sessionLogoutModule = require('./webserver/session-logout.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -352,6 +353,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const getWebsocketArgs = sessions.getWebsocketArgs;
     const setSessionRandom = sessions.setSessionRandom;
     const clearDestroyedSessions = sessions.clearDestroyedSessions;
+    const handleLogoutRequest = sessionLogoutModule.createSessionLogout({
+        state: obj,
+        parent: parent,
+        checkUserIpAddress: checkUserIpAddress,
+        clearDestroyedSessions: clearDestroyedSessions
+    });
     const externalGroups = externalGroupsModule.createExternalGroups({
         crypto: obj.crypto,
         userGroups: obj.userGroups,
@@ -772,56 +779,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     };
     */
-
-    function handleLogoutRequest(req, res) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if (domain.auth == 'sspi') { parent.debug('web', 'handleLogoutRequest: failed checks.'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-
-        // If a HTTP header is required, check new UserRequiredHttpHeader
-        if (domain.userrequiredhttpheader && (typeof domain.userrequiredhttpheader == 'object')) { var ok = false; for (var i in req.headers) { if (domain.userrequiredhttpheader[i.toLowerCase()] == req.headers[i]) { ok = true; } } if (ok == false) { res.sendStatus(404); return; } }
-
-        res.set({ 'Cache-Control': 'no-store' });
-        // Destroy the user's session to log them out will be re-created next request
-        var userid = req.session.userid;
-        if (req.session.userid) {
-            var user = obj.users[req.session.userid];
-            if (user != null) {
-                obj.parent.authLog('https', 'User ' + user.name + ' logout from ' + req.clientIp + ' port ' + req.connection.remotePort, { sessionid: req.session.x, useragent: req.headers['user-agent'] });
-                obj.parent.DispatchEvent(['*'], obj, { etype: 'user', userid: user._id, username: user.name, action: 'logout', msgid: 2, msg: 'Account logout', domain: domain.id });
-            }
-            if (req.session.x) { clearDestroyedSessions(); obj.destroyedSessions[req.session.userid + '/' + req.session.x] = Date.now(); } // Destroy this session
-        }
-        req.session = null;
-        parent.debug('web', 'handleLogoutRequest: success.');
-
-        // If this user was logged in using an authentication strategy and there is a logout URL, use it.
-        if ((userid != null) && (domain.authstrategies?.authStrategyFlags != null)) {
-            let logouturl = null;
-            let userStrategy = ((userid.split('/')[2]).split(':')[0]).substring(1);
-            // Setup logout url for oidc
-            if (userStrategy == 'oidc' && domain.authstrategies.oidc != null) {
-                if (typeof domain.authstrategies.oidc.logouturl == 'string') {
-                    logouturl = domain.authstrategies.oidc.logouturl;
-                } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
-                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + (domain.authstrategies.oidc.issuer.end_session_endpoint.indexOf('?') == -1 ? '?' : '&') + 'post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
-                } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
-                    logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint;
-                }
-                // Log out all other strategies
-            } else if ((domain.authstrategies[userStrategy] != null) && (typeof domain.authstrategies[userStrategy].logouturl == 'string')) { logouturl = domain.authstrategies[userStrategy].logouturl; }
-            // If custom logout was setup, use it
-            if (logouturl != null) {
-                parent.authLog('handleLogoutRequest', userStrategy.toUpperCase() + ': LOGOUT: ' + logouturl);
-                res.redirect(logouturl);
-                return;
-            }
-        }
-
-        // This is the default logout redirect to the login page
-        if (req.query.key != null) { res.redirect(domain.url + 'login?key=' + encodeURIComponent(req.query.key)); } else { res.redirect(domain.url + 'login'); }
-    }
 
     const twoFactorAuthentication = twoFactorAuthenticationModule.createTwoFactorAuthentication({ state: obj, parent: parent, args: args, checkCookieIp: checkCookieIp, require: require });
     const checkUserOneTimePasswordSkip = twoFactorAuthentication.checkUserOneTimePasswordSkip;
