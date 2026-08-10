@@ -2193,8 +2193,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         obj.db.Get(req.query.host, function (err, docs) {
             if (relayWebSocketModule.hasDatabaseFailure(err, docs)) { parent.debug('web', 'ERR: Unable to load relay node: ' + err); try { ws.close(); } catch (e) { } return; }
             if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-            var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
-            node = docs[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); ws.id = getRandomPassword(); ws.time = Date.now();
+            var node = docs[0];
+            ws.id = getRandomPassword(); ws.time = Date.now();
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
             var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
 
@@ -2227,68 +2227,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 }
             }
 
-            // Setup session recording if needed
-            if (domain.sessionrecording == true || ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.protocols == null) || (domain.sessionrecording.protocols.indexOf((req.query.p == 2) ? 101 : 100) >= 0)))) { // TODO 100
-                // Check again if we need to do recording
-                var record = true;
-
-                // Check user or device group recording
-                if ((typeof domain.sessionrecording == 'object') && ((domain.sessionrecording.onlyselectedusers === true) || (domain.sessionrecording.onlyselecteddevicegroups === true))) {
-                    record = false;
-
-                    // Check device group recording
-                    if (domain.sessionrecording.onlyselecteddevicegroups === true) {
-                        var mesh = obj.meshes[node.meshid];
-                        if (relayWebSocketModule.isSelectedDeviceGroup(mesh)) { record = true; } // Record the session
-                    }
-
-                    // Check user recording
-                    if (domain.sessionrecording.onlyselectedusers === true) {
-                        if ((user.flags != null) && ((user.flags & 2) != 0)) { record = true; } // Record the session
-                    }
-                }
-
-                if (record == true) {
-                    var now = new Date(Date.now());
-                    // Get the username and make it acceptable as a filename
-                    if (user._id) { xusername = '-' + parent.common.makeFilename(user._id.split('/')[2]); }
-                    var xsessionid = ws.id;
-                    var recFilename = 'relaysession' + ((domain.id == '') ? '' : '-') + domain.id + '-' + now.getUTCFullYear() + '-' + obj.common.zeroPad(now.getUTCMonth() + 1, 2) + '-' + obj.common.zeroPad(now.getUTCDate(), 2) + '-' + obj.common.zeroPad(now.getUTCHours(), 2) + '-' + obj.common.zeroPad(now.getUTCMinutes(), 2) + '-' + obj.common.zeroPad(now.getUTCSeconds(), 2) + xusername + xdevicename + '-' + xsessionid + '.mcrec';
-                    var recFullFilename = null;
-                    if (domain.sessionrecording.filepath) {
-                        try { obj.fs.mkdirSync(domain.sessionrecording.filepath); } catch (e) { }
-                        recFullFilename = obj.path.join(domain.sessionrecording.filepath, recFilename);
-                    } else {
-                        try { obj.fs.mkdirSync(parent.recordpath); } catch (e) { }
-                        recFullFilename = obj.path.join(parent.recordpath, recFilename);
-                    }
-                    var fd = relayWebSocketModule.openRecordingFile(obj.fs, recFullFilename, function (err) { parent.debug('relay', 'Relay: Failed to open recording file ' + recFullFilename + ': ' + err); });
-                    if (fd != null) {
-                        // Write the recording file header
-                        parent.debug('relay', 'Relay: Started recording to file: ' + recFullFilename);
-                        var metadata = {
-                            magic: 'MeshCentralRelaySession',
-                            ver: 1,
-                            userid: user._id,
-                            username: user.name,
-                            sessionid: ws.id,
-                            ipaddr1: req.clientIp,
-                            time: new Date().toLocaleString(),
-                            protocol: (req.query.p == 2) ? 101 : 100,
-                            nodeid: node._id,
-                            intelamt: true
-                        };
-                        if (ciraconn != null) { metadata.ipaddr2 = ciraconn.remoteAddr; }
-                        else if ((conn & 4) != 0) { metadata.ipaddr2 = node.host; }
-                        if (xdevicename2 != null) { metadata.devicename = xdevicename2; }
-                        var firstBlock = JSON.stringify(metadata)
-                        ws.logfile = { fd: fd, lock: false, filename: recFullFilename, startTime: Date.now(), size: 0, text: 0, req: req };
-                        obj.meshRelayHandler.recordingEntry(ws.logfile, 1, 0, firstBlock, function () { });
-                        if (node != null) { ws.logfile.nodeid = node._id; ws.logfile.meshid = node.meshid; ws.logfile.name = node.name; ws.logfile.icon = node.icon; }
-                        if (req.query.p == 2) { ws.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); } // Intel AMT Redirection: Indicate the session is being recorded
-                    }
-                }
-            }
+            relayWebSocketModule.setupSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, request: req, node: node, ciraConnection: ciraconn, connectivity: conn });
 
             // If Intel AMT CIRA connection is available, use it
             if (ciraconn != null) {
