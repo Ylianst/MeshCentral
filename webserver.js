@@ -112,6 +112,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
+    const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
     const applicationRenderModule = require('./webserver/application-render.js');
@@ -852,6 +853,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: handleRootRequestLogin, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
     const renderApplication = applicationRenderModule.createApplicationRenderer({ state: obj, parent: parent, args: args, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getQueryPortion: getQueryPortion });
     const authenticateSspi = sspiAuthenticationModule.createSspiAuthentication({ state: obj, parent: parent, database: db, setSessionRandom: setSessionRandom });
+    const authenticateAutomatically = automaticAuthenticationModule.createAutomaticAuthentication({ state: obj, parent: parent, setSessionRandom: setSessionRandom });
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
@@ -865,42 +867,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             return;
         }
 
-        if (obj.args.nousers == true) {
-            // If in single user mode, setup things here.
-            delete req.session.loginmode;
-            req.session.userid = 'user/' + domain.id + '/~';
-            delete req.session.currentNode;
-            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-            setSessionRandom(req);
-            if (obj.users[req.session.userid] == null) {
-                // Create the dummy user ~ with impossible password
-                parent.debug('web', 'handleRootRequestEx: created dummy user in nouser mode.');
-                obj.users[req.session.userid] = { type: 'user', _id: req.session.userid, name: '~', email: '~', domain: domain.id, siteadmin: 4294967295 };
-                obj.db.SetUser(obj.users[req.session.userid]);
-            }
-        } else if (obj.args.user && obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()]) {
-            // If a default user is active, setup the session here.
-            parent.debug('web', 'handleRootRequestEx: auth using default user.');
-            delete req.session.loginmode;
-            req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase();
-            delete req.session.currentNode;
-            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-            setSessionRandom(req);
-        } else if (req.query.login && (obj.parent.loginCookieEncryptionKey != null)) {
-            var loginCookie = obj.parent.decodeCookie(req.query.login, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-            //if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // If the cookie is bound to an IP address, check here.
-            if ((loginCookie != null) && (loginCookie.a == 3) && (loginCookie.u != null) && (loginCookie.u.split('/')[1] == domain.id)) {
-                // If a login cookie was provided, setup the session here.
-                parent.debug('web', 'handleRootRequestEx: cookie auth ok.');
-                delete req.session.loginmode;
-                req.session.userid = loginCookie.u;
-                delete req.session.currentNode;
-                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                setSessionRandom(req);
-            } else {
-                parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
-            }
-        } else if (domain.sspi != null) {
+        const automaticAuthentication = authenticateAutomatically(req, domain);
+        if (!automaticAuthentication && (domain.sspi != null)) {
             if (!authenticateSspi(req, res, domain)) { return; }
             nologout = true;
         }
