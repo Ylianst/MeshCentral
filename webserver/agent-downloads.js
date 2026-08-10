@@ -94,3 +94,32 @@ module.exports.sendAgentInstallScript = function (state, parent, domain, setCont
     for (var option in cmdoptions) { data = data.split('{{{' + option + '}}}').join(cmdoptions[option]); }
     response.send(data);
 };
+
+module.exports.sendMeshCmd = function (state, parent, domain, setContentDispositionHeader, request, response) {
+    var agentId = parseInt(request.query.meshcmd);
+    var signedId = null;
+    if (agentId == 3) { signedId = 11000; }
+    else if (agentId == 4) { signedId = 11001; }
+    else if (agentId == 43) { signedId = 11002; }
+    if ((signedId != null) && (parent.meshAgentBinaries[signedId] != null)) {
+        const signedPath = parent.meshAgentBinaries[signedId].path;
+        var stats = null;
+        try { stats = state.fs.statSync(signedPath); } catch (ex) { }
+        if (stats != null) {
+            setContentDispositionHeader(response, 'application/octet-stream', (agentId == 43) ? 'meshcmd-arm64.exe' : 'meshcmd.exe', null, 'meshcmd');
+            response.sendFile(signedPath);
+            return;
+        }
+    }
+
+    if (((agentId == 3) || (agentId == 4)) && (parent.meshAgentBinaries[agentId + 10000] != null)) { agentId += 10000; }
+    const agentInfo = module.exports.getAgentInfo(parent.meshAgentBinaries, domain.meshAgentBinaries, agentId);
+    if ((agentInfo == null) || (parent.defaultMeshCmd == null)) { try { response.sendStatus(404); } catch (ex) { } return; }
+    setContentDispositionHeader(response, 'application/octet-stream', 'meshcmd' + ((request.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
+    response.statusCode = 200;
+    if (agentInfo.signedMeshCmdPath != null) {
+        response.sendFile(agentInfo.signedMeshCmdPath);
+    } else {
+        parent.exeHandler.streamExeWithJavaScript({ platform: agentInfo.platform, sourceFileName: agentInfo.path, destinationStream: response, js: Buffer.from(parent.defaultMeshCmd, 'utf8'), peinfo: agentInfo.pe });
+    }
+};

@@ -16,6 +16,7 @@ const sendMeshCoreList = require('../webserver/agent-downloads.js').sendMeshCore
 const sendMeshCore = require('../webserver/agent-downloads.js').sendMeshCore;
 const sendAgentList = require('../webserver/agent-downloads.js').sendAgentList;
 const sendAgentInstallScript = require('../webserver/agent-downloads.js').sendAgentInstallScript;
+const sendMeshCmd = require('../webserver/agent-downloads.js').sendMeshCmd;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -118,4 +119,27 @@ test('unknown agent install scripts return not found', function () {
     const res = { sendStatus: function (status) { this.status = status; } };
     sendAgentInstallScript({}, { meshAgentInstallScripts: {} }, {}, function () { }, { query: { script: 99 } }, res);
     assert.equal(res.status, 404);
+});
+
+test('MeshCmd downloads prefer available signed executables', function () {
+    const parent = { meshAgentBinaries: { 11000: { path: 'signed.exe' } } };
+    const res = { sendFile: function (path) { this.path = path; }, sendStatus: function (status) { this.status = status; } };
+    const headers = [];
+    sendMeshCmd({ fs: { statSync: function () { return {}; } } }, parent, {}, function (response, type, filename) { headers.push(filename); }, { query: { meshcmd: '3' } }, res);
+    assert.equal(res.path, 'signed.exe');
+    assert.equal(headers[0], 'meshcmd.exe');
+});
+
+test('MeshCmd downloads merge the command core into unsigned agents', function () {
+    const streams = [];
+    const parent = {
+        meshAgentBinaries: { 6: { platform: 'linux', path: 'agent', pe: null } },
+        defaultMeshCmd: 'command-core',
+        exeHandler: { streamExeWithJavaScript: function (options) { streams.push(options); } }
+    };
+    const res = { sendFile: function () { }, sendStatus: function (status) { this.status = status; } };
+    sendMeshCmd({ fs: { statSync: function () { throw new Error('missing'); } } }, parent, {}, function () { }, { query: { meshcmd: '6' } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.equal(streams[0].sourceFileName, 'agent');
+    assert.equal(streams[0].js.toString(), 'command-core');
 });

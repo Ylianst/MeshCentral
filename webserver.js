@@ -2995,49 +2995,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             return;
         } else if (req.query.meshcmd != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-
-            // Send meshcmd for a specific platform back
-            var agentid = parseInt(req.query.meshcmd);
-
-            // If the agentid is 3 or 4, check if we have a signed MeshCmd.exe
-            if ((agentid == 3) && (obj.parent.meshAgentBinaries[11000] != null)) { // Signed Windows MeshCmd.exe x86-32
-                var stats = null, meshCmdPath = obj.parent.meshAgentBinaries[11000].path;
-                try { stats = obj.fs.statSync(meshCmdPath); } catch (e) { }
-                if ((stats != null)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd.exe', null, 'meshcmd');
-                    res.sendFile(meshCmdPath); return;
-                }
-            } else if ((agentid == 4) && (obj.parent.meshAgentBinaries[11001] != null)) { // Signed Windows MeshCmd64.exe x86-64
-                var stats = null, meshCmd64Path = obj.parent.meshAgentBinaries[11001].path;
-                try { stats = obj.fs.statSync(meshCmd64Path); } catch (e) { }
-                if ((stats != null)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd.exe', null, 'meshcmd');
-                    res.sendFile(meshCmd64Path); return;
-                }
-            } else if ((agentid == 43) && (obj.parent.meshAgentBinaries[11002] != null)) { // Signed Windows MeshCmd64.exe ARM-64
-                var stats = null, meshCmdAMR64Path = obj.parent.meshAgentBinaries[11002].path;
-                try { stats = obj.fs.statSync(meshCmdAMR64Path); } catch (e) { }
-                if ((stats != null)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd-arm64.exe', null, 'meshcmd');
-                    res.sendFile(meshCmdAMR64Path); return;
-                }
-            }
-
-            // No signed agents, we are going to merge a new MeshCmd.
-            if (((agentid == 3) || (agentid == 4)) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
-            var argentInfo = obj.parent.meshAgentBinaries[agentid];
-            if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
-            if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
-            setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
-            res.statusCode = 200;
-
-            if (argentInfo.signedMeshCmdPath != null) {
-                // If we have a pre-signed MeshCmd, send that.
-                res.sendFile(argentInfo.signedMeshCmdPath);
-            } else {
-                // Merge JavaScript to a unsigned agent and send that.
-                obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(obj.parent.defaultMeshCmd, 'utf8'), peinfo: argentInfo.pe });
-            }
+            agentDownloadsModule.sendMeshCmd(obj, parent, domain, setContentDispositionHeader, req, res);
             return;
         } else if (req.query.meshaction != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
