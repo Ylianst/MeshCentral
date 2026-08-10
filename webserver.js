@@ -108,6 +108,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
+    const passwordResetModule = require('./webserver/password-reset.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
@@ -1259,122 +1260,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         });
     }
 
-    // Called to process an account password reset
-    function handleResetPasswordRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-
-        // Decrypt any session data
-        const sec = parent.decryptSessionData(req.session.e);
-
-        // Check everything is ok
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false) || (sec.rtreset === true));
-        if ((allowAccountReset === false) || (domain == null) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (typeof req.body.rpassword1 != 'string') || (typeof req.body.rpassword2 != 'string') || (req.body.rpassword1 != req.body.rpassword2) || (typeof req.body.rpasswordhint != 'string') || (req.session == null) || (typeof sec.rtuser != 'string') || (typeof sec.rtpass != 'string')) {
-            parent.debug('web', 'handleResetPasswordRequest: checks failed');
-            delete req.session.e;
-            delete req.session.u2f;
-            delete req.session.loginmode;
-            delete req.session.tuserid;
-            delete req.session.tuser;
-            delete req.session.tpass;
-            delete req.session.temail;
-            delete req.session.tsms;
-            delete req.session.tmsg;
-            delete req.session.tpush;
-            delete req.session.messageid;
-            delete req.session.passhint;
-            delete req.session.cuserid;
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            return;
-        }
-
-        // Authenticate the user
-        obj.authenticate(sec.rtuser, sec.rtpass, domain, function (err, userid, passhint, loginOptions) {
-            if (userid) {
-                // Login
-                var user = obj.users[userid];
-
-                // If we have password requirements, check this here.
-                if (!obj.common.checkPasswordRequirements(req.body.rpassword1, domain.passwordrequirements)) {
-                    parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (1)');
-                    req.session.loginmode = 6;
-                    req.session.messageid = 105; // Password rejected, use a different one.
-                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    return;
-                }
-
-                // Check if the password is the same as a previous one
-                obj.checkOldUserPasswords(domain, user, req.body.rpassword1, function (result) {
-                    if (result != 0) {
-                        // This is the same password as an older one, request a password change again
-                        parent.debug('web', 'handleResetPasswordRequest: password rejected, use a different one (2)');
-                        req.session.loginmode = 6;
-                        req.session.messageid = 105; // Password rejected, use a different one.
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    } else {
-                        // Update the password, use a different salt.
-                        require('./pass').hash(req.body.rpassword1, function (err, salt, hash, tag) {
-                            const nowSeconds = Math.floor(Date.now() / 1000);
-                            if (err) { parent.debug('web', 'handleResetPasswordRequest: hash error.'); throw err; }
-
-                            if (domain.passwordrequirements != null) {
-                                // Save password hint if this feature is enabled
-                                passwordHistoryModule.updatePasswordHint(user, domain.passwordrequirements, req.body.rpasswordhint);
-
-                                // Save previous password if this feature is enabled
-                                if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {
-                                    if (user.oldpasswords == null) { user.oldpasswords = []; }
-                                    user.oldpasswords.push({ salt: user.salt, hash: user.hash, start: user.passchange, end: nowSeconds });
-                                    const extraOldPasswords = user.oldpasswords.length - domain.passwordrequirements.oldpasswordban;
-                                    if (extraOldPasswords > 0) { user.oldpasswords.splice(0, extraOldPasswords); }
-                                }
-                            }
-
-                            user.salt = salt;
-                            user.hash = hash;
-                            user.passchange = user.access = nowSeconds;
-                            delete user.passtype;
-                            obj.db.SetUser(user);
-
-                            // Event the account change
-                            var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', msg: 'User password reset', domain: domain.id };
-                            if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                            obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
-
-                            // Login successful
-                            parent.debug('web', 'handleResetPasswordRequest: success');
-                            req.session.userid = userid;
-                            req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                            setSessionRandom(req);
-                            const sec = parent.decryptSessionData(req.session.e);
-                            completeLoginRequest(req, res, domain, obj.users[userid], userid, sec.tuser, sec.tpass, direct, loginOptions);
-                        }, 0);
-                    }
-                }, 0);
-            } else {
-                // Failed, error out.
-                parent.debug('web', 'handleResetPasswordRequest: failed authenticate()');
-                delete req.session.e;
-                delete req.session.u2f;
-                delete req.session.loginmode;
-                delete req.session.tuserid;
-                delete req.session.tuser;
-                delete req.session.tpass;
-                delete req.session.temail;
-                delete req.session.tsms;
-                delete req.session.tmsg;
-                delete req.session.tpush;
-                delete req.session.messageid;
-                delete req.session.passhint;
-                delete req.session.cuserid;
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                return;
-            }
-        });
-    }
+    const handleResetPasswordRequest = passwordResetModule.createPasswordReset({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, setSessionRandom: setSessionRandom, completeLoginRequest: completeLoginRequest, hashPassword: require('./pass').hash, updatePasswordHint: passwordHistoryModule.updatePasswordHint }).handleResetPasswordRequest;
 
     // Called to process an account reset request
     function handleResetAccountRequest(req, res, direct) {

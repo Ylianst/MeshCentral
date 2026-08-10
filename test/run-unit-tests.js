@@ -48,6 +48,7 @@ require('./webserver-passport-routes.test.js');
 require('./webserver-password-authentication.test.js');
 require('./webserver-login-completion.test.js');
 require('./webserver-password-history.test.js');
+require('./webserver-password-reset.test.js');
 require('./webserver-agent-routing.test.js');
 require('./webserver-agent-routes.test.js');
 require('./webserver-agent-control.test.js');
