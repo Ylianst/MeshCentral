@@ -1193,7 +1193,12 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 } else {
                     // Check if this email was already verified
                     obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
-                        if ((docs != null) && (docs.length > 0)) {
+                        if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
+                            parent.debug('web', 'handleCreateAccountRequest: database error checking email address');
+                            req.session.loginmode = 2;
+                            req.session.messageid = 100; // Unable to create account.
+                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                        } else if (docs.length > 0) {
                             parent.debug('web', 'handleCreateAccountRequest: Existing account with this email address');
                             req.session.loginmode = 2;
                             req.session.messageid = 102; // Existing account with this email address.
