@@ -13,6 +13,8 @@
 /*jshint esversion: 6 */
 'use strict';
 
+const baseStateModule = require('./webserver/base-state.js');
+
 // ExpressJS login sample
 // https://github.com/expressjs/express/blob/master/examples/auth/index.js
 
@@ -22,28 +24,9 @@ if (!String.prototype.endsWith) { String.prototype.endsWith = function (searchSt
 
 // Construct a HTTP server object
 module.exports.CreateWebServer = function (parent, db, args, certificates, doneFunc) {
-    var obj = {}, i = 0;
+    var obj = baseStateModule.createBaseState(parent, db, args, certificates, require, process.env), i = 0;
 
     // Modules
-    obj.fs = require('fs');
-    obj.net = require('net');
-    obj.tls = require('tls');
-    obj.path = require('path');
-    obj.os = require('os');
-    obj.bodyParser = require('body-parser');
-    obj.exphbs = require('express-handlebars');
-    obj.crypto = require('crypto');
-    obj.common = require('./common.js');
-    obj.express = require('express');
-    obj.meshAgentHandler = require('./meshagent.js');
-    obj.meshRelayHandler = require('./meshrelay.js');
-    obj.meshDeviceFileHandler = require('./meshdevicefile.js');
-    obj.meshDesktopMultiplexHandler = require('./meshdesktopmultiplex.js');
-    obj.meshIderHandler = require('./amt/amt-ider.js');
-    obj.meshUserHandler = require('./meshuser.js');
-    obj.interceptor = require('./interceptor');
-    obj.uaparser = require('ua-parser-js');
-    obj.uaclienthints = require('ua-client-hints-js');
     const sanitization = require('./webserver/sanitization.js');
     const authorizationModule = require('./webserver/authorization.js');
     const renderingModule = require('./webserver/rendering.js');
@@ -145,33 +128,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     // Setup WebAuthn / FIDO2
     obj.webauthn = require('./webauthn.js').CreateWebAuthnModule();
 
-    if (process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']) {
-        obj.httpsProxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(process.env['HTTP_PROXY'] || process.env['HTTPS_PROXY'] || process.env['http_proxy'] || process.env['https_proxy']);
-    }
-
-    // Variables
-    obj.args = args;
-    obj.parent = parent;
-    obj.filespath = parent.filespath;
-    obj.db = db;
-    obj.app = obj.express();
-    if (obj.args.agentport) { obj.agentapp = obj.express(); }
-    if (args.compression === true) {
-        obj.app.use(require('compression')({ filter: function (req, res) {
-            if (req.path == '/devicefile.ashx') return false; // Don't compress device file transfers to show file sizes
-            if ((args.relaydns != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) return false; // Don't compress DNS relay requests
-            return require('compression').filter(req, res);
-        }}));
-    }
-    obj.app.disable('x-powered-by');
-    obj.tlsServer = null;
-    obj.tcpServer = null;
-    obj.certificates = certificates;
     obj.isTrustedCert = certificateTrustModule.createCertificateTrust(obj.args, parent.config, obj.certificates);
     obj.getDomainUserFeatures = domainUserFeaturesModule.createDomainUserFeatures({ state: obj, parent: parent, ipcheck: require('ipcheck') });
-    obj.users = {};                             // UserID --> User
-    obj.meshes = {};                            // MeshID --> Mesh (also called device group)
-    obj.userGroups = {};                        // UGrpID --> User Group
     const requestUtils = requestUtilsModule.createRequestUtils({
         crypto: obj.crypto,
         ipcheck: require('ipcheck'),
