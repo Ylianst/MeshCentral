@@ -100,6 +100,7 @@ const deviceCleanupModule = require('./webserver/device-cleanup.js');
 const amtEventsModule = require('./webserver/amt-events.js');
 const agentDownloadsModule = require('./webserver/agent-downloads.js');
 const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
+const certificateTrustModule = require('./webserver/certificate-trust.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -151,6 +152,7 @@ const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
     obj.tlsServer = null;
     obj.tcpServer = null;
     obj.certificates = certificates;
+    obj.isTrustedCert = certificateTrustModule.createCertificateTrust(obj.args, parent.config, obj.certificates);
     obj.users = {};                             // UserID --> User
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
@@ -2219,18 +2221,6 @@ const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
                 renderLanguages: obj.renderLanguages,
                 showLanguageSelect: domain.showlanguageselect ? domain.showlanguageselect : false,
             }, req, domain, (domain.sitestyle >= 2) ? 'login2' : 'login'));
-    }
-
-    // Handle a post request on the root
-    // Return true if it looks like we are using a real TLS certificate.
-    obj.isTrustedCert = function (domain) {
-        if ((domain != null) && (typeof domain.trustedcert == 'boolean')) return domain.trustedcert; // If the status of the cert specified, use that.
-        if (typeof obj.args.trustedcert == 'boolean') return obj.args.trustedcert; // If the status of the cert specified, use that.
-        if (obj.args.tlsoffload != null) return true; // We are using TLS offload, a real cert is likely used.
-        if (obj.parent.config.letsencrypt != null) return (obj.parent.config.letsencrypt.production === true); // We are using Let's Encrypt, real cert in use if production is set to true.
-        if ((typeof obj.certificates.WebIssuer == 'string') && (obj.certificates.WebIssuer.indexOf('MeshCentralRoot-') == 0)) return false; // Our cert is issued by self-signed cert.
-        if (obj.certificates.CommonName.indexOf('.') == -1) return false; // Our cert is named with a fake name
-        return true; // This is a guess
     }
 
     const rootRequests = rootRequestsModule.createRootRequests({
