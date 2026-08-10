@@ -11,6 +11,7 @@ const getSessionUser = require('../webserver/agent-downloads.js').getSessionUser
 const hasDatabaseFailure = require('../webserver/agent-downloads.js').hasDatabaseFailure;
 const getAgentInfo = require('../webserver/agent-downloads.js').getAgentInfo;
 const getMeshRelayUrl = require('../webserver/agent-downloads.js').getMeshRelayUrl;
+const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDownloadUrl;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -43,4 +44,9 @@ test('agent actions build valid relay URLs for root and path domains', function 
     assert.equal(getMeshRelayUrl(state, { id: 'tenant' }, {}), 'wss://server.example.com:443/tenant/meshrelay.ashx');
     state.args.aliasport = 8443;
     assert.equal(getMeshRelayUrl(state, { id: 'tenant' }, {}), 'wss://server.example.com:8443/tenant/meshrelay.ashx');
+});
+
+test('MeshCore links preserve the request path and encode query values', function () {
+    assert.equal(getCoreDownloadUrl({ originalUrl: '/meshagents?cores=1', query: {} }, 'dlcore', 'Core 1'), '/meshagents?dlcore=Core%201');
+    assert.equal(getCoreDownloadUrl({ originalUrl: '/tenant/meshagents?cores=1', query: { key: 'a&b' } }, 'dlccore', 'Core 1'), '/tenant/meshagents?dlccore=Core%201&key=a%26b');
 });

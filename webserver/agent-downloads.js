@@ -23,3 +23,8 @@ module.exports.getMeshRelayUrl = function (state, domain, request) {
     const httpsPort = (state.args.aliasport == null) ? state.args.port : state.args.aliasport;
     return 'wss://' + state.getWebServerName(domain, request) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : (domain.id + '/')) + 'meshrelay.ashx';
 };
+
+module.exports.getCoreDownloadUrl = function (request, parameter, coreName) {
+    const requestPath = request.originalUrl.split('?')[0];
+    return requestPath + '?' + parameter + '=' + encodeURIComponent(coreName) + ((request.query.key != null) ? ('&key=' + encodeURIComponent(request.query.key)) : '');
+};
