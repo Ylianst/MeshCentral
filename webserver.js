@@ -3047,18 +3047,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                     return;
                 });
             } else if (req.query.meshaction == 'generic') {
-                var meshaction = {
-                    username: user.name,
-                    password: '',
-                    serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                    serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
-                    debugLevel: 0
-                };
-                if (user != null) { meshaction.username = user.name; }
-                if (req.query.key != null) { meshaction.loginKey = req.query.key; }
-                if (obj.args.lanonly != true) { meshaction.serverUrl = agentDownloadsModule.getMeshRelayUrl(obj, domain, req); }
-                setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
-                res.send(JSON.stringify(meshaction, null, ' '));
+                agentDownloadsModule.sendGenericMeshAction(obj, domain, user, setContentDispositionHeader, req, res);
                 return;
             } else if (agentDownloadsModule.sendMeshTool(obj, parent, __dirname, setContentDispositionHeader, req.query.meshaction, res)) {
                 return;

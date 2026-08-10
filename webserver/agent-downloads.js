@@ -143,3 +143,17 @@ module.exports.sendMeshTool = function (state, parent, rootDirectory, setContent
     }
     return true;
 };
+
+module.exports.sendGenericMeshAction = function (state, domain, user, setContentDispositionHeader, request, response) {
+    const action = {
+        username: user.name,
+        password: '',
+        serverId: state.agentCertificateHashHex.toUpperCase(),
+        serverHttpsHash: Buffer.from(state.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(),
+        debugLevel: 0
+    };
+    if (request.query.key != null) { action.loginKey = request.query.key; }
+    if (state.args.lanonly != true) { action.serverUrl = module.exports.getMeshRelayUrl(state, domain, request); }
+    setContentDispositionHeader(response, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
+    response.send(JSON.stringify(action, null, ' '));
+};

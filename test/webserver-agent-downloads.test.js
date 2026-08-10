@@ -18,6 +18,7 @@ const sendAgentList = require('../webserver/agent-downloads.js').sendAgentList;
 const sendAgentInstallScript = require('../webserver/agent-downloads.js').sendAgentInstallScript;
 const sendMeshCmd = require('../webserver/agent-downloads.js').sendMeshCmd;
 const sendMeshTool = require('../webserver/agent-downloads.js').sendMeshTool;
+const sendGenericMeshAction = require('../webserver/agent-downloads.js').sendGenericMeshAction;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -164,4 +165,23 @@ test('companion tool downloads use repository fallbacks and reject unknown actio
     assert.equal(sendMeshTool(state, parent, 'root', function () { }, 'macrouter', res), true);
     assert.deepEqual(sent, [fallback]);
     assert.equal(sendMeshTool(state, parent, 'root', function () { }, 'unknown', res), false);
+});
+
+test('generic mesh actions contain user and server connection details', function () {
+    const state = {
+        agentCertificateHashHex: 'aabb',
+        webCertificateHashs: { tenant: Buffer.from([1, 2]).toString('binary') },
+        args: { port: 443 },
+        getWebServerName: function () { return 'server.example.com'; }
+    };
+    const headers = [];
+    const res = { send: function (body) { this.body = body; } };
+    sendGenericMeshAction(state, { id: 'tenant' }, { name: 'Alice' }, function (response, type, filename) { headers.push(filename); }, { query: { key: 'secret' } }, res);
+    const action = JSON.parse(res.body);
+    assert.equal(action.username, 'Alice');
+    assert.equal(action.serverId, 'AABB');
+    assert.equal(action.serverHttpsHash, '0102');
+    assert.equal(action.serverUrl, 'wss://server.example.com:443/tenant/meshrelay.ashx');
+    assert.equal(action.loginKey, 'secret');
+    assert.deepEqual(headers, ['meshaction.txt']);
 });
