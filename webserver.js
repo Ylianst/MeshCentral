@@ -2364,7 +2364,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                             obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                obj.fs.close(logfile.fd);
+                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
@@ -2416,7 +2416,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                             obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                obj.fs.close(logfile.fd);
+                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
@@ -2492,7 +2492,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                             obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                obj.fs.close(logfile.fd);
+                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;
@@ -2534,7 +2534,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     if (ws.logfile != null) {
                         setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
                             obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                obj.fs.close(logfile.fd);
+                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
                                 parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
                                 // Compute session length
                                 var sessionLength = null;

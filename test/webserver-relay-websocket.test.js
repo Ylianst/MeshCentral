@@ -10,6 +10,7 @@ const test = require('node:test');
 const hasDatabaseFailure = require('../webserver/relay-websocket.js').hasDatabaseFailure;
 const isSelectedDeviceGroup = require('../webserver/relay-websocket.js').isSelectedDeviceGroup;
 const openRecordingFile = require('../webserver/relay-websocket.js').openRecordingFile;
+const closeRecordingFile = require('../webserver/relay-websocket.js').closeRecordingFile;
 const setupSessionRecording = require('../webserver/relay-websocket.js').setupSessionRecording;
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 
@@ -34,6 +35,14 @@ test('relay recording file failures are contained', function () {
     assert.equal(openRecordingFile({ openSync: function () { throw new Error('permission denied'); } }, 'session.mcrec', function (error) { errors.push(error); }), null);
     assert.equal(errors.length, 1);
     assert.match(errors[0].message, /permission denied/);
+});
+
+test('relay recording descriptors close with callbacks and contained errors', function () {
+    const errors = [];
+    closeRecordingFile({ close: function (descriptor, callback) { assert.equal(descriptor, 7); callback(null); } }, 7, function (error) { errors.push(error); });
+    closeRecordingFile({ close: function (descriptor, callback) { callback(new Error('close failed')); } }, 8, function (error) { errors.push(error); });
+    closeRecordingFile({ close: function () { throw new Error('close threw'); } }, 9, function (error) { errors.push(error); });
+    assert.deepEqual(errors.map(function (error) { return error.message; }), ['close failed', 'close threw']);
 });
 
 test('relay recording creates metadata and signals recorded AMT sessions', function () {

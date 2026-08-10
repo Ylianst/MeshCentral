@@ -17,6 +17,10 @@ module.exports.openRecordingFile = function (fileSystem, filename, onError) {
     try { return fileSystem.openSync(filename, 'w'); } catch (error) { onError(error); return null; }
 };
 
+module.exports.closeRecordingFile = function (fileSystem, descriptor, onError) {
+    try { fileSystem.close(descriptor, function (error) { if (error != null) { onError(error); } }); } catch (error) { onError(error); }
+};
+
 module.exports.setupSessionRecording = function (options) {
     const state = options.state;
     const parent = options.parent;
