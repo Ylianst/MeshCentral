@@ -2360,31 +2360,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                         delete ws.forwardclient;
                     }
 
-                    // Close the recording file
-                    if (ws.logfile != null) {
-                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
-                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
-                                // Compute session length
-                                var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000) - 5; }
-                                // Add a event entry about this recording
-                                var basefile = parent.path.basename(ws.logfile.filename);
-                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
-                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
-                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
-                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
-                                var mesh = obj.meshes[ws.logfile.meshid];
-                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
-                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
-                                if (ws.logfile.name) { event.name = ws.logfile.name; }
-                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
-                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
-                                delete ws.logfile;
-                            }, ws);
-                        }, 5000);
-                    }
+                    relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 5 });
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
@@ -2412,31 +2388,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                         delete ws.forwardclient;
                     }
 
-                    // Close the recording file
-                    if (ws.logfile != null) {
-                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
-                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
-                                // Compute session length
-                                var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000) - 5; }
-                                // Add a event entry about this recording
-                                var basefile = parent.path.basename(ws.logfile.filename);
-                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
-                                if (user) { event.userids = [user._id]; }
-                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
-                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
-                                var mesh = obj.meshes[ws.logfile.meshid];
-                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
-                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
-                                if (ws.logfile.name) { event.name = ws.logfile.name; }
-                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
-                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
-                                delete ws.logfile;
-                            }, ws);
-                        }, 5000);
-                    }
+                    relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 5 });
                 });
 
                 // Note that here, req.query.p: 1 = WSMAN with server auth, 2 = REDIR with server auth, 3 = WSMAN without server auth, 4 = REDIR with server auth
@@ -2488,31 +2440,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
-                    // Close the recording file
-                    if (ws.logfile != null) {
-                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
-                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
-                                // Compute session length
-                                var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
-                                // Add a event entry about this recording
-                                var basefile = parent.path.basename(ws.logfile.filename);
-                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
-                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
-                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
-                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
-                                var mesh = obj.meshes[ws.logfile.meshid];
-                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
-                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
-                                if (ws.logfile.name) { event.name = ws.logfile.name; }
-                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
-                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
-                                delete ws.logfile;
-                            }, ws);
-                        }, 5000);
-                    }
+                    relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 0 });
                 });
 
                 // If the web socket is closed, close the associated TCP connection.
@@ -2530,31 +2458,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     }
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
-                    // Close the recording file
-                    if (ws.logfile != null) {
-                        setTimeout(function(){ // wait 5 seconds before finishing file for some reason?
-                            obj.meshRelayHandler.recordingEntry(ws.logfile, 3, 0, 'MeshCentralMCREC', function (logfile, ws) {
-                                relayWebSocketModule.closeRecordingFile(obj.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
-                                parent.debug('relay', 'Relay: Finished recording to file: ' + ws.logfile.filename);
-                                // Compute session length
-                                var sessionLength = null;
-                                if (ws.logfile.startTime != null) { sessionLength = Math.round((Date.now() - ws.logfile.startTime) / 1000); }
-                                // Add a event entry about this recording
-                                var basefile = parent.path.basename(ws.logfile.filename);
-                                var event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: ws.logfile.nodeid, msg: "Finished recording session" + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: basefile, size: ws.logfile.size };
-                                if (user) { event.userids = [user._id]; } else if (peer.user) { event.userids = [peer.user._id]; }
-                                var xprotocol = (((ws.logfile.req == null) || (ws.logfile.req.query == null)) ? null : (ws.logfile.req.query.p == 2) ? 101 : 100);
-                                if (xprotocol != null) { event.protocol = parseInt(xprotocol); }
-                                var mesh = obj.meshes[ws.logfile.meshid];
-                                if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
-                                if (ws.logfile.startTime) { event.startTime = ws.logfile.startTime; event.lengthTime = sessionLength; }
-                                if (ws.logfile.name) { event.name = ws.logfile.name; }
-                                if (ws.logfile.icon) { event.icon = ws.logfile.icon; }
-                                obj.parent.DispatchEvent(['*', 'recording', ws.logfile.nodeid, ws.logfile.meshid], obj, event);
-                                delete ws.logfile;
-                            }, ws);
-                        }, 5000);
-                    }
+                    relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 0 });
                 });
 
                 // Compute target port

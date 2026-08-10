@@ -103,3 +103,34 @@ module.exports.routeToPeerServer = function (parent, websocket, request, user, c
     }
     return false;
 };
+
+module.exports.finishSessionRecording = function (options) {
+    const state = options.state;
+    const parent = options.parent;
+    const domain = options.domain;
+    const user = options.user;
+    const websocket = options.websocket;
+    const logfile = websocket.logfile;
+    if (logfile == null) { return false; }
+    delete websocket.logfile;
+    const schedule = options.schedule || setTimeout;
+    schedule(function () {
+        state.meshRelayHandler.recordingEntry(logfile, 3, 0, 'MeshCentralMCREC', function () {
+            module.exports.closeRecordingFile(state.fs, logfile.fd, function (err) { parent.debug('relay', 'Relay: Failed to close recording file ' + logfile.filename + ': ' + err); });
+            parent.debug('relay', 'Relay: Finished recording to file: ' + logfile.filename);
+            var sessionLength = null;
+            if (logfile.startTime != null) { sessionLength = Math.round((Date.now() - logfile.startTime) / 1000) - (options.delayAdjustmentSeconds || 0); }
+            const event = { etype: 'relay', action: 'recording', domain: domain.id, nodeid: logfile.nodeid, msg: 'Finished recording session' + (sessionLength ? (', ' + sessionLength + ' second(s)') : ''), filename: parent.path.basename(logfile.filename), size: logfile.size };
+            if (user) { event.userids = [user._id]; }
+            const protocol = (((logfile.req == null) || (logfile.req.query == null)) ? null : (logfile.req.query.p == 2) ? 101 : 100);
+            if (protocol != null) { event.protocol = parseInt(protocol); }
+            const mesh = state.meshes[logfile.meshid];
+            if (mesh != null) { event.meshname = mesh.name; event.meshid = mesh._id; }
+            if (logfile.startTime) { event.startTime = logfile.startTime; event.lengthTime = sessionLength; }
+            if (logfile.name) { event.name = logfile.name; }
+            if (logfile.icon) { event.icon = logfile.icon; }
+            parent.DispatchEvent(['*', 'recording', logfile.nodeid, logfile.meshid], state, event);
+        }, websocket);
+    }, 5000);
+    return true;
+};

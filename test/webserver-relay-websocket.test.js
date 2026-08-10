@@ -13,6 +13,7 @@ const openRecordingFile = require('../webserver/relay-websocket.js').openRecordi
 const closeRecordingFile = require('../webserver/relay-websocket.js').closeRecordingFile;
 const setupSessionRecording = require('../webserver/relay-websocket.js').setupSessionRecording;
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
+const finishSessionRecording = require('../webserver/relay-websocket.js').finishSessionRecording;
 
 test('relay node lookups reject database failures and missing result arrays', function () {
     assert.equal(hasDatabaseFailure(new Error('database unavailable'), []), true);
@@ -98,4 +99,23 @@ test('relay routing forwards remote CIRA and direct connections to peers', funct
 test('relay routing prevents peer cookies from hopping again', function () {
     const parent = { multiServer: { createPeerRelay: function () { throw new Error('unexpected'); } } };
     assert.equal(routeToPeerServer(parent, {}, { query: {} }, {}, { ps: 1 }), false);
+});
+
+test('relay recording finalization is idempotent across close and error events', function () {
+    const entries = [], events = [];
+    const logfile = { fd: 7, filename: 'records/session.mcrec', startTime: Date.now() - 10000, size: 25, nodeid: 'node//node1', meshid: 'mesh//main', name: 'Desktop', req: { query: { p: 2 } } };
+    const websocket = { logfile: logfile };
+    const state = {
+        fs: { close: function (fd, callback) { callback(null); } },
+        meshes: { 'mesh//main': { _id: 'mesh//main', name: 'Main' } },
+        meshRelayHandler: { recordingEntry: function (log, type, flags, data, callback, ws) { entries.push(log); callback(log, ws); } }
+    };
+    const parent = { path: { basename: function () { return 'session.mcrec'; } }, debug: function () { }, DispatchEvent: function () { events.push(Array.from(arguments)); } };
+    const options = { state: state, parent: parent, domain: { id: '' }, user: { _id: 'user//alice' }, websocket: websocket, delayAdjustmentSeconds: 5, schedule: function (callback) { callback(); } };
+    assert.equal(finishSessionRecording(options), true);
+    assert.equal(finishSessionRecording(options), false);
+    assert.equal(entries.length, 1);
+    assert.equal(events.length, 1);
+    assert.equal(events[0][2].protocol, 101);
+    assert.equal(websocket.logfile, undefined);
 });
