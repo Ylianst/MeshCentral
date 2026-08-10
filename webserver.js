@@ -2262,7 +2262,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                         try { obj.fs.mkdirSync(parent.recordpath); } catch (e) { }
                         recFullFilename = obj.path.join(parent.recordpath, recFilename);
                     }
-                    var fd = obj.fs.openSync(recFullFilename, 'w');
+                    var fd = relayWebSocketModule.openRecordingFile(obj.fs, recFullFilename, function (err) { parent.debug('relay', 'Relay: Failed to open recording file ' + recFullFilename + ': ' + err); });
                     if (fd != null) {
                         // Write the recording file header
                         parent.debug('relay', 'Relay: Started recording to file: ' + recFullFilename);
