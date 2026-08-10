@@ -114,6 +114,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
     const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
+    const applicationEntryModule = require('./webserver/application-entry.js');
     const applicationSessionModule = require('./webserver/application-session.js');
     const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
@@ -963,20 +964,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
             const user = obj.users[req.session.userid];
 
-            // Check if we are in maintenance mode
-            if ((parent.config.settings.maintenancemode != null) && (user.siteadmin != 4294967295)) {
-                req.session.messageid = 115; // Server under maintenance
-                req.session.loginmode = 1;
-                res.redirect(domain.url);
-                return;
-            }
-
-            // If the request has a "meshmessengerid", redirect to MeshMessenger
-            // This situation happens when you get a push notification for a chat session, but are not logged in.
-            if (req.query.meshmessengerid != null) {
-                res.redirect(domain.url + 'messenger?id=' + encodeURIComponent(req.query.meshmessengerid) + ((req.query.key != null) ? ('&key=' + encodeURIComponent(req.query.key)) : ''));
-                return;
-            }
+            if (applicationEntryModule.handleApplicationEntry(req, res, domain, user, parent.config.settings.maintenancemode)) { return; }
 
             const xdbGetFunc = function dbGetFunc(err, states) {
                 if (dbGetFunc.req.session.userid.split('/')[1] != domain.id) { // Check if the session is for the correct domain
