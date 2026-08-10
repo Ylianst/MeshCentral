@@ -110,6 +110,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
+    const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
@@ -1092,6 +1093,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     }
 
     const completeLoginRequest = loginCompletionModule.createLoginCompletion({ state: obj, parent: parent, setSessionRandom: setSessionRandom, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
+    const accountCreationReservations = accountCreationReservationsModule.createAccountCreationReservations();
 
     function handleCreateAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
@@ -1144,12 +1146,22 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             return;
         }
 
+        if (!accountCreationReservations.acquire(domain.id)) {
+            parent.debug('web', 'handleCreateAccountRequest: account creation already pending');
+            req.session.loginmode = 2;
+            req.session.messageid = 100;
+            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            return;
+        }
+        var releaseAccountCreation = function () { accountCreationReservations.release(domain.id); };
+
         // Count the number of users in this domain
         var domainUserCount = 0;
         for (var i in obj.users) { if (obj.users[i].domain == domain.id) { domainUserCount++; } }
 
         // Check if we are allowed to create new users using the login screen
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true) && (domainUserCount > 0)) {
+            releaseAccountCreation();
             parent.debug('web', 'handleCreateAccountRequest: domainUserCount > 1.');
             res.sendStatus(401);
             return;
@@ -1160,6 +1172,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             var i = -1;
             if (typeof req.body.email == 'string') { i = req.body.email.indexOf('@'); }
             if (i == -1) {
+                releaseAccountCreation();
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (1)');
                 req.session.loginmode = 2;
                 req.session.messageid = 100; // Unable to create account.
@@ -1169,6 +1182,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             var emailok = false, emaildomain = req.body.email.substring(i + 1).toLowerCase();
             for (var i in domain.newaccountemaildomains) { if (emaildomain == domain.newaccountemaildomains[i].toLowerCase()) { emailok = true; } }
             if (emailok == false) {
+                releaseAccountCreation();
                 parent.debug('web', 'handleCreateAccountRequest: unable to create account (2)');
                 req.session.loginmode = 2;
                 req.session.messageid = 100; // Unable to create account.
@@ -1180,12 +1194,14 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         // Check if we exceed the maximum number of user accounts
         obj.db.isMaxType(domain.limits.maxuseraccounts, 'user', domain.id, function (maxExceed) {
             if (maxExceed) {
+                releaseAccountCreation();
                 parent.debug('web', 'handleCreateAccountRequest: account limit reached');
                 req.session.loginmode = 2;
                 req.session.messageid = 101; // Account limit reached.
                 if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
             } else {
                 if (!obj.common.validateUsername(req.body.username, 1, 64) || !obj.common.validateEmail(req.body.email, 1, 256) || !obj.common.validateString(req.body.password1, 1, 256) || !obj.common.validateString(req.body.password2, 1, 256) || (req.body.password1 != req.body.password2) || req.body.username == '~' || !obj.common.checkPasswordRequirements(req.body.password1, domain.passwordrequirements)) {
+                    releaseAccountCreation();
                     parent.debug('web', 'handleCreateAccountRequest: unable to create account (3)');
                     req.session.loginmode = 2;
                     req.session.messageid = 100; // Unable to create account.
@@ -1194,11 +1210,13 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     // Check if this email was already verified
                     obj.db.GetUserWithVerifiedEmail(domain.id, req.body.email, function (err, docs) {
                         if (emailAccountUtils.hasDatabaseFailure(err, docs)) {
+                            releaseAccountCreation();
                             parent.debug('web', 'handleCreateAccountRequest: database error checking email address');
                             req.session.loginmode = 2;
                             req.session.messageid = 100; // Unable to create account.
                             if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         } else if (docs.length > 0) {
+                            releaseAccountCreation();
                             parent.debug('web', 'handleCreateAccountRequest: Existing account with this email address');
                             req.session.loginmode = 2;
                             req.session.messageid = 102; // Existing account with this email address.
@@ -1206,6 +1224,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                         } else {
                             // Check if user exists
                             if (obj.users['user/' + domain.id + '/' + req.body.username.toLowerCase()]) {
+                                releaseAccountCreation();
                                 parent.debug('web', 'handleCreateAccountRequest: Username already exists');
                                 req.session.loginmode = 2;
                                 req.session.messageid = 104; // Username already exists.
@@ -1240,6 +1259,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                                 }
 
                                 obj.users[user._id] = user;
+                                releaseAccountCreation();
                                 req.session.userid = user._id;
                                 req.session.ip = req.clientIp; // Bind this session to the IP address of the request
                                 setSessionRandom(req);
