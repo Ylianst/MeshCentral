@@ -111,6 +111,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginFailureModule = require('./webserver/login-failure.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
+    const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
@@ -844,6 +845,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     const handleResetAccountRequest = accountRecoveryModule.createAccountRecovery({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkEmail: checkEmail, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, getRandomSixDigitInteger: getRandomSixDigitInteger }).handleResetAccountRequest;
 
+    const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: handleRootRequestLogin, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
+
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null;
@@ -1137,42 +1140,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             xdbGetFunc.user = user;
             obj.db.Get('ws' + user._id, xdbGetFunc);
         } else {
-            // Send back the login application
-            // If this is a 2 factor auth request, look for a hardware key challenge.
-            // Normal login 2 factor request
-            if (req.session && (req.session.loginmode == 4)) {
-                const sec = parent.decryptSessionData(req.session.e);
-                if ((sec != null) && (typeof sec.tuserid == 'string')) {
-                    const user = obj.users[sec.tuserid];
-                    if (user != null) {
-                        parent.debug('web', 'handleRootRequestEx: sending 2FA challenge.');
-                        getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
-                        return;
-                    }
-                }
-            }
-            // Password recovery 2 factor request
-            if (req.session && (req.session.loginmode == 5) && (req.session.temail)) {
-                obj.db.GetUserWithVerifiedEmail(domain.id, req.session.temail, function (err, docs) {
-                    if (emailAccountUtils.hasDatabaseFailure(err, docs) || (docs.length == 0)) {
-                        parent.debug('web', 'handleRootRequestEx: password recover 2FA fail.');
-                        req.session = null;
-                        res.redirect(domain.url + getQueryPortion(req)); // BAD***
-                    } else {
-                        var user = obj.users[docs[0]._id];
-                        if (user != null) {
-                            parent.debug('web', 'handleRootRequestEx: password recover 2FA challenge.');
-                            getHardwareKeyChallenge(req, domain, user, function (hwchallenge) { handleRootRequestLogin(req, res, domain, hwchallenge, passRequirements); });
-                        } else {
-                            parent.debug('web', 'handleRootRequestEx: password recover 2FA no user.');
-                            req.session = null;
-                            res.redirect(domain.url + getQueryPortion(req)); // BAD***
-                        }
-                    }
-                });
-                return;
-            }
-            handleRootRequestLogin(req, res, domain, '', passRequirements);
+            handleLoginChallenge(req, res, domain, passRequirements);
         }
     }
 
