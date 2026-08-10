@@ -52,6 +52,7 @@ require('./webserver-login-two-factor.test.js');
 require('./webserver-login-request.test.js');
 require('./webserver-login-challenge.test.js');
 require('./webserver-login-page-session.test.js');
+require('./webserver-login-page-two-factor.test.js');
 require('./webserver-automatic-authentication.test.js');
 require('./webserver-sspi-authentication.test.js');
 require('./webserver-user-web-state.test.js');

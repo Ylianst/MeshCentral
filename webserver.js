@@ -113,6 +113,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const loginPageSessionModule = require('./webserver/login-page-session.js');
+    const loginPageTwoFactorModule = require('./webserver/login-page-two-factor.js');
     const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
@@ -899,29 +900,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) { for (var i in obj.users) { if (obj.users[i].domain == domain.id) { newAccountsAllowed = false; break; } } }
         if (parent.config.settings.maintenancemode != null) { newAccountsAllowed = false; }
 
-        // Encrypt the hardware key challenge state if needed
-        var hwstate = null;
-        if (hardwareKeyChallenge && req.session) {
-            const sec = parent.decryptSessionData(req.session.e);
-            hwstate = obj.parent.encodeCookie({ u: sec.tuser, p: sec.tpass, c: sec.u2f }, obj.parent.loginCookieEncryptionKey)
-        }
-
-        // Check if we can use OTP tokens with email. We can't use email for 2FA password recovery (loginmode 5).
-        var otpemail = (loginmode != 5) && (domain.mailserver != null) && (req.session != null) && ((req.session.temail === 1) || (typeof req.session.temail == 'string'));
-        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.email2factor == false)) { otpemail = false; }
-        var otpduo = (req.session != null) && (req.session.tduo === 1);
-        if (((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.duo2factor == false)) || (typeof domain.duo2factor != 'object')) { otpduo = false; }
-        var otpsms = (parent.smsserver != null) && (req.session != null) && (req.session.tsms === 1);
-        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.sms2factor == false)) { otpsms = false; }
-        var otpmsg = (parent.msgserver != null) && (req.session != null) && (req.session.tmsg === 1);
-        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.msg2factor == false)) { otpmsg = false; }
-        var otppush = (parent.firebase != null) && (req.session != null) && (req.session.tpush === 1);
-        if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.push2factor == false)) { otppush = false; }
-        const autofido = ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.autofido2fa == true)); // See if FIDO should be automatically prompted if user account has it.
-
-        // See if we support two-factor trusted cookies
-        var twoFactorCookieDays = 30;
-        if (typeof domain.twofactorcookiedurationdays == 'number') { twoFactorCookieDays = domain.twofactorcookiedurationdays; }
+        const twoFactorOptions = loginPageTwoFactorModule.getLoginTwoFactorOptions(req, domain, hardwareKeyChallenge, loginmode, parent);
 
         // See what authentication strategies we have
         var authStrategies = [];
@@ -945,12 +924,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         const customui = pageOptionsModule.encodeCustomUi(domain);
 
         const customFiles = pageOptionsModule.encodeCustomFiles(domain);
-
-        // Get two-factor screen timeout
-        var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
-        if ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.twofactortimeout == 'number')) {
-            twoFactorTimeout = domain.passwordrequirements.twofactortimeout * 1000;
-        }
 
         // Setup CAPTCHA if needed
         var newAccountCaptcha = '', newAccountCaptchaImage = '';
@@ -1032,20 +1005,20 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     'relaycount': Object.keys(parent.webserver.wsrelays).length
                 })).split('\'').join('\\\'') : null,
                 welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
-                hwstate: hwstate,
-                otpemail: otpemail,
-                otpduo: otpduo,
-                otpsms: otpsms,
-                otpmsg: otpmsg,
-                otppush: otppush,
-                autofido: autofido,
-                twoFactorCookieDays: twoFactorCookieDays,
+                hwstate: twoFactorOptions.hardwareState,
+                otpemail: twoFactorOptions.email,
+                otpduo: twoFactorOptions.duo,
+                otpsms: twoFactorOptions.sms,
+                otpmsg: twoFactorOptions.messaging,
+                otppush: twoFactorOptions.push,
+                autofido: twoFactorOptions.autoFido,
+                twoFactorCookieDays: twoFactorOptions.cookieDays,
                 authStrategies: authStrategies.join(','),
                 oidcButtonText: oidcButtonText || '',
                 oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
                 oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
                 loginpicture: (typeof domain.loginpicture == 'string'),
-                tokenTimeout: twoFactorTimeout, // Two-factor authentication screen timeout in milliseconds,
+                tokenTimeout: twoFactorOptions.timeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
                 showLanguageSelect: domain.showlanguageselect ? domain.showlanguageselect : false,
             }, req, domain, (domain.sitestyle >= 2) ? 'login2' : 'login'));
