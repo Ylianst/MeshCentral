@@ -54,6 +54,7 @@ require('./webserver-login-challenge.test.js');
 require('./webserver-user-web-state.test.js');
 require('./webserver-application-server-features.test.js');
 require('./webserver-application-entry.test.js');
+require('./webserver-application-access.test.js');
 require('./webserver-application-session.test.js');
 require('./webserver-page-options.test.js');
 require('./webserver-password-history.test.js');

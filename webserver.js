@@ -115,6 +115,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
     const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
+    const applicationAccessModule = require('./webserver/application-access.js');
     const applicationSessionModule = require('./webserver/application-session.js');
     const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
@@ -967,25 +968,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             if (applicationEntryModule.handleApplicationEntry(req, res, domain, user, parent.config.settings.maintenancemode)) { return; }
 
             const xdbGetFunc = function dbGetFunc(err, states) {
-                if (dbGetFunc.req.session.userid.split('/')[1] != domain.id) { // Check if the session is for the correct domain
-                    parent.debug('web', 'handleRootRequestEx: incorrect domain.');
-                    dbGetFunc.req.session = null;
-                    dbGetFunc.res.redirect(domain.url + getQueryPortion(dbGetFunc.req)); // BAD***
-                    return;
-                }
-
-                // Check if this is a locked account
-                if ((dbGetFunc.user.siteadmin != null) && ((dbGetFunc.user.siteadmin & 32) != 0) && (dbGetFunc.user.siteadmin != 0xFFFFFFFF)) {
-                    // Locked account
-                    parent.debug('web', 'handleRootRequestEx: locked account.');
-                    delete dbGetFunc.req.session.userid;
-                    delete dbGetFunc.req.session.currentNode;
-                    delete dbGetFunc.req.session.passhint;
-                    delete dbGetFunc.req.session.cuserid;
-                    dbGetFunc.req.session.messageid = 110; // Account locked.
-                    dbGetFunc.res.redirect(domain.url + getQueryPortion(dbGetFunc.req)); // BAD***
-                    return;
-                }
+                if (!applicationAccessModule.validateApplicationAccess(dbGetFunc.req, dbGetFunc.res, domain, dbGetFunc.user, parent, getQueryPortion)) { return; }
 
                 const navigationState = applicationSessionModule.consumeNavigationState(dbGetFunc.req, domain);
                 var logoutcontrols = {};
