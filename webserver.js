@@ -2842,24 +2842,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
 
             // Download PDB debug files, only allowed for administrator or accounts with agent dump access
             if (req.query.pdb == 1) {
-                if ((req.session == null) || (req.session.userid == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
-                var user = obj.users[req.session.userid];
-                if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-                if ((user != null) && ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0)))) {
-                    if (argentInfo.id == 3) {
-                        setContentDispositionHeader(res, 'application/octet-stream', 'MeshService.pdb', null, 'MeshService.pdb');
-                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
-                        try { res.sendFile(argentInfo.path.split('MeshService-signed.exe').join('MeshService.pdb')); } catch (ex) { }
-                        return;
-                    }
-                    if (argentInfo.id == 4) {
-                        setContentDispositionHeader(res, 'application/octet-stream', 'MeshService64.pdb', null, 'MeshService64.pdb');
-                        if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
-                        try { res.sendFile(argentInfo.path.split('MeshService64-signed.exe').join('MeshService64.pdb')); } catch (ex) { }
-                        return;
-                    }
-                }
-                try { res.sendStatus(404); } catch (ex) { }
+                agentDownloadsModule.sendAgentPdb(obj, parent, argentInfo, setContentDispositionHeader, req, res);
                 return;
             }
 

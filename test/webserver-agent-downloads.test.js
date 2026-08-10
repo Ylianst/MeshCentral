@@ -22,6 +22,7 @@ const sendMeshTool = require('../webserver/agent-downloads.js').sendMeshTool;
 const sendGenericMeshAction = require('../webserver/agent-downloads.js').sendGenericMeshAction;
 const sendRouteMeshAction = require('../webserver/agent-downloads.js').sendRouteMeshAction;
 const sendAgentSelfInstaller = require('../webserver/agent-downloads.js').sendAgentSelfInstaller;
+const sendAgentPdb = require('../webserver/agent-downloads.js').sendAgentPdb;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -246,4 +247,18 @@ test('agent self installers reject missing MSH authorization', function () {
     const res = { sendStatus: function (status) { this.status = status; } };
     sendAgentSelfInstaller({}, {}, function () { return null; }, function () { }, { query: {} }, res);
     assert.equal(res.status, 401);
+});
+
+test('PDB downloads require an authorized user and resolve symbol paths', function () {
+    const user = { _id: 'user//admin', siteadmin: 0xFFFFFFFF };
+    const state = { users: { [user._id]: user } };
+    const parent = { config: { settings: {} } };
+    const agent = { id: 3, path: 'bin/MeshService-signed.exe' };
+    const res = { sendStatus: function (status) { this.status = status; }, sendFile: function (path) { this.path = path; }, setHeader: function () { } };
+    sendAgentPdb(state, parent, agent, function () { }, { session: { userid: user._id } }, res);
+    assert.equal(res.path, 'bin/MeshService.pdb');
+
+    const denied = { sendStatus: function (status) { this.status = status; } };
+    sendAgentPdb(state, parent, agent, function () { }, {}, denied);
+    assert.equal(denied.status, 404);
 });

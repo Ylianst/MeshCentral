@@ -210,3 +210,18 @@ module.exports.sendAgentSelfInstaller = function (parent, domain, getMshFromRequ
     response.statusCode = 200;
     parent.exeHandler.streamExeWithJavaScript({ platform: agentInfo.platform, sourceFileName: agentInfo.path, destinationStream: response, js: Buffer.from(js, 'utf8'), peinfo: agentInfo.pe });
 };
+
+module.exports.sendAgentPdb = function (state, parent, agentInfo, setContentDispositionHeader, request, response) {
+    const user = module.exports.getSessionUser(state.users, request);
+    if (user == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+    const allowed = (user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(parent.config.settings.agentcoredumpusers)) && (parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0));
+    if (allowed && ((agentInfo.id == 3) || (agentInfo.id == 4))) {
+        const filename = (agentInfo.id == 3) ? 'MeshService.pdb' : 'MeshService64.pdb';
+        const executable = (agentInfo.id == 3) ? 'MeshService-signed.exe' : 'MeshService64-signed.exe';
+        setContentDispositionHeader(response, 'application/octet-stream', filename, null, filename);
+        if (agentInfo.mtime != null) { response.setHeader('Last-Modified', agentInfo.mtime.toUTCString()); }
+        try { response.sendFile(agentInfo.path.split(executable).join(filename)); } catch (ex) { }
+        return;
+    }
+    try { response.sendStatus(404); } catch (ex) { }
+};
