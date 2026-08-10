@@ -2994,7 +2994,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
         if (req.query.id == null) { res.sendStatus(404); return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if (agentSettingsModule.isAgentDownloadLocked(obj.parent.config.settings, domain) && !agentSettingsModule.hasUserSession(req)) { res.sendStatus(401); return; }
 
         // Send a specific mesh agent back
         var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
