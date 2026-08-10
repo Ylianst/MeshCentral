@@ -10,6 +10,7 @@ module.exports.createWebSocketAuth = function (options) {
     const parent = options.parent;
     const getDomain = options.getDomain;
     const checkUserIpAddress = options.checkUserIpAddress;
+    const checkCookieIp = options.checkCookieIp;
     const SITERIGHT_NOMESHCMD = options.noMeshCommandRight;
     const cleanRemoteAddr = options.cleanRemoteAddr;
     const getRandomEightDigitInteger = options.getRandomEightDigitInteger;

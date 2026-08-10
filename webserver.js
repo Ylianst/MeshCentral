@@ -723,6 +723,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         parent: parent,
         getDomain: getDomain,
         checkUserIpAddress: checkUserIpAddress,
+        checkCookieIp: checkCookieIp,
         noMeshCommandRight: SITERIGHT_NOMESHCMD,
         cleanRemoteAddr: cleanRemoteAddr,
         getRandomEightDigitInteger: getRandomEightDigitInteger,

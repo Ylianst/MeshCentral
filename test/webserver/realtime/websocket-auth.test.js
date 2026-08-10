@@ -27,7 +27,12 @@ function createFixture(settings) {
     settings = settings || {};
     const domain = { id: 'tenant' };
     const user = { _id: 'user/tenant/alice', name: 'alice', siteadmin: 0 };
-    const parent = { certificates: { CommonName: 'server.example.com' }, debug: function () { } };
+    const parent = {
+        certificates: { CommonName: 'server.example.com' },
+        debug: function () { },
+        loginCookieEncryptionKey: 'key',
+        decodeCookie: settings.decodeCookie || function () { return null; }
+    };
     const state = {
         parent: parent,
         args: {},
@@ -47,6 +52,7 @@ function createFixture(settings) {
         parent: parent,
         getDomain: function () { return settings.domainMissing ? null : domain; },
         checkUserIpAddress: function () { return settings.domainMissing ? null : domain; },
+        checkCookieIp: settings.checkCookieIp || function (expected, actual) { return expected === actual; },
         noMeshCommandRight: 0x80,
         cleanRemoteAddr: function (value) { return value; },
         getRandomEightDigitInteger: function () { return 12345678; },
@@ -82,6 +88,23 @@ test('existing same-domain sessions resolve their user', function () {
     let authenticatedUser;
     fixture.service.PerformWSSessionAuth(socket(), req, true, function (ws, requestValue, domain, user) { authenticatedUser = user; });
     assert.equal(authenticatedUser, fixture.user);
+});
+
+test('encrypted authentication cookies enforce their bound IP address', function () {
+    const checks = [];
+    const fixture = createFixture({
+        decodeCookie: function () { return { userid: 'user/tenant/alice', domainid: 'tenant', ip: '192.0.2.10' }; },
+        checkCookieIp: function (expected, actual) { checks.push([expected, actual]); return false; }
+    });
+    const req = request();
+    req.query.auth = 'cookie';
+    const ws = socket();
+    let authenticated = false;
+    fixture.service.PerformWSSessionAuth(ws, req, false, function () { authenticated = true; });
+    assert.deepEqual(checks, [['192.0.2.10', '192.0.2.1']]);
+    assert.equal(authenticated, false);
+    assert.equal(ws.closed, true);
+    assert.deepEqual(ws.messages[0], { action: 'close', cause: 'noauth', msg: 'noauth-4' });
 });
 
 test('banned sockets are closed before domain and session processing', function () {
