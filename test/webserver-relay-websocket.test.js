@@ -8,6 +8,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const hasDatabaseFailure = require('../webserver/relay-websocket.js').hasDatabaseFailure;
+const hasRelayConnectivity = require('../webserver/relay-websocket.js').hasRelayConnectivity;
 const isSelectedDeviceGroup = require('../webserver/relay-websocket.js').isSelectedDeviceGroup;
 const openRecordingFile = require('../webserver/relay-websocket.js').openRecordingFile;
 const closeRecordingFile = require('../webserver/relay-websocket.js').closeRecordingFile;
@@ -27,6 +28,16 @@ test('relay node lookups reject database failures and missing result arrays', fu
     assert.equal(hasDatabaseFailure(null, null), true);
     assert.equal(hasDatabaseFailure(null, undefined), true);
     assert.equal(hasDatabaseFailure(null, []), false);
+});
+
+test('AMT relays require CIRA or direct connectivity', function () {
+    assert.equal(hasRelayConnectivity(null), false);
+    assert.equal(hasRelayConnectivity({ connectivity: 0 }), false);
+    assert.equal(hasRelayConnectivity({ connectivity: 1 }), false);
+    assert.equal(hasRelayConnectivity({ connectivity: 2 }), true);
+    assert.equal(hasRelayConnectivity({ connectivity: 4 }), true);
+    assert.equal(hasRelayConnectivity({ connectivity: 3 }), true);
+    assert.equal(hasRelayConnectivity({ connectivity: 5 }), true);
 });
 
 test('relay recording safely handles removed and unselected device groups', function () {

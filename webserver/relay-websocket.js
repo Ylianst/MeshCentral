@@ -9,6 +9,10 @@ module.exports.hasDatabaseFailure = function (error, documents) {
     return (error != null) || !Array.isArray(documents);
 };
 
+module.exports.hasRelayConnectivity = function (connectivityState) {
+    return (connectivityState != null) && ((connectivityState.connectivity & 6) != 0);
+};
+
 module.exports.isSelectedDeviceGroup = function (mesh) {
     return (mesh != null) && (mesh.flags != null) && ((mesh.flags & 4) != 0);
 };

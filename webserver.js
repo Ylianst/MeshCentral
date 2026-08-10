@@ -2204,7 +2204,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
             var conn = 0;
-            if (!state || state.connectivity == 0) { parent.debug('web', 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
+            if (!relayWebSocketModule.hasRelayConnectivity(state)) { parent.debug('web', 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
 
             if (relayWebSocketModule.routeToPeerServer(parent, ws, req, user, cookie)) { return; }
 
