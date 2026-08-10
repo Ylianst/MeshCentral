@@ -112,11 +112,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
-    const userWebStateModule = require('./webserver/user-web-state.js');
-    const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
-    const applicationAccessModule = require('./webserver/application-access.js');
-    const applicationSessionModule = require('./webserver/application-session.js');
+    const applicationRenderModule = require('./webserver/application-render.js');
     const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
@@ -852,6 +849,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const handleResetAccountRequest = accountRecoveryModule.createAccountRecovery({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkEmail: checkEmail, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, getRandomSixDigitInteger: getRandomSixDigitInteger }).handleResetAccountRequest;
 
     const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: handleRootRequestLogin, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
+    const renderApplication = applicationRenderModule.createApplicationRenderer({ state: obj, parent: parent, args: args, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getQueryPortion: getQueryPortion });
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
@@ -966,92 +964,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             const user = obj.users[req.session.userid];
 
             if (applicationEntryModule.handleApplicationEntry(req, res, domain, user, parent.config.settings.maintenancemode)) { return; }
-
-            const xdbGetFunc = function dbGetFunc(err, states) {
-                if (!applicationAccessModule.validateApplicationAccess(dbGetFunc.req, dbGetFunc.res, domain, dbGetFunc.user, parent, getQueryPortion)) { return; }
-
-                const navigationState = applicationSessionModule.consumeNavigationState(dbGetFunc.req, domain);
-                var logoutcontrols = {};
-                if (obj.args.nousers != true) { logoutcontrols.name = user.name; }
-
-                // Give the web page a list of supported server features for this domain and user
-                const allFeatures = obj.getDomainUserFeatures(domain, dbGetFunc.user, dbGetFunc.req);
-
-                // Create a authentication cookie
-                const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
-                const authRelayCookie = obj.parent.encodeCookie({ ruserid: dbGetFunc.user._id, x: req.session.x }, obj.parent.loginCookieEncryptionKey);
-
-                // Send the main web application
-                var extras = (dbGetFunc.req.query.key != null) ? ('&key=' + dbGetFunc.req.query.key) : '';
-                if ((!obj.args.user) && (obj.args.nousers != true) && (nologout == false)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
-                var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-
-                // Clean up the U2F challenge if needed
-                applicationSessionModule.clearU2fChallenge(dbGetFunc.req.session, parent.decryptSessionData, parent.encryptSessionData);
-
-                const amtscanoptions = pageOptionsModule.getAmtScanOptions(domain, obj.common.validateStrArray);
-
-                // Fetch the web state
-                parent.debug('web', 'handleRootRequestEx: success.');
-
-                const webstate = userWebStateModule.resolveUserWebState(obj.filterUserWebState, err, states, domain);
-
-                const customui = pageOptionsModule.encodeCustomUi(domain);
-                const customFiles = pageOptionsModule.encodeCustomFiles(domain);
-
-                const serverFeatures = applicationServerFeaturesModule.getApplicationServerFeatures(domain, obj.db.databaseType);
-
-                const webRtcConfig = pageOptionsModule.getWebRtcConfig(obj.parent.config.settings, args);
-
-                // Load default page style or new modern ui
-                const uiViewMode = userWebStateModule.getUiViewMode(req, domain, webstate);
-                // Refresh the session
-                render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
-                    authCookie: authCookie,
-                    authRelayCookie: authRelayCookie,
-                    viewmode: navigationState.viewmode,
-                    currentNode: navigationState.currentNode,
-                    logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'),
-                    domain: domain.id,
-                    debuglevel: parent.debugLevel,
-                    serverDnsName: obj.getWebServerName(domain, req),
-                    serverRedirPort: args.redirport,
-                    serverPublicPort: httpsPort,
-                    serverfeatures: serverFeatures,
-                    features: allFeatures.features,
-                    features2: allFeatures.features2,
-                    features3: allFeatures.features3,
-                    sessiontime: (args.sessiontime) ? args.sessiontime : 60,
-                    mpspass: args.mpspass,
-                    passRequirements: passRequirements,
-                    customui: customui,
-                    customFiles: customFiles,
-                    webcerthash: Buffer.from(obj.webCertificateFullHashs[domain.id], 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$'),
-                    footer: (domain.footer == null) ? '' : obj.common.replacePlaceholders(domain.footer, {
-                        'serverversion': obj.parent.currentVer,
-                        'servername': obj.getWebServerName(domain, req),
-                        'agentsessions': Object.keys(parent.webserver.wsagents).length,
-                        'connectedusers': Object.keys(parent.webserver.wssessions).length,
-                        'userssessions': Object.keys(parent.webserver.wssessions2).length,
-                        'relaysessions': parent.webserver.relaySessionCount,
-                        'relaycount': Object.keys(parent.webserver.wsrelays).length
-                    }),
-                    webstate: encodeURIComponent(webstate).replace(/'/g, '%27'),
-                    amtscanoptions: amtscanoptions,
-                    pluginHandler: (parent.pluginHandler == null) ? 'null' : parent.pluginHandler.prepExports(),
-                    webRelayPort: ((args.relaydns != null) ? ((typeof args.aliasport == 'number') ? args.aliasport : args.port) : ((parent.webrelayserver != null) ? ((typeof args.relayaliasport == 'number') ? args.relayaliasport : parent.webrelayserver.port) : 0)),
-                    webRelayDns: ((args.relaydns != null) ? args.relaydns[0] : ''),
-                    hidePowerTimeline: (domain.hidepowertimeline ? 'true' : 'false'),
-                    showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
-                    userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
-                    webrtcconfig: webRtcConfig,
-                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
-                }, dbGetFunc.req, domain, uiViewMode), user);
-            }
-            xdbGetFunc.req = req;
-            xdbGetFunc.res = res;
-            xdbGetFunc.user = user;
-            obj.db.Get('ws' + user._id, xdbGetFunc);
+            renderApplication(req, res, domain, user, nologout, passRequirements);
         } else {
             handleLoginChallenge(req, res, domain, passRequirements);
         }
