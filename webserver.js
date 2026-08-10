@@ -114,6 +114,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
     const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
+    const applicationSessionModule = require('./webserver/application-session.js');
     const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
@@ -998,20 +999,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     return;
                 }
 
-                var viewmode = 1;
-                if (dbGetFunc.req.session.viewmode) {
-                    viewmode = dbGetFunc.req.session.viewmode;
-                    delete dbGetFunc.req.session.viewmode;
-                } else if (dbGetFunc.req.query.viewmode) {
-                    viewmode = dbGetFunc.req.query.viewmode;
-                }
-                var currentNode = '';
-                if (dbGetFunc.req.session.currentNode) {
-                    currentNode = dbGetFunc.req.session.currentNode;
-                    delete dbGetFunc.req.session.currentNode;
-                } else if (dbGetFunc.req.query.node) {
-                    currentNode = 'node/' + domain.id + '/' + dbGetFunc.req.query.node;
-                }
+                const navigationState = applicationSessionModule.consumeNavigationState(dbGetFunc.req, domain);
                 var logoutcontrols = {};
                 if (obj.args.nousers != true) { logoutcontrols.name = user.name; }
 
@@ -1028,11 +1016,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
 
                 // Clean up the U2F challenge if needed
-                if (dbGetFunc.req.session.u2f) { delete dbGetFunc.req.session.u2f; };
-                if (dbGetFunc.req.session.e) {
-                    const sec = parent.decryptSessionData(dbGetFunc.req.session.e);
-                    if (sec.u2f != null) { delete sec.u2f; dbGetFunc.req.session.e = parent.encryptSessionData(sec); }
-                }
+                applicationSessionModule.clearU2fChallenge(dbGetFunc.req.session, parent.decryptSessionData, parent.encryptSessionData);
 
                 const amtscanoptions = pageOptionsModule.getAmtScanOptions(domain, obj.common.validateStrArray);
 
@@ -1054,8 +1038,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
                     authRelayCookie: authRelayCookie,
-                    viewmode: viewmode,
-                    currentNode: currentNode,
+                    viewmode: navigationState.viewmode,
+                    currentNode: navigationState.currentNode,
                     logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'),
                     domain: domain.id,
                     debuglevel: parent.debugLevel,
