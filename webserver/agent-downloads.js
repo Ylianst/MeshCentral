@@ -28,3 +28,13 @@ module.exports.getCoreDownloadUrl = function (request, parameter, coreName) {
     const requestPath = request.originalUrl.split('?')[0];
     return requestPath + '?' + parameter + '=' + encodeURIComponent(coreName) + ((request.query.key != null) ? ('&key=' + encodeURIComponent(request.query.key)) : '');
 };
+
+module.exports.sendMeshCoreList = function (parent, request, response) {
+    var html = '<html><head><title>Mesh Agents Cores</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
+    html += '<tr style="background-color:lightgray"><th>Name</th><th>Size</th><th>Comp</th><th>Decompressed Hash SHA384</th></tr>';
+    for (var name in parent.defaultMeshCores) {
+        html += '<tr><td>' + name.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="' + module.exports.getCoreDownloadUrl(request, 'dlcore', name) + '">' + parent.defaultMeshCores[name].length + '</a></td><td style="text-align:right"><a download href="' + module.exports.getCoreDownloadUrl(request, 'dlccore', name) + '">' + parent.defaultMeshCoresDeflate[name].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[name], 'binary').toString('hex') + '</td></tr>';
+    }
+    html += '</table><a href="' + request.originalUrl.split('?')[0] + (request.query.key ? ('?key=' + encodeURIComponent(request.query.key)) : '') + '">Mesh Agents</a></body></html>';
+    response.send(html);
+};

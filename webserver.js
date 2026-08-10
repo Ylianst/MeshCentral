@@ -3255,14 +3255,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             }
 
             if (req.query.cores != null) {
-                // Send list of agent cores
-                var response = '<html><head><title>Mesh Agents Cores</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
-                response += '<tr style="background-color:lightgray"><th>Name</th><th>Size</th><th>Comp</th><th>Decompressed Hash SHA384</th></tr>';
-                for (var i in parent.defaultMeshCores) {
-                    response += '<tr><td>' + i.split(' ').join('&nbsp;') + '</td><td style="text-align:right"><a download href="' + agentDownloadsModule.getCoreDownloadUrl(req, 'dlcore', i) + '">' + parent.defaultMeshCores[i].length + '</a></td><td style="text-align:right"><a download href="' + agentDownloadsModule.getCoreDownloadUrl(req, 'dlccore', i) + '">' + parent.defaultMeshCoresDeflate[i].length + '</a></td><td>' + Buffer.from(parent.defaultMeshCoresHash[i], 'binary').toString('hex') + '</td></tr>';
-                }
-                response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
-                res.send(response);
+                agentDownloadsModule.sendMeshCoreList(parent, req, res);
                 return;
             }
 

@@ -12,6 +12,7 @@ const hasDatabaseFailure = require('../webserver/agent-downloads.js').hasDatabas
 const getAgentInfo = require('../webserver/agent-downloads.js').getAgentInfo;
 const getMeshRelayUrl = require('../webserver/agent-downloads.js').getMeshRelayUrl;
 const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDownloadUrl;
+const sendMeshCoreList = require('../webserver/agent-downloads.js').sendMeshCoreList;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -49,4 +50,17 @@ test('agent actions build valid relay URLs for root and path domains', function 
 test('MeshCore links preserve the request path and encode query values', function () {
     assert.equal(getCoreDownloadUrl({ originalUrl: '/meshagents?cores=1', query: {} }, 'dlcore', 'Core 1'), '/meshagents?dlcore=Core%201');
     assert.equal(getCoreDownloadUrl({ originalUrl: '/tenant/meshagents?cores=1', query: { key: 'a&b' } }, 'dlccore', 'Core 1'), '/tenant/meshagents?dlccore=Core%201&key=a%26b');
+});
+
+test('MeshCore listings contain download links, sizes and hashes', function () {
+    const parent = {
+        defaultMeshCores: { 'Core 1': Buffer.alloc(8) },
+        defaultMeshCoresDeflate: { 'Core 1': Buffer.alloc(4) },
+        defaultMeshCoresHash: { 'Core 1': Buffer.from([1, 2]) }
+    };
+    const res = { send: function (body) { this.body = body; } };
+    sendMeshCoreList(parent, { originalUrl: '/tenant/meshagents?cores=1', query: { key: 'secret' } }, res);
+    assert.match(res.body, /href="\/tenant\/meshagents\?dlcore=Core%201&amp;key=secret"|href="\/tenant\/meshagents\?dlcore=Core%201&key=secret"/);
+    assert.match(res.body, />8<\/a>/);
+    assert.match(res.body, /0102/);
 });
