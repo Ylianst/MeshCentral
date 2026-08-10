@@ -853,7 +853,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
         // Authenticate the user
         obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint, loginOptions) {
-            if (userid) {
+            if (userid && obj.users[userid]) {
                 var user = obj.users[userid];
 
                 // Check if we are in maintenance mode
