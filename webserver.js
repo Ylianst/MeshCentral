@@ -860,12 +860,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         var nologout = false;
         res.set({ 'Cache-Control': 'no-store' });
 
-        // Check if we have an incomplete domain name in the path
-        if ((domain.id != '') && (domain.dns == null) && (req.url.split('/').length == 2)) {
-            parent.debug('web', 'handleRootRequestEx: incomplete domain name in the path.');
-            res.redirect(domain.url + getQueryPortion(req)); // BAD***
-            return;
-        }
+        if (rootRequests.redirectIncompleteDomainPath(req, res, domain)) { return; }
 
         const automaticAuthentication = authenticateAutomatically(req, domain);
         if (!automaticAuthentication && (domain.sspi != null)) {

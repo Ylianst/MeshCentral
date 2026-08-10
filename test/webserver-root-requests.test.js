@@ -69,6 +69,20 @@ test('login pages and authenticated sessions skip anonymous redirects', function
     assert.equal(service.redirectUnknownUser({ url: '/tenant/', session: { userid: 'user/tenant/alice' } }, res, { unknownuserrootredirect: 'https://portal.example/' }), false);
 });
 
+test('incomplete path-based domain URLs redirect to the domain root', function () {
+    const redirects = [];
+    const service = createRootRequests({ debug: function () { }, getQueryPortion: function () { return '?key=value'; } });
+    assert.equal(service.redirectIncompleteDomainPath({ url: '/tenant', query: {} }, { redirect: function (url) { redirects.push(url); } }, { id: 'tenant', url: '/tenant/' }), true);
+    assert.deepEqual(redirects, ['/tenant/?key=value']);
+});
+
+test('DNS domains and complete paths skip incomplete-domain redirects', function () {
+    const service = createRootRequests({ debug: function () { }, getQueryPortion: function () { return ''; } });
+    const response = { redirect: function () { throw new Error('unexpected redirect'); } };
+    assert.equal(service.redirectIncompleteDomainPath({ url: '/tenant', query: {} }, response, { id: 'tenant', dns: 'tenant.example.com', url: '/' }), false);
+    assert.equal(service.redirectIncompleteDomainPath({ url: '/tenant/', query: {} }, response, { id: 'tenant', url: '/tenant/' }), false);
+});
+
 test('maintenance mode renders the domain message page', function () {
     const renders = [];
     const service = createRootRequests({

@@ -57,6 +57,13 @@ module.exports.createRootRequests = function (options) {
         return true;
     }
 
+    function redirectIncompleteDomainPath(req, res, domain) {
+        if ((domain.id == '') || (domain.dns != null) || (req.url.split('/').length != 2)) { return false; }
+        debug('web', 'handleRootRequestEx: incomplete domain name in the path.');
+        res.redirect(domain.url + getQueryPortion(req));
+        return true;
+    }
+
     function handleMaintenance(req, res, domain) {
         if ((getMaintenanceMode() == null) || (req.query.loginscreen === '1')) { return false; }
         debug('web', 'handleLoginRequest: Server under maintenance.');
@@ -192,5 +199,5 @@ module.exports.createRootRequests = function (options) {
         handleRootRequestEx(req, res, domain, direct);
     }
 
-    return { handleRootRequest: handleRootRequest, handleRootPostRequest: handleRootPostRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, handlePushLogin: handlePushLogin, getRootCertLink: getRootCertLink };
+    return { handleRootRequest: handleRootRequest, handleRootPostRequest: handleRootPostRequest, checkRootRequest: checkRootRequest, handleRootRedirect: handleRootRedirect, redirectUnknownUser: redirectUnknownUser, redirectIncompleteDomainPath: redirectIncompleteDomainPath, handleMaintenance: handleMaintenance, handleSspi: handleSspi, handleUrlCredentials: handleUrlCredentials, handleLoginToken: handleLoginToken, findPushAuthUser: findPushAuthUser, handlePushLogin: handlePushLogin, getRootCertLink: getRootCertLink };
 };
