@@ -15,6 +15,9 @@ const setupSessionRecording = require('../webserver/relay-websocket.js').setupSe
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 const finishSessionRecording = require('../webserver/relay-websocket.js').finishSessionRecording;
 const logRelaySessionEnd = require('../webserver/relay-websocket.js').logRelaySessionEnd;
+const writeOrQueueCiraRelayData = require('../webserver/relay-websocket.js').writeOrQueueCiraRelayData;
+const flushCiraRelayData = require('../webserver/relay-websocket.js').flushCiraRelayData;
+const closeCiraRelayTransport = require('../webserver/relay-websocket.js').closeCiraRelayTransport;
 const setupDirectRelayTransport = require('../webserver/relay-websocket.js').setupDirectRelayTransport;
 const recordRelayStartAndUserAccess = require('../webserver/relay-websocket.js').recordRelayStartAndUserAccess;
 
@@ -135,6 +138,28 @@ test('relay session end logs include duration and routed address', function () {
     assert.equal(events[0][2].msgid, 9);
     assert.equal(events[0][2].msgArgs[2], '192.0.2.20');
     assert.equal(events[0][2].protocol, 101);
+});
+
+test('pending TLS CIRA data is retained until the relay client is ready', function () {
+    const writes = [];
+    const websocket = {};
+    assert.equal(writeOrQueueCiraRelayData(websocket, Buffer.from('first')), true);
+    assert.equal(writeOrQueueCiraRelayData(websocket, Buffer.from('second')), true);
+    assert.equal(websocket.pendingRelayData.length, 2);
+    websocket.forwardclient = { write: function (data) { writes.push(data.toString()); } };
+    assert.equal(flushCiraRelayData(websocket), 2);
+    assert.deepEqual(writes, ['first', 'second']);
+    assert.equal(websocket.pendingRelayData, undefined);
+});
+
+test('closing pending TLS CIRA relays releases their channel and rejects queued data', function () {
+    var closes = 0;
+    const websocket = { pendingRelayData: [Buffer.from('pending')], forwardchannel: { close: function () { closes++; } } };
+    closeCiraRelayTransport(websocket);
+    assert.equal(closes, 1);
+    assert.equal(websocket.forwardchannel, undefined);
+    assert.equal(websocket.pendingRelayData, undefined);
+    assert.equal(writeOrQueueCiraRelayData(websocket, Buffer.from('late')), false);
 });
 
 test('direct relay transport connects plain AMT sockets and installs HTTP interception', function () {

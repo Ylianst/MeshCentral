@@ -2226,6 +2226,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     // Perform TLS
                     var ser = new SerialTunnel();
                     var chnl = parent.mpsserver.SetupChannel(ciraconn, port);
+                    ws.forwardchannel = chnl;
 
                     // Let's chain up the TLSSocket <-> SerialTunnel <-> CIRA APF (chnl)
                     // Anything that needs to be forwarded by SerialTunnel will be encapsulated by chnl write
@@ -2239,6 +2240,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                         parent.debug('webrelay', 'Relay TLS CIRA state change', state);
                         if (state == 0) { try { ws.close(); } catch (e) { } }
                         if (state == 2) {
+                            if (ws.relayTransportClosed === true) { return; }
                             // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
                             const tlsoptions = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: constants.SSL_OP_NO_SSLv2 | constants.SSL_OP_NO_SSLv3 | constants.SSL_OP_NO_COMPRESSION | constants.SSL_OP_CIPHER_SERVER_PREFERENCE | constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
                             if (req.query.tls1only == 1) {
@@ -2261,6 +2263,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                             // If TLS is on, forward it through TLSSocket
                             ws.forwardclient = tlsock;
                             ws.forwardclient.xtls = 1;
+                            delete ws.forwardchannel;
+                            relayWebSocketModule.flushCiraRelayData(ws);
 
                             ws.forwardclient.onStateChange = function (ciraconn, state) {
                                 parent.debug('webrelay', 'Relay CIRA state change', state);
@@ -2329,10 +2333,10 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     // Log to recording file
                     if (ws.logfile == null) {
                         // Forward data to the associated TCP connection.
-                        try { ws.forwardclient.write(data); } catch (ex) { }
+                        relayWebSocketModule.writeOrQueueCiraRelayData(ws, data);
                     } else {
                         // Log to recording file
-                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 2, data, function () { try { ws.forwardclient.write(data); } catch (ex) { } });
+                        obj.meshRelayHandler.recordingEntry(ws.logfile, 2, 2, data, function () { relayWebSocketModule.writeOrQueueCiraRelayData(ws, data); });
                     }
                 });
 
@@ -2343,12 +2347,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
                     relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     // Websocket closed, close the CIRA channel and TLS session.
-                    if (ws.forwardclient) {
-                        if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
-                        if (ws.forwardclient.end) { ws.forwardclient.end(); }          // TLS, close the TLS session
-                        if (ws.forwardclient.chnl) { ws.forwardclient.chnl.close(); }  // TLS, close the CIRA channel
-                        delete ws.forwardclient;
-                    }
+                    relayWebSocketModule.closeCiraRelayTransport(ws);
 
                     relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 5 });
                 });
@@ -2359,12 +2358,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
                     relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     // Websocket closed, close the CIRA channel and TLS session.
-                    if (ws.forwardclient) {
-                        if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
-                        if (ws.forwardclient.end) { ws.forwardclient.end(); }          // TLS, close the TLS session
-                        if (ws.forwardclient.chnl) { ws.forwardclient.chnl.close(); }  // TLS, close the CIRA channel
-                        delete ws.forwardclient;
-                    }
+                    relayWebSocketModule.closeCiraRelayTransport(ws);
 
                     relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 5 });
                 });

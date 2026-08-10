@@ -156,6 +156,42 @@ module.exports.logRelaySessionEnd = function (state, parent, domain, user, webso
     return true;
 };
 
+module.exports.writeOrQueueCiraRelayData = function (websocket, data) {
+    if (websocket.relayTransportClosed === true) { return false; }
+    if (websocket.forwardclient != null) {
+        try { websocket.forwardclient.write(data); } catch (ex) { }
+    } else {
+        if (websocket.pendingRelayData == null) { websocket.pendingRelayData = []; }
+        websocket.pendingRelayData.push(data);
+    }
+    return true;
+};
+
+module.exports.flushCiraRelayData = function (websocket) {
+    const pendingRelayData = websocket.pendingRelayData;
+    delete websocket.pendingRelayData;
+    if (!Array.isArray(pendingRelayData) || (websocket.forwardclient == null)) { return 0; }
+    for (var i = 0; i < pendingRelayData.length; i++) {
+        try { websocket.forwardclient.write(pendingRelayData[i]); } catch (ex) { }
+    }
+    return pendingRelayData.length;
+};
+
+module.exports.closeCiraRelayTransport = function (websocket) {
+    websocket.relayTransportClosed = true;
+    delete websocket.pendingRelayData;
+    const forwardclient = websocket.forwardclient;
+    const forwardchannel = websocket.forwardchannel;
+    delete websocket.forwardclient;
+    delete websocket.forwardchannel;
+    if (forwardclient != null) {
+        if (forwardclient.close) { forwardclient.close(); }
+        if (forwardclient.end) { forwardclient.end(); }
+        if (forwardclient.chnl) { forwardclient.chnl.close(); }
+    }
+    if ((forwardchannel != null) && ((forwardclient == null) || (forwardclient.chnl !== forwardchannel))) { forwardchannel.close(); }
+};
+
 module.exports.setupDirectRelayTransport = function (options) {
     const state = options.state;
     const parent = options.parent;
