@@ -99,6 +99,7 @@ const pluginRequestsModule = require('./webserver/plugin-requests.js');
 const deviceCleanupModule = require('./webserver/device-cleanup.js');
 const amtEventsModule = require('./webserver/amt-events.js');
 const agentDownloadsModule = require('./webserver/agent-downloads.js');
+const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -2890,7 +2891,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
 
         // Setup the response output
         var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
-        archive.on('error', function (err) { throw err; });
+        archive.on('error', function (err) { macosAgentDownloadModule.handleArchiveError(parent, res, err); });
 
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
