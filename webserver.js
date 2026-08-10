@@ -84,8 +84,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
     const domainStaticModule = require('./webserver/domain-static.js');
-    const domainRouteRegistrationModule = require('./webserver/domain-route-registration.js');
     const serverFinalizationModule = require('./webserver/server-finalization.js');
+    const httpRouteFinalizationModule = require('./webserver/http-route-finalization.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -1077,13 +1077,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 }
             });
             const domainStatic = domainStaticModule.createDomainStatic({ state: obj, parent: parent, getDomain: getDomain });
-            if (parent.pluginHandler != null) {
-                parent.pluginHandler.callHook('hook_setupHttpHandlers', obj, parent);
-            }
-            if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
-            obj.webRelayRouter = webRelay.setupRouter();
-            domainRouteRegistrationModule.registerDomainRoutes(parent.config.domains, [basicRoutes, relayRoutes, resourceRoutes, applicationRoutes, passportRoutes, duoRoutes, domainAssets, agentRoutes, domainStatic]);
-            domainStatic.startDisconnectionCleanup();
+            httpRouteFinalizationModule.finalizeHttpRoutes({ state: obj, parent: parent, webRelay: webRelay, routeGroups: [basicRoutes, relayRoutes, resourceRoutes, applicationRoutes, passportRoutes, duoRoutes, domainAssets, agentRoutes, domainStatic], domainStatic: domainStatic });
         }
     }
 
