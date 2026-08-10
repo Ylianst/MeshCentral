@@ -2206,26 +2206,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             var conn = 0;
             if (!state || state.connectivity == 0) { parent.debug('web', 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
 
-            // Check what server needs to handle this connection
-            if ((obj.parent.multiServer != null) && ((cookie == null) || (cookie.ps != 1))) { // If a cookie is provided and is from a peer server, don't allow the connection to jump again to a different server
-                var server = obj.parent.GetRoutingServerId(req.query.host, 2); // Check for Intel CIRA connection
-                if (server != null) {
-                    if (server.serverid != obj.parent.serverId) {
-                        // Do local Intel CIRA routing using a different server
-                        parent.debug('web', 'Route Intel AMT CIRA connection to peer server: ' + server.serverid);
-                        obj.parent.multiServer.createPeerRelay(ws, req, server.serverid, user);
-                        return;
-                    }
-                } else {
-                    server = obj.parent.GetRoutingServerId(req.query.host, 4); // Check for local Intel AMT connection
-                    if ((server != null) && (server.serverid != obj.parent.serverId)) {
-                        // Do local Intel AMT routing using a different server
-                        parent.debug('web', 'Route Intel AMT direct connection to peer server: ' + server.serverid);
-                        obj.parent.multiServer.createPeerRelay(ws, req, server.serverid, user);
-                        return;
-                    }
-                }
-            }
+            if (relayWebSocketModule.routeToPeerServer(parent, ws, req, user, cookie)) { return; }
 
             relayWebSocketModule.setupSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, request: req, node: node, ciraConnection: ciraconn, connectivity: conn });
 

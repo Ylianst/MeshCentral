@@ -11,6 +11,7 @@ const hasDatabaseFailure = require('../webserver/relay-websocket.js').hasDatabas
 const isSelectedDeviceGroup = require('../webserver/relay-websocket.js').isSelectedDeviceGroup;
 const openRecordingFile = require('../webserver/relay-websocket.js').openRecordingFile;
 const setupSessionRecording = require('../webserver/relay-websocket.js').setupSessionRecording;
+const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 
 test('relay node lookups reject database failures and missing result arrays', function () {
     assert.equal(hasDatabaseFailure(new Error('database unavailable'), []), true);
@@ -69,4 +70,23 @@ test('relay recording skips removed selected device groups', function () {
         connectivity: 0
     });
     assert.equal(websocket.logfile, undefined);
+});
+
+test('relay routing forwards remote CIRA and direct connections to peers', function () {
+    const calls = [];
+    const parent = {
+        serverId: 'local',
+        multiServer: { createPeerRelay: function () { calls.push(Array.from(arguments)); } },
+        GetRoutingServerId: function (nodeId, connectionType) { return (connectionType == 2) ? null : { serverid: 'remote' }; },
+        debug: function () { }
+    };
+    const ws = {}, req = { query: { host: 'node//node1' } }, user = {};
+    assert.equal(routeToPeerServer(parent, ws, req, user, null), true);
+    assert.equal(calls[0][2], 'remote');
+    assert.equal(calls[0][3], user);
+});
+
+test('relay routing prevents peer cookies from hopping again', function () {
+    const parent = { multiServer: { createPeerRelay: function () { throw new Error('unexpected'); } } };
+    assert.equal(routeToPeerServer(parent, {}, { query: {} }, {}, { ps: 1 }), false);
 });

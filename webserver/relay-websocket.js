@@ -79,3 +79,23 @@ module.exports.setupSessionRecording = function (options) {
     websocket.logfile.icon = node.icon;
     if (request.query.p == 2) { websocket.send(Buffer.from(String.fromCharCode(0xF0), 'binary')); }
 };
+
+module.exports.routeToPeerServer = function (parent, websocket, request, user, cookie) {
+    if ((parent.multiServer == null) || ((cookie != null) && (cookie.ps == 1))) { return false; }
+    var server = parent.GetRoutingServerId(request.query.host, 2);
+    if (server != null) {
+        if (server.serverid != parent.serverId) {
+            parent.debug('web', 'Route Intel AMT CIRA connection to peer server: ' + server.serverid);
+            parent.multiServer.createPeerRelay(websocket, request, server.serverid, user);
+            return true;
+        }
+    } else {
+        server = parent.GetRoutingServerId(request.query.host, 4);
+        if ((server != null) && (server.serverid != parent.serverId)) {
+            parent.debug('web', 'Route Intel AMT direct connection to peer server: ' + server.serverid);
+            parent.multiServer.createPeerRelay(websocket, request, server.serverid, user);
+            return true;
+        }
+    }
+    return false;
+};
