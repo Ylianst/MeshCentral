@@ -78,7 +78,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
     const serverFinalizationModule = require('./webserver/server-finalization.js');
-    const startupDataValidationModule = require('./webserver/startup-data-validation.js');
+    const startupDataModule = require('./webserver/startup-data.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -667,92 +667,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     getEmailLanguageList();
 
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
-    // Fetch all users from the database, keep this in memory
-    obj.db.GetAllType('user', function (err, docs) {
-        if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'users', function (source, message) { parent.debug(source, message); })) { return; }
-        obj.common.unEscapeAllLinksFieldName(docs);
-        var domainUserCount = {}, i = 0;
-        for (i in parent.config.domains) { domainUserCount[i] = 0; }
-        for (i in docs) { var u = obj.users[docs[i]._id] = docs[i]; domainUserCount[u.domain]++; }
-        for (i in parent.config.domains) {
-            if ((parent.config.domains[i].share == null) && (domainUserCount[i] == 0)) {
-                // If newaccounts is set to no new accounts, but no accounts exists, temporarily allow account creation.
-                //if ((parent.config.domains[i].newaccounts === 0) || (parent.config.domains[i].newaccounts === false)) { parent.config.domains[i].newaccounts = 2; }
-                console.log('Server ' + ((i == '') ? '' : (i + ' ')) + 'has no users, next new account will be site administrator.');
-            }
-        }
-
-        // Fetch all device groups (meshes) from the database, keep this in memory
-        // As we load things in memory, we will also be doing some cleaning up.
-        // We will not save any clean up in the database right now, instead it will be saved next time there is a change.
-        obj.db.GetAllType('mesh', function (err, docs) {
-            if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'meshes', function (source, message) { parent.debug(source, message); })) { return; }
-            obj.common.unEscapeAllLinksFieldName(docs);
-            for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
-
-            // Fetch all user groups from the database, keep this in memory
-            obj.db.GetAllType('ugrp', function (err, docs) {
-                if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'user groups', function (source, message) { parent.debug(source, message); })) { return; }
-                obj.common.unEscapeAllLinksFieldName(docs);
-
-                // Perform user group link cleanup
-                for (var i in docs) {
-                    const ugrp = docs[i];
-                    if (ugrp.links != null) {
-                        for (var j in ugrp.links) {
-                            if (j.startsWith('user/') && (obj.users[j] == null)) { delete ugrp.links[j]; } // User group has a link to a user that does not exist
-                            else if (j.startsWith('mesh/') && ((obj.meshes[j] == null) || (obj.meshes[j].deleted != null))) { delete ugrp.links[j]; } // User has a link to a device group that does not exist
-                        }
-                    }
-                    obj.userGroups[docs[i]._id] = docs[i]; // Get all user groups
-                }
-
-                // Mapping between users and groups
-                for (var ugrpId in obj.userGroups) {
-                    const ugrp = obj.userGroups[ugrpId];
-                    if (ugrp.links != null) {
-                        for (var userId in ugrp.links) {
-                            if (userId.startsWith('user/') && (obj.users[userId] != null)) {
-                                const user = obj.users[userId];
-                                if (user.links == null) { user.links = {}; }
-                                if (user.links[ugrpId] == null) {
-                                    // Adding group link to user
-                                    user.links[ugrpId] = { rights: ugrp.links[userId].rights || 1 };
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Perform device group link cleanup
-                for (var i in obj.meshes) {
-                    const mesh = obj.meshes[i];
-                    if (mesh.links != null) {
-                        for (var j in mesh.links) {
-                            if (j.startsWith('ugrp/') && (obj.userGroups[j] == null)) { delete mesh.links[j]; } // Device group has a link to a user group that does not exist
-                            else if (j.startsWith('user/') && (obj.users[j] == null)) { delete mesh.links[j]; } // Device group has a link to a user that does not exist
-                        }
-                    }
-                }
-
-                // Perform user link cleanup
-                for (var i in obj.users) {
-                    const user = obj.users[i];
-                    if (user.links != null) {
-                        for (var j in user.links) {
-                            if (j.startsWith('ugrp/') && (obj.userGroups[j] == null)) { delete user.links[j]; } // User has a link to a user group that does not exist
-                            else if (j.startsWith('mesh/') && ((obj.meshes[j] == null) || (obj.meshes[j].deleted != null))) { delete user.links[j]; } // User has a link to a device group that does not exist
-                            //else if (j.startsWith('node/') && (obj.nodes[j] == null)) { delete user.links[j]; } // TODO
-                        }
-                        //if (Object.keys(user.links).length == 0) { delete user.links; }
-                    }
-                }
-
-                // We loaded the users, device groups and user group state, start the server
-                serverStart();
-            });
-        });
-    });
+    startupDataModule.createStartupDataLoader({ state: obj, parent: parent, onReady: serverStart }).load();
 
     obj.cleanDevice = deviceCleanupModule.createDeviceCleaner(obj);
 
