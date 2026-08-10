@@ -84,6 +84,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
     const domainStaticModule = require('./webserver/domain-static.js');
+    const domainRouteRegistrationModule = require('./webserver/domain-route-registration.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -1079,23 +1080,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             }
             if (parent.multiServer != null) { obj.app.ws('/meshserver.ashx', function (ws, req) { parent.multiServer.CreatePeerInServer(parent.multiServer, ws, req, obj.args.tlsoffload == null); }); }
             obj.webRelayRouter = webRelay.setupRouter();
-            for (var i in parent.config.domains) {
-                if ((parent.config.domains[i].dns != null) || (parent.config.domains[i].share != null)) { continue; } // This is a subdomain with a DNS name, no added HTTP bindings needed.
-                var domain = parent.config.domains[i];
-                var url = domain.url;
-                basicRoutes.register(domain);
-                relayRoutes.register(domain);
-                resourceRoutes.register(domain);
-                applicationRoutes.register(domain);
-
-                passportRoutes.register(domain);
-
-                duoRoutes.register(domain);
-                domainAssets.register(domain);
-
-                agentRoutes.register(domain);
-                domainStatic.register(domain);
-            }
+            domainRouteRegistrationModule.registerDomainRoutes(parent.config.domains, [basicRoutes, relayRoutes, resourceRoutes, applicationRoutes, passportRoutes, duoRoutes, domainAssets, agentRoutes, domainStatic]);
             domainStatic.startDisconnectionCleanup();
         }
         function finalizeWebserver() {
