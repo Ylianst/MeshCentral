@@ -209,6 +209,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         meshes: obj.meshes,
         userGroups: obj.userGroups
     }));
+    Object.assign(obj, passwordHistoryModule.createPasswordHistory({
+        debug: function (source, message) { parent.debug(source, message); },
+        require: require
+    }));
     const storage = storageModule.createStorage({
         fs: obj.fs,
         path: obj.path,
