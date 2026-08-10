@@ -53,6 +53,7 @@ require('./webserver-login-request.test.js');
 require('./webserver-login-challenge.test.js');
 require('./webserver-user-web-state.test.js');
 require('./webserver-application-server-features.test.js');
+require('./webserver-page-options.test.js');
 require('./webserver-password-history.test.js');
 require('./webserver-password-requirements.test.js');
 require('./webserver-password-reset.test.js');

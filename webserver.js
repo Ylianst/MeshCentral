@@ -114,6 +114,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
     const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
+    const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
@@ -1033,34 +1034,19 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     if (sec.u2f != null) { delete sec.u2f; dbGetFunc.req.session.e = parent.encryptSessionData(sec); }
                 }
 
-                // Intel AMT Scanning options
-                var amtscanoptions = '';
-                if (typeof domain.amtscanoptions == 'string') { amtscanoptions = encodeURIComponent(domain.amtscanoptions); }
-                else if (obj.common.validateStrArray(domain.amtscanoptions)) { domain.amtscanoptions = domain.amtscanoptions.join(','); amtscanoptions = encodeURIComponent(domain.amtscanoptions); }
+                const amtscanoptions = pageOptionsModule.getAmtScanOptions(domain, obj.common.validateStrArray);
 
                 // Fetch the web state
                 parent.debug('web', 'handleRootRequestEx: success.');
 
                 const webstate = userWebStateModule.resolveUserWebState(obj.filterUserWebState, err, states, domain);
 
-                // Custom user interface
-                var customui = '';
-                if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
-
-                // Custom files (CSS and JS)
-                var customFiles = '';
-                if (domain.customFiles != null) { 
-                    customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
-                } else if (domain.customfiles != null) {
-                    customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
-                }
+                const customui = pageOptionsModule.encodeCustomUi(domain);
+                const customFiles = pageOptionsModule.encodeCustomFiles(domain);
 
                 const serverFeatures = applicationServerFeaturesModule.getApplicationServerFeatures(domain, obj.db.databaseType);
 
-                // Get WebRTC configuration
-                var webRtcConfig = null;
-                if (obj.parent.config.settings && obj.parent.config.settings.webrtcconfig && (typeof obj.parent.config.settings.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(obj.parent.config.settings.webrtcconfig)).replace(/'/g, '%27'); }
-                else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
+                const webRtcConfig = pageOptionsModule.getWebRtcConfig(obj.parent.config.settings, args);
 
                 // Load default page style or new modern ui
                 const uiViewMode = userWebStateModule.getUiViewMode(req, domain, webstate);
@@ -1185,17 +1171,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
         }
 
-        // Custom user interface
-        var customui = '';
-        if (domain.customui != null) { customui = encodeURIComponent(JSON.stringify(domain.customui)); }
+        const customui = pageOptionsModule.encodeCustomUi(domain);
 
-        // Custom files (CSS and JS)
-        var customFiles = '';
-        if (domain.customFiles != null) { 
-            customFiles = encodeURIComponent(JSON.stringify(domain.customFiles)); 
-        } else if (domain.customfiles != null) {
-            customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
-        }
+        const customFiles = pageOptionsModule.encodeCustomFiles(domain);
 
         // Get two-factor screen timeout
         var twoFactorTimeout = 300000; // Default is 5 minutes, 0 for no timeout.
