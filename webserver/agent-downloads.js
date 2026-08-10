@@ -379,3 +379,73 @@ module.exports.handleCoreDumpRequest = function (state, parent, domain, user, se
     response.send(html);
     return { allowed: true, handled: true };
 };
+
+module.exports.createAgentDownloadHandler = function (options) {
+    const state = options.state;
+    const parent = options.parent;
+    const rootDirectory = options.rootDirectory;
+    const getDomain = options.getDomain;
+    const checkUserIpAddress = options.checkUserIpAddress;
+    const getMshFromRequest = options.getMshFromRequest;
+    const checkAgentColorString = options.checkAgentColorString;
+    const setContentDispositionHeader = options.setContentDispositionHeader;
+    const isAgentDownloadLocked = options.isAgentDownloadLocked;
+    const hasUserSession = options.hasUserSession;
+
+    return function handleMeshAgentRequest(request, response) {
+        var domain = getDomain(request, response);
+        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { response.sendStatus(404); } catch (ex) { } return; }
+        if (isAgentDownloadLocked(parent.config.settings, domain) && !hasUserSession(request)) { response.sendStatus(401); return; }
+
+        if ((request.query.meshinstall != null) && (request.query.id != null)) {
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(request.query.key) == -1)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            module.exports.sendAgentSelfInstaller(parent, domain, getMshFromRequest, setContentDispositionHeader, request, response);
+        } else if (request.query.id != null) {
+            const agentInfo = module.exports.getAgentInfo(parent.meshAgentBinaries, domain.meshAgentBinaries, request.query.id);
+            if (agentInfo == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+            if (request.query.pdb == 1) { module.exports.sendAgentPdb(state, parent, agentInfo, setContentDispositionHeader, request, response); return; }
+            if ((request.query.meshid == null) || (agentInfo.platform != 'win32')) {
+                module.exports.sendAgentBinary(domain, agentInfo, setContentDispositionHeader, request, response);
+            } else {
+                module.exports.sendCustomizedWindowsAgent(state, parent, domain, agentInfo, checkAgentColorString, setContentDispositionHeader, request, response);
+            }
+        } else if (request.query.script != null) {
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(request.query.key) == -1)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            module.exports.sendAgentInstallScript(state, parent, domain, setContentDispositionHeader, request, response);
+        } else if (request.query.meshcmd != null) {
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(request.query.key) == -1)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            module.exports.sendMeshCmd(state, parent, domain, setContentDispositionHeader, request, response);
+        } else if (request.query.meshaction != null) {
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(request.query.key) == -1)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            var user = module.exports.getSessionUser(state.users, request);
+            if (user == null) {
+                const cookie = parent.decodeCookie(request.query.auth, parent.loginCookieEncryptionKey);
+                if (cookie == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+                if (cookie.download == request.query.meshaction) { module.exports.sendMeshTool(state, parent, rootDirectory, setContentDispositionHeader, request.query.meshaction, response); return; }
+                if (cookie.userid == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+                user = state.users[cookie.userid];
+                if (user == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+            }
+            if ((request.query.meshaction == 'route') && (request.query.nodeid != null)) {
+                module.exports.sendRouteMeshAction(state, domain, user, setContentDispositionHeader, request, response);
+            } else if (request.query.meshaction == 'generic') {
+                module.exports.sendGenericMeshAction(state, domain, user, setContentDispositionHeader, request, response);
+            } else if (!module.exports.sendMeshTool(state, parent, rootDirectory, setContentDispositionHeader, request.query.meshaction, response)) {
+                try { response.sendStatus(401); } catch (ex) { }
+            }
+        } else {
+            domain = checkUserIpAddress(request, response);
+            if (domain == null) return;
+            if ((domain.loginkey != null) && (domain.loginkey.indexOf(request.query.key) == -1)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            if ((request.session == null) || (request.session.userid == null)) { try { response.sendStatus(404); } catch (ex) { } return; }
+            const user = (typeof request.session.userid == 'string') ? state.users[request.session.userid] : null;
+            if (user == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+            const coreDumpResult = module.exports.handleCoreDumpRequest(state, parent, domain, user, setContentDispositionHeader, request, response);
+            if (coreDumpResult.handled) { return; }
+            if (request.query.cores != null) { module.exports.sendMeshCoreList(parent, request, response); return; }
+            if (request.query.dlcore != null) { module.exports.sendMeshCore(parent, setContentDispositionHeader, request, response, false); return; }
+            if (request.query.dlccore != null) { module.exports.sendMeshCore(parent, setContentDispositionHeader, request, response, true); return; }
+            module.exports.sendAgentList(parent, domain, user, request, response, coreDumpResult.allowed);
+        }
+    };
+};

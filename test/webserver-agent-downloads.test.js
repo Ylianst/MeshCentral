@@ -26,6 +26,7 @@ const sendAgentPdb = require('../webserver/agent-downloads.js').sendAgentPdb;
 const sendAgentBinary = require('../webserver/agent-downloads.js').sendAgentBinary;
 const sendCustomizedWindowsAgent = require('../webserver/agent-downloads.js').sendCustomizedWindowsAgent;
 const handleCoreDumpRequest = require('../webserver/agent-downloads.js').handleCoreDumpRequest;
+const createAgentDownloadHandler = require('../webserver/agent-downloads.js').createAgentDownloadHandler;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -344,4 +345,33 @@ test('core dump requests list authorized dumps with domain agent metadata', func
 test('core dump requests remain inactive for unauthorized users', function () {
     const result = handleCoreDumpRequest({}, { config: { settings: { agentcoredump: true, agentcoredumpusers: [] } } }, {}, { _id: 'user//alice', siteadmin: 0 }, function () { }, { query: { dumps: 1 } }, {});
     assert.deepEqual(result, { allowed: false, handled: false });
+});
+
+test('agent download handler rejects locked anonymous requests', function () {
+    const handler = createAgentDownloadHandler({
+        state: {},
+        parent: { config: { settings: { lockagentdownload: true } }, debug: function () { } },
+        getDomain: function () { return { id: '' }; },
+        isAgentDownloadLocked: function () { return true; },
+        hasUserSession: function () { return false; }
+    });
+    const res = { sendStatus: function (status) { this.status = status; } };
+    handler({ query: {} }, res);
+    assert.equal(res.status, 401);
+});
+
+test('agent download handler dispatches direct binary requests', function () {
+    const data = Buffer.from('agent');
+    const parent = { config: { settings: {} }, meshAgentBinaries: { 6: { rname: 'meshagent', platform: 'linux', data: data } }, debug: function () { } };
+    const handler = createAgentDownloadHandler({
+        state: {},
+        parent: parent,
+        getDomain: function () { return { id: '' }; },
+        setContentDispositionHeader: function () { },
+        isAgentDownloadLocked: function () { return false; },
+        hasUserSession: function () { return false; }
+    });
+    const res = { send: function (body) { this.body = body; }, sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
+    handler({ query: { id: 6 } }, res);
+    assert.equal(res.body, data);
 });

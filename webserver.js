@@ -193,6 +193,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
     obj.handleDevicePowerEvents = handleDevicePowerEvents;
     const getDomain = networkAccess.getDomain;
     obj.handleAmtEventRequest = amtEventsModule.createAmtEventHandler({ state: obj, parent: parent, getDomain: getDomain });
+    obj.handleMeshAgentRequest = agentDownloadsModule.createAgentDownloadHandler({ state: obj, parent: parent, rootDirectory: __dirname, getDomain: getDomain, checkUserIpAddress: checkUserIpAddress, getMshFromRequest: getMshFromRequest, checkAgentColorString: checkAgentColorString, setContentDispositionHeader: setContentDispositionHeader, isAgentDownloadLocked: agentSettingsModule.isAgentDownloadLocked, hasUserSession: agentSettingsModule.hasUserSession });
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
     const captcha = captchaModule.createCaptcha({ parent: parent, checkUserIpAddress: checkUserIpAddress });
     const handleNewAccountCaptchaRequest = captcha.handleNewAccount;
@@ -2824,106 +2825,6 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
     }
 
     // Handle a request to download a mesh agent
-    obj.handleMeshAgentRequest = function (req, res) {
-        var domain = getDomain(req, res);
-        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
-
-        // If required, check if this user has rights to do this
-        if (agentSettingsModule.isAgentDownloadLocked(obj.parent.config.settings, domain) && !agentSettingsModule.hasUserSession(req)) { res.sendStatus(401); return; }
-
-        if ((req.query.meshinstall != null) && (req.query.id != null)) {
-            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            agentDownloadsModule.sendAgentSelfInstaller(parent, domain, getMshFromRequest, setContentDispositionHeader, req, res);
-        } else if (req.query.id != null) {
-            // Send a specific mesh agent back
-            var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
-            if (domain.meshAgentBinaries && domain.meshAgentBinaries[req.query.id]) { argentInfo = domain.meshAgentBinaries[req.query.id]; }
-            if (argentInfo == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-
-            // Download PDB debug files, only allowed for administrator or accounts with agent dump access
-            if (req.query.pdb == 1) {
-                agentDownloadsModule.sendAgentPdb(obj, parent, argentInfo, setContentDispositionHeader, req, res);
-                return;
-            }
-
-            if ((req.query.meshid == null) || (argentInfo.platform != 'win32')) {
-                agentDownloadsModule.sendAgentBinary(domain, argentInfo, setContentDispositionHeader, req, res);
-                return;
-            } else {
-                agentDownloadsModule.sendCustomizedWindowsAgent(obj, parent, domain, argentInfo, checkAgentColorString, setContentDispositionHeader, req, res);
-                return;
-            }
-        } else if (req.query.script != null) {
-            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            agentDownloadsModule.sendAgentInstallScript(obj, parent, domain, setContentDispositionHeader, req, res);
-            return;
-        } else if (req.query.meshcmd != null) {
-            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            agentDownloadsModule.sendMeshCmd(obj, parent, domain, setContentDispositionHeader, req, res);
-            return;
-        } else if (req.query.meshaction != null) {
-            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            var user = agentDownloadsModule.getSessionUser(obj.users, req);
-            if (user == null) {
-                // Check if we have an authentication cookie
-                var c = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey);
-                if (c == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-
-                // Download tools using a cookie
-                if (c.download == req.query.meshaction) {
-                    agentDownloadsModule.sendMeshTool(obj, parent, __dirname, setContentDispositionHeader, req.query.meshaction, res);
-                    return;
-                }
-
-                // Check if the cookie authenticates a user
-                if (c.userid == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-                user = obj.users[c.userid];
-                if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-            }
-            if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
-                agentDownloadsModule.sendRouteMeshAction(obj, domain, user, setContentDispositionHeader, req, res);
-            } else if (req.query.meshaction == 'generic') {
-                agentDownloadsModule.sendGenericMeshAction(obj, domain, user, setContentDispositionHeader, req, res);
-                return;
-            } else if (agentDownloadsModule.sendMeshTool(obj, parent, __dirname, setContentDispositionHeader, req.query.meshaction, res)) {
-                return;
-            } else {
-                try { res.sendStatus(401); } catch (ex) { }
-                return;
-            }
-        } else {
-            domain = checkUserIpAddress(req, res); // Recheck the domain to apply user IP filtering.
-            if (domain == null) return;
-            if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-            if ((req.session == null) || (req.session.userid == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
-            var user = null, coreDumpsAllowed = false;
-            if (typeof req.session.userid == 'string') { user = obj.users[req.session.userid]; }
-            if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-
-            const coreDumpResult = agentDownloadsModule.handleCoreDumpRequest(obj, parent, domain, user, setContentDispositionHeader, req, res);
-            coreDumpsAllowed = coreDumpResult.allowed;
-            if (coreDumpResult.handled) { return; }
-
-            if (req.query.cores != null) {
-                agentDownloadsModule.sendMeshCoreList(parent, req, res);
-                return;
-            }
-
-            if (req.query.dlcore != null) {
-                agentDownloadsModule.sendMeshCore(parent, setContentDispositionHeader, req, res, false);
-                return;
-            }
-
-            if (req.query.dlccore != null) {
-                agentDownloadsModule.sendMeshCore(parent, setContentDispositionHeader, req, res, true);
-                return;
-            }
-
-            agentDownloadsModule.sendAgentList(parent, domain, user, req, res, coreDumpsAllowed);
-            return;
-        }
-    };
-
     // Create a OSX mesh agent installer
     obj.handleMeshOsxAgentRequest = function (req, res) {
         const domain = getDomain(req, res);
