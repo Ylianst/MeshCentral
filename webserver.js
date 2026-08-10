@@ -112,6 +112,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
+    const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
     const applicationRenderModule = require('./webserver/application-render.js');
     const pageOptionsModule = require('./webserver/page-options.js');
@@ -850,10 +851,11 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: handleRootRequestLogin, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
     const renderApplication = applicationRenderModule.createApplicationRenderer({ state: obj, parent: parent, args: args, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getQueryPortion: getQueryPortion });
+    const authenticateSspi = sspiAuthenticationModule.createSspiAuthentication({ state: obj, parent: parent, database: db, setSessionRandom: setSessionRandom });
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
-        var nologout = false, user = null;
+        var nologout = false;
         res.set({ 'Cache-Control': 'no-store' });
 
         // Check if we have an incomplete domain name in the path
@@ -899,62 +901,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 parent.debug('web', 'handleRootRequestEx: cookie auth failed.');
             }
         } else if (domain.sspi != null) {
-            // SSPI login (Windows only)
-            //console.log(req.connection.user, req.connection.userSid);
-            if ((req.connection.user == null) || (req.connection.userSid == null)) {
-                parent.debug('web', 'handleRootRequestEx: SSPI no user auth.');
-                res.sendStatus(404); return;
-            } else {
-                nologout = true;
-                req.session.userid = 'user/' + domain.id + '/' + req.connection.user.toLowerCase();
-                req.session.usersid = req.connection.userSid;
-                req.session.usersGroups = req.connection.userGroups;
-                delete req.session.currentNode;
-                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                setSessionRandom(req);
-                obj.parent.authLog('https', 'Accepted SSPI-auth for ' + req.connection.user + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
-
-                // Check if this user exists, create it if not.
-                user = obj.users[req.session.userid];
-                if ((user == null) || (user.sid != req.session.usersid)) {
-                    // Create the domain user
-                    var usercount = 0, user2 = { type: 'user', _id: req.session.userid, name: req.connection.user, domain: domain.id, sid: req.session.usersid, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000) };
-                    if (domain.newaccountsrights) { user2.siteadmin = domain.newaccountsrights; }
-                    if (obj.common.validateStrArray(domain.newaccountrealms)) { user2.groups = domain.newaccountrealms; }
-                    for (var i in obj.users) { if (obj.users[i].domain == domain.id) { usercount++; } }
-                    if (usercount == 0) { user2.siteadmin = 4294967295; } // If this is the first user, give the account site admin.
-
-                    // Auto-join any user groups
-                    if (typeof domain.newaccountsusergroups == 'object') {
-                        for (var i in domain.newaccountsusergroups) {
-                            var ugrpid = domain.newaccountsusergroups[i];
-                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
-                            var ugroup = obj.userGroups[ugrpid];
-                            if (ugroup != null) {
-                                // Add group to the user
-                                if (user2.links == null) { user2.links = {}; }
-                                user2.links[ugroup._id] = { rights: 1 };
-
-                                // Add user to the group
-                                ugroup.links[user2._id] = { userid: user2._id, name: user2.name, rights: 1 };
-                                db.Set(ugroup);
-
-                                // Notify user group change
-                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user2.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
-                                if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                parent.DispatchEvent(['*', ugroup._id, user2._id], obj, event);
-                            }
-                        }
-                    }
-
-                    obj.users[req.session.userid] = user2;
-                    obj.db.SetUser(user2);
-                    var event = { etype: 'user', userid: req.session.userid, username: req.connection.user, account: obj.CloneSafeUser(user2), action: 'accountcreate', msg: 'Domain account created, user ' + req.connection.user, domain: domain.id };
-                    if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                    obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
-                    parent.debug('web', 'handleRootRequestEx: SSPI new domain user.');
-                }
-            }
+            if (!authenticateSspi(req, res, domain)) { return; }
+            nologout = true;
         }
 
         const passRequirements = passwordRequirementsModule.getEncodedPasswordRequirements(domain);
