@@ -27,21 +27,6 @@ module.exports.createAgentControl = function (options) {
         if (agent != null) agent.close(disconnectMode);
     }
 
-    function sendBuiltInCore(agent, coreType) {
-        const architecture = ((agent.agentInfo != null) && (state.parent.meshAgentsArchitectureNumbers != null)) ? state.parent.meshAgentsArchitectureNumbers[agent.agentInfo.agentId] : null;
-        const coreProperty = { 'default': 'core', 'recovery': 'rcore', 'tiny': 'tcore' }[coreType];
-        const coreName = (architecture == null) ? null : architecture[coreProperty];
-        const coreHash = (coreName == null) ? null : state.parent.defaultMeshCoresHash[coreName];
-        const core = (coreName == null) ? null : state.parent.defaultMeshCores[coreName];
-
-        agent.agentCoreCheck = (coreType == 'recovery') ? 1001 : ((coreType == 'tiny') ? 1011 : 0);
-        if ((coreHash != null) && (core != null)) {
-            agent.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + coreHash + core.toString('binary'));
-        } else {
-            agent.send(common.ShortToStr(11) + common.ShortToStr(0));
-        }
-    }
-
     function sendMeshAgentCore(user, domain, nodeId, coreType, coreData) {
         const agent = getAuthorizedAgent(user, domain, nodeId);
         if (agent == null) return;
@@ -49,11 +34,14 @@ module.exports.createAgentControl = function (options) {
             agent.agentCoreCheck = 1000;
             agent.send(common.ShortToStr(10) + common.ShortToStr(0));
         } else if (coreType == 'default') {
-            sendBuiltInCore(agent, coreType);
+            agent.agentCoreCheck = 0;
+            agent.send(common.ShortToStr(11) + common.ShortToStr(0));
         } else if (coreType == 'recovery') {
-            sendBuiltInCore(agent, coreType);
+            agent.agentCoreCheck = 1001;
+            agent.send(common.ShortToStr(11) + common.ShortToStr(0));
         } else if (coreType == 'tiny') {
-            sendBuiltInCore(agent, coreType);
+            agent.agentCoreCheck = 1011;
+            agent.send(common.ShortToStr(11) + common.ShortToStr(0));
         } else if (coreType == 'custom') {
             agent.agentCoreCheck = 1000;
             const buffer = Buffer.from(coreData, 'utf8');

@@ -16,23 +16,11 @@ function createFixture(rights) {
     const binary = [];
     const agent = {
         dbMeshKey: 'mesh/domain/group',
-        agentInfo: { agentId: 4 },
         send: function (value) { sent.push(value); },
         sendBinary: function (value) { binary.push(value); },
         close: function (mode) { closed.push(mode); }
     };
-    const state = {
-        wsagents: { 'node/domain/1': agent },
-        parent: {
-            meshAgentsArchitectureNumbers: { 4: { core: 'windows-amt', rcore: 'windows-recovery', tcore: 'windows-tiny' } },
-            defaultMeshCoresHash: { 'windows-amt': 'default-hash', 'windows-recovery': 'recovery-hash', 'windows-tiny': 'tiny-hash' },
-            defaultMeshCores: {
-                'windows-amt': Buffer.from('default-core'),
-                'windows-recovery': Buffer.from('recovery-core'),
-                'windows-tiny': Buffer.from('tiny-core')
-            }
-        }
-    };
+    const state = { wsagents: { 'node/domain/1': agent } };
     const service = createAgentControl({
         state: state,
         common: { ShortToStr: function (value) { return '[' + value + ']'; } },
@@ -61,17 +49,7 @@ test('administrators can select built-in agent cores', function () {
     const fixture = createFixture(0);
     fixture.service.sendMeshAgentCore({ siteadmin: 0xFFFFFFFF }, { id: 'domain' }, 'node/domain/1', 'recovery');
     assert.equal(fixture.agent.agentCoreCheck, 1001);
-    assert.deepEqual(fixture.sent, []);
-    assert.deepEqual(fixture.binary, ['[10][0]recovery-hashrecovery-core']);
-});
-
-test('default core selection replaces a core that reports the custom-core sentinel', function () {
-    const fixture = createFixture(0x10);
-    fixture.agent.agentCoreCheck = 1000;
-    fixture.service.sendMeshAgentCore({ siteadmin: 0 }, { id: 'domain' }, 'node/domain/1', 'default');
-    assert.equal(fixture.agent.agentCoreCheck, 0);
-    assert.deepEqual(fixture.sent, []);
-    assert.deepEqual(fixture.binary, ['[10][0]default-hashdefault-core']);
+    assert.deepEqual(fixture.sent, ['[11][0]']);
 });
 
 test('custom agent cores include their SHA-384 hash and payload', function () {
