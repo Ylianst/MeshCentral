@@ -156,6 +156,107 @@ module.exports.logRelaySessionEnd = function (state, parent, domain, user, webso
     return true;
 };
 
+module.exports.setupDirectRelayTransport = function (options) {
+    const state = options.state;
+    const parent = options.parent;
+    const domain = options.domain;
+    const user = options.user;
+    const websocket = options.websocket;
+    const request = options.request;
+    const node = options.node;
+    const ciraConnection = options.ciraConnection;
+    const connectivity = options.connectivity;
+    const tlsConstants = options.tlsConstants;
+
+    parent.debug('webrelay', 'Opening relay TCP socket connection to ' + request.query.host + '.');
+
+    websocket.on('message', function (msg) {
+        if (typeof msg == 'string') { msg = Buffer.from(msg, 'binary'); }
+        if (websocket.interceptor) { msg = websocket.interceptor.processBrowserData(msg); }
+        if (websocket.logfile == null) {
+            try { websocket.forwardclient.write(msg); } catch (ex) { }
+        } else {
+            state.meshRelayHandler.recordingEntry(websocket.logfile, 2, 2, msg, function () { try { websocket.forwardclient.write(msg); } catch (ex) { } });
+        }
+    });
+
+    websocket.on('error', function (err) {
+        console.log('Error with relay web socket connection from ' + request.clientIp + ', ' + err.toString().split('\r')[0] + '.');
+        parent.debug('webrelay', 'Error with relay web socket connection from ' + request.clientIp + '.');
+        module.exports.logRelaySessionEnd(state, parent, domain, user, websocket, request, node, ciraConnection, connectivity);
+        if (websocket.forwardclient) { try { websocket.forwardclient.destroy(); } catch (e) { } }
+        module.exports.finishSessionRecording({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, delayAdjustmentSeconds: 0 });
+    });
+
+    websocket.on('close', function () {
+        parent.debug('webrelay', 'Closing relay web socket connection to ' + request.query.host + '.');
+        module.exports.logRelaySessionEnd(state, parent, domain, user, websocket, request, node, ciraConnection, connectivity);
+        if (websocket.forwardclient) { try { websocket.forwardclient.destroy(); } catch (e) { } }
+        module.exports.finishSessionRecording({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, delayAdjustmentSeconds: 0 });
+    });
+
+    var port = 16992;
+    if (node.intelamt.tls > 0) port = 16993;
+    if ((request.query.p == 2) || (request.query.p == 4)) port += 2;
+
+    if (node.intelamt.tls == 0) {
+        websocket.forwardclient = new state.net.Socket();
+        websocket.forwardclient.setEncoding('binary');
+        websocket.forwardclient.xstate = 0;
+        websocket.forwardclient.forwardwsocket = websocket;
+        websocket._socket.resume();
+    } else {
+        var tlsoptions = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: tlsConstants.SSL_OP_NO_SSLv2 | tlsConstants.SSL_OP_NO_SSLv3 | tlsConstants.SSL_OP_NO_COMPRESSION | tlsConstants.SSL_OP_CIPHER_SERVER_PREFERENCE | tlsConstants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+        if (request.query.tls1only == 1) {
+            tlsoptions.secureProtocol = 'TLSv1_method';
+        } else {
+            tlsoptions.minVersion = 'TLSv1';
+        }
+        websocket.forwardclient = state.tls.connect(port, node.host, tlsoptions, function () {
+            parent.debug('webrelay', user.name + ' - TLS connected to ' + node.host + ':' + port + '.');
+            websocket.forwardclient.xstate = 1;
+            websocket._socket.resume();
+        });
+        websocket.forwardclient.setEncoding('binary');
+        websocket.forwardclient.xstate = 0;
+        websocket.forwardclient.forwardwsocket = websocket;
+    }
+
+    websocket.forwardclient.on('data', function (data) {
+        if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
+        if (state.parent.debugLevel >= 1) {
+            parent.debug('webrelaydata', user.name + ' - TCP relay data from ' + node.host + ', ' + data.length + ' bytes.');
+        }
+        if (websocket.interceptor) { data = websocket.interceptor.processAmtData(data); }
+        if (websocket.logfile == null) {
+            try { websocket.send(data); } catch (e) { }
+        } else {
+            state.meshRelayHandler.recordingEntry(websocket.logfile, 2, 0, data, function () { try { websocket.send(data); } catch (e) { } });
+        }
+    });
+
+    websocket.forwardclient.on('close', function () {
+        parent.debug('webrelay', user.name + ' - TCP relay disconnected from ' + node.host + ':' + port + '.');
+        try { websocket.close(); } catch (e) { }
+    });
+
+    websocket.forwardclient.on('error', function (err) {
+        parent.debug('webrelay', user.name + ' - TCP relay error from ' + node.host + ':' + port + ': ' + err);
+        try { websocket.close(); } catch (e) { }
+    });
+
+    if (request.query.p == 1) { websocket.interceptor = state.interceptor.CreateHttpInterceptor({ host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass }); }
+    else if (request.query.p == 2) { websocket.interceptor = state.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass }); }
+
+    if (node.intelamt.tls == 0) {
+        websocket.forwardclient.connect(port, node.host, function () {
+            parent.debug('webrelay', user.name + ' - TCP relay connected to ' + node.host + ':' + port + '.');
+            websocket.forwardclient.xstate = 1;
+            websocket._socket.resume();
+        });
+    }
+};
+
 module.exports.recordRelayStartAndUserAccess = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {
     if (user == null) { return; }
     if (request.query.p == 2) {

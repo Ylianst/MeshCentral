@@ -15,6 +15,7 @@ const setupSessionRecording = require('../webserver/relay-websocket.js').setupSe
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 const finishSessionRecording = require('../webserver/relay-websocket.js').finishSessionRecording;
 const logRelaySessionEnd = require('../webserver/relay-websocket.js').logRelaySessionEnd;
+const setupDirectRelayTransport = require('../webserver/relay-websocket.js').setupDirectRelayTransport;
 const recordRelayStartAndUserAccess = require('../webserver/relay-websocket.js').recordRelayStartAndUserAccess;
 
 test('relay node lookups reject database failures and missing result arrays', function () {
@@ -134,6 +135,36 @@ test('relay session end logs include duration and routed address', function () {
     assert.equal(events[0][2].msgid, 9);
     assert.equal(events[0][2].msgArgs[2], '192.0.2.20');
     assert.equal(events[0][2].protocol, 101);
+});
+
+test('direct relay transport connects plain AMT sockets and installs HTTP interception', function () {
+    const socketHandlers = {}, websocketHandlers = {}, connections = [], interceptors = [], resumes = [];
+    function FakeSocket() { }
+    FakeSocket.prototype.setEncoding = function (encoding) { this.encoding = encoding; };
+    FakeSocket.prototype.on = function (event, handler) { socketHandlers[event] = handler; };
+    FakeSocket.prototype.connect = function (port, host, callback) { connections.push([port, host]); callback(); };
+    const state = {
+        parent: { debugLevel: 0 },
+        net: { Socket: FakeSocket },
+        interceptor: { CreateHttpInterceptor: function (options) { interceptors.push(options); return { processBrowserData: function (data) { return data; }, processAmtData: function (data) { return data; } }; } },
+        meshRelayHandler: { recordingEntry: function () { throw new Error('unexpected recording'); } }
+    };
+    const websocket = {
+        _socket: { resume: function () { resumes.push(true); } },
+        on: function (event, handler) { websocketHandlers[event] = handler; },
+        send: function () { },
+        close: function () { }
+    };
+    const node = { host: '192.0.2.10', intelamt: { tls: 0, user: 'admin', pass: 'secret' } };
+    setupDirectRelayTransport({ state: state, parent: { debug: function () { } }, domain: {}, user: { name: 'Alice' }, websocket: websocket, request: { clientIp: '192.0.2.1', query: { host: 'node//node1', p: 1 } }, node: node, ciraConnection: null, connectivity: 4, tlsConstants: {} });
+    assert.deepEqual(connections, [[16992, '192.0.2.10']]);
+    assert.deepEqual(interceptors, [{ host: '192.0.2.10', port: 16992, user: 'admin', pass: 'secret' }]);
+    assert.equal(websocket.forwardclient.encoding, 'binary');
+    assert.equal(websocket.forwardclient.xstate, 1);
+    assert.equal(websocket.forwardclient.forwardwsocket, websocket);
+    assert.equal(resumes.length, 2);
+    assert.equal(typeof websocketHandlers.message, 'function');
+    assert.equal(typeof socketHandlers.data, 'function');
 });
 
 test('relay starts log redirection sessions and refresh stale user access', function () {
