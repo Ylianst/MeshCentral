@@ -40,6 +40,7 @@ require('./webserver-server-finalization.test.js');
 require('./webserver-startup-data-validation.test.js');
 require('./webserver-startup-data.test.js');
 require('./webserver-runtime-initialization.test.js');
+require('./webserver-rights.test.js');
 require('./webserver-http-route-finalization.test.js');
 require('./webserver-http-route-setup.test.js');
 require('./webserver-relay-websocket.test.js');

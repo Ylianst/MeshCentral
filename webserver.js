@@ -80,6 +80,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const serverFinalizationModule = require('./webserver/server-finalization.js');
     const startupDataModule = require('./webserver/startup-data.js');
     const runtimeInitializationModule = require('./webserver/runtime-initialization.js');
+    const rights = require('./webserver/rights.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -489,12 +490,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     parent.AddEventDispatch(['server-shareremove'], obj);
     obj.HandleEvent = webRelay.handleEvent;
 
-    // Mesh Rights
-    const MESHRIGHT_EDITMESH = 0x00000001;
-    const MESHRIGHT_MANAGEUSERS = 0x00000002;
-    const MESHRIGHT_MANAGECOMPUTERS = 0x00000004;
-    const MESHRIGHT_REMOTECONTROL = 0x00000008;
-    const MESHRIGHT_AGENTCONSOLE = 0x00000010;
+    const MESHRIGHT_REMOTECONTROL = rights.mesh.remoteControl;
+    const MESHRIGHT_AGENTCONSOLE = rights.mesh.agentConsole;
     const fileDownloads = fileDownloadsModule.createFileDownloads({
         state: obj,
         parent: parent,
@@ -536,42 +533,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         removeAllEventDispatch: function (target) { parent.RemoveAllEventDispatch(target); },
         addEventDispatch: function (subscriptions, target) { parent.AddEventDispatch(subscriptions, target); }
     }));
-    const MESHRIGHT_SERVERFILES = 0x00000020;
-    const MESHRIGHT_WAKEDEVICE = 0x00000040;
-    const MESHRIGHT_SETNOTES = 0x00000080;
-    const MESHRIGHT_REMOTEVIEWONLY = 0x00000100;
-    const MESHRIGHT_NOTERMINAL = 0x00000200;
-    const MESHRIGHT_NOFILES = 0x00000400;
-    const MESHRIGHT_NOAMT = 0x00000800;
-    const MESHRIGHT_DESKLIMITEDINPUT = 0x00001000;
-    const MESHRIGHT_LIMITEVENTS = 0x00002000;
-    const MESHRIGHT_CHATNOTIFY = 0x00004000;
-    const MESHRIGHT_UNINSTALL = 0x00008000;
-    const MESHRIGHT_NODESKTOP = 0x00010000;
-    const MESHRIGHT_REMOTECOMMAND = 0x00020000;
-    const MESHRIGHT_RESETOFF = 0x00040000;
-    const MESHRIGHT_GUESTSHARING = 0x00080000;
-    const MESHRIGHT_DEVICEDETAILS = 0x00100000;
-    const MESHRIGHT_RELAY = 0x00200000;
-    const MESHRIGHT_NOREGISTRY = 0x00400000;
-    const MESHRIGHT_NOSOFTWARE = 0x00800000;
-    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
-
-    // Site rights
-    const SITERIGHT_SERVERBACKUP = 0x00000001;
-    const SITERIGHT_MANAGEUSERS = 0x00000002;
-    const SITERIGHT_SERVERRESTORE = 0x00000004;
-    const SITERIGHT_FILEACCESS = 0x00000008;
-    const SITERIGHT_SERVERUPDATE = 0x00000010;
-    const SITERIGHT_LOCKED = 0x00000020;
-    const SITERIGHT_NONEWGROUPS = 0x00000040;
-    const SITERIGHT_NOMESHCMD = 0x00000080;
-    const SITERIGHT_USERGROUPS = 0x00000100;
-    const SITERIGHT_RECORDINGS = 0x00000200;
-    const SITERIGHT_LOCKSETTINGS = 0x00000400;
-    const SITERIGHT_ALLEVENTS = 0x00000800;
-    const SITERIGHT_NONEWDEVICES = 0x00001000;
-    const SITERIGHT_ADMIN = 0xFFFFFFFF;
+    const SITERIGHT_NOMESHCMD = rights.site.noMeshCommand;
 
     runtimeInitializationModule.configureSspiDomains(obj, parent, require);
 
