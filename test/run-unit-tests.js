@@ -35,6 +35,7 @@ require('./webserver-macos-agent-download.test.js');
 require('./webserver-certificate-trust.test.js');
 require('./webserver-domain-user-features.test.js');
 require('./webserver-domain-route-registration.test.js');
+require('./webserver-server-finalization.test.js');
 require('./webserver-relay-websocket.test.js');
 require('./webserver-special-uploads.test.js');
 require('./webserver-subscriptions.test.js');

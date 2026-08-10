@@ -85,6 +85,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const webRelayModule = require('./webserver/web-relay.js');
     const domainStaticModule = require('./webserver/domain-static.js');
     const domainRouteRegistrationModule = require('./webserver/domain-route-registration.js');
+    const serverFinalizationModule = require('./webserver/server-finalization.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -935,6 +936,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
+        const finalizeWebserver = serverFinalizationModule.createServerFinalization({ setupHttpHandlers: setupHTTPHandlers, args: obj.args, app: obj.app, nice404: nice404, checkListenPort: CheckListenPort, startWebServer: StartWebServer, startAltWebServer: StartAltWebServer, done: doneFunc });
         tlsConfiguration.setupServers();
 
         coreMiddleware.setupCoreMiddleware();
@@ -1082,24 +1084,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             obj.webRelayRouter = webRelay.setupRouter();
             domainRouteRegistrationModule.registerDomainRoutes(parent.config.domains, [basicRoutes, relayRoutes, resourceRoutes, applicationRoutes, passportRoutes, duoRoutes, domainAssets, agentRoutes, domainStatic]);
             domainStatic.startDisconnectionCleanup();
-        }
-        function finalizeWebserver() {
-            // Setup all HTTP handlers
-            setupHTTPHandlers()
-
-            // Handle 404 error
-            if (obj.args.nice404 !== false) {
-                obj.app.use(nice404);
-            }
-
-            // Start server on a free port.
-            CheckListenPort(obj.args.port, obj.args.portbind, StartWebServer);
-
-            // Start on a second agent-only alternative port if needed.
-            if (obj.args.agentport) { CheckListenPort(obj.args.agentport, obj.args.agentportbind, StartAltWebServer); }
-
-            // We are done starting the web server.
-            if (doneFunc) doneFunc();
         }
     }
 
