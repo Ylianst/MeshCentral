@@ -79,6 +79,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const webRelayModule = require('./webserver/web-relay.js');
     const serverFinalizationModule = require('./webserver/server-finalization.js');
     const startupDataModule = require('./webserver/startup-data.js');
+    const runtimeInitializationModule = require('./webserver/runtime-initialization.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -572,28 +573,11 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const SITERIGHT_NONEWDEVICES = 0x00001000;
     const SITERIGHT_ADMIN = 0xFFFFFFFF;
 
-    // Setup SSPI authentication if needed
-    if ((obj.parent.platform == 'win32') && (obj.args.nousers != true) && (obj.parent.config != null) && (obj.parent.config.domains != null)) {
-        for (i in obj.parent.config.domains) { if (obj.parent.config.domains[i].auth == 'sspi') { var nodeSSPI = require('node-sspi'); obj.parent.config.domains[i].sspi = new nodeSSPI({ retrieveGroups: false, offerBasic: false }); } }
-    }
+    runtimeInitializationModule.configureSspiDomains(obj, parent, require);
 
     certificateHashesModule.initializeCertificateHashes(obj, parent);
 
-    // Main lists
-    obj.wsagents = {};                // NodeId --> Agent
-    obj.wsagentsWithBadWebCerts = {}; // NodeId --> Agent
-    obj.wsagentsDisconnections = {};
-    obj.wsagentsDisconnectionsTimer = null;
-    obj.duplicateAgentsLog = {};
-    obj.wssessions = {};              // UserId --> Array Of Sessions
-    obj.wssessions2 = {};             // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
-    obj.wsPeerSessions = {};          // ServerId --> Array Of "UserId + SessionRnd"
-    obj.wsPeerSessions2 = {};         // "UserId + SessionRnd" --> ServerId
-    obj.wsPeerSessions3 = {};         // ServerId --> UserId --> [ SessionId ]
-    obj.sessionsCount = {};           // Merged session counters, used when doing server peering. UserId --> SessionCount
-    obj.wsrelays = {};                // Id -> Relay
-    obj.desktoprelays = {};           // Id -> Desktop Multiplexer Relay
-    obj.wsPeerRelays = {};            // Id -> { ServerId, Time }
+    runtimeInitializationModule.initializeRuntimeCollections(obj);
     const tlsConfiguration = tlsConfigurationModule.createTlsConfiguration({
         state: obj,
         parent: parent,
@@ -657,10 +641,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const handlePasswordChangeRequest = accountManagement.handlePasswordChangeRequest;
     const handleDeleteAccountRequest = accountManagement.handleDeleteAccountRequest;
 
-    // Setup randoms
-    obj.crypto.randomBytes(48, function (err, buf) { obj.httpAuthRandom = buf; });
-    obj.crypto.randomBytes(16, function (err, buf) { obj.httpAuthRealm = buf.toString('hex'); });
-    obj.crypto.randomBytes(48, function (err, buf) { obj.relayRandom = buf; });
+    runtimeInitializationModule.initializeRuntimeRandoms(obj);
 
     // Get non-english web pages and emails
     getRenderList();
