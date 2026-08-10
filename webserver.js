@@ -112,6 +112,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
+    const loginPageSessionModule = require('./webserver/login-page-session.js');
     const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
@@ -888,17 +889,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string') || (parent.config.settings.allowedframingorigins != null) || (domain != null && domain.allowedframingorigins != null))) { features += 32; } // Allow site within iframe
         if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
         var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        var loginmode = 0;
-        if (req.session) { loginmode = req.session.loginmode; delete req.session.loginmode; } // Clear this state, if the user hits refresh, we want to go back to the login page.
-
-        // Format an error message if needed
-        var passhint = null, msgid = 0;
-        if (req.session != null) {
-            msgid = req.session.messageid;
-            if ((msgid == 5) || (loginmode == 7) || ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true))) { passhint = EscapeHtml(req.session.passhint); }
-            delete req.session.messageid;
-            delete req.session.passhint;
-        }
+        const loginPageSession = loginPageSessionModule.consumeLoginPageSession(req, domain, EscapeHtml, obj.common.uniqueArray);
+        const loginmode = loginPageSession.loginMode;
         const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
         const emailcheck = (allowAccountReset && (domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
 
@@ -967,13 +959,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
         }
 
-        // Check for flash errors from passport.js and make the array unique
-        var flashErrors = [];
-        if (req.session.flash && req.session.flash.error) {
-            flashErrors = obj.common.uniqueArray(req.session.flash.error);
-            req.session.flash = null;
-        }
-
         // Render the login page
         // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
         var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
@@ -1033,9 +1018,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     'relaycount': Object.keys(parent.webserver.wsrelays).length
                 }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
-                messageid: msgid,
-                flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
-                passhint: passhint,
+                messageid: loginPageSession.messageId,
+                flashErrors: JSON.stringify(loginPageSession.flashErrors).replace(/"/g, '\\"'),
+                passhint: loginPageSession.passwordHint,
 
                 welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {
                     'serverversion': obj.parent.currentVer,
