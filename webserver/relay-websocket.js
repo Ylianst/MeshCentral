@@ -153,3 +153,22 @@ module.exports.logRelaySessionEnd = function (state, parent, domain, user, webso
     };
     parent.DispatchEvent(['*', user._id, node._id, node.meshid], state, event);
 };
+
+module.exports.recordRelayStartAndUserAccess = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {
+    if (user == null) { return; }
+    if (request.query.p == 2) {
+        const ip = (ciraConnection != null) ? ciraConnection.remoteAddr : (((connectivity & 4) != 0) ? node.host : request.clientIp);
+        const event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: 13, msgArgs: [websocket.id, request.clientIp, ip], msg: 'Started relay session "' + websocket.id + '" from ' + request.clientIp + ' to ' + ip, protocol: 101, nodeid: node._id };
+        parent.DispatchEvent(['*', user._id], state, event);
+    }
+    const timeNow = Math.floor(Date.now() / 1000);
+    if (user.access < (timeNow - 300)) {
+        user.access = timeNow;
+        parent.db.SetUser(user);
+        const message = { etype: 'user', userid: user._id, username: user.name, account: state.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+        if (parent.db.changeStream) { message.noact = 1; }
+        const targets = ['*', 'server-users', user._id];
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
+        parent.DispatchEvent(targets, state, message);
+    }
+};

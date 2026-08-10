@@ -2495,30 +2495,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 }
             }
 
-            // Log the connection
-            if (user != null) {
-                if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
-                    var msg = 'Started relay session', msgid = 13, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                    var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip, protocol: 101, nodeid: node._id };
-                    obj.parent.DispatchEvent(['*', user._id], obj, event);
-                }
-
-                // Update user last access time
-                if ((user != null)) {
-                    const timeNow = Math.floor(Date.now() / 1000);
-                    if (user.access < (timeNow - 300)) { // Only update user access time if longer than 5 minutes
-                        user.access = timeNow;
-                        obj.parent.db.SetUser(user);
-
-                        // Event the change
-                        var message = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
-                        if (parent.db.changeStream) { message.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                        var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-                        obj.parent.DispatchEvent(targets, obj, message);
-                    }
-                }
-            }
+            relayWebSocketModule.recordRelayStartAndUserAccess(obj, parent, domain, user, ws, req, node, ciraconn, conn);
         });
     }
 

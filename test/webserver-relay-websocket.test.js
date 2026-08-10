@@ -15,6 +15,7 @@ const setupSessionRecording = require('../webserver/relay-websocket.js').setupSe
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 const finishSessionRecording = require('../webserver/relay-websocket.js').finishSessionRecording;
 const logRelaySessionEnd = require('../webserver/relay-websocket.js').logRelaySessionEnd;
+const recordRelayStartAndUserAccess = require('../webserver/relay-websocket.js').recordRelayStartAndUserAccess;
 
 test('relay node lookups reject database failures and missing result arrays', function () {
     assert.equal(hasDatabaseFailure(new Error('database unavailable'), []), true);
@@ -132,4 +133,16 @@ test('relay session end logs include duration and routed address', function () {
     assert.equal(events[0][2].msgid, 9);
     assert.equal(events[0][2].msgArgs[2], '192.0.2.20');
     assert.equal(events[0][2].protocol, 101);
+});
+
+test('relay starts log redirection sessions and refresh stale user access', function () {
+    const events = [], writes = [];
+    const parent = { db: { changeStream: false, SetUser: function (user) { writes.push(user); } }, DispatchEvent: function () { events.push(Array.from(arguments)); } };
+    const state = { CloneSafeUser: function (user) { return { _id: user._id }; } };
+    const user = { _id: 'user//alice', name: 'Alice', access: 1, groups: ['staff'] };
+    recordRelayStartAndUserAccess(state, parent, { id: '' }, user, { id: 'session1' }, { clientIp: '192.0.2.1', query: { p: 2 } }, { _id: 'node//node1', host: '192.0.2.10' }, null, 4);
+    assert.equal(writes.length, 1);
+    assert.equal(events[0][2].msgid, 13);
+    assert.equal(events[0][2].msgArgs[2], '192.0.2.10');
+    assert.deepEqual(events[1][0], ['*', 'server-users', user._id, 'server-users:staff']);
 });
