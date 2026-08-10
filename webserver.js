@@ -108,6 +108,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
+    const loginFailureModule = require('./webserver/login-failure.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
     const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
@@ -826,6 +827,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const checkUserOneTimePasswordRequired = twoFactorAuthentication.checkUserOneTimePasswordRequired;
     const checkUserOneTimePassword = twoFactorAuthentication.checkUserOneTimePassword;
     const getHardwareKeyChallenge = twoFactorAuthentication.getHardwareKeyChallenge;
+    const handleLoginFailure = loginFailureModule.createLoginFailureHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
 
     function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
@@ -1050,45 +1052,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 if (twoFactorSkip != null) { if (loginOptions == null) { loginOptions = {}; } loginOptions.twoFactorType = twoFactorSkip.twoFactorType; }
                 completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
             } else {
-                // Login failed, log the error
-                obj.parent.authLog('https', 'Failed password for ' + xusername + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
-
-                // Wait a random delay
-                setTimeout(function () {
-                    // If the account is locked, display that.
-                    if (typeof xusername == 'string') {
-                        var xuserid = 'user/' + domain.id + '/' + xusername.toLowerCase();
-                        if (err == 'locked') {
-                            parent.debug('web', 'handleLoginRequest: login failed, locked account');
-                            req.session.messageid = 110; // Account locked.
-                            const ua = obj.getUserAgentInfo(req);
-                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp, msgid: 109, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
-                        } else if (err == 'denied') {
-                            parent.debug('web', 'handleLoginRequest: login failed, access denied');
-                            req.session.messageid = 111; // Access denied.
-                            const ua = obj.getUserAgentInfo(req);
-                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Denied user login from ' + req.clientIp, msgid: 155, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
-                        } else {
-                            parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
-                            req.session.messageid = 112; // Login failed, check username and password.
-                            const ua = obj.getUserAgentInfo(req);
-                            obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp, msgid: 110, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
-                        }
-                    }
-
-                    // Clean up login mode and display password hint if present.
-                    delete req.session.loginmode;
-                    if ((passhint != null) && (passhint.length > 0)) {
-                        req.session.passhint = passhint;
-                    } else {
-                        delete req.session.passhint;
-                    }
-
-                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095)); // Wait for 2 to ~6 seconds.
+                handleLoginFailure(req, res, domain, xusername, err, passhint, direct);
             }
         });
     }
