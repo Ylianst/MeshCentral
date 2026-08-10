@@ -78,6 +78,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
     const serverFinalizationModule = require('./webserver/server-finalization.js');
+    const startupDataValidationModule = require('./webserver/startup-data-validation.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -668,6 +669,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     //function EscapeHtmlBreaks(x) { if (typeof x == "string") return x.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/\r/g, '<br />').replace(/\n/g, '').replace(/\t/g, '&nbsp;&nbsp;'); if (typeof x == "boolean") return x; if (typeof x == "number") return x; }
     // Fetch all users from the database, keep this in memory
     obj.db.GetAllType('user', function (err, docs) {
+        if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'users', function (source, message) { parent.debug(source, message); })) { return; }
         obj.common.unEscapeAllLinksFieldName(docs);
         var domainUserCount = {}, i = 0;
         for (i in parent.config.domains) { domainUserCount[i] = 0; }
@@ -684,11 +686,13 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         // As we load things in memory, we will also be doing some cleaning up.
         // We will not save any clean up in the database right now, instead it will be saved next time there is a change.
         obj.db.GetAllType('mesh', function (err, docs) {
+            if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'meshes', function (source, message) { parent.debug(source, message); })) { return; }
             obj.common.unEscapeAllLinksFieldName(docs);
             for (var i in docs) { obj.meshes[docs[i]._id] = docs[i]; } // Get all meshes, including deleted ones.
 
             // Fetch all user groups from the database, keep this in memory
             obj.db.GetAllType('ugrp', function (err, docs) {
+                if (startupDataValidationModule.hasStartupDatabaseFailure(err, docs, 'user groups', function (source, message) { parent.debug(source, message); })) { return; }
                 obj.common.unEscapeAllLinksFieldName(docs);
 
                 // Perform user group link cleanup
