@@ -2239,7 +2239,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     // Check device group recording
                     if (domain.sessionrecording.onlyselecteddevicegroups === true) {
                         var mesh = obj.meshes[node.meshid];
-                        if ((mesh.flags != null) && ((mesh.flags & 4) != 0)) { record = true; } // Record the session
+                        if (relayWebSocketModule.isSelectedDeviceGroup(mesh)) { record = true; } // Record the session
                     }
 
                     // Check user recording
