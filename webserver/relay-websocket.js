@@ -418,6 +418,46 @@ module.exports.setupDirectRelayTransport = function (options) {
     }
 };
 
+module.exports.createRelayWebSocketHandler = function (options) {
+    const state = options.state;
+    const parent = options.parent;
+    const remoteControlRight = options.remoteControlRight;
+    const getRandomPassword = options.getRandomPassword;
+    const tlsConstants = options.tlsConstants;
+    const createSerialTunnel = options.createSerialTunnel;
+
+    return function handleRelayWebSocket(websocket, request, domain, user, cookie) {
+        if (!(request.query.host)) { console.log('ERR: No host target specified'); try { websocket.close(); } catch (e) { } return; }
+        parent.debug('web', 'Websocket relay connected from ' + user.name + ' for ' + request.query.host + '.');
+        try { websocket._socket.setKeepAlive(true, 240000); } catch (ex) { }
+
+        state.db.Get(request.query.host, function (err, docs) {
+            if (module.exports.hasDatabaseFailure(err, docs)) { parent.debug('web', 'ERR: Unable to load relay node: ' + err); try { websocket.close(); } catch (e) { } return; }
+            if (docs.length == 0) { console.log('ERR: Node not found'); try { websocket.close(); } catch (e) { } return; }
+            var node = docs[0];
+            websocket.id = getRandomPassword(); websocket.time = Date.now();
+            if (!node.intelamt) { console.log('ERR: Not AMT node'); try { websocket.close(); } catch (e) { } return; }
+            var ciraConnection = parent.mpsserver.GetConnectionToNode(request.query.host, null, false);
+
+            if ((state.GetNodeRights(user, node.meshid, node._id) & remoteControlRight) == 0) { console.log('ERR: Access denied (3)'); try { websocket.close(); } catch (e) { } return; }
+
+            var connectivityState = parent.GetConnectivityState(request.query.host);
+            var connectivity = 0;
+            if (!module.exports.hasRelayConnectivity(connectivityState)) { parent.debug('web', 'ERR: No routing possible (1)'); try { websocket.close(); } catch (e) { } return; } else { connectivity = connectivityState.connectivity; }
+
+            if (module.exports.routeToPeerServer(parent, websocket, request, user, cookie)) { return; }
+
+            module.exports.setupSessionRecording({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, request: request, node: node, ciraConnection: ciraConnection, connectivity: connectivity });
+            if (ciraConnection != null) {
+                module.exports.setupCiraRelayTransport({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, request: request, node: node, ciraConnection: ciraConnection, connectivity: connectivity, tlsConstants: tlsConstants, createSerialTunnel: createSerialTunnel });
+            } else if ((connectivity & 4) != 0) {
+                module.exports.setupDirectRelayTransport({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, request: request, node: node, ciraConnection: ciraConnection, connectivity: connectivity, tlsConstants: tlsConstants });
+            }
+            module.exports.recordRelayStartAndUserAccess(state, parent, domain, user, websocket, request, node, ciraConnection, connectivity);
+        });
+    };
+};
+
 module.exports.recordRelayStartAndUserAccess = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {
     if (user == null) { return; }
     if (request.query.p == 2) {

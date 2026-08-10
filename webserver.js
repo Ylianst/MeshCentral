@@ -2183,43 +2183,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const getRootCertLink = rootRequests.getRootCertLink;
 
     // Handle a web socket relay request
-    function handleRelayWebSocket(ws, req, domain, user, cookie) {
-        if (!(req.query.host)) { console.log('ERR: No host target specified'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-        parent.debug('web', 'Websocket relay connected from ' + user.name + ' for ' + req.query.host + '.');
-
-        try { ws._socket.setKeepAlive(true, 240000); } catch (ex) { }   // Set TCP keep alive
-
-        // Fetch information about the target
-        obj.db.Get(req.query.host, function (err, docs) {
-            if (relayWebSocketModule.hasDatabaseFailure(err, docs)) { parent.debug('web', 'ERR: Unable to load relay node: ' + err); try { ws.close(); } catch (e) { } return; }
-            if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-            var node = docs[0];
-            ws.id = getRandomPassword(); ws.time = Date.now();
-            if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-            var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
-
-            // Check if this user has permission to manage this computer
-            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (3)'); try { ws.close(); } catch (e) { } return; }
-
-            // Check what connectivity is available for this node
-            var state = parent.GetConnectivityState(req.query.host);
-            var conn = 0;
-            if (!relayWebSocketModule.hasRelayConnectivity(state)) { parent.debug('web', 'ERR: No routing possible (1)'); try { ws.close(); } catch (e) { } return; } else { conn = state.connectivity; }
-
-            if (relayWebSocketModule.routeToPeerServer(parent, ws, req, user, cookie)) { return; }
-
-            relayWebSocketModule.setupSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, request: req, node: node, ciraConnection: ciraconn, connectivity: conn });
-
-            // If Intel AMT CIRA connection is available, use it
-            if (ciraconn != null) {
-                relayWebSocketModule.setupCiraRelayTransport({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, request: req, node: node, ciraConnection: ciraconn, connectivity: conn, tlsConstants: constants, createSerialTunnel: SerialTunnel });
-            } else if ((conn & 4) != 0) { // If Intel AMT direct connection is possible, option a direct socket
-                relayWebSocketModule.setupDirectRelayTransport({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, request: req, node: node, ciraConnection: ciraconn, connectivity: conn, tlsConstants: constants });
-            }
-
-            relayWebSocketModule.recordRelayStartAndUserAccess(obj, parent, domain, user, ws, req, node, ciraconn, conn);
-        });
-    }
+    const handleRelayWebSocket = relayWebSocketModule.createRelayWebSocketHandler({ state: obj, parent: parent, remoteControlRight: MESHRIGHT_REMOTECONTROL, getRandomPassword: getRandomPassword, tlsConstants: constants, createSerialTunnel: SerialTunnel });
 
     // Handle a request to download a mesh agent
     // Create a OSX mesh agent installer
