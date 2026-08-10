@@ -14,6 +14,7 @@ const getMeshRelayUrl = require('../webserver/agent-downloads.js').getMeshRelayU
 const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDownloadUrl;
 const sendMeshCoreList = require('../webserver/agent-downloads.js').sendMeshCoreList;
 const sendMeshCore = require('../webserver/agent-downloads.js').sendMeshCore;
+const sendAgentList = require('../webserver/agent-downloads.js').sendAgentList;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -85,4 +86,19 @@ test('unknown MeshCore downloads return not found', function () {
     const res = { sendStatus: function (status) { this.status = status; } };
     sendMeshCore({ defaultMeshCores: {} }, function () { }, { query: { dlcore: 'missing' } }, res, false);
     assert.equal(res.status, 404);
+});
+
+test('agent listings use domain binaries and expose authorized downloads', function () {
+    const parent = {
+        config: { settings: { agentcoredumpusers: [] } },
+        meshAgentBinaries: { 3: { id: 3, desc: 'Default Agent', rname: 'meshagent.exe', size: 10, hashhex: 'default' } }
+    };
+    const custom = { id: 3, desc: 'Custom Agent', rname: 'customagent.exe', size: 20, hashhex: 'custom', zdata: Buffer.alloc(1) };
+    const res = { send: function (body) { this.body = body; } };
+    sendAgentList(parent, { meshAgentBinaries: { 3: custom } }, { _id: 'user//admin', siteadmin: 0xFFFFFFFF }, { originalUrl: '/tenant/meshagents', query: {} }, res, true);
+    assert.match(res.body, /Custom&nbsp;Agent/);
+    assert.match(res.body, /customagent\.exe/);
+    assert.match(res.body, />PDB<\/a>/);
+    assert.match(res.body, />ZIP<\/a>/);
+    assert.match(res.body, /MeshAgent Crash Dumps/);
 });

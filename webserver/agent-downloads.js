@@ -52,3 +52,25 @@ module.exports.sendMeshCore = function (parent, setContentDispositionHeader, req
         response.send(data.slice(4));
     }
 };
+
+module.exports.sendAgentList = function (parent, domain, user, request, response, coreDumpsAllowed) {
+    var html = '<html><head><title>Mesh Agents</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
+    html += '<tr style="background-color:lightgray"><th>ID</th><th>Description</th><th>Link</th><th>Size</th><th>SHA384</th><th>MeshCmd</th></tr>';
+    const originalUrl = request.originalUrl.split('?')[0];
+    for (var agentId in parent.meshAgentBinaries) {
+        if ((agentId >= 10000) && (agentId != 10005)) continue;
+        const agentInfo = module.exports.getAgentInfo(parent.meshAgentBinaries, domain.meshAgentBinaries, agentId);
+        html += '<tr><td>' + agentInfo.id + '</td><td>' + agentInfo.desc.split(' ').join('&nbsp;') + '</td>';
+        html += '<td><a download href="' + originalUrl + '?id=' + agentInfo.id + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">' + agentInfo.rname + '</a>';
+        if ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(parent.config.settings.agentcoredumpusers)) && (parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0))) {
+            if ((agentId == 3) || (agentId == 4)) { html += ', <a download href="' + originalUrl + '?id=' + agentInfo.id + '&pdb=1' + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">PDB</a>'; }
+        }
+        if (agentInfo.zdata != null) { html += ', <a download href="' + originalUrl + '?id=' + agentInfo.id + '&zip=1' + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">ZIP</a>'; }
+        html += '</td><td>' + agentInfo.size + '</td><td>' + agentInfo.hashhex + '</td>';
+        html += '<td><a download href="' + originalUrl + '?meshcmd=' + agentInfo.id + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">' + agentInfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
+    }
+    html += '</table><a href="' + originalUrl + '?cores=1' + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">MeshCores</a> ';
+    if (coreDumpsAllowed) { html += '<a href="' + originalUrl + '?dumps=1' + (request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '') + '">MeshAgent Crash Dumps</a>'; }
+    html += '</body></html>';
+    response.send(html);
+};
