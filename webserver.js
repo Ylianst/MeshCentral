@@ -2991,25 +2991,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             }
         } else if (req.query.script != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-
-            // Send a specific mesh install script back
-            var scriptInfo = obj.parent.meshAgentInstallScripts[req.query.script];
-            if (scriptInfo == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-            setContentDispositionHeader(res, 'application/octet-stream', scriptInfo.rname, null, 'script');
-            var data = scriptInfo.data;
-            var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' }
-            if (obj.isTrustedCert(domain) != true) {
-                cmdoptions.wgetoptionshttps += '--no-check-certificate ';
-                cmdoptions.curloptionshttps += '-k ';
-            }
-            if (domain.agentnoproxy === true) {
-                cmdoptions.wgetoptionshttp += '--no-proxy ';
-                cmdoptions.wgetoptionshttps += '--no-proxy ';
-                cmdoptions.curloptionshttp += '--noproxy \'*\' ';
-                cmdoptions.curloptionshttps += '--noproxy \'*\' ';
-            }
-            for (var i in cmdoptions) { data = data.split('{{{' + i + '}}}').join(cmdoptions[i]); }
-            res.send(data);
+            agentDownloadsModule.sendAgentInstallScript(obj, parent, domain, setContentDispositionHeader, req, res);
             return;
         } else if (req.query.meshcmd != null) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key

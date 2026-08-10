@@ -74,3 +74,23 @@ module.exports.sendAgentList = function (parent, domain, user, request, response
     html += '</body></html>';
     response.send(html);
 };
+
+module.exports.sendAgentInstallScript = function (state, parent, domain, setContentDispositionHeader, request, response) {
+    const scriptInfo = parent.meshAgentInstallScripts[request.query.script];
+    if (scriptInfo == null) { try { response.sendStatus(404); } catch (ex) { } return; }
+    setContentDispositionHeader(response, 'application/octet-stream', scriptInfo.rname, null, 'script');
+    var data = scriptInfo.data;
+    var cmdoptions = { wgetoptionshttp: '', wgetoptionshttps: '', curloptionshttp: '-L ', curloptionshttps: '-L ' };
+    if (state.isTrustedCert(domain) != true) {
+        cmdoptions.wgetoptionshttps += '--no-check-certificate ';
+        cmdoptions.curloptionshttps += '-k ';
+    }
+    if (domain.agentnoproxy === true) {
+        cmdoptions.wgetoptionshttp += '--no-proxy ';
+        cmdoptions.wgetoptionshttps += '--no-proxy ';
+        cmdoptions.curloptionshttp += '--noproxy \'*\' ';
+        cmdoptions.curloptionshttps += '--noproxy \'*\' ';
+    }
+    for (var option in cmdoptions) { data = data.split('{{{' + option + '}}}').join(cmdoptions[option]); }
+    response.send(data);
+};

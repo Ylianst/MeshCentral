@@ -15,6 +15,7 @@ const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDow
 const sendMeshCoreList = require('../webserver/agent-downloads.js').sendMeshCoreList;
 const sendMeshCore = require('../webserver/agent-downloads.js').sendMeshCore;
 const sendAgentList = require('../webserver/agent-downloads.js').sendAgentList;
+const sendAgentInstallScript = require('../webserver/agent-downloads.js').sendAgentInstallScript;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -101,4 +102,20 @@ test('agent listings use domain binaries and expose authorized downloads', funct
     assert.match(res.body, />PDB<\/a>/);
     assert.match(res.body, />ZIP<\/a>/);
     assert.match(res.body, /MeshAgent Crash Dumps/);
+});
+
+test('agent install scripts receive certificate and proxy command options', function () {
+    const parent = { meshAgentInstallScripts: { 1: { rname: 'install.sh', data: '{{{wgetoptionshttp}}}|{{{wgetoptionshttps}}}|{{{curloptionshttp}}}|{{{curloptionshttps}}}' } } };
+    const state = { isTrustedCert: function () { return false; } };
+    const headers = [];
+    const res = { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } };
+    sendAgentInstallScript(state, parent, { agentnoproxy: true }, function (response, type, filename) { headers.push(filename); }, { query: { script: 1 } }, res);
+    assert.equal(headers[0], 'install.sh');
+    assert.equal(res.body, '--no-proxy |--no-check-certificate --no-proxy |-L --noproxy \'*\' |-L -k --noproxy \'*\' ');
+});
+
+test('unknown agent install scripts return not found', function () {
+    const res = { sendStatus: function (status) { this.status = status; } };
+    sendAgentInstallScript({}, { meshAgentInstallScripts: {} }, {}, function () { }, { query: { script: 99 } }, res);
+    assert.equal(res.status, 404);
 });
