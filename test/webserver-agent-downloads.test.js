@@ -23,6 +23,7 @@ const sendGenericMeshAction = require('../webserver/agent-downloads.js').sendGen
 const sendRouteMeshAction = require('../webserver/agent-downloads.js').sendRouteMeshAction;
 const sendAgentSelfInstaller = require('../webserver/agent-downloads.js').sendAgentSelfInstaller;
 const sendAgentPdb = require('../webserver/agent-downloads.js').sendAgentPdb;
+const sendAgentBinary = require('../webserver/agent-downloads.js').sendAgentBinary;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -261,4 +262,26 @@ test('PDB downloads require an authorized user and resolve symbol paths', functi
     const denied = { sendStatus: function (status) { this.status = status; } };
     sendAgentPdb(state, parent, agent, function () { }, {}, denied);
     assert.equal(denied.status, 404);
+});
+
+test('direct agent downloads apply customized APK filenames', function () {
+    const headers = [];
+    const agent = { rname: 'meshagent.apk', data: Buffer.from('agent') };
+    const res = { send: function (body) { this.body = body; }, sendFile: function (path) { this.path = path; }, setHeader: function () { } };
+    sendAgentBinary({ agentcustomization: { filename: 'company-agent' } }, agent, function (response, type, filename) { headers.push(filename); }, { query: {} }, res);
+    assert.deepEqual(headers, ['company-agent.apk']);
+    assert.equal(res.body, agent.data);
+});
+
+test('compressed agent downloads return ZIP data or not found', function () {
+    const headers = [];
+    const data = Buffer.from('zip');
+    const res = { send: function (body) { this.body = body; }, sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
+    sendAgentBinary({}, { rname: 'meshagent', zdata: data }, function (response, type, filename) { headers.push(filename); }, { query: { zip: 1 } }, res);
+    assert.equal(res.body, data);
+    assert.deepEqual(headers, ['meshagent.zip']);
+
+    const missing = { sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
+    sendAgentBinary({}, { rname: 'meshagent' }, function () { }, { query: { zip: 1 } }, missing);
+    assert.equal(missing.status, 404);
 });

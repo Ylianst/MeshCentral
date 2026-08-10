@@ -225,3 +225,21 @@ module.exports.sendAgentPdb = function (state, parent, agentInfo, setContentDisp
     }
     try { response.sendStatus(404); } catch (ex) { }
 };
+
+module.exports.sendAgentBinary = function (domain, agentInfo, setContentDispositionHeader, request, response) {
+    var filename = agentInfo.rname;
+    if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { filename = domain.agentcustomization.filename; }
+    if (agentInfo.rname.endsWith('.apk') && !filename.endsWith('.apk')) { filename += '.apk'; }
+    if (agentInfo.mtime != null) { response.setHeader('Last-Modified', agentInfo.mtime.toUTCString()); }
+    if (request.query.zip == 1) {
+        if (agentInfo.zdata != null) {
+            setContentDispositionHeader(response, 'application/octet-stream', filename + '.zip', null, 'meshagent.zip');
+            response.send(agentInfo.zdata);
+        } else {
+            try { response.sendStatus(404); } catch (ex) { }
+        }
+        return;
+    }
+    setContentDispositionHeader(response, 'application/octet-stream', filename, null, 'meshagent');
+    if (agentInfo.data == null) { response.sendFile(agentInfo.path); } else { response.send(agentInfo.data); }
+};
