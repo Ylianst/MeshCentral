@@ -14,6 +14,7 @@ const closeRecordingFile = require('../webserver/relay-websocket.js').closeRecor
 const setupSessionRecording = require('../webserver/relay-websocket.js').setupSessionRecording;
 const routeToPeerServer = require('../webserver/relay-websocket.js').routeToPeerServer;
 const finishSessionRecording = require('../webserver/relay-websocket.js').finishSessionRecording;
+const logRelaySessionEnd = require('../webserver/relay-websocket.js').logRelaySessionEnd;
 
 test('relay node lookups reject database failures and missing result arrays', function () {
     assert.equal(hasDatabaseFailure(new Error('database unavailable'), []), true);
@@ -118,4 +119,17 @@ test('relay recording finalization is idempotent across close and error events',
     assert.equal(events.length, 1);
     assert.equal(events[0][2].protocol, 101);
     assert.equal(websocket.logfile, undefined);
+});
+
+test('relay session end logs include duration and routed address', function () {
+    const events = [];
+    const parent = { DispatchEvent: function () { events.push(Array.from(arguments)); } };
+    const websocket = { id: 'session1', time: Date.now() - 2500 };
+    const request = { clientIp: '192.0.2.1', query: { p: 2 } };
+    const node = { _id: 'node//node1', meshid: 'mesh//main', host: '192.0.2.10' };
+    logRelaySessionEnd({}, parent, { id: '' }, { _id: 'user//alice', name: 'Alice' }, websocket, request, node, { remoteAddr: '192.0.2.20' }, 2);
+    assert.equal(events.length, 1);
+    assert.equal(events[0][2].msgid, 9);
+    assert.equal(events[0][2].msgArgs[2], '192.0.2.20');
+    assert.equal(events[0][2].protocol, 101);
 });

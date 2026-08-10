@@ -134,3 +134,22 @@ module.exports.finishSessionRecording = function (options) {
     }, 5000);
     return true;
 };
+
+module.exports.logRelaySessionEnd = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {
+    if (!websocket.time || (request.query.p != 2) || !user) { return; }
+    const ip = (ciraConnection != null) ? ciraConnection.remoteAddr : (((connectivity & 4) != 0) ? node.host : request.clientIp);
+    const seconds = Math.floor((Date.now() - websocket.time) / 1000);
+    const event = {
+        etype: 'relay',
+        action: 'relaylog',
+        domain: domain.id,
+        userid: user._id,
+        username: user.name,
+        msgid: 9,
+        msgArgs: [websocket.id, request.clientIp, ip, seconds],
+        msg: 'Ended relay session "' + websocket.id + '" from ' + request.clientIp + ' to ' + ip + ', ' + seconds + ' second(s)',
+        protocol: 101,
+        nodeid: node._id
+    };
+    parent.DispatchEvent(['*', user._id, node._id, node.meshid], state, event);
+};

@@ -2341,17 +2341,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     console.log('CIRA server websocket error from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Websocket relay closed on error.');
 
-                    // Log the disconnection
-                    if (ws.time) {
-                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
-                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                            if (user) {
-                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: 101, nodeid: node._id };
-                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
-                            }
-                        }
-                    }
-
+                    relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     // Websocket closed, close the CIRA channel and TLS session.
                     if (ws.forwardclient) {
                         if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
@@ -2367,19 +2357,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 ws.on('close', function () {
                     parent.debug('webrelay', 'Websocket relay closed.');
 
-                    // Log the disconnection
-                    if (ws.time) {
-                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
-                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                            var nodeid = node._id;
-                            var meshid = node.meshid;
-                            if (user) {
-                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: nodeid };
-                                obj.parent.DispatchEvent(['*', user._id, nodeid, meshid], obj, event);
-                            }
-                        }
-                    }
-
+                    relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     // Websocket closed, close the CIRA channel and TLS session.
                     if (ws.forwardclient) {
                         if (ws.forwardclient.close) { ws.forwardclient.close(); }      // NonTLS, close the CIRA channel
@@ -2428,16 +2406,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 ws.on('error', function (err) {
                     console.log('Error with relay web socket connection from ' + req.clientIp + ', ' + err.toString().split('\r')[0] + '.');
                     parent.debug('webrelay', 'Error with relay web socket connection from ' + req.clientIp + '.');
-                    // Log the disconnection
-                    if (ws.time) {
-                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
-                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                            if (user) {
-                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
-                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
-                            }
-                        }
-                    }
+                    relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 0 });
@@ -2446,16 +2415,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 // If the web socket is closed, close the associated TCP connection.
                 ws.on('close', function () {
                     parent.debug('webrelay', 'Closing relay web socket connection to ' + req.query.host + '.');
-                    // Log the disconnection
-                    if (ws.time) {
-                        if (req.query.p == 2) { // Only log event if Intel Redirection, otherwise hundreds of logs for WSMAN are recorded
-                            var msg = 'Ended relay session', msgid = 9, ip = ((ciraconn != null) ? ciraconn.remoteAddr : (((conn & 4) != 0) ? node.host : req.clientIp));
-                            if (user) {
-                                var event = { etype: 'relay', action: 'relaylog', domain: domain.id, userid: user._id, username: user.name, msgid: msgid, msgArgs: [ws.id, req.clientIp, ip, Math.floor((Date.now() - ws.time) / 1000)], msg: msg + ' \"' + ws.id + '\" from ' + req.clientIp + ' to ' + ip + ', ' + Math.floor((Date.now() - ws.time) / 1000) + ' second(s)', protocol: ((req.query.p == 2) ? 101 : 100), nodeid: node._id };
-                                obj.parent.DispatchEvent(['*', user._id, node._id, node.meshid], obj, event);
-                            }
-                        }
-                    }
+                    relayWebSocketModule.logRelaySessionEnd(obj, parent, domain, user, ws, req, node, ciraconn, conn);
                     if (ws.forwardclient) { try { ws.forwardclient.destroy(); } catch (e) { } }
 
                     relayWebSocketModule.finishSessionRecording({ state: obj, parent: parent, domain: domain, user: user, websocket: ws, delayAdjustmentSeconds: 0 });
