@@ -2900,72 +2900,9 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             if (typeof req.session.userid == 'string') { user = obj.users[req.session.userid]; }
             if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
 
-            // Check if this user has access to agent core dumps
-            if ((obj.parent.config.settings.agentcoredump === true) && ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(obj.parent.config.settings.agentcoredumpusers)) && (obj.parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0)))) {
-                coreDumpsAllowed = true;
-
-                if ((req.query.dldump != null) && obj.common.IsFilenameValid(req.query.dldump)) {
-                    // Download a dump file
-                    var dumpFile = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', req.query.dldump);
-                    if (obj.fs.existsSync(dumpFile)) {
-                        setContentDispositionHeader(res, 'application/octet-stream', req.query.dldump, null, 'file.bin');
-                        res.sendFile(dumpFile); return;
-                    } else {
-                        try { res.sendStatus(404); } catch (ex) { } return;
-                    }
-                }
-
-                if ((req.query.deldump != null) && obj.common.IsFilenameValid(req.query.deldump)) {
-                    // Delete a dump file
-                    try { obj.fs.unlinkSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', req.query.deldump)); } catch (ex) { console.log(ex); }
-                }
-
-                if ((req.query.dumps != null) || (req.query.deldump != null)) {
-                    // Send list of agent core dumps
-                    var response = '<html><head><title>Mesh Agents Core Dumps</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
-                    response += '<tr style="background-color:lightgray"><th>ID</th><th>Upload Date</th><th>Description</th><th>Current</th><th>Dump</th><th>Size</th><th>Agent</th><th>Agent SHA384</th><th>NodeID</th><th></th></tr>';
-
-                    var coreDumpPath = obj.path.join(parent.datapath, '..', 'meshcentral-coredumps');
-                    if (obj.fs.existsSync(coreDumpPath)) {
-                        var files = obj.fs.readdirSync(coreDumpPath);
-                        var coredumps = [];
-                        for (var i in files) {
-                            var file = files[i];
-                            if (file.endsWith('.dmp')) {
-                                var fileSplit = file.substring(0, file.length - 4).split('-');
-                                if (fileSplit.length == 3) {
-                                    var agentid = parseInt(fileSplit[0]);
-                                    if ((isNaN(agentid) == false) && (obj.parent.meshAgentBinaries[agentid] != null)) {
-                                        var agentinfo = agentDownloadsModule.getAgentInfo(obj.parent.meshAgentBinaries, domain.meshAgentBinaries, agentid);
-                                        var filestats = obj.fs.statSync(obj.path.join(parent.datapath, '..', 'meshcentral-coredumps', file));
-                                        coredumps.push({
-                                            fileSplit: fileSplit,
-                                            agentinfo: agentinfo,
-                                            filestats: filestats,
-                                            currentAgent: agentinfo.hashhex.startsWith(fileSplit[1].toLowerCase()),
-                                            downloadUrl: req.originalUrl.split('?')[0] + '?dldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
-                                            deleteUrl: req.originalUrl.split('?')[0] + '?deldump=' + file + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
-                                            agentUrl: req.originalUrl.split('?')[0] + '?id=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : ''),
-                                            time: new Date(filestats.ctime)
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                        coredumps.sort(function (a, b) { if (a.time > b.time) return -1; if (a.time < b.time) return 1; return 0; });
-                        for (var i in coredumps) {
-                            var d = coredumps[i];
-                            response += '<tr><td>' + d.agentinfo.id + '</td><td>' + d.time.toDateString().split(' ').join('&nbsp;') + '</td><td>' + d.agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
-                            response += '<td style=text-align:center>' + d.currentAgent + '</td><td><a download href="' + d.downloadUrl + '">Download</a></td><td style=text-align:right>' + d.filestats.size + '</td>';
-                            if (d.currentAgent) { response += '<td><a download href="' + d.agentUrl + '">Download</a></td>'; } else { response += '<td></td>'; }
-                            response += '<td>' + d.fileSplit[1].toLowerCase() + '</td><td>' + d.fileSplit[2] + '</td><td><a href="' + d.deleteUrl + '">Delete</a></td></tr>';
-                        }
-                    }
-                    response += '</table><a href="' + req.originalUrl.split('?')[0] + (req.query.key ? ('?key=' + encodeURIComponent(req.query.key)) : '') + '">Mesh Agents</a></body></html>';
-                    res.send(response);
-                    return;
-                }
-            }
+            const coreDumpResult = agentDownloadsModule.handleCoreDumpRequest(obj, parent, domain, user, setContentDispositionHeader, req, res);
+            coreDumpsAllowed = coreDumpResult.allowed;
+            if (coreDumpResult.handled) { return; }
 
             if (req.query.cores != null) {
                 agentDownloadsModule.sendMeshCoreList(parent, req, res);

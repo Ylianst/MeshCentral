@@ -25,6 +25,7 @@ const sendAgentSelfInstaller = require('../webserver/agent-downloads.js').sendAg
 const sendAgentPdb = require('../webserver/agent-downloads.js').sendAgentPdb;
 const sendAgentBinary = require('../webserver/agent-downloads.js').sendAgentBinary;
 const sendCustomizedWindowsAgent = require('../webserver/agent-downloads.js').sendCustomizedWindowsAgent;
+const handleCoreDumpRequest = require('../webserver/agent-downloads.js').handleCoreDumpRequest;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -314,4 +315,33 @@ test('customized Windows agents embed device group and server policy', function 
     assert.match(streams[0].msh, /MeshServer=wss:\/\/server\.example\.com:443\/tenant\/agent\.ashx/);
     assert.match(streams[0].msh, /Tag=branch1/);
     assert.match(streams[0].msh, /displayName=Company Agent/);
+});
+
+test('core dump requests list authorized dumps with domain agent metadata', function () {
+    const parent = {
+        datapath: 'data',
+        config: { settings: { agentcoredump: true } },
+        meshAgentBinaries: { 3: { id: 3, desc: 'Default Agent', hashhex: 'abc123' } }
+    };
+    const custom = { id: 3, desc: 'Custom Agent', hashhex: 'abc999' };
+    const state = {
+        path: { join: function () { return Array.from(arguments).join('/'); } },
+        common: { IsFilenameValid: function () { return true; } },
+        fs: {
+            existsSync: function () { return true; },
+            readdirSync: function () { return ['3-ABC-node1.dmp']; },
+            statSync: function () { return { ctime: new Date('2024-01-02T00:00:00Z'), size: 50 }; }
+        }
+    };
+    const res = { send: function (body) { this.body = body; }, sendStatus: function (status) { this.status = status; } };
+    const result = handleCoreDumpRequest(state, parent, { meshAgentBinaries: { 3: custom } }, { siteadmin: 0xFFFFFFFF }, function () { }, { originalUrl: '/tenant/meshagents?dumps=1', query: { dumps: 1 } }, res);
+    assert.deepEqual(result, { allowed: true, handled: true });
+    assert.match(res.body, /Custom&nbsp;Agent/);
+    assert.match(res.body, /\?dldump=3-ABC-node1\.dmp/);
+    assert.match(res.body, />50<\/td>/);
+});
+
+test('core dump requests remain inactive for unauthorized users', function () {
+    const result = handleCoreDumpRequest({}, { config: { settings: { agentcoredump: true, agentcoredumpusers: [] } } }, {}, { _id: 'user//alice', siteadmin: 0 }, function () { }, { query: { dumps: 1 } }, {});
+    assert.deepEqual(result, { allowed: false, handled: false });
 });

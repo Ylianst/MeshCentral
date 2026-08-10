@@ -316,3 +316,66 @@ module.exports.sendCustomizedWindowsAgent = function (state, parent, domain, age
     if (agentInfo.mtime != null) { response.setHeader('Last-Modified', agentInfo.mtime.toUTCString()); }
     parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: agentInfo.path, destinationStream: response, msh: meshSettings, peinfo: agentInfo.pe });
 };
+
+module.exports.handleCoreDumpRequest = function (state, parent, domain, user, setContentDispositionHeader, request, response) {
+    const allowed = (parent.config.settings.agentcoredump === true) && ((user.siteadmin == 0xFFFFFFFF) || ((Array.isArray(parent.config.settings.agentcoredumpusers)) && (parent.config.settings.agentcoredumpusers.indexOf(user._id) >= 0)));
+    if (!allowed) { return { allowed: false, handled: false }; }
+    const directory = state.path.join(parent.datapath, '..', 'meshcentral-coredumps');
+    if ((request.query.dldump != null) && state.common.IsFilenameValid(request.query.dldump)) {
+        const dumpFile = state.path.join(directory, request.query.dldump);
+        if (state.fs.existsSync(dumpFile)) {
+            setContentDispositionHeader(response, 'application/octet-stream', request.query.dldump, null, 'file.bin');
+            response.sendFile(dumpFile);
+        } else {
+            try { response.sendStatus(404); } catch (ex) { }
+        }
+        return { allowed: true, handled: true };
+    }
+    if ((request.query.deldump != null) && state.common.IsFilenameValid(request.query.deldump)) {
+        try { state.fs.unlinkSync(state.path.join(directory, request.query.deldump)); } catch (ex) { console.log(ex); }
+    }
+    if ((request.query.dumps == null) && (request.query.deldump == null)) { return { allowed: true, handled: false }; }
+
+    var html = '<html><head><title>Mesh Agents Core Dumps</title><style>table,th,td { border:1px solid black;border-collapse:collapse;padding:3px; }</style></head><body style=overflow:auto><table>';
+    html += '<tr style="background-color:lightgray"><th>ID</th><th>Upload Date</th><th>Description</th><th>Current</th><th>Dump</th><th>Size</th><th>Agent</th><th>Agent SHA384</th><th>NodeID</th><th></th></tr>';
+    if (state.fs.existsSync(directory)) {
+        const files = state.fs.readdirSync(directory);
+        const dumps = [];
+        for (var i in files) {
+            const file = files[i];
+            if (file.endsWith('.dmp')) {
+                const parts = file.substring(0, file.length - 4).split('-');
+                if (parts.length == 3) {
+                    const agentId = parseInt(parts[0]);
+                    if (!isNaN(agentId) && (parent.meshAgentBinaries[agentId] != null)) {
+                        const agentInfo = module.exports.getAgentInfo(parent.meshAgentBinaries, domain.meshAgentBinaries, agentId);
+                        const fileStats = state.fs.statSync(state.path.join(directory, file));
+                        const requestPath = request.originalUrl.split('?')[0];
+                        const key = request.query.key ? ('&key=' + encodeURIComponent(request.query.key)) : '';
+                        dumps.push({
+                            fileSplit: parts,
+                            agentinfo: agentInfo,
+                            filestats: fileStats,
+                            currentAgent: agentInfo.hashhex.startsWith(parts[1].toLowerCase()),
+                            downloadUrl: requestPath + '?dldump=' + file + key,
+                            deleteUrl: requestPath + '?deldump=' + file + key,
+                            agentUrl: requestPath + '?id=' + agentInfo.id + key,
+                            time: new Date(fileStats.ctime)
+                        });
+                    }
+                }
+            }
+        }
+        dumps.sort(function (a, b) { if (a.time > b.time) return -1; if (a.time < b.time) return 1; return 0; });
+        for (var j in dumps) {
+            const dump = dumps[j];
+            html += '<tr><td>' + dump.agentinfo.id + '</td><td>' + dump.time.toDateString().split(' ').join('&nbsp;') + '</td><td>' + dump.agentinfo.desc.split(' ').join('&nbsp;') + '</td>';
+            html += '<td style=text-align:center>' + dump.currentAgent + '</td><td><a download href="' + dump.downloadUrl + '">Download</a></td><td style=text-align:right>' + dump.filestats.size + '</td>';
+            if (dump.currentAgent) { html += '<td><a download href="' + dump.agentUrl + '">Download</a></td>'; } else { html += '<td></td>'; }
+            html += '<td>' + dump.fileSplit[1].toLowerCase() + '</td><td>' + dump.fileSplit[2] + '</td><td><a href="' + dump.deleteUrl + '">Delete</a></td></tr>';
+        }
+    }
+    html += '</table><a href="' + request.originalUrl.split('?')[0] + (request.query.key ? ('?key=' + encodeURIComponent(request.query.key)) : '') + '">Mesh Agents</a></body></html>';
+    response.send(html);
+    return { allowed: true, handled: true };
+};
