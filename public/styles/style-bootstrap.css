@@ -1600,6 +1600,13 @@ NoMeshesPanel img {
     font-size: 10px;
 }
 
+.auth-app-qrcode {
+    background: #FFF;
+    display: inline-block;
+    line-height: 0;
+    padding: 8px;
+}
+
 #p2AccountActions .mL {
     margin-left: 40px;
 }
