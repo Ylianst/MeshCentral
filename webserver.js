@@ -111,6 +111,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginFailureModule = require('./webserver/login-failure.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
+    const userWebStateModule = require('./webserver/user-web-state.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
     const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
@@ -1049,18 +1050,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 // Fetch the web state
                 parent.debug('web', 'handleRootRequestEx: success.');
 
-                var webstate = '{}';
-                if ((err == null) && (states != null) && (Array.isArray(states)) && (states.length == 1) && (states[0].state != null)) {
-                    const filteredWebState = obj.filterUserWebState(states[0].state);
-                    if (typeof filteredWebState == 'string') { webstate = filteredWebState; }
-                }
-                if ((webstate == '{}') && (typeof domain.defaultuserwebstate == 'object')) { webstate = JSON.stringify(domain.defaultuserwebstate); } // User has no web state, use defaults.
-                if (typeof domain.forceduserwebstate == 'object') { // Forces initial user web state if present, use it.
-                    var webstate2 = {};
-                    try { if (webstate != '{}') { webstate2 = JSON.parse(webstate); } } catch (ex) { }
-                    for (var i in domain.forceduserwebstate) { webstate2[i] = domain.forceduserwebstate[i]; }
-                    webstate = JSON.stringify(webstate2);
-                }
+                const webstate = userWebStateModule.resolveUserWebState(obj.filterUserWebState, err, states, domain);
 
                 // Custom user interface
                 var customui = '';
@@ -1098,15 +1088,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 else if (args.webrtcconfig && (typeof args.webrtcconfig == 'object')) { webRtcConfig = encodeURIComponent(JSON.stringify(args.webrtcconfig)).replace(/'/g, '%27'); }
 
                 // Load default page style or new modern ui
-                var uiViewMode = 'default';
-                var webstateJSON = JSON.parse(webstate);
-                if (req.query.sitestyle != null) {
-                    if (req.query.sitestyle == 3) { uiViewMode = 'default3'; }
-                } else if (webstateJSON && webstateJSON.uiViewMode == 3) {
-                    uiViewMode = 'default3';
-                } else if (domain.sitestyle == 3) {
-                    uiViewMode = 'default3';
-                }
+                const uiViewMode = userWebStateModule.getUiViewMode(req, domain, webstate);
                 // Refresh the session
                 render(dbGetFunc.req, dbGetFunc.res, getRenderPage(uiViewMode, dbGetFunc.req, domain), getRenderArgs({
                     authCookie: authCookie,
