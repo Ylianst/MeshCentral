@@ -161,3 +161,31 @@ module.exports.sendGenericMeshAction = function (state, domain, user, setContent
     setContentDispositionHeader(response, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
     response.send(JSON.stringify(action, null, ' '));
 };
+
+module.exports.sendRouteMeshAction = function (state, domain, user, setContentDispositionHeader, request, response) {
+    const nodeIdSplit = request.query.nodeid.split('/');
+    if ((nodeIdSplit[0] != 'node') || (nodeIdSplit[1] != domain.id)) { try { response.sendStatus(401); } catch (ex) { } return; }
+    state.db.Get(request.query.nodeid, function (err, nodes) {
+        if (module.exports.hasDatabaseFailure(err, nodes) || (nodes.length != 1)) { try { response.sendStatus(401); } catch (ex) { } return; }
+        const node = nodes[0];
+        if (!module.exports.hasNodeAccess(state, user, node)) { try { response.sendStatus(401); } catch (ex) { } return; }
+        const action = {
+            action: request.query.meshaction,
+            localPort: 1234,
+            remoteName: node.name,
+            remoteNodeId: node._id,
+            remoteTarget: null,
+            remotePort: 3389,
+            username: '',
+            password: '',
+            serverId: state.agentCertificateHashHex.toUpperCase(),
+            serverHttpsHash: Buffer.from(state.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(),
+            debugLevel: 0
+        };
+        if (user != null) { action.username = user.name; }
+        if (request.query.key != null) { action.loginKey = request.query.key; }
+        if (state.args.lanonly != true) { action.serverUrl = module.exports.getMeshRelayUrl(state, domain, request); }
+        setContentDispositionHeader(response, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
+        response.send(JSON.stringify(action, null, ' '));
+    });
+};

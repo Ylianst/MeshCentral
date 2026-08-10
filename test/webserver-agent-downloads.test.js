@@ -20,6 +20,7 @@ const sendAgentInstallScript = require('../webserver/agent-downloads.js').sendAg
 const sendMeshCmd = require('../webserver/agent-downloads.js').sendMeshCmd;
 const sendMeshTool = require('../webserver/agent-downloads.js').sendMeshTool;
 const sendGenericMeshAction = require('../webserver/agent-downloads.js').sendGenericMeshAction;
+const sendRouteMeshAction = require('../webserver/agent-downloads.js').sendRouteMeshAction;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -194,4 +195,32 @@ test('generic mesh actions contain user and server connection details', function
     assert.equal(action.serverUrl, 'wss://server.example.com:443/tenant/meshrelay.ashx');
     assert.equal(action.loginKey, 'secret');
     assert.deepEqual(headers, ['meshaction.txt']);
+});
+
+test('route mesh actions resolve authorized nodes and connection details', function () {
+    const user = { name: 'Alice' };
+    const node = { _id: 'node/tenant/node1', meshid: 'mesh/tenant/main', name: 'Desktop' };
+    const state = {
+        db: { Get: function (id, callback) { callback(null, [node]); } },
+        GetNodeRights: function () { return 1; },
+        agentCertificateHashHex: 'aabb',
+        webCertificateHashs: { tenant: Buffer.from([1, 2]).toString('binary') },
+        args: { port: 443 },
+        getWebServerName: function () { return 'server.example.com'; }
+    };
+    const res = { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } };
+    sendRouteMeshAction(state, { id: 'tenant' }, user, function () { }, { query: { meshaction: 'route', nodeid: node._id } }, res);
+    const action = JSON.parse(res.body);
+    assert.equal(action.remoteName, 'Desktop');
+    assert.equal(action.remoteNodeId, node._id);
+    assert.equal(action.username, 'Alice');
+    assert.equal(action.serverUrl, 'wss://server.example.com:443/tenant/meshrelay.ashx');
+});
+
+test('route mesh actions reject unauthorized nodes', function () {
+    const node = { _id: 'node/tenant/node1', meshid: 'mesh/tenant/main' };
+    const state = { db: { Get: function (id, callback) { callback(null, [node]); } }, GetNodeRights: function () { return 0; } };
+    const res = { sendStatus: function (status) { this.status = status; } };
+    sendRouteMeshAction(state, { id: 'tenant' }, {}, function () { }, { query: { meshaction: 'route', nodeid: node._id } }, res);
+    assert.equal(res.status, 401);
 });

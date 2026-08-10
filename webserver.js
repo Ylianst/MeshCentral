@@ -3017,36 +3017,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                 if (user == null) { try { res.sendStatus(404); } catch (ex) { } return; }
             }
             if ((req.query.meshaction == 'route') && (req.query.nodeid != null)) {
-                var nodeIdSplit = req.query.nodeid.split('/');
-                if ((nodeIdSplit[0] != 'node') || (nodeIdSplit[1] != domain.id)) { try { res.sendStatus(401); } catch (ex) { } return; }
-                obj.db.Get(req.query.nodeid, function (err, nodes) {
-                    if (agentDownloadsModule.hasDatabaseFailure(err, nodes) || (nodes.length != 1)) { try { res.sendStatus(401); } catch (ex) { } return; }
-                    var node = nodes[0];
-                    if (!agentDownloadsModule.hasNodeAccess(obj, user, node)) { try { res.sendStatus(401); } catch (ex) { } return; }
-
-                    // Create the meshaction.txt file for meshcmd.exe
-                    var meshaction = {
-                        action: req.query.meshaction,
-                        localPort: 1234,
-                        remoteName: node.name,
-                        remoteNodeId: node._id,
-                        remoteTarget: null,
-                        remotePort: 3389,
-                        username: '',
-                        password: '',
-                        serverId: obj.agentCertificateHashHex.toUpperCase(), // SHA384 of server HTTPS public key
-                        serverHttpsHash: Buffer.from(obj.webCertificateHashs[domain.id], 'binary').toString('hex').toUpperCase(), // SHA384 of server HTTPS certificate
-                        debugLevel: 0
-                    };
-                    if (user != null) { meshaction.username = user.name; }
-                    if (req.query.key != null) { meshaction.loginKey = req.query.key; }
-                    var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-                    if (obj.args.lanonly != true) { meshaction.serverUrl = 'wss://' + obj.getWebServerName(domain, req) + ':' + httpsPort + '/' + ((domain.id == '') ? '' : (domain.id + '/')) + 'meshrelay.ashx'; }
-
-                    setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
-                    res.send(JSON.stringify(meshaction, null, ' '));
-                    return;
-                });
+                agentDownloadsModule.sendRouteMeshAction(obj, domain, user, setContentDispositionHeader, req, res);
             } else if (req.query.meshaction == 'generic') {
                 agentDownloadsModule.sendGenericMeshAction(obj, domain, user, setContentDispositionHeader, req, res);
                 return;
