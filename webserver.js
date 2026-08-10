@@ -1154,7 +1154,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             // Password recovery 2 factor request
             if (req.session && (req.session.loginmode == 5) && (req.session.temail)) {
                 obj.db.GetUserWithVerifiedEmail(domain.id, req.session.temail, function (err, docs) {
-                    if ((err != null) || (docs.length == 0)) {
+                    if (emailAccountUtils.hasDatabaseFailure(err, docs) || (docs.length == 0)) {
                         parent.debug('web', 'handleRootRequestEx: password recover 2FA fail.');
                         req.session = null;
                         res.redirect(domain.url + getQueryPortion(req)); // BAD***
