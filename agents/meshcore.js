@@ -7878,11 +7878,8 @@ function isValidHttpUrl(value) {
 
 	try {
 		const url = new URL(value);
-		if ((url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname)) {
-			return false;
-		}
-		return true;
-	} catch {
+		return ((url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname));
+	} catch (ex) {
 		return false;
 	}
 }

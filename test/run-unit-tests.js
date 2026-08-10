@@ -116,3 +116,4 @@ require('./webserver/auth/login/two-factor-authentication.test.js');
 require('./webserver/shared/user-agent.test.js');
 require('./webserver/realtime/web-relay.test.js');
 require('./webserver/realtime/websocket-auth.test.js');
+require('./meshcore-compatibility.test.js');
