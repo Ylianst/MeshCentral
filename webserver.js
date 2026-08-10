@@ -1228,57 +1228,70 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                                 parent.debug('web', 'handleCreateAccountRequest: Username already exists');
                                 req.session.loginmode = 2;
                                 req.session.messageid = 104; // Username already exists.
+                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                             } else {
                                 var user = { type: 'user', _id: 'user/' + domain.id + '/' + req.body.username.toLowerCase(), name: req.body.username, email: req.body.email, creation: Math.floor(Date.now() / 1000), login: Math.floor(Date.now() / 1000), access: Math.floor(Date.now() / 1000), domain: domain.id };
                                 if (domain.newaccountsrights) { user.siteadmin = domain.newaccountsrights; }
                                 if (obj.common.validateStrArray(domain.newaccountrealms)) { user.groups = domain.newaccountrealms; }
                                 if ((domain.passwordrequirements != null) && (domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) { hint = hint.substring(0, 250); } user.passhint = hint; }
                                 if (domainUserCount == 0) { user.siteadmin = 4294967295; /*if (domain.newaccounts === 2) { delete domain.newaccounts; }*/ } // If this is the first user, give the account site admin.
-
-                                // Auto-join any user groups
-                                if (typeof domain.newaccountsusergroups == 'object') {
-                                    for (var i in domain.newaccountsusergroups) {
-                                        var ugrpid = domain.newaccountsusergroups[i];
-                                        if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
-                                        var ugroup = obj.userGroups[ugrpid];
-                                        if (ugroup != null) {
-                                            // Add group to the user
-                                            if (user.links == null) { user.links = {}; }
-                                            user.links[ugroup._id] = { rights: 1 };
-
-                                            // Add user to the group
-                                            ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
-                                            db.Set(ugroup);
-
-                                            // Notify user group change
-                                            var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
-                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
-                                            parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
-                                        }
-                                    }
-                                }
-
-                                obj.users[user._id] = user;
-                                releaseAccountCreation();
-                                req.session.userid = user._id;
-                                req.session.ip = req.clientIp; // Bind this session to the IP address of the request
-                                setSessionRandom(req);
                                 // Create a user, generate a salt and hash the password
                                 require('./pass').hash(req.body.password1, function (err, salt, hash, tag) {
-                                    if (err) throw err;
+                                    if (err) {
+                                        releaseAccountCreation();
+                                        parent.debug('web', 'handleCreateAccountRequest: password hash failed');
+                                        req.session.loginmode = 2;
+                                        req.session.messageid = 100;
+                                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                                        return;
+                                    }
+                                    if (obj.users[user._id] != null) {
+                                        releaseAccountCreation();
+                                        parent.debug('web', 'handleCreateAccountRequest: Username already exists after password hash');
+                                        req.session.loginmode = 2;
+                                        req.session.messageid = 104;
+                                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+                                        return;
+                                    }
                                     user.salt = salt;
                                     user.hash = hash;
                                     delete user.passtype;
+
+                                    // Auto-join any user groups
+                                    if (typeof domain.newaccountsusergroups == 'object') {
+                                        for (var i in domain.newaccountsusergroups) {
+                                            var ugrpid = domain.newaccountsusergroups[i];
+                                            if (ugrpid.indexOf('/') < 0) { ugrpid = 'ugrp/' + domain.id + '/' + ugrpid; }
+                                            var ugroup = obj.userGroups[ugrpid];
+                                            if (ugroup != null) {
+                                                if (user.links == null) { user.links = {}; }
+                                                user.links[ugroup._id] = { rights: 1 };
+                                                ugroup.links[user._id] = { userid: user._id, name: user.name, rights: 1 };
+                                                db.Set(ugroup);
+                                                var event = { etype: 'ugrp', ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msg: 'Added user ' + user.name + ' to user group ' + ugroup.name, addUserDomain: domain.id };
+                                                if (db.changeStream) { event.noact = 1; }
+                                                parent.DispatchEvent(['*', ugroup._id, user._id], obj, event);
+                                            }
+                                        }
+                                    }
+
+                                    obj.users[user._id] = user;
+                                    releaseAccountCreation();
                                     obj.db.SetUser(user);
+
+                                    req.session.userid = user._id;
+                                    req.session.ip = req.clientIp;
+                                    setSessionRandom(req);
 
                                     // Send the verification email
                                     if ((domain.mailserver != null) && (domain.auth != 'sspi') && (domain.auth != 'ldap') && (obj.common.validateEmail(user.email, 1, 256) == true)) { domain.mailserver.sendAccountCheckMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key); }
+
+                                    var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
+                                    if (obj.db.changeStream) { event.noact = 1; }
+                                    obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
+                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                                 }, 0);
-                                var event = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'accountcreate', msg: 'Account created, email is ' + req.body.email, domain: domain.id };
-                                if (obj.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
-                                obj.parent.DispatchEvent(['*', 'server-users'], obj, event);
                             }
-                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
                         }
                     });
                 }
