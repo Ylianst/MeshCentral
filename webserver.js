@@ -64,6 +64,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const startupDataModule = require('./webserver/bootstrap/startup-data.js');
     const runtimeInitializationModule = require('./webserver/bootstrap/runtime-initialization.js');
     const rights = require('./webserver/shared/rights.js');
+    const MESHRIGHT_REMOTECONTROL = rights.mesh.remoteControl;
+    const MESHRIGHT_AGENTCONSOLE = rights.mesh.agentConsole;
+    const SITERIGHT_NOMESHCMD = rights.site.noMeshCommand;
     const ssoStrategiesModule = require('./webserver/auth/sso/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/auth/sso/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/auth/sso/sso-login-response.js');
@@ -448,8 +451,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     parent.AddEventDispatch(['server-shareremove'], obj);
     obj.HandleEvent = webRelay.handleEvent;
 
-    const MESHRIGHT_REMOTECONTROL = rights.mesh.remoteControl;
-    const MESHRIGHT_AGENTCONSOLE = rights.mesh.agentConsole;
     const fileDownloads = fileDownloadsModule.createFileDownloads({
         state: obj,
         parent: parent,
@@ -491,8 +492,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         removeAllEventDispatch: function (target) { parent.RemoveAllEventDispatch(target); },
         addEventDispatch: function (subscriptions, target) { parent.AddEventDispatch(subscriptions, target); }
     }));
-    const SITERIGHT_NOMESHCMD = rights.site.noMeshCommand;
-
     runtimeInitializationModule.configureSspiDomains(obj, parent, require);
 
     certificateHashesModule.initializeCertificateHashes(obj, parent);
