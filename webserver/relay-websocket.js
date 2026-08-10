@@ -136,7 +136,8 @@ module.exports.finishSessionRecording = function (options) {
 };
 
 module.exports.logRelaySessionEnd = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {
-    if (!websocket.time || (request.query.p != 2) || !user) { return; }
+    if (!websocket.time || (request.query.p != 2) || !user || (websocket.relayEndLogged === true)) { return false; }
+    websocket.relayEndLogged = true;
     const ip = (ciraConnection != null) ? ciraConnection.remoteAddr : (((connectivity & 4) != 0) ? node.host : request.clientIp);
     const seconds = Math.floor((Date.now() - websocket.time) / 1000);
     const event = {
@@ -152,6 +153,7 @@ module.exports.logRelaySessionEnd = function (state, parent, domain, user, webso
         nodeid: node._id
     };
     parent.DispatchEvent(['*', user._id, node._id, node.meshid], state, event);
+    return true;
 };
 
 module.exports.recordRelayStartAndUserAccess = function (state, parent, domain, user, websocket, request, node, ciraConnection, connectivity) {

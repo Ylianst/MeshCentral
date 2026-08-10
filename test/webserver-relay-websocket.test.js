@@ -128,7 +128,8 @@ test('relay session end logs include duration and routed address', function () {
     const websocket = { id: 'session1', time: Date.now() - 2500 };
     const request = { clientIp: '192.0.2.1', query: { p: 2 } };
     const node = { _id: 'node//node1', meshid: 'mesh//main', host: '192.0.2.10' };
-    logRelaySessionEnd({}, parent, { id: '' }, { _id: 'user//alice', name: 'Alice' }, websocket, request, node, { remoteAddr: '192.0.2.20' }, 2);
+    assert.equal(logRelaySessionEnd({}, parent, { id: '' }, { _id: 'user//alice', name: 'Alice' }, websocket, request, node, { remoteAddr: '192.0.2.20' }, 2), true);
+    assert.equal(logRelaySessionEnd({}, parent, { id: '' }, { _id: 'user//alice', name: 'Alice' }, websocket, request, node, { remoteAddr: '192.0.2.20' }, 2), false);
     assert.equal(events.length, 1);
     assert.equal(events[0][2].msgid, 9);
     assert.equal(events[0][2].msgArgs[2], '192.0.2.20');
