@@ -123,3 +123,23 @@ module.exports.sendMeshCmd = function (state, parent, domain, setContentDisposit
         parent.exeHandler.streamExeWithJavaScript({ platform: agentInfo.platform, sourceFileName: agentInfo.path, destinationStream: response, js: Buffer.from(parent.defaultMeshCmd, 'utf8'), peinfo: agentInfo.pe });
     }
 };
+
+module.exports.sendMeshTool = function (state, parent, rootDirectory, setContentDispositionHeader, action, response) {
+    const tools = {
+        winrouter: { key: 'MeshCentralRouter', filename: 'MeshCentralRouter.exe' },
+        winassistant: { key: 'MeshCentralAssistant', filename: 'MeshCentralAssistant.exe' },
+        macrouter: { key: 'MeshCentralRouterMacOS', filename: 'MeshCentralRouter.dmg' }
+    };
+    const tool = tools[action];
+    if (tool == null) { return false; }
+    var filePath = null;
+    if (parent.meshToolsBinaries[tool.key]) { filePath = parent.meshToolsBinaries[tool.key].path; }
+    if ((filePath == null) || !state.fs.existsSync(filePath)) { filePath = state.path.join(rootDirectory, 'agents', tool.filename); }
+    if (state.fs.existsSync(filePath)) {
+        setContentDispositionHeader(response, 'application/octet-stream', tool.filename, null, tool.filename);
+        try { response.sendFile(filePath); } catch (ex) { }
+    } else {
+        try { response.sendStatus(404); } catch (ex) { }
+    }
+    return true;
+};

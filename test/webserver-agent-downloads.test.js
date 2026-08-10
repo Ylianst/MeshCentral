@@ -17,6 +17,7 @@ const sendMeshCore = require('../webserver/agent-downloads.js').sendMeshCore;
 const sendAgentList = require('../webserver/agent-downloads.js').sendAgentList;
 const sendAgentInstallScript = require('../webserver/agent-downloads.js').sendAgentInstallScript;
 const sendMeshCmd = require('../webserver/agent-downloads.js').sendMeshCmd;
+const sendMeshTool = require('../webserver/agent-downloads.js').sendMeshTool;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -142,4 +143,25 @@ test('MeshCmd downloads merge the command core into unsigned agents', function (
     assert.equal(res.statusCode, 200);
     assert.equal(streams[0].sourceFileName, 'agent');
     assert.equal(streams[0].js.toString(), 'command-core');
+});
+
+test('companion tool downloads prefer configured binaries', function () {
+    const sent = [], headers = [];
+    const state = { fs: { existsSync: function (path) { return path == 'custom-router.exe'; } }, path: { join: function () { return Array.from(arguments).join('/'); } } };
+    const parent = { meshToolsBinaries: { MeshCentralRouter: { path: 'custom-router.exe' } } };
+    const res = { sendFile: function (path) { sent.push(path); }, sendStatus: function (status) { this.status = status; } };
+    assert.equal(sendMeshTool(state, parent, 'root', function (response, type, filename) { headers.push(filename); }, 'winrouter', res), true);
+    assert.deepEqual(sent, ['custom-router.exe']);
+    assert.deepEqual(headers, ['MeshCentralRouter.exe']);
+});
+
+test('companion tool downloads use repository fallbacks and reject unknown actions', function () {
+    const sent = [];
+    const fallback = 'root/agents/MeshCentralRouter.dmg';
+    const state = { fs: { existsSync: function (path) { return path == fallback; } }, path: { join: function () { return Array.from(arguments).join('/'); } } };
+    const parent = { meshToolsBinaries: {} };
+    const res = { sendFile: function (path) { sent.push(path); }, sendStatus: function (status) { this.status = status; } };
+    assert.equal(sendMeshTool(state, parent, 'root', function () { }, 'macrouter', res), true);
+    assert.deepEqual(sent, [fallback]);
+    assert.equal(sendMeshTool(state, parent, 'root', function () { }, 'unknown', res), false);
 });

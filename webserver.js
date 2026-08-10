@@ -3007,34 +3007,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
 
                 // Download tools using a cookie
                 if (c.download == req.query.meshaction) {
-                    if (req.query.meshaction == 'winrouter') {
-                        var p = null;
-                        if (obj.parent.meshToolsBinaries['MeshCentralRouter']) { p = obj.parent.meshToolsBinaries['MeshCentralRouter'].path; }
-                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
-                        if (obj.fs.existsSync(p)) {
-                            setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
-                            try { res.sendFile(p); } catch (ex) { }
-                        } else { try { res.sendStatus(404); } catch (ex) { } }
-                        return;
-                    } else if (req.query.meshaction == 'winassistant') {
-                        var p = null;
-                        if (obj.parent.meshToolsBinaries['MeshCentralAssistant']) { p = obj.parent.meshToolsBinaries['MeshCentralAssistant'].path; }
-                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
-                        if (obj.fs.existsSync(p)) {
-                            setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
-                            try { res.sendFile(p); } catch (ex) { }
-                        } else { try { res.sendStatus(404); } catch (ex) { } }
-                        return;
-                    } else if (req.query.meshaction == 'macrouter') {
-                        var p = null;
-                        if (obj.parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = obj.parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
-                        if ((p == null) || (!obj.fs.existsSync(p))) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
-                        if (obj.fs.existsSync(p)) {
-                            setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
-                            try { res.sendFile(p); } catch (ex) { }
-                        } else { try { res.sendStatus(404); } catch (ex) { } }
-                        return;
-                    }
+                    agentDownloadsModule.sendMeshTool(obj, parent, __dirname, setContentDispositionHeader, req.query.meshaction, res);
                     return;
                 }
 
@@ -3087,32 +3060,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                 setContentDispositionHeader(res, 'application/octet-stream', 'meshaction.txt', null, 'meshaction.txt');
                 res.send(JSON.stringify(meshaction, null, ' '));
                 return;
-            } else if (req.query.meshaction == 'winrouter') {
-                var p = null;
-                if (parent.meshToolsBinaries['MeshCentralRouter']) { p = parent.meshToolsBinaries['MeshCentralRouter'].path; }
-                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.exe'); }
-                if (obj.fs.existsSync(p)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.exe', null, 'MeshCentralRouter.exe');
-                    try { res.sendFile(p); } catch (ex) { }
-                } else { try { res.sendStatus(404); } catch (ex) { } }
-                return;
-            } else if (req.query.meshaction == 'winassistant') {
-                var p = null;
-                if (parent.meshToolsBinaries['MeshCentralAssistant']) { p = parent.meshToolsBinaries['MeshCentralAssistant'].path; }
-                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralAssistant.exe'); }
-                if (obj.fs.existsSync(p)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralAssistant.exe', null, 'MeshCentralAssistant.exe');
-                    try { res.sendFile(p); } catch (ex) { }
-                } else { try { res.sendStatus(404); } catch (ex) { } }
-                return;
-            } else if (req.query.meshaction == 'macrouter') {
-                var p = null;
-                if (parent.meshToolsBinaries['MeshCentralRouterMacOS']) { p = parent.meshToolsBinaries['MeshCentralRouterMacOS'].path; }
-                if ((p == null) || !obj.fs.existsSync(p)) { p = obj.path.join(__dirname, 'agents', 'MeshCentralRouter.dmg'); }
-                if (obj.fs.existsSync(p)) {
-                    setContentDispositionHeader(res, 'application/octet-stream', 'MeshCentralRouter.dmg', null, 'MeshCentralRouter.dmg');
-                    try { res.sendFile(p); } catch (ex) { }
-                } else { try { res.sendStatus(404); } catch (ex) { } }
+            } else if (agentDownloadsModule.sendMeshTool(obj, parent, __dirname, setContentDispositionHeader, req.query.meshaction, res)) {
                 return;
             } else {
                 try { res.sendStatus(401); } catch (ex) { }
