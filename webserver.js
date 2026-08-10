@@ -115,6 +115,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginPageSessionModule = require('./webserver/login-page-session.js');
     const loginPageTwoFactorModule = require('./webserver/login-page-two-factor.js');
     const loginPageStrategiesModule = require('./webserver/login-page-strategies.js');
+    const loginPageAccountOptionsModule = require('./webserver/login-page-account-options.js');
     const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
@@ -857,6 +858,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const renderApplication = applicationRenderModule.createApplicationRenderer({ state: obj, parent: parent, args: args, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getQueryPortion: getQueryPortion });
     const authenticateSspi = sspiAuthenticationModule.createSspiAuthentication({ state: obj, parent: parent, database: db, setSessionRandom: setSessionRandom });
     const authenticateAutomatically = automaticAuthenticationModule.createAutomaticAuthentication({ state: obj, parent: parent, setSessionRandom: setSessionRandom });
+    const getLoginPageAccountOptions = loginPageAccountOptionsModule.createLoginPageAccountOptions({ state: obj, parent: parent, args: args, captcha: captcha });
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
@@ -887,20 +889,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     // Return a list of server supported features for a given domain and user
     function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
         parent.debug('web', 'handleRootRequestLogin()');
-        var features = 0;
-        if ((parent.config != null) && (parent.config.settings != null) && ((parent.config.settings.allowframing == true) || (typeof parent.config.settings.allowframing == 'string') || (parent.config.settings.allowedframingorigins != null) || (domain != null && domain.allowedframingorigins != null))) { features += 32; } // Allow site within iframe
-        if (domain.usernameisemail) { features += 0x00200000; } // Username is email address
-        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
+        const accountOptions = getLoginPageAccountOptions(domain);
         const loginPageSession = loginPageSessionModule.consumeLoginPageSession(req, domain, EscapeHtml, obj.common.uniqueArray);
         const loginmode = loginPageSession.loginMode;
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
-        const emailcheck = (allowAccountReset && (domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
-
-        // Check if we are allowed to create new users using the login screen
-        var newAccountsAllowed = true;
-        if ((domain.newaccounts !== 1) && (domain.newaccounts !== true)) { for (var i in obj.users) { if (obj.users[i].domain == domain.id) { newAccountsAllowed = false; break; } } }
-        if (parent.config.settings.maintenancemode != null) { newAccountsAllowed = false; }
-
         const twoFactorOptions = loginPageTwoFactorModule.getLoginTwoFactorOptions(req, domain, hardwareKeyChallenge, loginmode, parent);
 
         const strategyOptions = loginPageStrategiesModule.getLoginStrategyOptions(domain, obj.common);
@@ -909,28 +900,21 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
         const customFiles = pageOptionsModule.encodeCustomFiles(domain);
 
-        // Setup CAPTCHA if needed
-        var newAccountCaptcha = '', newAccountCaptchaImage = '';
-        if ((domain.newaccountscaptcha != null) && (domain.newaccountscaptcha !== false)) {
-            newAccountCaptcha = captcha.createNewAccountCookie();
-            newAccountCaptchaImage = 'newAccountCaptcha.ashx?x=' + newAccountCaptcha;
-        }
-
         // Render the login page
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
                 loginmode: loginmode,
                 rootCertLink: getRootCertLink(domain),
-                newAccount: newAccountsAllowed, // True if new accounts are allowed from the login page
+                newAccount: accountOptions.newAccountsAllowed, // True if new accounts are allowed from the login page
                 newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), // 1 if new account creation requires password
-                newAccountCaptcha: newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
-                newAccountCaptchaImage: newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
+                newAccountCaptcha: accountOptions.newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
+                newAccountCaptchaImage: accountOptions.newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
                 serverDnsName: obj.getWebServerName(domain, req),
-                serverPublicPort: httpsPort,
+                serverPublicPort: accountOptions.serverPublicPort,
                 passlogin: (typeof domain.showpasswordlogin == 'boolean') ? domain.showpasswordlogin : true,
-                emailcheck: emailcheck,
-                features: features,
+                emailcheck: accountOptions.emailCheck,
+                features: accountOptions.features,
                 sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
                 passRequirements: passRequirements,
                 customui: customui,
