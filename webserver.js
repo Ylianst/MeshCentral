@@ -112,15 +112,11 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
-    const loginPageSessionModule = require('./webserver/login-page-session.js');
-    const loginPageTwoFactorModule = require('./webserver/login-page-two-factor.js');
-    const loginPageStrategiesModule = require('./webserver/login-page-strategies.js');
-    const loginPageAccountOptionsModule = require('./webserver/login-page-account-options.js');
+    const loginPageRenderModule = require('./webserver/login-page-render.js');
     const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
     const applicationRenderModule = require('./webserver/application-render.js');
-    const pageOptionsModule = require('./webserver/page-options.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
@@ -854,11 +850,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     const handleResetAccountRequest = accountRecoveryModule.createAccountRecovery({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkEmail: checkEmail, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, getRandomSixDigitInteger: getRandomSixDigitInteger }).handleResetAccountRequest;
 
-    const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: handleRootRequestLogin, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
     const renderApplication = applicationRenderModule.createApplicationRenderer({ state: obj, parent: parent, args: args, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getQueryPortion: getQueryPortion });
     const authenticateSspi = sspiAuthenticationModule.createSspiAuthentication({ state: obj, parent: parent, database: db, setSessionRandom: setSessionRandom });
     const authenticateAutomatically = automaticAuthenticationModule.createAutomaticAuthentication({ state: obj, parent: parent, setSessionRandom: setSessionRandom });
-    const getLoginPageAccountOptions = loginPageAccountOptionsModule.createLoginPageAccountOptions({ state: obj, parent: parent, args: args, captcha: captcha });
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
@@ -884,82 +878,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         } else {
             handleLoginChallenge(req, res, domain, passRequirements);
         }
-    }
-
-    // Return a list of server supported features for a given domain and user
-    function handleRootRequestLogin(req, res, domain, hardwareKeyChallenge, passRequirements) {
-        parent.debug('web', 'handleRootRequestLogin()');
-        const accountOptions = getLoginPageAccountOptions(domain);
-        const loginPageSession = loginPageSessionModule.consumeLoginPageSession(req, domain, EscapeHtml, obj.common.uniqueArray);
-        const loginmode = loginPageSession.loginMode;
-        const twoFactorOptions = loginPageTwoFactorModule.getLoginTwoFactorOptions(req, domain, hardwareKeyChallenge, loginmode, parent);
-
-        const strategyOptions = loginPageStrategiesModule.getLoginStrategyOptions(domain, obj.common);
-
-        const customui = pageOptionsModule.encodeCustomUi(domain);
-
-        const customFiles = pageOptionsModule.encodeCustomFiles(domain);
-
-        // Render the login page
-        render(req, res,
-            getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
-            getRenderArgs({
-                loginmode: loginmode,
-                rootCertLink: getRootCertLink(domain),
-                newAccount: accountOptions.newAccountsAllowed, // True if new accounts are allowed from the login page
-                newAccountPass: (((domain.newaccountspass == null) || (domain.newaccountspass == '')) ? 0 : 1), // 1 if new account creation requires password
-                newAccountCaptcha: accountOptions.newAccountCaptcha, // If new account creation requires a CAPTCHA, this string will not be empty
-                newAccountCaptchaImage: accountOptions.newAccountCaptchaImage, // Set to the URL of the CAPTCHA image
-                serverDnsName: obj.getWebServerName(domain, req),
-                serverPublicPort: accountOptions.serverPublicPort,
-                passlogin: (typeof domain.showpasswordlogin == 'boolean') ? domain.showpasswordlogin : true,
-                emailcheck: accountOptions.emailCheck,
-                features: accountOptions.features,
-                sessiontime: (args.sessiontime) ? args.sessiontime : 60, // Session time in minutes, 60 minutes is the default
-                passRequirements: passRequirements,
-                customui: customui,
-                customFiles: customFiles,
-                footer: (domain.loginfooter == null) ? '' : obj.common.replacePlaceholders(domain.loginfooter, { 
-                    'serverversion': obj.parent.currentVer,
-                    'servername': obj.getWebServerName(domain, req),
-                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
-                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
-                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
-                    'relaysessions': parent.webserver.relaySessionCount,
-                    'relaycount': Object.keys(parent.webserver.wsrelays).length
-                }),
-                hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
-                messageid: loginPageSession.messageId,
-                flashErrors: JSON.stringify(loginPageSession.flashErrors).replace(/"/g, '\\"'),
-                passhint: loginPageSession.passwordHint,
-
-                welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {
-                    'serverversion': obj.parent.currentVer,
-                    'servername': obj.getWebServerName(domain, req),
-                    'agentsessions': Object.keys(parent.webserver.wsagents).length,
-                    'connectedusers': Object.keys(parent.webserver.wssessions).length,
-                    'userssessions': Object.keys(parent.webserver.wssessions2).length,
-                    'relaysessions': parent.webserver.relaySessionCount,
-                    'relaycount': Object.keys(parent.webserver.wsrelays).length
-                })).split('\'').join('\\\'') : null,
-                welcomePictureFullScreen: ((typeof domain.welcomepicturefullscreen == 'boolean') ? domain.welcomepicturefullscreen : false),
-                hwstate: twoFactorOptions.hardwareState,
-                otpemail: twoFactorOptions.email,
-                otpduo: twoFactorOptions.duo,
-                otpsms: twoFactorOptions.sms,
-                otpmsg: twoFactorOptions.messaging,
-                otppush: twoFactorOptions.push,
-                autofido: twoFactorOptions.autoFido,
-                twoFactorCookieDays: twoFactorOptions.cookieDays,
-                authStrategies: strategyOptions.strategies,
-                oidcButtonText: strategyOptions.oidcButtonText,
-                oidcButtonIcon: strategyOptions.oidcButtonIcon,
-                oidcButtonIcon2x: strategyOptions.oidcButtonIcon2x,
-                loginpicture: (typeof domain.loginpicture == 'string'),
-                tokenTimeout: twoFactorOptions.timeout, // Two-factor authentication screen timeout in milliseconds,
-                renderLanguages: obj.renderLanguages,
-                showLanguageSelect: domain.showlanguageselect ? domain.showlanguageselect : false,
-            }, req, domain, (domain.sitestyle >= 2) ? 'login2' : 'login'));
     }
 
     const rootRequests = rootRequestsModule.createRootRequests({
@@ -999,6 +917,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const handleRootPostRequest = rootRequests.handleRootPostRequest;
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;
+    const renderLoginPage = loginPageRenderModule.createLoginPageRenderer({ state: obj, parent: parent, args: args, captcha: captcha, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getRootCertLink: getRootCertLink, escapeHtml: EscapeHtml });
+    const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: renderLoginPage, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
 
     // Handle a web socket relay request
     const handleRelayWebSocket = relayWebSocketModule.createRelayWebSocketHandler({ state: obj, parent: parent, remoteControlRight: MESHRIGHT_REMOTECONTROL, getRandomPassword: getRandomPassword, tlsConstants: constants, createSerialTunnel: SerialTunnel });
