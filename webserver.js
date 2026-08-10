@@ -102,6 +102,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
 const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
 const certificateTrustModule = require('./webserver/certificate-trust.js');
 const domainUserFeaturesModule = require('./webserver/domain-user-features.js');
+const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const telemetryModule = require('./webserver/telemetry.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
@@ -2190,6 +2191,7 @@ const domainUserFeaturesModule = require('./webserver/domain-user-features.js');
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
+            if (relayWebSocketModule.hasDatabaseFailure(err, docs)) { parent.debug('web', 'ERR: Unable to load relay node: ' + err); try { ws.close(); } catch (e) { } return; }
             if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
             var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
             node = docs[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); ws.id = getRandomPassword(); ws.time = Date.now();
