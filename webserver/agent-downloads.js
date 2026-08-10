@@ -189,3 +189,24 @@ module.exports.sendRouteMeshAction = function (state, domain, user, setContentDi
         response.send(JSON.stringify(action, null, ' '));
     });
 };
+
+module.exports.sendAgentSelfInstaller = function (parent, domain, getMshFromRequest, setContentDispositionHeader, request, response) {
+    const meshSettings = getMshFromRequest(request, response, domain);
+    if (meshSettings == null) { try { response.sendStatus(401); } catch (ex) { } return; }
+    const agentId = parseInt(request.query.meshinstall);
+    const agentInfo = module.exports.getAgentInfo(parent.meshAgentBinaries, domain.meshAgentBinaries, agentId);
+    const scriptInfo = parent.meshAgentInstallScripts[6];
+    if ((agentInfo == null) || (scriptInfo == null) || (agentInfo.platform == 'win32')) { try { response.sendStatus(404); } catch (ex) { } return; }
+
+    var tokens;
+    const msh = {};
+    const lines = meshSettings.split('\r').join('').split('\n');
+    for (var i in lines) { tokens = lines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
+    const js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
+    var filename = 'meshagent';
+    if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { filename = domain.agentcustomization.filename; }
+    setContentDispositionHeader(response, 'application/octet-stream', filename, null, 'meshagent');
+    if (agentInfo.mtime != null) { response.setHeader('Last-Modified', agentInfo.mtime.toUTCString()); }
+    response.statusCode = 200;
+    parent.exeHandler.streamExeWithJavaScript({ platform: agentInfo.platform, sourceFileName: agentInfo.path, destinationStream: response, js: Buffer.from(js, 'utf8'), peinfo: agentInfo.pe });
+};

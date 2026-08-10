@@ -2833,32 +2833,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
 
         if ((req.query.meshinstall != null) && (req.query.id != null)) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
-
-            // Send meshagent with included self installer for a specific platform back
-            // Start by getting the .msh for this request
-            var meshsettings = getMshFromRequest(req, res, domain);
-            if (meshsettings == null) { try { res.sendStatus(401); } catch (ex) { } return; }
-
-            // Get the interactive install script, this only works for non-Windows agents
-            var agentid = parseInt(req.query.meshinstall);
-            var argentInfo = obj.parent.meshAgentBinaries[agentid];
-            if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
-            var scriptInfo = obj.parent.meshAgentInstallScripts[6];
-            if ((argentInfo == null) || (scriptInfo == null) || (argentInfo.platform == 'win32')) { try { res.sendStatus(404); } catch (ex) { } return; }
-
-            // Change the .msh file into JSON format and merge it into the install script
-            var tokens, msh = {}, meshsettingslines = meshsettings.split('\r').join('').split('\n');
-            for (var i in meshsettingslines) { tokens = meshsettingslines[i].split('='); if (tokens.length == 2) { msh[tokens[0]] = tokens[1]; } }
-            var js = scriptInfo.data.replace('var msh = {};', 'var msh = ' + JSON.stringify(msh) + ';');
-
-            // Get the agent filename
-            var meshagentFilename = 'meshagent';
-            if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) { meshagentFilename = domain.agentcustomization.filename; }
-
-            setContentDispositionHeader(res, 'application/octet-stream', meshagentFilename, null, 'meshagent');
-            if (argentInfo.mtime != null) { res.setHeader('Last-Modified', argentInfo.mtime.toUTCString()); }
-            res.statusCode = 200;
-            obj.parent.exeHandler.streamExeWithJavaScript({ platform: argentInfo.platform, sourceFileName: argentInfo.path, destinationStream: res, js: Buffer.from(js, 'utf8'), peinfo: argentInfo.pe });
+            agentDownloadsModule.sendAgentSelfInstaller(parent, domain, getMshFromRequest, setContentDispositionHeader, req, res);
         } else if (req.query.id != null) {
             // Send a specific mesh agent back
             var argentInfo = obj.parent.meshAgentBinaries[req.query.id];

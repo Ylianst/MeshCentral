@@ -21,6 +21,7 @@ const sendMeshCmd = require('../webserver/agent-downloads.js').sendMeshCmd;
 const sendMeshTool = require('../webserver/agent-downloads.js').sendMeshTool;
 const sendGenericMeshAction = require('../webserver/agent-downloads.js').sendGenericMeshAction;
 const sendRouteMeshAction = require('../webserver/agent-downloads.js').sendRouteMeshAction;
+const sendAgentSelfInstaller = require('../webserver/agent-downloads.js').sendAgentSelfInstaller;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -222,5 +223,27 @@ test('route mesh actions reject unauthorized nodes', function () {
     const state = { db: { Get: function (id, callback) { callback(null, [node]); } }, GetNodeRights: function () { return 0; } };
     const res = { sendStatus: function (status) { this.status = status; } };
     sendRouteMeshAction(state, { id: 'tenant' }, {}, function () { }, { query: { meshaction: 'route', nodeid: node._id } }, res);
+    assert.equal(res.status, 401);
+});
+
+test('agent self installers embed MSH settings into non-Windows binaries', function () {
+    const streams = [], headers = [];
+    const parent = {
+        meshAgentBinaries: { 6: { platform: 'linux', path: 'agent', pe: null } },
+        meshAgentInstallScripts: { 6: { data: 'before; var msh = {}; after;' } },
+        exeHandler: { streamExeWithJavaScript: function (options) { streams.push(options); } }
+    };
+    const req = { query: { meshinstall: '6', id: 'mesh-id' } };
+    const res = { sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
+    sendAgentSelfInstaller(parent, { agentcustomization: { filename: 'company-agent' } }, function () { return '\r\nMeshName=Main\r\nMeshType=2\r\n'; }, function (response, type, filename) { headers.push(filename); }, req, res);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(headers, ['company-agent']);
+    assert.equal(streams[0].sourceFileName, 'agent');
+    assert.match(streams[0].js.toString(), /var msh = \{"MeshName":"Main","MeshType":"2"\};/);
+});
+
+test('agent self installers reject missing MSH authorization', function () {
+    const res = { sendStatus: function (status) { this.status = status; } };
+    sendAgentSelfInstaller({}, {}, function () { return null; }, function () { }, { query: {} }, res);
     assert.equal(res.status, 401);
 });
