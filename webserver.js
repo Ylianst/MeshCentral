@@ -451,27 +451,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     parent.AddEventDispatch(['server-shareremove'], obj);
     obj.HandleEvent = webRelay.handleEvent;
 
-    const fileDownloads = fileDownloadsModule.createFileDownloads({
-        state: obj,
-        parent: parent,
-        serverRoot: __dirname,
-        checkUserIpAddress: checkUserIpAddress,
-        getDomain: getDomain,
-        checkAgentIpAddress: checkAgentIpAddress,
-        getRandomLowerCase: getRandomLowerCase,
-        setContentDispositionHeader: setContentDispositionHeader,
-        render: render,
-        getRenderPage: getRenderPage,
-        getRenderArgs: getRenderArgs,
-        getRootCertLink: getRootCertLink,
-        remoteControlRight: MESHRIGHT_REMOTECONTROL,
-        getLanguageCodes: obj.getLanguageCodes
-    });
-    const handleDownloadUserFiles = fileDownloads.downloadUserFile;
-    const handleDeviceFile = fileDownloads.downloadDeviceFile;
-    const handleAgentDownloadFile = fileDownloads.downloadAgentFile;
-    const handleDownloadFile = fileDownloads.downloadServerFile;
-    const handleMeshCommander = fileDownloads.meshCommander;
     const translations = translationsModule.createTranslations({
         state: obj,
         parent: parent,
@@ -681,6 +660,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const handleRootPostRequest = rootRequests.handleRootPostRequest;
     const handleRootRedirect = rootRequests.handleRootRedirect;
     const getRootCertLink = rootRequests.getRootCertLink;
+    const fileDownloads = fileDownloadsModule.createFileDownloads({
+        state: obj,
+        parent: parent,
+        serverRoot: __dirname,
+        checkUserIpAddress: checkUserIpAddress,
+        getDomain: getDomain,
+        checkAgentIpAddress: checkAgentIpAddress,
+        getRandomLowerCase: getRandomLowerCase,
+        setContentDispositionHeader: setContentDispositionHeader,
+        render: render,
+        getRenderPage: getRenderPage,
+        getRenderArgs: getRenderArgs,
+        getRootCertLink: getRootCertLink,
+        remoteControlRight: MESHRIGHT_REMOTECONTROL,
+        getLanguageCodes: obj.getLanguageCodes
+    });
+    const handleDownloadUserFiles = fileDownloads.downloadUserFile;
+    const handleDeviceFile = fileDownloads.downloadDeviceFile;
+    const handleAgentDownloadFile = fileDownloads.downloadAgentFile;
+    const handleDownloadFile = fileDownloads.downloadServerFile;
+    const handleMeshCommander = fileDownloads.meshCommander;
     const renderLoginPage = loginPageRenderModule.createLoginPageRenderer({ state: obj, parent: parent, args: args, captcha: captcha, render: render, getRenderPage: getRenderPage, getRenderArgs: getRenderArgs, getRootCertLink: getRootCertLink, escapeHtml: EscapeHtml });
     const handleLoginChallenge = loginChallengeModule.createLoginChallengeHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, getHardwareKeyChallenge: getHardwareKeyChallenge, renderLogin: renderLoginPage, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure });
 
