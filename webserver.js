@@ -113,6 +113,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
+    const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
     const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
@@ -953,21 +954,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             }
         }
 
-        // Figure out the minimal password requirement
-        var passRequirements = null;
-        if (domain.passwordrequirements != null) {
-            if (domain.passrequirementstr == null) {
-                var passRequirements = {};
-                if (typeof domain.passwordrequirements.min == 'number') { passRequirements.min = domain.passwordrequirements.min; }
-                if (typeof domain.passwordrequirements.max == 'number') { passRequirements.max = domain.passwordrequirements.max; }
-                if (typeof domain.passwordrequirements.upper == 'number') { passRequirements.upper = domain.passwordrequirements.upper; }
-                if (typeof domain.passwordrequirements.lower == 'number') { passRequirements.lower = domain.passwordrequirements.lower; }
-                if (typeof domain.passwordrequirements.numeric == 'number') { passRequirements.numeric = domain.passwordrequirements.numeric; }
-                if (typeof domain.passwordrequirements.nonalpha == 'number') { passRequirements.nonalpha = domain.passwordrequirements.nonalpha; }
-                domain.passwordrequirementsstr = encodeURIComponent(JSON.stringify(passRequirements));
-            }
-            passRequirements = domain.passwordrequirementsstr;
-        }
+        const passRequirements = passwordRequirementsModule.getEncodedPasswordRequirements(domain);
 
         // If a user exists and is logged in, serve the default app, otherwise server the login app.
         if (req.session && req.session.userid && obj.users[req.session.userid]) {
