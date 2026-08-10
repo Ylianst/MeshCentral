@@ -110,6 +110,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
     const loginFailureModule = require('./webserver/login-failure.js');
     const loginTwoFactorModule = require('./webserver/login-two-factor.js');
+    const loginRequestModule = require('./webserver/login-request.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
     const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
@@ -832,68 +833,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const handleLoginFailure = loginFailureModule.createLoginFailureHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
     const handleLoginTwoFactor = loginTwoFactorModule.createLoginTwoFactorHandler({ state: obj, parent: parent, getRandomEightDigitInteger: getRandomEightDigitInteger, getRandomSixDigitInteger: getRandomSixDigitInteger, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, completeLoginRequest: completeLoginRequest, cleanRemoteAddr: cleanRemoteAddr, require: require });
 
-    function handleLoginRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-        if (req.session == null) { req.session = {}; }
-
-        // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) {
-            // Wait and redirect the user
-            setTimeout(function () {
-                req.session.messageid = 114; // IP address blocked, try again later.
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
-            return;
-        }
-
-        // Normally, use the body username/password. If this is a token, use the username/password in the session.
-        var xusername = req.body.username, xpassword = req.body.password;
-        if ((xusername == null) && (xpassword == null) && (req.body.token != null)) {
-            const sec = parent.decryptSessionData(req.session.e);
-            xusername = sec.tuser; xpassword = sec.tpass;
-        }
-
-        // Authenticate the user
-        obj.authenticate(xusername, xpassword, domain, function (err, userid, passhint, loginOptions) {
-            if (userid && obj.users[userid]) {
-                var user = obj.users[userid];
-
-                // Check if we are in maintenance mode
-                if ((parent.config.settings.maintenancemode != null) && (user.siteadmin != 4294967295)) {
-                    req.session.messageid = 115; // Server under maintenance
-                    req.session.loginmode = 1;
-                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    return;
-                }
-
-                // Check if two factor can be skipped
-                const twoFactorSkip = checkUserOneTimePasswordSkip(domain, user, req, loginOptions);
-                if (handleLoginTwoFactor(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions, twoFactorSkip)) { return; }
-
-                // Check if email address needs to be confirmed
-                const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
-                if (emailcheck && (user.emailVerified !== true)) {
-                    parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
-                    req.session.messageid = 3; // "Email verification required" message
-                    req.session.loginmode = 7;
-                    req.session.passhint = user.email;
-                    req.session.cuserid = userid;
-                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                    return;
-                }
-
-                // Login successful
-                parent.debug('web', 'handleLoginRequest: successful login');
-                if (twoFactorSkip != null) { if (loginOptions == null) { loginOptions = {}; } loginOptions.twoFactorType = twoFactorSkip.twoFactorType; }
-                completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
-            } else {
-                handleLoginFailure(req, res, domain, xusername, err, passhint, direct);
-            }
-        });
-    }
+    const handleLoginRequest = loginRequestModule.createLoginRequestHandler({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordSkip: checkUserOneTimePasswordSkip, handleLoginTwoFactor: handleLoginTwoFactor, completeLoginRequest: completeLoginRequest, handleLoginFailure: handleLoginFailure });
 
     const accountCreationReservations = accountCreationReservationsModule.createAccountCreationReservations();
 

@@ -49,6 +49,7 @@ require('./webserver-password-authentication.test.js');
 require('./webserver-login-completion.test.js');
 require('./webserver-login-failure.test.js');
 require('./webserver-login-two-factor.test.js');
+require('./webserver-login-request.test.js');
 require('./webserver-password-history.test.js');
 require('./webserver-password-reset.test.js');
 require('./webserver-account-recovery.test.js');
