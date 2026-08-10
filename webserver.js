@@ -195,6 +195,7 @@ const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
     const getDomain = networkAccess.getDomain;
     obj.handleAmtEventRequest = amtEventsModule.createAmtEventHandler({ state: obj, parent: parent, getDomain: getDomain });
     obj.handleMeshAgentRequest = agentDownloadsModule.createAgentDownloadHandler({ state: obj, parent: parent, rootDirectory: __dirname, getDomain: getDomain, checkUserIpAddress: checkUserIpAddress, getMshFromRequest: getMshFromRequest, checkAgentColorString: checkAgentColorString, setContentDispositionHeader: setContentDispositionHeader, isAgentDownloadLocked: agentSettingsModule.isAgentDownloadLocked, hasUserSession: agentSettingsModule.hasUserSession });
+    obj.handleMeshOsxAgentRequest = macosAgentDownloadModule.createMacOsAgentHandler({ state: obj, parent: parent, getDomain: getDomain, getMshFromRequest: getMshFromRequest, setContentDispositionHeader: setContentDispositionHeader, isAgentDownloadLocked: agentSettingsModule.isAgentDownloadLocked, hasUserSession: agentSettingsModule.hasUserSession, createArchive: function () { return require('archiver')('zip', { level: 5 }); }, createInstaller: function (installerOptions) { return require('./macosinstaller').createMacOSInstaller(installerOptions); } });
     const parseAllowedFramingOrigins = networkAccess.parseAllowedFramingOrigins;
     const captcha = captchaModule.createCaptcha({ parent: parent, checkUserIpAddress: checkUserIpAddress });
     const handleNewAccountCaptchaRequest = captcha.handleNewAccount;
@@ -2827,130 +2828,6 @@ const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
 
     // Handle a request to download a mesh agent
     // Create a OSX mesh agent installer
-    obj.handleMeshOsxAgentRequest = function (req, res) {
-        const domain = getDomain(req, res);
-        if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
-        if (req.query.id == null) { res.sendStatus(404); return; }
-
-        // If required, check if this user has rights to do this
-        if (agentSettingsModule.isAgentDownloadLocked(obj.parent.config.settings, domain) && !agentSettingsModule.hasUserSession(req)) { res.sendStatus(401); return; }
-
-        // Send a specific mesh agent back
-        var argentInfo = obj.parent.meshAgentBinaries[req.query.id];
-        if (domain.meshAgentBinaries && domain.meshAgentBinaries[req.query.id]) { argentInfo = domain.meshAgentBinaries[req.query.id]; }
-        if ((argentInfo == null) || (req.query.meshid == null)) { res.sendStatus(404); return; }
-
-        // Check if the meshid is a time limited, encrypted cookie
-        var meshcookie = obj.parent.decodeCookie(req.query.meshid, obj.parent.invitationLinkEncryptionKey);
-        if ((meshcookie != null) && (meshcookie.m != null)) { req.query.meshid = meshcookie.m; }
-
-        // We are going to embed the .msh file into the Windows executable (signed or not).
-        // First, fetch the mesh object to build the .msh file
-        var mesh = obj.meshes['mesh/' + domain.id + '/' + req.query.meshid];
-        if (mesh == null) { res.sendStatus(401); return; }
-
-        // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
-            if ((domain.id != mesh.domain) || ((obj.GetMeshRights(req.session.userid, mesh) & 1) == 0)) { res.sendStatus(401); return; }
-        }
-
-        var meshidhex = Buffer.from(req.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-        var serveridhex = Buffer.from(obj.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
-
-        // Get the agent connection server name
-        var serverName = obj.getWebServerName(domain, req);
-        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
-
-        // Build the agent connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-        var xdomain = (domain.dns == null) ? domain.id : '';
-        if (xdomain != '') xdomain += '/';
-        var meshsettings = '\r\nMeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshidhex + '\r\nServerID=' + serveridhex + '\r\n';
-        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
-        if (obj.args.agentport != null) { httpsPort = obj.args.agentport; } // If an agent only port is enabled, use that.
-        if (obj.args.agentaliasport != null) { httpsPort = obj.args.agentaliasport; } // If an agent alias port is specified, use that.
-        if (obj.args.lanonly != true) { meshsettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + xdomain + 'agent.ashx\r\n'; } else {
-            meshsettings += 'MeshServer=local\r\n';
-            if ((obj.args.localdiscovery != null) && (typeof obj.args.localdiscovery.key == 'string') && (obj.args.localdiscovery.key.length > 0)) { meshsettings += 'DiscoveryKey=' + obj.args.localdiscovery.key + '\r\n'; }
-        }
-        if ((req.query.tag != null) && (typeof req.query.tag == 'string') && (obj.common.isAlphaNumeric(req.query.tag) == true)) { meshsettings += 'Tag=' + encodeURIComponent(req.query.tag) + '\r\n'; }
-        if ((req.query.installflags != null) && (req.query.installflags != 0) && (parseInt(req.query.installflags) == req.query.installflags)) { meshsettings += 'InstallFlags=' + parseInt(req.query.installflags) + '\r\n'; }
-        if ((domain.agentnoproxy === true) || (obj.args.lanonly == true)) { meshsettings += 'ignoreProxyFile=1\r\n'; }
-        if (obj.args.agentconfig) { for (var i in obj.args.agentconfig) { meshsettings += obj.args.agentconfig[i] + '\r\n'; } }
-        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshsettings += domain.agentconfig[i] + '\r\n'; } }
-        if (domain.agentcustomization != null) { // Add agent customization
-            if (domain.agentcustomization.displayname != null) { meshsettings += 'displayName=' + domain.agentcustomization.displayname + '\r\n'; }
-            if (domain.agentcustomization.description != null) { meshsettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
-            if (domain.agentcustomization.companyname != null) { meshsettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
-            if (domain.agentcustomization.servicename != null) { meshsettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
-            if (domain.agentcustomization.filename != null) { meshsettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
-            if (domain.agentcustomization.image != null) { meshsettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
-            if (domain.agentcustomization.foregroundcolor != null) { meshsettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
-            if (domain.agentcustomization.backgroundcolor != null) { meshsettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
-        }
-        if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
-
-        // Setup the response output
-        var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
-        archive.on('error', function (err) { macosAgentDownloadModule.handleArchiveError(parent, res, err); });
-
-        // Customize the mesh agent file name
-        var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
-        var meshexecutablename = 'meshagent';
-        var meshpkgname = 'MeshAgent.pkg';
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
-            meshfilename = meshfilename.split('MeshAgent').join(domain.agentcustomization.filename);
-            meshexecutablename = meshexecutablename.split('meshagent').join(domain.agentcustomization.filename);
-            meshpkgname = meshpkgname.split('MeshAgent').join(domain.agentcustomization.filename);
-        }
-
-        // Customise the mesh agent display name
-        var meshdisplayname = 'Mesh Agent';
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.displayname == 'string')) {
-            meshdisplayname = meshdisplayname.split('Mesh Agent').join(domain.agentcustomization.displayname);
-        }
-
-        // Customise the mesh agent service name
-        var meshservicename = 'meshagent';
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.servicename == 'string')) {
-            meshservicename = meshservicename.split('meshagent').join(domain.agentcustomization.servicename);
-        }
-
-        // Customise the mesh agent company name
-        var meshcompanyname = 'meshagent';
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.companyname == 'string')) {
-            meshcompanyname = meshcompanyname.split('meshagent').join(domain.agentcustomization.companyname);
-        }
-
-        // Set the agent download including the mesh name.
-        setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
-        archive.pipe(res);
-
-        // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
-        const macosInstallerOpts = {
-            agentPath: argentInfo.path,
-            meshSettings: meshsettings,
-            meshName: mesh.name.split(']').join('').split('[').join(''), // We can't have ']]' in the string since it will terminate the CDATA.
-            executableName: meshexecutablename,
-            packageName: meshpkgname,
-            displayName: meshdisplayname,
-            serviceName: meshservicename,
-            companyName: meshcompanyname
-        };
-
-        if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.macosinstallerimage == 'string')) {
-            macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
-        }
-
-        require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
-            archive.append(installer.pkg, { name: meshpkgname });
-            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
-            archive.finalize();
-        }).catch(function (err) {
-            parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
-            try { res.sendStatus(500); } catch (ex) { }
-        });
-    }
-
     if (parent.pluginHandler != null) {
         const pluginRequests = pluginRequestsModule.createPluginRequests({ state: obj, pluginHandler: parent.pluginHandler, checkUserIpAddress: checkUserIpAddress });
         obj.handlePluginAdminReq = pluginRequests.handleAdminRequest;
