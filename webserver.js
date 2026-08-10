@@ -114,6 +114,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const loginPageSessionModule = require('./webserver/login-page-session.js');
     const loginPageTwoFactorModule = require('./webserver/login-page-two-factor.js');
+    const loginPageStrategiesModule = require('./webserver/login-page-strategies.js');
     const automaticAuthenticationModule = require('./webserver/automatic-authentication.js');
     const sspiAuthenticationModule = require('./webserver/sspi-authentication.js');
     const applicationEntryModule = require('./webserver/application-entry.js');
@@ -902,24 +903,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
         const twoFactorOptions = loginPageTwoFactorModule.getLoginTwoFactorOptions(req, domain, hardwareKeyChallenge, loginmode, parent);
 
-        // See what authentication strategies we have
-        var authStrategies = [];
-        if (typeof domain.authstrategies == 'object') {
-            if (typeof domain.authstrategies.twitter == 'object') { authStrategies.push('twitter'); }
-            if (typeof domain.authstrategies.google == 'object') { authStrategies.push('google'); }
-            if (typeof domain.authstrategies.github == 'object') { authStrategies.push('github'); }
-            if (typeof domain.authstrategies.azure == 'object') { authStrategies.push('azure'); }
-            if (typeof domain.authstrategies.oidc == 'object') {
-                if (obj.common.validateObject(domain.authstrategies.oidc.custom) && obj.common.validateString(domain.authstrategies.oidc.custom.preset)) {
-                    authStrategies.push('oidc-' + domain.authstrategies.oidc.custom.preset);
-                } else {
-                    authStrategies.push('oidc');
-                }
-            }
-            if (typeof domain.authstrategies.intel == 'object') { authStrategies.push('intel'); }
-            if (typeof domain.authstrategies.jumpcloud == 'object') { authStrategies.push('jumpcloud'); }
-            if (typeof domain.authstrategies.saml == 'object') { authStrategies.push('saml'); }
-        }
+        const strategyOptions = loginPageStrategiesModule.getLoginStrategyOptions(domain, obj.common);
 
         const customui = pageOptionsModule.encodeCustomUi(domain);
 
@@ -933,36 +917,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         }
 
         // Render the login page
-        // Allow configurable OIDC login button text via domain.authstrategies.oidc.custom
-        var oidcButtonIcon, oidcButtonIcon2x, oidcButtonText;
-        if (obj.common.validateObject(domain.authstrategies) && obj.common.validateObject(domain.authstrategies.oidc) && obj.common.validateObject(domain.authstrategies.oidc.custom)) {
-            if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl)) {
-                oidcButtonIcon = domain.authstrategies.oidc.custom.buttoniconurl;
-                if (obj.common.validateUrl(domain.authstrategies.oidc.custom.buttoniconurl2x)) {
-                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl2x + ' 2x';
-                } else {
-                    oidcButtonIcon2x = domain.authstrategies.oidc.custom.buttoniconurl + ' 2x';
-                }
-            } else {
-                switch (domain.authstrategies.oidc.custom.preset) {
-                    case 'azure':
-                        oidcButtonIcon = "images/login/azure32.png";
-                        oidcButtonIcon2x = "images/login/azure64.png 2x";
-                        break;
-                    case 'google':
-                        oidcButtonIcon = "images/login/google32.png";
-                        oidcButtonIcon2x = "images/login/google64.png 2x";
-                        break;
-                    default:
-                        oidcButtonIcon = "images/login/oidc32.png";
-                        oidcButtonIcon2x = "images/login/oidc64.png 2x";
-                }
-            }
-
-            if (obj.common.validateString(domain.authstrategies.oidc.custom.buttontext, 1, 128)) {
-                oidcButtonText = domain.authstrategies.oidc.custom.buttontext;
-            }
-        }
         render(req, res,
             getRenderPage((domain.sitestyle >= 2) ? 'login2' : 'login', req, domain),
             getRenderArgs({
@@ -1013,10 +967,10 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 otppush: twoFactorOptions.push,
                 autofido: twoFactorOptions.autoFido,
                 twoFactorCookieDays: twoFactorOptions.cookieDays,
-                authStrategies: authStrategies.join(','),
-                oidcButtonText: oidcButtonText || '',
-                oidcButtonIcon: oidcButtonIcon || 'images/login/oidc32.png',
-                oidcButtonIcon2x: oidcButtonIcon2x || 'images/login/oidc64.png 2x',
+                authStrategies: strategyOptions.strategies,
+                oidcButtonText: strategyOptions.oidcButtonText,
+                oidcButtonIcon: strategyOptions.oidcButtonIcon,
+                oidcButtonIcon2x: strategyOptions.oidcButtonIcon2x,
                 loginpicture: (typeof domain.loginpicture == 'string'),
                 tokenTimeout: twoFactorOptions.timeout, // Two-factor authentication screen timeout in milliseconds,
                 renderLanguages: obj.renderLanguages,
