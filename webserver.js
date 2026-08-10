@@ -1322,7 +1322,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
                             if (domain.passwordrequirements != null) {
                                 // Save password hint if this feature is enabled
-                                if ((domain.passwordrequirements.hint === true) && (req.body.apasswordhint)) { var hint = req.body.apasswordhint; if (hint.length > 250) hint = hint.substring(0, 250); user.passhint = hint; } else { delete user.passhint; }
+                                passwordHistoryModule.updatePasswordHint(user, domain.passwordrequirements, req.body.rpasswordhint);
 
                                 // Save previous password if this feature is enabled
                                 if ((typeof domain.passwordrequirements.oldpasswordban == 'number') && (domain.passwordrequirements.oldpasswordban > 0)) {

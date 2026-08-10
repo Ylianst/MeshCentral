@@ -8,6 +8,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const createPasswordHistory = require('../webserver/password-history.js').createPasswordHistory;
+const updatePasswordHint = require('../webserver/password-history.js').updatePasswordHint;
 
 function createFixture(settings) {
     settings = settings || {};
@@ -54,4 +55,12 @@ test('common-password policy reports its distinct result', async function () {
     const user = { salt: 'current', hash: 'stored' };
     const result = await checkHistory(createFixture({ common: true }), { passwordrequirements: { oldpasswordban: 1, bancommonpasswords: true } }, user);
     assert.equal(result, 2);
+});
+
+test('password reset hints use the recovery field and enforce the storage limit', function () {
+    const user = { passhint: 'old hint' };
+    updatePasswordHint(user, { hint: true }, 'x'.repeat(300));
+    assert.equal(user.passhint, 'x'.repeat(250));
+    updatePasswordHint(user, { hint: false }, 'new hint');
+    assert.equal(user.passhint, undefined);
 });

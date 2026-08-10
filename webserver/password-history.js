@@ -5,6 +5,14 @@
 
 'use strict';
 
+module.exports.updatePasswordHint = function (user, passwordRequirements, passwordHint) {
+    if ((passwordRequirements != null) && (passwordRequirements.hint === true) && passwordHint) {
+        user.passhint = passwordHint.substring(0, 250);
+    } else {
+        delete user.passhint;
+    }
+};
+
 module.exports.createPasswordHistory = function (options) {
     const debug = options.debug;
     const loadModule = options.require || require;
