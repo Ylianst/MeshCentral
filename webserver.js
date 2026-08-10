@@ -3022,6 +3022,7 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
                 obj.db.Get(req.query.nodeid, function (err, nodes) {
                     if (agentDownloadsModule.hasDatabaseFailure(err, nodes) || (nodes.length != 1)) { try { res.sendStatus(401); } catch (ex) { } return; }
                     var node = nodes[0];
+                    if (!agentDownloadsModule.hasNodeAccess(obj, user, node)) { try { res.sendStatus(401); } catch (ex) { } return; }
 
                     // Create the meshaction.txt file for meshcmd.exe
                     var meshaction = {

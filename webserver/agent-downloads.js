@@ -14,6 +14,10 @@ module.exports.hasDatabaseFailure = function (error, documents) {
     return (error != null) || !Array.isArray(documents);
 };
 
+module.exports.hasNodeAccess = function (state, user, node) {
+    return state.GetNodeRights(user, node.meshid, node._id) != 0;
+};
+
 module.exports.getAgentInfo = function (defaultBinaries, domainBinaries, agentId) {
     if ((domainBinaries != null) && (domainBinaries[agentId] != null)) { return domainBinaries[agentId]; }
     return defaultBinaries[agentId];

@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const getSessionUser = require('../webserver/agent-downloads.js').getSessionUser;
 const hasDatabaseFailure = require('../webserver/agent-downloads.js').hasDatabaseFailure;
+const hasNodeAccess = require('../webserver/agent-downloads.js').hasNodeAccess;
 const getAgentInfo = require('../webserver/agent-downloads.js').getAgentInfo;
 const getMeshRelayUrl = require('../webserver/agent-downloads.js').getMeshRelayUrl;
 const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDownloadUrl;
@@ -35,6 +36,15 @@ test('agent action node lookups reject database failures and missing arrays', fu
     assert.equal(hasDatabaseFailure(null, null), true);
     assert.equal(hasDatabaseFailure(null, undefined), true);
     assert.equal(hasDatabaseFailure(null, []), false);
+});
+
+test('route actions require user rights on the requested node', function () {
+    const user = { _id: 'user//alice' };
+    const node = { _id: 'node//node1', meshid: 'mesh//main' };
+    const allowed = { GetNodeRights: function (actualUser, meshId, nodeId) { return (actualUser === user && meshId == node.meshid && nodeId == node._id) ? 1 : 0; } };
+    const denied = { GetNodeRights: function () { return 0; } };
+    assert.equal(hasNodeAccess(allowed, user, node), true);
+    assert.equal(hasNodeAccess(denied, user, node), false);
 });
 
 test('agent listings prefer binaries customized for the domain', function () {
