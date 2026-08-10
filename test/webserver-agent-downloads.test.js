@@ -13,6 +13,7 @@ const getAgentInfo = require('../webserver/agent-downloads.js').getAgentInfo;
 const getMeshRelayUrl = require('../webserver/agent-downloads.js').getMeshRelayUrl;
 const getCoreDownloadUrl = require('../webserver/agent-downloads.js').getCoreDownloadUrl;
 const sendMeshCoreList = require('../webserver/agent-downloads.js').sendMeshCoreList;
+const sendMeshCore = require('../webserver/agent-downloads.js').sendMeshCore;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -63,4 +64,25 @@ test('MeshCore listings contain download links, sizes and hashes', function () {
     assert.match(res.body, /href="\/tenant\/meshagents\?dlcore=Core%201&amp;key=secret"|href="\/tenant\/meshagents\?dlcore=Core%201&key=secret"/);
     assert.match(res.body, />8<\/a>/);
     assert.match(res.body, /0102/);
+});
+
+test('MeshCore downloads strip the uncompressed header and preserve compressed data', function () {
+    const parent = { defaultMeshCores: { core: Buffer.from('HEADcode') }, defaultMeshCoresDeflate: { core: Buffer.from('zip') } };
+    const headers = [];
+    const setHeader = function (res, type, filename) { headers.push(filename); };
+    const plain = { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } };
+    sendMeshCore(parent, setHeader, { query: { dlcore: 'core' } }, plain, false);
+    assert.equal(plain.body.toString(), 'code');
+    assert.equal(headers[0], 'core.js');
+
+    const compressed = { sendStatus: function (status) { this.status = status; }, send: function (body) { this.body = body; } };
+    sendMeshCore(parent, setHeader, { query: { dlccore: 'core' } }, compressed, true);
+    assert.equal(compressed.body, parent.defaultMeshCoresDeflate.core);
+    assert.equal(headers[1], 'core.js.deflate');
+});
+
+test('unknown MeshCore downloads return not found', function () {
+    const res = { sendStatus: function (status) { this.status = status; } };
+    sendMeshCore({ defaultMeshCores: {} }, function () { }, { query: { dlcore: 'missing' } }, res, false);
+    assert.equal(res.status, 404);
 });

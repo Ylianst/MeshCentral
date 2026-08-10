@@ -3260,20 +3260,12 @@ const agentDownloadsModule = require('./webserver/agent-downloads.js');
             }
 
             if (req.query.dlcore != null) {
-                // Download mesh core
-                var bin = parent.defaultMeshCores[req.query.dlcore];
-                if ((bin == null) || (bin.length < 5)) { try { res.sendStatus(404); } catch (ex) { } return; }
-                setContentDispositionHeader(res, 'application/octet-stream', encodeURIComponent(req.query.dlcore) + '.js', null, 'meshcore.js');
-                res.send(bin.slice(4));
+                agentDownloadsModule.sendMeshCore(parent, setContentDispositionHeader, req, res, false);
                 return;
             }
 
             if (req.query.dlccore != null) {
-                // Download compressed mesh core
-                var bin = parent.defaultMeshCoresDeflate[req.query.dlccore];
-                if (bin == null) { try { res.sendStatus(404); } catch (ex) { } return; }
-                setContentDispositionHeader(res, 'application/octet-stream', req.query.dlccore + '.js.deflate', null, 'meshcore.js.deflate');
-                res.send(bin);
+                agentDownloadsModule.sendMeshCore(parent, setContentDispositionHeader, req, res, true);
                 return;
             }
 

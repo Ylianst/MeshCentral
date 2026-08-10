@@ -38,3 +38,17 @@ module.exports.sendMeshCoreList = function (parent, request, response) {
     html += '</table><a href="' + request.originalUrl.split('?')[0] + (request.query.key ? ('?key=' + encodeURIComponent(request.query.key)) : '') + '">Mesh Agents</a></body></html>';
     response.send(html);
 };
+
+module.exports.sendMeshCore = function (parent, setContentDispositionHeader, request, response, compressed) {
+    const name = compressed ? request.query.dlccore : request.query.dlcore;
+    const cores = compressed ? parent.defaultMeshCoresDeflate : parent.defaultMeshCores;
+    const data = cores[name];
+    if ((data == null) || (!compressed && (data.length < 5))) { try { response.sendStatus(404); } catch (ex) { } return; }
+    if (compressed) {
+        setContentDispositionHeader(response, 'application/octet-stream', name + '.js.deflate', null, 'meshcore.js.deflate');
+        response.send(data);
+    } else {
+        setContentDispositionHeader(response, 'application/octet-stream', encodeURIComponent(name) + '.js', null, 'meshcore.js');
+        response.send(data.slice(4));
+    }
+};
