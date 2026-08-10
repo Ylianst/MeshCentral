@@ -95,6 +95,7 @@ const amtEventsModule = require('./webserver/amt-events.js');
 const agentDownloadsModule = require('./webserver/agent-downloads.js');
 const macosAgentDownloadModule = require('./webserver/macos-agent-download.js');
 const certificateTrustModule = require('./webserver/certificate-trust.js');
+const certificateHashesModule = require('./webserver/certificate-hashes.js');
 const domainUserFeaturesModule = require('./webserver/domain-user-features.js');
 const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const telemetryModule = require('./webserver/telemetry.js');
@@ -575,57 +576,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         for (i in obj.parent.config.domains) { if (obj.parent.config.domains[i].auth == 'sspi') { var nodeSSPI = require('node-sspi'); obj.parent.config.domains[i].sspi = new nodeSSPI({ retrieveGroups: false, offerBasic: false }); } }
     }
 
-    // Perform hash on web certificate and agent certificate
-    obj.webCertificateHash = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.web.cert);
-    obj.webCertificateHashs = { '': obj.webCertificateHash };
-    obj.webCertificateHashBase64 = Buffer.from(obj.webCertificateHash, 'binary').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-    obj.webCertificateFullHash = parent.certificateOperations.getCertHashBinary(obj.certificates.web.cert);
-    obj.webCertificateFullHashs = { '': obj.webCertificateFullHash };
-    obj.webCertificateExpire = { '': parent.certificateOperations.getCertificateExpire(parent.certificates.web.cert) };
-    obj.agentCertificateHashHex = parent.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert);
-    obj.agentCertificateHashBase64 = Buffer.from(obj.agentCertificateHashHex, 'hex').toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
-    obj.agentCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.agent.cert))).getBytes();
-    obj.defaultWebCertificateHash = obj.certificates.webdefault ? parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.webdefault.cert) : null;
-    obj.defaultWebCertificateFullHash = obj.certificates.webdefault ? parent.certificateOperations.getCertHashBinary(obj.certificates.webdefault.cert) : null;
-
-    // Compute the hash of all of the web certificates for each domain
-    for (var i in obj.parent.config.domains) {
-        if (obj.parent.config.domains[i].certhash != null) {
-            // If the web certificate hash is provided, use it.
-            obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i] = Buffer.from(obj.parent.config.domains[i].certhash, 'hex').toString('binary');
-            if (obj.parent.config.domains[i].certkeyhash != null) { obj.webCertificateHashs[i] = Buffer.from(obj.parent.config.domains[i].certkeyhash, 'hex').toString('binary'); }
-            delete obj.webCertificateExpire[i]; // Expire time is not provided
-        } else if ((obj.parent.config.domains[i].dns != null) && (obj.parent.config.domains[i].certs != null)) {
-            // If the domain has a different DNS name, use a different certificate hash.
-            // Hash the full certificate
-            obj.webCertificateFullHashs[i] = parent.certificateOperations.getCertHashBinary(obj.parent.config.domains[i].certs.cert);
-            obj.webCertificateExpire[i] = Date.parse(parent.certificateOperations.forge.pki.certificateFromPem(obj.parent.config.domains[i].certs.cert).validity.notAfter);
-            try {
-                // Decode a RSA certificate and hash the public key.
-                obj.webCertificateHashs[i] = parent.certificateOperations.getPublicKeyHashBinary(obj.parent.config.domains[i].certs.cert);
-            } catch (ex) {
-                // This may be a ECDSA certificate, hash the entire cert.
-                obj.webCertificateHashs[i] = obj.webCertificateFullHashs[i];
-            }
-        } else if ((obj.parent.config.domains[i].dns != null) && (obj.certificates.dns[i] != null)) {
-            // If this domain has a DNS and a matching DNS cert, use it. This case works for wildcard certs.
-            obj.webCertificateFullHashs[i] = parent.certificateOperations.getCertHashBinary(obj.certificates.dns[i].cert);
-            obj.webCertificateHashs[i] = parent.certificateOperations.getPublicKeyHashBinary(obj.certificates.dns[i].cert);
-            obj.webCertificateExpire[i] = Date.parse(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.dns[i].cert).validity.notAfter);
-        } else if (i != '') {
-            // For any other domain, use the default cert.
-            obj.webCertificateFullHashs[i] = obj.webCertificateFullHashs[''];
-            obj.webCertificateHashs[i] = obj.webCertificateHashs[''];
-            obj.webCertificateExpire[i] = obj.webCertificateExpire[''];
-        }
-    }
-
-    // If we are running the legacy swarm server, compute the hash for that certificate
-    if (parent.certificates.swarmserver != null) {
-        obj.swarmCertificateAsn1 = parent.certificateOperations.forge.asn1.toDer(parent.certificateOperations.forge.pki.certificateToAsn1(parent.certificateOperations.forge.pki.certificateFromPem(parent.certificates.swarmserver.cert))).getBytes();
-        obj.swarmCertificateHash384 = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.swarmserver.cert).publicKey, { md: parent.certificateOperations.forge.md.sha384.create(), encoding: 'binary' });
-        obj.swarmCertificateHash256 = parent.certificateOperations.forge.pki.getPublicKeyFingerprint(parent.certificateOperations.forge.pki.certificateFromPem(obj.certificates.swarmserver.cert).publicKey, { md: parent.certificateOperations.forge.md.sha256.create(), encoding: 'binary' });
-    }
+    certificateHashesModule.initializeCertificateHashes(obj, parent);
 
     // Main lists
     obj.wsagents = {};                // NodeId --> Agent

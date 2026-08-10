@@ -33,6 +33,7 @@ require('./webserver-amt-events.test.js');
 require('./webserver-agent-downloads.test.js');
 require('./webserver-macos-agent-download.test.js');
 require('./webserver-certificate-trust.test.js');
+require('./webserver-certificate-hashes.test.js');
 require('./webserver-domain-user-features.test.js');
 require('./webserver-domain-route-registration.test.js');
 require('./webserver-server-finalization.test.js');
