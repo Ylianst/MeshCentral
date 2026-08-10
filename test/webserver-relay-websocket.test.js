@@ -18,6 +18,7 @@ const logRelaySessionEnd = require('../webserver/relay-websocket.js').logRelaySe
 const writeOrQueueCiraRelayData = require('../webserver/relay-websocket.js').writeOrQueueCiraRelayData;
 const flushCiraRelayData = require('../webserver/relay-websocket.js').flushCiraRelayData;
 const closeCiraRelayTransport = require('../webserver/relay-websocket.js').closeCiraRelayTransport;
+const setupCiraRelayTransport = require('../webserver/relay-websocket.js').setupCiraRelayTransport;
 const setupDirectRelayTransport = require('../webserver/relay-websocket.js').setupDirectRelayTransport;
 const recordRelayStartAndUserAccess = require('../webserver/relay-websocket.js').recordRelayStartAndUserAccess;
 
@@ -160,6 +161,36 @@ test('closing pending TLS CIRA relays releases their channel and rejects queued 
     assert.equal(websocket.forwardchannel, undefined);
     assert.equal(websocket.pendingRelayData, undefined);
     assert.equal(writeOrQueueCiraRelayData(websocket, Buffer.from('late')), false);
+});
+
+test('CIRA relay transport opens plain channels and installs HTTP interception', function () {
+    const websocketHandlers = {}, writes = [], setups = [], interceptors = [], resumes = [];
+    const channel = { write: function (data) { writes.push(data.toString()); }, close: function () { } };
+    const parent = {
+        debug: function () { },
+        mpsserver: { SetupChannel: function (connection, port) { setups.push([connection, port]); return channel; } }
+    };
+    const state = {
+        interceptor: { CreateHttpInterceptor: function (options) { interceptors.push(options); return { processBrowserData: function (data) { return data; }, processAmtData: function (data) { return data; } }; } },
+        meshRelayHandler: { recordingEntry: function () { throw new Error('unexpected recording'); } }
+    };
+    const websocket = {
+        _socket: { resume: function () { resumes.push(true); } },
+        on: function (event, handler) { websocketHandlers[event] = handler; },
+        send: function () { },
+        close: function () { }
+    };
+    const ciraConnection = { tag: { boundPorts: [16992] } };
+    const node = { host: '192.0.2.10', intelamt: { user: 'admin', pass: 'secret' } };
+    setupCiraRelayTransport({ state: state, parent: parent, domain: {}, user: { name: 'Alice' }, websocket: websocket, request: { clientIp: '192.0.2.1', query: { host: 'node//node1', p: 1 } }, node: node, ciraConnection: ciraConnection, connectivity: 2, tlsConstants: {} });
+    assert.deepEqual(setups, [[ciraConnection, 16992]]);
+    assert.deepEqual(interceptors, [{ host: '192.0.2.10', port: 16992, user: 'admin', pass: 'secret' }]);
+    assert.equal(websocket.forwardclient, channel);
+    assert.equal(channel.xtls, 0);
+    assert.equal(websocket.interceptor.blockAmtStorage, true);
+    assert.equal(resumes.length, 1);
+    websocketHandlers.message('hello');
+    assert.deepEqual(writes, ['hello']);
 });
 
 test('direct relay transport connects plain AMT sockets and installs HTTP interception', function () {

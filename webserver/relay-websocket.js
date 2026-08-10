@@ -192,6 +192,127 @@ module.exports.closeCiraRelayTransport = function (websocket) {
     if ((forwardchannel != null) && ((forwardclient == null) || (forwardclient.chnl !== forwardchannel))) { forwardchannel.close(); }
 };
 
+module.exports.setupCiraRelayTransport = function (options) {
+    const state = options.state;
+    const parent = options.parent;
+    const domain = options.domain;
+    const user = options.user;
+    const websocket = options.websocket;
+    const request = options.request;
+    const node = options.node;
+    const ciraConnection = options.ciraConnection;
+    const connectivity = options.connectivity;
+    const tlsConstants = options.tlsConstants;
+    const SerialTunnel = options.createSerialTunnel;
+
+    parent.debug('web', 'Opening relay CIRA channel connection to ' + request.query.host + '.');
+    var port = 16993;
+    if (ciraConnection.tag.boundPorts.indexOf(16992) >= 0) port = 16992;
+    if (request.query.p == 2) port += 2;
+
+    if ((port == 16993) || (port == 16995)) {
+        var ser = new SerialTunnel();
+        var chnl = parent.mpsserver.SetupChannel(ciraConnection, port);
+        websocket.forwardchannel = chnl;
+        ser.forwardwrite = function (data) { if (data.length > 0) { chnl.write(data); } };
+        chnl.onData = function (ciraConnection, data) { if (data.length > 0) { try { ser.updateBuffer(data); } catch (ex) { console.log(ex); } } };
+        chnl.onStateChange = function (ciraConnection, channelState) {
+            parent.debug('webrelay', 'Relay TLS CIRA state change', channelState);
+            if (channelState == 0) { try { websocket.close(); } catch (e) { } }
+            if (channelState == 2) {
+                if (websocket.relayTransportClosed === true) { return; }
+                const tlsoptions = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: tlsConstants.SSL_OP_NO_SSLv2 | tlsConstants.SSL_OP_NO_SSLv3 | tlsConstants.SSL_OP_NO_COMPRESSION | tlsConstants.SSL_OP_CIPHER_SERVER_PREFERENCE | tlsConstants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                if (request.query.tls1only == 1) {
+                    tlsoptions.secureProtocol = 'TLSv1_method';
+                } else {
+                    tlsoptions.minVersion = 'TLSv1';
+                }
+                var tlsock = state.tls.connect(tlsoptions, function () { parent.debug('webrelay', 'CIRA Secure TLS Connection'); websocket._socket.resume(); });
+                tlsock.chnl = chnl;
+                tlsock.setEncoding('binary');
+                tlsock.on('error', function (err) { parent.debug('webrelay', 'CIRA TLS Connection Error', err); });
+                tlsock.on('data', function (data) {
+                    if (websocket.interceptor) { data = websocket.interceptor.processAmtData(data); }
+                    try { websocket.send(data); } catch (ex) { }
+                });
+                websocket.forwardclient = tlsock;
+                websocket.forwardclient.xtls = 1;
+                delete websocket.forwardchannel;
+                module.exports.flushCiraRelayData(websocket);
+                websocket.forwardclient.onStateChange = function (ciraConnection, channelState) {
+                    parent.debug('webrelay', 'Relay CIRA state change', channelState);
+                    if (channelState == 0) { try { websocket.close(); } catch (e) { } }
+                };
+                websocket.forwardclient.onData = function (ciraConnection, data) {
+                    if (websocket.interceptor) { data = websocket.interceptor.processAmtData(data); }
+                    if (data.length > 0) {
+                        if (websocket.logfile == null) {
+                            try { websocket.send(data); } catch (e) { }
+                        } else {
+                            state.meshRelayHandler.recordingEntry(websocket.logfile, 2, 0, data, function () { try { websocket.send(data); } catch (ex) { console.log(ex); } });
+                        }
+                    }
+                };
+                websocket.forwardclient.onSendOk = function (ciraConnection) { };
+            }
+        };
+    } else {
+        websocket.forwardclient = parent.mpsserver.SetupChannel(ciraConnection, port);
+        websocket.forwardclient.xtls = 0;
+        websocket._socket.resume();
+        websocket.forwardclient.onStateChange = function (ciraConnection, channelState) {
+            parent.debug('webrelay', 'Relay CIRA state change', channelState);
+            if (channelState == 0) { try { websocket.close(); } catch (e) { } }
+        };
+        websocket.forwardclient.onData = function (ciraConnection, data) {
+            if (websocket.interceptor) { data = websocket.interceptor.processAmtData(data); }
+            if (data.length > 0) {
+                if (websocket.logfile == null) {
+                    try { websocket.send(data); } catch (e) { }
+                } else {
+                    state.meshRelayHandler.recordingEntry(websocket.logfile, 2, 0, data, function () { try { websocket.send(data); } catch (ex) { console.log(ex); } });
+                }
+            }
+        };
+        websocket.forwardclient.onSendOk = function (ciraConnection) { };
+    }
+
+    websocket.on('message', function (data) {
+        if (typeof data == 'string') { data = Buffer.from(data, 'binary'); }
+        if (websocket.interceptor) { data = websocket.interceptor.processBrowserData(data); }
+        if (websocket.logfile == null) {
+            module.exports.writeOrQueueCiraRelayData(websocket, data);
+        } else {
+            state.meshRelayHandler.recordingEntry(websocket.logfile, 2, 2, data, function () { module.exports.writeOrQueueCiraRelayData(websocket, data); });
+        }
+    });
+
+    websocket.on('error', function (err) {
+        console.log('CIRA server websocket error from ' + request.clientIp + ', ' + err.toString().split('\r')[0] + '.');
+        parent.debug('webrelay', 'Websocket relay closed on error.');
+        module.exports.logRelaySessionEnd(state, parent, domain, user, websocket, request, node, ciraConnection, connectivity);
+        module.exports.closeCiraRelayTransport(websocket);
+        module.exports.finishSessionRecording({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, delayAdjustmentSeconds: 5 });
+    });
+
+    websocket.on('close', function () {
+        parent.debug('webrelay', 'Websocket relay closed.');
+        module.exports.logRelaySessionEnd(state, parent, domain, user, websocket, request, node, ciraConnection, connectivity);
+        module.exports.closeCiraRelayTransport(websocket);
+        module.exports.finishSessionRecording({ state: state, parent: parent, domain: domain, user: user, websocket: websocket, delayAdjustmentSeconds: 5 });
+    });
+
+    if (request.query.p == 1) {
+        parent.debug('webrelaydata', 'INTERCEPTOR1', { host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
+        websocket.interceptor = state.interceptor.CreateHttpInterceptor({ host: node.host, port: port, user: node.intelamt.user, pass: node.intelamt.pass });
+        websocket.interceptor.blockAmtStorage = true;
+    } else if (request.query.p == 2) {
+        parent.debug('webrelaydata', 'INTERCEPTOR2', { user: node.intelamt.user, pass: node.intelamt.pass });
+        websocket.interceptor = state.interceptor.CreateRedirInterceptor({ user: node.intelamt.user, pass: node.intelamt.pass });
+        websocket.interceptor.blockAmtStorage = true;
+    }
+};
+
 module.exports.setupDirectRelayTransport = function (options) {
     const state = options.state;
     const parent = options.parent;
