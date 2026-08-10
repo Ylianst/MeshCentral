@@ -1050,7 +1050,10 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 parent.debug('web', 'handleRootRequestEx: success.');
 
                 var webstate = '{}';
-                if ((err == null) && (states != null) && (Array.isArray(states)) && (states.length == 1) && (states[0].state != null)) { webstate = obj.filterUserWebState(states[0].state); }
+                if ((err == null) && (states != null) && (Array.isArray(states)) && (states.length == 1) && (states[0].state != null)) {
+                    const filteredWebState = obj.filterUserWebState(states[0].state);
+                    if (typeof filteredWebState == 'string') { webstate = filteredWebState; }
+                }
                 if ((webstate == '{}') && (typeof domain.defaultuserwebstate == 'object')) { webstate = JSON.stringify(domain.defaultuserwebstate); } // User has no web state, use defaults.
                 if (typeof domain.forceduserwebstate == 'object') { // Forces initial user web state if present, use it.
                     var webstate2 = {};
