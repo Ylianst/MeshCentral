@@ -7882,7 +7882,7 @@ function isValidHttpUrl(value) {
 			return false;
 		}
 		return true;
-	} catch {
+	} catch (ex) {
 		return false;
 	}
 }
