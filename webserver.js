@@ -109,6 +109,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
     const loginFailureModule = require('./webserver/login-failure.js');
+    const loginTwoFactorModule = require('./webserver/login-two-factor.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
     const accountCreationReservationsModule = require('./webserver/account-creation-reservations.js');
@@ -827,7 +828,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const checkUserOneTimePasswordRequired = twoFactorAuthentication.checkUserOneTimePasswordRequired;
     const checkUserOneTimePassword = twoFactorAuthentication.checkUserOneTimePassword;
     const getHardwareKeyChallenge = twoFactorAuthentication.getHardwareKeyChallenge;
+    const completeLoginRequest = loginCompletionModule.createLoginCompletion({ state: obj, parent: parent, setSessionRandom: setSessionRandom, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
     const handleLoginFailure = loginFailureModule.createLoginFailureHandler({ state: obj, parent: parent, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
+    const handleLoginTwoFactor = loginTwoFactorModule.createLoginTwoFactorHandler({ state: obj, parent: parent, getRandomEightDigitInteger: getRandomEightDigitInteger, getRandomSixDigitInteger: getRandomSixDigitInteger, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, completeLoginRequest: completeLoginRequest, cleanRemoteAddr: cleanRemoteAddr, require: require });
 
     function handleLoginRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
@@ -866,174 +869,9 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     return;
                 }
 
-                var email2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.email2factor != false)) && (domain.mailserver != null) && (user.email != null) && (user.emailVerified == true) && (user.otpekey != null));
-                var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
-                var push2fa = ((parent.firebase != null) && (user.otpdev != null));
-                var duo2fa = ((((typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) || ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.duo2factor != false))) && (user.otpduo != null));
-
                 // Check if two factor can be skipped
                 const twoFactorSkip = checkUserOneTimePasswordSkip(domain, user, req, loginOptions);
-
-                // Check if this user has 2-step login active
-                if ((twoFactorSkip == null) && (req.session.loginmode != 6) && checkUserOneTimePasswordRequired(domain, user, req, loginOptions)) {
-                    if ((req.body.hwtoken == '**timeout**')) {
-                        delete req.session; // Clear the session
-                        res.redirect(domain.url + getQueryPortion(req));
-                        return;
-                    }
-
-                    if ((req.body.hwtoken == '**email**') && email2fa) {
-                        user.otpekey = { k: obj.common.zeroPad(getRandomEightDigitInteger(), 8), d: Date.now() };
-                        obj.db.SetUser(user);
-                        parent.debug('web', 'Sending 2FA email to: ' + user.email);
-                        domain.mailserver.sendAccountLoginMail(domain, user.email, user.otpekey.k, obj.getLanguageCodes(req), req.query.key);
-                        req.session.messageid = 2; // "Email sent" message
-                        req.session.loginmode = 4;
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                        return;
-                    }
-
-                    if ((req.body.hwtoken == '**sms**') && sms2fa) {
-                        // Cause a token to be sent to the user's phone number
-                        user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
-                        obj.db.SetUser(user);
-                        parent.debug('web', 'Sending 2FA SMS to: ' + user.phone);
-                        parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
-                        // Ask for a login token & confirm sms was sent
-                        req.session.messageid = 4; // "SMS sent" message
-                        req.session.loginmode = 4;
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                        return;
-                    }
-
-                    if ((req.body.hwtoken == '**msg**') && msg2fa) {
-                        // Cause a token to be sent to the user's messenger account
-                        user.otpmsg = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
-                        obj.db.SetUser(user);
-                        parent.debug('web', 'Sending 2FA message to: ' + user.msghandle);
-                        parent.msgserver.sendToken(domain, user.msghandle, user.otpmsg.k, obj.getLanguageCodes(req));
-                        // Ask for a login token & confirm message was sent
-                        req.session.messageid = 6; // "Message sent" message
-                        req.session.loginmode = 4;
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                        return;
-                    }
-
-                    if ((req.body.hwtoken == '**duo**') && duo2fa && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) {
-                        // Redirect to duo here
-                        const duo = require('@duosecurity/duo_universal');
-                        const client = new duo.Client({
-                            clientId: domain.duo2factor.integrationkey,
-                            clientSecret: domain.duo2factor.secretkey,
-                            apiHost: domain.duo2factor.apihostname,
-                            redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
-                        });
-                        // Decrypt any session data
-                        const sec = parent.decryptSessionData(req.session.e);
-                        sec.duostate = client.generateState();
-                        req.session.e = parent.encryptSessionData(sec);
-                        parent.debug('web', 'Redirecting user ' + user._id + ' to Duo');
-                        res.redirect(client.createAuthUrl(user._id.split('/')[2], sec.duostate));
-                        return;
-                    }
-
-                    // Handle device push notification 2FA request
-                    // We create a browser cookie, send it back and when the browser connects it's web socket, it will trigger the push notification.
-                    if ((req.body.hwtoken == '**push**') && push2fa && ((domain.passwordrequirements == null) || (domain.passwordrequirements.push2factor != false))) {
-                        const logincodeb64 = Buffer.from(obj.common.zeroPad(getRandomSixDigitInteger(), 6)).toString('base64');
-                        const sessioncode = obj.crypto.randomBytes(24).toString('base64');
-
-                        // Create a browser cookie so the browser can connect using websocket and wait for device accept/reject.
-                        const browserCookie = parent.encodeCookie({ a: 'waitAuth', c: logincodeb64, u: user._id, n: user.otpdev, s: sessioncode, d: domain.id });
-
-                        // Get the HTTPS port
-                        var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port if specified
-
-                        // Get the agent connection server name
-                        var serverName = obj.getWebServerName(domain, req);
-                        if (typeof obj.args.agentaliasdns == 'string') { serverName = obj.args.agentaliasdns; }
-
-                        // Build the connection URL. If we are using a sub-domain or one with a DNS, we need to craft the URL correctly.
-                        var xdomain = (domain.dns == null) ? domain.id : '';
-                        if (xdomain != '') xdomain += '/';
-                        var url = 'wss://' + serverName + ':' + httpsPort + '/' + xdomain + '2fahold.ashx?c=' + browserCookie;
-
-                        // Request that the login page wait for device auth
-                        req.session.messageid = 5; // "Sending notification..." message
-                        req.session.passhint = url;
-                        req.session.loginmode = 8;
-                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                        return;
-                    }
-
-                    checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result, authData) {
-                        if (result == false) {
-                            var randomWaitTime = 0;
-
-                            // Check if 2FA is allowed for this IP address
-                            if (obj.checkAllow2Fa(req) == false) {
-                                // Wait and redirect the user
-                                setTimeout(function () {
-                                    req.session.messageid = 114; // IP address blocked, try again later.
-                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
-                                return;
-                            }
-
-                            // 2-step auth is required, but the token is not present or not valid.
-                            if ((req.body.token != null) || (req.body.hwtoken != null)) {
-                                randomWaitTime = 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095); // This is a fail, wait a random time. 2 to 6 seconds.
-                                req.session.messageid = 108; // Invalid token, try again.
-                                obj.parent.authLog('https', 'Failed 2FA for ' + xusername + ' from ' + cleanRemoteAddr(req.clientIp) + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'] });
-                                parent.debug('web', 'handleLoginRequest: invalid 2FA token');
-                                const ua = obj.getUserAgentInfo(req);
-                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                obj.setbad2Fa(req);
-                            } else {
-                                parent.debug('web', 'handleLoginRequest: 2FA token required');
-                            }
-
-                            // Wait and redirect the user
-                            setTimeout(function () {
-                                req.session.loginmode = 4;
-                                if ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) { req.session.temail = 1; } else { delete req.session.temail; }
-                                if ((user.phone != null) && (parent.smsserver != null)) { req.session.tsms = 1; } else { delete req.session.tsms; }
-                                if ((user.msghandle != null) && (parent.msgserver != null) && (parent.msgserver.providers != 0)) { req.session.tmsg = 1; } else { delete req.session.tmsg; }
-                                if ((user.otpdev != null) && (parent.firebase != null)) { req.session.tpush = 1; } else { delete req.session.tpush; }
-                                if ((user.otpduo != null)) { req.session.tduo = 1; } else { delete req.session.tduo; }
-                                req.session.e = parent.encryptSessionData({ tuserid: userid, tuser: xusername, tpass: xpassword });
-                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                            }, randomWaitTime);
-                        } else {
-                            // Check if we need to remember this device
-                            if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) {
-                                var maxCookieAge = domain.twofactorcookiedurationdays;
-                                if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
-                                const twoFactorCookie = obj.parent.encodeCookie({ userid: user._id, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
-                                res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: parent.config.settings.sessionsamesite, secure: true });
-                            }
-
-                            // Check if email address needs to be confirmed
-                            const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
-                            if (emailcheck && (user.emailVerified !== true)) {
-                                parent.debug('web', 'Redirecting using ' + user.name + ' to email check login page');
-                                req.session.messageid = 3; // "Email verification required" message
-                                req.session.loginmode = 7;
-                                req.session.passhint = user.email;
-                                req.session.cuserid = userid;
-                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                return;
-                            }
-
-                            // Login successful
-                            parent.debug('web', 'handleLoginRequest: successful 2FA login');
-                            if (authData != null) { if (loginOptions == null) { loginOptions = {}; } loginOptions.twoFactorType = authData.twoFactorType; }
-                            completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions);
-                        }
-                    });
-                    return;
-                }
+                if (handleLoginTwoFactor(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions, twoFactorSkip)) { return; }
 
                 // Check if email address needs to be confirmed
                 const emailcheck = ((domain.mailserver != null) && (obj.parent.certificates.CommonName != null) && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.lanonly != true) && (domain.auth != 'sspi') && (domain.auth != 'ldap'))
@@ -1057,7 +895,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         });
     }
 
-    const completeLoginRequest = loginCompletionModule.createLoginCompletion({ state: obj, parent: parent, setSessionRandom: setSessionRandom, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
     const accountCreationReservations = accountCreationReservationsModule.createAccountCreationReservations();
 
     const handleCreateAccountRequest = accountCreationModule.createAccountCreation({ state: obj, parent: parent, reservations: accountCreationReservations, checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, setSessionRandom: setSessionRandom, hashPassword: require('./pass').hash, hasDatabaseFailure: emailAccountUtils.hasDatabaseFailure }).handleCreateAccountRequest;
