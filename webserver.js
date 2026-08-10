@@ -74,18 +74,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const requestMiddlewareModule = require('./webserver/request-middleware.js');
     const domainStartupModule = require('./webserver/domain-startup.js');
     const notFoundModule = require('./webserver/not-found.js');
-    const basicRoutesModule = require('./webserver/basic-routes.js');
-    const resourceRoutesModule = require('./webserver/resource-routes.js');
-    const applicationRoutesModule = require('./webserver/application-routes.js');
-    const relayRoutesModule = require('./webserver/relay-routes.js');
-    const passportRoutesModule = require('./webserver/passport-routes.js');
-    const duoRoutesModule = require('./webserver/duo-routes.js');
-    const agentRoutesModule = require('./webserver/agent-routes.js');
+    const httpRouteSetupModule = require('./webserver/http-route-setup.js');
     const domainAssetsModule = require('./webserver/domain-assets.js');
     const webRelayModule = require('./webserver/web-relay.js');
-    const domainStaticModule = require('./webserver/domain-static.js');
     const serverFinalizationModule = require('./webserver/server-finalization.js');
-    const httpRouteFinalizationModule = require('./webserver/http-route-finalization.js');
     const ssoStrategiesModule = require('./webserver/sso-strategies.js');
     const ssoLoginGroupsModule = require('./webserver/sso-login-groups.js');
     const ssoLoginResponseModule = require('./webserver/sso-login-response.js');
@@ -936,7 +928,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     // Starts the HTTPS server, this should be called after the user/mesh tables are loaded
     function serverStart() {
-        const finalizeWebserver = serverFinalizationModule.createServerFinalization({ setupHttpHandlers: setupHTTPHandlers, args: obj.args, app: obj.app, nice404: nice404, checkListenPort: CheckListenPort, startWebServer: StartWebServer, startAltWebServer: StartAltWebServer, done: doneFunc });
+        const finalizeWebserver = serverFinalizationModule.createServerFinalization({ setupHttpHandlers: setupHttpRoutes, args: obj.args, app: obj.app, nice404: nice404, checkListenPort: CheckListenPort, startWebServer: StartWebServer, startAltWebServer: StartAltWebServer, done: doneFunc });
         tlsConfiguration.setupServers();
 
         coreMiddleware.setupCoreMiddleware();
@@ -951,134 +943,6 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
             finalizeWebserver: finalizeWebserver
         }).setup();
 
-        function setupHTTPHandlers() {
-            // Setup all HTTP handlers
-            const basicRoutes = basicRoutesModule.createBasicRoutes({
-                state: obj,
-                urlencoded: obj.bodyParser.urlencoded,
-                handlers: {
-                    rootRedirect: handleRootRedirect,
-                    rootRequest: handleRootRequest,
-                    rootPostRequest: handleRootPostRequest,
-                    refresh: function (req, res) { res.sendStatus(200); },
-                    backupRequest: handleBackupRequest,
-                    restoreRequest: handleRestoreRequest,
-                    termsRequest: handleTermsRequest,
-                    xtermRequest: handleXTermRequest,
-                    loginRequest: handleLoginRequest,
-                    logoutRequest: handleLogoutRequest,
-                    rootCertRequest: handleRootCertRequest,
-                    manifestRequest: handleManifestRequest,
-                    passwordChangeRequest: handlePasswordChangeRequest,
-                    deleteAccountRequest: handleDeleteAccountRequest,
-                    createAccountRequest: handleCreateAccountRequest,
-                    resetPasswordRequest: handleResetPasswordRequest,
-                    resetAccountRequest: handleResetAccountRequest,
-                    checkMailRequest: handleCheckMailRequest,
-                    agentInviteRequest: handleAgentInviteRequest,
-                    userImageRequest: handleUserImageRequest,
-                    amtEventRequest: obj.handleAmtEventRequest,
-                    meshAgentRequest: obj.handleMeshAgentRequest,
-                    messengerRequest: handleMessengerRequest,
-                    messengerImageRequest: handleMessengerImageRequest,
-                    meshOsxAgentRequest: obj.handleMeshOsxAgentRequest,
-                    meshSettingsRequest: obj.handleMeshSettingsRequest,
-                    devicePowerEvents: handleDevicePowerEvents,
-                    downloadFile: handleDownloadFile,
-                    meshCommander: handleMeshCommander,
-                    uploadFile: handleUploadFile,
-                    uploadFileBatch: handleUploadFileBatch,
-                    customIconUpload: handleCustomIconUpload,
-                    customIconDelete: handleCustomIconDelete,
-                    customIconDownload: handleCustomIconDownload,
-                    uploadMeshCoreFile: handleUploadMeshCoreFile,
-                    oneClickRecoveryFile: handleOneClickRecoveryFile,
-                    downloadUserFiles: handleDownloadUserFiles,
-                    echoWebSocket: handleEchoWebSocket,
-                    twoFactorHoldWebSocket: handle2faHoldWebSocket,
-                    apfWebSocket: function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); },
-                    websocketExpected: function (req, res) { res.send('Websocket connection expected'); },
-                    health: function (req, res) { res.send('ok'); }
-                }
-            });
-            const resourceRoutes = resourceRoutesModule.createResourceRoutes({
-                state: obj,
-                urlencoded: obj.bodyParser.urlencoded,
-                hasPlugins: parent.pluginHandler != null,
-                hasCrowdSec: parent.crowdSecBounser != null,
-                handlers: {
-                    deviceFile: handleDeviceFile,
-                    agentDownloadFile: handleAgentDownloadFile,
-                    logoRequest: handleLogoRequest,
-                    loginLogoRequest: handleLoginLogoRequest,
-                    pwaLogoRequest: handlePWALogoRequest,
-                    translationsRequest: handleTranslationsRequest,
-                    welcomeImageRequest: handleWelcomeImageRequest,
-                    getRecordings: handleGetRecordings,
-                    getRecordingsWebSocket: handleGetRecordingsWebSocket,
-                    playerRequest: handlePlayerRequest,
-                    sharingRequest: handleSharingRequest,
-                    agentFileTransfer: handleAgentFileTransfer,
-                    inviteRequest: handleInviteRequest,
-                    pluginAdminRequest: obj.handlePluginAdminReq,
-                    pluginAdminPostRequest: obj.handlePluginAdminPostReq,
-                    pluginScript: obj.handlePluginJS,
-                    newAccountCaptchaRequest: handleNewAccountCaptchaRequest,
-                    captchaGetRequest: handleCaptchaGetRequest,
-                    captchaPostRequest: handleCaptchaPostRequest
-                }
-            });
-            const applicationRoutes = applicationRoutesModule.createApplicationRoutes({
-                state: obj,
-                parent: parent,
-                getDomain: getDomain,
-                authorizeWebSocket: PerformWSSessionAuth,
-                urlencoded: obj.bodyParser.urlencoded,
-                handlers: {
-                    mstscRequest: handleMSTSCRequest,
-                    firebasePushOnlyRelayRequest: handleFirebasePushOnlyRelayRequest,
-                    firebaseRelayRequest: handleFirebaseRelayRequest
-                }
-            });
-            const relayRoutes = relayRoutesModule.createRelayRoutes({
-                state: obj,
-                parent: parent,
-                getDomain: getDomain,
-                getWebSocketArgs: getWebsocketArgs,
-                authorizeWebSocket: PerformWSSessionAuth,
-                authorizeInnerWebSocket: PerformWSSessionInnerAuth,
-                relayWebSocket: handleRelayWebSocket
-            });
-            const passportRoutes = passportRoutesModule.createPassportRoutes({
-                state: obj,
-                parent: parent,
-                flags: domainAuthStrategyConsts,
-                getDomain: getDomain,
-                strategyLogin: handleStrategyLogin,
-                urlencoded: obj.bodyParser.urlencoded
-            });
-            const duoRoutes = duoRoutesModule.createDuoRoutes({
-                state: obj,
-                parent: parent,
-                getDomain: getDomain,
-                getQueryPortion: getQueryPortion,
-                setSessionRandom: setSessionRandom
-            });
-            const agentRoutes = agentRoutesModule.createAgentRoutes({
-                state: obj,
-                parent: parent,
-                checkAgentIpAddress: checkAgentIpAddress,
-                authorizeWebSocket: PerformWSSessionAuth,
-                createSerialTunnel: SerialTunnel,
-                handlers: {
-                    agentFileTransfer: handleAgentFileTransfer,
-                    meshAgentRequest: obj.handleMeshAgentRequest,
-                    agentDownloadFile: handleAgentDownloadFile
-                }
-            });
-            const domainStatic = domainStaticModule.createDomainStatic({ state: obj, parent: parent, getDomain: getDomain });
-            httpRouteFinalizationModule.finalizeHttpRoutes({ state: obj, parent: parent, webRelay: webRelay, routeGroups: [basicRoutes, relayRoutes, resourceRoutes, applicationRoutes, passportRoutes, duoRoutes, domainAssets, agentRoutes, domainStatic], domainStatic: domainStatic });
-        }
     }
 
     const domainAuthStrategyConsts = ssoStrategiesModule.constants;
@@ -1100,6 +964,87 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     });
     const PerformWSSessionInnerAuth = websocketAuth.PerformWSSessionInnerAuth;
     const PerformWSSessionAuth = websocketAuth.PerformWSSessionAuth;
+
+    const setupHttpRoutes = httpRouteSetupModule.createHttpRouteSetup({
+        state: obj,
+        parent: parent,
+        domainAssets: domainAssets,
+        webRelay: webRelay,
+        getDomain: getDomain,
+        getWebSocketArgs: getWebsocketArgs,
+        authorizeWebSocket: PerformWSSessionAuth,
+        authorizeInnerWebSocket: PerformWSSessionInnerAuth,
+        relayWebSocket: handleRelayWebSocket,
+        authStrategyFlags: domainAuthStrategyConsts,
+        strategyLogin: handleStrategyLogin,
+        getQueryPortion: getQueryPortion,
+        setSessionRandom: setSessionRandom,
+        checkAgentIpAddress: checkAgentIpAddress,
+        createSerialTunnel: SerialTunnel,
+        handlers: {
+            rootRedirect: handleRootRedirect,
+            rootRequest: handleRootRequest,
+            rootPostRequest: handleRootPostRequest,
+            refresh: function (req, res) { res.sendStatus(200); },
+            backupRequest: handleBackupRequest,
+            restoreRequest: handleRestoreRequest,
+            termsRequest: handleTermsRequest,
+            xtermRequest: handleXTermRequest,
+            loginRequest: handleLoginRequest,
+            logoutRequest: handleLogoutRequest,
+            rootCertRequest: handleRootCertRequest,
+            manifestRequest: handleManifestRequest,
+            passwordChangeRequest: handlePasswordChangeRequest,
+            deleteAccountRequest: handleDeleteAccountRequest,
+            createAccountRequest: handleCreateAccountRequest,
+            resetPasswordRequest: handleResetPasswordRequest,
+            resetAccountRequest: handleResetAccountRequest,
+            checkMailRequest: handleCheckMailRequest,
+            agentInviteRequest: handleAgentInviteRequest,
+            userImageRequest: handleUserImageRequest,
+            amtEventRequest: obj.handleAmtEventRequest,
+            meshAgentRequest: obj.handleMeshAgentRequest,
+            messengerRequest: handleMessengerRequest,
+            messengerImageRequest: handleMessengerImageRequest,
+            meshOsxAgentRequest: obj.handleMeshOsxAgentRequest,
+            meshSettingsRequest: obj.handleMeshSettingsRequest,
+            devicePowerEvents: handleDevicePowerEvents,
+            downloadFile: handleDownloadFile,
+            meshCommander: handleMeshCommander,
+            uploadFile: handleUploadFile,
+            uploadFileBatch: handleUploadFileBatch,
+            customIconUpload: handleCustomIconUpload,
+            customIconDelete: handleCustomIconDelete,
+            customIconDownload: handleCustomIconDownload,
+            uploadMeshCoreFile: handleUploadMeshCoreFile,
+            oneClickRecoveryFile: handleOneClickRecoveryFile,
+            downloadUserFiles: handleDownloadUserFiles,
+            echoWebSocket: handleEchoWebSocket,
+            twoFactorHoldWebSocket: handle2faHoldWebSocket,
+            apfWebSocket: function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); },
+            websocketExpected: function (req, res) { res.send('Websocket connection expected'); },
+            health: function (req, res) { res.send('ok'); },
+            deviceFile: handleDeviceFile,
+            agentDownloadFile: handleAgentDownloadFile,
+            logoRequest: handleLogoRequest,
+            loginLogoRequest: handleLoginLogoRequest,
+            pwaLogoRequest: handlePWALogoRequest,
+            translationsRequest: handleTranslationsRequest,
+            welcomeImageRequest: handleWelcomeImageRequest,
+            getRecordings: handleGetRecordings,
+            getRecordingsWebSocket: handleGetRecordingsWebSocket,
+            playerRequest: handlePlayerRequest,
+            sharingRequest: handleSharingRequest,
+            agentFileTransfer: handleAgentFileTransfer,
+            inviteRequest: handleInviteRequest,
+            newAccountCaptchaRequest: handleNewAccountCaptchaRequest,
+            captchaGetRequest: handleCaptchaGetRequest,
+            captchaPostRequest: handleCaptchaPostRequest,
+            mstscRequest: handleMSTSCRequest,
+            firebasePushOnlyRelayRequest: handleFirebasePushOnlyRelayRequest,
+            firebaseRelayRequest: handleFirebaseRelayRequest
+        }
+    });
 
     if (parent.config.settings == null) { parent.config.settings = {}; }
     const throttling = throttlingModule.createThrottling(parent.config.settings, require('ipcheck'));
