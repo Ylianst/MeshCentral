@@ -243,3 +243,76 @@ module.exports.sendAgentBinary = function (domain, agentInfo, setContentDisposit
     setContentDispositionHeader(response, 'application/octet-stream', filename, null, 'meshagent');
     if (agentInfo.data == null) { response.sendFile(agentInfo.path); } else { response.send(agentInfo.data); }
 };
+
+module.exports.sendCustomizedWindowsAgent = function (state, parent, domain, agentInfo, checkAgentColorString, setContentDispositionHeader, request, response) {
+    const meshCookie = parent.decodeCookie(request.query.meshid, parent.invitationLinkEncryptionKey);
+    if ((meshCookie != null) && (meshCookie.m != null)) { request.query.meshid = meshCookie.m; }
+    const mesh = state.meshes['mesh/' + domain.id + '/' + request.query.meshid];
+    if (mesh == null) { try { response.sendStatus(401); } catch (ex) { } return; }
+    if ((parent.config.settings != null) && ((parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true))) {
+        if ((domain.id != mesh.domain) || ((state.GetMeshRights(request.session.userid, mesh) & 1) == 0)) { try { response.sendStatus(401); } catch (ex) { } return; }
+    }
+
+    const meshIdHex = Buffer.from(request.query.meshid.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+    const serverIdHex = Buffer.from(state.agentCertificateHashBase64.replace(/\@/g, '+').replace(/\$/g, '/'), 'base64').toString('hex').toUpperCase();
+    var httpsPort = (state.args.aliasport == null) ? state.args.port : state.args.aliasport;
+    if (state.args.agentport != null) { httpsPort = state.args.agentport; }
+    if (state.args.agentaliasport != null) { httpsPort = state.args.agentaliasport; }
+
+    var filename = mesh.name;
+    filename = filename.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join('');
+    if (agentInfo.rname.endsWith('.exe')) { filename = agentInfo.rname.substring(0, agentInfo.rname.length - 4) + '-' + filename + '.exe'; } else { filename = agentInfo.rname + '-' + filename; }
+    if ((domain.agentcustomization != null) && (typeof domain.agentcustomization.filename == 'string')) {
+        filename = filename.split('meshagent').join(domain.agentcustomization.filename).split('MeshAgent').join(domain.agentcustomization.filename);
+    }
+
+    var serverName = state.getWebServerName(domain, request);
+    if (typeof state.args.agentaliasdns == 'string') { serverName = state.args.agentaliasdns; }
+    var domainPath = (domain.dns == null) ? domain.id : '';
+    if (domainPath != '') domainPath += '/';
+    var meshSettings = '';
+    if (request.query.ac != '4') {
+        meshSettings += '\r\nMeshName=' + mesh.name + '\r\nMeshType=' + mesh.mtype + '\r\nMeshID=0x' + meshIdHex + '\r\nServerID=' + serverIdHex + '\r\n';
+        if (state.args.lanonly != true) { meshSettings += 'MeshServer=wss://' + serverName + ':' + httpsPort + '/' + domainPath + 'agent.ashx\r\n'; } else {
+            meshSettings += 'MeshServer=local\r\n';
+            if ((state.args.localdiscovery != null) && (typeof state.args.localdiscovery.key == 'string') && (state.args.localdiscovery.key.length > 0)) { meshSettings += 'DiscoveryKey=' + state.args.localdiscovery.key + '\r\n'; }
+        }
+        if ((request.query.tag != null) && (typeof request.query.tag == 'string') && (state.common.isAlphaNumeric(request.query.tag) == true)) { meshSettings += 'Tag=' + encodeURIComponent(request.query.tag) + '\r\n'; }
+        if ((request.query.installflags != null) && (request.query.installflags != 0) && (parseInt(request.query.installflags) == request.query.installflags)) { meshSettings += 'InstallFlags=' + parseInt(request.query.installflags) + '\r\n'; }
+    }
+    if (request.query.id == '10006') {
+        if (request.query.ac != null) { meshSettings += 'AutoConnect=' + request.query.ac + '\r\n'; }
+        if (state.args.assistantconfig) { for (var i in state.args.assistantconfig) { meshSettings += state.args.assistantconfig[i] + '\r\n'; } }
+        if (domain.assistantconfig) { for (var i in domain.assistantconfig) { meshSettings += domain.assistantconfig[i] + '\r\n'; } }
+        if ((domain.assistantnoproxy === true) || (state.args.lanonly == true)) { meshSettings += 'ignoreProxyFile=1\r\n'; }
+        if ((domain.assistantcustomization != null) && (typeof domain.assistantcustomization == 'object')) {
+            if (typeof domain.assistantcustomization.title == 'string') { meshSettings += 'Title=' + domain.assistantcustomization.title + '\r\n'; }
+            if (typeof domain.assistantcustomization.image == 'string') {
+                try { meshSettings += 'Image=' + Buffer.from(state.fs.readFileSync(parent.getConfigFilePath(domain.assistantcustomization.image)), 'binary').toString('base64') + '\r\n'; } catch (ex) { console.log(ex); }
+            }
+            if (request.query.ac != '4') {
+                if (typeof domain.assistantcustomization.filename == 'string') { filename = filename.split('MeshCentralAssistant').join(domain.assistantcustomization.filename); }
+            } else {
+                if (typeof domain.assistantcustomization.filename == 'string') { filename = domain.assistantcustomization.filename + '.exe'; } else { filename = 'MeshCentralAssistant.exe'; }
+            }
+        }
+    } else {
+        if (state.args.agentconfig) { for (var i in state.args.agentconfig) { meshSettings += state.args.agentconfig[i] + '\r\n'; } }
+        if (domain.agentconfig) { for (var i in domain.agentconfig) { meshSettings += domain.agentconfig[i] + '\r\n'; } }
+        if ((domain.agentnoproxy === true) || (state.args.lanonly == true)) { meshSettings += 'ignoreProxyFile=1\r\n'; }
+        if (domain.agentcustomization != null) {
+            if (domain.agentcustomization.displayname != null) { meshSettings += 'displayName=' + domain.agentcustomization.displayname + '\r\n'; }
+            if (domain.agentcustomization.description != null) { meshSettings += 'description=' + domain.agentcustomization.description + '\r\n'; }
+            if (domain.agentcustomization.companyname != null) { meshSettings += 'companyName=' + domain.agentcustomization.companyname + '\r\n'; }
+            if (domain.agentcustomization.servicename != null) { meshSettings += 'meshServiceName=' + domain.agentcustomization.servicename + '\r\n'; }
+            if (domain.agentcustomization.filename != null) { meshSettings += 'fileName=' + domain.agentcustomization.filename + '\r\n'; }
+            if (domain.agentcustomization.image != null) { meshSettings += 'image=' + domain.agentcustomization.image + '\r\n'; }
+            if (domain.agentcustomization.foregroundcolor != null) { meshSettings += checkAgentColorString('foreground=', domain.agentcustomization.foregroundcolor); }
+            if (domain.agentcustomization.backgroundcolor != null) { meshSettings += checkAgentColorString('background=', domain.agentcustomization.backgroundcolor); }
+        }
+        if (domain.agentTranslations != null) { meshSettings += 'translation=' + domain.agentTranslations + '\r\n'; }
+    }
+    setContentDispositionHeader(response, 'application/octet-stream', filename, null, agentInfo.rname);
+    if (agentInfo.mtime != null) { response.setHeader('Last-Modified', agentInfo.mtime.toUTCString()); }
+    parent.exeHandler.streamExeWithMeshPolicy({ platform: 'win32', sourceFileName: agentInfo.path, destinationStream: response, msh: meshSettings, peinfo: agentInfo.pe });
+};

@@ -24,6 +24,7 @@ const sendRouteMeshAction = require('../webserver/agent-downloads.js').sendRoute
 const sendAgentSelfInstaller = require('../webserver/agent-downloads.js').sendAgentSelfInstaller;
 const sendAgentPdb = require('../webserver/agent-downloads.js').sendAgentPdb;
 const sendAgentBinary = require('../webserver/agent-downloads.js').sendAgentBinary;
+const sendCustomizedWindowsAgent = require('../webserver/agent-downloads.js').sendCustomizedWindowsAgent;
 
 test('agent tool downloads safely resolve optional session users', function () {
     const users = { 'user//alice': { name: 'Alice' } };
@@ -284,4 +285,33 @@ test('compressed agent downloads return ZIP data or not found', function () {
     const missing = { sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
     sendAgentBinary({}, { rname: 'meshagent' }, function () { }, { query: { zip: 1 } }, missing);
     assert.equal(missing.status, 404);
+});
+
+test('customized Windows agents embed device group and server policy', function () {
+    const meshId = Buffer.from('mesh-id').toString('base64');
+    const streams = [], headers = [];
+    const state = {
+        meshes: { ['mesh/tenant/' + meshId]: { name: 'Main Group', mtype: 2, domain: 'tenant' } },
+        agentCertificateHashBase64: Buffer.from('server-id').toString('base64'),
+        args: { port: 443 },
+        common: { isAlphaNumeric: function () { return true; } },
+        GetMeshRights: function () { return 1; },
+        getWebServerName: function () { return 'server.example.com'; }
+    };
+    const parent = {
+        config: { settings: {} },
+        decodeCookie: function () { return null; },
+        exeHandler: { streamExeWithMeshPolicy: function (options) { streams.push(options); } }
+    };
+    const domain = { id: 'tenant', agentcustomization: { displayname: 'Company Agent' } };
+    const agent = { rname: 'MeshAgent.exe', path: 'agent.exe', pe: null };
+    const req = { query: { id: '3', meshid: meshId, tag: 'branch1' }, session: {} };
+    const res = { sendStatus: function (status) { this.status = status; }, setHeader: function () { } };
+    sendCustomizedWindowsAgent(state, parent, domain, agent, function () { return ''; }, function (response, type, filename) { headers.push(filename); }, req, res);
+    assert.deepEqual(headers, ['MeshAgent-MainGroup.exe']);
+    assert.equal(streams[0].sourceFileName, 'agent.exe');
+    assert.match(streams[0].msh, /MeshName=Main Group/);
+    assert.match(streams[0].msh, /MeshServer=wss:\/\/server\.example\.com:443\/tenant\/agent\.ashx/);
+    assert.match(streams[0].msh, /Tag=branch1/);
+    assert.match(streams[0].msh, /displayName=Company Agent/);
 });
