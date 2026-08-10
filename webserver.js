@@ -109,6 +109,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
     const loginCompletionModule = require('./webserver/login-completion.js');
     const passwordResetModule = require('./webserver/password-reset.js');
+    const accountRecoveryModule = require('./webserver/account-recovery.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
@@ -1262,145 +1263,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
 
     const handleResetPasswordRequest = passwordResetModule.createPasswordReset({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, setSessionRandom: setSessionRandom, completeLoginRequest: completeLoginRequest, hashPassword: require('./pass').hash, updatePasswordHint: passwordHistoryModule.updatePasswordHint }).handleResetPasswordRequest;
 
-    // Called to process an account reset request
-    function handleResetAccountRequest(req, res, direct) {
-        const domain = checkUserIpAddress(req, res);
-        if (domain == null) { return; }
-        const allowAccountReset = ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.allowaccountreset !== false));
-        if ((allowAccountReset === false) || (domain.auth == 'sspi') || (domain.auth == 'ldap') || (obj.args.lanonly == true) || (obj.parent.certificates.CommonName == null) || (obj.parent.certificates.CommonName.indexOf('.') == -1)) { parent.debug('web', 'handleResetAccountRequest: check failed'); res.sendStatus(404); return; }
-        if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
-        if (req.session.loginToken != null) { res.sendStatus(404); return; } // Do not allow this command when logged in using a login token
-        if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
-
-        // Always lowercase the email address
-        if (req.body.email) { req.body.email = req.body.email.toLowerCase(); }
-
-        // Get the email from the body or session.
-        var email = req.body.email;
-        if ((email == null) || (email == '')) { email = req.session.temail; }
-
-        // Check the email string format
-        if (!email || checkEmail(email) == false) {
-            parent.debug('web', 'handleResetAccountRequest: Invalid email');
-            req.session.loginmode = 3;
-            req.session.messageid = 106; // Invalid email.
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-        } else {
-            obj.db.GetUserWithVerifiedEmail(domain.id, email, function (err, docs) {
-                // Remove all accounts that start with ~ since they are special accounts.
-                var cleanDocs = [];
-                if ((err == null) && (docs.length > 0)) {
-                    for (var i in docs) {
-                        const user = docs[i];
-                        const locked = ((user.siteadmin != null) && (user.siteadmin != 0xFFFFFFFF) && ((user.siteadmin & 1024) != 0)); // No password recovery for locked accounts
-                        const specialAccount = (user._id.split('/')[2].startsWith('~')); // No password recovery for special accounts
-                        if ((specialAccount == false) && (locked == false)) { cleanDocs.push(user); }
-                    }
-                }
-                docs = cleanDocs;
-
-                // Check if we have any account that match this email address
-                if ((err != null) || (docs.length == 0)) {
-                    parent.debug('web', 'handleResetAccountRequest: Account not found');
-                    req.session.loginmode = 3;
-                    req.session.messageid = 1; // If valid, reset mail sent. Instead of "Account not found" (107), we send this hold on message so users can't know if this account exists or not.
-                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                } else {
-                    // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
-                    var responseSent = false;
-                    for (let i in docs) {
-                        const user = docs[i];
-                        if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
-                            // Second factor setup, request it now.
-                            checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result, authData) {
-                                if (result == false) {
-                                    if (i == 0) {
-
-                                        // Check if 2FA is allowed for this IP address
-                                        if (obj.checkAllow2Fa(req) == false) {
-                                            // Wait and redirect the user
-                                            setTimeout(function () {
-                                                req.session.messageid = 114; // IP address blocked, try again later.
-                                                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
-                                            return;
-                                        }
-
-                                        // 2-step auth is required, but the token is not present or not valid.
-                                        parent.debug('web', 'handleResetAccountRequest: Invalid 2FA token, try again');
-                                        if ((req.body.token != null) || (req.body.hwtoken != null)) {
-                                            var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
-                                            var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
-                                            if ((req.body.hwtoken == '**sms**') && sms2fa) {
-                                                // Cause a token to be sent to the user's phone number
-                                                user.otpsms = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
-                                                obj.db.SetUser(user);
-                                                parent.debug('web', 'Sending 2FA SMS for password recovery to: ' + user.phone);
-                                                parent.smsserver.sendToken(domain, user.phone, user.otpsms.k, obj.getLanguageCodes(req));
-                                                req.session.messageid = 4; // SMS sent.
-                                            } else if ((req.body.hwtoken == '**msg**') && msg2fa) {
-                                                // Cause a token to be sent to the user's messager account
-                                                user.otpmsg = { k: obj.common.zeroPad(getRandomSixDigitInteger(), 6), d: Date.now() };
-                                                obj.db.SetUser(user);
-                                                parent.debug('web', 'Sending 2FA message for password recovery to: ' + user.msghandle);
-                                                parent.msgserver.sendToken(domain, user.msghandle, user.otpmsg.k, obj.getLanguageCodes(req));
-                                                req.session.messageid = 6; // Message sent.
-                                            } else {
-                                                req.session.messageid = 108; // Invalid token, try again.
-                                                const ua = obj.getUserAgentInfo(req);
-                                                obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                                obj.setbad2Fa(req);
-                                            }
-                                        }
-                                        req.session.loginmode = 5;
-                                        req.session.temail = email;
-                                        if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                    }
-                                } else {
-                                    // Send email to perform recovery.
-                                    delete req.session.temail;
-                                    if (domain.mailserver != null) {
-                                        domain.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
-                                        if (i == 0) {
-                                            parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
-                                            req.session.loginmode = 1;
-                                            req.session.messageid = 1; // If valid, reset mail sent.
-                                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                        }
-                                    } else {
-                                        if (i == 0) {
-                                            parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
-                                            req.session.loginmode = 3;
-                                            req.session.messageid = 109; // Unable to sent email.
-                                            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                        }
-                                    }
-                                }
-                            });
-                        } else {
-                            // No second factor, send email to perform recovery.
-                            if (domain.mailserver != null) {
-                                domain.mailserver.sendAccountResetMail(domain, user.name, user._id, user.email, obj.getLanguageCodes(req), req.query.key);
-                                if (i == 0) {
-                                    parent.debug('web', 'handleResetAccountRequest: Hold on, reset mail sent.');
-                                    req.session.loginmode = 1;
-                                    req.session.messageid = 1; // If valid, reset mail sent.
-                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                }
-                            } else {
-                                if (i == 0) {
-                                    parent.debug('web', 'handleResetAccountRequest: Unable to sent email.');
-                                    req.session.loginmode = 3;
-                                    req.session.messageid = 109; // Unable to sent email.
-                                    if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    }
+    const handleResetAccountRequest = accountRecoveryModule.createAccountRecovery({ state: obj, parent: parent, checkUserIpAddress: checkUserIpAddress, checkEmail: checkEmail, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx, checkUserOneTimePasswordRequired: checkUserOneTimePasswordRequired, checkUserOneTimePassword: checkUserOneTimePassword, getRandomSixDigitInteger: getRandomSixDigitInteger }).handleResetAccountRequest;
 
     // Handle account email change and email verification request
     function handleRootRequestEx(req, res, domain, direct) {
