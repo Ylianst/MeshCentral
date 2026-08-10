@@ -2256,11 +2256,6 @@ function handleServerCommand(data) {
                 });
                 break;
             }
-            case 'getScript': {
-                // Received a configuration script from the server
-                sendConsoleText('getScript: ' + JSON.stringify(data));
-                break;
-            }
             case 'sysinfo': {
                 // Fetch system information
                 getSystemInformation(function (results) {
@@ -4871,7 +4866,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'help': { // Displays available commands
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
                 availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbdelete,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
-                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getscript,getclip,setclip,log,cpuinfo,sysinfo,';
+                availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getclip,setclip,log,cpuinfo,sysinfo,';
                 availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
@@ -6427,14 +6422,6 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             case 'listservices': {
                 var services = require('service-manager').manager.enumerateService();
                 response = JSON.stringify(services, null, 1);
-                break;
-            }
-            case 'getscript': {
-                if (args['_'].length != 1) {
-                    response = "Proper usage: getscript [scriptNumber].";
-                } else {
-                    mesh.SendCommand({ action: 'getScript', type: args['_'][0] });
-                }
                 break;
             }
             case 'diagnostic':
