@@ -113,6 +113,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const loginRequestModule = require('./webserver/login-request.js');
     const loginChallengeModule = require('./webserver/login-challenge.js');
     const userWebStateModule = require('./webserver/user-web-state.js');
+    const applicationServerFeaturesModule = require('./webserver/application-server-features.js');
     const passwordRequirementsModule = require('./webserver/password-requirements.js');
     const passwordResetModule = require('./webserver/password-reset.js');
     const accountRecoveryModule = require('./webserver/account-recovery.js');
@@ -1054,23 +1055,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                     customFiles = encodeURIComponent(JSON.stringify(domain.customfiles)); 
                 }
 
-                // Server features
-                var serverFeatures = 255;
-                if (domain.myserver === false) { serverFeatures = 0; } // 64 = Show "My Server" tab
-                else if (typeof domain.myserver == 'object') {
-                    if (domain.myserver.backup !== true) { serverFeatures -= 1; } // Disallow simple server backups
-                    if (domain.myserver.restore !== true) { serverFeatures -= 2; } // Disallow simple server restore
-                    if (domain.myserver.upgrade !== true) { serverFeatures -= 4; } // Disallow server upgrade
-                    if (domain.myserver.errorlog !== true) { serverFeatures -= 8; } // Disallow show server crash log
-                    if (domain.myserver.console !== true) { serverFeatures -= 16; } // Disallow server console
-                    if (domain.myserver.trace !== true) { serverFeatures -= 32; } // Disallow server tracing
-                    if (domain.myserver.config !== true) { serverFeatures -= 128; } // Disallow server configuration
-                }
-                if (obj.db.databaseType != 1) { // If not using NeDB, we can't backup using the simple system.
-                    // backup function changed to support all types, only NeDB can be restored through the webinterface
-                    // if ((serverFeatures & 1) != 0) { serverFeatures -= 1; } // Disallow server backups
-                    if ((serverFeatures & 2) != 0) { serverFeatures -= 2; } // Disallow simple server restore
-                }
+                const serverFeatures = applicationServerFeaturesModule.getApplicationServerFeatures(domain, obj.db.databaseType);
 
                 // Get WebRTC configuration
                 var webRtcConfig = null;
