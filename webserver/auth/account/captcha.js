@@ -8,10 +8,15 @@
 module.exports.createCaptcha = function (options) {
     const parent = options.parent;
     const checkUserIpAddress = options.checkUserIpAddress;
-    const svgCaptcha = options.svgCaptcha || require('svg-captcha');
+    let svgCaptcha = options.svgCaptcha;
+
+    function getSvgCaptcha() {
+        if (svgCaptcha == null) { svgCaptcha = require('svg-captcha'); }
+        return svgCaptcha;
+    }
 
     function createNewAccountCookie() {
-        return parent.encodeCookie({ type: 'newAccount', captcha: svgCaptcha.randomText(5) }, parent.loginCookieEncryptionKey);
+        return parent.encodeCookie({ type: 'newAccount', captcha: getSvgCaptcha().randomText(5) }, parent.loginCookieEncryptionKey);
     }
 
     function handleNewAccount(req, res) {
@@ -21,7 +26,7 @@ module.exports.createCaptcha = function (options) {
         const cookie = parent.decodeCookie(req.query.x, parent.loginCookieEncryptionKey);
         if ((cookie == null) || (cookie.type !== 'newAccount') || (typeof cookie.captcha !== 'string')) { res.sendStatus(404); return; }
         res.type('svg');
-        res.status(200).end(svgCaptcha(cookie.captcha, {}));
+        res.status(200).end(getSvgCaptcha()(cookie.captcha, {}));
     }
 
     function getRedirectPath(domain) {

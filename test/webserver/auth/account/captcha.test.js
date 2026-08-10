@@ -68,3 +68,13 @@ test('CrowdSec CAPTCHA redirects to the current domain root', function () {
     assert.equal(postRequest.originalUrl, '/tenant');
     assert.equal(postResponse.redirectPath, '/tenant');
 });
+
+test('CAPTCHA service does not load the optional renderer until it is needed', function () {
+    const service = createCaptcha({
+        parent: {},
+        checkUserIpAddress: function () { return { id: 'tenant' }; }
+    });
+    const res = response();
+    service.handleGet({}, res);
+    assert.equal(res.statusCode, 404);
+});
