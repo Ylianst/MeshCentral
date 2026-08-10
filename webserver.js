@@ -107,6 +107,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
     const serialTunnelModule = require('./webserver/serial-tunnel.js');
     const websocketAuthModule = require('./webserver/websocket-auth.js');
     const passwordAuthenticationModule = require('./webserver/password-authentication.js');
+    const loginCompletionModule = require('./webserver/login-completion.js');
     const twoFactorAuthenticationModule = require('./webserver/two-factor-authentication.js');
     const passwordHistoryModule = require('./webserver/password-history.js');
     const fileDownloadsModule = require('./webserver/file-downloads.js');
@@ -1088,95 +1089,7 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
         });
     }
 
-    function completeLoginRequest(req, res, domain, user, userid, xusername, xpassword, direct, loginOptions) {
-        // Check if we need to change the password
-        if ((typeof user.passchange == 'number') && ((user.passchange == -1) || ((typeof domain.passwordrequirements == 'object') && (typeof domain.passwordrequirements.reset == 'number') && (user.passchange + (domain.passwordrequirements.reset * 86400) < Math.floor(Date.now() / 1000))))) {
-            // Request a password change
-            parent.debug('web', 'handleLoginRequest: login ok, password change requested');
-            req.session.loginmode = 6;
-            req.session.messageid = 113; // Password change requested.
-
-            // Decrypt any session data
-            const sec = parent.decryptSessionData(req.session.e);
-            sec.rtuser = xusername;
-            sec.rtpass = xpassword;
-            sec.rtreset = true;
-            req.session.e = parent.encryptSessionData(sec);
-
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            return;
-        }
-
-        // Save login time
-        user.pastlogin = user.login;
-        user.login = user.access = Math.floor(Date.now() / 1000);
-        obj.db.SetUser(user);
-
-        // Notify account login
-        const targets = ['*', 'server-users', user._id];
-        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
-        const ua = obj.getUserAgentInfo(req);
-        const loginEvent = { etype: 'user', userid: user._id, username: user.name, account: obj.CloneSafeUser(user), action: 'login', msgid: 107, msgArgs: [req.clientIp, ua.browserStr, ua.osStr], msg: 'Account login from ' + req.clientIp + ', ' + ua.browserStr + ', ' + ua.osStr, domain: domain.id, ip: req.clientIp, userAgent: req.headers['user-agent'], rport: req.connection.remotePort };
-        if (loginOptions != null) {
-            if ((loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) { loginEvent.tokenName = loginOptions.tokenName; loginEvent.tokenUser = loginOptions.tokenUser; } // If a login token was used, add it to the event.
-            if (loginOptions.twoFactorType != null) { loginEvent.twoFactorType = loginOptions.twoFactorType; }
-        }
-        obj.parent.DispatchEvent(targets, obj, loginEvent);
-
-        // Regenerate session when signing in to prevent fixation
-        //req.session.regenerate(function () {
-        // Store the user's primary key in the session store to be retrieved, or in this case the entire user object
-        delete req.session.e;
-        delete req.session.u2f;
-        delete req.session.loginmode;
-        delete req.session.tuserid;
-        delete req.session.tuser;
-        delete req.session.tpass;
-        delete req.session.temail;
-        delete req.session.tsms;
-        delete req.session.tmsg;
-        delete req.session.tduo;
-        delete req.session.tpush;
-        delete req.session.messageid;
-        delete req.session.passhint;
-        delete req.session.cuserid;
-        delete req.session.expire;
-        delete req.session.currentNode;
-        req.session.userid = userid;
-        req.session.ip = req.clientIp;
-        setSessionRandom(req);
-        obj.parent.authLog('https', 'Accepted password for ' + (xusername ? xusername : userid) + ' from ' + req.clientIp + ' port ' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
-
-        // If a login token was used, add this information and expire time to the session.
-        if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) {
-            req.session.loginToken = loginOptions.tokenUser;
-            if (loginOptions.expire != null) { req.session.expire = loginOptions.expire; }
-        }
-
-        if (req.body.viewmode) { req.session.viewmode = req.body.viewmode; }
-        if (req.body.host) {
-            // TODO: This is a terrible search!!! FIX THIS.
-            /*
-            obj.db.GetAllType('node', function (err, docs) {
-                for (var i = 0; i < docs.length; i++) {
-                    if (docs[i].name == req.body.host) {
-                        req.session.currentNode = docs[i]._id;
-                        break;
-                    }
-                }
-                console.log("CurrentNode: " + req.session.currentNode);
-                // This redirect happens after finding node is completed
-                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-            });
-            */
-            parent.debug('web', 'handleLoginRequest: login ok (1)');
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); } // Temporary
-        } else {
-            parent.debug('web', 'handleLoginRequest: login ok (2)');
-            if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
-        }
-        //});
-    }
+    const completeLoginRequest = loginCompletionModule.createLoginCompletion({ state: obj, parent: parent, setSessionRandom: setSessionRandom, getQueryPortion: getQueryPortion, handleRootRequestEx: handleRootRequestEx });
 
     function handleCreateAccountRequest(req, res, direct) {
         const domain = checkUserIpAddress(req, res);
