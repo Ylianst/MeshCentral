@@ -1308,8 +1308,8 @@ const relayWebSocketModule = require('./webserver/relay-websocket.js');
                 } else {
                     // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
                     var responseSent = false;
-                    for (var i in docs) {
-                        var user = docs[i];
+                    for (let i in docs) {
+                        const user = docs[i];
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Second factor setup, request it now.
                             checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result, authData) {
