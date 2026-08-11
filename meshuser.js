@@ -19,6 +19,31 @@ const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3
 const conversionStatus = { "-1": "Unknown", 0: "Fully Decrypted", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
 const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
 
+// Helper: normalise various date formats into ISO 8601 for CSV export (#7928)
+// Handles: WMI BIOS date (20120507000000.000000+000), ctime (18:57:36 Mar 6 2025),
+//          ISO string pass-through, epoch number, and null/empty.
+function formatCsvDate(value) {
+    if (value == null || value === '') return '';
+    // Already ISO 8601?
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) return value;
+    // Epoch milliseconds (number)
+    if (typeof value === 'number') { try { return new Date(value).toISOString(); } catch (e) { return value; } }
+    // WMI BIOS date format: 20120507000000.000000+000
+    var wmiMatch = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})\.\d+\+[0-9]+$/.exec(value);
+    if (wmiMatch) {
+        try { return new Date(Date.UTC(+wmiMatch[1], +wmiMatch[2] - 1, +wmiMatch[3], +wmiMatch[4], +wmiMatch[5], +wmiMatch[6])).toISOString(); } catch (e) { return value; }
+    }
+    // ctime format: "18:57:36 Mar 6 2025" or "18:57:36 Mar  6 2025"
+    var ctimeMatch = /^(\d{2}):(\d{2}):(\d{2})\s+(\w{3})\s+(\d{1,2})\s+(\d{4})$/.exec(value);
+    if (ctimeMatch) {
+        try { return new Date(value).toISOString(); } catch (e) { return value; }
+    }
+    // Try generic Date parse as last resort
+    try { var d = new Date(value); if (!isNaN(d.getTime())) return d.toISOString(); } catch (e) {}
+    return value; // Fallback: return as-is
+}
+
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
     const fs = require('fs');
@@ -444,7 +469,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) || ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null)))) {
                                 event = common.Clone(event);
                                 if ((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) {
-                                    for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
+                                    for (var i in event.deviceShares) { if ((event.deviceShares[i] != null) && (event.deviceShares[i].userid != user._id)) { delete event.deviceShares[i].url; } }
                                 }
                                 if ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null))) {
                                     // Clean up RDP & SSH credentials
@@ -4610,7 +4635,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var now = Date.now();
                         for (var i = 0; i < docs.length; i++) {
                             const doc = docs[i];
-                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); delete docs[i]; } else {
+                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); docs.splice(i--, 1); } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
                             }
@@ -5356,7 +5381,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             } else {
                                                 output += ',';
                                             }
-                                            if (typeof n.lastbootuptime == 'number') { output += ',' + n.lastbootuptime; } else { output += ','; }
+                                            if (typeof n.lastbootuptime == 'number') { output += ',' + new Date(n.lastbootuptime).toISOString(); } else { output += ','; }
                                         } else {
                                             output += ',,,,,,,,,,,,,,,,,,,,';
                                         }
@@ -5373,7 +5398,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             output += ',';
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_date)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_date); }
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_date)) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.identifiers.bios_date)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_vendor); }
                                             output += ',';
@@ -5463,7 +5488,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && nodeinfo.sys.hardware.linux.kernel_build) { output += csvClean(nodeinfo.sys.hardware.linux.kernel_build); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.linux.bios_date)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
                                             output += ',';
@@ -5523,11 +5548,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.agentvers.openssl) { output += csvClean(nodeinfo.sys.hardware.agentvers.openssl); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.agentvers.commitDate) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitDate); }
+                                            if (nodeinfo.sys.hardware.agentvers.commitDate) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.agentvers.commitDate)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.agentvers.commitHash) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitHash); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.agentvers.compileTime) { output += csvClean(nodeinfo.sys.hardware.agentvers.compileTime); }
+                                            if (nodeinfo.sys.hardware.agentvers.compileTime) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.agentvers.compileTime)); }
                                         } else {
                                             output += ',,,,';
                                         }
@@ -5559,9 +5584,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             if (nodeinfo.lastConnect.time) {
                                                 // Last connection time
                                                 if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
-                                                    output += csvClean(new Date(nodeinfo.lastConnect.time).toLocaleString(command.l, { timeZone: command.tz }))
+                                                    output += csvClean(new Date(nodeinfo.lastConnect.time).toISOString())
                                                 } else {
-                                                    output += nodeinfo.lastConnect.time;
+                                                    output += new Date(nodeinfo.lastConnect.time).toISOString();
                                                 }
                                             }
                                             output += ',';

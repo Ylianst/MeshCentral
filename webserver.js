@@ -501,7 +501,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         obj.agentIssues.push([new Date().toLocaleString(), addrport, issue]);
-        while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); }
+        while (obj.agentIssues.length > 50) { obj.agentIssues.shift(); }
     }
     obj.agentIssues = [];
 
