@@ -348,6 +348,7 @@
             document.onkeypress = ondockeypress;
             document.onkeydown = ondockeydown;
             document.onkeyup = ondockeyup;
+            window.onblur = ondocblur;
             setupDesktop();
             setupTerminal();
             setupFiles();
@@ -2283,7 +2284,16 @@
 
         // Display a dialog box
         // Parameters: Dialog Mode (0 = none), Dialog Title, Buttons (1 = OK, 2 = Cancel, 3 = OK & Cancel), Call back function(0 = Cancel, 1 = OK), Dialog Content (Mode 2 only)
+        // A dialog opening over the shared desktop swallows the in-flight key-up (ondockeyup gates on
+        // xxdialogMode), leaving the key held on the remote where Wayland auto-repeats it (e.g. Ctrl+V
+        // opening the Clipboard dialog pastes "vvvv..."). Release held keys before the dialog opens, and
+        // on window blur. No GrabKeyInput pause/resume here: the page-level ondockey* handlers gate on
+        // xxdialogMode, so re-grabbing would double-forward keys.
+        function deskDialogReleaseKeys() { if (!xxdialogMode && desktop && desktop.m && desktop.m.handleReleaseKeys && Q('DeskControl') && isInputAllowed()) { desktop.m.handleReleaseKeys(); } }
+        function ondocblur() { if (desktop && desktop.m && desktop.m.handleReleaseKeys && Q('DeskControl') && isInputAllowed()) { return desktop.m.handleReleaseKeys(); } }
+
         function setDialogMode(x, y, b, f, c, tag) {
+            if (x) { deskDialogReleaseKeys(); }
             xxdialogMode = x;
             xxdialogFunc = f;
             xxdialogButtons = b;

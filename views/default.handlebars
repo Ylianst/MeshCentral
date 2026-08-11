@@ -4510,7 +4510,9 @@
 
         //function ondocfocus() { }
         // TODO: Add handleReleaseKeys() for Intel AMT.
-        function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked && desktop.m.handleReleaseKeys) { return desktop.m.handleReleaseKeys(); } }
+        // On window blur (e.g. alt-tab away mid-keypress), release any keys the desktop is still
+        // holding so they don't stick and auto-repeat on the remote. Runs regardless of dialog state.
+        function ondocblur() { if ((xxcurrentView == 11) && desktop && desktop.m && desktop.m.handleReleaseKeys && Q('DeskControl') && Q('DeskControl').checked) { return desktop.m.handleReleaseKeys(); } }
 
         // Highlights the device group hovered
         function devGrpMouseHover(element, over) {
@@ -20121,6 +20123,14 @@
         function setDialogMode(x, y, b, f, c, tag) {
             setSessionActivity();
             QV('uiMenu', false);
+            // Opening/closing a dialog over an active remote desktop: release any keys the desktop is
+            // still holding and pause keyboard capture, so keys typed into the dialog (e.g. Ctrl+V into
+            // the Clipboard box) don't leak to the agent and stick down (Wayland then auto-repeats the
+            // held key, e.g. "vvvv"). Resume capture when the dialog closes.
+            if ((xxcurrentView == 11) && desktop && desktop.m && Q('DeskControl') && Q('DeskControl').checked) {
+                if (x && !xxdialogMode) { if (desktop.m.handleReleaseKeys) { desktop.m.handleReleaseKeys(); } if (desktop.m.UnGrabKeyInput) { desktop.m.UnGrabKeyInput(); } }
+                else if (!x && xxdialogMode) { if (desktop.m.GrabKeyInput) { desktop.m.GrabKeyInput(); } }
+            }
             xxdialogMode = x;
             xxdialogFunc = f;
             xxdialogButtons = b;
