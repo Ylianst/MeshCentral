@@ -3900,7 +3900,11 @@ function onTunnelData(data)
             if (cmd == null) { return; }
             if ((cmd.ctrlChannel == '102938') || ((cmd.type == 'offer') && (cmd.sdp != null))) { onTunnelControlData(cmd, this); return; } // If this is control data, handle it now.
             if (cmd.action == undefined) { return; }
-            var remoteRegistry = (process.platform == 'win32') ? require('win-registry-remote') : null;
+            var remoteRegistry = null;
+            if (process.platform == 'win32') {
+                try { remoteRegistry = require('win-registry-remote'); }
+                catch (ex) { }
+            }
 
             switch (cmd.action) {
                 case 'listroots': {
