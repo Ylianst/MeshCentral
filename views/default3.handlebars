@@ -5417,7 +5417,9 @@
 
         //function ondocfocus() { }
         // TODO: Add handleReleaseKeys() for Intel AMT.
-        function ondocblur() { if (!xxdialogMode && xxcurrentView == 11 && desktop && Q('DeskControl').checked && desktop.m.handleReleaseKeys) { return desktop.m.handleReleaseKeys(); } }
+        // On window blur (e.g. alt-tab away mid-keypress), release any keys the desktop is still
+        // holding so they don't stick and auto-repeat on the remote. Runs regardless of dialog state.
+        function ondocblur() { if ((xxcurrentView == 11) && desktop && desktop.m && desktop.m.handleReleaseKeys && Q('DeskControl') && Q('DeskControl').checked) { return desktop.m.handleReleaseKeys(); } }
 
         // Highlights the device group hovered
         function devGrpMouseHover(element, over) {
@@ -6914,7 +6916,16 @@
 
         var xxModal;
 
+        // A dialog/modal opening over the active remote desktop swallows the in-flight key-up (the
+        // ondockey* handlers stop forwarding once xxdialogMode is set), leaving that key held down on
+        // the remote where it auto-repeats (e.g. Ctrl+V opening the Clipboard dialog pastes "vvvv...").
+        // Release held keys before the dialog takes the keyboard. Unlike the classic UI there is no
+        // UnGrabKeyInput/GrabKeyInput pair to pause/resume here: this UI never attaches the desktop
+        // module's own key handlers, the page-level ondockey* handlers gate on xxdialogMode instead.
+        function deskDialogReleaseKeys() { if (!xxdialogMode && (xxcurrentView == 11) && desktop && desktop.m && desktop.m.handleReleaseKeys && Q('DeskControl') && Q('DeskControl').checked) { desktop.m.handleReleaseKeys(); } }
+
         function setModalContent(modalId, title, bodyContent, size = null) {
+            deskDialogReleaseKeys();
             // Check if the modal elements exist
             var modalConfigurableElement = document.getElementById('xxAddAgentModalConf');
             var modalTitleElement = document.getElementById(modalId + 'Title');
@@ -22902,6 +22913,7 @@
         function setDialogMode(x, y, b, f, c, tag) {
             setSessionActivity();
             QV('uiMenu', false);
+            if (x) { deskDialogReleaseKeys(); }
             xxdialogMode = x;
             xxdialogFunc = f;
             xxdialogButtons = b;
