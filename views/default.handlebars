@@ -6538,7 +6538,10 @@
 
         function parseSearchOrInput(x) {
             var s = x.split(' ' + "or" + ' '), r = null;
-            for (var i in s) { var r2 = parseSearchAndInput(s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j] >= 0)) { r.push(r2[j]); } } } }
+            // Fix #7937: the OR merge was broken — r.indexOf(r2[j] >= 0) evaluated
+            // (r2[j] >= 0) to true/false first, then searched for that boolean in r.
+            // Correct: if r2[j] is NOT already in r, add it (union/OR semantics).
+            for (var i in s) { var r2 = parseSearchAndInput(s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j]) < 0) { r.push(r2[j]); } } } }
             return r;
         }
 

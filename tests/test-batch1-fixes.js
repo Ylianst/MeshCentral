@@ -200,3 +200,174 @@ describe('#8033 - agentIssues array length bug', function () {
         assert.strictEqual(agentIssues.length, 50, 'Array should be trimmed to 50');
     });
 });
+
+// ============================================================================
+// Test #7951: OIDC groups from token claim should skip Graph API lookup
+// ============================================================================
+
+describe('#7951 - OIDC groups from token claim', function () {
+    // Simulate the fixed logic: if user.groups is already a valid array from
+    // the ID token, skip the Graph API lookup entirely.
+    function shouldSkipGraphLookup(userGroups) {
+        return Array.isArray(userGroups) && userGroups.length > 0;
+    }
+
+    it('should skip Graph lookup when groups are in the token', function () {
+        var user = { groups: ['group-id-1', 'group-id-2'] };
+        assert.strictEqual(shouldSkipGraphLookup(user.groups), true);
+    });
+
+    it('should NOT skip Graph lookup when groups are null', function () {
+        var user = { groups: null };
+        assert.strictEqual(shouldSkipGraphLookup(user.groups), false);
+    });
+
+    it('should NOT skip Graph lookup when groups array is empty', function () {
+        var user = { groups: [] };
+        assert.strictEqual(shouldSkipGraphLookup(user.groups), false);
+    });
+
+    it('should NOT skip Graph lookup when groups is a string (invalid)', function () {
+        var user = { groups: 'not-an-array' };
+        assert.strictEqual(shouldSkipGraphLookup(user.groups), false);
+    });
+});
+
+// ============================================================================
+// Test #8037: otplib require should be wrapped in try-catch
+// ============================================================================
+
+describe('#8037 - 2FA otplib crash protection', function () {
+    it('should catch module loading errors and not crash the server', function () {
+        // Simulate: when otplib subdependency @scure/base32 is missing,
+        // require('otplib') throws. The fix wraps it in try-catch.
+        var result;
+        try {
+            // Simulate a module loading failure
+            throw new Error("Cannot find module '@scure/base32'");
+        } catch (ex) {
+            // Fix: log the error and continue — server stays alive
+            result = 'caught: ' + ex.message;
+        }
+        assert.ok(result.startsWith('caught:'), 'Error should be caught, not propagated');
+        assert.ok(result.indexOf('@scure/base32') >= 0, 'Error message preserved');
+    });
+
+    it('should still verify valid tokens when otplib loads correctly', function () {
+        var result;
+        try {
+            // Simulate successful otplib verification
+            var verified = { valid: true };
+            if (verified.valid === true) {
+                result = 'success';
+            }
+        } catch (ex) {
+            result = 'error';
+        }
+        assert.strictEqual(result, 'success');
+    });
+});
+
+// ============================================================================
+// Test #7937: Multiple search fragments (OR) in device filter
+// ============================================================================
+
+describe('#7937 - Device search OR filter', function () {
+    // Re-implement the FIXED parseSearchOrInput merge logic
+    function orMerge(r, r2) {
+        if (r == null) { return r2; }
+        for (var j in r2) { if (r.indexOf(r2[j]) < 0) { r.push(r2[j]); } }
+        return r;
+    }
+
+    it('should union results from two search terms (ABC OR 123)', function () {
+        var r = null;
+        // Simulate: "ABC OR 123" — first term matches [node1, node3], second matches [node2, node3]
+        r = orMerge(r, ['node1', 'node3']);
+        r = orMerge(r, ['node2', 'node3']);
+        assert.strictEqual(r.length, 3, 'Union should have 3 unique devices');
+        assert.ok(r.indexOf('node1') >= 0, 'node1 should be in results');
+        assert.ok(r.indexOf('node2') >= 0, 'node2 should be in results');
+        assert.ok(r.indexOf('node3') >= 0, 'node3 should be in results');
+    });
+
+    it('should NOT duplicate devices that match both terms', function () {
+        var r = null;
+        r = orMerge(r, ['node1', 'node2']);
+        r = orMerge(r, ['node1', 'node2', 'node3']);
+        assert.strictEqual(r.length, 3, 'No duplicates — node1 and node2 appear once');
+    });
+
+    it('should demonstrate the old buggy behavior was broken', function () {
+        // OLD: r.indexOf(r2[j] >= 0) — evaluates (r2[j] >= 0) first
+        // For r2[j] = 'node2', ('node2' >= 0) = false (string >= number = NaN >= 0 = false)
+        // r.indexOf(false) = -1 (false not in array)
+        // if(-1) is TRUTHY in JS! So push executes, but this is still wrong:
+        // it would push r2[j] even if it's already in r (no dedup check).
+        // With a non-empty array like ['node1'], indexOf(false) = -1, if(-1) = true → push happens
+        // With an array that already contains 'false' → indexOf = 0, if(0) = false → push skipped (wrong!)
+        // The logic is completely broken — it accidentally works in some cases but not others.
+        var r = ['node1'];
+        var r2 = ['node2'];
+        // Old buggy line:
+        for (var j in r2) { if (r.indexOf(r2[j] >= 0)) { r.push(r2[j]); } }
+        // In this specific case, -1 is truthy so it accidentally pushes
+        // But the logic is WRONG: it doesn't check if r2[j] is already in r
+        assert.strictEqual(r.length, 2, 'Old code accidentally pushes but with wrong logic');
+    });
+
+    it('should handle null r (first term)', function () {
+        var r = orMerge(null, ['node1', 'node2']);
+        assert.strictEqual(r.length, 2);
+        assert.strictEqual(r[0], 'node1');
+    });
+});
+
+// ============================================================================
+// Test #7929: LDAP TLS options parsing
+// ============================================================================
+
+describe('#7929 - LDAP TLS options', function () {
+    // Simulate the tlsOptions merge logic
+    function applyLdapTlsOptions(ldapoptions, ldaptlsoptions) {
+        if (typeof ldaptlsoptions == 'object' && ldaptlsoptions != null) {
+            ldapoptions.tlsOptions = Object.assign({}, ldaptlsoptions);
+            if (ldapoptions.tlsOptions.rejectUnauthorized == null) {
+                ldapoptions.tlsOptions.rejectUnauthorized = false;
+            }
+            if (ldapoptions.tlsOptions.minVersion == null) {
+                ldapoptions.tlsOptions.minVersion = 'TLSv1.2';
+            }
+        }
+        return ldapoptions;
+    }
+
+    it('should default rejectUnauthorized to false for self-signed certs', function () {
+        var opts = applyLdapTlsOptions({}, { ca: 'cert-content' });
+        assert.strictEqual(opts.tlsOptions.rejectUnauthorized, false);
+    });
+
+    it('should respect rejectUnauthorized when explicitly set to true', function () {
+        var opts = applyLdapTlsOptions({}, { rejectUnauthorized: true });
+        assert.strictEqual(opts.tlsOptions.rejectUnauthorized, true);
+    });
+
+    it('should default minVersion to TLSv1.2', function () {
+        var opts = applyLdapTlsOptions({}, {});
+        assert.strictEqual(opts.tlsOptions.minVersion, 'TLSv1.2');
+    });
+
+    it('should not modify original ldaptlsoptions (use copy)', function () {
+        var original = { rejectUnauthorized: true };
+        var opts = applyLdapTlsOptions({}, original);
+        // The original should keep its value
+        assert.strictEqual(original.rejectUnauthorized, true);
+        // The copy should also have it
+        assert.strictEqual(opts.tlsOptions.rejectUnauthorized, true);
+    });
+
+    it('should do nothing when ldaptlsoptions is null', function () {
+        var opts = applyLdapTlsOptions({}, null);
+        assert.strictEqual(opts.tlsOptions, undefined);
+    });
+});

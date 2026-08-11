@@ -789,6 +789,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var LdapAuth = require('ldapauth-fork');
                 if (domain.ldapoptions == null) { domain.ldapoptions = {}; }
                 domain.ldapoptions.includeRaw = true; // This allows us to get data as buffers which is useful for images.
+                // Apply TLS options for LDAPS (ldaps:// URLs) if configured (#7929)
+                // Supports: tlsOptions.ca (cert path or buffer), tlsOptions.cert, tlsOptions.key,
+                //   tlsOptions.rejectUnauthorized (default: false for self-signed certs),
+                //   tlsOptions.minVersion (default: 'TLSv1.2'), tlsOptions.ciphers
+                if (typeof domain.ldaptlsoptions == 'object' && domain.ldaptlsoptions != null) {
+                    domain.ldapoptions.tlsOptions = domain.ldaptlsoptions;
+                    // Load CA certificate from file path if provided
+                    if (typeof domain.ldaptlsoptions.caPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.ca = require('fs').readFileSync(domain.ldaptlsoptions.caPath); } catch (e) { console.log('LDAP TLS: Failed to read CA cert file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.caPath;
+                    }
+                    if (typeof domain.ldaptlsoptions.certPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.cert = require('fs').readFileSync(domain.ldaptlsoptions.certPath); } catch (e) { console.log('LDAP TLS: Failed to read client cert file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.certPath;
+                    }
+                    if (typeof domain.ldaptlsoptions.keyPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.key = require('fs').readFileSync(domain.ldaptlsoptions.keyPath); } catch (e) { console.log('LDAP TLS: Failed to read client key file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.keyPath;
+                    }
+                    // Default rejectUnauthorized to false if not explicitly set (allows self-signed certs)
+                    if (domain.ldapoptions.tlsOptions.rejectUnauthorized == null) { domain.ldapoptions.tlsOptions.rejectUnauthorized = false; }
+                    // Default minVersion to TLSv1.2 for security
+                    if (domain.ldapoptions.tlsOptions.minVersion == null) { domain.ldapoptions.tlsOptions.minVersion = 'TLSv1.2'; }
+                }
                 var ldap = new LdapAuth(domain.ldapoptions);
                 ldapHandler.ldapobj = ldap;
                 ldap.on('error', function (err) { parent.debug('ldap', 'LDAP OnError: ' + err); try { ldap.close(); } catch (ex) { console.log(ex); } }); // Close the LDAP object
@@ -1132,19 +1156,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check Google Authenticator
         if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
-            const otplib = require('otplib');
-            const verified = otplib.verifySync({ 
-                epochTolerance: 60, 
-                token: token, 
-                secret: user.otpsecret,
-                guardrails: otplib.createGuardrails({
-                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
-                })
-            });
-            if (verified.valid === true) {
-                parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
-                func(true, { twoFactorType: 'otp' });
-                return;
+            try {
+                const otplib = require('otplib');
+                const verified = otplib.verifySync({
+                    epochTolerance: 60,
+                    token: token,
+                    secret: user.otpsecret,
+                    guardrails: otplib.createGuardrails({
+                        MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                    })
+                });
+                if (verified.valid === true) {
+                    parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
+                    func(true, { twoFactorType: 'otp' });
+                    return;
+                }
+            } catch (ex) {
+                // otplib may fail to load if its subdependencies (@scure/base32) are missing (#8037)
+                // Don't crash the server — log the error and continue to other 2FA methods
+                parent.debug('error', 'OTPLIB: Failed to verify authenticator token: ' + ex.message);
+                console.log('OTPLIB error (2FA verification skipped): ' + ex.message);
             }
         };
 
@@ -8661,23 +8692,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
-                        getGroups(user.preset, tokenset).then((groups) => {
-                            user = Object.assign(user, { 'groups': groups });
-							if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
+                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) {
+                        // If groups are already present from the ID token claim, use them and skip the API lookup (#7951)
+                        if (Array.isArray(user.groups) && user.groups.length > 0) {
+                            if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
                                 // Check also for roles
-		                        user.groups = (user.groups || []).concat(user.roles);
-		                    }
-		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
-		                    done(null, user);
-                        }).catch((err) => {
-                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                            parent.debug('error', `${JSON.stringify(error)}`);
-                            parent.authLog('oidcCallback', error.message);
-                            user.groups = [];
+                                user.groups = (user.groups || []).concat(user.roles || []);
+                            }
+                            parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES (from token claim): ${JSON.stringify(user)}`);
                             done(null, user);
-                        });
-                    
+                        } else {
+                            getGroups(user.preset, tokenset).then((groups) => {
+                                user = Object.assign(user, { 'groups': groups });
+					                        if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
+                                    // Check also for roles
+				                            user.groups = (user.groups || []).concat(user.roles || []);
+                                }
+					                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
+					                    done(null, user);
+                            }).catch((err) => {
+                                let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                                parent.debug('error', `${JSON.stringify(error)}`);
+                                parent.authLog('oidcCallback', error.message);
+                                user.groups = [];
+                                done(null, user);
+                            });
+                        }
                     } else if (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) {
                         // Only roles are requested
                         if (user.roles) {
