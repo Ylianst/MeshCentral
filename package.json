@@ -17,9 +17,6 @@
   "description": "Web based remote computer management server",
   "author": "Ylian Saint-Hilaire <ylianst@gmail.com>",
   "main": "meshcentral.js",
-  "scripts": {
-    "test:unit": "node test/run-unit-tests.js"
-  },
   "bin": {
     "meshcentral": "bin/meshcentral"
   },
