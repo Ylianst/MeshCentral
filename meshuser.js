@@ -52,6 +52,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     // Cross domain messages, for cross-domain administrators only.
     const allowedCrossDomainMessages = ['accountcreate', 'accountremove', 'accountchange', 'createusergroup', 'deleteusergroup', 'usergroupchange'];
 
+    // Helper: add token user info to an event if the session used a login token (#8047)
+    // This allows audit logs to distinguish actions performed via API token from
+    // normal user sessions. The webserver.js login path stores tokenUser in
+    // req.session.loginToken when a login token is used.
+    function addTokenInfo(event, req) {
+        if (req && req.session && req.session.loginToken != null && event != null) {
+            event.tokenUser = req.session.loginToken;
+        }
+        return event;
+    }
+
     // User Consent Flags
     const USERCONSENT_DesktopNotifyUser = 1;
     const USERCONSENT_TerminalNotifyUser = 2;
@@ -2684,8 +2695,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(device);
 
                         // Event the new node
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        // Send response if required
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, Object.assign({ etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id }, (req && req.session && req.session.loginToken != null ? { tokenUser: req.session.loginToken } : {})));                        // Send response if required
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addlocaldevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
                     break;
@@ -2740,8 +2750,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(device);
 
                         // Event the new node
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        // Send response if required
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, Object.assign({ etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id }, (req && req.session && req.session.loginToken != null ? { tokenUser: req.session.loginToken } : {})));                        // Send response if required
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addamtdevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
 
@@ -2869,6 +2878,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
+                            addTokenInfo(event, req);
                             // Even if change stream is enabled on this server, we still make the nodemeshchange actionable. This is because the DB can't send out a change event that will match this.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
 
@@ -2955,6 +2965,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Event node deletion
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msgid: 87, msgArgs: [node.name, parent.meshes[node.meshid].name], msg: 'Removed device ' + node.name + ' from device group ' + parent.meshes[node.meshid].name, domain: domain.id };
+                            addTokenInfo(event, req);
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
                             //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
@@ -3195,6 +3206,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                            addTokenInfo(event, req);
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         } else if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent

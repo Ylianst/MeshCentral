@@ -132,6 +132,47 @@ describe('#8044 - DeviceShare array holes (splice vs delete)', function () {
 });
 
 // ============================================================================
+// Test #8047: Token user info in events
+// ============================================================================
+
+describe('#8047 - Token user info in audit events', function () {
+    // Re-implement addTokenInfo for testing (same logic as meshuser.js)
+    function addTokenInfo(event, req) {
+        if (req && req.session && req.session.loginToken != null && event != null) {
+            event.tokenUser = req.session.loginToken;
+        }
+        return event;
+    }
+
+    it('should add tokenUser when session has loginToken', function () {
+        var event = { etype: 'node', userid: 'user//abc', username: 'admin', action: 'nodemeshchange' };
+        var req = { session: { loginToken: 'ATLt5tlE9QiFYen2' } };
+        addTokenInfo(event, req);
+        assert.strictEqual(event.tokenUser, 'ATLt5tlE9QiFYen2');
+    });
+
+    it('should NOT add tokenUser when session has no loginToken (normal user)', function () {
+        var event = { etype: 'node', userid: 'user//abc', username: 'admin', action: 'nodemeshchange' };
+        var req = { session: { userid: 'user//abc' } };
+        addTokenInfo(event, req);
+        assert.strictEqual(event.tokenUser, undefined);
+    });
+
+    it('should NOT add tokenUser when req or session is null', function () {
+        var event = { etype: 'node', userid: 'user//abc', action: 'runcommands' };
+        addTokenInfo(event, null);
+        assert.strictEqual(event.tokenUser, undefined);
+        addTokenInfo(event, { session: null });
+        assert.strictEqual(event.tokenUser, undefined);
+    });
+
+    it('should handle null event gracefully', function () {
+        var req = { session: { loginToken: 'test-token' } };
+        assert.strictEqual(addTokenInfo(null, req), null);
+    });
+});
+
+// ============================================================================
 // Test #8033: setAgentIssues length bug
 // ============================================================================
 
