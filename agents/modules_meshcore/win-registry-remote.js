@@ -92,14 +92,30 @@ function getRegistryExecutableCandidates() {
     return ['C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
 }
 
+// MeshAgent builds a Windows command line from this array, so arguments containing
+// whitespace or quotes must be escaped explicitly.
+function quoteRegistryArgument(value) {
+    var arg = String(value);
+    if ((arg.length > 0) && (/[\s"]/.test(arg) == false)) { return arg; }
+    return '"' + arg.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/g, '$1$1') + '"';
+}
+
+function getRegistryCommandText(executable, execArgs) {
+    return quoteRegistryArgument(executable) + ' ' + execArgs.slice(1).join(' ');
+}
+
+function getRegistryCommandError(message, executable, execArgs) {
+    return message + '\r\nCommand: ' + getRegistryCommandText(executable, execArgs);
+}
+
 function runRegistryCommand(args, returnOutput) {
     var fs = require('fs');
-    var child = null, childProcess = require('child_process'), lastExecError = null, executable = null, candidates = getRegistryExecutableCandidates(), execArgs = null;
+    var child = null, childProcess = require('child_process'), lastExecError = null, executable = null, candidates = getRegistryExecutableCandidates(), execArgs = ['reg.exe'];
+    for (var i = 0; i < args.length; i++) { execArgs.push(quoteRegistryArgument(args[i])); }
     for (var i = 0; i < candidates.length; i++) {
         executable = candidates[i];
         if ((executable.indexOf('\\') >= 0) && (fs.existsSync(executable) == false)) { continue; }
         try {
-            execArgs = ['reg.exe'].concat(args);
             child = childProcess.execFile(executable, execArgs);
             break;
         } catch (ex) {
@@ -108,8 +124,8 @@ function runRegistryCommand(args, returnOutput) {
         }
     }
     if (child == null) {
-        if (lastExecError != null) { throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + '] (' + lastExecError + ')'); }
-        throw ('child_process.execFile(): Could not exec [' + candidates.join(', ') + ']');
+        if (lastExecError != null) { throw (getRegistryCommandError('child_process.execFile(): Could not exec [' + candidates.join(', ') + '] (' + lastExecError + ')', executable || candidates[0], execArgs)); }
+        throw (getRegistryCommandError('child_process.execFile(): Could not exec [' + candidates.join(', ') + ']', executable || candidates[0], execArgs));
     }
     child.stdout.str = '';
     child.stderr.str = '';
@@ -117,11 +133,11 @@ function runRegistryCommand(args, returnOutput) {
     child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
     child.waitExit();
     if ((child.exitCode != null) && (child.exitCode !== 0)) {
-        if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
-        if ((child.stdout.str != null) && (child.stdout.str.trim() != '')) { throw (child.stdout.str.trim()); }
-        throw ('Registry command failed with exit code ' + child.exitCode + ' using ' + executable + '.');
+        if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (getRegistryCommandError(child.stderr.str.trim(), executable, execArgs)); }
+        if ((child.stdout.str != null) && (child.stdout.str.trim() != '')) { throw (getRegistryCommandError(child.stdout.str.trim(), executable, execArgs)); }
+        throw (getRegistryCommandError('Registry command failed with exit code ' + child.exitCode + '.', executable, execArgs));
     }
-    if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (child.stderr.str.trim()); }
+    if ((child.stderr.str != null) && (child.stderr.str.trim() != '')) { throw (getRegistryCommandError(child.stderr.str.trim(), executable, execArgs)); }
     if (returnOutput === true) { return child.stdout.str || ''; }
     return child.stdout.str || '';
 }
@@ -209,6 +225,7 @@ function exportRegistryKey(hiveName, path) {
     var fs = require('fs');
     // Write to the agent folder, not to a shared temp folder, the export can hold sensitive keys
     var tmpFolder = (process.cwd() != '//') ? process.cwd() : ((process.env['ProgramData'] || 'C:\\ProgramData') + '\\MeshAgent\\');
+    if (tmpFolder.charAt(tmpFolder.length - 1) != '\\') { tmpFolder += '\\'; }
     var tmpFile = tmpFolder + 'mesh-registry-export-' + Date.now() + '.reg';
     try {
         runRegistryCommand(['export', getRegistryFullPath(hiveName, path), tmpFile, '/y']);
