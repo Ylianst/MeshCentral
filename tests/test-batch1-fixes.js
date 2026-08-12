@@ -652,3 +652,45 @@ describe('#7971 - Null guard on agentInfo prevents crash', function () {
         assert.strictEqual(caps, 0x40);
     });
 });
+
+// ============================================================================
+// Test #7807: IPv6 address parsing in clientIp
+// ============================================================================
+
+describe('#7807 - IPv6 clientIp parsing', function () {
+    // Simulate the fixed IPv6 port-stripping logic
+    function cleanClientIp(ip) {
+        if (ip.startsWith('[')) {
+            var closeBracket = ip.indexOf(']');
+            if (closeBracket > 1) { return ip.substring(1, closeBracket); }
+        } else {
+            var parts = ip.split(':');
+            if ((parts.length == 2) && (parts[1].match(/^\d+$/))) { return parts[0]; }
+        }
+        return ip;
+    }
+
+    it('should handle IPv4 with port', function () {
+        assert.strictEqual(cleanClientIp('192.168.1.1:8080'), '192.168.1.1');
+    });
+
+    it('should handle IPv4 without port', function () {
+        assert.strictEqual(cleanClientIp('192.168.1.1'), '192.168.1.1');
+    });
+
+    it('should handle plain IPv6 (no port)', function () {
+        assert.strictEqual(cleanClientIp('2003:c8::1'), '2003:c8::1');
+    });
+
+    it('should handle IPv6 in bracket notation with port', function () {
+        assert.strictEqual(cleanClientIp('[2003:c8::1]:443'), '2003:c8::1');
+    });
+
+    it('should handle IPv6 loopback', function () {
+        assert.strictEqual(cleanClientIp('::1'), '::1');
+    });
+
+    it('should handle IPv6 full address', function () {
+        assert.strictEqual(cleanClientIp('2001:0db8:85a3:0000:0000:8a2e:0370:7334'), '2001:0db8:85a3:0000:0000:8a2e:0370:7334');
+    });
+});
