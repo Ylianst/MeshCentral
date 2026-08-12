@@ -1595,6 +1595,12 @@ function handleServerCommand(data) {
                             break;
                         }
                     case 'openUrl': {
+						// Check if URL is valid (http or https only)
+						if (!isValidHttpUrl(data.url)) {
+							sendConsoleText("OpenURL failed: Invalid URL.");
+							break;
+						}
+						
                         // Open a local web browser and return success/fail
                         MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                         sendConsoleText("OpenURL: " + data.url);
@@ -2019,6 +2025,12 @@ function handleServerCommand(data) {
                 break;
             }
             case 'openUrl': {
+				// Check if URL is valid (http or https only)
+				if (!isValidHttpUrl(data.url)) {
+					sendConsoleText("OpenURL failed: Invalid URL.");
+					break;
+				}				
+
                 // Open a local web browser and return success/fail
                 //sendConsoleText('OpenURL: ' + data.url);
                 MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
@@ -4603,7 +4615,10 @@ function openFileOnDesktop(file) {
 
 // Open a web browser to a specified URL on current user's desktop
 function openUserDesktopUrl(url) {
-    if ((url.toLowerCase().startsWith('http://') == false) && (url.toLowerCase().startsWith('https://') == false)) { return null; }
+	if (!isValidHttpUrl(url)) {
+		return null;
+	}
+
     var child = null;
     try {
         switch (process.platform) {
@@ -5700,8 +5715,17 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 break;
             }
             case 'openurl': {
-                if (args['_'].length != 1) { response = 'Proper usage: openurl (url)'; } // Display usage
-                else { if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; } }
+                if (args['_'].length != 1) { // Display usage
+					response = 'Proper usage: openurl (url)'; 
+				} else {
+					// Check if URL is valid (http or https only)
+					if (!isValidHttpUrl(args['_'][0])) {
+						response = "Invalid URL.";
+						break;
+					}
+
+					if (openUserDesktopUrl(args['_'][0]) == null) { response = 'Failed.'; } else { response = 'Success.'; }
+				}
                 break;
             }
             case 'openfile': {
@@ -7634,6 +7658,22 @@ function onWebSocketUpgrade(response, s, head) {
     s.httprequest = this;
     s.end = onWebSocketClosed;
     s.data = onWebSocketData;
+}
+
+function isValidHttpUrl(value) {
+	if (typeof value !== "string" || value.trim() !== value) {
+		return false;
+	}
+
+	try {
+		const url = new URL(value);
+		if ((url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname)) {
+			return false;
+		}
+		return true;
+	} catch (ex) {
+		return false;
+	}
 }
 
 mesh.AddCommandHandler(handleServerCommand);

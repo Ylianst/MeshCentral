@@ -1017,6 +1017,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Complete the nodeid if needed
                     if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+					
+					// View only users should not be able to do those operations
+					const ViewOnlyForbiddenCommandTypes = [
+						'openUrl', 'getclip', 'setclip', 'pskill', 'userSessions', 'messagebox',
+						'serviceStop', 'serviceStart', 'serviceRestart', 'deskBackground',
+						'localapp', 'alertbox',
+					];
+
+					if (ViewOnlyForbiddenCommandTypes.includes(command.type)) {
+						requiredNonRights = MESHRIGHT_REMOTEVIEWONLY;
+					}
 
                     // Check if getting / setting clipboard data is allowed
                     if ((command.type == 'getclip') && (domain.clipboardget == false)) { console.log('CG-EXIT'); break; }
