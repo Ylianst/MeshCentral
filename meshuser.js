@@ -2205,6 +2205,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
                         else if ((command.parent != null) && (typeof command.parent !== 'string' || !parent.meshes[command.parent] || parent.meshes[command.parent].domain !== domain.id)) { err = 'Invalid parent group'; }
+                        // #8045: Check for duplicate group name within the same domain
+                        else if (domain.disallowDuplicateMeshNames !== false) {
+                            for (var meshidKey in parent.meshes) {
+                                if ((parent.meshes[meshidKey].domain == domain.id) && (parent.meshes[meshidKey].name == command.meshname)) { err = 'A device group with this name already exists'; break; }
+                            }
+                        }
                         if ((err == null) && (command.meshtype == 4)) {
                             if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
                             else if (common.validateString(command.kvmhost, 1, 128) == false) { err = 'Invalid KVM hostname'; }
@@ -2432,6 +2438,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Device group "' + mesh.name + '" flags changed'; changesids.push(3); mesh.flags = command.flags; }
                     if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Device group "' + mesh.name + '" consent changed'; changesids.push(4); mesh.consent = command.consent; }
                     if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
+
+                    // #7977: Change owner of a device group (site admins only)
+                    if ((typeof command.newcreatorid == 'string') && (command.newcreatorid != mesh.creatorid)) {
+                        // Only site admins can change the owner
+                        if ((user.siteadmin == SITERIGHT_ADMIN) || ((user.siteadmin & 1) != 0)) {
+                            // Verify the new owner exists
+                            var newCreator = obj.users[command.newcreatorid];
+                            if (newCreator != null) {
+                                if (change != '') change += ' and owner changed'; else change += 'Device group "' + mesh.name + '" owner changed';
+                                changesids.push(8);
+                                mesh.creatorid = command.newcreatorid;
+                                mesh.creatorname = newCreator.name;
+                                // Ensure new owner has full rights on this mesh
+                                if (mesh.links == null) { mesh.links = {}; }
+                                if (mesh.links[command.newcreatorid] == null) { mesh.links[command.newcreatorid] = { name: newCreator.name, rights: 4294967295 }; }
+                            }
+                        }
+                    }
 
                     var oldRelayNodeId = null, newRelayNodeId = null;
                     if ((typeof command.relayid == 'string') && ((mesh.mtype == 3) || (mesh.mtype == 4)) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {

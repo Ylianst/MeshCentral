@@ -469,8 +469,122 @@ describe('#8011 - Agent receives setmesh command on mesh change', function () {
     });
 
     it('should NOT send setmesh when agent is not connected', function () {
-        var result = simulateMeshChange(false, { meshid: 'mesh//domain//newmesh' });
+        var result = simulateMeshChange(false, { meshid: 'mesh//newmesh' });
         assert.strictEqual(result.sentCommands.length, 0);
         assert.strictEqual(result.agentSession, null);
+    });
+});
+
+// ============================================================================
+// Test #8045: Duplicate mesh group names are blocked
+// ============================================================================
+
+describe('#8045 - Duplicate mesh group names', function () {
+    // Simulate the duplicate name check logic
+    function checkDuplicateName(meshes, domainId, meshname, disallow) {
+        if (disallow === false) return null; // duplicates allowed when explicitly disabled
+        for (var key in meshes) {
+            if (meshes[key].domain == domainId && meshes[key].name == meshname) {
+                return 'A device group with this name already exists';
+            }
+        }
+        return null;
+    }
+
+    var meshes = {
+        'mesh//domain//abc': { domain: 'domain', name: 'BSB - BRASILIA' },
+        'mesh//domain//def': { domain: 'domain', name: 'SP - SAO PAULO' }
+    };
+
+    it('should block creation when name exists in same domain', function () {
+        var err = checkDuplicateName(meshes, 'domain', 'BSB - BRASILIA');
+        assert.ok(err);
+        assert.ok(err.indexOf('already exists') >= 0);
+    });
+
+    it('should allow creation when name is unique', function () {
+        var err = checkDuplicateName(meshes, 'domain', 'RJ - RIO DE JANEIRO');
+        assert.strictEqual(err, null);
+    });
+
+    it('should allow same name in different domain', function () {
+        var err = checkDuplicateName(meshes, 'otherdomain', 'BSB - BRASILIA');
+        assert.strictEqual(err, null);
+    });
+
+    it('should allow duplicates when disallowDuplicateMeshNames is false', function () {
+        var err = checkDuplicateName(meshes, 'domain', 'BSB - BRASILIA', false);
+        assert.strictEqual(err, null);
+    });
+});
+
+// ============================================================================
+// Test #7977: Change owner of a device group
+// ============================================================================
+
+describe('#7977 - Change owner of a device group', function () {
+    // Simulate the owner change logic
+    function changeOwner(mesh, newCreatorId, users, isSiteAdmin) {
+        if (!isSiteAdmin) return { changed: false, reason: 'permission denied' };
+        var newCreator = users[newCreatorId];
+        if (newCreator == null) return { changed: false, reason: 'user not found' };
+        mesh.creatorid = newCreatorId;
+        mesh.creatorname = newCreator.name;
+        if (mesh.links == null) { mesh.links = {}; }
+        if (mesh.links[newCreatorId] == null) { mesh.links[newCreatorId] = { name: newCreator.name, rights: 4294967295 }; }
+        return { changed: true, mesh: mesh };
+    }
+
+    var mesh = { name: 'TestGroup', creatorid: 'user//oldadmin', creatorname: 'OldAdmin', links: {} };
+    var users = { 'user//newadmin': { name: 'NewAdmin' } };
+
+    it('should change owner when site admin', function () {
+        var result = changeOwner(JSON.parse(JSON.stringify(mesh)), 'user//newadmin', users, true);
+        assert.ok(result.changed);
+        assert.strictEqual(result.mesh.creatorid, 'user//newadmin');
+        assert.strictEqual(result.mesh.creatorname, 'NewAdmin');
+    });
+
+    it('should give new owner full rights on the mesh', function () {
+        var result = changeOwner(JSON.parse(JSON.stringify(mesh)), 'user//newadmin', users, true);
+        assert.ok(result.mesh.links['user//newadmin']);
+        assert.strictEqual(result.mesh.links['user//newadmin'].rights, 4294967295);
+    });
+
+    it('should NOT change owner when not site admin', function () {
+        var result = changeOwner(JSON.parse(JSON.stringify(mesh)), 'user//newadmin', users, false);
+        assert.ok(!result.changed);
+    });
+
+    it('should NOT change owner when user does not exist', function () {
+        var result = changeOwner(JSON.parse(JSON.stringify(mesh)), 'user//ghost', users, true);
+        assert.ok(!result.changed);
+    });
+});
+
+// ============================================================================
+// Test #8066: Warn when cert is not configured
+// ============================================================================
+
+describe('#8066 - Cert config warning', function () {
+    // Simulate the warning logic
+    function shouldWarnCert(config, lanonly) {
+        if (lanonly === true) return false;
+        if (config.settings == null || config.settings.cert == null) return true;
+        return false;
+    }
+
+    it('should warn when cert is not set and not lanonly', function () {
+        assert.strictEqual(shouldWarnCert({ settings: {} }, false), true);
+        assert.strictEqual(shouldWarnCert({}, false), true);
+    });
+
+    it('should NOT warn when cert is set', function () {
+        assert.strictEqual(shouldWarnCert({ settings: { cert: 'myserver.lan' } }, false), false);
+    });
+
+    it('should NOT warn when lanonly is true', function () {
+        assert.strictEqual(shouldWarnCert({ settings: {} }, true), false);
+        assert.strictEqual(shouldWarnCert({}, true), false);
     });
 });

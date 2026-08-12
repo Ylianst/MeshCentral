@@ -1890,6 +1890,13 @@ function CreateMeshCentralServer(config, args) {
         // If the certificate is un-configured, force LAN-only mode
         if (obj.certificates.CommonName.indexOf('.') == -1) { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
 
+        // #8066: Warn if cert is not configured — agents may fail to reconnect
+        if ((obj.config.settings == null || obj.config.settings.cert == null) && (obj.args.lanonly != true)) {
+            console.log('WARNING: The "cert" setting is not configured in config.json. Agents may fail to reconnect');
+            console.log('         or KVM may display partial screen updates. Set "cert" to the server FQDN or LAN IP.');
+            console.log('         Example: "settings": { "cert": "myserver.lan" }');
+        }
+
         // Write server version and run mode
         const productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
         const runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
