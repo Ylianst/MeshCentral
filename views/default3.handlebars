@@ -7765,8 +7765,12 @@
                         if (features2 & 0x00008000) { // Both server and client names must match
                             if (features2 & 0x10000000) {
                                 if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             } else {
                                 if (rx.test(nodes[d].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             }
                         } else {
                             if (features2 & 0x10000000) {
@@ -7775,12 +7779,16 @@
                                 } else {
                                     if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase())) { r.push(d); }
                                 }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             } else {
                                 if (showRealNames) {
                                     if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(d); }
                                 } else {
                                     if (rx.test(nodes[d].name.toLowerCase())) { r.push(d); }
                                 }
+                                // #7217: Also match IP address in generic search
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             }
                         }
                     }
