@@ -20,7 +20,16 @@ function parseLine(entry)
     var test = entry.match(/^\[.*M\]/);
     if (test == null)
     {
-        test = entry.match(/\[.+ => .+:[0-9]+\]/);
+        // check if there is an ASLR base adress in the entry
+        var baseTest = entry.match(/^base=(0x[0-9a-fA-F]+)$/);
+        if (baseTest != null)
+        {
+            var baseEntry = this.results.peek();
+            if (baseEntry != null) { baseEntry.base = baseTest[1]; }
+            return;
+        }
+
+        test = entry.match(/\[.+ => .+:[0-9]+\]/);  // Windows crash entry: [func => file:line]
         if (test != null)
         {
             // Windows Crash Entry
@@ -34,15 +43,18 @@ function parseLine(entry)
         }
         else
         {
-            test = entry.match(/^[\.\/].+\(\) \[0x[0-9a-fA-F]+\]$/);
+            test = entry.match(/^([\.\/][^(]*)\(([^)]*)\) \[(0x[0-9a-fA-F]+)\]$/); // group 1=name, group 2=symbol/offset, group 3=address (./meshservice(main+0x12ab) [0x7fff0000])
             if (test != null)
             {
-                // Linux Crash Stack with no symbols
-                test = test[0].match(/(?!\[)0x[0-9a-fA-F]+(?=\]$)/);
-                if (test != null)
+                if (!/\.so($|\.)/.test(test[1]))    // skip external lib (*.so(.)*) entries
                 {
-                    if (this.results.peek().sx == null) { this.results.peek().sx = []; }
-                    this.results.peek().sx.unshift(test[0]);
+                    var lEntry = this.results.peek();
+                    if (lEntry != null)
+                    {
+                        if (lEntry.sx == null) { lEntry.sx = []; }
+                        var offset = test[2].match(/^\+(0x[0-9a-fA-F]+)$/);
+                        lEntry.sx.unshift(offset != null ? offset[1] : test[3]); // prefer file offset, fall back to runtime address
+                    }
                 }
             }
             else
