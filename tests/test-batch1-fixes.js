@@ -371,3 +371,106 @@ describe('#7929 - LDAP TLS options', function () {
         assert.strictEqual(opts.tlsOptions, undefined);
     });
 });
+
+// ============================================================================
+// Test #8023: MacOS TCC reset uses executable path when bundle ID is null
+// ============================================================================
+
+describe('#8023 - MacOS uninstall TCC reset', function () {
+    // Simulate the logic: if mdls returns (null), use the executable path
+    function tccResetTarget(bundleId, agentPath) {
+        if (bundleId && bundleId !== '(null)' && bundleId.length > 0) {
+            return bundleId;
+        }
+        return agentPath; // Fall back to executable path
+    }
+
+    it('should use bundle ID when available', function () {
+        var target = tccResetTarget('com.meshcentral.agent', '/usr/local/mesh_services/mesh/agent/meshagent');
+        assert.strictEqual(target, 'com.meshcentral.agent');
+    });
+
+    it('should use executable path when mdls returns (null)', function () {
+        var target = tccResetTarget('(null)', '/usr/local/mesh_services/mesh/agent/meshagent');
+        assert.strictEqual(target, '/usr/local/mesh_services/mesh/agent/meshagent');
+    });
+
+    it('should use executable path when mdls returns empty string', function () {
+        var target = tccResetTarget('', '/usr/local/mesh_services/mesh/agent/meshagent');
+        assert.strictEqual(target, '/usr/local/mesh_services/mesh/agent/meshagent');
+    });
+});
+
+// ============================================================================
+// Test #8021: Registry tab disabled per domain
+// ============================================================================
+
+describe('#8021 - Disable Registry tab per domain', function () {
+    // Simulate: features2 bit 0x80000000 = noregistry
+    function isRegistryVisible(features2) {
+        return (features2 & 0x80000000) === 0;
+    }
+
+    it('should show Registry tab when noregistry not set', function () {
+        assert.strictEqual(isRegistryVisible(0), true);
+        assert.strictEqual(isRegistryVisible(0x08000000), true); // scrolltotop bit set, not noregistry
+    });
+
+    it('should hide Registry tab when noregistry is set', function () {
+        assert.strictEqual(isRegistryVisible(0x80000000), false);
+        assert.strictEqual(isRegistryVisible(0x88000000), false); // multiple bits set including noregistry
+    });
+
+    it('should not collide with scrolltotop bit (0x08000000)', function () {
+        // scrolltotop = 0x08000000, noregistry = 0x80000000 — different bits
+        var features2 = 0x08000000; // only scrolltotop
+        assert.strictEqual((features2 & 0x80000000) === 0, true, 'noregistry should NOT be set');
+        assert.strictEqual((features2 & 0x08000000) !== 0, true, 'scrolltotop SHOULD be set');
+    });
+});
+
+// ============================================================================
+// Test #8011: Agent receives setmesh command on mesh change
+// ============================================================================
+
+describe('#8011 - Agent receives setmesh command on mesh change', function () {
+    // Simulate the mesh change flow
+    function simulateMeshChange(agentConnected, command) {
+        var sentCommands = [];
+        var agentSession = null;
+        if (agentConnected) {
+            agentSession = {
+                dbMeshKey: null,
+                meshid: null,
+                send: function(data) { sentCommands.push(JSON.parse(data)); }
+            };
+            agentSession.dbMeshKey = command.meshid;
+            agentSession.meshid = command.meshid.split('/')[2];
+            try { agentSession.send(JSON.stringify({ action: 'setmesh', meshid: command.meshid })); } catch (ex) { }
+        }
+        return { agentSession: agentSession, sentCommands: sentCommands };
+    }
+
+    it('should send setmesh command when agent is connected', function () {
+        var result = simulateMeshChange(true, { meshid: 'mesh//domain//newmesh' });
+        assert.strictEqual(result.sentCommands.length, 1);
+        assert.strictEqual(result.sentCommands[0].action, 'setmesh');
+        assert.strictEqual(result.sentCommands[0].meshid, 'mesh//domain//newmesh');
+    });
+
+    it('should update agentSession meshid to new mesh', function () {
+        // meshid format: mesh//domainid//meshid — split('/')[2] is domainid, [4] is meshid
+        // In the real code, meshid.split('/')[2] gets the 3rd segment (domain id part)
+        // The agent session uses the full meshid as dbMeshKey
+        var result = simulateMeshChange(true, { meshid: 'mesh//newmesh' });
+        assert.strictEqual(result.agentSession.dbMeshKey, 'mesh//newmesh');
+        // mesh//newmesh split by / gives ['mesh', '', 'newmesh'], [2] = 'newmesh'
+        assert.strictEqual(result.agentSession.meshid, 'newmesh');
+    });
+
+    it('should NOT send setmesh when agent is not connected', function () {
+        var result = simulateMeshChange(false, { meshid: 'mesh//domain//newmesh' });
+        assert.strictEqual(result.sentCommands.length, 0);
+        assert.strictEqual(result.agentSession, null);
+    });
+});

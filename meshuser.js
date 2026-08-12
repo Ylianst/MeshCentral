@@ -2848,6 +2848,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 agentSession.dbMeshKey = command.meshid; // Switch the agent mesh
                                 agentSession.meshid = command.meshid.split('/')[2]; // Switch the agent mesh
                                 agentSession.sendUpdatedIntelAmtPolicy(); // Send the new Intel AMT policy
+                                // #8011: Tell the agent to update its local .msh file with the new meshid.
+                                // Without this, if the agent re-registers (e.g. after restart), it reads the
+                                // old .msh file and reappears in the original mesh group.
+                                try { agentSession.send(JSON.stringify({ action: 'setmesh', meshid: command.meshid })); } catch (ex) { }
                             }
 
                             // If any MQTT sessions are connected on this server, switch it now.
