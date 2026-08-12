@@ -907,6 +907,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.setAgentIssue(obj, 'duplicateAgent');
             if (obj.nodeid != null) { parent.parent.debug('agent', 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
             dupAgent.close(3);
+            // Re-affirm connectivity for the NEW agent. The duplicate (stale) connection
+            // may have already cleared the connectivity state when its socket died, and
+            // entering this branch would otherwise skip SetConnectivityState, leaving the
+            // device stuck OFFLINE even though the new agent is connected. This fixes
+            // #8049 (agent does not reconnect after client restart until server restart).
+            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport, name: device.name });
         } else {
             // Indicate the agent is connected
             parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport, name: device.name });
