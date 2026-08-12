@@ -3680,41 +3680,16 @@ function CreateMeshCentralServer(config, args) {
                         this.meshAgentBinary.fileHash = hash.digest('binary');
                         this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
 
-                        // Compress the agent using ZIP
-                        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-                        const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                        const onZipEnd = function onZipEnd() {
-                            // Concat all the buffer for create compressed zip agent
-                            const concatData = Buffer.concat(onZipData.x.zacc);
-                            delete onZipData.x.zacc;
-
-                            // Hash the compressed binary
+                        // #7918: Compress the agent using ZIP via @zip.js (replaces archiver)
+                        var zipHelper = require('./zipHelper');
+                        var agentData = this.meshAgentBinary;
+                        zipHelper.createZipFromEntries([{ name: 'meshagent', data: agentData.data }], { level: 9 }).then(function (concatData) {
                             const hash = obj.crypto.createHash('sha384').update(concatData);
-                            onZipData.x.zhash = hash.digest('binary');
-                            onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
-
-                            // Set the agent
-                            onZipData.x.zdata = concatData;
-                            onZipData.x.zsize = concatData.length;
-                        }
-                        const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                        this.meshAgentBinary.zacc = [];
-                        onZipData.x = this.meshAgentBinary;
-                        onZipEnd.x = this.meshAgentBinary;
-                        onZipError.x = this.meshAgentBinary;
-                        archive.on('data', onZipData);
-                        archive.on('end', onZipEnd);
-                        archive.on('error', onZipError);
-
-                        // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
-                        // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
-                        const ReadableStream = require('stream').Readable;
-                        const zipInputStream = new ReadableStream();
-                        zipInputStream.push(this.meshAgentBinary.data);
-                        zipInputStream.push(null);
-                        archive.append(zipInputStream, { name: 'meshagent' });
-
-                        archive.finalize();
+                            agentData.zhash = hash.digest('binary');
+                            agentData.zhashhex = Buffer.from(agentData.zhash, 'binary').toString('hex');
+                            agentData.zdata = concatData;
+                            agentData.zsize = concatData.length;
+                        }).catch(function (err) { console.log('ZIP compression failed: ' + err); });
                     })
                     obj.exeHandler.streamExeWithMeshPolicy(
                         {
@@ -3729,36 +3704,15 @@ function CreateMeshCentralServer(config, args) {
                     // Load the agent as-is
                     objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
 
-                    // Compress the agent using ZIP
-                    const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-
-                    const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                    const onZipEnd = function onZipEnd() {
-                        // Concat all the buffer for create compressed zip agent
-                        const concatData = Buffer.concat(onZipData.x.zacc);
-                        delete onZipData.x.zacc;
-
-                        // Hash the compressed binary
+                    // #7918: Compress the agent using ZIP via @zip.js (replaces archiver)
+                    var zipHelper = require('./zipHelper');
+                    zipHelper.createZipFromEntries([{ name: 'meshagent', data: objx.meshAgentBinaries[archid].data }], { level: 9 }).then(function (concatData) {
                         const hash = obj.crypto.createHash('sha384').update(concatData);
-                        onZipData.x.zhash = hash.digest('binary');
-                        onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
-
-                        // Set the agent
-                        onZipData.x.zdata = concatData;
-                        onZipData.x.zsize = concatData.length;
-
-                        //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
-                    }
-                    const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                    objx.meshAgentBinaries[archid].zacc = [];
-                    onZipData.x = objx.meshAgentBinaries[archid];
-                    onZipEnd.x = objx.meshAgentBinaries[archid];
-                    onZipError.x = objx.meshAgentBinaries[archid];
-                    archive.on('data', onZipData);
-                    archive.on('end', onZipEnd);
-                    archive.on('error', onZipError);
-                    archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
-                    archive.finalize();
+                        objx.meshAgentBinaries[archid].zhash = hash.digest('binary');
+                        objx.meshAgentBinaries[archid].zhashhex = Buffer.from(objx.meshAgentBinaries[archid].zhash, 'binary').toString('hex');
+                        objx.meshAgentBinaries[archid].zdata = concatData;
+                        objx.meshAgentBinaries[archid].zsize = concatData.length;
+                    }).catch(function (err) { console.log('ZIP compression failed: ' + err); });
                 }
             }
 

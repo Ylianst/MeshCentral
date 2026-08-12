@@ -6725,8 +6725,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
 
         // Setup the response output
-        var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
-        archive.on('error', function (err) { throw err; });
+        // #7918: Replaced archiver (66 deps) with @zip.js (1 dep)
+        var zipHelper = require('./zipHelper');
 
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
@@ -6758,7 +6758,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Set the agent download including the mesh name.
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
-        archive.pipe(res);
 
         // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
         const macosInstallerOpts = {
@@ -6776,10 +6775,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
         }
 
+        // #7918: Use @zip.js instead of archiver to create the agent ZIP
         require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
-            archive.append(installer.pkg, { name: meshpkgname });
-            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
-            archive.finalize();
+            var entries = [
+                { name: meshpkgname, data: installer.pkg },
+                { name: 'Uninstall.command', data: installer.uninstall }
+            ];
+            zipHelper.createZipStream(res, entries, {
+                level: 5,
+                onEnd: function () { try { res.end(); } catch (ex) { } },
+                onError: function (err) { parent.debug('web', 'ZIP creation failed: ' + err); try { res.sendStatus(500); } catch (ex) { } }
+            });
         }).catch(function (err) {
             parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
             try { res.sendStatus(500); } catch (ex) { }
