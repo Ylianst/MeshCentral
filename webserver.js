@@ -549,18 +549,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof domain.ldapusername == 'string') {
                     if (domain.ldapusername.indexOf('{{{') >= 0) { username = assembleStringFromObject(domain.ldapusername, xxuser); } else { username = xxuser[domain.ldapusername]; }
                 } else { username = xxuser['displayName'] ? xxuser['displayName'] : xxuser['name']; }
+                // Helper: get a binary attribute as a raw Buffer when available.
+                // ldapjs may convert binary SID/GUID attributes to a string in xxuser[...],
+                // and Buffer.from(string, 'binary') can collapse/truncate bytes, causing
+                // two distinct binary SIDs that differ only in the last byte to map to the
+                // same shortname (see #8059). Prefer the raw Buffer from xxuser._raw to keep
+                // the exact binary identity as the userid. Also handle the JSON-serialized
+                // Buffer shape { type: 'Buffer', data: [...] } that appears when LDAP users
+                // are reloaded from ldapsaveusertofile or a "test" config.
+                var getBinaryKey = function (key) {
+                    var normalize = function (val) {
+                        if (val == null) { return null; }
+                        if (Buffer.isBuffer(val)) { return val; }
+                        if (typeof val === 'string') { return Buffer.from(val, 'binary'); }
+                        if (typeof val === 'object' && (val.type === 'Buffer') && Array.isArray(val.data)) { return Buffer.from(val.data); }
+                        return Buffer.from(val, 'binary');
+                    };
+                    var raw = (xxuser._raw != null) ? xxuser._raw[key] : null;
+                    if (raw != null) { return normalize(raw).toString('hex').toLowerCase(); }
+                    if (xxuser[key] != null) { return normalize(xxuser[key]).toString('hex').toLowerCase(); }
+                    return null;
+                };
                 if (domain.ldapuserbinarykey) {
                     // Use a binary key as the userid
-                    if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                    shortname = getBinaryKey(domain.ldapuserbinarykey);
                 } else if (domain.ldapuserkey) {
                     // Use a string key as the userid
                     if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
                 } else {
                     // Use the default key as the userid
-                    if (xxuser['objectSid']) { shortname = Buffer.from(xxuser['objectSid'], 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser['objectGUID']) { shortname = Buffer.from(xxuser['objectGUID'], 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser['name']) { shortname = xxuser['name']; }
-                    else if (xxuser['cn']) { shortname = xxuser['cn']; }
+                    shortname = getBinaryKey('objectSid');
+                    if (shortname == null) { shortname = getBinaryKey('objectGUID'); }
+                    if (shortname == null) { if (xxuser['name']) { shortname = xxuser['name']; } else if (xxuser['cn']) { shortname = xxuser['cn']; } }
                 }
                 if (shortname == null) { fn(new Error('no user identifier')); if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } return; }
                 if (username == null) { username = shortname; }
