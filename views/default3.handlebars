@@ -18,6 +18,7 @@
     <link id="theme-stylesheet" href="styles/bootstrap{{{min}}}.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
+    <link href="styles/print.css" media="print" rel="stylesheet" title="CSS">
     {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
@@ -7648,7 +7649,10 @@
 
         function parseSearchOrInput(x) {
             var s = x.split(' ' + "or" + ' '), r = null;
-            for (var i in s) { var r2 = parseSearchAndInput(s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j] >= 0)) { r.push(r2[j]); } } } }
+            // Fix #7937: the OR merge was broken — r.indexOf(r2[j] >= 0) evaluated
+            // (r2[j] >= 0) to true/false first, then searched for that boolean in r.
+            // Correct: if r2[j] is NOT already in r, add it (union/OR semantics).
+            for (var i in s) { var r2 = parseSearchAndInput(s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j]) < 0) { r.push(r2[j]); } } } }
             return r;
         }
 
@@ -7761,8 +7765,12 @@
                         if (features2 & 0x00008000) { // Both server and client names must match
                             if (features2 & 0x10000000) {
                                 if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             } else {
                                 if (rx.test(nodes[d].name.toLowerCase()) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             }
                         } else {
                             if (features2 & 0x10000000) {
@@ -7771,12 +7779,16 @@
                                 } else {
                                     if (rx.test(nodes[d].name.toLowerCase()) || rx.test(meshes[nodes[d].meshid].name.toLowerCase())) { r.push(d); }
                                 }
+                                // #7217: Also match IP address
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             } else {
                                 if (showRealNames) {
                                     if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(d); }
                                 } else {
                                     if (rx.test(nodes[d].name.toLowerCase())) { r.push(d); }
                                 }
+                                // #7217: Also match IP address in generic search
+                                if ((nodes[d].ip != null) && rx.test(nodes[d].ip.toLowerCase()) && r.indexOf(d) < 0) { r.push(d); }
                             }
                         }
                     }
@@ -8907,6 +8919,9 @@
                 // Attribute: Name
                 if ((node.rname != null) && (node.name != node.rname)) { x += addDeviceAttribute('<span title="' + "The name of this computer as set in the operating system" + '">' + "OS Name" + '</span>', '<span title="' + "The name of this computer as set in the operating system" + '">' + EscapeHtml(node.rname) + '</span>'); }
 
+                // #7436: Show IP address on General tab for quick access
+                if (node.ip) { x += addDeviceAttribute("IP Address", '<a href="https://iplocation.com/?ip=' + encodeURIComponent(node.ip) + '" rel="noreferrer noopener" target="MeshIPLoopup">' + EscapeHtml(node.ip) + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(node.ip) + '")></i>'); }
+
                 // Attribute: Host
                 if ((((features & 1) == 0) && (node.mtype != 4)) || (node.mtype == 3)) { // If not WAN-only, local hostname is in use
                     x += addDeviceAttribute("Hostname", addLinkConditional((node.host ? EscapeHtml(node.host) : ('<i>' + "None" + '</i>')), 'showEditNodeValueDialog(1)', meshrights & 4));
@@ -9352,7 +9367,7 @@
                 );
                 QV('MainDevTerminal', (((node.agent == null) && (node.intelamt != null)) || ((node.agent) && (node.agent.caps == null)) || ((node.agent) && ((node.agent.caps & 2) != 0)) || (node.intelamt && (node.intelamt.state == 2))) && (meshrights & 8) && terminalAccess);
                 QV('MainDevFiles', (node.agent != null) && (node.agent.caps != null) && ((node.agent.caps & 4) != 0) && (meshrights & 8) && fileAccess);
-                QV('MainDevRegistry', (node.agent != null) && isWindowsNode(node) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4194304) == 0)));
+                QV('MainDevRegistry', (node.agent != null) && isWindowsNode(node) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 4194304) == 0)) && ((features2 & 0x80000000) == 0)); // Hide Registry tab if domain.noregistry is true (#8021)
                 QV('MainDevInfo', (node.mtype < 3) && ((meshrights & 1048576) != 0));
                 QV('MainDevApps', (node.agent != null) && (meshrights & 8) && ((meshrights == 0xFFFFFFFF) || ((meshrights & 8388608) == 0)));
                 QV('MainDevAmt', (node.intelamt != null) && ((node.intelamt.state == 2) || (node.conn & 2)) && (meshrights & 8) && amtAccess);
@@ -9605,6 +9620,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 4194304) str1.push("No Registry");
                 if (rights & 8388608) str1.push("No Software");
+                if (rights & 16777216) str1.push("View BitLocker");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -9640,6 +9656,7 @@
                 if (rights & 1024) str1.push("No Files");
                 if (rights & 4194304) str1.push("No Registry");
                 if (rights & 8388608) str1.push("No Software");
+                if (rights & 16777216) str1.push("View BitLocker");
                 if (rights & 2048) str1.push("No AMT");
                 if (rights & 4096) str1.push("Limited Input");
                 if (rights & 65536) str1.push("No Desktop");
@@ -18002,6 +18019,7 @@
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20nofiles style=margin-left:12px>' + "No File Access" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20noregistry style=margin-left:12px>' + "No Registry Access" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20nosoftware style=margin-left:12px>' + "No Software" + '</label><br>';
+            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20viewbitlocker style=margin-left:12px>' + "View BitLocker Keys" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20noamt style=margin-left:12px>' + "No Intel&reg; AMT" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20meshagentconsole>' + "Mesh Agent Console" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20meshserverfiles>' + "Server Files" + '</label><br>';
@@ -18116,6 +18134,7 @@
                     if (urights & 1024) { Q('p20nofiles').checked = true; }
                     if (urights & 4194304) { Q('p20noregistry').checked = true; }
                     if (urights & 8388608) { Q('p20nosoftware').checked = true; }
+                    if (urights & 16777216) { Q('p20viewbitlocker').checked = true; }
                     if (urights & 2048) { Q('p20noamt').checked = true; }
                     if (urights & 4096) { Q('p20remotelimitedinput').checked = true; }
                 }
@@ -18171,6 +18190,7 @@
                 Q('p20nofiles').checked = ((devrights & 1024) != 0);
                 Q('p20noregistry').checked = ((devrights & 4194304) != 0);
                 Q('p20nosoftware').checked = ((devrights & 8388608) != 0);
+                Q('p20viewbitlocker').checked = ((devrights & 16777216) != 0);
                 Q('p20noamt').checked = ((devrights & 2048) != 0);
                 Q('p20remotelimitedinput').checked = ((devrights & 4096) != 0);
                 Q('p20limitevents').checked = ((devrights & 8192) != 0);
@@ -18259,6 +18279,7 @@
             QE('p20nofiles', nc && Q('p20remotecontrol').checked);
             QE('p20noregistry', nc && Q('p20remotecontrol').checked);
             QE('p20nosoftware', nc && Q('p20remotecontrol').checked);
+            QE('p20viewbitlocker', nc && Q('p20remotecontrol').checked);
             QE('p20noamt', nc && Q('p20remotecontrol').checked);
             QE('p20chatnotify', nc);
             QE('p20uninstall', nc);
@@ -18288,6 +18309,7 @@
                 if (Q('p20nofiles').checked == true) meshadmin += 1024;
                 if (Q('p20noregistry').checked == true) meshadmin += 4194304;
                 if (Q('p20nosoftware').checked == true) meshadmin += 8388608;
+                if (Q('p20viewbitlocker').checked == true) meshadmin += 16777216;
                 if (Q('p20noamt').checked == true) meshadmin += 2048;
                 if ((Q('p20remotelimitedinput').checked == true) && (!Q('p20remoteview').checked)) meshadmin += 4096;
                 if (Q('p20limitevents').checked == true) meshadmin += 8192;

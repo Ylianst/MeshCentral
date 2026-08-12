@@ -942,6 +942,14 @@ body.night .icon-customization-modal .btn-close:hover,
     color: black;
 }
 
+/* #7418: Alternating row colors for device list table readability */
+#devs tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+.night #devs tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
 .deviceBarIcon {
     float: left;
     height: 18px;

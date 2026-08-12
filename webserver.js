@@ -501,7 +501,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         obj.agentIssues.push([new Date().toLocaleString(), addrport, issue]);
-        while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); }
+        while (obj.agentIssues.length > 50) { obj.agentIssues.shift(); }
     }
     obj.agentIssues = [];
 
@@ -549,18 +549,38 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (typeof domain.ldapusername == 'string') {
                     if (domain.ldapusername.indexOf('{{{') >= 0) { username = assembleStringFromObject(domain.ldapusername, xxuser); } else { username = xxuser[domain.ldapusername]; }
                 } else { username = xxuser['displayName'] ? xxuser['displayName'] : xxuser['name']; }
+                // Helper: get a binary attribute as a raw Buffer when available.
+                // ldapjs may convert binary SID/GUID attributes to a string in xxuser[...],
+                // and Buffer.from(string, 'binary') can collapse/truncate bytes, causing
+                // two distinct binary SIDs that differ only in the last byte to map to the
+                // same shortname (see #8059). Prefer the raw Buffer from xxuser._raw to keep
+                // the exact binary identity as the userid. Also handle the JSON-serialized
+                // Buffer shape { type: 'Buffer', data: [...] } that appears when LDAP users
+                // are reloaded from ldapsaveusertofile or a "test" config.
+                var getBinaryKey = function (key) {
+                    var normalize = function (val) {
+                        if (val == null) { return null; }
+                        if (Buffer.isBuffer(val)) { return val; }
+                        if (typeof val === 'string') { return Buffer.from(val, 'binary'); }
+                        if (typeof val === 'object' && (val.type === 'Buffer') && Array.isArray(val.data)) { return Buffer.from(val.data); }
+                        return Buffer.from(val, 'binary');
+                    };
+                    var raw = (xxuser._raw != null) ? xxuser._raw[key] : null;
+                    if (raw != null) { return normalize(raw).toString('hex').toLowerCase(); }
+                    if (xxuser[key] != null) { return normalize(xxuser[key]).toString('hex').toLowerCase(); }
+                    return null;
+                };
                 if (domain.ldapuserbinarykey) {
                     // Use a binary key as the userid
-                    if (xxuser[domain.ldapuserbinarykey]) { shortname = Buffer.from(xxuser[domain.ldapuserbinarykey], 'binary').toString('hex').toLowerCase(); }
+                    shortname = getBinaryKey(domain.ldapuserbinarykey);
                 } else if (domain.ldapuserkey) {
                     // Use a string key as the userid
                     if (xxuser[domain.ldapuserkey]) { shortname = xxuser[domain.ldapuserkey]; }
                 } else {
                     // Use the default key as the userid
-                    if (xxuser['objectSid']) { shortname = Buffer.from(xxuser['objectSid'], 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser['objectGUID']) { shortname = Buffer.from(xxuser['objectGUID'], 'binary').toString('hex').toLowerCase(); }
-                    else if (xxuser['name']) { shortname = xxuser['name']; }
-                    else if (xxuser['cn']) { shortname = xxuser['cn']; }
+                    shortname = getBinaryKey('objectSid');
+                    if (shortname == null) { shortname = getBinaryKey('objectGUID'); }
+                    if (shortname == null) { if (xxuser['name']) { shortname = xxuser['name']; } else if (xxuser['cn']) { shortname = xxuser['cn']; } }
                 }
                 if (shortname == null) { fn(new Error('no user identifier')); if (ldapHandlerFunc.ldapobj) { try { ldapHandlerFunc.ldapobj.close(); } catch (ex) { console.log(ex); } } return; }
                 if (username == null) { username = shortname; }
@@ -789,6 +809,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var LdapAuth = require('ldapauth-fork');
                 if (domain.ldapoptions == null) { domain.ldapoptions = {}; }
                 domain.ldapoptions.includeRaw = true; // This allows us to get data as buffers which is useful for images.
+                // Apply TLS options for LDAPS (ldaps:// URLs) if configured (#7929)
+                // Supports: tlsOptions.ca (cert path or buffer), tlsOptions.cert, tlsOptions.key,
+                //   tlsOptions.rejectUnauthorized (default: false for self-signed certs),
+                //   tlsOptions.minVersion (default: 'TLSv1.2'), tlsOptions.ciphers
+                if (typeof domain.ldaptlsoptions == 'object' && domain.ldaptlsoptions != null) {
+                    domain.ldapoptions.tlsOptions = domain.ldaptlsoptions;
+                    // Load CA certificate from file path if provided
+                    if (typeof domain.ldaptlsoptions.caPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.ca = require('fs').readFileSync(domain.ldaptlsoptions.caPath); } catch (e) { console.log('LDAP TLS: Failed to read CA cert file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.caPath;
+                    }
+                    if (typeof domain.ldaptlsoptions.certPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.cert = require('fs').readFileSync(domain.ldaptlsoptions.certPath); } catch (e) { console.log('LDAP TLS: Failed to read client cert file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.certPath;
+                    }
+                    if (typeof domain.ldaptlsoptions.keyPath == 'string') {
+                        try { domain.ldapoptions.tlsOptions.key = require('fs').readFileSync(domain.ldaptlsoptions.keyPath); } catch (e) { console.log('LDAP TLS: Failed to read client key file: ' + e.message); }
+                        delete domain.ldapoptions.tlsOptions.keyPath;
+                    }
+                    // Default rejectUnauthorized to false if not explicitly set (allows self-signed certs)
+                    if (domain.ldapoptions.tlsOptions.rejectUnauthorized == null) { domain.ldapoptions.tlsOptions.rejectUnauthorized = false; }
+                    // Default minVersion to TLSv1.2 for security
+                    if (domain.ldapoptions.tlsOptions.minVersion == null) { domain.ldapoptions.tlsOptions.minVersion = 'TLSv1.2'; }
+                }
                 var ldap = new LdapAuth(domain.ldapoptions);
                 ldapHandler.ldapobj = ldap;
                 ldap.on('error', function (err) { parent.debug('ldap', 'LDAP OnError: ' + err); try { ldap.close(); } catch (ex) { console.log(ex); } }); // Close the LDAP object
@@ -1132,19 +1176,26 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check Google Authenticator
         if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
-            const otplib = require('otplib');
-            const verified = otplib.verifySync({ 
-                epochTolerance: 60, 
-                token: token, 
-                secret: user.otpsecret,
-                guardrails: otplib.createGuardrails({
-                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
-                })
-            });
-            if (verified.valid === true) {
-                parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
-                func(true, { twoFactorType: 'otp' });
-                return;
+            try {
+                const otplib = require('otplib');
+                const verified = otplib.verifySync({
+                    epochTolerance: 60,
+                    token: token,
+                    secret: user.otpsecret,
+                    guardrails: otplib.createGuardrails({
+                        MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                    })
+                });
+                if (verified.valid === true) {
+                    parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
+                    func(true, { twoFactorType: 'otp' });
+                    return;
+                }
+            } catch (ex) {
+                // otplib may fail to load if its subdependencies (@scure/base32) are missing (#8037)
+                // Don't crash the server — log the error and continue to other 2FA methods
+                parent.debug('error', 'OTPLIB: Failed to verify authenticator token: ' + ex.message);
+                console.log('OTPLIB error (2FA verification skipped): ' + ex.message);
             }
         };
 
@@ -3469,6 +3520,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((typeof domain.terminal == 'object') && (domain.terminal.sshconnect === false)) { features2 += 0x01000000; } // Remove the "SSH Connect" button in the "Terminal" tab when the device is agent managed
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0)) { features2 += 0x02000000; } // User messaging server is enabled
         if ((parent.msgserver != null) && (parent.msgserver.providers != 0) && ((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false))) { features2 += 0x04000000; } // User messaging 2FA is allowed
+        if (domain.noregistry === true) { features2 += 0x80000000; } // Disable Registry tab (#8021)
         if (domain.scrolltotop == true) { features2 += 0x08000000; } // Show the "Scroll to top" button
         if (domain.devicesearchbargroupname === true) { features2 += 0x10000000; } // Search bar will find by group name too
         if (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.duo2factor != false)) && (typeof domain.duo2factor == 'object') && (typeof domain.duo2factor.integrationkey == 'string') && (typeof domain.duo2factor.secretkey == 'string') && (typeof domain.duo2factor.apihostname == 'string')) { features2 += 0x20000000; } // using Duo for 2FA is allowed
@@ -6693,8 +6745,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.agentTranslations != null) { meshsettings += 'translation=' + domain.agentTranslations + '\r\n'; }
 
         // Setup the response output
-        var archive = require('archiver')('zip', { level: 5 }); // Sets the compression method.
-        archive.on('error', function (err) { throw err; });
+        // #7918: Replaced archiver (66 deps) with @zip.js (1 dep)
+        var zipHelper = require('./zipHelper');
 
         // Customize the mesh agent file name
         var meshfilename = 'MeshAgent-' + mesh.name + '.zip';
@@ -6726,7 +6778,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Set the agent download including the mesh name.
         setContentDispositionHeader(res, 'application/octet-stream', meshfilename, null, 'MeshAgent.zip');
-        archive.pipe(res);
 
         // Create a flat XAR macOS installer package. Bundle .mpkg installers are rejected by recent macOS versions.
         const macosInstallerOpts = {
@@ -6744,10 +6795,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             macosInstallerOpts.backgroundPath = parent.path.join(parent.datapath, domain.agentcustomization.macosinstallerimage);
         }
 
+        // #7918: Use @zip.js instead of archiver to create the agent ZIP
         require('./macosinstaller').createMacOSInstaller(macosInstallerOpts).then(function (installer) {
-            archive.append(installer.pkg, { name: meshpkgname });
-            archive.append(installer.uninstall, { name: 'Uninstall.command', mode: 493 });
-            archive.finalize();
+            var entries = [
+                { name: meshpkgname, data: installer.pkg },
+                { name: 'Uninstall.command', data: installer.uninstall }
+            ];
+            zipHelper.createZipStream(res, entries, {
+                level: 5,
+                onEnd: function () { try { res.end(); } catch (ex) { } },
+                onError: function (err) { parent.debug('web', 'ZIP creation failed: ' + err); try { res.sendStatus(500); } catch (ex) { } }
+            });
         }).catch(function (err) {
             parent.debug('web', 'Failed to build macOS MeshAgent package: ' + err);
             try { res.sendStatus(500); } catch (ex) { }
@@ -7166,9 +7224,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     req.clientIp = ipex;
                 }
 
-                // If there is a port number, remove it. This will only work for IPv4, but nice for people that have a bad reverse proxy config.
-                const clientIpSplit = req.clientIp.split(':');
-                if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
+                // If there is a port number, remove it.
+                // #7807: IPv6 addresses contain colons (e.g. 2003:c8::1), so split(':').length == 2
+                // only works for IPv4. For IPv6, check if the address is wrapped in brackets [ip]:port
+                // or use the fact that a port number is always numeric after the last colon.
+                if (req.clientIp.startsWith('[')) {
+                    // IPv6 in bracket notation: [2003:c8::1]:port
+                    var closeBracket = req.clientIp.indexOf(']');
+                    if (closeBracket > 1) { req.clientIp = req.clientIp.substring(1, closeBracket); }
+                } else {
+                    var clientIpSplit = req.clientIp.split(':');
+                    if ((clientIpSplit.length == 2) && (clientIpSplit[1].match(/^\d+$/))) { req.clientIp = clientIpSplit[0]; }
+                }
 
                 // Get server host
                 if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host'].split(',')[0]; } // If multiple hosts are specified with a comma, take the first one.
@@ -8661,23 +8728,32 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup presets and groups, get groups from API if needed then return
                 if (strategy.groups && typeof user.preset == 'string') {
-                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) { 
-                        getGroups(user.preset, tokenset).then((groups) => {
-                            user = Object.assign(user, { 'groups': groups });
-							if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
+                    if((Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.filter(x => x.trim().length > 0).length > 0) == false || strategy.custom.authorities.includes('groups')) {
+                        // If groups are already present from the ID token claim, use them and skip the API lookup (#7951)
+                        if (Array.isArray(user.groups) && user.groups.length > 0) {
+                            if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
                                 // Check also for roles
-		                        user.groups = (user.groups || []).concat(user.roles);
-		                    }
-		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
-		                    done(null, user);
-                        }).catch((err) => {
-                            let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
-                            parent.debug('error', `${JSON.stringify(error)}`);
-                            parent.authLog('oidcCallback', error.message);
-                            user.groups = [];
+                                user.groups = (user.groups || []).concat(user.roles || []);
+                            }
+                            parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES (from token claim): ${JSON.stringify(user)}`);
                             done(null, user);
-                        });
-                    
+                        } else {
+                            getGroups(user.preset, tokenset).then((groups) => {
+                                user = Object.assign(user, { 'groups': groups });
+					                        if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
+                                    // Check also for roles
+				                            user.groups = (user.groups || []).concat(user.roles || []);
+                                }
+					                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
+					                    done(null, user);
+                            }).catch((err) => {
+                                let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
+                                parent.debug('error', `${JSON.stringify(error)}`);
+                                parent.authLog('oidcCallback', error.message);
+                                user.groups = [];
+                                done(null, user);
+                            });
+                        }
                     } else if (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) {
                         // Only roles are requested
                         if (user.roles) {
