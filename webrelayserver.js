@@ -132,9 +132,14 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                     req.clientIp = ipex;
                 }
 
-                // If there is a port number, remove it. This will only work for IPv4, but nice for people that have a bad reverse proxy config.
-                const clientIpSplit = req.clientIp.split(':');
-                if (clientIpSplit.length == 2) { req.clientIp = clientIpSplit[0]; }
+                // #7807: IPv6 addresses contain colons, so split(':').length == 2 only works for IPv4.
+                if (req.clientIp.startsWith('[')) {
+                    var closeBracket = req.clientIp.indexOf(']');
+                    if (closeBracket > 1) { req.clientIp = req.clientIp.substring(1, closeBracket); }
+                } else {
+                    var clientIpSplit = req.clientIp.split(':');
+                    if ((clientIpSplit.length == 2) && (clientIpSplit[1].match(/^\d+$/))) { req.clientIp = clientIpSplit[0]; }
+                }
 
                 // Get server host
                 if (req.headers['x-forwarded-host']) { xforwardedhost = req.headers['x-forwarded-host'].split(',')[0]; } // If multiple hosts are specified with a comma, take the first one.

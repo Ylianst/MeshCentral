@@ -272,7 +272,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     const agentUpdateMethod = compareAgentBinaryHash(obj.agentExeInfo, agenthash);
                     if (agentUpdateMethod === 2) { // Use meshcore agent update system
                         // Send the recovery core to the agent, if the agent is capable of running one
-                        if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
+                        if (((obj.agentInfo != null) && (obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             parent.agentStats.agentMeshCoreBinaryUpdate++;
                             obj.agentCoreUpdate = true;
                             obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // Ask to clear the core
@@ -368,7 +368,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                     } else {
                         // Check the mesh core, if the agent is capable of running one
-                        if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
+                        if (((obj.agentInfo != null) && (obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
                         }
                     }
@@ -676,7 +676,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         else if ((typeof args.agentpong == 'number') && (obj.pongtimer == null)) { obj.pongtimer = setInterval(sendPong, args.agentpong * 1000); }
 
         // If this is a recovery agent
-        if (obj.agentInfo.capabilities & 0x40) {
+        if ((obj.agentInfo != null) && (obj.agentInfo.capabilities & 0x40)) {
             // Inform mesh agent that it's authenticated.
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
@@ -907,6 +907,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.setAgentIssue(obj, 'duplicateAgent');
             if (obj.nodeid != null) { parent.parent.debug('agent', 'Duplicate agent ' + obj.nodeid + ' (' + obj.remoteaddrport + ')'); }
             dupAgent.close(3);
+            // Re-affirm connectivity for the NEW agent. The duplicate (stale) connection
+            // may have already cleared the connectivity state when its socket died, and
+            // entering this branch would otherwise skip SetConnectivityState, leaving the
+            // device stuck OFFLINE even though the new agent is connected. This fixes
+            // #8049 (agent does not reconnect after client restart until server restart).
+            parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport, name: device.name });
         } else {
             // Indicate the agent is connected
             parent.parent.SetConnectivityState(obj.dbMeshKey, obj.dbNodeKey, obj.connectTime, 1, 1, null, { remoteaddrport: obj.remoteaddrport, name: device.name });

@@ -19,6 +19,31 @@ const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3
 const conversionStatus = { "-1": "Unknown", 0: "Fully Decrypted", 1: "Fully Encrypted", 2: "Encryption In Progress", 3: "Decryption In Progress", 4: "Encryption Paused", 5: "Decryption Paused" };
 const protectionStatus = { 0: "Off", 1: "On", 2: "Locked"};
 
+// Helper: normalise various date formats into ISO 8601 for CSV export (#7928)
+// Handles: WMI BIOS date (20120507000000.000000+000), ctime (18:57:36 Mar 6 2025),
+//          ISO string pass-through, epoch number, and null/empty.
+function formatCsvDate(value) {
+    if (value == null || value === '') return '';
+    // Already ISO 8601?
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) return value;
+    // Epoch milliseconds (number)
+    if (typeof value === 'number') { try { return new Date(value).toISOString(); } catch (e) { return value; } }
+    // WMI BIOS date format: 20120507000000.000000+000
+    var wmiMatch = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})\.\d+\+[0-9]+$/.exec(value);
+    if (wmiMatch) {
+        try { return new Date(Date.UTC(+wmiMatch[1], +wmiMatch[2] - 1, +wmiMatch[3], +wmiMatch[4], +wmiMatch[5], +wmiMatch[6])).toISOString(); } catch (e) { return value; }
+    }
+    // ctime format: "18:57:36 Mar 6 2025" or "18:57:36 Mar  6 2025"
+    var ctimeMatch = /^(\d{2}):(\d{2}):(\d{2})\s+(\w{3})\s+(\d{1,2})\s+(\d{4})$/.exec(value);
+    if (ctimeMatch) {
+        try { return new Date(value).toISOString(); } catch (e) { return value; }
+    }
+    // Try generic Date parse as last resort
+    try { var d = new Date(value); if (!isNaN(d.getTime())) return d.toISOString(); } catch (e) {}
+    return value; // Fallback: return as-is
+}
+
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, user) {
     const fs = require('fs');
@@ -26,6 +51,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const common = parent.common;
     // Cross domain messages, for cross-domain administrators only.
     const allowedCrossDomainMessages = ['accountcreate', 'accountremove', 'accountchange', 'createusergroup', 'deleteusergroup', 'usergroupchange'];
+
+    // Helper: add token user info to an event if the session used a login token (#8047)
+    // This allows audit logs to distinguish actions performed via API token from
+    // normal user sessions. The webserver.js login path stores tokenUser in
+    // req.session.loginToken when a login token is used.
+    function addTokenInfo(event, req) {
+        if (req && req.session && req.session.loginToken != null && event != null) {
+            event.tokenUser = req.session.loginToken;
+        }
+        return event;
+    }
 
     // User Consent Flags
     const USERCONSENT_DesktopNotifyUser = 1;
@@ -60,7 +96,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
-    const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
+    const MESHRIGHT_NOSOFTWARE         = 0x00800000; // 8388608
+    const MESHRIGHT_VIEWBITLOCKER      = 0x01000000; // 16777216 — #8036: View BitLocker recovery keys without full admin
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -444,7 +481,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) || ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null)))) {
                                 event = common.Clone(event);
                                 if ((event.action == 'deviceShareUpdate') && (Array.isArray(event.deviceShares))) {
-                                    for (var i in event.deviceShares) { if (event.deviceShares[i].userid != user._id) { delete event.deviceShares[i].url; } }
+                                    for (var i in event.deviceShares) { if ((event.deviceShares[i] != null) && (event.deviceShares[i].userid != user._id)) { delete event.deviceShares[i].url; } }
                                 }
                                 if ((event.action == 'changenode') && (event.node != null) && ((event.node.rdp != null) || (event.node.ssh != null))) {
                                     // Clean up RDP & SSH credentials
@@ -2169,6 +2206,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if (((command.meshtype == 3) || (command.meshtype == 4)) && (parent.args.lanonly == true) && (typeof command.relayid == 'string')) { err = 'Invalid group type'; } // Local device group type with relay is not allowed in WAN mode
                         else if ((domain.ipkvm == null) && (command.meshtype == 4)) { err = 'Invalid group type'; } // IP KVM device group type is not allowed unless enabled
                         else if ((command.parent != null) && (typeof command.parent !== 'string' || !parent.meshes[command.parent] || parent.meshes[command.parent].domain !== domain.id)) { err = 'Invalid parent group'; }
+                        // #8045: Check for duplicate group name within the same domain
+                        else if (domain.disallowDuplicateMeshNames !== false) {
+                            for (var meshidKey in parent.meshes) {
+                                if ((parent.meshes[meshidKey].domain == domain.id) && (parent.meshes[meshidKey].name == command.meshname)) { err = 'A device group with this name already exists'; break; }
+                            }
+                        }
                         if ((err == null) && (command.meshtype == 4)) {
                             if ((command.kvmmodel < 1) || (command.kvmmodel > 2)) { err = 'Invalid KVM model'; }
                             else if (common.validateString(command.kvmhost, 1, 128) == false) { err = 'Invalid KVM hostname'; }
@@ -2396,6 +2439,24 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((common.validateInt(command.flags) == true) && (command.flags != mesh.flags)) { if (change != '') change += ' and flags changed'; else change += 'Device group "' + mesh.name + '" flags changed'; changesids.push(3); mesh.flags = command.flags; }
                     if ((common.validateInt(command.consent) == true) && (command.consent != mesh.consent)) { if (change != '') change += ' and consent changed'; else change += 'Device group "' + mesh.name + '" consent changed'; changesids.push(4); mesh.consent = command.consent; }
                     if ((common.validateInt(command.expireDevs, 0, 2000) == true) && (command.expireDevs != mesh.expireDevs)) { if (change != '') change += ' and auto-remove changed'; else change += 'Device group "' + mesh.name + '" auto-remove changed'; changesids.push(5); if (command.expireDevs == 0) { delete mesh.expireDevs; } else { mesh.expireDevs = command.expireDevs; } }
+
+                    // #7977: Change owner of a device group (site admins only)
+                    if ((typeof command.newcreatorid == 'string') && (command.newcreatorid != mesh.creatorid)) {
+                        // Only site admins can change the owner
+                        if ((user.siteadmin == SITERIGHT_ADMIN) || ((user.siteadmin & 1) != 0)) {
+                            // Verify the new owner exists
+                            var newCreator = obj.users[command.newcreatorid];
+                            if (newCreator != null) {
+                                if (change != '') change += ' and owner changed'; else change += 'Device group "' + mesh.name + '" owner changed';
+                                changesids.push(8);
+                                mesh.creatorid = command.newcreatorid;
+                                mesh.creatorname = newCreator.name;
+                                // Ensure new owner has full rights on this mesh
+                                if (mesh.links == null) { mesh.links = {}; }
+                                if (mesh.links[command.newcreatorid] == null) { mesh.links[command.newcreatorid] = { name: newCreator.name, rights: 4294967295 }; }
+                            }
+                        }
+                    }
 
                     var oldRelayNodeId = null, newRelayNodeId = null;
                     if ((typeof command.relayid == 'string') && ((mesh.mtype == 3) || (mesh.mtype == 4)) && (mesh.relayid != null) && (command.relayid != mesh.relayid)) {
@@ -2659,8 +2720,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(device);
 
                         // Event the new node
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        // Send response if required
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, Object.assign({ etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id }, (req && req.session && req.session.loginToken != null ? { tokenUser: req.session.loginToken } : {})));                        // Send response if required
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addlocaldevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
                     break;
@@ -2715,8 +2775,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         db.Set(device);
 
                         // Event the new node
-                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, { etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id });
-                        // Send response if required
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [nodeid]), obj, Object.assign({ etype: 'node', userid: user._id, username: user.name, action: 'addnode', node: parent.CloneSafeNode(device), msgid: 84, msgArgs: [command.devicename, mesh.name], msg: 'Added device ' + command.devicename + ' to device group ' + mesh.name, domain: domain.id }, (req && req.session && req.session.loginToken != null ? { tokenUser: req.session.loginToken } : {})));                        // Send response if required
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'addamtdevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     });
 
@@ -2814,6 +2873,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 agentSession.dbMeshKey = command.meshid; // Switch the agent mesh
                                 agentSession.meshid = command.meshid.split('/')[2]; // Switch the agent mesh
                                 agentSession.sendUpdatedIntelAmtPolicy(); // Send the new Intel AMT policy
+                                // #8011: Tell the agent to update its local .msh file with the new meshid.
+                                // Without this, if the agent re-registers (e.g. after restart), it reads the
+                                // old .msh file and reappears in the original mesh group.
+                                try { agentSession.send(JSON.stringify({ action: 'setmesh', meshid: command.meshid })); } catch (ex) { }
                             }
 
                             // If any MQTT sessions are connected on this server, switch it now.
@@ -2844,6 +2907,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
+                            addTokenInfo(event, req);
                             // Even if change stream is enabled on this server, we still make the nodemeshchange actionable. This is because the DB can't send out a change event that will match this.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
 
@@ -2930,6 +2994,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Event node deletion
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'removenode', nodeid: node._id, msgid: 87, msgArgs: [node.name, parent.meshes[node.meshid].name], msg: 'Removed device ' + node.name + ' from device group ' + parent.meshes[node.meshid].name, domain: domain.id };
+                            addTokenInfo(event, req);
                             // TODO: We can't use the changeStream for node delete because we will not know the meshid the device was in.
                             //if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to remove the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
@@ -3170,6 +3235,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                            addTokenInfo(event, req);
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         } else if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent
@@ -4610,7 +4676,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var now = Date.now();
                         for (var i = 0; i < docs.length; i++) {
                             const doc = docs[i];
-                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); delete docs[i]; } else {
+                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); docs.splice(i--, 1); } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
                             }
@@ -5356,7 +5422,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             } else {
                                                 output += ',';
                                             }
-                                            if (typeof n.lastbootuptime == 'number') { output += ',' + n.lastbootuptime; } else { output += ','; }
+                                            if (typeof n.lastbootuptime == 'number') { output += ',' + new Date(n.lastbootuptime).toISOString(); } else { output += ','; }
                                         } else {
                                             output += ',,,,,,,,,,,,,,,,,,,,';
                                         }
@@ -5373,7 +5439,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             output += ',';
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_date)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_date); }
+                                            if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_date)) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.identifiers.bios_date)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.identifiers && (nodeinfo.sys.hardware.identifiers.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.identifiers.bios_vendor); }
                                             output += ',';
@@ -5463,7 +5529,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && nodeinfo.sys.hardware.linux.kernel_build) { output += csvClean(nodeinfo.sys.hardware.linux.kernel_build); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_date); }
+                                            if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_date)) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.linux.bios_date)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.linux && (nodeinfo.sys.hardware.linux.bios_vendor)) { output += csvClean(nodeinfo.sys.hardware.linux.bios_vendor); }
                                             output += ',';
@@ -5523,11 +5589,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             output += ',';
                                             if (nodeinfo.sys.hardware.agentvers.openssl) { output += csvClean(nodeinfo.sys.hardware.agentvers.openssl); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.agentvers.commitDate) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitDate); }
+                                            if (nodeinfo.sys.hardware.agentvers.commitDate) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.agentvers.commitDate)); }
                                             output += ',';
                                             if (nodeinfo.sys.hardware.agentvers.commitHash) { output += csvClean(nodeinfo.sys.hardware.agentvers.commitHash); }
                                             output += ',';
-                                            if (nodeinfo.sys.hardware.agentvers.compileTime) { output += csvClean(nodeinfo.sys.hardware.agentvers.compileTime); }
+                                            if (nodeinfo.sys.hardware.agentvers.compileTime) { output += csvClean(formatCsvDate(nodeinfo.sys.hardware.agentvers.compileTime)); }
                                         } else {
                                             output += ',,,,';
                                         }
@@ -5559,9 +5625,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             if (nodeinfo.lastConnect.time) {
                                                 // Last connection time
                                                 if ((typeof command.l == 'string') && (typeof command.tz == 'string')) {
-                                                    output += csvClean(new Date(nodeinfo.lastConnect.time).toLocaleString(command.l, { timeZone: command.tz }))
+                                                    output += csvClean(new Date(nodeinfo.lastConnect.time).toISOString())
                                                 } else {
-                                                    output += nodeinfo.lastConnect.time;
+                                                    output += new Date(nodeinfo.lastConnect.time).toISOString();
                                                 }
                                             }
                                             output += ',';
@@ -6662,6 +6728,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
 
+            // Enforce port-forward restrictions (issue #7969). The cookie carries the target
+            // TCP port that MeshCentral Router / meshcmd will relay to. If a port-forward
+            // policy is configured for this domain and the requested port is blocked, reject
+            // the cookie so the tunnel handshake fails with an explicit error.
+            if ((command.tcpport != null) && (parent.isPortForwardAllowed != null) && (parent.isPortForwardAllowed(domain, command.tcpport) === false)) {
+                obj.send({ action: 'getcookie', nodeid: command.nodeid, tag: command.tag, result: 'Port ' + command.tcpport + ' blocked by port-forward policy' });
+                return;
+            }
+
             // Add a user authentication cookie to a url
             var cookieContent = { userid: user._id, domainid: user.domain };
             if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
@@ -6717,8 +6792,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
-                    // If this is not an admin user, don't send any BitLocker recovery info
-                    if (rights != MESHRIGHT_ADMIN && doc?.hardware?.windows) {
+                    // If this user does not have admin or viewbitlocker rights, don't send any BitLocker recovery info
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_VIEWBITLOCKER) == 0) && doc?.hardware?.windows) {
                         if (doc.hardware.windows?.volumes) {
                             for (var i in doc.hardware.windows.volumes) {
                                 delete doc.hardware.windows.volumes[i].recoveryPassword;    // previous single bitlocker schema
@@ -6738,13 +6813,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     volumeInfo.volumeStatus = conversionStatus[volumeInfo.volumeStatus] ?? 'Unknown';
                                     if (volumeInfo.protectionStatus && typeof volumeInfo.protectionStatus == 'number') { volumeInfo.protectionStatus = protectionStatus[volumeInfo.protectionStatus] ?? 'Unknown'; }     
                                     if (volumeInfo.encryptionMethod) { volumeInfo.encryptionMethod = encMethod[volumeInfo.encryptionMethod] ?? 'Unknown'; } 
-                                    if ((rights == MESHRIGHT_ADMIN) && volumeInfo.identifier && !(volumeInfo.hasOwnProperty('recoveryPassword')) && doc.hardware.windows?.bitlocker?.[volumeInfo.identifier])
+                                    if (((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_VIEWBITLOCKER) != 0)) && volumeInfo.identifier && !(volumeInfo.hasOwnProperty('recoveryPassword')) && doc.hardware.windows?.bitlocker?.[volumeInfo.identifier])
                                         { volumeInfo.recoveryPassword = doc.hardware.windows.bitlocker[volumeInfo.identifier].rp; }
                                 }
                             }
                         }
                         var b;
-                        if ((rights == MESHRIGHT_ADMIN) && (b = doc.hardware?.windows?.bitlocker)) {
+                        if (((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_VIEWBITLOCKER) != 0)) && (b = doc.hardware?.windows?.bitlocker)) {
                             for (const robj of Object.values(b)) {
                                 robj.recoveryPassword = robj.rp; delete robj.rp;
                                 robj.lastSeen = new Date(robj.t); delete robj.t;

@@ -1,0 +1,123 @@
+/* print.css — Print styles for MeshCentral device details (#8048)
+ *
+ * When printing a device details page (Ctrl+P), hide UI chrome
+ * (sidebar, toolbar, nav, buttons) and expand the content area
+ * to full width so the printout shows only the device information.
+ */
+
+@media print {
+    /* Hide non-essential UI elements */
+    .navbar,
+    .nav-side-menu,
+    .sidebar,
+    #sideBar,
+    #leftNav,
+    .col-md-3.col-sm-3,
+    #footer,
+    .footer,
+    .noctab,
+    .btn,
+    .btn-group,
+    .dropdown,
+    .modal,
+    .modal-backdrop,
+    #topbar,
+    .breadcrumb,
+    #masthead,
+    .alert,
+    #deviceNotifyCell,
+    #connectivityCell,
+    #connectButtonHolder,
+    .remoteDesktopBar,
+    #deskTopBar,
+    #termTableBar,
+    #fileTableBar,
+    .pluginTabButton,
+    .search-bar,
+    #searchBar,
+    .ui-component:not(.st3) {
+        display: none !important;
+    }
+
+    /* Expand main content area */
+    .col-md-9.col-sm-9,
+    #mainContent,
+    .main-content,
+    #p2 {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+    }
+
+    /* Body: white bg, no margins, full width */
+    body {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 12pt !important;
+        color: #000 !important;
+    }
+
+    /* Device details: visible with proper formatting */
+    #p1deviceDetails,
+    .deviceDetails,
+    .device-details,
+    #devicedetails,
+    .col-md-9.col-sm-9 {
+        display: block !important;
+        visibility: visible !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Tables: avoid breaking rows across pages */
+    table {
+        page-break-inside: auto;
+    }
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+    thead {
+        display: table-header-group;
+    }
+    tfoot {
+        display: table-footer-group;
+    }
+
+    /* Tab content: show all tabs when printing */
+    .tab-content > .tab-pane {
+        display: block !important;
+        visibility: visible !important;
+        page-break-after: always;
+    }
+    .tab-content > .tab-pane:last-child {
+        page-break-after: auto;
+    }
+
+    /* Links: show URL in print (optional) */
+    a[href]:after {
+        content: "";
+    }
+
+    /* Headers: black text, no background */
+    h1, h2, h3, h4, h5, h6 {
+        background: transparent !important;
+        color: #000 !important;
+        page-break-after: avoid;
+        font-weight: bold !important;
+    }
+
+    /* Borders: light gray */
+    table, th, td {
+        border: 1px solid #ddd !important;
+        border-collapse: collapse !important;
+    }
+
+    /* Page setup */
+    @page {
+        margin: 1cm;
+    }
+}

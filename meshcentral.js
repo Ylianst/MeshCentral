@@ -1890,6 +1890,13 @@ function CreateMeshCentralServer(config, args) {
         // If the certificate is un-configured, force LAN-only mode
         if (obj.certificates.CommonName.indexOf('.') == -1) { /*console.log('Server name not configured, running in LAN-only mode.');*/ obj.args.lanonly = true; }
 
+        // #8066: Warn if cert is not configured — agents may fail to reconnect
+        if ((obj.config.settings == null || obj.config.settings.cert == null) && (obj.args.lanonly != true)) {
+            console.log('WARNING: The "cert" setting is not configured in config.json. Agents may fail to reconnect');
+            console.log('         or KVM may display partial screen updates. Set "cert" to the server FQDN or LAN IP.');
+            console.log('         Example: "settings": { "cert": "myserver.lan" }');
+        }
+
         // Write server version and run mode
         const productionMode = (process.env.NODE_ENV && (process.env.NODE_ENV == 'production'));
         const runmode = (obj.args.lanonly ? 2 : (obj.args.wanonly ? 1 : 0));
@@ -2723,6 +2730,31 @@ function CreateMeshCentralServer(config, args) {
     // powerState: Value, 0 = Unknown, 1 = S0 power on, 2 = S1 Sleep, 3 = S2 Sleep, 4 = S3 Sleep, 5 = S4 Hibernate, 6 = S5 Soft-Off, 7 = Present, 8 = Off
     //var connectTypeStrings = ['', 'MeshAgent', 'Intel AMT CIRA', '', 'Intel AMT local', '', '', '', 'Intel AMT Relay', '', '', '', '', '', '', '', 'MQTT'];
     //var powerStateStrings = ['Unknown', 'Powered', 'Sleep', 'Sleep', 'Deep Sleep', 'Hibernating', 'Soft-Off', 'Present', 'Off'];
+    // Check if a TCP/UDP port is allowed for port-forwarding on a domain, based on the
+    // domain.portForwardRestrictions config (see issue #7969). Supports an allow list or a
+    // deny list (not both). Port entries may be a number or a "start-end" range string.
+    // Returns true if the port is permitted, false if blocked by policy.
+    // shape: { mode: 'allow'|'deny', ports: [3306, 445, '1433-1435'] }
+    obj.isPortForwardAllowed = function (domain, port) {
+        if ((domain == null) || (domain.portForwardRestrictions == null)) { return true; }
+        var r = domain.portForwardRestrictions;
+        if ((r.mode !== 'allow') && (r.mode !== 'deny')) { return true; }
+        if (!Array.isArray(r.ports)) { r.ports = []; }
+        var denied = false, allowed = false;
+        for (var i = 0; i < r.ports.length; i++) {
+            var p = r.ports[i];
+            if (typeof p === 'number') { if (p === port) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+            else if (typeof p === 'string') {
+                var m = p.match(/^(\d+)\s*-\s*(\d+)$/);
+                if (m) { var s = parseInt(m[1], 10), e = parseInt(m[2], 10); if ((port >= s) && (port <= e)) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+                else { var pn = parseInt(p, 10); if (pn === port) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+            }
+        }
+        if (r.mode === 'deny') { return !denied; }
+        // allow mode: port must be in the list
+        return allowed;
+    };
+
     obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
         //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState] + (serverid == null ? ('') : (', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState, extraInfo: extraInfo }); }
@@ -3673,41 +3705,16 @@ function CreateMeshCentralServer(config, args) {
                         this.meshAgentBinary.fileHash = hash.digest('binary');
                         this.meshAgentBinary.fileHashHex = Buffer.from(this.meshAgentBinary.fileHash, 'binary').toString('hex');
 
-                        // Compress the agent using ZIP
-                        const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-                        const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                        const onZipEnd = function onZipEnd() {
-                            // Concat all the buffer for create compressed zip agent
-                            const concatData = Buffer.concat(onZipData.x.zacc);
-                            delete onZipData.x.zacc;
-
-                            // Hash the compressed binary
+                        // #7918: Compress the agent using ZIP via @zip.js (replaces archiver)
+                        var zipHelper = require('./zipHelper');
+                        var agentData = this.meshAgentBinary;
+                        zipHelper.createZipFromEntries([{ name: 'meshagent', data: agentData.data }], { level: 9 }).then(function (concatData) {
                             const hash = obj.crypto.createHash('sha384').update(concatData);
-                            onZipData.x.zhash = hash.digest('binary');
-                            onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
-
-                            // Set the agent
-                            onZipData.x.zdata = concatData;
-                            onZipData.x.zsize = concatData.length;
-                        }
-                        const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                        this.meshAgentBinary.zacc = [];
-                        onZipData.x = this.meshAgentBinary;
-                        onZipEnd.x = this.meshAgentBinary;
-                        onZipError.x = this.meshAgentBinary;
-                        archive.on('data', onZipData);
-                        archive.on('end', onZipEnd);
-                        archive.on('error', onZipError);
-
-                        // Starting with NodeJS v16, passing in a buffer at archive.append() will result a compressed file with zero byte length. To fix this, we pass in the buffer as a stream.
-                        // archive.append(this.meshAgentBinary.data, { name: 'meshagent' }); // This is the version that does not work on NodeJS v16.
-                        const ReadableStream = require('stream').Readable;
-                        const zipInputStream = new ReadableStream();
-                        zipInputStream.push(this.meshAgentBinary.data);
-                        zipInputStream.push(null);
-                        archive.append(zipInputStream, { name: 'meshagent' });
-
-                        archive.finalize();
+                            agentData.zhash = hash.digest('binary');
+                            agentData.zhashhex = Buffer.from(agentData.zhash, 'binary').toString('hex');
+                            agentData.zdata = concatData;
+                            agentData.zsize = concatData.length;
+                        }).catch(function (err) { console.log('ZIP compression failed: ' + err); });
                     })
                     obj.exeHandler.streamExeWithMeshPolicy(
                         {
@@ -3722,36 +3729,15 @@ function CreateMeshCentralServer(config, args) {
                     // Load the agent as-is
                     objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
 
-                    // Compress the agent using ZIP
-                    const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
-
-                    const onZipData = function onZipData(buffer) { onZipData.x.zacc.push(buffer); }
-                    const onZipEnd = function onZipEnd() {
-                        // Concat all the buffer for create compressed zip agent
-                        const concatData = Buffer.concat(onZipData.x.zacc);
-                        delete onZipData.x.zacc;
-
-                        // Hash the compressed binary
+                    // #7918: Compress the agent using ZIP via @zip.js (replaces archiver)
+                    var zipHelper = require('./zipHelper');
+                    zipHelper.createZipFromEntries([{ name: 'meshagent', data: objx.meshAgentBinaries[archid].data }], { level: 9 }).then(function (concatData) {
                         const hash = obj.crypto.createHash('sha384').update(concatData);
-                        onZipData.x.zhash = hash.digest('binary');
-                        onZipData.x.zhashhex = Buffer.from(onZipData.x.zhash, 'binary').toString('hex');
-
-                        // Set the agent
-                        onZipData.x.zdata = concatData;
-                        onZipData.x.zsize = concatData.length;
-
-                        //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
-                    }
-                    const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                    objx.meshAgentBinaries[archid].zacc = [];
-                    onZipData.x = objx.meshAgentBinaries[archid];
-                    onZipEnd.x = objx.meshAgentBinaries[archid];
-                    onZipError.x = objx.meshAgentBinaries[archid];
-                    archive.on('data', onZipData);
-                    archive.on('end', onZipEnd);
-                    archive.on('error', onZipError);
-                    archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
-                    archive.finalize();
+                        objx.meshAgentBinaries[archid].zhash = hash.digest('binary');
+                        objx.meshAgentBinaries[archid].zhashhex = Buffer.from(objx.meshAgentBinaries[archid].zhash, 'binary').toString('hex');
+                        objx.meshAgentBinaries[archid].zdata = concatData;
+                        objx.meshAgentBinaries[archid].zsize = concatData.length;
+                    }).catch(function (err) { console.log('ZIP compression failed: ' + err); });
                 }
             }
 

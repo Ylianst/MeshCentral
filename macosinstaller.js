@@ -108,9 +108,15 @@ sudo rm "/Library/LaunchDaemons/meshagentDiagnostic_periodicStart.plist" &> /dev
 sudo rm "/Library/LaunchDaemons/meshagentDiagnostic.plist" &> /dev/null
 
 echo "Resetting TCC permissions for ###SERVICENAME###..."
-BUNDLE_ID=$(mdls -name kMDItemCFBundleIdentifier -raw "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###" 2>/dev/null || true)
-if [ -n "\${BUNDLE_ID}" ] && [ "\${BUNDLE_ID}" != "(null)" ]; then
-    sudo tccutil reset All "\${BUNDLE_ID}" &> /dev/null || true
+AGENT_PATH="/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###"
+BUNDLE_ID=$(mdls -name kMDItemCFBundleIdentifier -raw "${AGENT_PATH}" 2>/dev/null || true)
+if [ -n "${BUNDLE_ID}" ] && [ "${BUNDLE_ID}" != "(null)" ]; then
+    sudo tccutil reset All "${BUNDLE_ID}" &> /dev/null || true
+else
+    # #8023: meshagent is a binary, not a .app bundle — mdls returns (null).
+    # TCC stores the executable path as the identifier for non-bundle binaries.
+    # Reset TCC using the binary path directly.
+    sudo tccutil reset All "${AGENT_PATH}" &> /dev/null || true
 fi
 sudo tccutil reset All "###SERVICENAME###" &> /dev/null || true
 
