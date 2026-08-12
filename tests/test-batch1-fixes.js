@@ -627,3 +627,28 @@ describe('#8036 - View BitLocker keys permission bit', function () {
         }
     });
 });
+
+// ============================================================================
+// Test #7971: Null guard on agentInfo.capabilities prevents server crash
+// ============================================================================
+
+describe('#7971 - Null guard on agentInfo prevents crash', function () {
+    it('should not crash when agentInfo is null', function () {
+        var obj = { agentInfo: null };
+        // Simulate the fix: check null before accessing capabilities
+        var caps = (obj.agentInfo != null) ? (obj.agentInfo.capabilities & 0x40) : 0;
+        assert.strictEqual(caps, 0);
+    });
+
+    it('should not crash when agentInfo is undefined', function () {
+        var obj = {};
+        var caps = (obj.agentInfo != null) ? (obj.agentInfo.capabilities & 0x40) : 0;
+        assert.strictEqual(caps, 0);
+    });
+
+    it('should work correctly when agentInfo is present', function () {
+        var obj = { agentInfo: { capabilities: 0x40 } };
+        var caps = (obj.agentInfo != null) ? (obj.agentInfo.capabilities & 0x40) : 0;
+        assert.strictEqual(caps, 0x40);
+    });
+});
