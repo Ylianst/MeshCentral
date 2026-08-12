@@ -96,7 +96,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_DEVICEDETAILS       = 0x00100000; // 1048576
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
-    const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
+    const MESHRIGHT_NOSOFTWARE         = 0x00800000; // 8388608
+    const MESHRIGHT_VIEWBITLOCKER      = 0x01000000; // 16777216 — #8036: View BitLocker recovery keys without full admin
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -6782,8 +6783,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
-                    // If this is not an admin user, don't send any BitLocker recovery info
-                    if (rights != MESHRIGHT_ADMIN && doc?.hardware?.windows) {
+                    // If this user does not have admin or viewbitlocker rights, don't send any BitLocker recovery info
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_VIEWBITLOCKER) == 0) && doc?.hardware?.windows) {
                         if (doc.hardware.windows?.volumes) {
                             for (var i in doc.hardware.windows.volumes) {
                                 delete doc.hardware.windows.volumes[i].recoveryPassword;    // previous single bitlocker schema
@@ -6803,13 +6804,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     volumeInfo.volumeStatus = conversionStatus[volumeInfo.volumeStatus] ?? 'Unknown';
                                     if (volumeInfo.protectionStatus && typeof volumeInfo.protectionStatus == 'number') { volumeInfo.protectionStatus = protectionStatus[volumeInfo.protectionStatus] ?? 'Unknown'; }     
                                     if (volumeInfo.encryptionMethod) { volumeInfo.encryptionMethod = encMethod[volumeInfo.encryptionMethod] ?? 'Unknown'; } 
-                                    if ((rights == MESHRIGHT_ADMIN) && volumeInfo.identifier && !(volumeInfo.hasOwnProperty('recoveryPassword')) && doc.hardware.windows?.bitlocker?.[volumeInfo.identifier])
+                                    if (((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_VIEWBITLOCKER) != 0)) && volumeInfo.identifier && !(volumeInfo.hasOwnProperty('recoveryPassword')) && doc.hardware.windows?.bitlocker?.[volumeInfo.identifier])
                                         { volumeInfo.recoveryPassword = doc.hardware.windows.bitlocker[volumeInfo.identifier].rp; }
                                 }
                             }
                         }
                         var b;
-                        if ((rights == MESHRIGHT_ADMIN) && (b = doc.hardware?.windows?.bitlocker)) {
+                        if (((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_VIEWBITLOCKER) != 0)) && (b = doc.hardware?.windows?.bitlocker)) {
                             for (const robj of Object.values(b)) {
                                 robj.recoveryPassword = robj.rp; delete robj.rp;
                                 robj.lastSeen = new Date(robj.t); delete robj.t;

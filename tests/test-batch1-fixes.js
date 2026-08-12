@@ -588,3 +588,42 @@ describe('#8066 - Cert config warning', function () {
         assert.strictEqual(shouldWarnCert({}, true), false);
     });
 });
+
+// ============================================================================
+// Test #8036: View BitLocker keys without full admin
+// ============================================================================
+
+describe('#8036 - View BitLocker keys permission bit', function () {
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
+    const MESHRIGHT_VIEWBITLOCKER = 0x01000000; // 16777216
+
+    function canViewBitlocker(rights) {
+        // Only allow admin (exact match) or VIEWBITLOCKER bit — not admin bitmask that contains all bits
+        if (rights === MESHRIGHT_ADMIN) return true;
+        return (rights & MESHRIGHT_VIEWBITLOCKER) !== 0;
+    }
+
+    it('should allow admin to view BitLocker keys', function () {
+        assert.strictEqual(canViewBitlocker(MESHRIGHT_ADMIN), true);
+    });
+
+    it('should allow user with VIEWBITLOCKER right', function () {
+        assert.strictEqual(canViewBitlocker(MESHRIGHT_VIEWBITLOCKER), true);
+        // Combined with other rights
+        assert.strictEqual(canViewBitlocker(MESHRIGHT_VIEWBITLOCKER | 0x08), true); // remote control + viewbitlocker
+    });
+
+    it('should NOT allow regular user without VIEWBITLOCKER or ADMIN', function () {
+        assert.strictEqual(canViewBitlocker(0x08), false); // remote control only
+        assert.strictEqual(canViewBitlocker(0x108), false); // remote control + remote view only
+        assert.strictEqual(canViewBitlocker(0), false); // no rights
+    });
+
+    it('should be a unique bit that does not collide with existing rights', function () {
+        // Verify VIEWBITLOCKER (0x01000000) does not collide with any existing MESHRIGHT
+        const existing = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608];
+        for (var i = 0; i < existing.length; i++) {
+            assert.strictEqual((MESHRIGHT_VIEWBITLOCKER & existing[i]) !== 0, false, 'Bit collision with MESHRIGHT_' + existing[i]);
+        }
+    });
+});
