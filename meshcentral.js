@@ -2730,6 +2730,31 @@ function CreateMeshCentralServer(config, args) {
     // powerState: Value, 0 = Unknown, 1 = S0 power on, 2 = S1 Sleep, 3 = S2 Sleep, 4 = S3 Sleep, 5 = S4 Hibernate, 6 = S5 Soft-Off, 7 = Present, 8 = Off
     //var connectTypeStrings = ['', 'MeshAgent', 'Intel AMT CIRA', '', 'Intel AMT local', '', '', '', 'Intel AMT Relay', '', '', '', '', '', '', '', 'MQTT'];
     //var powerStateStrings = ['Unknown', 'Powered', 'Sleep', 'Sleep', 'Deep Sleep', 'Hibernating', 'Soft-Off', 'Present', 'Off'];
+    // Check if a TCP/UDP port is allowed for port-forwarding on a domain, based on the
+    // domain.portForwardRestrictions config (see issue #7969). Supports an allow list or a
+    // deny list (not both). Port entries may be a number or a "start-end" range string.
+    // Returns true if the port is permitted, false if blocked by policy.
+    // shape: { mode: 'allow'|'deny', ports: [3306, 445, '1433-1435'] }
+    obj.isPortForwardAllowed = function (domain, port) {
+        if ((domain == null) || (domain.portForwardRestrictions == null)) { return true; }
+        var r = domain.portForwardRestrictions;
+        if ((r.mode !== 'allow') && (r.mode !== 'deny')) { return true; }
+        if (!Array.isArray(r.ports)) { r.ports = []; }
+        var denied = false, allowed = false;
+        for (var i = 0; i < r.ports.length; i++) {
+            var p = r.ports[i];
+            if (typeof p === 'number') { if (p === port) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+            else if (typeof p === 'string') {
+                var m = p.match(/^(\d+)\s*-\s*(\d+)$/);
+                if (m) { var s = parseInt(m[1], 10), e = parseInt(m[2], 10); if ((port >= s) && (port <= e)) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+                else { var pn = parseInt(p, 10); if (pn === port) { if (r.mode === 'deny') { denied = true; } else { allowed = true; } } }
+            }
+        }
+        if (r.mode === 'deny') { return !denied; }
+        // allow mode: port must be in the list
+        return allowed;
+    };
+
     obj.SetConnectivityState = function (meshid, nodeid, connectTime, connectType, powerState, serverid, extraInfo) {
         //console.log('SetConnectivity for ' + nodeid.substring(0, 16) + ', Type: ' + connectTypeStrings[connectType] + ', Power: ' + powerStateStrings[powerState] + (serverid == null ? ('') : (', ServerId: ' + serverid)));
         if ((serverid == null) && (obj.multiServer != null)) { obj.multiServer.DispatchMessage({ action: 'SetConnectivityState', meshid: meshid, nodeid: nodeid, connectTime: connectTime, connectType: connectType, powerState: powerState, extraInfo: extraInfo }); }

@@ -6728,6 +6728,15 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) return; // Access denied.
 
+            // Enforce port-forward restrictions (issue #7969). The cookie carries the target
+            // TCP port that MeshCentral Router / meshcmd will relay to. If a port-forward
+            // policy is configured for this domain and the requested port is blocked, reject
+            // the cookie so the tunnel handshake fails with an explicit error.
+            if ((command.tcpport != null) && (parent.isPortForwardAllowed != null) && (parent.isPortForwardAllowed(domain, command.tcpport) === false)) {
+                obj.send({ action: 'getcookie', nodeid: command.nodeid, tag: command.tag, result: 'Port ' + command.tcpport + ' blocked by port-forward policy' });
+                return;
+            }
+
             // Add a user authentication cookie to a url
             var cookieContent = { userid: user._id, domainid: user.domain };
             if (command.nodeid) { cookieContent.nodeid = command.nodeid; }
