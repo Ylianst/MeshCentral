@@ -31,6 +31,7 @@
     "agents",
     "public",
     "translate",
+    "webserver",
     "readme.txt",
     "license.txt",
     "sample-config.json",

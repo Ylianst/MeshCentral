@@ -1661,7 +1661,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                         // Notify change
                         var targets = ['*', 'server-users', user._id];
-                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+                        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 113, msg: "Added push notification authentication device", domain: domain.id };
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);

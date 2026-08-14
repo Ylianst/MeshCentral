@@ -4236,7 +4236,7 @@ module.exports.CreateDB = function (parent, func) {
 
         // Send the user update
         var targets = ['*', 'server-users', user._id];
-        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
+        if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + user.groups[i]); } }
         parent.DispatchEvent(targets, obj, { etype: 'user', userid: user._id, username: user.name, account: parent.webserver.CloneSafeUser(user), action: (added ? 'accountcreate' : 'accountchange'), domain: user.domain, nolog: 1 });
     }
 

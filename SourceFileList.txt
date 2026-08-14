@@ -3,6 +3,7 @@ license.txt
 package.json
 sample-config.json
 *.js
+webserver/*
 views/*
 public/*
 public/images/*
