@@ -13,6 +13,7 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const softwareActions = require('./softwareactions.js');
 // volume & bitlocker statuses
 const encMethod = { 0: '', 1: "AES-128 with diffuser", 2: "AES-256 with diffuser", 3: 'AES-128', 4: 'AES-256', 5: "Hardware encryption", 6: 'XTS-AES-128', 7: 'XTS-AES-256' };
 const driveType = { 0: "Unknown", 1: "No Root Directory", 2: "Removable Disk", 3: "Local Disk", 4: "Network Drive", 5: "Compact Disc", 6: "RAM Disk" };
@@ -285,8 +286,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
                     var mesh = parent.meshes[agent.dbMeshKey];
                     if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
-                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
-                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
+                        if ((options != null) && (options.softwareAction != null) && (softwareActions.isActionAllowed(options.softwareAction, rights) !== true)) { if (func) { func(false, 'denied'); } return; }
+                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false, 'denied'); } return; } // Check Required Rights
+                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false, 'denied'); } return; } // Check Required None Rights
 
                         command.sessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = rights;            // Add user rights flags to the message
@@ -318,7 +320,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
-                    } else { if (func) { func(false); } }
+                        if ((func != null) && (options != null) && (options.waitForRights === true)) { func(true); }
+                    } else { if (func) { func(false, 'denied'); } }
                 });
             } else {
                 // Check if a peer server is connected to this agent
@@ -326,11 +329,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
-                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
-
                         var mesh = parent.meshes[routing.meshid];
                         if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
+                            if ((options != null) && (options.softwareAction != null) && (softwareActions.isActionAllowed(options.softwareAction, rights) !== true)) { if (func) { func(false, 'denied'); } return; }
+                            if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false, 'denied'); } return; } // Check Required Rights
+                            if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false, 'denied'); } return; } // Check Required None Rights
                             command.fromSessionid = ws.sessionId;   // Set the session id, required for responses
                             command.rights = rights;                // Add user rights flags to the message
                             if ((options != null) && (options.removeViewOnlyLimitation === true) && (command.rights != 0xFFFFFFFF) && ((command.rights & 0x100) != 0)) { command.rights -= 0x100; } // Since the multiplexor will enforce view-only, remove MESHRIGHT_REMOTEVIEWONLY
@@ -357,12 +360,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             command.remoteaddr = req.clientIp;      // User's IP address
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
-                        } else { if (func) { func(false); } }
+                            if ((func != null) && (options != null) && (options.waitForRights === true)) { func(true); }
+                        } else { if (func) { func(false, 'denied'); } }
                     });
-                } else { if (func) { func(false); } return false; }
+                } else { if (func) { func(false, 'offline'); } return false; }
             }
-        } else { if (func) { func(false); } return false; }
-        if (func) { func(true); }
+        } else { if (func) { func(false, 'denied'); } return false; }
+        if ((func != null) && ((options == null) || (options.waitForRights !== true))) { func(true); }
         return true;
     }
 
@@ -987,21 +991,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                
-                parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
-                        var agent = parent.wsagents[command.nodeid];
-                        if (agent != null) {
-                            routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-                        } else {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
-                        }
-                    } else {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                    }
-                });
+                if (softwareActions.getActionKind(command.type) == null) {
+                    if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                    break;
+                }
+                var softwareRouteResult = null;
+                if (command.responseid != null) {
+                    softwareRouteResult = function (r, reason) {
+                        if (r === true) return;
+                        try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: (reason === 'offline') ? 'Agent offline' : 'Denied' })); } catch (ex) { }
+                    };
+                }
+                routeCommandToNode(command, null, null, softwareRouteResult, { softwareAction: command.type, waitForRights: true });
                 break;
             }
             case 'msg':
