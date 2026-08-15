@@ -2827,7 +2827,7 @@
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
-                            QH('p18Status', '<span>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
+                            QH('p18Status', '<span>' + "ERROR: " + EscapeHtml(JSON.parse(message.value).error) + '</span>');
                             QH('p18html', '<div style="text-align:center;padding:50px"><i>' + "Click Refresh to load installed software..." + '</i></div>');
                             installedAppsLoading = false;
                             installedAppsLoadingType = 0;
