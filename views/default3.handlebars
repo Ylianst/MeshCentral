@@ -14334,7 +14334,7 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
+                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
                     h += '<span title="' + shortname + '"><div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' mt-1" onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
                     if (sysvol && sysvol.name) {
@@ -14356,8 +14356,8 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3>';
-                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + parseInt(i) + ' class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;';
                     h += '<span class=fsize>' + fdatestr + '</span>';
                     h += '<span style=float:right>' + EscapeHtml(fsize) + '</span>';
                     h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
@@ -14517,7 +14517,16 @@
 
         function p13sort_files(files) {
             var r = [], sortselection = Q('p13sortdropdown').value;
-            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            for (var i in files) {
+                var file = files[i];
+                file.nx = i;
+                file.t = parseInt(file.t);
+                if (isNaN(file.t)) { file.t = 3; }
+                if (file.s == null) { file.s = 0; }
+                if (file.n == null) { file.n = i; }
+                file.ln = file.n.toLowerCase();
+                r.push(file);
+            }
             p13sortorder = 1;
             if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
             if (sortselection == 1) { r.sort(p13sort_filename); }
