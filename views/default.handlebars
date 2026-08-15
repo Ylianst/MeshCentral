@@ -10813,12 +10813,15 @@
             deskTools.services = services;
             if (services != null) {
                 for (var i in services) {
-                    if (services[i].status) {
+                    if ((services[i] == null) || (typeof services[i] != 'object')) continue;
+                    var serviceIndex = parseInt(i);
+                    if (isNaN(serviceIndex)) continue;
+                    if (services[i].status && (typeof services[i].status.state == 'string')) {
                         // Windows
-                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: i });
-                    } else if (services[i].serviceType) {
+                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: serviceIndex });
+                    } else if ((typeof services[i].serviceType == 'string') && (typeof services[i].name == 'string')) {
                         // Linux (TODO: This the service status is not displayed, not sure start/stop/restart will work).
-                        s.push({ p: services[i].serviceType, d: services[i].name, i: i });
+                        s.push({ p: services[i].serviceType, d: services[i].name, i: serviceIndex });
                     }
                 }
                 if (deskTools.ssort == 0) { s.sort(sortProcessPid); } else if (deskTools.ssort == 1) { s.sort(sortProcessName); }
@@ -10830,7 +10833,7 @@
                         else if (ss == 'Running') { ss = "Running"; }
                         x += '<div onclick=showServiceWaitDialog(' + s[i].i + ') class=deskToolsBar>';
                         x += '<div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + c + '">' + EscapeHtml(c) + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + EscapeHtml(c) + '">' + EscapeHtml(c) + '</div>';
                         x += '</div>';
                     }
                 }
@@ -10840,20 +10843,22 @@
 
         function showServiceDetailsDialog(data) {
             if (xxdialogMode && (xxdialogTag.indexOf('service_') != -1)) {
-                var index = xxdialogTag.replace('service_','')
+                var index = parseInt(xxdialogTag.replace('service_', ''));
+                if (isNaN(index)) return;
                 // var org_service = deskTools.services[index];
-                var service = data.value ? JSON.parse(data.value) : deskTools.services[index];
-                if(data.value) service.displayName = deskTools.services[index].displayName;
-                if (service != null) {
+                var service = null;
+                try { service = data.value ? JSON.parse(data.value) : deskTools.services[index]; } catch (e) { }
+                if ((service != null) && (typeof service == 'object')) {
+                    if (data.value && deskTools.services && deskTools.services[index]) { service.displayName = deskTools.services[index].displayName; }
                     var x = '';
-                    if (service.name) { x += addHtmlValue("Name", service.name); }
-                    if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
+                    if (service.name) { x += addHtmlValue("Name", EscapeHtml(service.name)); }
+                    if (service.displayName) { x += addHtmlValue("Display name", EscapeHtml(service.displayName)); }
                     if (service.status) {
-                        var ss = capitalizeFirstLetter(service.status.state.toLowerCase());
+                        var ss = (typeof service.status.state == 'string') ? EscapeHtml(capitalizeFirstLetter(service.status.state.toLowerCase())) : '';
                         if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
                         else if (ss == 'Running') { ss = "Running"; }
                         if (service.status.state) { x += addHtmlValue("State", ss); }
-                        if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
+                        if (service.status.pid) { x += addHtmlValue("PID", EscapeHtml(service.status.pid)); }
                         var serviceTypes = [];
                         if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
                         if (service.status.isInteractive === true) { serviceTypes.push("Interactive"); }
@@ -10862,18 +10867,18 @@
                         if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
                         if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
                     }
-                    if (service.startType) { x += addHtmlValue("Start Type", service.startType); }
-                    if (service.user) { x += addHtmlValue("User", service.user); }
-                    if (service.installedBy) { x += addHtmlValue("Installed By", service.installedBy); }
+                    if (service.startType) { x += addHtmlValue("Start Type", EscapeHtml(service.startType)); }
+                    if (service.user) { x += addHtmlValue("User", EscapeHtml(service.user)); }
+                    if (service.installedBy) { x += addHtmlValue("Installed By", EscapeHtml(service.installedBy)); }
                     if (service.installedDate) { x += addHtmlValue("Installed Date", printDateTime(new Date(service.installedDate))); }
                     if (service.failureActions) { 
                         if (service.failureActions.resetPeriod) { 
                             var abc = ((service.failureActions.resetPeriod < 86400 ? 0 : service.failureActions.resetPeriod) / (24 * 60 * 60));
                             x += addHtmlValue("Restart Fail Count After ", abc + ' Day' + (abc != 1 ? 's': '')); }
                         if (service.failureActions.actions) {
-                            if (service.failureActions.actions[0]) { x += addHtmlValue("First Failure",service.failureActions.actions[0].type); }
-                            if (service.failureActions.actions[1]) { x += addHtmlValue("Second Failure",service.failureActions.actions[1].type); }
-                            if (service.failureActions.actions[2]) { x += addHtmlValue("Subsequent Failures",service.failureActions.actions[2].type); }
+                            if (service.failureActions.actions[0]) { x += addHtmlValue("First Failure", EscapeHtml(service.failureActions.actions[0].type)); }
+                            if (service.failureActions.actions[1]) { x += addHtmlValue("Second Failure", EscapeHtml(service.failureActions.actions[1].type)); }
+                            if (service.failureActions.actions[2]) { x += addHtmlValue("Subsequent Failures", EscapeHtml(service.failureActions.actions[2].type)); }
                         }
                     }
                     x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
