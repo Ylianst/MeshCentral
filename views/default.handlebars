@@ -7830,7 +7830,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    if (node.agent.id == 14) { str = node.agent.core; }
+                    if (node.agent.id == 14) { str = EscapeHtml(node.agent.core); }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
                     x += addDeviceAttribute("Mesh Agent", str);
                 }
@@ -13210,7 +13210,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    if (node.agent.id == 14) { str = node.agent.core; }
+                    if (node.agent.id == 14) { str = EscapeHtml(node.agent.core); }
                     x += addDetailItem("Mesh Agent", str);
                 }
                 if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2])); }
