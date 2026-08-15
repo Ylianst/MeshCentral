@@ -3833,20 +3833,20 @@
                                         if (!message.value.cmd && message.value.path) { message.value.cmd = message.value.path }
                                         if (!message.value.processUser && message.value.userName) { message.value.processUser = message.value.userName.split("\\")[1]; }
                                         if (!message.value.processDomain && message.value.userName) { message.value.processDomain = message.value.userName.split("\\")[0]; }
-                                        if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.processName + '</b></div></div>'; }
-                                        if (message.value.machineName) { x += addHtmlValue5("Machine Name", message.value.machineName); }
-                                        if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.cmd + '</b></div></div>'; }
-                                        if (message.value.mainWindowTitle) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Window Title" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.mainWindowTitle + '</b></div></div>'; }
-                                        if (message.value.processUser) { x += addHtmlValue5("User", message.value.processUser); }
-                                        if (message.value.processDomain) { x += addHtmlValue5("Domain", message.value.processDomain); }
-                                        if (message.value.startTime) { x += addHtmlValue5("Start Time", message.value.startTime); }
+                                        if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.processName) + '</b></div></div>'; }
+                                        if (message.value.machineName) { x += addHtmlValue5("Machine Name", EscapeHtml(message.value.machineName)); }
+                                        if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.cmd) + '</b></div></div>'; }
+                                        if (message.value.mainWindowTitle) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Window Title" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.mainWindowTitle) + '</b></div></div>'; }
+                                        if (message.value.processUser) { x += addHtmlValue5("User", EscapeHtml(message.value.processUser)); }
+                                        if (message.value.processDomain) { x += addHtmlValue5("Domain", EscapeHtml(message.value.processDomain)); }
+                                        if (message.value.startTime) { x += addHtmlValue5("Start Time", EscapeHtml(message.value.startTime)); }
                                         x += '<hr />';
                                         if (message.value.PriorityBoostEnabled) { x += addHtmlValue5("Priority Boost", message.value.PriorityBoostEnabled ? "Enabled" : "Disabled"); }
-                                        if (message.value.sessionId) { x += addHtmlValue5("Session Id", message.value.sessionId); }
-                                        if (message.value.handleCount) { x += addHtmlValue5("Handle Count", message.value.handleCount); }
-                                        if (message.value.privilegedProcessorTime) { x += addHtmlValue5("Privileged Processor Time", format("{0} seconds", message.value.privilegedProcessorTime)); }
-                                        if (message.value.totalProcessorTime) { x += addHtmlValue5("Total Processor Time", format("{0} seconds", message.value.totalProcessorTime)); }
-                                        if (message.value.userProcessorTime) { x += addHtmlValue5("User Processor Time", format("{0} seconds", message.value.userProcessorTime)); }
+                                        if (message.value.sessionId) { x += addHtmlValue5("Session Id", EscapeHtml(message.value.sessionId)); }
+                                        if (message.value.handleCount) { x += addHtmlValue5("Handle Count", EscapeHtml(message.value.handleCount)); }
+                                        if (message.value.privilegedProcessorTime) { x += addHtmlValue5("Privileged Processor Time", EscapeHtml(format("{0} seconds", message.value.privilegedProcessorTime))); }
+                                        if (message.value.totalProcessorTime) { x += addHtmlValue5("Total Processor Time", EscapeHtml(format("{0} seconds", message.value.totalProcessorTime))); }
+                                        if (message.value.userProcessorTime) { x += addHtmlValue5("User Processor Time", EscapeHtml(format("{0} seconds", message.value.userProcessorTime))); }
                                         if (message.value.nonpagedSystemMemorySize) { x += addHtmlValue5("Non Paged Memory", getNiceSize2(message.value.nonpagedSystemMemorySize)); }
                                         if (message.value.pagedMemorySize) { x += addHtmlValue5("Paged Memory", getNiceSize2(message.value.pagedMemorySize)); }
                                         if (message.value.privateMemorySize) { x += addHtmlValue5("Private Memory", getNiceSize2(message.value.privateMemorySize)); }
