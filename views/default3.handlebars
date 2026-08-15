@@ -15656,7 +15656,7 @@
                 for (var i in hardware.windows.volumes) {
                     var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i) + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
                     if (m.size) {
                         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
@@ -15678,7 +15678,7 @@
                     if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
                         var bitlockerState;
                         if (typeof(m.volumeStatus) === 'string') {  // string style db schema
-                            bitlockerState = m.volumeStatus;
+                            bitlockerState = EscapeHtml(m.volumeStatus);
                         } else {    // new code db schema
                             if (m.protectionStatus == 2) {
                                 bitlockerState = "Locked";
@@ -15778,9 +15778,12 @@
 
         function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
             if (xxdialogMode) return false;
-            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
-            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
-            setModalContent('xxAddAgent', decodeURIComponent(drive) + ': ' + "BitLocker Information", x);
+            var decodedDrive = drive ? decodeURIComponent(drive) : "Unknown";
+            var decodedIdentifier = identifier ? decodeURIComponent(identifier) : "Unknown";
+            var decodedPassword = password ? decodeURIComponent(password) : "Unknown";
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedIdentifier) + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedPassword) + '</p></div>';
+            setModalContent('xxAddAgent', EscapeHtml(decodedDrive) + ': ' + "BitLocker Information", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
