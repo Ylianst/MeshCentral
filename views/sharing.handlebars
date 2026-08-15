@@ -2187,7 +2187,7 @@
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', file.name);
+                QH('p13dfileName', EscapeHtml(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 if (file.xdata == null) {
