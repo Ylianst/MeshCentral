@@ -1770,9 +1770,11 @@
                             } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
+                                var userSessionTag = parseInt(message.tag);
+                                if (isNaN(userSessionTag)) { userSessionTag = 0; }
                                 if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
-                                if (userSessions.length == 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
-                                else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
+                                if (userSessions.length == 0) { connectDesktop(null, 1, null, userSessionTag); } // No active sessions, do a normal connection.
+                                else if (userSessions.length == 1) { var userSessionId = parseInt(userSessions[0].SessionId); connectDesktop(null, 1, isNaN(userSessionId) ? null : userSessionId, userSessionTag); } // One active session, connect to it
                                 else {
                                     var x = '';
                                     var sortBy = "{{{userSessionsSort}}}";
@@ -1786,8 +1788,10 @@
                                         });
                                     }
                                     for (var i in userSessions) {
-                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + ', ' + userSessions[i].StationName;
-                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
+                                        var userSessionId = parseInt(userSessions[i].SessionId);
+                                        if (isNaN(userSessionId)) continue;
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessionId + ',' + userSessionTag + ')>' + EscapeHtml(userSessions[i].State) + ', ' + EscapeHtml(userSessions[i].StationName);
+                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + EscapeHtml(userSessions[i].Domain) + '/' + EscapeHtml(userSessions[i].Username); } else { x += ' - ' + EscapeHtml(userSessions[i].Username); } }
                                         x += '</div>';
                                     }
                                     QH('p11DeskSessionSelector', x);
