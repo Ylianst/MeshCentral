@@ -6886,7 +6886,7 @@
             // Pending Reboot
             if (node.pr) {
                 var y = [];
-                for (var i in node.pr){ y.push(node.pr[i]); }
+                for (var i in node.pr){ y.push(EscapeHtml(node.pr[i])); }
                 if (y.length > 0) x += addDetailItem("Pending Reboot", y.join(', '));
             }
 
