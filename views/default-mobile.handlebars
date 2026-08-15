@@ -6345,7 +6345,7 @@
                     h = '<div class=filelist file=999><div class=filelistrow><input file=999 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + displayname + '</a></div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 } else {
                     var truncname = p13truncateName(name);
-                    var link = '<a style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + truncname + '</a>';
+                    var link = '<a style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')\">' + truncname + '</a>';
                     if (f.s == 0) { link = truncname; }
                     h = '<div class=filelist file=3><div class=filelistrow><input file=3 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<div class="fileIcon' + f.t + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname>' + link + '</div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 }
