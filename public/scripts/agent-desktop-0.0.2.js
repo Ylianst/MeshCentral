@@ -7,6 +7,8 @@
 // Polyfill Uint8Array.slice() for IE
 if (!Uint8Array.prototype.slice) { Object.defineProperty(Uint8Array.prototype, 'slice', { value: function (begin, end) { return new Uint8Array(Array.prototype.slice.call(this, begin, end)); } }); }
 
+var _audioDataCount = 0; // throttle counter for MNG_AUDIO_DATA debug logging
+
 function isWindowsBrowser() {
     return navigator && !!(/win/i).exec(navigator.platform);
 }
@@ -201,6 +203,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ProcessScreenMsg = function (width, height) {
         if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
+        obj.SendAudioQuery();       // MNG_AUDIO_QUERY: always fire on session init, before same-size guard
         if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
@@ -314,6 +317,25 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (cursorNum > mouseCursors.length) { cursorNum = 0; }
                 xMouseCursorCurrent = mouseCursors[cursorNum];
                 if (xMouseCursorActive) { obj.CanvasId.style.cursor = xMouseCursorCurrent; }
+                break;
+            case 90: // MNG_AUDIO_DATA — Opus-encoded audio chunk
+                if (++_audioDataCount <= 5) console.log('MeshAudio: DATA frame #' + _audioDataCount);
+                if (obj.onAudioData) { obj.onAudioData(view); }
+                break;
+            case 91: // MNG_AUDIO_CAPS — Agent capability advertisement
+                if (cmdsize >= 9) {
+                    console.log('MeshAudio: raw CAPS frame flags=0x' + view[7].toString(16), 'captureAvailable=', !!(view[7] & 0x04));
+                    var audioCaps = {
+                        sampleRate: view[4] === 0 ? 48000 : 16000,
+                        channels: view[5],
+                        bitrateKbps: view[6],
+                        dtx: !!(view[7] & 0x01),
+                        fec: !!(view[7] & 0x02),
+                        captureAvailable: !!(view[7] & 0x04),
+                        platform: view[8]
+                    };
+                    if (obj.onAudioCaps) { obj.onAudioCaps(audioCaps); }
+                }
                 break;
             default:
                 console.log('Unknown command', cmd, cmdsize);
@@ -631,6 +653,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.GetDisplayNumbers = function () { obj.send(String.fromCharCode(0x00, 0x0B, 0x00, 0x04)); } // Get Terminal display
     obj.SetDisplay = function (number) { /*console.log('Set display', number);*/ obj.send(String.fromCharCode(0x00, 0x0C, 0x00, 0x06, number >> 8, number & 0xFF)); } // Set Terminal display
+    obj.SendAudioStart = function () { obj.send(String.fromCharCode(0x00, 0x5C, 0x00, 0x04)); } // MNG_AUDIO_START (92 = 0x5C)
+    obj.SendAudioStop  = function () { obj.send(String.fromCharCode(0x00, 0x5D, 0x00, 0x04)); } // MNG_AUDIO_STOP  (93 = 0x5D)
+    obj.SendAudioQuery = function () { obj.send(String.fromCharCode(0x00, 0x5E, 0x00, 0x04)); } // MNG_AUDIO_QUERY (94 = 0x5E) — pull-handshake: request CAPS re-send
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 

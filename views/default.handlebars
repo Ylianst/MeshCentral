@@ -32,6 +32,7 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-rdp-0.0.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-audio-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
@@ -842,6 +843,7 @@
                             <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskGuestShareButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
+                            <span id=DeskAudioButton title="Toggle remote audio streaming" style="display:none"><img class="desktopButtons" id=DeskAudioButtonImage src='images/icon-audio-off.png' onclick=deskAudioToggle() height=16 width=16 /></span>
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -1529,6 +1531,7 @@
                                 <label style="display:block"><input type="checkbox" id="d7deskRemoteKeyMap" />Use Remote Keyboard Map</label>
                                 <label style="display:block" id="d7deskAutoClipboardLabel"><input type="checkbox" id="d7deskAutoClipboard" />Automatic Clipboard</label>
                                 <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
+                                <label style="display:block" id="d7deskAudioLabel"><input type="checkbox" id="d7deskAudio" />Enable Audio on Connect</label>
                             </div>
                         </div>
                     </div>
@@ -1644,7 +1647,8 @@
         var stars = {}; // Devices that have been "stared" by the user.
         var nodeShortIdent = 0;
         var desktop;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false, autoclipboard: false, autolock: false, agentencoding: 4 };
+        var deskAudio = null;
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false, autoclipboard: false, autolock: false, audioOnConnect: false, agentencoding: 4 };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000, agentencoding: 4 };
         var terminal;
         var files;
@@ -8692,6 +8696,18 @@
             desktop.m.SendRefresh();
         }
 
+        function deskAudioToggle() {
+            if (desktop == null || desktop.State != 3) return;
+            if (typeof CreateAgentAudio !== 'undefined') {
+                if (deskAudio == null) {
+                    deskAudio = CreateAgentAudio(desktop);
+                    desktop.m.onAudioCaps = function(caps) { deskAudio.onCaps(caps); if (caps.captureAvailable && Q('d7deskAudio') && Q('d7deskAudio').checked) { deskAudio.start(); } };
+                    desktop.m.onAudioData = function(view)  { deskAudio.onData(view); };
+                }
+                deskAudio.toggle();
+            }
+        }
+
         function deviceToastFunction() {
             if (xxdialogMode) return;
             var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
@@ -9734,6 +9750,11 @@
                     desktop.onStateChanged = onDesktopStateChange;
                     if ((features2 & 0x2000) != 0) desktop.m.stopInput = true;
                     desktop.m.onRemoteInputLockChanged = function(obj, state) { QV('DeskInputLockedButton', state); QV('DeskInputUnLockedButton', !state); }
+                    if (typeof CreateAgentAudio !== 'undefined') {
+                        deskAudio = CreateAgentAudio(desktop);
+                        desktop.m.onAudioCaps = function(caps) { deskAudio.onCaps(caps); if (caps.captureAvailable && Q('d7deskAudio') && Q('d7deskAudio').checked) { deskAudio.start(); } };
+                        desktop.m.onAudioData = function(view)  { deskAudio.onData(view); };
+                    }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
@@ -9956,6 +9977,9 @@
                     if (desktop != null) {
                         // Stop recording
                         if (desktop.m.recordedData != null) { deskRecordSession(); }
+                        // Stop audio streaming
+                        if (deskAudio != null) { deskAudio.stop(); deskAudio = null; }
+                        QV('DeskAudioButton', false);
                         // Disconnect and clean up the remote desktop
                         desktop.Stop();
                     }
@@ -10094,6 +10118,7 @@
             desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.autolock = d7deskAutoLock.checked;
+            desktopsettings.audioOnConnect = d7deskAudio.checked;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.kvmrmw = d7kvmrmw.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
@@ -10146,6 +10171,7 @@
             if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.autoclipboard != null) { d7deskAutoClipboard.checked = desktopsettings.autoclipboard; }
             if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
+            if (desktopsettings.audioOnConnect != null) { d7deskAudio.checked = desktopsettings.audioOnConnect; }
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             if (desktopsettings.kvmrmw) { d7kvmrmw.checked = desktopsettings.kvmrmw; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
