@@ -8080,7 +8080,7 @@
             var filetreexx = p13sort_files(p13filetree.dir);
             var file = filetreexx[parseInt(contextelement.attributes.fileindex.nodeValue)];
             if (action == 1) { // Rename the file
-                setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + file.n + '" />');
+                setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + EscapeHtml(file.n) + '" />');
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: file.n }));
                 focusTextBox('p13renameinput');
                 p13fileNameCheck();
@@ -14639,7 +14639,7 @@
                     renamefile = p13filetree.dir[checkboxes[i].value].n;
                 }
             }
-            setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
+            setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + EscapeHtml(renamefile) + '" />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
