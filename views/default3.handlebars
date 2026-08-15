@@ -8592,7 +8592,7 @@
             var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Search" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
             for (var i in nodes) {
                 x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\'' + nodes[i]._id + '\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox class="form-check-input me-2" style=width:16px;display:inline />';
-                x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
+                x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + EscapeHtml(nodes[i].name) + '</div></div>';
             }
             setModalContent('xxAddAgent', "Select a node to place", x + '</div>');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => placeNodeEx(3, coords));
