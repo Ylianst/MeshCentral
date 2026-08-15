@@ -16882,7 +16882,7 @@
                             msg = EscapeHtml(event.username) + guestname + ' &rarr; ' + msg;
                         }
                     }
-                    if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
+                    if (event.remoteaddr) { msg += ' (' + EscapeHtml(event.remoteaddr) + ')'; }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'relayIcon16';
                     x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) style=cursor:pointer><td style=width:18px><div class=' + icon + '></div></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td><td class=g2>&nbsp;</td></tr><tr style=height:2px></tr>';
                 }
