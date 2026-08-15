@@ -12227,7 +12227,12 @@
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
             if (processes != null) {
-                for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
+                for (var pid in processes) {
+                    if ((processes[pid] == null) || (typeof processes[pid] != 'object')) continue;
+                    var processId = parseInt(pid), processCommand = processes[pid].cmd;
+                    if (isNaN(processId) || (typeof processCommand != 'string')) continue;
+                    p.push({ p: processId, c: processCommand, d: processCommand.toLowerCase(), u: processes[pid].user });
+                }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
                 for (var i in p) {
@@ -12235,9 +12240,9 @@
                         var c = p[i].c;
                         x += '<div onclick=showProcessDetails(' + p[i].p + ') class="deskToolsBar d-flex">';
                         x += '<div class="pe-1 text-start" style=width:50px;>' + EscapeHtml(p[i].p) + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + EscapeHtml(c) + '">' + EscapeHtml(c) + '</div>';
                         x += '<div class="ms-auto">' + (p[i].u ? EscapeHtml(p[i].u) : '');
-                        x += '<i class="ps-1 fa-solid fa-trash-can" role="button" title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'></i></div>';
+                        x += '<i class="ps-1 fa-solid fa-trash-can" role="button" title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',' + EscapeHtml(JSON.stringify(p[i].c)) + ')\'></i></div>';
                         x += '</div>';
                     }
                 }

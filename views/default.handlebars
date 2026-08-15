@@ -10776,7 +10776,12 @@
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
             if (processes != null) {
-                for (var pid in processes) { p.push( { p:parseInt(pid), c:processes[pid].cmd, d:processes[pid].cmd.toLowerCase(), u: processes[pid].user } ); }
+                for (var pid in processes) {
+                    if ((processes[pid] == null) || (typeof processes[pid] != 'object')) continue;
+                    var processId = parseInt(pid), processCommand = processes[pid].cmd;
+                    if (isNaN(processId) || (typeof processCommand != 'string')) continue;
+                    p.push({ p: processId, c: processCommand, d: processCommand.toLowerCase(), u: processes[pid].user });
+                }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
                 for (var i in p) {
@@ -10784,9 +10789,9 @@
                         var c = p[i].c;
                         x += '<div onclick=showProcessDetails(' + p[i].p + ') class=deskToolsBar>';
                         x += '<div style=width:50px;float:left;text-align:right;padding-right:5px>' + EscapeHtml(p[i].p) + '</div>';
-                        x += '<a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'><img width=10 height=10 src="images/trash.png"></a>';
+                        x += '<a href=# style=float:right;padding-right:5px;cursor:pointer title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',' + EscapeHtml(JSON.stringify(p[i].c)) + ')\'><img width=10 height=10 src="images/trash.png"></a>';
                         x += '<div style=float:right;padding-right:5px>' + (p[i].u ? EscapeHtml(p[i].u) : '') + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:5px" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:5px" title="' + EscapeHtml(c) + '">' + EscapeHtml(c) + '</div>';
                         x += '</div>';
                     }
                 }
