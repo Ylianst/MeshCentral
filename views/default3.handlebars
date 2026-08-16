@@ -17340,8 +17340,8 @@
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
-                x += addHtmlValue("Hostname", currentMesh.kvm.host);
-                x += addHtmlValue("Username", currentMesh.kvm.user);
+                x += addHtmlValue("Hostname", EscapeHtml(currentMesh.kvm.host));
+                x += addHtmlValue("Username", EscapeHtml(currentMesh.kvm.user));
             }
 
             // Display device group creator
