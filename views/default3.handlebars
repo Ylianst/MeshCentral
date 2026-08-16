@@ -17415,7 +17415,7 @@
             // Display invitation codes
             if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
-                if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
+                if (currentMesh.invite != null) { icodes = true; inviteCodeStr = EscapeHtml(currentMesh.invite.codes.join(', ')); /* + ', ' + currentMesh.invite.flags;*/ }
                 x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
@@ -18488,7 +18488,7 @@
                 // View codes only
                 var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
-                x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
+                x += addHtmlValue("Invite Codes", EscapeHtml(currentMesh.invite.codes.join(', ')));
                 x += addHtmlValue("Installation Type", ["Background and interactive", "Interactive only", "Background only"][currentMesh.invite.flags & 3]);
                 setModalContent('xxAddAgent', "Invite Codes", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton');
