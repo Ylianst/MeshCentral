@@ -3513,8 +3513,13 @@ function micConsentHandleStart(tunnel) {
     // room should never happen without them knowing.
     var consentRequired = ((httprequest.consent == null) || ((httprequest.consent & 128) != 0));
     if (!consentRequired) {
-        httprequest.micConsentGranted = true;
+        // Policy says no prompt is needed, so go straight to what accepting
+        // a real prompt does: mark it granted AND tell native to actually
+        // start capture. Setting the flag alone here previously left native
+        // never told, so nothing ever started -- policy said "don't ask"
+        // but that silently became "never listen" instead of "just listen".
         MeshServerLogEx(30, null, "Starting microphone capture, consent not required by policy (" + httprequest.remoteaddr + ")", httprequest);
+        micConsentGranted.call({ tunnel: tunnel });
         return true;
     }
 
