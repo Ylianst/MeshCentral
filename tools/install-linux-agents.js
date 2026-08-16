@@ -12,6 +12,12 @@
  * that set does not always line up with what this server publishes, so an
  * unknown name is reported and skipped rather than added blindly with an id
  * this script would have to invent.
+ *
+ * Skipping matters for correctness, not just tidiness. meshagent_arm64 is
+ * ARCHID 26 while this server publishes meshagent_aarch64, ARCHID 32; an agent
+ * reports its own ARCHID, so filing one under the other's id would hand ARM
+ * devices a binary the server believes is something else. Adding a target here
+ * means adding its real entry to hashagents.json, not renaming a file.
  */
 
 'use strict';
