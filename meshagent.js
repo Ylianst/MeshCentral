@@ -1446,7 +1446,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 }
                                 // Record keys actually read this scan (refreshes the timestamp).
                                 for (const v of Object.values(volumes)) {
-                                    if (v.identifier && v.recoveryPassword) { keys[v.identifier] = { rp: v.recoveryPassword, t: command.data.time }; }
+                                    if (v && v.identifier && v.recoveryPassword) { keys[v.identifier] = { rp: v.recoveryPassword, t: command.data.time }; }
                                 }
                                 command.data.hardware.windows.bitlocker = keys;
                                 saveSysInfo();
