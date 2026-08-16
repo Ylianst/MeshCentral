@@ -13350,7 +13350,7 @@
                     }
                     x += '</div></td></tr>';
                 }
-                if (hardware.network && hardware.network.dns) {
+                if (hardware.network && Array.isArray(hardware.network.dns)) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
