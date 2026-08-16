@@ -15881,19 +15881,23 @@
             var storeApps = installedAppsData.store || [];
             if (searchTerm) {
                 desktopApps = desktopApps.filter(function(app) {
-                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
-                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                    return ((typeof app.name == 'string') && (app.name.toLowerCase().indexOf(searchTerm) >= 0)) ||
+                        ((typeof app.publisher == 'string') && (app.publisher.toLowerCase().indexOf(searchTerm) >= 0));
                 });
                 storeApps = storeApps.filter(function(app) {
-                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
-                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                    return ((typeof app.name == 'string') && (app.name.toLowerCase().indexOf(searchTerm) >= 0)) ||
+                        ((typeof app.publisher == 'string') && (app.publisher.toLowerCase().indexOf(searchTerm) >= 0));
                 });
             }
             desktopApps.sort(function(a, b) { 
-                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+                var aName = (typeof a.name == 'string') ? a.name.toLowerCase() : '';
+                var bName = (typeof b.name == 'string') ? b.name.toLowerCase() : '';
+                return aName.localeCompare(bName);
             });
             storeApps.sort(function(a, b) { 
-                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+                var aName = (typeof a.name == 'string') ? a.name.toLowerCase() : '';
+                var bName = (typeof b.name == 'string') ? b.name.toLowerCase() : '';
+                return aName.localeCompare(bName);
             });
             var x = '';
             // ===== DESKTOP APPS TABLE (immer anzeigen) =====
