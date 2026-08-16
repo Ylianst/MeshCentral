@@ -5103,6 +5103,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'previousLogins': {
                 // TODO: Make a better database call to get filtered data.
+                if ((command.userid != null) && (typeof command.userid != 'string')) break;
                 if (command.userid == null) {
                     var splitUser = user._id.split('/');
                     // Get previous logins for self
