@@ -3827,6 +3827,64 @@ a {
     -webkit-filter: invert(60%);
 }
 
+/* Microphone button.
+   An open microphone is easy to forget about, so the control states its own
+   status rather than relying on the operator to remember: a pulse while the
+   device user is deciding, a red tint plus a live input meter once audio is
+   actually being transmitted. */
+#DeskMicButton {
+    position: relative;
+    display: inline-block;
+}
+
+#DeskMicButton.micRequesting .desktopButtons {
+    animation: micPulse 1.2s ease-in-out infinite;
+}
+
+#DeskMicButton.micLive .desktopButtons {
+    filter: drop-shadow(0 0 2px #e53935);
+    -webkit-filter: drop-shadow(0 0 2px #e53935);
+}
+
+/* The meter sits under the icon and only occupies space while transmitting. */
+#DeskMicLevel {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+#DeskMicButton.micLive #DeskMicLevel {
+    display: block;
+}
+
+#DeskMicLevel > i {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: #43a047;
+    /* Rise immediately, fall gently: speech should register at once without
+       the bar flickering between syllables. */
+    transition: width 90ms ease-out;
+}
+
+@keyframes micPulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.35; }
+}
+
+/* Respect a reduced-motion preference: the colour and meter still convey
+   state without the pulse. */
+@media (prefers-reduced-motion: reduce) {
+    #DeskMicButton.micRequesting .desktopButtons { animation: none; opacity: 0.6; }
+    #DeskMicLevel > i { transition: none; }
+}
+
 
 .dtab {
     overflow: hidden;

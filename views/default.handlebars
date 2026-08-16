@@ -33,6 +33,7 @@
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-rdp-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-audio-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-mic-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
@@ -844,6 +845,7 @@
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskGuestShareButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
                             <span id=DeskAudioButton title="Toggle remote audio streaming" style="display:none"><img class="desktopButtons" id=DeskAudioButtonImage src='images/icon-audio-off.png' onclick=deskAudioToggle() height=16 width=16 /></span>
+                            <span id=DeskMicButton title="Speak to the remote user" style="display:none"><img class="desktopButtons" id=DeskMicButtonImage src='images/icon-mic-off.png' onclick=deskMicToggle() height=16 width=16 /><span id=DeskMicLevel><i></i></span></span>
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -1648,6 +1650,7 @@
         var nodeShortIdent = 0;
         var desktop;
         var deskAudio = null;
+        var deskMic = null;
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false, autoclipboard: false, autolock: false, audioOnConnect: false, agentencoding: 4 };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000, agentencoding: 4 };
         var terminal;
@@ -8708,6 +8711,53 @@
             }
         }
 
+        // Microphone. The button reflects four states so the operator always
+        // knows whether they can be heard: hidden when the device cannot play
+        // audio, idle, waiting on the user's decision, and live.
+        function deskMicToggle() {
+            if (desktop == null || desktop.State != 3) return;
+            if (deskMic == null) return;
+            deskMic.toggle();
+        }
+
+        function deskMicApplyState(state, detail) {
+            var img = Q('DeskMicButtonImage');
+            var btn = Q('DeskMicButton');
+            if (!img || !btn) return;
+
+            QV('DeskMicButton', state != 'unavailable');
+            btn.classList.remove('micRequesting', 'micLive');
+
+            switch (state) {
+                case 'requesting':
+                    img.src = 'images/icon-mic-wait.png';
+                    btn.classList.add('micRequesting');
+                    btn.title = "Waiting for the user to allow microphone access";
+                    break;
+                case 'live':
+                    img.src = 'images/icon-mic-on.png';
+                    btn.classList.add('micLive');
+                    btn.title = "You can be heard - click to stop";
+                    break;
+                default:
+                    img.src = 'images/icon-mic-off.png';
+                    btn.title = "Speak to the remote user";
+                    deskMicApplyLevel(0);
+                    break;
+            }
+
+            // Surface the outcome rather than failing silently: being unsure
+            // whether a microphone is open is worse than a little noise.
+            if (detail) { p11setConsoleMsg(detail, 5000); }
+        }
+
+        function deskMicApplyLevel(level) {
+            var meter = Q('DeskMicLevel');
+            if (!meter) return;
+            var bar = meter.firstElementChild;
+            if (bar) { bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; }
+        }
+
         function deviceToastFunction() {
             if (xxdialogMode) return;
             var x = '<select id=d2deviceop style=width:100%;margin-bottom:4px><option value=2>' + "Toast Notification" + '</option><option value=1>' + "Message Box" + '</option><option value=3>' + "Alert Box" + '</option></select>';
@@ -9755,6 +9805,16 @@
                         desktop.m.onAudioCaps = function(caps) { deskAudio.onCaps(caps); if (caps.captureAvailable && Q('d7deskAudio') && Q('d7deskAudio').checked) { deskAudio.start(); } };
                         desktop.m.onAudioData = function(view)  { deskAudio.onData(view); };
                     }
+                    if (typeof CreateAgentMic !== 'undefined') {
+                        // The microphone is never auto-started: it is only ever
+                        // enabled by an explicit click, and then only after the
+                        // device user agrees.
+                        deskMic = CreateAgentMic(desktop);
+                        deskMic.onStateChanged = deskMicApplyState;
+                        deskMic.onLevel = deskMicApplyLevel;
+                        desktop.m.onMicCaps = function(caps) { deskMic.onCaps(caps); };
+                        desktop.onMicConsent = function(granted) { if (!granted) { deskMic.onConsentDenied(); } };
+                    }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
@@ -9908,6 +9968,19 @@
         function p13clearConsoleMsg() { QH('p13FilesConsoleMsg', ''); QV('p13FilesConsoleMsg', false); if (p13FilesConsoleMsgTimer) { clearTimeout(p13FilesConsoleMsgTimer); p13FilesConsoleMsgTimer = null; } }
         function p9clearConsoleMsg() { QH('p9ConsoleMsg', ''); QV('p9ConsoleMsg', false); if (p9ConsoleMsgTimer) { clearTimeout(p9ConsoleMsgTimer); p9ConsoleMsgTimer = null; } }
 
+        // Desktop-panel equivalent of p12setConsoleMsg, used to report
+        // microphone consent outcomes where the operator is already looking.
+        function p11setConsoleMsg(msg, timeout) {
+            if (msg) {
+                Q('p11DeskConsoleMsg').innerHTML = msg;
+                QV('p11DeskConsoleMsg', true);
+                if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                if (timeout) { p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, timeout); }
+            } else {
+                p11clearConsoleMsg();
+            }
+        }
+
         function p12setConsoleMsg(msg, timeout) {
             if (msg) {
                 Q('p12TermConsoleMsg').innerHTML += msg;
@@ -9980,6 +10053,10 @@
                         // Stop audio streaming
                         if (deskAudio != null) { deskAudio.stop(); deskAudio = null; }
                         QV('DeskAudioButton', false);
+                        // Release the microphone so the browser's recording
+                        // indicator clears when the session ends.
+                        if (deskMic != null) { deskMic.stop(); deskMic = null; }
+                        QV('DeskMicButton', false);
                         // Disconnect and clean up the remote desktop
                         desktop.Stop();
                     }

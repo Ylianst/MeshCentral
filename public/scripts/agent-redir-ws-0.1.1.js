@@ -104,6 +104,10 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
         if ((typeof args != 'undefined') && args.redirtrace) { console.log('RedirRecv', controlMsg); }
         if (controlMsg.type == 'console') {
             obj.setConsoleMessage(controlMsg.msg, controlMsg.msgid, controlMsg.msgargs, controlMsg.timeout);
+        } else if (controlMsg.type == 'micconsent') {
+            // The device user answered the microphone prompt. A refusal must
+            // reach the operator, not be swallowed.
+            if (obj.onMicConsent) { obj.onMicConsent(controlMsg.granted === true); }
         } else if (controlMsg.type == 'metadata') {
             obj.metadata = controlMsg;
             if (obj.onMetadataChange) obj.onMetadataChange(obj.metadata);

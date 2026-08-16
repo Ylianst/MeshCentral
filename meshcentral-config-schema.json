@@ -2122,6 +2122,10 @@
                 "type": "string",
                 "description": "Consent message that is shown when a remote file session is connected, you can use {0} to represent the realname and {1} to represent the username."
               },
+              "mic": {
+                "type": "string",
+                "description": "Consent message shown before an administrator's microphone is played through the device's speakers. {0} is the account real name, {1} the account identifier."
+              },
               "consentTimeout": {
                 "type": "integer",
                 "default": 30,
@@ -2427,6 +2431,11 @@
                 "type": "boolean",
                 "default": false,
                 "description": "Enable remote desktop privacy bar for this domain."
+              },
+              "micprompt": {
+                "type": "boolean",
+                "default": true,
+                "description": "Ask the device user for permission before an administrator's microphone can be played through the device's speakers. Enabled by default; set to false only where local consent is obtained by other means."
               }
             }
           },

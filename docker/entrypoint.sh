@@ -286,6 +286,22 @@ function dynamic_config() {
         sed -i 's/"localSessionRecording":/"_localSessionRecording":/g' "$CONFIG_FILE"
     fi
 
+    # MIC_CONSENT
+    # Whether the device user is asked before an administrator's microphone is
+    # played through that device's speakers. Defaults to true when unset: making
+    # a remote person audible in someone's room should require a local decision,
+    # so it is only disabled by asking for that explicitly.
+    MIC_CONSENT=${MIC_CONSENT,,}
+    if [[ "$MIC_CONSENT" == "false" ]]; then
+        echo "Setting userConsentFlags.micprompt... false (microphone consent prompt DISABLED)"
+        jq '.domains[""].userConsentFlags.micprompt = false' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    else
+        echo "Setting userConsentFlags.micprompt... true (default)"
+        jq '.domains[""].userConsentFlags.micprompt = true' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    fi
+
     # MINIFY
     MINIFY=${MINIFY,,}
     if [[ "$MINIFY" =~ ^(true|false)$ ]]; then

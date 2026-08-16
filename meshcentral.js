@@ -1601,6 +1601,10 @@ function CreateMeshCentralServer(config, args) {
                 if (obj.config.domains[i].userconsentflags.terminalprompt == true) { flags |= 16; }
                 if (obj.config.domains[i].userconsentflags.fileprompt == true) { flags |= 32; }
                 if (obj.config.domains[i].userconsentflags.desktopprivacybar == true) { flags |= 64; }
+                // Microphone prompt defaults to ON: making a remote operator
+                // audible in someone's room must be an explicit local decision,
+                // so it is only cleared when set to false outright.
+                if (obj.config.domains[i].userconsentflags.micprompt !== false) { flags |= 128; }
                 obj.config.domains[i].userconsentflags = flags;
             }
 

@@ -204,6 +204,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.ProcessScreenMsg = function (width, height) {
         if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
         obj.SendAudioQuery();       // MNG_AUDIO_QUERY: always fire on session init, before same-size guard
+        obj.SendMicQuery();         // MNG_MIC_QUERY: learn playback capability without starting anything
         if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
@@ -321,6 +322,19 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 90: // MNG_AUDIO_DATA — Opus-encoded audio chunk
                 if (++_audioDataCount <= 5) console.log('MeshAudio: DATA frame #' + _audioDataCount);
                 if (obj.onAudioData) { obj.onAudioData(view); }
+                break;
+            case 96: // MNG_MIC_CAPS — microphone playback capability + consent
+                if (cmdsize >= 9) {
+                    var micCaps = {
+                        sampleRate: view[4] === 0 ? 48000 : 16000,
+                        channels: view[5],
+                        bitrateKbps: view[6],
+                        playbackAvailable: !!(view[7] & 0x01),
+                        consentGranted: !!(view[7] & 0x02),
+                        platform: view[8]
+                    };
+                    if (obj.onMicCaps) { obj.onMicCaps(micCaps); }
+                }
                 break;
             case 91: // MNG_AUDIO_CAPS — Agent capability advertisement
                 if (cmdsize >= 9) {
@@ -656,6 +670,20 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.SendAudioStart = function () { obj.send(String.fromCharCode(0x00, 0x5C, 0x00, 0x04)); } // MNG_AUDIO_START (92 = 0x5C)
     obj.SendAudioStop  = function () { obj.send(String.fromCharCode(0x00, 0x5D, 0x00, 0x04)); } // MNG_AUDIO_STOP  (93 = 0x5D)
     obj.SendAudioQuery = function () { obj.send(String.fromCharCode(0x00, 0x5E, 0x00, 0x04)); } // MNG_AUDIO_QUERY (94 = 0x5E) — pull-handshake: request CAPS re-send
+    // Operator microphone (browser -> device). START only asks; the agent
+    // prompts the device user and stays silent until they accept.
+    obj.SendMicQuery = function () { obj.send(String.fromCharCode(0x00, 0x5F, 0x00, 0x04)); } // MNG_MIC_QUERY (95 = 0x5F)
+    obj.SendMicStart = function () { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); } // MNG_MIC_START (97 = 0x61)
+    obj.SendMicStop  = function () { obj.send(String.fromCharCode(0x00, 0x62, 0x00, 0x04)); } // MNG_MIC_STOP  (98 = 0x62)
+    obj.SendMicData  = function (frame) {                                                     // MNG_MIC_DATA  (99 = 0x63)
+        // The frame already carries its own header, built by agent-mic. Convert
+        // to a binary string because that is what obj.send expects.
+        var str = '', chunk = 32768;
+        for (var i = 0; i < frame.length; i += chunk) {
+            str += String.fromCharCode.apply(null, frame.subarray(i, i + chunk));
+        }
+        obj.send(str);
+    }
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 
