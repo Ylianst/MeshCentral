@@ -37,6 +37,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.connectioncount = 0;
     obj.rotation = 0;
     obj.protocol = 2; // KVM
+    obj.autoUnpauseOnConnect = true; // Set to false before connecting to suppress the automatic video resume on first screen message (mic/audio-only quick-start; see devQuickToggle() in default.handlebars)
     obj.debugmode = 0;
     obj.firstUpKeys = [];
     obj.stopInput = false;
@@ -214,7 +215,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.KillDraw = obj.tilesReceived;
         while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
         obj.SendCompressionLevel(obj.ImageType);
-        obj.SendUnPause();
+        if (obj.autoUnpauseOnConnect) { obj.SendUnPause(); }
         obj.SendRemoteInputLock(2); // Query input lock state
         // No need to event the display size change now, it will be evented on first draw.
         if (obj.onScreenSizeChange != null) { obj.onScreenSizeChange(obj, obj.ScreenWidth, obj.ScreenHeight, obj.CanvasId); }
