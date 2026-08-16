@@ -5665,9 +5665,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var amtDevices = [];
 
                 // Decode a JSON file from the Intel SCS migration tool
-                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
+                if ((typeof command.amtdevices == 'object') && (command.amtdevices.ApplicationData != null) && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (command.amtdevices['ManagedSystems'] != null) && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
                     for (var i in command.amtdevices['ManagedSystems']['ManagedSystemsList']) {
                         const importDev = command.amtdevices['ManagedSystems']['ManagedSystemsList'][i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         var host = null;
                         if ((typeof importDev.Fqdn == 'string') && (importDev.Fqdn != '')) { host = importDev.Fqdn; }
                         if ((host == null) && (typeof importDev.IPv4 == 'string') && (importDev.IPv4 != '')) { host = importDev.IPv4; }
@@ -5694,6 +5695,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.webappversion == 'string') && (Array.isArray(command.amtdevices.computers))) {
                     for (var i in command.amtdevices.computers) {
                         const importDev = command.amtdevices.computers[i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         if ((typeof importDev.host == 'string') && (importDev.host != '') && (importDev.host != '127.0.0.1') && (importDev.host.toLowerCase() != 'localhost')) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -5724,6 +5726,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (Array.isArray(command.amtdevices)) {
                     for (var i in command.amtdevices) {
                         const importDev = command.amtdevices[i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         if ((typeof importDev.fqdn == 'string') && (importDev.fqdn != '') && (importDev.fqdn != '127.0.0.1') && (importDev.fqdn.toLowerCase() != 'localhost')) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
