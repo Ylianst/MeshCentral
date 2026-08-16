@@ -5064,7 +5064,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (parent.parent.webpush == null) break;
 
                 // Adds a web push session to the user. Start by sanitizing the input.
-                if ((typeof command.sub != 'object') && (typeof command.sub.keys != 'object') && (typeof command.sub.endpoint != 'string')) break;
+                if ((command.sub == null) || (typeof command.sub != 'object') || (command.sub.keys == null) || (typeof command.sub.keys != 'object') || (typeof command.sub.endpoint != 'string')) break;
                 if (common.validateString(command.sub.endpoint, 1, 1024) == false) break; // Check endpoint
                 if (common.validateString(command.sub.keys.auth, 1, 64) == false) break; // Check key auth
                 if (common.validateString(command.sub.keys.p256dh, 1, 256) == false) break; // Check key dh
