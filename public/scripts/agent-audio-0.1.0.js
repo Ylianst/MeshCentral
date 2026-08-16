@@ -185,6 +185,11 @@ var CreateAgentAudio = function (desktop) {
             if (img) { img.src = 'images/icon-audio-on.png'; }
             var btn = Q('DeskAudioButton');
             if (btn) { btn.classList.add('audio-active'); }
+            // Same state, reflected on the always-visible quick-toggle tab
+            // (see devQuickToggle() in default.handlebars), so it's visible
+            // without opening the Desktop panel.
+            var tabBtn = Q('MainDevAudio');
+            if (tabBtn) { tabBtn.classList.add('audio-active'); }
         }).catch(function (e) {
             obj._starting = false;
             console.log('MeshAudio worklet load failed:', e);
@@ -222,6 +227,8 @@ var CreateAgentAudio = function (desktop) {
         if (img) { img.src = 'images/icon-audio-off.png'; }
         var btn = Q('DeskAudioButton');
         if (btn) { btn.classList.remove('audio-active'); }
+        var tabBtn = Q('MainDevAudio');
+        if (tabBtn) { tabBtn.classList.remove('audio-active'); }
     };
 
     // Toggle (called by the toolbar button)

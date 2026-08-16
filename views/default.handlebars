@@ -235,6 +235,8 @@
                             <tr>
                                 <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
+                                <td tabindex=0 id=MainDevAudio class="topbar_td style3x" onmouseup=devQuickToggle('audio',event) onkeypress="if (event.key == 'Enter') devQuickToggle('audio')" title="Listen to this device's audio, without opening Desktop">Audio</td>
+                                <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup=devQuickToggle('mic',event) onkeypress="if (event.key == 'Enter') devQuickToggle('mic')" title="Listen through this device's microphone, without opening Desktop">Mic</td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevRegistry class="topbar_td style3x" onmouseup=go(9,event) onkeypress="if (event.key == 'Enter') go(9)">Registry</td>
@@ -8723,6 +8725,13 @@
         function deskMicApplyState(state, detail) {
             var img = Q('DeskMicButtonImage');
             var btn = Q('DeskMicButton');
+            // Same state, reflected on the always-visible quick-toggle tab
+            // (see devQuickToggle()), so it's visible without opening the
+            // Desktop panel -- this is the only state indicator when the
+            // user started Mic that way.
+            var tabBtn = Q('MainDevMic');
+
+            if (tabBtn) { tabBtn.classList.remove('micRequesting', 'micLive'); }
             if (!img || !btn) return;
 
             QV('DeskMicButton', state != 'unavailable');
@@ -8733,11 +8742,13 @@
                     img.src = 'images/icon-mic-wait.png';
                     btn.classList.add('micRequesting');
                     btn.title = "Waiting for the user to allow microphone access";
+                    if (tabBtn) { tabBtn.classList.add('micRequesting'); }
                     break;
                 case 'live':
                     img.src = 'images/icon-mic-on.png';
                     btn.classList.add('micLive');
                     btn.title = "Listening - click to stop";
+                    if (tabBtn) { tabBtn.classList.add('micLive'); }
                     break;
                 default:
                     img.src = 'images/icon-mic-off.png';
@@ -8756,6 +8767,43 @@
             if (!meter) return;
             var bar = meter.firstElementChild;
             if (bar) { bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; }
+        }
+
+        // Start Audio or Mic without switching to the Desktop panel. This
+        // reuses the exact same connection object and toggle functions
+        // (deskAudioToggle/deskMicToggle) the Desktop panel's own buttons
+        // already use -- the only new thing is a way to reach them without
+        // opening that panel first. If a connection already exists (e.g.
+        // Desktop is open), it's reused as-is; connectDesktop() itself
+        // toggles connect/disconnect, so this only ever calls it to CONNECT.
+        //
+        // When starting a connection this way, video is paused right away
+        // (desktop._quickStartWantsVideo tracks whether Desktop was already
+        // the active view at connect time) -- see the matching one-way
+        // unpause in go(), which fires the first time the Desktop panel is
+        // actually opened on that connection.
+        function devQuickToggle(kind, event) {
+            if (event) { event.stopPropagation(); }
+            if (desktop == null) {
+                connectDesktop(null, 3);
+                if (desktop == null) return; // e.g. no rights; connectDesktop already reported it
+                desktop._quickStart = kind;
+                desktop._quickStartWantsVideo = (xxcurrentView == 11);
+                var origOnStateChanged = desktop.onStateChanged;
+                desktop.onStateChanged = function (xdesktop, state) {
+                    if (origOnStateChanged) { origOnStateChanged(xdesktop, state); }
+                    if ((state == 3) && (xdesktop === desktop)) {
+                        if (!desktop._quickStartWantsVideo && desktop.m && desktop.m.SendPause) { desktop.m.SendPause(); }
+                        if (desktop._quickStart == 'audio') { deskAudioToggle(); }
+                        else if (desktop._quickStart == 'mic') { deskMicToggle(); }
+                        desktop._quickStart = null;
+                    }
+                };
+            } else if (desktop.State == 3) {
+                if (kind == 'audio') { deskAudioToggle(); }
+                else if (kind == 'mic') { deskMicToggle(); }
+            }
+            // else: already connecting, ignore the extra click
         }
 
         function deviceToastFunction() {
@@ -20334,6 +20382,16 @@
             // Edit this line when adding a new screen
             for (var i = 0; i < 61; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
+
+            // If a connection was started via the Audio/Mic quick-toggle
+            // buttons (video paused, since nobody was looking), opening the
+            // actual Desktop panel now means video is wanted. One-way: once
+            // resumed for a session, it stays resumed even if the user tabs
+            // away again -- see devQuickToggle().
+            if ((x == 11) && (desktop != null) && (desktop.State == 3) && (desktop.m) && (desktop._quickStartWantsVideo === false)) {
+                desktop.m.SendUnPause();
+                desktop._quickStartWantsVideo = true;
+            }
 
             // Get out of fullscreen if needed
             if (fullscreen) { deskToggleFull(); }

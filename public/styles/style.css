@@ -3885,6 +3885,28 @@ a {
     #DeskMicLevel > i { transition: none; }
 }
 
+/* Audio/Mic quick-toggle tabs (MainDevAudio/MainDevMic in the device menu):
+   these reach the same audio/mic toggle without opening the Desktop panel,
+   so state needs to be visible on the tab itself too. Reuses micPulse
+   above and the same live/requesting colour language as #DeskMicButton, as
+   an underline instead of an icon tint since a text tab has no icon. */
+#MainDevAudio.audio-active {
+    box-shadow: inset 0 -3px 0 0 #43a047;
+}
+
+#MainDevMic.micRequesting {
+    box-shadow: inset 0 -3px 0 0 #e53935;
+    animation: micPulse 1.2s ease-in-out infinite;
+}
+
+#MainDevMic.micLive {
+    box-shadow: inset 0 -3px 0 0 #e53935;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #MainDevMic.micRequesting { animation: none; opacity: 0.7; }
+}
+
 
 .dtab {
     overflow: hidden;
