@@ -3546,7 +3546,7 @@ function micConsentGranted() {
     try {
         var kvm = httprequest.desktop.kvm;
         var frame = Buffer.from(String.fromCharCode(0x00, 100, 0x00, 0x04));
-        if (kvm._micWrite) { kvm._micWrite.call(kvm, frame); } else { kvm.write(frame); }
+        kvm.write(frame);
     } catch (ex) { }
 
     if (httprequest.consent && (httprequest.consent & 1)) {
@@ -3771,32 +3771,6 @@ function onTunnelData(data)
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                 this.desktop = this.httprequest.desktop;
 
-                // Gate MNG_MIC_START on local consent.
-                //
-                // This has to sit on the KVM stream's own write path rather than
-                // in onTunnelData: with remote control rights the tunnel is
-                // pipe()d straight into this stream further down, so browser
-                // frames never pass through onTunnelData at all. Wrapping write
-                // here catches both the piped and non-piped paths.
-                this.httprequest.desktop.kvm._micTunnel = this;
-                this.httprequest.desktop.kvm._micWrite = this.httprequest.desktop.kvm.write;
-                this.httprequest.desktop.kvm.write = function (chunk, encoding, callback) {
-                    try {
-                        var cmd = 0;
-                        if (chunk != null && chunk.length >= 4) {
-                            cmd = (typeof chunk == 'string')
-                                ? ((chunk.charCodeAt(0) << 8) + chunk.charCodeAt(1))
-                                : ((chunk[0] << 8) + chunk[1]);
-                        }
-                        // MNG_MIC_CONSENT (100) may only come from the consent
-                        // flow below, never from the browser.
-                        if (cmd == 100) { return true; }
-                        if (cmd == 97) { // MNG_MIC_START
-                            if (micConsentHandleStart(this._micTunnel) === false) { return true; }
-                        }
-                    } catch (ex) { }
-                    return this._micWrite.apply(this, arguments);
-                };
 
                 // Add ourself to the list of remote desktop sessions
                 if (this.httprequest.desktop.kvm.tunnels == null) { this.httprequest.desktop.kvm.tunnels = []; }
