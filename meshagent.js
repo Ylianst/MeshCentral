@@ -1368,7 +1368,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'pong': { break; }
                 case 'diagnostic':
                     {
-                        if (typeof command.value == 'object') {
+                        if ((command.value != null) && (typeof command.value == 'object')) {
                             switch (command.value.command) {
                                 case 'register': {
                                     // Only main agent can do this
