@@ -2979,6 +2979,16 @@ function tunnel_kvm_end()
     if (this.httprequest != null) {
         this.httprequest.micConsentGranted = false;
         this.httprequest.micConsentPending = false;
+        // Close any prompt still on screen: the session it belonged to is gone.
+        try {
+            var micPr = this.httprequest._micConsentPromise;
+            if (micPr != null) {
+                this.httprequest._micConsentCancelled = true;
+                if (typeof micPr.close == 'function') { micPr.close(); }
+                else if ((micPr.__childPromise != null) && (typeof micPr.__childPromise.close == 'function')) { micPr.__childPromise.close(); }
+            }
+        } catch (ex) { }
+        this.httprequest._micConsentPromise = null;
     }
 
     // Only clear the "current session" pointer if this is the tunnel it was
@@ -3563,8 +3573,39 @@ function micConsentHandleStart(tunnel) {
     }
 
     pr.tunnel = tunnel;
+    // Keep the prompt so it can be taken down if the operator gives up before
+    // the local user answers -- see onMicConsentCancelled().
+    httprequest._micConsentPromise = pr;
     pr.then(micConsentGranted, micConsentDenied);
     return false;   // hold this frame; the operator retries once granted
+}
+
+// Called from native code (via agentcore.c's MNG_MIC_CONSENT_CANCEL
+// interception) when the operator stopped asking before the local user
+// answered -- clicking the microphone button again to cancel, or by mistake.
+// Closes the dialog rather than leaving the user to answer a request that no
+// longer exists. Closing rejects the promise, so micConsentDenied() runs and
+// clears the pending state as it would for a refusal.
+function onMicConsentCancelled() {
+    if ((_activeDesktopTunnel == null) || (_activeDesktopTunnel.httprequest == null)) { return; }
+    var httprequest = _activeDesktopTunnel.httprequest;
+    if (httprequest.micConsentPending !== true) { return; }
+
+    var pr = httprequest._micConsentPromise;
+    httprequest._micConsentPromise = null;
+    httprequest.micConsentPending = false;
+    // Closing rejects the promise, so micConsentDenied() runs next; this tells
+    // it the prompt was withdrawn rather than refused.
+    httprequest._micConsentCancelled = true;
+
+    // message-box exposes close() directly; the Windows win-userconsent path
+    // hangs it off __childPromise, matching kvm_tunnel_consentpromise_closehandler.
+    try {
+        if (pr != null) {
+            if (typeof pr.close == 'function') { pr.close(); }
+            else if ((pr.__childPromise != null) && (typeof pr.__childPromise.close == 'function')) { pr.__childPromise.close(); }
+        }
+    } catch (ex) { }
 }
 
 function micConsentGranted() {
@@ -3574,6 +3615,7 @@ function micConsentGranted() {
 
     httprequest.micConsentPending = false;
     httprequest.micConsentGranted = true;
+    httprequest._micConsentPromise = null;
 
     MeshServerLogEx(30, null, "Local user granted microphone access (" + httprequest.remoteaddr + ")", httprequest);
     try { tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 })); } catch (ex) { }
@@ -3606,6 +3648,15 @@ function micConsentDenied(e) {
 
     httprequest.micConsentPending = false;
     httprequest.micConsentGranted = false;
+    httprequest._micConsentPromise = null;
+
+    // The operator withdrew the request themselves, so the prompt was closed
+    // from this side rather than answered. Nothing was denied and nobody is
+    // waiting to hear about it; reporting a refusal here would be wrong.
+    if (httprequest._micConsentCancelled === true) {
+        httprequest._micConsentCancelled = false;
+        return;
+    }
 
     MeshServerLogEx(34, null, "Local user denied microphone access (" + httprequest.remoteaddr + ")", httprequest);
 
