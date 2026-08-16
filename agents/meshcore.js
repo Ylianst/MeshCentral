@@ -3464,40 +3464,6 @@ function registry_consentpromise_rejected(e)
 //
 // Returns false when the frame must not be forwarded (prompt pending, or
 // denied). Returns true only once the local user has agreed.
-// Writable stand-in placed between the browser tunnel and the native KVM
-// stream. Its only job is to hold MNG_MIC_START until the local user has
-// agreed, then forward everything unchanged.
-//
-// The interception cannot live on the KVM stream itself: that object is
-// created in native code and exposes write as a readonly property, so
-// assigning a wrapper over it silently does nothing. It cannot live in
-// onTunnelData either, because a tunnel with remote control rights is piped
-// directly into the KVM stream and never passes through that function.
-function micCreateConsentRelay(tunnel) {
-    return {
-        write: function (chunk) {
-            try {
-                var cmd = 0;
-                if (chunk != null && chunk.length >= 4) {
-                    cmd = (typeof chunk == 'string')
-                        ? ((chunk.charCodeAt(0) << 8) + chunk.charCodeAt(1))
-                        : ((chunk[0] << 8) + chunk[1]);
-                }
-                // MNG_MIC_CONSENT (100) is the agent telling its own native
-                // layer that the user agreed. A browser must never be able to
-                // send it, so drop it if it arrives from the tunnel.
-                if (cmd == 100) { return true; }
-                if (cmd == 97) { // MNG_MIC_START
-                    if (micConsentHandleStart(tunnel) === false) { return true; }
-                }
-            } catch (ex) { }
-            try { tunnel.httprequest.desktop.kvm.write(chunk); } catch (ex) { }
-            return true;
-        },
-        end: function () { }
-    };
-}
-
 function micConsentHandleStart(tunnel) {
     var httprequest = tunnel.httprequest;
 
@@ -3575,9 +3541,13 @@ function micConsentGranted() {
 
     // Tell the native layer that consent is granted, then start capture. The
     // browser learns the outcome from the MNG_MIC_CAPS that follows.
-    // Write straight to the KVM stream, bypassing the relay that blocks this
-    // command when it comes from a browser.
-    try { httprequest.desktop.kvm.write(Buffer.from(String.fromCharCode(0x00, 100, 0x00, 0x04))); } catch (ex) { }
+    // Send MNG_MIC_CONSENT past the wrapper installed on the KVM stream, which
+    // exists to block exactly this command when it arrives from a browser.
+    try {
+        var kvm = httprequest.desktop.kvm;
+        var frame = Buffer.from(String.fromCharCode(0x00, 100, 0x00, 0x04));
+        if (kvm._micWrite) { kvm._micWrite.call(kvm, frame); } else { kvm.write(frame); }
+    } catch (ex) { }
 
     if (httprequest.consent && (httprequest.consent & 1)) {
         // Notification is enabled for this domain: say plainly that the
@@ -3801,6 +3771,32 @@ function onTunnelData(data)
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                 this.desktop = this.httprequest.desktop;
 
+                // Gate MNG_MIC_START on local consent.
+                //
+                // This has to sit on the KVM stream's own write path rather than
+                // in onTunnelData: with remote control rights the tunnel is
+                // pipe()d straight into this stream further down, so browser
+                // frames never pass through onTunnelData at all. Wrapping write
+                // here catches both the piped and non-piped paths.
+                this.httprequest.desktop.kvm._micTunnel = this;
+                this.httprequest.desktop.kvm._micWrite = this.httprequest.desktop.kvm.write;
+                this.httprequest.desktop.kvm.write = function (chunk, encoding, callback) {
+                    try {
+                        var cmd = 0;
+                        if (chunk != null && chunk.length >= 4) {
+                            cmd = (typeof chunk == 'string')
+                                ? ((chunk.charCodeAt(0) << 8) + chunk.charCodeAt(1))
+                                : ((chunk[0] << 8) + chunk[1]);
+                        }
+                        // MNG_MIC_CONSENT (100) may only come from the consent
+                        // flow below, never from the browser.
+                        if (cmd == 100) { return true; }
+                        if (cmd == 97) { // MNG_MIC_START
+                            if (micConsentHandleStart(this._micTunnel) === false) { return true; }
+                        }
+                    } catch (ex) { }
+                    return this._micWrite.apply(this, arguments);
+                };
 
                 // Add ourself to the list of remote desktop sessions
                 if (this.httprequest.desktop.kvm.tunnels == null) { this.httprequest.desktop.kvm.tunnels = []; }
@@ -3843,12 +3839,7 @@ function onTunnelData(data)
                 if ((this.httprequest.desktopviewonly != true) && ((this.httprequest.rights == 0xFFFFFFFF) || (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((this.httprequest.rights & MESHRIGHT_REMOTEVIEW) == 0))))
                 {
                     // If we have remote control rights, pipe the KVM input
-                    // Pipe through a relay rather than straight into the KVM
-                    // stream, so microphone frames can be inspected on the way
-                    // past. The KVM stream is native and exposes write as a
-                    // readonly property, so it cannot be wrapped in place;
-                    // assigning over it fails silently.
-                    this.pipe(micCreateConsentRelay(this), { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
+                    this.pipe(this.httprequest.desktop.kvm, { dataTypeSkip: 1, end: false }); // 0 = Binary, 1 = Text. Pipe the Browser --> KVM input.
                 }
                 else
                 {
