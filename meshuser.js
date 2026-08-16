@@ -702,6 +702,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function processWebSocketData(msg) {
         var command, i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
         try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
+        if (command == null) return;
         if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
         var commandHandler = serverCommands[command.action];
