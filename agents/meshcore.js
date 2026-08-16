@@ -2981,6 +2981,11 @@ function tunnel_kvm_end()
         this.httprequest.micConsentPending = false;
     }
 
+    // Only clear the "current session" pointer if this is the tunnel it was
+    // pointing at -- a second viewer disconnecting must not blank it out
+    // from under a first viewer whose session is still open.
+    if (_activeDesktopTunnel === this) { _activeDesktopTunnel = null; }
+
     --this.desktop.kvm.connectionCount;
 
     // Remove ourself from the list of remote desktop session
@@ -3456,14 +3461,43 @@ function registry_consentpromise_rejected(e)
 
 // Microphone consent.
 //
-// Unlike desktop/terminal/file access, which are requested once when the
-// session opens, the operator can ask to listen at any point during a session.
-// So consent is requested at the moment MNG_MIC_START arrives and is scoped to
-// that session: closing the tunnel or stopping capture revokes it, and a later
-// start prompts again.
+// Unlike desktop/terminal/file access, which are gated by intercepting the
+// browser's own bytes before they reach a native stream, the microphone is
+// multiplexed onto the same KVM tunnel as desktop video, so nothing here can
+// safely inspect or hold that stream (that was tried twice and broke the
+// desktop stream both times). Instead, native code (kvm_mic_start(), in
+// linux_mic.c / windows_mic.c) is the one place that already sees every
+// MNG_MIC_START and already knows the true consent state, so it decides when
+// a prompt is needed and tells JS via MNG_MIC_CONSENT_NEEDED -- an internal,
+// browser-invisible signal that agentcore.c turns into a call to
+// onMicConsentNeeded() below. That happens twice per session: once
+// speculatively when the KVM slave starts (so the operator does not have to
+// click first to find out a prompt is coming), and again for every
+// MNG_MIC_START a browser sends while consent is still missing.
 //
-// Returns false when the frame must not be forwarded (prompt pending, or
-// denied). Returns true only once the local user has agreed.
+// _activeDesktopTunnel (set where the desktop session is created, cleared in
+// tunnel_kvm_end()) is how onMicConsentNeeded() finds the session to prompt
+// for, since the native call that triggers it carries no JS reference.
+//
+// Consent itself is scoped to the session: closing the tunnel or stopping
+// capture revokes it, and a later start prompts again.
+var _activeDesktopTunnel = null;
+
+// Called from native code (via agentcore.c's MNG_MIC_CONSENT_NEEDED
+// interception) when a microphone start was attempted -- by a browser click,
+// or speculatively at session open -- but local consent has not been granted.
+// There is no frame to hold here: native never opens the microphone without
+// consent regardless of this call, so this only needs to (continue to) show
+// the same prompt a click would.
+function onMicConsentNeeded() {
+    if (_activeDesktopTunnel == null || _activeDesktopTunnel.httprequest == null) { return; }
+    micConsentHandleStart(_activeDesktopTunnel);
+}
+
+// Shows the microphone consent prompt, unless it is already granted, already
+// pending, or policy has turned it off. The boolean return is a leftover from
+// an earlier design that gated a live frame on it; onMicConsentNeeded(), its
+// only caller, has no frame to gate and ignores it.
 function micConsentHandleStart(tunnel) {
     var httprequest = tunnel.httprequest;
 
@@ -3541,8 +3575,6 @@ function micConsentGranted() {
 
     // Tell the native layer that consent is granted, then start capture. The
     // browser learns the outcome from the MNG_MIC_CAPS that follows.
-    // Send MNG_MIC_CONSENT past the wrapper installed on the KVM stream, which
-    // exists to block exactly this command when it arrives from a browser.
     try {
         var kvm = httprequest.desktop.kvm;
         var frame = Buffer.from(String.fromCharCode(0x00, 100, 0x00, 0x04));
@@ -3771,6 +3803,12 @@ function onTunnelData(data)
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                 this.desktop = this.httprequest.desktop;
 
+                // Native code has no JS session object to hand back when it
+                // signals onMicConsentNeeded(), so track the session it means
+                // here. Set synchronously in the same tick getRemoteDesktopStream
+                // starts the KVM slave, so it is always in place before that
+                // process could possibly get far enough to call back.
+                _activeDesktopTunnel = this;
 
                 // Add ourself to the list of remote desktop sessions
                 if (this.httprequest.desktop.kvm.tunnels == null) { this.httprequest.desktop.kvm.tunnels = []; }
