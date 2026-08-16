@@ -779,7 +779,7 @@
         check_webp_feature('lossy', function (f, x) { webpSupport = x; });
 
         function startup() {
-            QH('p10deviceName', nodeName);
+            QH('p10deviceName', EscapeHtml(nodeName));
             if ((features & 32) == 0) {
                 // Guard against other site's top frames (web bugs).
                 var loc = null;
