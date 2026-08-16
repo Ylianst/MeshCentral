@@ -4026,7 +4026,16 @@ function onTunnelData(data)
                 // Everything else, including MNG_MIC_DATA, passes through: the
                 // native layer independently discards audio while consent is
                 // absent, so a client that skips this handshake gains nothing.
-                var kvmCmd = (data.length >= 4) ? ((data[0] << 8) + data[1]) : 0;
+                // The tunnel hands this layer either a Buffer or a string
+                // depending on the transport, so read the command id in a way
+                // that works for both. Indexing a string yields characters,
+                // which would silently never match a numeric comparison.
+                var kvmCmd = 0;
+                if (data.length >= 4) {
+                    kvmCmd = (typeof data == 'string')
+                        ? ((data.charCodeAt(0) << 8) + data.charCodeAt(1))
+                        : ((data[0] << 8) + data[1]);
+                }
                 // MNG_MIC_CONSENT (100) may only originate from the consent
                 // flow below. Drop it if it arrives over the tunnel, so a
                 // client cannot grant itself permission to listen.
