@@ -1473,7 +1473,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'sessions': {
                     // This is a list of sessions provided by the agent
                     if (obj.sessions == null) { obj.sessions = {}; }
-                    if (typeof command.value != null) {
+                    if ((command.value != null) && (typeof command.value == 'object')) {
                         if (command.type == 'kvm') { obj.sessions.kvm = command.value; }
                         else if (command.type == 'terminal') { obj.sessions.terminal = command.value; }
                         else if (command.type == 'files') { obj.sessions.files = command.value; }
