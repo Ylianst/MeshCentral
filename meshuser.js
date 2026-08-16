@@ -2417,7 +2417,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (mesh.invite != null) { delete mesh.invite; }
                             if (change != '') { change += ' and invite code changed'; } else { change += 'Device group "' + mesh.name + '" invite code changed'; }
                             changesids.push(6);
-                        } else if ((typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
+                        } else if ((command.invite != null) && (typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
                             // Set invite codes
                             if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
                                 // Check if an invite code is not already in use.
