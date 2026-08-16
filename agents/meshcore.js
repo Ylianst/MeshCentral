@@ -316,8 +316,8 @@ function getCoreTranslation() {
     setDefaultCoreTranslation(ret, 'fileNotify', '{0} started a remote file session.');
     setDefaultCoreTranslation(ret, 'registryNotify', '{0} started a remote registry session.');
     setDefaultCoreTranslation(ret, 'privacyBar', 'Sharing desktop with: {0}');
-    setDefaultCoreTranslation(ret, 'micConsent', '{0} would like to speak to you through this computer\'s speakers. Allow?');
-    setDefaultCoreTranslation(ret, 'micNotify', '{0} can now be heard through this computer\'s speakers.');
+    setDefaultCoreTranslation(ret, 'micConsent', '{0} would like to listen through this computer\'s microphone. Allow?');
+    setDefaultCoreTranslation(ret, 'micNotify', '{0} is now listening through this computer\'s microphone.');
 
     return (ret);
 }
@@ -3454,13 +3454,13 @@ function registry_consentpromise_rejected(e)
     }
 }
 
-// Microphone playback consent.
+// Microphone consent.
 //
 // Unlike desktop/terminal/file access, which are requested once when the
-// session opens, the operator can enable the microphone at any point during a
-// session. So consent is asked for at the moment MNG_MIC_START arrives and is
-// scoped to that session: closing the tunnel or stopping playback revokes it,
-// and a later start prompts again.
+// session opens, the operator can ask to listen at any point during a session.
+// So consent is requested at the moment MNG_MIC_START arrives and is scoped to
+// that session: closing the tunnel or stopping capture revokes it, and a later
+// start prompts again.
 //
 // Returns false when the frame must not be forwarded (prompt pending, or
 // denied). Returns true only once the local user has agreed.
@@ -3475,12 +3475,12 @@ function micConsentHandleStart(tunnel) {
     if (httprequest.micConsentPending === true) { return false; }
 
     // Consent for the microphone is required unless the server cleared bit 128
-    // (userConsentFlags.micprompt). It defaults to on: making a remote person
-    // audible in someone's room should never be silent.
+    // (userConsentFlags.micprompt). It defaults to on: listening to someone's
+    // room should never happen without them knowing.
     var consentRequired = ((httprequest.consent == null) || ((httprequest.consent & 128) != 0));
     if (!consentRequired) {
         httprequest.micConsentGranted = true;
-        MeshServerLogEx(30, null, "Starting microphone playback, consent not required by policy (" + httprequest.remoteaddr + ")", httprequest);
+        MeshServerLogEx(30, null, "Starting microphone capture, consent not required by policy (" + httprequest.remoteaddr + ")", httprequest);
         return true;
     }
 
@@ -3539,13 +3539,13 @@ function micConsentGranted() {
     MeshServerLogEx(30, null, "Local user granted microphone access (" + httprequest.remoteaddr + ")", httprequest);
     try { tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 })); } catch (ex) { }
 
-    // Tell the native layer to accept audio, then start playback. The browser
-    // learns the outcome from the MNG_MIC_CAPS that follows.
-    try { httprequest.desktop.write(Buffer.from(String.fromCharCode(0x00, 97, 0x00, 0x04))); } catch (ex) { }
+    // Tell the native layer that consent is granted, then start capture. The
+    // browser learns the outcome from the MNG_MIC_CAPS that follows.
+    try { httprequest.desktop.write(Buffer.from(String.fromCharCode(0x00, 100, 0x00, 0x04))); } catch (ex) { }
 
     if (httprequest.consent && (httprequest.consent & 1)) {
         // Notification is enabled for this domain: say plainly that the
-        // operator can now be heard.
+        // microphone is now open.
         var notifyMessage = currentTranslation['micNotify'].replace(/\{0\}/g, httprequest.realname);
         var notifyTitle = 'MeshCentral';
         if (httprequest.soptions != null) {
@@ -3571,7 +3571,7 @@ function micConsentDenied(e) {
     // continues; only the microphone is refused.
     try {
         tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'micconsent', granted: false }));
-        tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Microphone access was denied by the local user.", msgid: 2 }));
+        tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "The user declined the microphone request.", msgid: 2 }));
     } catch (ex) { }
 }
 
@@ -4026,7 +4026,12 @@ function onTunnelData(data)
                 // Everything else, including MNG_MIC_DATA, passes through: the
                 // native layer independently discards audio while consent is
                 // absent, so a client that skips this handshake gains nothing.
-                if ((data.length >= 4) && (((data[0] << 8) + data[1]) == 97)) {
+                var kvmCmd = (data.length >= 4) ? ((data[0] << 8) + data[1]) : 0;
+                // MNG_MIC_CONSENT (100) may only originate from the consent
+                // flow below. Drop it if it arrives over the tunnel, so a
+                // client cannot grant itself permission to listen.
+                if (kvmCmd == 100) { return; }
+                if (kvmCmd == 97) {
                     if (micConsentHandleStart(this) === false) { return; }
                 }
                 this.httprequest.desktop.write(data);

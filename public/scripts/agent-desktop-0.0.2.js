@@ -323,13 +323,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 if (++_audioDataCount <= 5) console.log('MeshAudio: DATA frame #' + _audioDataCount);
                 if (obj.onAudioData) { obj.onAudioData(view); }
                 break;
-            case 96: // MNG_MIC_CAPS — microphone playback capability + consent
+            case 99: // MNG_MIC_DATA — Opus microphone audio from the device
+                if (obj.onMicData) { obj.onMicData(view); }
+                break;
+            case 96: // MNG_MIC_CAPS — microphone availability + consent state
                 if (cmdsize >= 9) {
                     var micCaps = {
                         sampleRate: view[4] === 0 ? 48000 : 16000,
                         channels: view[5],
                         bitrateKbps: view[6],
-                        playbackAvailable: !!(view[7] & 0x01),
+                        captureAvailable: !!(view[7] & 0x01),
                         consentGranted: !!(view[7] & 0x02),
                         platform: view[8]
                     };
@@ -670,20 +673,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.SendAudioStart = function () { obj.send(String.fromCharCode(0x00, 0x5C, 0x00, 0x04)); } // MNG_AUDIO_START (92 = 0x5C)
     obj.SendAudioStop  = function () { obj.send(String.fromCharCode(0x00, 0x5D, 0x00, 0x04)); } // MNG_AUDIO_STOP  (93 = 0x5D)
     obj.SendAudioQuery = function () { obj.send(String.fromCharCode(0x00, 0x5E, 0x00, 0x04)); } // MNG_AUDIO_QUERY (94 = 0x5E) — pull-handshake: request CAPS re-send
-    // Operator microphone (browser -> device). START only asks; the agent
-    // prompts the device user and stays silent until they accept.
+    // Device microphone (device -> browser). START only asks; the agent
+    // prompts its local user and captures nothing until they accept.
     obj.SendMicQuery = function () { obj.send(String.fromCharCode(0x00, 0x5F, 0x00, 0x04)); } // MNG_MIC_QUERY (95 = 0x5F)
     obj.SendMicStart = function () { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); } // MNG_MIC_START (97 = 0x61)
     obj.SendMicStop  = function () { obj.send(String.fromCharCode(0x00, 0x62, 0x00, 0x04)); } // MNG_MIC_STOP  (98 = 0x62)
-    obj.SendMicData  = function (frame) {                                                     // MNG_MIC_DATA  (99 = 0x63)
-        // The frame already carries its own header, built by agent-mic. Convert
-        // to a binary string because that is what obj.send expects.
-        var str = '', chunk = 32768;
-        for (var i = 0; i < frame.length; i += chunk) {
-            str += String.fromCharCode.apply(null, frame.subarray(i, i + chunk));
-        }
-        obj.send(str);
-    }
+
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
 

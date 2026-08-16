@@ -1,24 +1,27 @@
 /**
- * @description MeshCentral operator microphone.
+ * @description MeshCentral remote microphone listener.
  *
- *   Captures the administrator's microphone, encodes it as Opus with the
- *   WebCodecs AudioEncoder and streams it to the managed device, where it is
- *   played through that device's speakers. This is the reverse direction of
- *   agent-audio-0.1.0.js.
+ *   Plays the managed device's microphone in the operator's browser, so an
+ *   administrator can hear the person at that machine and any noise worth
+ *   diagnosing, such as fans or clicking drives.
  *
- *   Because this makes the operator audible in someone else's room, the agent
- *   asks the device user for permission before any audio is played, and drops
- *   every frame until they agree. Nothing here can bypass that: this module
- *   only requests, it never grants.
+ *   This never touches the operator's own microphone: audio travels one way,
+ *   device -> browser, exactly like the speaker feature in
+ *   agent-audio-0.1.0.js. The only difference is which source the agent
+ *   captures.
  *
- *   Requires: Chrome 94+, Edge 94+, Firefox 130+ (WebCodecs AudioEncoder).
- *   The page must be served over HTTPS for getUserMedia to be available.
+ *   The device's user is asked before their microphone is opened, and the
+ *   agent refuses to capture until they accept. This module only requests;
+ *   it can never grant.
+ *
+ *   Requires: Chrome 94+, Edge 94+, Firefox 130+ (WebCodecs AudioDecoder).
  *
  * @version v0.1.0
  *
  * Usage:
  *   var deskMic = CreateAgentMic(desktop);
  *   desktop.m.onMicCaps = function (caps) { deskMic.onCaps(caps); };
+ *   desktop.m.onMicData = function (view) { deskMic.onData(view); };
  *   deskMic.toggle();
  */
 
@@ -27,25 +30,23 @@
 var CreateAgentMic = function (desktop) {
     var obj = {};
 
-    // 'unavailable'  device cannot play audio, or the browser lacks support
-    // 'idle'         ready, not transmitting
+    // 'unavailable'  device has no microphone, or the browser cannot decode
+    // 'idle'         ready, not listening
     // 'requesting'   waiting for the device user to accept or refuse
-    // 'live'         transmitting
+    // 'live'         listening
     obj.state = 'unavailable';
     obj.caps = null;
-    obj.level = 0;              // 0..1 input level, for the meter
+    obj.level = 0;              // 0..1 output level, for the meter
 
     obj.onStateChanged = null;  // function (state, detail)
     obj.onLevel = null;         // function (level)
 
     var SAMPLE_RATE = 48000;
-    var FRAME_MS = 20;
-    var FRAME_SAMPLES = SAMPLE_RATE * FRAME_MS / 1000;   // 960
-    var MNG_MIC_QUERY = 95, MNG_MIC_START = 97, MNG_MIC_STOP = 98, MNG_MIC_DATA = 99;
+    var JITTER_MIN = 2, JITTER_MAX = 8;
 
-    var stream = null, actx = null, source = null, worklet = null;
-    var encoder = null, seq = 0, pending = [];
-    var levelTimer = null, consentTimer = null;
+    var actx = null, worklet = null, decoder = null;
+    var jitter = [], nextSeq = -1, jitterDepth = 3, gapCount = 0;
+    var gapTimer = null, consentTimer = null, levelTimer = null;
 
     function setState(state, detail) {
         if (obj.state === state) { return; }
@@ -53,99 +54,71 @@ var CreateAgentMic = function (desktop) {
         if (obj.onStateChanged) { try { obj.onStateChanged(state, detail); } catch (ex) { console.log(ex); } }
     }
 
-    function supported() {
-        return (typeof AudioEncoder !== 'undefined') &&
-               (navigator.mediaDevices != null) &&
-               (typeof navigator.mediaDevices.getUserMedia === 'function');
-    }
+    function supported() { return (typeof AudioDecoder !== 'undefined'); }
 
     // ---------------------------------------------------------------------
-    // MNG_MIC_CAPS (96) from the agent. Carries both whether the device can
-    // play audio at all and whether the user has currently granted consent.
+    // MNG_MIC_CAPS (96): whether the device has a usable microphone, and
+    // whether its user has currently granted permission.
     // ---------------------------------------------------------------------
     obj.onCaps = function (caps) {
         obj.caps = caps;
 
-        if (!caps.playbackAvailable || !supported()) {
+        if (!caps.captureAvailable || !supported()) {
             teardown();
             setState('unavailable');
             return;
         }
 
         if (caps.consentGranted) {
-            // The user accepted. Stop waiting and begin sending.
             if (consentTimer) { clearTimeout(consentTimer); consentTimer = null; }
-            if (obj.state === 'requesting') { beginCapture(); }
+            // The user accepted, so audio is about to arrive: open the player.
+            if (obj.state !== 'live') { beginPlayback(); }
         } else if (obj.state === 'live') {
-            // Consent was withdrawn mid-session, or the agent stopped playback.
-            stopCapture();
+            // Withdrawn mid-session, or the agent stopped capturing.
+            teardown();
             setState('idle', 'Microphone access ended.');
         } else if (obj.state !== 'requesting') {
             setState('idle');
         }
     };
 
-    // Called when the agent reports the user refused.
+    // The agent reports an explicit refusal.
     obj.onConsentDenied = function () {
         if (consentTimer) { clearTimeout(consentTimer); consentTimer = null; }
-        stopCapture();
-        setState('idle', 'The user declined microphone access.');
+        teardown();
+        setState('idle', 'The user declined the microphone request.');
     };
 
-    // ---------------------------------------------------------------------
-    // Ask the device for playback capability and current consent state.
-    // ---------------------------------------------------------------------
     obj.query = function () {
         if (desktop && desktop.m && desktop.m.SendMicQuery) { desktop.m.SendMicQuery(); }
     };
 
     // ---------------------------------------------------------------------
-    // Request permission, then capture. Two permissions are involved: the
-    // operator's own browser prompt (getUserMedia) and the device user's
-    // prompt on the far end. Ask for ours first, so we do not interrupt
-    // someone else's work only to discover we have no microphone.
+    // Ask the device user for permission. Nothing is captured or played until
+    // the agent confirms they accepted.
     // ---------------------------------------------------------------------
     obj.start = function () {
         if (obj.state === 'live' || obj.state === 'requesting') { return; }
-        if (!supported()) { setState('unavailable', 'This browser cannot encode audio.'); return; }
-        if (!obj.caps || !obj.caps.playbackAvailable) { setState('unavailable', 'This device cannot play audio.'); return; }
+        if (!supported()) { setState('unavailable', 'This browser cannot decode audio.'); return; }
+        if (!obj.caps || !obj.caps.captureAvailable) { setState('unavailable', 'This device has no microphone.'); return; }
 
-        setState('requesting', 'Waiting for the user to allow microphone access...');
+        setState('requesting', 'Asking the user for permission to use their microphone...');
+        if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(); }
 
-        navigator.mediaDevices.getUserMedia({
-            audio: {
-                channelCount: 1,
-                sampleRate: SAMPLE_RATE,
-                echoCancellation: true,
-                noiseSuppression: true,
-                autoGainControl: true
+        // An unattended machine would otherwise leave the operator waiting
+        // indefinitely with no indication of what is happening.
+        consentTimer = setTimeout(function () {
+            consentTimer = null;
+            if (obj.state === 'requesting') {
+                obj.stop();
+                setState('idle', 'No response from the user.');
             }
-        }).then(function (s) {
-            stream = s;
-            // Ask the device user. Capture only starts when the agent replies
-            // with consentGranted, so nothing is transmitted before then.
-            if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(); }
-
-            // Do not wait forever: an unattended device would otherwise leave
-            // the operator staring at a pending state indefinitely.
-            consentTimer = setTimeout(function () {
-                consentTimer = null;
-                if (obj.state === 'requesting') {
-                    stopCapture();
-                    setState('idle', 'No response from the user.');
-                }
-            }, 65000);
-        }).catch(function (err) {
-            // The operator's own browser or OS refused.
-            setState('idle', (err && err.name === 'NotAllowedError')
-                ? 'Your browser blocked microphone access.'
-                : 'No microphone is available.');
-        });
+        }, 65000);
     };
 
     obj.stop = function () {
         if (desktop && desktop.m && desktop.m.SendMicStop) { desktop.m.SendMicStop(); }
-        stopCapture();
+        teardown();
         setState('idle');
     };
 
@@ -154,130 +127,137 @@ var CreateAgentMic = function (desktop) {
     };
 
     // ---------------------------------------------------------------------
-    // Capture pipeline: getUserMedia -> AudioWorklet -> Opus -> MNG_MIC_DATA
+    // MNG_MIC_DATA (99): [type 2][len 2][seq 2][flags 1][opus...]
+    // Reordered and late packets are common on a relay, so buffer briefly and
+    // play in sequence rather than decoding whatever arrives first.
     // ---------------------------------------------------------------------
-    function beginCapture() {
-        if (stream == null) { return; }
-        if (actx != null) { return; }   // already running
+    obj.onData = function (view) {
+        if (obj.state !== 'live') { return; }
+
+        var seq = (view[4] << 8) | view[5];
+        var opus = view.slice(7);
+
+        var inserted = false;
+        for (var i = 0; i < jitter.length; i++) {
+            if (seq < jitter[i].seq) { jitter.splice(i, 0, { seq: seq, opus: opus }); inserted = true; break; }
+        }
+        if (!inserted) { jitter.push({ seq: seq, opus: opus }); }
+
+        drain();
+    };
+
+    function drain() {
+        while (jitter.length > jitterDepth) {
+            var pkt = jitter.shift();
+            if (nextSeq >= 0 && pkt.seq !== (nextSeq & 0xFFFF)) { gapCount++; }
+            nextSeq = (pkt.seq + 1) & 0xFFFF;
+
+            if (decoder && decoder.state === 'configured') {
+                try {
+                    decoder.decode(new EncodedAudioChunk({
+                        type: 'key',
+                        timestamp: pkt.seq * 20000,   // 20 ms frames, in microseconds
+                        data: pkt.opus
+                    }));
+                } catch (ex) { /* a bad frame should not end the stream */ }
+            }
+        }
+    }
+
+    // Grow the buffer when packets are being lost, shrink it when the link is
+    // clean, so latency stays as low as the connection allows.
+    function startGapTimer() {
+        if (gapTimer) { return; }
+        gapTimer = setInterval(function () {
+            if (gapCount > 3) { jitterDepth = Math.min(jitterDepth + 1, JITTER_MAX); }
+            else if (gapCount === 0 && jitterDepth > JITTER_MIN) { jitterDepth--; }
+            gapCount = 0;
+        }, 5000);
+    }
+
+    function beginPlayback() {
+        if (actx != null) { return; }
 
         try {
             actx = new AudioContext({ sampleRate: SAMPLE_RATE });
         } catch (ex) {
-            stopCapture();
-            setState('idle', 'Could not open the audio pipeline.');
+            teardown();
+            setState('idle', 'Could not open audio playback.');
             return;
         }
 
-        actx.audioWorklet.addModule('scripts/agent-mic-worklet-0.1.0.js').then(function () {
-            if (stream == null) { return; }   // stopped while loading
+        actx.audioWorklet.addModule('scripts/agent-audio-worklet-0.1.0.js').then(function () {
+            if (actx == null) { return; }   // stopped while loading
 
-            source = actx.createMediaStreamSource(stream);
-            worklet = new AudioWorkletNode(actx, 'mesh-mic-processor');
+            worklet = new AudioWorkletNode(actx, 'mesh-audio-processor');
+            worklet.connect(actx.destination);
 
-            encoder = new AudioEncoder({
-                output: function (chunk) { sendChunk(chunk); },
-                error: function (err) {
-                    console.log('MeshMic: encoder error', err);
-                    obj.stop();
-                }
+            // Browsers start an AudioContext suspended unless it was created
+            // inside a user gesture; without this there would be silence.
+            actx.resume().catch(function () { });
+
+            decoder = new AudioDecoder({
+                output: function (audioData) {
+                    var pcm = new Float32Array(audioData.numberOfFrames);
+                    // Force f32-planar: some browsers decode to s16, which would
+                    // be misread as float and play as noise.
+                    audioData.copyTo(pcm, { planeIndex: 0, format: 'f32-planar' });
+                    audioData.close();
+
+                    // Peak level, so the operator can see the far end is live
+                    // even when nobody happens to be speaking.
+                    var peak = 0;
+                    for (var i = 0; i < pcm.length; i++) {
+                        var v = pcm[i] < 0 ? -pcm[i] : pcm[i];
+                        if (v > peak) { peak = v; }
+                    }
+                    obj.level = peak;
+
+                    worklet.port.postMessage(pcm, [pcm.buffer]);
+                },
+                error: function (err) { console.log('MeshMic: decode error', err); }
             });
-            encoder.configure({
+
+            decoder.configure({
                 codec: 'opus',
                 sampleRate: SAMPLE_RATE,
-                numberOfChannels: 1,
-                bitrate: 28000
+                numberOfChannels: (obj.caps && obj.caps.channels) ? obj.caps.channels : 1
             });
 
-            worklet.port.onmessage = function (event) {
-                if (obj.state !== 'live') { return; }
-                obj.level = event.data.level;
-                encodeFrame(event.data.pcm);   // Float32Array, FRAME_SAMPLES long
-            };
-
-            source.connect(worklet);
-            // Keep the worklet running without echoing the operator's own voice
-            // back to them: a zero-gain sink pulls the graph without output.
-            var sink = actx.createGain();
-            sink.gain.value = 0;
-            worklet.connect(sink);
-            sink.connect(actx.destination);
-
-            seq = 0;
-            setState('live', 'The user can hear you.');
+            jitter = [];
+            nextSeq = -1;
+            gapCount = 0;
+            startGapTimer();
             startLevelMeter();
+            setState('live', 'You can hear this device.');
         }).catch(function (ex) {
             console.log('MeshMic: worklet failed to load', ex);
-            stopCapture();
-            setState('idle', 'Could not start the microphone.');
+            teardown();
+            setState('idle', 'Could not start audio playback.');
         });
-    }
-
-    function encodeFrame(pcm) {
-        if (encoder == null || encoder.state !== 'configured') { return; }
-        try {
-            var data = new AudioData({
-                format: 'f32-planar',
-                sampleRate: SAMPLE_RATE,
-                numberOfFrames: pcm.length,
-                numberOfChannels: 1,
-                timestamp: (seq * FRAME_MS * 1000),
-                data: pcm
-            });
-            encoder.encode(data);
-            data.close();
-        } catch (ex) { /* a dropped frame is preferable to breaking the stream */ }
-    }
-
-    function sendChunk(chunk) {
-        if (obj.state !== 'live') { return; }
-        if (!desktop || !desktop.m || !desktop.m.SendMicData) { return; }
-
-        var payload = new Uint8Array(chunk.byteLength);
-        chunk.copyTo(payload);
-
-        // [type 2][total length 2][seq 2][flags 1][opus payload]
-        var total = 7 + payload.length;
-        var frame = new Uint8Array(total);
-        frame[0] = (MNG_MIC_DATA >> 8) & 0xFF;
-        frame[1] = MNG_MIC_DATA & 0xFF;
-        frame[2] = (total >> 8) & 0xFF;
-        frame[3] = total & 0xFF;
-        frame[4] = (seq >> 8) & 0xFF;
-        frame[5] = seq & 0xFF;
-        frame[6] = 0x00;
-        frame.set(payload, 7);
-        seq = (seq + 1) & 0xFFFF;
-
-        desktop.m.SendMicData(frame);
     }
 
     function startLevelMeter() {
         if (levelTimer) { return; }
         levelTimer = setInterval(function () {
             if (obj.onLevel) { try { obj.onLevel(obj.level); } catch (ex) { } }
+            // Decay between frames so the meter falls back to rest during
+            // silence instead of holding the last peak.
+            obj.level *= 0.6;
         }, 100);
     }
 
-    function stopCapture() {
+    function teardown() {
+        if (gapTimer) { clearInterval(gapTimer); gapTimer = null; }
         if (levelTimer) { clearInterval(levelTimer); levelTimer = null; }
         if (consentTimer) { clearTimeout(consentTimer); consentTimer = null; }
-        teardown();
+        if (decoder != null) { try { decoder.close(); } catch (ex) { } decoder = null; }
+        if (worklet != null) { try { worklet.disconnect(); } catch (ex) { } worklet = null; }
+        if (actx != null) { try { actx.close(); } catch (ex) { } actx = null; }
+        jitter = [];
+        nextSeq = -1;
         obj.level = 0;
         if (obj.onLevel) { try { obj.onLevel(0); } catch (ex) { } }
-    }
-
-    function teardown() {
-        if (encoder != null) { try { encoder.close(); } catch (ex) { } encoder = null; }
-        if (worklet != null) { try { worklet.disconnect(); } catch (ex) { } worklet = null; }
-        if (source != null) { try { source.disconnect(); } catch (ex) { } source = null; }
-        if (actx != null) { try { actx.close(); } catch (ex) { } actx = null; }
-        // Release the microphone so the browser's recording indicator clears;
-        // leaving it open would suggest we are still listening.
-        if (stream != null) {
-            try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (ex) { }
-            stream = null;
-        }
-        pending = [];
     }
 
     return obj;

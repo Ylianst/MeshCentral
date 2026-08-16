@@ -845,7 +845,7 @@
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
                             <span id=DeskGuestShareButton title="Share the device with a guest"><img class="desktopButtons" id=DeskGuestShareButtonImage src='images/icon-share2.png' onclick=showShareDevice() height=16 width=16 /></span>
                             <span id=DeskAudioButton title="Toggle remote audio streaming" style="display:none"><img class="desktopButtons" id=DeskAudioButtonImage src='images/icon-audio-off.png' onclick=deskAudioToggle() height=16 width=16 /></span>
-                            <span id=DeskMicButton title="Speak to the remote user" style="display:none"><img class="desktopButtons" id=DeskMicButtonImage src='images/icon-mic-off.png' onclick=deskMicToggle() height=16 width=16 /><span id=DeskMicLevel><i></i></span></span>
+                            <span id=DeskMicButton title="Listen to the device microphone" style="display:none"><img class="desktopButtons" id=DeskMicButtonImage src='images/icon-mic-off.png' onclick=deskMicToggle() height=16 width=16 /><span id=DeskMicLevel><i></i></span></span>
                         </div>
                         <div class="toright2"><span id=DeskMonitorSelectionSpan></span></div>
                         <div>
@@ -8737,11 +8737,11 @@
                 case 'live':
                     img.src = 'images/icon-mic-on.png';
                     btn.classList.add('micLive');
-                    btn.title = "You can be heard - click to stop";
+                    btn.title = "Listening - click to stop";
                     break;
                 default:
                     img.src = 'images/icon-mic-off.png';
-                    btn.title = "Speak to the remote user";
+                    btn.title = "Listen to the device microphone";
                     deskMicApplyLevel(0);
                     break;
             }
@@ -9813,6 +9813,7 @@
                         deskMic.onStateChanged = deskMicApplyState;
                         deskMic.onLevel = deskMicApplyLevel;
                         desktop.m.onMicCaps = function(caps) { deskMic.onCaps(caps); };
+                        desktop.m.onMicData = function(view) { deskMic.onData(view); };
                         desktop.onMicConsent = function(granted) { if (!granted) { deskMic.onConsentDenied(); } };
                     }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
