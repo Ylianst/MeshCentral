@@ -9151,7 +9151,7 @@
             var y = '<select id=p10newGroup style=width:236px>', count = 0, altGroups = [];
             for (var i in meshes) { var meshrights = GetMeshRights(i); if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { altGroups.push(meshes[i]); } }
             altGroups.sort(nameSort);
-            for (var i in altGroups) { count++; y += '<option value=\'' + altGroups[i]._id + '\'>' + altGroups[i].name + '</option>'; }
+            for (var i in altGroups) { count++; y += '<option value=\'' + altGroups[i]._id + '\'>' + EscapeHtml(altGroups[i].name) + '</option>'; }
             y += '</select>';
 
             if (count > 0) {
