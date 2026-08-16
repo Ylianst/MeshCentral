@@ -20797,7 +20797,7 @@
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fa-solid fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
+                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fa-solid fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? EscapeHtml(user.msghandle) : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             // Display features

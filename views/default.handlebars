@@ -18244,7 +18244,7 @@
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", '<span style=cursor:pointer onclick=p30editMessaging()><img src="images/messaging12.png" height=12 width=12 title="' + "Messaging enabled" + '" style="margin-top:2px" /> ' + (user.msghandle?user.msghandle:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Messaging", '<span style=cursor:pointer onclick=p30editMessaging()><img src="images/messaging12.png" height=12 width=12 title="' + "Messaging enabled" + '" style="margin-top:2px" /> ' + (user.msghandle?EscapeHtml(user.msghandle):('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
             }
 
             // Display features
