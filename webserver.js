@@ -5005,6 +5005,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var totalsize = readTotalFileSize(xfile.fullpath);
             if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
                 if (fields.name != null) {
+                    if ((fields.name.length != 1) || (typeof fields.name[0] != 'string') ||
+                        (fields.size == null) || (fields.size.length != 1) || (typeof fields.size[0] != 'string') ||
+                        (fields.type == null) || (fields.type.length != 1) || (typeof fields.type[0] != 'string') ||
+                        (fields.data == null) || (fields.data.length != 1) || (typeof fields.data[0] != 'string')) { res.sendStatus(400); return; }
 
                     // See if we need to create the folder
                     var domainx = 'domain';
