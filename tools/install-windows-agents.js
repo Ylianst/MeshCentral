@@ -88,9 +88,13 @@ function main() {
         const stat = fs.statSync(src);
 
         // Guard against installing a build that lacks the audio support, which
-        // is the exact failure this script exists to prevent.
+        // is the exact failure this script exists to prevent. Detect the Opus
+        // encoder's own symbols rather than any message of ours: the Windows
+        // capture path deliberately prints nothing, so there is no log string
+        // to look for, whereas libopus is only linked when the audio support
+        // is compiled in (verified: absent from pre-audio builds).
         const contents = fs.readFileSync(src);
-        const hasAudio = contents.includes('MeshAudio') || contents.includes('KVM Audio');
+        const hasAudio = contents.includes('silk_') && contents.includes('celt_');
 
         fs.copyFileSync(src, dest);
 
