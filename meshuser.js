@@ -3380,6 +3380,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                             if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = "Invalid nodeid"; } // Invalid domain, operation only valid for current domain
                             else if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) { err = "Invalid user location"; }
+                            else if ((command.tags != null) && (common.validateString(command.tags, 0, 4096) == false) && (common.validateStrArray(command.tags) == false)) { err = "Invalid tags"; }
                         }
                     } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
 
