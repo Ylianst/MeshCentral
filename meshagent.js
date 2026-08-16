@@ -1414,7 +1414,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         break;
                     }
                 case 'sysinfo': {
-                    if ((typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
+                    if ((command.data != null) && (typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
                         // Validate command.data.
                         if (common.validateObjectForMongo(command.data, 1024) == false) break;
 
