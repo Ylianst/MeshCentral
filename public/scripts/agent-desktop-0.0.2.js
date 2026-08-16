@@ -335,7 +335,11 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                         bitrateKbps: view[6],
                         captureAvailable: !!(view[7] & 0x01),
                         consentGranted: !!(view[7] & 0x02),
-                        platform: view[8]
+                        platform: view[8],
+                        // Older agents (pre-dating configurable mic encoding)
+                        // send only the original 9 bytes; treat that as
+                        // "settings not supported" rather than crashing.
+                        settingsSupported: (cmdsize >= 10) && (view[9] >= 1)
                     };
                     if (obj.onMicCaps) { obj.onMicCaps(micCaps); }
                 }
@@ -677,7 +681,30 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // Device microphone (device -> browser). START only asks; the agent
     // prompts its local user and captures nothing until they accept.
     obj.SendMicQuery = function () { obj.send(String.fromCharCode(0x00, 0x5F, 0x00, 0x04)); } // MNG_MIC_QUERY (95 = 0x5F)
-    obj.SendMicStart = function () { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); } // MNG_MIC_START (97 = 0x61)
+    // MNG_MIC_START (97 = 0x61). Called with no argument, sends the original
+    // bare 4-byte frame (agent uses whatever encoder settings are already in
+    // effect -- this is the only frame an agent older than the configurable
+    // -mic-encoding feature understands). Called with a params object, sends
+    // an extended 12-byte frame the agent applies immediately, live, whether
+    // this is a fresh start or a profile change on an already-running
+    // session -- see mic_apply_params() in linux_mic.c/windows_mic.c for the
+    // exact field meanings this must match byte-for-byte.
+    obj.SendMicStart = function (params) {
+        if (params == null) { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); return; }
+        var vbrFlags = (params.vbr ? 0x01 : 0x00) | (params.vbrConstrained ? 0x02 : 0x00);
+        var miscFlags = (params.dtx ? 0x01 : 0x00) | (params.fec ? 0x02 : 0x00);
+        obj.send(String.fromCharCode(
+            0x00, 0x61, 0x00, 0x0C,
+            Math.max(0, Math.min(255, params.bitrateKbps | 0)),
+            Math.max(0, Math.min(2, params.application | 0)),
+            vbrFlags,
+            Math.max(0, Math.min(5, params.bandwidth | 0)),
+            Math.max(0, Math.min(255, params.frameSizeMs | 0)),
+            Math.max(0, Math.min(10, params.complexity | 0)),
+            miscFlags,
+            Math.max(0, Math.min(100, params.packetLossPercent | 0))
+        ));
+    }
     obj.SendMicStop  = function () { obj.send(String.fromCharCode(0x00, 0x62, 0x00, 0x04)); } // MNG_MIC_STOP  (98 = 0x62)
 
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }

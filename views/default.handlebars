@@ -236,7 +236,7 @@
                                 <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
                                 <td tabindex=0 id=MainDevAudio class="topbar_td style3x" onmouseup="devQuickToggle('audio',event)" onkeypress="if (event.key == 'Enter') devQuickToggle('audio')" title="Listen to this device's audio, without opening Desktop">Audio</td>
-                                <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup="devQuickToggle('mic',event)" onkeypress="if (event.key == 'Enter') devQuickToggle('mic')" title="Listen through this device's microphone, without opening Desktop">Mic</td>
+                                <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup="devQuickToggle('mic',event)" onkeypress="if (event.key == 'Enter') devQuickToggle('mic')" title="Listen through this device's microphone, without opening Desktop">Mic<span id=MicSettingsGear title="Microphone settings" onmouseup="event.stopPropagation(); showMicSettings();" onkeypress="if (event.key == 'Enter') { event.stopPropagation(); showMicSettings(); }" style="margin-left:4px;cursor:pointer">&#9881;</span></td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevRegistry class="topbar_td style3x" onmouseup=go(9,event) onkeypress="if (event.key == 'Enter') go(9)">Registry</td>
@@ -1595,6 +1595,61 @@
                         </div>
                     </div>
                 </div>
+                <div id=dialog8 style="">
+                    <div id="d8unsupportedNotice" class="warningbox" style="display:none;margin-bottom:8px">This device's agent does not support custom microphone profiles yet. Update the agent, or use the Balanced profile below.</div>
+                    <div style="margin-top:8px">
+                        <div>Profile</div>
+                        <select id="d8preset" onchange="micSettingsPresetChanged()">
+                            <option value="balanced">Balanced (Default)</option>
+                            <option value="lowbandwidth">Low Bandwidth</option>
+                            <option value="highfidelity">High Fidelity</option>
+                            <option value="lowlatency">Low Latency</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div id="d8advanced">
+                        <div>Advanced</div>
+                        <div style="display:block">
+                            <label style="display:block">Bitrate (kbps)<br /><input type="number" id="d8bitrate" min="6" max="255" style="width:70px" /></label>
+                            <label style="display:block">Application<br />
+                                <select id="d8application">
+                                    <option value="0">Voice (VOIP)</option>
+                                    <option value="1">Music (Audio)</option>
+                                    <option value="2">Lowest Delay</option>
+                                </select>
+                            </label>
+                            <label style="display:block">Bitrate Mode<br />
+                                <select id="d8vbrmode">
+                                    <option value="cbr">Constant (CBR)</option>
+                                    <option value="vbr">Variable (VBR)</option>
+                                    <option value="cvbr">Constrained VBR</option>
+                                </select>
+                            </label>
+                            <label style="display:block">Bandwidth<br />
+                                <select id="d8bandwidth">
+                                    <option value="0">Auto</option>
+                                    <option value="1">Narrowband (4 kHz)</option>
+                                    <option value="2">Mediumband (6 kHz)</option>
+                                    <option value="3">Wideband (8 kHz)</option>
+                                    <option value="4">Super-wideband (12 kHz)</option>
+                                    <option value="5">Fullband (20 kHz)</option>
+                                </select>
+                            </label>
+                            <label style="display:block">Frame Size<br />
+                                <select id="d8framesize">
+                                    <option value="10">10 ms</option>
+                                    <option value="20">20 ms</option>
+                                    <option value="40">40 ms</option>
+                                    <option value="60">60 ms</option>
+                                </select>
+                            </label>
+                            <label style="display:block">Complexity (0-10)<br /><input type="number" id="d8complexity" min="0" max="10" style="width:50px" /></label>
+                            <label style="display:block"><input type="checkbox" id="d8dtx" />Discontinuous Transmission (DTX) -- saves bandwidth during silence</label>
+                            <label style="display:block"><input type="checkbox" id="d8fec" />Forward Error Correction (FEC) -- more robust on lossy links</label>
+                            <label style="display:block">Expected Packet Loss (%)<br /><input type="number" id="d8losspct" min="0" max="100" style="width:50px" /></label>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="idx_dlgButtonBar">
                 <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
@@ -1655,6 +1710,17 @@
         var deskMic = null;
         var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, localkeymap: false, swapmouse: false, remotekeymap: false, autoclipboard: false, autolock: false, audioOnConnect: false, agentencoding: 4 };
         var multidesktopsettings = { quality: 20, scaling: 128, framerate: 1000, agentencoding: 4 };
+        // Named microphone encoder profiles. Field names match SendMicStart()'s
+        // params object exactly (agent-desktop-0.0.2.js), so a preset or the
+        // Custom form values can be handed to it/deskMic.applySettings() as-is.
+        var micPresets = {
+            balanced:     { bitrateKbps: 28, application: 0, vbr: 1, vbrConstrained: 0, bandwidth: 0, frameSizeMs: 20, complexity: 5,  dtx: true,  fec: true,  packetLossPercent: 10 },
+            lowbandwidth: { bitrateKbps: 8,  application: 0, vbr: 1, vbrConstrained: 0, bandwidth: 1, frameSizeMs: 60, complexity: 5,  dtx: true,  fec: true,  packetLossPercent: 15 },
+            highfidelity: { bitrateKbps: 64, application: 1, vbr: 1, vbrConstrained: 0, bandwidth: 5, frameSizeMs: 20, complexity: 10, dtx: false, fec: true,  packetLossPercent: 5 },
+            lowlatency:   { bitrateKbps: 48, application: 2, vbr: 1, vbrConstrained: 0, bandwidth: 5, frameSizeMs: 10, complexity: 6,  dtx: false, fec: true,  packetLossPercent: 10 }
+        };
+        var micsettings = { preset: 'balanced' };
+        for (var mpk in micPresets.balanced) { micsettings[mpk] = micPresets.balanced[mpk]; }
         var terminal;
         var files;
         var debugLevel = parseInt('{{{debuglevel}}}');
@@ -1902,6 +1968,9 @@
             try { t = localStorage.getItem('multidesktopsettings'); } catch (ex) {}
             if (t != null) { multidesktopsettings = JSON.parse(t); }
             applyDesktopSettings();
+            t = null;
+            try { t = localStorage.getItem('micsettings'); } catch (ex) {}
+            if (t != null) { try { micsettings = JSON.parse(t); } catch (ex) {} }
 
             // Terminal special keys
             var x = '';
@@ -8769,6 +8838,79 @@
             if (bar) { bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; }
         }
 
+        // Microphone encoder settings (bitrate/bandwidth/etc, dialog8). Reachable
+        // straight from the Mic tab's gear icon, independent of the Desktop panel
+        // -- same "without opening Desktop" spirit as devQuickToggle() below.
+        function showMicSettings() {
+            if (xxdialogMode) return;
+            micSettingsPopulate();
+            setDialogMode(8, "Microphone Settings", 3, showMicSettingsChanged);
+        }
+
+        function micSettingsSetAdvancedEnabled(enabled) {
+            var ids = ['d8bitrate', 'd8application', 'd8vbrmode', 'd8bandwidth', 'd8framesize', 'd8complexity', 'd8dtx', 'd8fec', 'd8losspct'];
+            for (var i in ids) { var e = Q(ids[i]); if (e) { e.disabled = !enabled; } }
+        }
+
+        function micSettingsFillForm(s) {
+            Q('d8bitrate').value = s.bitrateKbps;
+            Q('d8application').value = s.application;
+            Q('d8vbrmode').value = s.vbrConstrained ? 'cvbr' : (s.vbr ? 'vbr' : 'cbr');
+            Q('d8bandwidth').value = s.bandwidth;
+            Q('d8framesize').value = s.frameSizeMs;
+            Q('d8complexity').value = s.complexity;
+            Q('d8dtx').checked = !!s.dtx;
+            Q('d8fec').checked = !!s.fec;
+            Q('d8losspct').value = s.packetLossPercent;
+        }
+
+        function micSettingsPopulate() {
+            Q('d8preset').value = micPresets[micsettings.preset] ? micsettings.preset : 'custom';
+            micSettingsFillForm(micsettings);
+
+            // Old agents (pre-dating configurable mic encoding) report
+            // settingsSupported === false in MNG_MIC_CAPS -- don't let the
+            // operator pick a profile that silently won't apply.
+            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
+            QV('d8unsupportedNotice', unsupported);
+            micSettingsSetAdvancedEnabled(!unsupported && (Q('d8preset').value == 'custom'));
+        }
+
+        function micSettingsPresetChanged() {
+            var name = Q('d8preset').value;
+            if (name != 'custom' && micPresets[name]) { micSettingsFillForm(micPresets[name]); }
+            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
+            micSettingsSetAdvancedEnabled(!unsupported && (name == 'custom'));
+        }
+
+        // setDialogMode() only invokes this on OK (see dialogclose()), never on
+        // Cancel, so this can unconditionally read the form and apply it.
+        function showMicSettingsChanged() {
+            var name = Q('d8preset').value;
+            var resolved = (name != 'custom' && micPresets[name]) ? micPresets[name] : {
+                bitrateKbps: parseInt(Q('d8bitrate').value, 10) || 28,
+                application: parseInt(Q('d8application').value, 10) || 0,
+                vbr: (Q('d8vbrmode').value != 'cbr') ? 1 : 0,
+                vbrConstrained: (Q('d8vbrmode').value == 'cvbr') ? 1 : 0,
+                bandwidth: parseInt(Q('d8bandwidth').value, 10) || 0,
+                frameSizeMs: parseInt(Q('d8framesize').value, 10) || 20,
+                complexity: parseInt(Q('d8complexity').value, 10) || 5,
+                dtx: Q('d8dtx').checked,
+                fec: Q('d8fec').checked,
+                packetLossPercent: parseInt(Q('d8losspct').value, 10) || 10
+            };
+            if (name != 'custom' && !micPresets[name]) { name = 'custom'; }
+
+            micsettings = { preset: name };
+            for (var k in resolved) { micsettings[k] = resolved[k]; }
+            putstore('micsettings', JSON.stringify(micsettings));
+
+            // Re-applies live (no interruption) if a session is already
+            // listening or waiting on consent; otherwise just takes effect on
+            // the next start() -- see applySettings() in agent-mic-0.1.0.js.
+            if (deskMic) { deskMic.applySettings(micsettings); }
+        }
+
         // Registry of no-video-required quick-start stream kinds. Add an entry
         // here (and its own toggle function, mirroring deskAudioToggle/
         // deskMicToggle) to support another stream type in the future, e.g.
@@ -9873,6 +10015,7 @@
                         deskMic = CreateAgentMic(desktop);
                         deskMic.onStateChanged = deskMicApplyState;
                         deskMic.onLevel = deskMicApplyLevel;
+                        deskMic.applySettings(micsettings); // seed the persisted/default profile before the first start()
                         desktop.m.onMicCaps = function(caps) { deskMic.onCaps(caps); };
                         desktop.m.onMicData = function(view) { deskMic.onData(view); };
                         desktop.onMicConsent = function(granted) { if (!granted) { deskMic.onConsentDenied(); } };

@@ -37,6 +37,7 @@ var CreateAgentMic = function (desktop) {
     obj.state = 'unavailable';
     obj.caps = null;
     obj.level = 0;              // 0..1 output level, for the meter
+    obj.params = null;          // resolved encoder settings, or null = agent default
 
     obj.onStateChanged = null;  // function (state, detail)
     obj.onLevel = null;         // function (level)
@@ -103,7 +104,7 @@ var CreateAgentMic = function (desktop) {
         if (!obj.caps || !obj.caps.captureAvailable) { setState('unavailable', 'This device has no microphone.'); return; }
 
         setState('requesting', 'Asking the user for permission to use their microphone...');
-        if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(); }
+        if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(obj.params); }
 
         // An unattended machine would otherwise leave the operator waiting
         // indefinitely with no indication of what is happening.
@@ -124,6 +125,21 @@ var CreateAgentMic = function (desktop) {
 
     obj.toggle = function () {
         if (obj.state === 'live' || obj.state === 'requesting') { obj.stop(); } else { obj.start(); }
+    };
+
+    // ---------------------------------------------------------------------
+    // Change the encoder settings profile (bitrate/bandwidth/etc, see the
+    // Mic Settings dialog). Safe to call any time: if a session is already
+    // live or requesting, re-applies immediately without interrupting audio
+    // (the agent re-applies in place -- see mic_apply_params() in
+    // linux_mic.c/windows_mic.c); otherwise just stored for the next start().
+    // Pass null to fall back to the agent's own built-in default.
+    // ---------------------------------------------------------------------
+    obj.applySettings = function (params) {
+        obj.params = params;
+        if (obj.state === 'live' || obj.state === 'requesting') {
+            if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(obj.params); }
+        }
     };
 
     // ---------------------------------------------------------------------
