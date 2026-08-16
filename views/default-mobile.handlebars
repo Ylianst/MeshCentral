@@ -8053,7 +8053,7 @@
 
             // Show notification within the web page.
             if (n.time == null) { n.time = Date.now(); }
-            if (n.id == null) { n.id = Math.random(); }
+            if ((typeof n.id != 'number') || (isFinite(n.id) == false)) { n.id = Math.random(); }
             notifications.unshift(n);
             setNotificationCount(notifications.length);
             clickNotificationIcon(true);
