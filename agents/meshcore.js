@@ -3499,16 +3499,24 @@ var _activeDesktopTunnel = null;
 // There is no frame to hold here: native never opens the microphone without
 // consent regardless of this call, so this only needs to (continue to) show
 // the same prompt a click would.
-function onMicConsentNeeded() {
+//   skipPrompt: 1 if the browser request that triggered this asked to skip
+//   the interactive prompt (the Mic panel, not the Desktop panel's own mic
+//   button -- see agent-desktop-0.0.2.js's SendMicStart()). This is only a
+//   *request*: native never grants consent on its own regardless of this
+//   flag (see kvm_mic_start()), so the actual authorization decision below
+//   is still made here, by the trusted agent JS layer, exactly like the
+//   existing server-policy bypass just below it.
+function onMicConsentNeeded(skipPrompt) {
     if (_activeDesktopTunnel == null || _activeDesktopTunnel.httprequest == null) { return; }
-    micConsentHandleStart(_activeDesktopTunnel);
+    micConsentHandleStart(_activeDesktopTunnel, skipPrompt === 1);
 }
 
 // Shows the microphone consent prompt, unless it is already granted, already
-// pending, or policy has turned it off. The boolean return is a leftover from
-// an earlier design that gated a live frame on it; onMicConsentNeeded(), its
-// only caller, has no frame to gate and ignores it.
-function micConsentHandleStart(tunnel) {
+// pending, policy has turned it off, or the request itself asked to skip the
+// interactive step (see skipPrompt above). The boolean return is a leftover
+// from an earlier design that gated a live frame on it; onMicConsentNeeded(),
+// its only caller, has no frame to gate and ignores it.
+function micConsentHandleStart(tunnel, skipPrompt) {
     var httprequest = tunnel.httprequest;
 
     // Already granted for this session.
@@ -3520,15 +3528,22 @@ function micConsentHandleStart(tunnel) {
 
     // Consent for the microphone is required unless the server cleared bit 128
     // (userConsentFlags.micprompt). It defaults to on: listening to someone's
-    // room should never happen without them knowing.
+    // room should never happen without them knowing. The Mic panel's own
+    // "listen directly" request (skipPrompt) is a second, independent way to
+    // reach the same fast path: an operator using the dedicated, video-free
+    // Mic tab already isn't watching the desktop, so there is nothing to
+    // interactively ask about; the Desktop panel's own mic button never sets
+    // this, and still goes through the interactive prompt whenever policy
+    // requires it.
     var consentRequired = ((httprequest.consent == null) || ((httprequest.consent & 128) != 0));
-    if (!consentRequired) {
-        // Policy says no prompt is needed, so go straight to what accepting
-        // a real prompt does: mark it granted AND tell native to actually
-        // start capture. Setting the flag alone here previously left native
-        // never told, so nothing ever started -- policy said "don't ask"
-        // but that silently became "never listen" instead of "just listen".
-        MeshServerLogEx(30, null, "Starting microphone capture, consent not required by policy (" + httprequest.remoteaddr + ")", httprequest);
+    if (!consentRequired || skipPrompt === true) {
+        // Policy (or the operator's quiet-listen request) says no prompt is
+        // needed, so go straight to what accepting a real prompt does: mark
+        // it granted AND tell native to actually start capture. Setting the
+        // flag alone here previously left native never told, so nothing ever
+        // started -- policy said "don't ask" but that silently became "never
+        // listen" instead of "just listen".
+        MeshServerLogEx(30, null, (skipPrompt === true ? "Starting microphone capture without a prompt (operator requested quiet listening, " : "Starting microphone capture, consent not required by policy (") + httprequest.remoteaddr + ")", httprequest);
         micConsentGranted.call({ tunnel: tunnel });
         return true;
     }
@@ -3563,6 +3578,16 @@ function micConsentHandleStart(tunnel) {
             pr = ipr.then(function (img) {
                 this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: false, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
                 this.__childPromise.close = this.consent.close.bind(this.consent);
+                // server_getUserImage() above is a round-trip to the server,
+                // so the operator can already have cancelled (clicked again
+                // to stop, before the local user ever saw anything) while
+                // this was in flight -- onMicConsentCancelled() ran already,
+                // but found nothing to close yet (this.consent did not exist
+                // until the line above). Close it now instead of leaving a
+                // dialog on screen nobody is waiting to answer; this goes
+                // through the exact same close() micConsentDenied() already
+                // expects; nothing else in the promise chain changes.
+                if (httprequest._micConsentCancelled === true) { this.consent.close(); }
                 return (this.consent);
             });
         } else {

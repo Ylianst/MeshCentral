@@ -8920,7 +8920,16 @@
         // suppressed, exactly like the old quick-toggle did, just triggered
         // by a real visible button instead of a tab's onmouseup), queries
         // the input device list, then starts listening -- or stops/cancels
-        // if already live/requesting.
+        // if already live/requesting. Always starts with skipConsentPrompt,
+        // so listening from this panel never waits on (or shows) the
+        // interactive local-user prompt -- unlike the Desktop panel's own
+        // mic button (deskMicToggle(), which calls deskMic.toggle()/start()
+        // with no argument), this panel has no video for the operator to be
+        // looking at anyway, so there's nothing for an interactive prompt to
+        // add here. See agent-mic-0.1.0.js's start() and
+        // agents/meshcore.js's micConsentHandleStart() for where this is
+        // actually honoured (still gated on the agent's own policy-aware JS
+        // layer, never a native-side auto-grant).
         function p22Toggle(event) {
             if (event) { event.stopPropagation(); }
             if (deskMic && (deskMic.state == 'live' || deskMic.state == 'requesting')) { deskMic.stop(); return; }
@@ -8940,13 +8949,13 @@
                     if ((state == 3) && (xdesktop === desktop)) {
                         if (!desktop._quickStartWantsVideo && desktop.m && desktop.m.SendPause) { desktop.m.SendPause(); }
                         p22QueryDevices();
-                        if (deskMic) { deskMic.start(); }
+                        if (deskMic) { deskMic.start(true); }
                     }
                     p22UpdateStatus();
                 };
             } else if (desktop.State == 3) {
                 p22QueryDevices();
-                if (deskMic) { deskMic.start(); }
+                if (deskMic) { deskMic.start(true); }
             }
             // else: already connecting, wait for onStateChanged above
             p22UpdateStatus();

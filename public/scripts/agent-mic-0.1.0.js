@@ -96,15 +96,25 @@ var CreateAgentMic = function (desktop) {
 
     // ---------------------------------------------------------------------
     // Ask the device user for permission. Nothing is captured or played until
-    // the agent confirms they accepted.
+    // the agent confirms they accepted -- unless skipConsentPrompt is true
+    // (the Mic panel's "listen directly" behaviour; the Desktop panel's own
+    // mic button never passes this), in which case the agent's policy-aware
+    // JS layer may grant it immediately without ever showing that prompt.
+    // Passed per-call rather than folded into obj.params: this same deskMic
+    // instance is shared with the Desktop panel's own mic button, which must
+    // never inherit a "skip the prompt" request made from the Mic panel.
     // ---------------------------------------------------------------------
-    obj.start = function () {
+    obj.start = function (skipConsentPrompt) {
         if (obj.state === 'live' || obj.state === 'requesting') { return; }
         if (!supported()) { setState('unavailable', 'This browser cannot decode audio.'); return; }
         if (!obj.caps || !obj.caps.captureAvailable) { setState('unavailable', 'This device has no microphone.'); return; }
 
         setState('requesting', 'Asking the user for permission to use their microphone...');
-        if (desktop && desktop.m && desktop.m.SendMicStart) { desktop.m.SendMicStart(obj.params); }
+        if (desktop && desktop.m && desktop.m.SendMicStart) {
+            var startParams = obj.params ? Object.assign({}, obj.params) : {};
+            startParams.skipConsentPrompt = !!skipConsentPrompt;
+            desktop.m.SendMicStart(startParams);
+        }
 
         // An unattended machine would otherwise leave the operator waiting
         // indefinitely with no indication of what is happening.

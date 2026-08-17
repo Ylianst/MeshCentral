@@ -706,11 +706,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // exact field meanings this must match byte-for-byte. params.deviceIndex
     // is an index into the list the agent last sent via MNG_MIC_DEVICE_LIST
     // (see SendMicDeviceQuery below); omit it, or use -1, for the system's
-    // default input device.
+    // default input device. params.skipConsentPrompt requests that the local
+    // user not be interactively asked (the Mic panel's "listen directly"
+    // behaviour) -- this is only a request the agent's policy-aware JS layer
+    // may honour, never a grant native code trusts on its own; leave unset
+    // for the Desktop panel's own mic button, which must always go through
+    // the interactive prompt when policy requires it.
     obj.SendMicStart = function (params) {
         if (params == null) { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); return; }
         var vbrFlags = (params.vbr ? 0x01 : 0x00) | (params.vbrConstrained ? 0x02 : 0x00);
-        var miscFlags = (params.dtx ? 0x01 : 0x00) | (params.fec ? 0x02 : 0x00);
+        var miscFlags = (params.dtx ? 0x01 : 0x00) | (params.fec ? 0x02 : 0x00) | (params.skipConsentPrompt ? 0x04 : 0x00);
         var deviceIndex = (params.deviceIndex == null || params.deviceIndex < 0) ? 0xFF : Math.max(0, Math.min(254, params.deviceIndex | 0));
         obj.send(String.fromCharCode(
             0x00, 0x61, 0x00, 0x0D,
