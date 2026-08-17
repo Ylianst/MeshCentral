@@ -235,8 +235,7 @@
                             <tr>
                                 <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
-                                <td tabindex=0 id=MainDevAudio class="topbar_td style3x" onmouseup="devQuickToggle('audio',event)" onkeypress="if (event.key == 'Enter') devQuickToggle('audio')" title="Listen to this device's audio, without opening Desktop">Audio</td>
-                                <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup="devQuickToggle('mic',event)" onkeypress="if (event.key == 'Enter') devQuickToggle('mic')" title="Listen through this device's microphone, without opening Desktop">Mic<span id=MicSettingsGear title="Microphone settings" onmouseup="event.stopPropagation(); showMicSettings();" onkeypress="if (event.key == 'Enter') { event.stopPropagation(); showMicSettings(); }" style="margin-left:4px;cursor:pointer">&#9881;</span></td>
+                                <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup=go(22,event) onkeypress="if (event.key == 'Enter') go(22)">Mic</td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevRegistry class="topbar_td style3x" onmouseup=go(9,event) onkeypress="if (event.key == 'Enter') go(9)">Registry</td>
@@ -1162,6 +1161,84 @@
                 <div id="p19headers"></div>
                 <div id=p19pages></div>
             </div>
+            <div id=p22 style="display:none">
+                <div id=p22main style="overflow-y:auto">
+                    <div id="p22title">
+                        <div id="p22BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                        <h1>Mic<span id=p22deviceName></span></h1>
+                    </div>
+                    <div id=p22body style="max-width:480px">
+                        <div id=p22info style="font-size:12px;color:gray;margin-bottom:8px"></div>
+                        <div id=p22statusText style="font-size:14px;margin-bottom:8px"></div>
+                        <div id=p22levelwrap style="display:none;margin-bottom:8px;max-width:300px;height:8px;border-radius:3px;overflow:hidden;background:rgba(128,128,128,0.25)">
+                            <div id=p22level style="width:0;height:100%;background:#43a047;transition:width 90ms ease-out"></div>
+                        </div>
+                        <input type=button id=p22startstop value="Start Listening" onclick=p22Toggle(event) />
+
+                        <div id="p22unsupportedNotice" class="warningbox" style="display:none;margin-top:12px">This device's agent does not support custom microphone profiles yet -- it will use its default settings.</div>
+
+                        <div id=p22settings style="margin-top:16px">
+                            <div style="font-weight:bold;margin-bottom:4px">Input Device</div>
+                            <div style="display:flex;align-items:center">
+                                <select id=p22device onchange=p22DeviceChanged() style="flex:1;max-width:300px">
+                                    <option value="-1">System Default</option>
+                                </select>
+                                <span id=p22deviceRefresh title="Refresh device list" onclick=p22QueryDevices() onkeypress="if (event.key == 'Enter') p22QueryDevices()" tabindex=0 style="cursor:pointer;margin-left:6px;font-size:16px">&#8635;</span>
+                            </div>
+
+                            <div style="font-weight:bold;margin:14px 0 4px">Profile</div>
+                            <select id=p22preset onchange=micSettingsPresetChanged() style="max-width:300px">
+                                <option value="balanced">Balanced (Default)</option>
+                                <option value="lowbandwidth">Low Bandwidth</option>
+                                <option value="highfidelity">High Fidelity</option>
+                                <option value="lowlatency">Low Latency</option>
+                                <option value="custom">Custom</option>
+                            </select>
+
+                            <div style="font-weight:bold;margin:14px 0 4px">Advanced</div>
+                            <div id="p22advanced">
+                                <label style="display:block">Bitrate (kbps)<br /><input type="number" id="p22bitrate" min="6" max="255" style="width:70px" onchange=p22AdvancedChanged() /></label>
+                                <label style="display:block">Application<br />
+                                    <select id="p22application" onchange=p22AdvancedChanged()>
+                                        <option value="0">Voice (VOIP)</option>
+                                        <option value="1">Music (Audio)</option>
+                                        <option value="2">Lowest Delay</option>
+                                    </select>
+                                </label>
+                                <label style="display:block">Bitrate Mode<br />
+                                    <select id="p22vbrmode" onchange=p22AdvancedChanged()>
+                                        <option value="cbr">Constant (CBR)</option>
+                                        <option value="vbr">Variable (VBR)</option>
+                                        <option value="cvbr">Constrained VBR</option>
+                                    </select>
+                                </label>
+                                <label style="display:block">Bandwidth<br />
+                                    <select id="p22bandwidth" onchange=p22AdvancedChanged()>
+                                        <option value="0">Auto</option>
+                                        <option value="1">Narrowband (4 kHz)</option>
+                                        <option value="2">Mediumband (6 kHz)</option>
+                                        <option value="3">Wideband (8 kHz)</option>
+                                        <option value="4">Super-wideband (12 kHz)</option>
+                                        <option value="5">Fullband (20 kHz)</option>
+                                    </select>
+                                </label>
+                                <label style="display:block">Frame Size<br />
+                                    <select id="p22framesize" onchange=p22AdvancedChanged()>
+                                        <option value="10">10 ms</option>
+                                        <option value="20">20 ms</option>
+                                        <option value="40">40 ms</option>
+                                        <option value="60">60 ms</option>
+                                    </select>
+                                </label>
+                                <label style="display:block">Complexity (0-10)<br /><input type="number" id="p22complexity" min="0" max="10" style="width:50px" onchange=p22AdvancedChanged() /></label>
+                                <label style="display:block"><input type="checkbox" id="p22dtx" onchange=p22AdvancedChanged() />Discontinuous Transmission (DTX) -- saves bandwidth during silence</label>
+                                <label style="display:block"><input type="checkbox" id="p22fec" onchange=p22AdvancedChanged() />Forward Error Correction (FEC) -- more robust on lossy links</label>
+                                <label style="display:block">Expected Packet Loss (%)<br /><input type="number" id="p22losspct" min="0" max="100" style="width:50px" onchange=p22AdvancedChanged() /></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id=p20 style="display:none">
                 <div id=p20main style="overflow-y:auto">
                     <div id="p20title">
@@ -1595,61 +1672,6 @@
                         </div>
                     </div>
                 </div>
-                <div id=dialog8 style="">
-                    <div id="d8unsupportedNotice" class="warningbox" style="display:none;margin-bottom:8px">This device's agent does not support custom microphone profiles yet. Update the agent, or use the Balanced profile below.</div>
-                    <div style="margin-top:8px">
-                        <div>Profile</div>
-                        <select id="d8preset" onchange="micSettingsPresetChanged()">
-                            <option value="balanced">Balanced (Default)</option>
-                            <option value="lowbandwidth">Low Bandwidth</option>
-                            <option value="highfidelity">High Fidelity</option>
-                            <option value="lowlatency">Low Latency</option>
-                            <option value="custom">Custom</option>
-                        </select>
-                    </div>
-                    <div id="d8advanced">
-                        <div>Advanced</div>
-                        <div style="display:block">
-                            <label style="display:block">Bitrate (kbps)<br /><input type="number" id="d8bitrate" min="6" max="255" style="width:70px" /></label>
-                            <label style="display:block">Application<br />
-                                <select id="d8application">
-                                    <option value="0">Voice (VOIP)</option>
-                                    <option value="1">Music (Audio)</option>
-                                    <option value="2">Lowest Delay</option>
-                                </select>
-                            </label>
-                            <label style="display:block">Bitrate Mode<br />
-                                <select id="d8vbrmode">
-                                    <option value="cbr">Constant (CBR)</option>
-                                    <option value="vbr">Variable (VBR)</option>
-                                    <option value="cvbr">Constrained VBR</option>
-                                </select>
-                            </label>
-                            <label style="display:block">Bandwidth<br />
-                                <select id="d8bandwidth">
-                                    <option value="0">Auto</option>
-                                    <option value="1">Narrowband (4 kHz)</option>
-                                    <option value="2">Mediumband (6 kHz)</option>
-                                    <option value="3">Wideband (8 kHz)</option>
-                                    <option value="4">Super-wideband (12 kHz)</option>
-                                    <option value="5">Fullband (20 kHz)</option>
-                                </select>
-                            </label>
-                            <label style="display:block">Frame Size<br />
-                                <select id="d8framesize">
-                                    <option value="10">10 ms</option>
-                                    <option value="20">20 ms</option>
-                                    <option value="40">40 ms</option>
-                                    <option value="60">60 ms</option>
-                                </select>
-                            </label>
-                            <label style="display:block">Complexity (0-10)<br /><input type="number" id="d8complexity" min="0" max="10" style="width:50px" /></label>
-                            <label style="display:block"><input type="checkbox" id="d8dtx" />Discontinuous Transmission (DTX) -- saves bandwidth during silence</label>
-                            <label style="display:block"><input type="checkbox" id="d8fec" />Forward Error Correction (FEC) -- more robust on lossy links</label>
-                            <label style="display:block">Expected Packet Loss (%)<br /><input type="number" id="d8losspct" min="0" max="100" style="width:50px" /></label>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div id="idx_dlgButtonBar">
                 <input id="idx_dlgCancelButton" type="button" value="Cancel" style="" onclick="dialogclose(0)" />
@@ -1719,7 +1741,7 @@
             highfidelity: { bitrateKbps: 64, application: 1, vbr: 1, vbrConstrained: 0, bandwidth: 5, frameSizeMs: 20, complexity: 10, dtx: false, fec: true,  packetLossPercent: 5 },
             lowlatency:   { bitrateKbps: 48, application: 2, vbr: 1, vbrConstrained: 0, bandwidth: 5, frameSizeMs: 10, complexity: 6,  dtx: false, fec: true,  packetLossPercent: 10 }
         };
-        var micsettings = { preset: 'balanced' };
+        var micsettings = { preset: 'balanced', deviceName: '', deviceIndex: -1 }; // deviceIndex -1 = System Default
         for (var mpk in micPresets.balanced) { micsettings[mpk] = micPresets.balanced[mpk]; }
         var terminal;
         var files;
@@ -3699,11 +3721,11 @@
                                     nodes = newnodes;
 
                                     // If we are looking at a node that is no longer visible, move back to "My Devices"
-                                    if ((xxcurrentView >= 9) && (xxcurrentView < 20) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
+                                    if ((xxcurrentView >= 9) && (xxcurrentView < 23) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                                 }
                             }
                             mainUpdate(4 + 128 + 8192 + 16384);
-                            if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 9) && (xxcurrentView < 20)) { go(1); } }
+                            if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 9) && (xxcurrentView < 23)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -3727,7 +3749,7 @@
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 9 && xxcurrentView < 20 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
+                            if (xxcurrentView >= 9 && xxcurrentView < 23 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                             break;
                         }
                         case 'addnode': {
@@ -3757,7 +3779,7 @@
                             if (index != -1) {
                                 var node = nodes[index];
                                 if (currentNode == node) {
-                                    if (xxcurrentView >= 9 && xxcurrentView < 20) { setDialogMode(0); go(1); }
+                                    if (xxcurrentView >= 9 && xxcurrentView < 23) { setDialogMode(0); go(1); }
                                     currentNode = null;
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
@@ -3843,7 +3865,7 @@
                                         // We don't see the new mesh, remove this device
                                         // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                         if ((currentNode != null) && (currentNode._id == node._id)) {
-                                            if ((xxcurrentView >= 9) && (xxcurrentView < 20) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
+                                            if ((xxcurrentView >= 9) && (xxcurrentView < 23) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
                                         }
                                         var index = -1;
                                         for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
@@ -3880,7 +3902,7 @@
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                     if ((currentNode != null) && (currentNode._id == node._id)) {
-                                        if ((xxcurrentView >= 9) && (xxcurrentView < 20) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
+                                        if ((xxcurrentView >= 9) && (xxcurrentView < 23) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
                                     }
                                     nodes.splice(index, 1);
                                     mainUpdate(4 | 16);
@@ -8371,7 +8393,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 9) && (xxcurrentView < 20)) {
+                if ((currentNode) && (xxcurrentView >= 9) && (xxcurrentView < 23)) {
                     document.title = currentNode.name + (mesh?(' - ' + mesh.name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
                 } else {
                     document.title = decodeURIComponent('{{{extitle}}}');
@@ -8479,7 +8501,7 @@
 
                 // Change the URL
                 var urlviewmode = '';
-                if (((features & 0x10000000) == 0) && (xxcurrentView >= 9) && (xxcurrentView <= 19) && (currentNode != null)) {
+                if (((features & 0x10000000) == 0) && (xxcurrentView >= 9) && (xxcurrentView <= 22) && (currentNode != null)) {
                     urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2];
                     for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                     try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -8792,12 +8814,12 @@
         }
 
         function deskMicApplyState(state, detail) {
+            p22UpdateStatus();
+
             var img = Q('DeskMicButtonImage');
             var btn = Q('DeskMicButton');
-            // Same state, reflected on the always-visible quick-toggle tab
-            // (see devQuickToggle()), so it's visible without opening the
-            // Desktop panel -- this is the only state indicator when the
-            // user started Mic that way.
+            // Same state, also reflected on the Mic tab itself, so it's
+            // visible regardless of which panel is currently open.
             var tabBtn = Q('MainDevMic');
 
             if (tabBtn) { tabBtn.classList.remove('micRequesting', 'micLive'); }
@@ -8833,117 +8855,83 @@
 
         function deskMicApplyLevel(level) {
             var meter = Q('DeskMicLevel');
-            if (!meter) return;
-            var bar = meter.firstElementChild;
-            if (bar) { bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; }
+            if (meter) { var bar = meter.firstElementChild; if (bar) { bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; } }
+            var p22bar = Q('p22level');
+            if (p22bar) { p22bar.style.width = Math.min(100, Math.round(level * 140)) + '%'; }
         }
 
-        // Microphone encoder settings (bitrate/bandwidth/etc, dialog8). Reachable
-        // straight from the Mic tab's gear icon, independent of the Desktop panel
-        // -- same "without opening Desktop" spirit as devQuickToggle() below.
-        function showMicSettings() {
-            if (xxdialogMode) return;
+        // ===================================================================
+        // Mic panel (p22): a normal device tab like Desktop/Terminal/Files,
+        // not a quick-toggle -- opening it never connects or starts anything
+        // by itself, matching how those other tabs require their own
+        // explicit Connect button. p22Toggle() is that explicit action here,
+        // folded into one "Start Listening" button since (unlike Desktop)
+        // there is no separate reason to connect without also wanting to
+        // listen.
+        // ===================================================================
+
+        // Called from go() when this panel is shown, and again whenever mic
+        // state/caps change while it's the active view.
+        function p22Show() {
             micSettingsPopulate();
-            setDialogMode(8, "Microphone Settings", 3, showMicSettingsChanged);
+            p22UpdateStatus();
         }
 
-        function micSettingsSetAdvancedEnabled(enabled) {
-            var ids = ['d8bitrate', 'd8application', 'd8vbrmode', 'd8bandwidth', 'd8framesize', 'd8complexity', 'd8dtx', 'd8fec', 'd8losspct'];
-            for (var i in ids) { var e = Q(ids[i]); if (e) { e.disabled = !enabled; } }
+        function p22UpdateStatus() {
+            var btn = Q('p22startstop');
+            if (!btn) return;
+
+            var infoText = Q('p22info');
+            if (deskMic && deskMic.caps) {
+                var c = deskMic.caps;
+                var bits = [(c.sampleRate || 48000) + ' Hz', (c.channels == 2 ? 'stereo' : 'mono'), (c.platform == 2 ? 'Windows' : (c.platform == 1 ? 'Linux' : 'agent')) + ' agent'];
+                if (!c.captureAvailable) { bits.push('no microphone detected'); }
+                infoText.textContent = bits.join(' · ');
+            } else {
+                infoText.textContent = '';
+            }
+
+            var state = deskMic ? deskMic.state : 'unavailable';
+            switch (state) {
+                case 'live':
+                    btn.value = 'Stop Listening';
+                    Q('p22statusText').textContent = "Listening to this device's microphone.";
+                    QV('p22levelwrap', true);
+                    break;
+                case 'requesting':
+                    btn.value = 'Cancel';
+                    Q('p22statusText').textContent = 'Waiting for the device user to allow microphone access...';
+                    QV('p22levelwrap', false);
+                    break;
+                case 'unavailable':
+                    btn.value = 'Start Listening';
+                    Q('p22statusText').textContent = (desktop && desktop.State == 3) ? 'This device has no usable microphone.' : 'Not connected.';
+                    QV('p22levelwrap', false);
+                    break;
+                default: // idle
+                    btn.value = 'Start Listening';
+                    Q('p22statusText').textContent = 'Not listening.';
+                    QV('p22levelwrap', false);
+                    break;
+            }
         }
 
-        function micSettingsFillForm(s) {
-            Q('d8bitrate').value = s.bitrateKbps;
-            Q('d8application').value = s.application;
-            Q('d8vbrmode').value = s.vbrConstrained ? 'cvbr' : (s.vbr ? 'vbr' : 'cbr');
-            Q('d8bandwidth').value = s.bandwidth;
-            Q('d8framesize').value = s.frameSizeMs;
-            Q('d8complexity').value = s.complexity;
-            Q('d8dtx').checked = !!s.dtx;
-            Q('d8fec').checked = !!s.fec;
-            Q('d8losspct').value = s.packetLossPercent;
-        }
-
-        function micSettingsPopulate() {
-            Q('d8preset').value = micPresets[micsettings.preset] ? micsettings.preset : 'custom';
-            micSettingsFillForm(micsettings);
-
-            // Old agents (pre-dating configurable mic encoding) report
-            // settingsSupported === false in MNG_MIC_CAPS -- don't let the
-            // operator pick a profile that silently won't apply.
-            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
-            QV('d8unsupportedNotice', unsupported);
-            micSettingsSetAdvancedEnabled(!unsupported && (Q('d8preset').value == 'custom'));
-        }
-
-        function micSettingsPresetChanged() {
-            var name = Q('d8preset').value;
-            if (name != 'custom' && micPresets[name]) { micSettingsFillForm(micPresets[name]); }
-            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
-            micSettingsSetAdvancedEnabled(!unsupported && (name == 'custom'));
-        }
-
-        // setDialogMode() only invokes this on OK (see dialogclose()), never on
-        // Cancel, so this can unconditionally read the form and apply it.
-        function showMicSettingsChanged() {
-            var name = Q('d8preset').value;
-            var resolved = (name != 'custom' && micPresets[name]) ? micPresets[name] : {
-                bitrateKbps: parseInt(Q('d8bitrate').value, 10) || 28,
-                application: parseInt(Q('d8application').value, 10) || 0,
-                vbr: (Q('d8vbrmode').value != 'cbr') ? 1 : 0,
-                vbrConstrained: (Q('d8vbrmode').value == 'cvbr') ? 1 : 0,
-                bandwidth: parseInt(Q('d8bandwidth').value, 10) || 0,
-                frameSizeMs: parseInt(Q('d8framesize').value, 10) || 20,
-                complexity: parseInt(Q('d8complexity').value, 10) || 5,
-                dtx: Q('d8dtx').checked,
-                fec: Q('d8fec').checked,
-                packetLossPercent: parseInt(Q('d8losspct').value, 10) || 10
-            };
-            if (name != 'custom' && !micPresets[name]) { name = 'custom'; }
-
-            micsettings = { preset: name };
-            for (var k in resolved) { micsettings[k] = resolved[k]; }
-            putstore('micsettings', JSON.stringify(micsettings));
-
-            // Re-applies live (no interruption) if a session is already
-            // listening or waiting on consent; otherwise just takes effect on
-            // the next start() -- see applySettings() in agent-mic-0.1.0.js.
-            if (deskMic) { deskMic.applySettings(micsettings); }
-        }
-
-        // Registry of no-video-required quick-start stream kinds. Add an entry
-        // here (and its own toggle function, mirroring deskAudioToggle/
-        // deskMicToggle) to support another stream type in the future, e.g.
-        // camera -- devQuickToggle() itself never needs to change.
-        var quickStartKinds = {
-            audio: deskAudioToggle,
-            mic: deskMicToggle
-        };
-
-        // Start Audio or Mic without switching to the Desktop panel. This
-        // reuses the exact same connection object and toggle functions the
-        // Desktop panel's own buttons already use (see quickStartKinds above)
-        // -- the only new thing is a way to reach them without opening that
-        // panel first. If a connection already exists (e.g. Desktop is open),
-        // it's reused as-is; connectDesktop() itself toggles connect/
-        // disconnect, so this only ever calls it to CONNECT.
-        //
-        // When starting a connection this way, video is paused right away
-        // (desktop._quickStartWantsVideo tracks whether Desktop was already
-        // the active view at connect time) via SendPause(), AND via
-        // desktop.m.autoUnpauseOnConnect = false, which stops the low-level
-        // desktop module (agent-desktop-0.0.2.js) from auto-resuming video
-        // the moment it sees the agent's first screen-size message -- see the
-        // matching one-way unpause in go(), which fires the first time the
-        // Desktop panel is actually opened on that connection.
-        function devQuickToggle(kind, event) {
+        // The one entry point for this panel: connects if needed (video
+        // suppressed, exactly like the old quick-toggle did, just triggered
+        // by a real visible button instead of a tab's onmouseup), queries
+        // the input device list, then starts listening -- or stops/cancels
+        // if already live/requesting.
+        function p22Toggle(event) {
             if (event) { event.stopPropagation(); }
-            var action = quickStartKinds[kind];
-            if (!action) return;
+            if (deskMic && (deskMic.state == 'live' || deskMic.state == 'requesting')) { deskMic.stop(); return; }
+
             if (desktop == null) {
                 connectDesktop(null, 3);
                 if (desktop == null) return; // e.g. no rights; connectDesktop already reported it
-                desktop._quickStart = kind;
+                // Video is unwanted unless the operator is already looking at
+                // the Desktop panel -- see autoUnpauseOnConnect in
+                // agent-desktop-0.0.2.js and the matching one-way resume in
+                // go() below, which fires if Desktop is opened later.
                 desktop._quickStartWantsVideo = (xxcurrentView == 11);
                 if (desktop.m) { desktop.m.autoUnpauseOnConnect = desktop._quickStartWantsVideo; }
                 var origOnStateChanged = desktop.onStateChanged;
@@ -8951,14 +8939,132 @@
                     if (origOnStateChanged) { origOnStateChanged(xdesktop, state); }
                     if ((state == 3) && (xdesktop === desktop)) {
                         if (!desktop._quickStartWantsVideo && desktop.m && desktop.m.SendPause) { desktop.m.SendPause(); }
-                        if (desktop._quickStart && quickStartKinds[desktop._quickStart]) { quickStartKinds[desktop._quickStart](); }
-                        desktop._quickStart = null;
+                        p22QueryDevices();
+                        if (deskMic) { deskMic.start(); }
                     }
+                    p22UpdateStatus();
                 };
             } else if (desktop.State == 3) {
-                action();
+                p22QueryDevices();
+                if (deskMic) { deskMic.start(); }
             }
-            // else: already connecting, ignore the extra click
+            // else: already connecting, wait for onStateChanged above
+            p22UpdateStatus();
+        }
+
+        function p22QueryDevices() {
+            if (desktop && desktop.m && desktop.m.SendMicDeviceQuery) { desktop.m.SendMicDeviceQuery(); }
+        }
+
+        // devices: array of display names, in the same order the agent will
+        // interpret a later SendMicStart's deviceIndex byte against -- valid
+        // only for this query/response round-trip, not stable across
+        // sessions or replugs, which is why the persisted choice
+        // (micsettings.deviceName) is a name, resolved back to an index here
+        // each time a fresh list arrives, rather than a raw index.
+        function p22DeviceListReceived(devices) {
+            var sel = Q('p22device');
+            if (!sel) return;
+            sel.innerHTML = '<option value="-1">System Default</option>';
+            for (var i = 0; i < devices.length; i++) {
+                var opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = devices[i];
+                sel.appendChild(opt);
+            }
+            var idx = -1;
+            if (micsettings.deviceName) {
+                for (var i = 0; i < devices.length; i++) { if (devices[i] === micsettings.deviceName) { idx = i; break; } }
+            }
+            sel.value = idx;
+        }
+
+        function p22DeviceChanged() {
+            var sel = Q('p22device');
+            if (!sel) return;
+            var idx = parseInt(sel.value, 10);
+            micsettings.deviceIndex = idx;
+            micsettings.deviceName = (idx >= 0 && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].textContent : '';
+            putstore('micsettings', JSON.stringify(micsettings));
+            if (deskMic) { deskMic.applySettings(micsettings); }
+        }
+
+        function micSettingsSetAdvancedEnabled(enabled) {
+            var ids = ['p22bitrate', 'p22application', 'p22vbrmode', 'p22bandwidth', 'p22framesize', 'p22complexity', 'p22dtx', 'p22fec', 'p22losspct'];
+            for (var i in ids) { var e = Q(ids[i]); if (e) { e.disabled = !enabled; } }
+        }
+
+        function micSettingsFillForm(s) {
+            Q('p22bitrate').value = s.bitrateKbps;
+            Q('p22application').value = s.application;
+            Q('p22vbrmode').value = s.vbrConstrained ? 'cvbr' : (s.vbr ? 'vbr' : 'cbr');
+            Q('p22bandwidth').value = s.bandwidth;
+            Q('p22framesize').value = s.frameSizeMs;
+            Q('p22complexity').value = s.complexity;
+            Q('p22dtx').checked = !!s.dtx;
+            Q('p22fec').checked = !!s.fec;
+            Q('p22losspct').value = s.packetLossPercent;
+        }
+
+        // Called when the panel is shown: reflects the persisted/current
+        // settings into the form without applying anything (nothing has
+        // changed yet).
+        function micSettingsPopulate() {
+            Q('p22preset').value = micPresets[micsettings.preset] ? micsettings.preset : 'custom';
+            micSettingsFillForm(micsettings);
+
+            // Old agents (pre-dating configurable mic encoding) report
+            // settingsSupported === false in MNG_MIC_CAPS -- don't let the
+            // operator pick a profile that silently won't apply.
+            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
+            QV('p22unsupportedNotice', unsupported);
+            micSettingsSetAdvancedEnabled(!unsupported && (Q('p22preset').value == 'custom'));
+        }
+
+        function micSettingsPresetChanged() {
+            var name = Q('p22preset').value;
+            if (name != 'custom' && micPresets[name]) { micSettingsFillForm(micPresets[name]); }
+            var unsupported = !!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false);
+            micSettingsSetAdvancedEnabled(!unsupported && (name == 'custom'));
+            micSettingsApply();
+        }
+
+        function p22AdvancedChanged() {
+            // Editing a field by hand always means Custom -- there's no
+            // meaning to "tweak one field of Balanced" other than turning it
+            // into a Custom profile with that one difference.
+            Q('p22preset').value = 'custom';
+            micSettingsSetAdvancedEnabled(!(deskMic && deskMic.caps && deskMic.caps.settingsSupported === false));
+            micSettingsApply();
+        }
+
+        // Reads the form (a named preset, or the Custom fields) and applies
+        // it: persists to localStorage, and re-applies live (no
+        // interruption) if a session is already listening or waiting on
+        // consent -- see applySettings() in agent-mic-0.1.0.js. This panel
+        // applies on every change rather than needing a Save button.
+        function micSettingsApply() {
+            var name = Q('p22preset').value;
+            var resolved = (name != 'custom' && micPresets[name]) ? micPresets[name] : {
+                bitrateKbps: parseInt(Q('p22bitrate').value, 10) || 28,
+                application: parseInt(Q('p22application').value, 10) || 0,
+                vbr: (Q('p22vbrmode').value != 'cbr') ? 1 : 0,
+                vbrConstrained: (Q('p22vbrmode').value == 'cvbr') ? 1 : 0,
+                bandwidth: parseInt(Q('p22bandwidth').value, 10) || 0,
+                frameSizeMs: parseInt(Q('p22framesize').value, 10) || 20,
+                complexity: parseInt(Q('p22complexity').value, 10) || 5,
+                dtx: Q('p22dtx').checked,
+                fec: Q('p22fec').checked,
+                packetLossPercent: parseInt(Q('p22losspct').value, 10) || 10
+            };
+            if (name != 'custom' && !micPresets[name]) { name = 'custom'; }
+
+            var deviceName = micsettings.deviceName, deviceIndex = micsettings.deviceIndex;
+            micsettings = { preset: name, deviceName: deviceName, deviceIndex: deviceIndex };
+            for (var k in resolved) { micsettings[k] = resolved[k]; }
+            putstore('micsettings', JSON.stringify(micsettings));
+
+            if (deskMic) { deskMic.applySettings(micsettings); }
         }
 
         function deviceToastFunction() {
@@ -10018,6 +10124,7 @@
                         deskMic.applySettings(micsettings); // seed the persisted/default profile before the first start()
                         desktop.m.onMicCaps = function(caps) { deskMic.onCaps(caps); };
                         desktop.m.onMicData = function(view) { deskMic.onData(view); };
+                        desktop.m.onMicDeviceList = function(devices) { p22DeviceListReceived(devices); };
                         desktop.onMicConsent = function(granted) { if (!granted) { deskMic.onConsentDenied(); } };
                     }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
@@ -20487,7 +20594,10 @@
         }
 
         function getTabGroup(v) {
-            return (v === 9) ? 1 : Math.floor(v / 10);
+            // 9 (Registry) and 22 (Mic) sit outside the 10-19 block that
+            // Math.floor(v/10) naturally groups as "device tabs", so both are
+            // folded in by hand -- same reason, same fix, for the same group.
+            return ((v === 9) || (v === 22)) ? 1 : Math.floor(v / 10);
         }
 
         function go(x, event) {
@@ -20503,7 +20613,7 @@
             // If "shift" is pressed, open a new tab.
             if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
-                if ((x >= 9) && (x <= 19)) {
+                if ((x >= 9) && (x <= 22)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
                     if (currentMesh) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentMesh._id); }
@@ -20539,11 +20649,13 @@
             for (var i = 0; i < 61; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
 
-            // If a connection was started via the Audio/Mic quick-toggle
-            // buttons (video paused, since nobody was looking), opening the
+            if (x == 22) { p22Show(); }
+
+            // If a connection was started from the Mic panel (video paused,
+            // since nobody was looking -- see p22Toggle()), opening the
             // actual Desktop panel now means video is wanted. One-way: once
             // resumed for a session, it stays resumed even if the user tabs
-            // away again -- see devQuickToggle().
+            // away again.
             if ((x == 11) && (desktop != null) && (desktop.State == 3) && (desktop.m) && (desktop._quickStartWantsVideo === false)) {
                 desktop.m.SendUnPause();
                 desktop._quickStartWantsVideo = true;
@@ -20556,7 +20668,7 @@
             // Change the URL
             if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
                 var urlviewmode = '';
-                if ((xxcurrentView >= 9) && (xxcurrentView <= 19)) { // Device Link
+                if ((xxcurrentView >= 9) && (xxcurrentView <= 22)) { // Device Link
                     if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
@@ -20591,7 +20703,7 @@
             if (goBackStack.length > 0) { backView = goBackStack[goBackStack.length - 1]; }
 
             // My Devices
-            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 9 && x < 20))) {
+            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 9 && x < 23))) {
                 QC('MainMenuMyDevices').add(mainMenuActiveClass);
                 QC('LeftMenuMyDevices').add(leftMenuActiveClass);
             } else if (x == 2 || (backView == 2) || ((backView == 0) && (x >= 20 && x < 30))) {
@@ -20624,7 +20736,7 @@
             QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
-            QV('MainSubMenuSpan', (x >= 9) && (x < 20));
+            QV('MainSubMenuSpan', (x >= 9) && (x < 23));
             QV('UserDummyMenuSpan', (x == 51) || ((x < 10) && (x != 6) && webPageFullScreen));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
@@ -20669,7 +20781,7 @@
             if (x == 9) { setupRegistry(); }
 
             // Update the web page title
-            if ((currentNode) && (x >= 9) && (x < 20)) {
+            if ((currentNode) && (x >= 9) && (x < 23)) {
                 document.title = currentNode.name + ((meshes[currentNode.meshid])?(' - ' + meshes[currentNode.meshid].name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
             } else {
                 document.title = decodeURIComponent('{{{extitle}}}');

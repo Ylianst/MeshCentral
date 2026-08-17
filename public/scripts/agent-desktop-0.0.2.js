@@ -327,6 +327,21 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 99: // MNG_MIC_DATA — Opus microphone audio from the device
                 if (obj.onMicData) { obj.onMicData(view); }
                 break;
+            case 104: // MNG_MIC_DEVICE_LIST — enumerated input devices, response to SendMicDeviceQuery
+                if (cmdsize >= 5) {
+                    var micDevCount = view[4], micDevices = [], micDevPtr = 5;
+                    for (var mdi = 0; mdi < micDevCount && micDevPtr < cmdsize; mdi++) {
+                        var micNameLen = view[micDevPtr]; micDevPtr++;
+                        var micNameBytes = view.slice(micDevPtr, micDevPtr + micNameLen);
+                        var micName = '';
+                        for (var mnb = 0; mnb < micNameBytes.length; mnb++) { micName += String.fromCharCode(micNameBytes[mnb]); }
+                        try { micName = decodeURIComponent(escape(micName)); } catch (mex) { } // best-effort UTF-8 decode
+                        micDevices.push(micName);
+                        micDevPtr += micNameLen;
+                    }
+                    if (obj.onMicDeviceList) { obj.onMicDeviceList(micDevices); }
+                }
+                break;
             case 96: // MNG_MIC_CAPS — microphone availability + consent state
                 if (cmdsize >= 9) {
                     var micCaps = {
@@ -685,16 +700,20 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // bare 4-byte frame (agent uses whatever encoder settings are already in
     // effect -- this is the only frame an agent older than the configurable
     // -mic-encoding feature understands). Called with a params object, sends
-    // an extended 12-byte frame the agent applies immediately, live, whether
+    // an extended 13-byte frame the agent applies immediately, live, whether
     // this is a fresh start or a profile change on an already-running
     // session -- see mic_apply_params() in linux_mic.c/windows_mic.c for the
-    // exact field meanings this must match byte-for-byte.
+    // exact field meanings this must match byte-for-byte. params.deviceIndex
+    // is an index into the list the agent last sent via MNG_MIC_DEVICE_LIST
+    // (see SendMicDeviceQuery below); omit it, or use -1, for the system's
+    // default input device.
     obj.SendMicStart = function (params) {
         if (params == null) { obj.send(String.fromCharCode(0x00, 0x61, 0x00, 0x04)); return; }
         var vbrFlags = (params.vbr ? 0x01 : 0x00) | (params.vbrConstrained ? 0x02 : 0x00);
         var miscFlags = (params.dtx ? 0x01 : 0x00) | (params.fec ? 0x02 : 0x00);
+        var deviceIndex = (params.deviceIndex == null || params.deviceIndex < 0) ? 0xFF : Math.max(0, Math.min(254, params.deviceIndex | 0));
         obj.send(String.fromCharCode(
-            0x00, 0x61, 0x00, 0x0C,
+            0x00, 0x61, 0x00, 0x0D,
             Math.max(0, Math.min(255, params.bitrateKbps | 0)),
             Math.max(0, Math.min(2, params.application | 0)),
             vbrFlags,
@@ -702,10 +721,17 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             Math.max(0, Math.min(255, params.frameSizeMs | 0)),
             Math.max(0, Math.min(10, params.complexity | 0)),
             miscFlags,
-            Math.max(0, Math.min(100, params.packetLossPercent | 0))
+            Math.max(0, Math.min(100, params.packetLossPercent | 0)),
+            deviceIndex
         ));
     }
     obj.SendMicStop  = function () { obj.send(String.fromCharCode(0x00, 0x62, 0x00, 0x04)); } // MNG_MIC_STOP  (98 = 0x62)
+    // MNG_MIC_DEVICE_QUERY (103 = 0x67): ask the agent to enumerate available
+    // input devices. Response arrives as MNG_MIC_DEVICE_LIST (case 104 below),
+    // handed to obj.onMicDeviceList. The returned order is only valid for
+    // this round-trip -- a later SendMicStart's deviceIndex must reference
+    // the most recently received list, not a cached one from an earlier query.
+    obj.SendMicDeviceQuery = function () { obj.send(String.fromCharCode(0x00, 0x67, 0x00, 0x04)); }
 
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }
