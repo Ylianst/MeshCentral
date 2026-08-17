@@ -9058,6 +9058,7 @@
                 if (node.av && node.av.length > 0) {
                     var y = [];
                     for (var i in node.av) {
+                        if (node.av[i] == null) continue;
                         if (node.av[i].product) {
                             var avx = EscapeHtml(node.av[i].product);
                             if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
