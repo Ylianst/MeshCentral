@@ -6729,6 +6729,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
+                    if (doc?.hardware?.windows?.volumes) {
+                        for (var i in doc.hardware.windows.volumes) { if (doc.hardware.windows.volumes[i] == null) { delete doc.hardware.windows.volumes[i]; } }
+                    }
+
                     // If this is not an admin user, don't send any BitLocker recovery info
                     if (rights != MESHRIGHT_ADMIN && doc?.hardware?.windows) {
                         if (doc.hardware.windows?.volumes) {
