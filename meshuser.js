@@ -1095,6 +1095,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // User filtered events
                     if ((command.userid != null) && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) {
+                        if (typeof command.userid != 'string') return;
                         const userSplit = command.userid.split('/');
                         if ((userSplit.length != 3) || (userSplit[1] != domain.id)) return;
 
