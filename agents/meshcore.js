@@ -3519,8 +3519,19 @@ function onMicConsentNeeded(skipPrompt) {
 function micConsentHandleStart(tunnel, skipPrompt) {
     var httprequest = tunnel.httprequest;
 
-    // Already granted for this session.
-    if (httprequest.micConsentGranted === true) { return true; }
+    // NOTE: this function only ever runs in response to native's own
+    // MNG_MIC_CONSENT_NEEDED, which native sends only when it has just
+    // checked its own consent state and found it missing (see
+    // kvm_mic_start()'s fail-closed gate in linux_mic.c/windows_mic.c). So
+    // httprequest.micConsentGranted -- this side's cache of a *previous*
+    // grant -- can never be validly true here: MNG_MIC_STOP resets native's
+    // consent directly, without going through this JS layer at all, so a
+    // stop followed by a new start always lands here with a stale cached
+    // "true" from the prior session. Trusting it used to make the second
+    // start silently return without ever telling native to resume,
+    // stranding the browser in "requesting" forever. Always fall through
+    // and re-decide below.
+    httprequest.micConsentGranted = false;
 
     // A prompt is already on screen; drop duplicates rather than stacking
     // dialogs if the operator clicks repeatedly.
