@@ -6762,6 +6762,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var b;
                         if ((rights == MESHRIGHT_ADMIN) && (b = doc.hardware?.windows?.bitlocker)) {
                             for (const robj of Object.values(b)) {
+                                if (robj == null) continue;
                                 robj.recoveryPassword = robj.rp; delete robj.rp;
                                 robj.lastSeen = new Date(robj.t); delete robj.t;
                             }
