@@ -7083,6 +7083,7 @@
                 if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
                 if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
+                if (Array.isArray(ident.gpu_name)) { ident.gpu_name = ident.gpu_name.filter(function (x) { return x != null; }); }
                 if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard' }); }
 
