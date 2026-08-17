@@ -1123,6 +1123,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else if (command.nodeid != null) { // Device filtered events
                         // Check that the user has access to this nodeid
 
+                        if (typeof command.nodeid != 'string') return;
                         const nodeSplit = command.nodeid.split('/');
                         if (nodeSplit.length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
 
