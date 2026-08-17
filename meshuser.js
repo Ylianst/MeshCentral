@@ -3621,6 +3621,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Argument validation
                     if (common.validateString(command.msg, 1, 4096) == false) break; // Check event
+                    var decodedMsg;
+                    try { decodedMsg = decodeURIComponent(command.msg); } catch (ex) { break; }
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -3628,7 +3630,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add an event for this device
                         var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodedMsg, domain: domain.id };
                         parent.parent.DispatchEvent(targets, obj, event);
                     });
                     break;
