@@ -13606,6 +13606,7 @@
                 var x = '';
                 for (var i in hardware.linux.volumes) {
                     var m = hardware.linux.volumes[i];
+                    if (m == null) continue;
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
