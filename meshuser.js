@@ -4729,6 +4729,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // This is only available when plugins are enabled since it could cause stress on the server
                 if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 for (var i in command.nodes) {
+                    if ((command.nodes[i] == null) || (typeof command.nodes[i]._id != 'string')) continue;
                     parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
                 }
                 break;
