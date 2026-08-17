@@ -1770,9 +1770,11 @@
                             } else if ((message.type == 'userSessions') && (currentNode != null) && (currentNode._id == message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
+                                var userSessionTag = parseInt(message.tag);
+                                if (isNaN(userSessionTag)) { userSessionTag = 0; }
                                 if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
-                                if (userSessions.length == 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
-                                else if (userSessions.length == 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
+                                if (userSessions.length == 0) { connectDesktop(null, 1, null, userSessionTag); } // No active sessions, do a normal connection.
+                                else if (userSessions.length == 1) { var userSessionId = parseInt(userSessions[0].SessionId); connectDesktop(null, 1, isNaN(userSessionId) ? null : userSessionId, userSessionTag); } // One active session, connect to it
                                 else {
                                     var x = '';
                                     var sortBy = "{{{userSessionsSort}}}";
@@ -1786,8 +1788,10 @@
                                         });
                                     }
                                     for (var i in userSessions) {
-                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + ', ' + userSessions[i].StationName;
-                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
+                                        var userSessionId = parseInt(userSessions[i].SessionId);
+                                        if (isNaN(userSessionId)) continue;
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessionId + ',' + userSessionTag + ')>' + EscapeHtml(userSessions[i].State) + ', ' + EscapeHtml(userSessions[i].StationName);
+                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + EscapeHtml(userSessions[i].Domain) + '/' + EscapeHtml(userSessions[i].Username); } else { x += ' - ' + EscapeHtml(userSessions[i].Username); } }
                                         x += '</div>';
                                     }
                                     QH('p11DeskSessionSelector', x);
@@ -2968,7 +2972,7 @@
                     var publiclink = '';
                     if (publicfolder) { publiclink = ' (<a style=cursor:pointer onclick=\'p5showPublicLink("' + publicPath + '/' + f.nx + '")\'>' + "Link" + '</a>)'; }
                     if (f.s > 0) { link = '<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=' + encodeURIComponent(filetreelinkpath + '/' + f.nx) + '\">' + shortname + '</a>' + publiclink; }
-                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + f.nx + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
+                    h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -6338,12 +6342,12 @@
                     var right = '';
                     var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
                     var displayname = (sysvol && sysvol.name) ? (EscapeHtml(sysvol.name) + ' (' + shortname + ')') : shortname;
-                    h = '<div class=filelist file=999><div class=filelistrow><input file=999 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + displayname + '</a></div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
+                    h = '<div class=filelist file=999><div class=filelistrow><input file=999 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname><a style=cursor:pointer onclick=p13folderset("' + encodeURIComponent(f.nx) + '")>' + displayname + '</a></div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 } else {
                     var truncname = p13truncateName(name);
-                    var link = '<a style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponent(newlinkpath + '/' + name) + '\',\'' + encodeURIComponent(name) + '\',' + f.s + ')\">' + truncname + '</a>';
+                    var link = '<a style=cursor:pointer onclick=\"p13downloadfile(\'' + encodeURIComponentEx(newlinkpath + '/' + name) + '\',\'' + encodeURIComponentEx(name) + '\',' + f.s + ')\">' + truncname + '</a>';
                     if (f.s == 0) { link = truncname; }
-                    h = '<div class=filelist file=3><div class=filelistrow><input file=3 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<div class="fileIcon' + f.t + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname>' + link + '</div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
+                    h = '<div class=filelist file=3><div class=filelistrow><input file=3 style="flex-shrink:0" name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<div class="fileIcon' + f.t + '" style="flex-shrink:0;margin-top:0"></div>&nbsp;<div class=filelistcontent><div class=filelistname>' + link + '</div><div class=filelistmeta>' + fdatestr + EscapeHtml(fsize) + '</div></div></div></div>';
                 }
 
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
@@ -6397,7 +6401,17 @@
 
         function p13sort_files(files) {
             var r = [], sortselection = Q('p13sortdropdown').value;
-            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            for (var i in files) {
+                var file = files[i];
+                file.nx = i;
+                file.t = parseInt(file.t);
+                if (isNaN(file.t)) { file.t = 3; }
+                if (file.s == null) { file.s = 0; }
+                if (file.n == null) { file.n = i; }
+                file.n = String(file.n);
+                file.ln = file.n.toLowerCase();
+                r.push(file);
+            }
             p13sortorder = 1;
             if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
             if (sortselection == 1) { r.sort(p13sort_filename); }
@@ -6450,7 +6464,7 @@
         function p13createfolderEx() { files.sendText({ action: 'mkdir', reqid: 1, path: p13filetreelocation.join('/') + '/' + Q('p13renameinput').value }); p13folderup(999); }
         function p13deletefile() { var cc = p13getFileSelCount(), rec = (p13getFileSelDirCount() > 0) ? '<br /><br /><label><input type=checkbox id=p13recdeleteinput>' + "Recursive delete" + '</label><br>' : '<input type=checkbox id=p13recdeleteinput style=\'display:none\'>'; setDialogMode(2, "Delete", 3, p13deletefileEx, (cc > 1) ? (format("Delete {0} selected items?", cc) + rec) : ("Delete selected item?" + rec)); }
         function p13deletefileEx() { var delfiles = [], checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { delfiles.push(p13filetree.dir[checkboxes[i].value].n); } } files.sendText({ action: 'rm', reqid: 1, path: p13filetreelocation.join('/'), delfiles: delfiles, rec: Q('p13recdeleteinput').checked }); p13folderup(999); }
-        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
+        function p13renamefile() { var renamefile, checkboxes = document.getElementsByName('fd'); for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { renamefile = p13filetree.dir[checkboxes[i].value].n; } } setDialogMode(2, "Rename", 3, p13renamefileEx, '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + EscapeHtml(renamefile) + '" />', { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }); focusTextBox('p13renameinput'); p13fileNameCheck(); }
         function p13renamefileEx(b, t) { t.newname = Q('p13renameinput').value; files.sendText(t); p13folderup(999); }
         function p13fileNameCheck(e) { var x = isFilenameValid(Q('p13renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e != null) && (e.keyCode == 13)) { dialogclose(1); } }
         function p13uploadFile() { setDialogMode(2, "Upload File", 3, p13uploadFileEx, '<input type=file name=files id=p13uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p13uploadinput\')" />'); updateUploadDialogOk('p13uploadinput'); }
@@ -6882,7 +6896,7 @@
             // Pending Reboot
             if (node.pr) {
                 var y = [];
-                for (var i in node.pr){ y.push(node.pr[i]); }
+                for (var i in node.pr){ y.push(EscapeHtml(node.pr[i])); }
                 if (y.length > 0) x += addDetailItem("Pending Reboot", y.join(', '));
             }
 
@@ -6898,6 +6912,7 @@
             if (node.av && node.av.length > 0) {
                 var y = [];
                 for (var i in node.av) {
+                    if (node.av[i] == null) continue;
                     if (node.av[i].product) {
                         var avx = EscapeHtml(node.av[i].product);
                         if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
@@ -7021,7 +7036,7 @@
                     }
                     x += '</div></td></tr>';
                 }
-                if (hardware.network && hardware.network.dns) {
+                if (hardware.network && Array.isArray(hardware.network.dns)) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
@@ -7068,6 +7083,7 @@
                 if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
                 if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
+                if (Array.isArray(ident.gpu_name)) { ident.gpu_name = ident.gpu_name.filter(function (x) { return x != null; }); }
                 if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard' }); }
 
@@ -7098,6 +7114,7 @@
                 x += '<table style=width:100%>';
                 for (var i in hardware.battery) {
                     var battery = hardware.battery[i];
+                    if (battery == null) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
@@ -7190,6 +7207,7 @@
             if (hardware.identifiers && ident.storage_devices) {
                 var x = '';
                 // Sort Storage
+                ident.storage_devices = ident.storage_devices.filter(function (x) { return x != null; });
                 ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
 
                 x += '<table style=width:100%>';
@@ -7225,7 +7243,7 @@
                 for (var i in hardware.windows.volumes) {
                     var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i) + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
                     if (m.size) {
                         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
@@ -7247,7 +7265,7 @@
                     if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
                         var bitlockerState;
                         if (typeof(m.volumeStatus) === 'string') {  // string style db schema
-                            bitlockerState = m.volumeStatus;
+                            bitlockerState = EscapeHtml(m.volumeStatus);
                         } else {    // new code db schema
                             if (m.protectionStatus == 2) {
                                 bitlockerState = 'Locked'
@@ -7274,6 +7292,7 @@
                 var x = '';
                 for (var i in hardware.linux.volumes) {
                     var m = hardware.linux.volumes[i];
+                    if (m == null) continue;
                     if(m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
@@ -7347,9 +7366,12 @@
 
         function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
             if (xxdialogMode) return false;
-            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
-            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
-            setDialogMode(2, decodeURIComponent(drive) + ': ' + "BitLocker Information", 1, null, x, '');
+            var decodedDrive = drive ? decodeURIComponent(drive) : "Unknown";
+            var decodedIdentifier = identifier ? decodeURIComponent(identifier) : "Unknown";
+            var decodedPassword = password ? decodeURIComponent(password) : "Unknown";
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedIdentifier) + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedPassword) + '</p></div>';
+            setDialogMode(2, EscapeHtml(decodedDrive) + ': ' + "BitLocker Information", 1, null, x, '');
         }
 
 
@@ -7611,8 +7633,8 @@
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
-                x += addHtmlValue("Hostname", currentMesh.kvm.host);
-                x += addHtmlValue("Username", currentMesh.kvm.user);
+                x += addHtmlValue("Hostname", EscapeHtml(currentMesh.kvm.host));
+                x += addHtmlValue("Username", EscapeHtml(currentMesh.kvm.user));
             }
 
             x += '<br><input type=button value="' + "Notes" + '" onclick=showNotes(false,"' + encodeURIComponent(currentMesh._id) + '") />';
@@ -8036,7 +8058,7 @@
 
             // Show notification within the web page.
             if (n.time == null) { n.time = Date.now(); }
-            if (n.id == null) { n.id = Math.random(); }
+            if ((typeof n.id != 'number') || (isFinite(n.id) == false)) { n.id = Math.random(); }
             notifications.unshift(n);
             setNotificationCount(notifications.length);
             clickNotificationIcon(true);
@@ -8331,13 +8353,13 @@
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
         function getUserName(userid) { 
             var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
-            if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + decode_utf8(atob(useridsplit[3].substring(6))); }
+            if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + EscapeHtml(decode_utf8(atob(useridsplit[3].substring(6)))); }
             if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
             if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
             if (userid == userinfo._id) { return (userinfo.name + guestname); }
             if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
             if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
-            return (useridsplit[2] + guestname);
+            return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right' + (state === true ? ';word-break:break-all' : '') + '>' + value + '</table>'; }
         function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }

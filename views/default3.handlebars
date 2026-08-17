@@ -3705,7 +3705,7 @@
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
-                            QH('p18Status', '<span>' + "ERROR: " + JSON.parse(message.value).error + '</span>');
+                            QH('p18Status', '<span>' + "ERROR: " + EscapeHtml(JSON.parse(message.value).error) + '</span>');
                             QH('p18html', '<div style="text-align:center;padding:50px;color:gray"><i>' + "Click Refresh to load installed software..." + '</i></div>');
                             installedAppsLoading = false;
                             installedAppsLoadingType = 0;
@@ -3793,9 +3793,14 @@
                             } else if ((message.type === 'userSessions') && (currentNode != null) && (currentNode._id === message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
+                                var userSessionTag = parseInt(message.tag);
+                                if (isNaN(userSessionTag)) { userSessionTag = 0; }
                                 if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].State == 'Connected') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { userSessions.push(message.data[i]); } } }
-                                if (userSessions.length === 0) { connectDesktop(null, 1, null, message.tag); } // No active sessions, do a normal connection.
-                                else if (userSessions.length === 1) { connectDesktop(null, 1, userSessions[0].SessionId, message.tag); } // One active session, connect to it
+                                if (userSessions.length === 0) { connectDesktop(null, 1, null, userSessionTag); } // No active sessions, do a normal connection.
+                                else if (userSessions.length === 1) {
+                                    var userSessionId = parseInt(userSessions[0].SessionId);
+                                    connectDesktop(null, 1, isNaN(userSessionId) ? null : userSessionId, userSessionTag);
+                                } // One active session, connect to it
                                 else {
                                     var x = '';
                                     var sortBy = "{{{userSessionsSort}}}";
@@ -3809,8 +3814,10 @@
                                         });
                                     }
                                     for (var i in userSessions) {
-                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessions[i].SessionId + ',' + message.tag + ')>' + userSessions[i].State + (userSessions[i].StationName ? (', ' + userSessions[i].StationName) : '');
-                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + userSessions[i].Domain + '/' + userSessions[i].Username; } else { x += ' - ' + userSessions[i].Username; } }
+                                        var userSessionId = parseInt(userSessions[i].SessionId);
+                                        if (isNaN(userSessionId)) continue;
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessionId + ',' + userSessionTag + ')>' + EscapeHtml(userSessions[i].State) + (userSessions[i].StationName ? (', ' + EscapeHtml(userSessions[i].StationName)) : '');
+                                        if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + EscapeHtml(userSessions[i].Domain) + '/' + EscapeHtml(userSessions[i].Username); } else { x += ' - ' + EscapeHtml(userSessions[i].Username); } }
                                         x += '</div>';
                                     }
                                     QH('p11DeskSessionSelector', x);
@@ -3826,20 +3833,20 @@
                                         if (!message.value.cmd && message.value.path) { message.value.cmd = message.value.path }
                                         if (!message.value.processUser && message.value.userName) { message.value.processUser = message.value.userName.split("\\")[1]; }
                                         if (!message.value.processDomain && message.value.userName) { message.value.processDomain = message.value.userName.split("\\")[0]; }
-                                        if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.processName + '</b></div></div>'; }
-                                        if (message.value.machineName) { x += addHtmlValue5("Machine Name", message.value.machineName); }
-                                        if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.cmd + '</b></div></div>'; }
-                                        if (message.value.mainWindowTitle) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Window Title" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + message.value.mainWindowTitle + '</b></div></div>'; }
-                                        if (message.value.processUser) { x += addHtmlValue5("User", message.value.processUser); }
-                                        if (message.value.processDomain) { x += addHtmlValue5("Domain", message.value.processDomain); }
-                                        if (message.value.startTime) { x += addHtmlValue5("Start Time", message.value.startTime); }
+                                        if (message.value.processName) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Process Name" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.processName) + '</b></div></div>'; }
+                                        if (message.value.machineName) { x += addHtmlValue5("Machine Name", EscapeHtml(message.value.machineName)); }
+                                        if (message.value.cmd) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Command Line" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.cmd) + '</b></div></div>'; }
+                                        if (message.value.mainWindowTitle) { x += '<div style=padding:4px><div style=padding-bottom:4px>' + "Window Title" + '</div><div style=word-wrap:break-word;padding-left:6px><b>' + EscapeHtml(message.value.mainWindowTitle) + '</b></div></div>'; }
+                                        if (message.value.processUser) { x += addHtmlValue5("User", EscapeHtml(message.value.processUser)); }
+                                        if (message.value.processDomain) { x += addHtmlValue5("Domain", EscapeHtml(message.value.processDomain)); }
+                                        if (message.value.startTime) { x += addHtmlValue5("Start Time", EscapeHtml(message.value.startTime)); }
                                         x += '<hr />';
                                         if (message.value.PriorityBoostEnabled) { x += addHtmlValue5("Priority Boost", message.value.PriorityBoostEnabled ? "Enabled" : "Disabled"); }
-                                        if (message.value.sessionId) { x += addHtmlValue5("Session Id", message.value.sessionId); }
-                                        if (message.value.handleCount) { x += addHtmlValue5("Handle Count", message.value.handleCount); }
-                                        if (message.value.privilegedProcessorTime) { x += addHtmlValue5("Privileged Processor Time", format("{0} seconds", message.value.privilegedProcessorTime)); }
-                                        if (message.value.totalProcessorTime) { x += addHtmlValue5("Total Processor Time", format("{0} seconds", message.value.totalProcessorTime)); }
-                                        if (message.value.userProcessorTime) { x += addHtmlValue5("User Processor Time", format("{0} seconds", message.value.userProcessorTime)); }
+                                        if (message.value.sessionId) { x += addHtmlValue5("Session Id", EscapeHtml(message.value.sessionId)); }
+                                        if (message.value.handleCount) { x += addHtmlValue5("Handle Count", EscapeHtml(message.value.handleCount)); }
+                                        if (message.value.privilegedProcessorTime) { x += addHtmlValue5("Privileged Processor Time", EscapeHtml(format("{0} seconds", message.value.privilegedProcessorTime))); }
+                                        if (message.value.totalProcessorTime) { x += addHtmlValue5("Total Processor Time", EscapeHtml(format("{0} seconds", message.value.totalProcessorTime))); }
+                                        if (message.value.userProcessorTime) { x += addHtmlValue5("User Processor Time", EscapeHtml(format("{0} seconds", message.value.userProcessorTime))); }
                                         if (message.value.nonpagedSystemMemorySize) { x += addHtmlValue5("Non Paged Memory", getNiceSize2(message.value.nonpagedSystemMemorySize)); }
                                         if (message.value.pagedMemorySize) { x += addHtmlValue5("Paged Memory", getNiceSize2(message.value.pagedMemorySize)); }
                                         if (message.value.privateMemorySize) { x += addHtmlValue5("Private Memory", getNiceSize2(message.value.privateMemorySize)); }
@@ -5037,9 +5044,9 @@
                 }
                 case 'downgradePluginVersions': {
                     var vSelect = '<select id="lastPluginVersion">';
-                    message.info.versionList.forEach(function (v) { vSelect += '<option value="' + v.zipball_url + '">' + v.name + '</option>'; });
+                    message.info.versionList.forEach(function (v) { vSelect += '<option value="' + EscapeHtml(v.zipball_url) + '">' + EscapeHtml(v.name) + '</option>'; });
                     vSelect += '</select>';
-                    setModalContent('xxAddAgent', "Plugin Action", format("Select the version to downgrade the plugin: {0}", message.info.name) + '<hr />' + vSelect + '<hr />' + "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something." + + '<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + message.info.id + '" />');
+                    setModalContent('xxAddAgent', "Plugin Action", format("Select the version to downgrade the plugin: {0}", EscapeHtml(message.info.name)) + '<hr />' + vSelect + '<hr />' + "Please be aware that downgrading is not recommended. Please only do so in the event that a recent upgrade has broken something." + '<input id="lastPluginAct" type="hidden" value="downgrade" /><input id="lastPluginId" type="hidden" value="' + EscapeHtml(message.info.id) + '" />');
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', pluginActionEx);
                     break;
                 }
@@ -8073,7 +8080,7 @@
             var filetreexx = p13sort_files(p13filetree.dir);
             var file = filetreexx[parseInt(contextelement.attributes.fileindex.nodeValue)];
             if (action == 1) { // Rename the file
-                setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + file.n + '" />');
+                setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + EscapeHtml(file.n) + '" />');
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: file.n }));
                 focusTextBox('p13renameinput');
                 p13fileNameCheck();
@@ -8585,7 +8592,7 @@
             var x = '<div style=margin-bottom:6px><label for=selectnode-search>' + "Search" + '</label>&nbsp&nbsp<input type=text placeholder="' + "Device name" + '" id="selectnode-search" onchange=onPlaceNodeInputChange() onkeyup=onPlaceNodeInputChange() autocomplete=off style=width:120px></div><div id=placenode style="height:254px;overflow-y:auto;width:100%;margin:12px 1px 4px 1px;"><div id=noNodesMapPlace style=text-align:center;width:100%;display:none>' + "No devices found." + '</div>';
             for (var i in nodes) {
                 x += '<div class=noselect id=' + nodes[i]._id + '-rowid onclick=selectNodeToPlace(event,\'' + nodes[i]._id + '\') style=background-color:lightgray;margin-bottom:4px;border-radius:2px><input name=PlaceMapDeviceCheckbox id=' + nodes[i]._id + '-checkid type=checkbox class="form-check-input me-2" style=width:16px;display:inline />';
-                x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + nodes[i].name + '</div></div>';
+                x += '<div class=j' + nodes[i].icon + ' style=width:16px;height:16px;margin-top:2px;margin-right:4px;display:inline-block></div><div style=width:16px;display:inline>' + EscapeHtml(nodes[i].name) + '</div></div>';
             }
             setModalContent('xxAddAgent', "Select a node to place", x + '</div>');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => placeNodeEx(3, coords));
@@ -8935,7 +8942,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    if (node.agent.id == 14) { str = node.agent.core; }
+                    if (node.agent.id == 14) { str = EscapeHtml(node.agent.core); }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
                     x += addDeviceAttribute("Mesh Agent", str);
                 }
@@ -9035,7 +9042,7 @@
                 // Pending Reboot
                 if (node.pr) {
                     var y = [];
-                    for (var i in node.pr){ y.push(node.pr[i]); }
+                    for (var i in node.pr){ y.push(EscapeHtml(node.pr[i])); }
                     if (y.length > 0) x += addDeviceAttribute("Pending Reboot", y.join(', '));
                 }
 
@@ -9051,6 +9058,7 @@
                 if (node.av && node.av.length > 0) {
                     var y = [];
                     for (var i in node.av) {
+                        if (node.av[i] == null) continue;
                         if (node.av[i].product) {
                             var avx = EscapeHtml(node.av[i].product);
                             if (node.av[i].enabled !== true) { avx += ' - <span style=color:red>' + "Disabled" + '</span>'; }
@@ -10422,7 +10430,7 @@
             var y = '<select id=p10newGroup class="form-select">', count = 0, altGroups = [];
             for (var i in meshes) { var meshrights = GetMeshRights(i); if ((meshes[i]._id != targetMeshId) && (meshrights & 4)) { altGroups.push(meshes[i]); } }
             altGroups.sort(nameSort);
-            for (var i in altGroups) { count++; y += '<option value=\'' + altGroups[i]._id + '\'>' + altGroups[i].name + '</option>'; }
+            for (var i in altGroups) { count++; y += '<option value=\'' + altGroups[i]._id + '\'>' + EscapeHtml(altGroups[i].name) + '</option>'; }
             y += '</select>';
 
             if (count > 0) {
@@ -12220,7 +12228,12 @@
             var p = [], processes = null;
             try { processes = JSON.parse(message.value); } catch (e) { }
             if (processes != null) {
-                for (var pid in processes) { p.push({ p: parseInt(pid), c: processes[pid].cmd, d: processes[pid].cmd.toLowerCase(), u: processes[pid].user }); }
+                for (var pid in processes) {
+                    if ((processes[pid] == null) || (typeof processes[pid] != 'object')) continue;
+                    var processId = parseInt(pid), processCommand = processes[pid].cmd;
+                    if (isNaN(processId) || (typeof processCommand != 'string')) continue;
+                    p.push({ p: processId, c: processCommand, d: processCommand.toLowerCase(), u: processes[pid].user });
+                }
                 if (deskTools.sort == 0) { p.sort(sortProcessPid); } else if (deskTools.sort == 1) { p.sort(sortProcessName); }
                 var x = '';
                 for (var i in p) {
@@ -12228,9 +12241,9 @@
                         var c = p[i].c;
                         x += '<div onclick=showProcessDetails(' + p[i].p + ') class="deskToolsBar d-flex">';
                         x += '<div class="pe-1 text-start" style=width:50px;>' + EscapeHtml(p[i].p) + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + EscapeHtml(c) + '">' + c + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + EscapeHtml(c) + '">' + EscapeHtml(c) + '</div>';
                         x += '<div class="ms-auto">' + (p[i].u ? EscapeHtml(p[i].u) : '');
-                        x += '<i class="ps-1 fa-solid fa-trash-can" role="button" title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',"' + EscapeHtml(p[i].c) + '")\'></i></div>';
+                        x += '<i class="ps-1 fa-solid fa-trash-can" role="button" title="' + "Stop process" + '" onclick=\'return stopProcess(' + EscapeHtml(p[i].p) + ',' + EscapeHtml(JSON.stringify(p[i].c)) + ')\'></i></div>';
                         x += '</div>';
                     }
                 }
@@ -12254,12 +12267,15 @@
             deskTools.services = services;
             if (services != null) {
                 for (var i in services) {
-                    if (services[i].status) {
+                    if ((services[i] == null) || (typeof services[i] != 'object')) continue;
+                    var serviceIndex = parseInt(i);
+                    if (isNaN(serviceIndex)) continue;
+                    if (services[i].status && (typeof services[i].status.state == 'string')) {
                         // Windows
-                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: i });
-                    } else if (services[i].serviceType) {
+                        s.push({ p: capitalizeFirstLetter(services[i].status.state.toLowerCase()), d: services[i].displayName, i: serviceIndex });
+                    } else if ((typeof services[i].serviceType == 'string') && (typeof services[i].name == 'string')) {
                         // Linux (TODO: This the service status is not displayed, not sure start/stop/restart will work).
-                        s.push({ p: services[i].serviceType, d: services[i].name, i: i });
+                        s.push({ p: services[i].serviceType, d: services[i].name, i: serviceIndex });
                     }
                 }
                 if (deskTools.ssort == 0) { s.sort(sortProcessPid); } else if (deskTools.ssort == 1) { s.sort(sortProcessName); }
@@ -12271,7 +12287,7 @@
                         else if (ss == 'Running') { ss = "Running"; }
                         x += '<div onclick=showServiceWaitDialog(' + s[i].i + ') class=deskToolsBar>';
                         x += '<div style=width:70px;float:left;padding-right:5px>' + EscapeHtml(ss) + '</div>';
-                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + c + '">' + EscapeHtml(c) + '</div>';
+                        x += '<div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="' + EscapeHtml(c) + '">' + EscapeHtml(c) + '</div>';
                         x += '</div>';
                     }
                 }
@@ -12281,20 +12297,22 @@
 
         function showServiceDetailsDialog(data) {
             if (xxdialogMode && (xxdialogTag.indexOf('service_') != -1)) {
-                var index = xxdialogTag.replace('service_', '')
+                var index = parseInt(xxdialogTag.replace('service_', ''));
+                if (isNaN(index)) return;
                 // var org_service = deskTools.services[index];
-                var service = data.value ? JSON.parse(data.value) : deskTools.services[index];
-                if (data.value) service.displayName = deskTools.services[index].displayName;
-                if (service != null) {
+                var service = null;
+                try { service = data.value ? JSON.parse(data.value) : deskTools.services[index]; } catch (e) { }
+                if ((service != null) && (typeof service == 'object')) {
+                    if (data.value && deskTools.services && deskTools.services[index]) { service.displayName = deskTools.services[index].displayName; }
                     var x = '';
-                    if (service.name) { x += addHtmlValue("Name", service.name); }
-                    if (service.displayName) { x += addHtmlValue("Display name", service.displayName); }
+                    if (service.name) { x += addHtmlValue("Name", EscapeHtml(service.name)); }
+                    if (service.displayName) { x += addHtmlValue("Display name", EscapeHtml(service.displayName)); }
                     if (service.status) {
-                        var ss = capitalizeFirstLetter(service.status.state.toLowerCase());
+                        var ss = (typeof service.status.state == 'string') ? EscapeHtml(capitalizeFirstLetter(service.status.state.toLowerCase())) : '';
                         if (ss == 'Stopped') { ss = "Stopped"; } // TODO: Add all other states for translation
                         else if (ss == 'Running') { ss = "Running"; }
                         if (service.status.state) { x += addHtmlValue("State", ss); }
-                        if (service.status.pid) { x += addHtmlValue("PID", service.status.pid); }
+                        if (service.status.pid) { x += addHtmlValue("PID", EscapeHtml(service.status.pid)); }
                         var serviceTypes = [];
                         if (service.status.isFileSystemDriver === true) { serviceTypes.push("FileSystemDriver"); }
                         if (service.status.isInteractive === true) { serviceTypes.push("Interactive"); }
@@ -12303,9 +12321,9 @@
                         if (service.status.isSharedProcess === true) { serviceTypes.push("SharedProcess"); }
                         if (serviceTypes.length > 0) { x += addHtmlValue("Type", serviceTypes.join(', ')); }
                     }
-                    if (service.startType) { x += addHtmlValue("Start Type", service.startType); }
-                    if (service.user) { x += addHtmlValue("User", service.user); }
-                    if (service.installedBy) { x += addHtmlValue("Installed By", service.installedBy); }
+                    if (service.startType) { x += addHtmlValue("Start Type", EscapeHtml(service.startType)); }
+                    if (service.user) { x += addHtmlValue("User", EscapeHtml(service.user)); }
+                    if (service.installedBy) { x += addHtmlValue("Installed By", EscapeHtml(service.installedBy)); }
                     if (service.installedDate) { x += addHtmlValue("Installed Date", printDateTime(new Date(service.installedDate))); }
                     if (service.failureActions) {
                         if (service.failureActions.resetPeriod) {
@@ -12313,9 +12331,9 @@
                             x += addHtmlValue("Restart Fail Count After ", abc + ' Day' + (abc != 1 ? 's' : ''));
                         }
                         if (service.failureActions.actions) {
-                            if (service.failureActions.actions[0]) { x += addHtmlValue("First Failure", service.failureActions.actions[0].type); }
-                            if (service.failureActions.actions[1]) { x += addHtmlValue("Second Failure", service.failureActions.actions[1].type); }
-                            if (service.failureActions.actions[2]) { x += addHtmlValue("Subsequent Failures", service.failureActions.actions[2].type); }
+                            if (service.failureActions.actions[0]) { x += addHtmlValue("First Failure", EscapeHtml(service.failureActions.actions[0].type)); }
+                            if (service.failureActions.actions[1]) { x += addHtmlValue("Second Failure", EscapeHtml(service.failureActions.actions[1].type)); }
+                            if (service.failureActions.actions[2]) { x += addHtmlValue("Subsequent Failures", EscapeHtml(service.failureActions.actions[2].type)); }
                         }
                     }
                     x += '<br/><div style=float:right;margin-bottom:12px><input type=button value="' + "Close" + '" onclick=showServiceDetailsDialogEx(0,' + index + ')></div><div style=margin-bottom:12px><input type=button value="' + "Start" + '" onclick=showServiceDetailsDialogEx(1,' + index + ')><input type=button value="' + "Stop" + '" onclick=showServiceDetailsDialogEx(2,' + index + ')><input type=button value="' + "Restart" + '" onclick=showServiceDetailsDialogEx(3,' + index + ')></div>';
@@ -14317,7 +14335,7 @@
                 if (f.t < 3) {
                     var right = '', title = '';
                     h = '<div class=filelist file=999>';
-                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
+                    h += '<input file=999 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + right + '</span>';
                     h += '<span title="' + shortname + '"><div class="fileIcon' + (f.dt == 'REMOVABLE' ? 5 : (f.dt == 'CDROM' ? 6 : f.t)) + ' mt-1" onclick=p13folderset("' + encodeURIComponentEx(f.nx) + '")></div><a href=# style=cursor:pointer onclick=\'return p13folderset("' + encodeURIComponentEx(f.nx) + '")\'>';
                     var sysvol = (isWindowsNode(currentNode) && f.dt && (DeviceDetailsNodeId == currentNode._id) && DeviceDetailsHardware && DeviceDetailsHardware.windows && DeviceDetailsHardware.windows.volumes) ? DeviceDetailsHardware.windows.volumes[shortname.charAt(0).toUpperCase()] : null;
                     if (sysvol && sysvol.name) {
@@ -14339,8 +14357,8 @@
                             link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
-                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + i + ' class=filelist file=3>';
-                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + f.nx + '\'>&nbsp;';
+                    h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + parseInt(i) + ' class=filelist file=3>';
+                    h += '<input file=3 style=float:left name=fd class="fcb form-check-input m-1" type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;';
                     h += '<span class=fsize>' + fdatestr + '</span>';
                     h += '<span style=float:right>' + EscapeHtml(fsize) + '</span>';
                     h += '<span title="' + shortname + '"><div class="fileIcon' + f.t + ' mt-1"></div>' + link + '</span>';
@@ -14500,7 +14518,17 @@
 
         function p13sort_files(files) {
             var r = [], sortselection = Q('p13sortdropdown').value;
-            for (var i in files) { files[i].nx = i; if (files[i].s == null) { files[i].s = 0; } if (files[i].n == null) { files[i].n = i; } files[i].ln = files[i].n.toLowerCase(); r.push(files[i]); }
+            for (var i in files) {
+                var file = files[i];
+                file.nx = i;
+                file.t = parseInt(file.t);
+                if (isNaN(file.t)) { file.t = 3; }
+                if (file.s == null) { file.s = 0; }
+                if (file.n == null) { file.n = i; }
+                file.n = String(file.n);
+                file.ln = file.n.toLowerCase();
+                r.push(file);
+            }
             p13sortorder = 1;
             if (sortselection > 3) { p13sortorder = -1; sortselection -= 3; }
             if (sortselection == 1) { r.sort(p13sort_filename); }
@@ -14612,7 +14640,7 @@
                     renamefile = p13filetree.dir[checkboxes[i].value].n;
                 }
             }
-            setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + renamefile + '" />');
+            setModalContent('xxAddAgent', "Rename", '<input type=text id=p13renameinput maxlength=64 onkeyup=p13fileNameCheck(event) style=width:100% value="' + EscapeHtml(renamefile) + '" />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13renamefileEx(3, { action: 'rename', path: p13filetreelocation.join('/'), oldname: renamefile }));
             focusTextBox('p13renameinput');
             p13fileNameCheck();
@@ -14754,7 +14782,7 @@
             gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
             //console.log('p13downloadFileCancel', gdownloadFile);
             files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
-            setModalContent('xxAddAgent', "Download File", '<div>' + gdownloadFile.file + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
+            setModalContent('xxAddAgent', "Download File", '<div>' + EscapeHtml(gdownloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13downloadFileCancel());
         }
 
@@ -15307,7 +15335,7 @@
                     var str = '';
                     if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
-                    if (node.agent.id == 14) { str = node.agent.core; }
+                    if (node.agent.id == 14) { str = EscapeHtml(node.agent.core); }
                     x += addDetailItem("Mesh Agent", str);
                 }
                 if (node._id) { x += addDetailItem("Node ID", EscapeHtml(node._id.split('/')[2]), true); }
@@ -15437,7 +15465,7 @@
                     }
                     x += '</div></td></tr>';
                 }
-                if (hardware.network && hardware.network.dns) {
+                if (hardware.network && Array.isArray(hardware.network.dns)) {
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += addDetailItem('<b>' + "DNS Servers" + '</b>', EscapeHtml(hardware.network.dns.join(", ")));
                     x += '</div></td></tr>';
@@ -15483,6 +15511,7 @@
                 if (ident.board_version) { x += addDetailItem("Version", EscapeHtml(ident.board_version), s); }
                 if (ident.product_uuid) { x += addDetailItem("Identifier", EscapeHtml(ident.product_uuid), s); }
                 if (ident.cpu_name) { x += addDetailItem("CPU", EscapeHtml(ident.cpu_name).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); }
+                if (Array.isArray(ident.gpu_name)) { ident.gpu_name = ident.gpu_name.filter(function (x) { return x != null; }); }
                 if (ident.gpu_name) { for (var i in ident.gpu_name) { x += addDetailItem("GPU", EscapeHtml(ident.gpu_name[i]).split('(TM)').join('&trade;').split('(R)').join('&reg;'), s); } }
                 if (x != '') { sections.push({ name: "Motherboard", html: x, img: 'motherboard64.png' }); }
 
@@ -15512,6 +15541,7 @@
                 x += '<table class="table table-hover" style=width:100%>';
                 for (var i in hardware.battery) {
                     var battery = hardware.battery[i];
+                    if (battery == null) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
@@ -15604,6 +15634,7 @@
             if (hardware.identifiers && hardware.identifiers.storage_devices) {
                 var x = '';
                 // Sort Storage
+                ident.storage_devices = ident.storage_devices.filter(function (x) { return x != null; });
                 ident.storage_devices.sort(function (a, b) { if (a.Caption > b.Caption) return 1; if (a.Caption < b.Caption) return -1; return 0; });
 
                 x += '<table style=width:100%>';
@@ -15639,7 +15670,7 @@
                 for (var i in hardware.windows.volumes) {
                     var m = hardware.windows.volumes[i];
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
-                    x += '<div style=margin-bottom:3px><b>' + i + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
+                    x += '<div style=margin-bottom:3px><b>' + EscapeHtml(i) + ':' + (((m.name == null) || (m.name == '')) ? '' : (' - ' + EscapeHtml(m.name))) + '</b></div>';
                     if (m.size) {
                         var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
                         var j = parseInt(Math.floor(Math.log(Math.abs(m.size)) / Math.log(1024)), 10);
@@ -15661,7 +15692,7 @@
                     if (m.protectionStatus || m.volumeStatus) { // volumeStatus=conversionStatus
                         var bitlockerState;
                         if (typeof(m.volumeStatus) === 'string') {  // string style db schema
-                            bitlockerState = m.volumeStatus;
+                            bitlockerState = EscapeHtml(m.volumeStatus);
                         } else {    // new code db schema
                             if (m.protectionStatus == 2) {
                                 bitlockerState = "Locked";
@@ -15688,6 +15719,7 @@
                 var x = '';
                 for (var i in hardware.linux.volumes) {
                     var m = hardware.linux.volumes[i];
+                    if (m == null) continue;
                     if (m.mount_point.startsWith('/var/lib/docker/overlay2')) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(m.mount_point) + '</b></div>';
@@ -15761,9 +15793,12 @@
 
         function deviceDetailsShowBitlockerInfo(drive, identifier, password) {
             if (xxdialogMode) return false;
-            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + (identifier ? decodeURIComponent(identifier) : "Unknown") + '</p>';
-            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + (password ? decodeURIComponent(password) : "Unknown") + '</p></div>';
-            setModalContent('xxAddAgent', decodeURIComponent(drive) + ': ' + "BitLocker Information", x);
+            var decodedDrive = drive ? decodeURIComponent(drive) : "Unknown";
+            var decodedIdentifier = identifier ? decodeURIComponent(identifier) : "Unknown";
+            var decodedPassword = password ? decodeURIComponent(password) : "Unknown";
+            var x = '<div><p>' + "Identifier" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedIdentifier) + '</p>';
+            x += '<p>' + "Recovery Password" + '</p><p style=user-select:text;font-weight:bold>' + EscapeHtml(decodedPassword) + '</p></div>';
+            setModalContent('xxAddAgent', EscapeHtml(decodedDrive) + ': ' + "BitLocker Information", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
         }
 
@@ -15851,19 +15886,23 @@
             var storeApps = installedAppsData.store || [];
             if (searchTerm) {
                 desktopApps = desktopApps.filter(function(app) {
-                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
-                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                    return ((typeof app.name == 'string') && (app.name.toLowerCase().indexOf(searchTerm) >= 0)) ||
+                        ((typeof app.publisher == 'string') && (app.publisher.toLowerCase().indexOf(searchTerm) >= 0));
                 });
                 storeApps = storeApps.filter(function(app) {
-                    return (app.name && app.name.toLowerCase().indexOf(searchTerm) >= 0) ||
-                        (app.publisher && app.publisher.toLowerCase().indexOf(searchTerm) >= 0);
+                    return ((typeof app.name == 'string') && (app.name.toLowerCase().indexOf(searchTerm) >= 0)) ||
+                        ((typeof app.publisher == 'string') && (app.publisher.toLowerCase().indexOf(searchTerm) >= 0));
                 });
             }
             desktopApps.sort(function(a, b) { 
-                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+                var aName = (typeof a.name == 'string') ? a.name.toLowerCase() : '';
+                var bName = (typeof b.name == 'string') ? b.name.toLowerCase() : '';
+                return aName.localeCompare(bName);
             });
             storeApps.sort(function(a, b) { 
-                return (a.name || '').toLowerCase().localeCompare((b.name || '').toLowerCase()); 
+                var aName = (typeof a.name == 'string') ? a.name.toLowerCase() : '';
+                var bName = (typeof b.name == 'string') ? b.name.toLowerCase() : '';
+                return aName.localeCompare(bName);
             });
             var x = '';
             // ===== DESKTOP APPS TABLE (immer anzeigen) =====
@@ -17310,8 +17349,8 @@
 
             // Display IP-KVM information if needed
             if (currentMesh.mtype == 4) {
-                x += addHtmlValue("Hostname", currentMesh.kvm.host);
-                x += addHtmlValue("Username", currentMesh.kvm.user);
+                x += addHtmlValue("Hostname", EscapeHtml(currentMesh.kvm.host));
+                x += addHtmlValue("Username", EscapeHtml(currentMesh.kvm.user));
             }
 
             // Display device group creator
@@ -17385,7 +17424,7 @@
             // Display invitation codes
             if ((features & 0x01000000) && (currentMesh.mtype == 2)) {
                 var inviteCodeStr = '<i>' + "None" + '</i>', icodes = false;
-                if (currentMesh.invite != null) { icodes = true; inviteCodeStr = currentMesh.invite.codes.join(', '); /* + ', ' + currentMesh.invite.flags;*/ }
+                if (currentMesh.invite != null) { icodes = true; inviteCodeStr = EscapeHtml(currentMesh.invite.codes.join(', ')); /* + ', ' + currentMesh.invite.flags;*/ }
                 x += addHtmlValue("Invite Codes", addLinkConditional(inviteCodeStr, 'p20editmeshInviteCode()', (meshrights & 1) || (icodes)));
             }
 
@@ -18458,7 +18497,7 @@
                 // View codes only
                 var x = "Invitation codes can be used by anyone to join devices to this device group using the following public link:" + '<br /><br />';
                 x += '<div style=width:100%;text-align:center><a rel="noreferrer noopener" target=_blank href="' + url + '">' + url + '</a></div><br />';
-                x += addHtmlValue("Invite Codes", currentMesh.invite.codes.join(', '));
+                x += addHtmlValue("Invite Codes", EscapeHtml(currentMesh.invite.codes.join(', ')));
                 x += addHtmlValue("Installation Type", ["Background and interactive", "Interactive only", "Background only"][currentMesh.invite.flags & 3]);
                 setModalContent('xxAddAgent', "Invite Codes", x);
                 showModal('xxAddAgentModal', 'idx_dlgOkButton');
@@ -19348,7 +19387,7 @@
                             msg = EscapeHtml(event.username) + guestname + ' &rarr; ' + msg;
                         }
                     }
-                    if (event.remoteaddr) { msg += ' (' + event.remoteaddr + ')'; }
+                    if (event.remoteaddr) { msg += ' (' + EscapeHtml(event.remoteaddr) + ')'; }
                     if (event.etype == 'relay' || event.action == 'relaylog') icon = 'fa-arrow-right-arrow-left';
                     x += '<tr onclick=showEventDetails(' + event.h + ',2)  onmouseover=eventMouseHover(this,1) onmouseout=eventMouseHover(this,0) role=button><td style=width:18px><i class="fa-fw fa-solid ' + icon + '"></i></td><td class=g1>&nbsp;</td><td class=style10>' + printTime(time) + ' - ' + msg + '</td></tr><tr></tr>';
                 }
@@ -20739,7 +20778,7 @@
 
             // Show user attributes
             var x = '<div style=min-height:80px><table style=width:100%>';
-            if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", user.name); } // If title bar is hidden, display the user name here
+            if ((args.hide & 8) != 0) { x += '<br />' + addDeviceAttribute("Name", EscapeHtml(user.name)); } // If title bar is hidden, display the user name here
             var email = user.email ? EscapeHtml(user.email) : '<i>' + "Not set" + '</i>', everify = '';
             var realname = user.realname ? EscapeHtml(user.realname) : '<i>' + "Not set" + '</i>';
             if (serverinfo.emailcheck) { everify = ((user.emailVerified == true) ? '<b style=color:green;cursor:pointer title="' + "Email is verified" + '">&#x2713</b> ' : '<b style=color:red;cursor:pointer title="' + "Email not verified" + '">&#x2717;</b> '); }
@@ -20767,7 +20806,7 @@
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
-                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fa-solid fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? user.msghandle : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
+                x += addDeviceAttribute("Messaging", '<span role=button onclick=p30editMessaging()><i class="fa-solid fa-comment fa-xs" title="' + "Messaging enabled" + '" style="margin-top:2px"></i> ' + (user.msghandle ? EscapeHtml(user.msghandle) : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             // Display features
@@ -22367,7 +22406,7 @@
 
             // Show notification within the web page.
             if (n.time == null) { n.time = Date.now(); }
-            if (n.id == null) { n.id = Math.random(); }
+            if ((typeof n.id != 'number') || (isFinite(n.id) == false)) { n.id = Math.random(); }
             notifications.unshift(n);
             setNotificationCount(notifications.length);
             clickNotificationIcon(true);
@@ -23335,7 +23374,7 @@
             } else {
                 var plugin = null;
                 for (var i in installedPluginList) { if (installedPluginList[i]._id == id) { plugin = installedPluginList[i]; } }
-                setModalContent('xxAddAgent', "Plugin Action", format("Are you sure you want to {0} the plugin: {1}", elem.value, plugin.name) + '<input id="lastPluginAct" type="hidden" value="' + elem.value + '" /><input id="lastPluginId" type="hidden" value="' + id + '" /><input id="lastPluginVersion" type="hidden" value="" />');
+                setModalContent('xxAddAgent', "Plugin Action", format("Are you sure you want to {0} the plugin: {1}", EscapeHtml(elem.value), EscapeHtml(plugin.name)) + '<input id="lastPluginAct" type="hidden" value="' + EscapeHtml(elem.value) + '" /><input id="lastPluginId" type="hidden" value="' + EscapeHtml(id) + '" /><input id="lastPluginVersion" type="hidden" value="" />');
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', () => pluginActionEx());
             }
             elem.value = '';
@@ -24347,7 +24386,7 @@
             if (userid == userinfo._id) { return (userinfo.name + guestname); }
             if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
             if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
-            return (useridsplit[2] + guestname);
+            return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
