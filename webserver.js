@@ -4034,7 +4034,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // The download page puts the filename inside a JavaScript string (var filename = '...'),
                 // so escape backslashes and single quotes to keep it inside that string.
                 var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
+                var fileurljs = (req.path + '?download=1').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: fileurljs, filename: filenamejs, filesize: stat.size }, req, domain));
             }
         } else {
             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
