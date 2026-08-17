@@ -3004,7 +3004,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (nodeif.netif) {
                                         for (var j in nodeif.netif) { if (nodeif.netif[j].mac && (nodeif.netif[j].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif[j].mac) == -1)) { macs.push(nodeif.netif[j].mac); } }
                                     } else if (nodeif.netif2) {
-                                        for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if (nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
+                                        for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if ((nodeif.netif2[j][k] != null) && nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
                                     }
                                     if (macs.length == 0) {
                                         if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'No known MAC addresses for this device' })); } catch (ex) { } }
