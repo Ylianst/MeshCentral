@@ -7113,6 +7113,7 @@
                 x += '<table style=width:100%>';
                 for (var i in hardware.battery) {
                     var battery = hardware.battery[i];
+                    if (battery == null) continue;
                     x += '<tr><td><div class=style10 style=border-radius:5px;padding:8px>';
                     x += '<div style=margin-bottom:3px><b>' + EscapeHtml(battery.DeviceName ? battery.DeviceName : "Unknown") + '</b></div>';
                     if (battery.CycleCount) { x += addDetailItem("Cycle Count", EscapeHtml(battery.CycleCount), s); }
