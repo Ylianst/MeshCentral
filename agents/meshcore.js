@@ -857,6 +857,50 @@ var http = require('http');
 var net = require('net');
 var fs = require('fs');
 var rtc = require('ILibWebRTC');
+
+// OpenFrame: Read machine ID from shared location
+var openframeMachineId = null;
+function getOpenFrameMachineId() {
+    if (openframeMachineId != null) return openframeMachineId;
+    try {
+        var machineIdPath = (process.platform == 'win32')
+            ? (process.env['ProgramData'] + '\\OpenFrame\\machine_id')
+            : ((process.platform == 'darwin')
+                ? '/Library/Application Support/OpenFrame/machine_id'
+                : '/var/lib/openframe/machine_id');
+        openframeMachineId = fs.readFileSync(machineIdPath).toString().trim();
+    } catch (ex) { openframeMachineId = null; }
+    return openframeMachineId;
+}
+
+// OpenFrame: Add x-machine-id and Authorization headers to request options (only in openFrameMode)
+function addOpenFrameHeaders(options) {
+    // Only add headers if running in OpenFrame mode
+    if (!mesh.openFrameMode) return options;
+
+    if (!options.headers) options.headers = {};
+
+    // Native http adds Host only when no headers object exists; we made one, so set it.
+    if (options.host && !options.headers['Host']) {
+        var ofIsTLS = (options.protocol == 'wss:' || options.protocol == 'https:');
+        var ofPort = '' + options.port;
+        options.headers['Host'] = ((ofPort == '443' && ofIsTLS) || (ofPort == '80' && !ofIsTLS)) ? options.host : (options.host + ':' + options.port);
+    }
+
+    // Add x-machine-id header
+    var machineId = getOpenFrameMachineId();
+    if (machineId) {
+        options.headers['x-machine-id'] = machineId;
+    }
+
+    // Add Authorization header with JWT token
+    var token = mesh.authToken();
+    if (token) {
+        options.headers['Authorization'] = 'Bearer ' + token;
+    }
+
+    return options;
+}
 var amt = null;
 var processManager = require('process-manager');
 var wifiScannerLib = null;
@@ -1150,6 +1194,14 @@ function getServerTargetUrl(path) {
     if (path == null) { path = ''; }
     x = http.parseUri(x);
     if (x == null) return null;
+    // OpenFrame mode: dial through the gateway proxy path with the agent JWT
+    var token = null;
+    try { if (typeof mesh.authToken == 'function') { token = mesh.authToken(); } } catch (ex) { }
+    if (token) {
+        var url = x.protocol + '//' + x.host + '/ws/tools/agent/meshcentral-server/' + path;
+        url += ((path.indexOf('?') !== -1) ? '&' : '?') + 'authorization=' + encodeURIComponent(token);
+        return url;
+    }
     return x.protocol + '//' + x.host + ':' + x.port + '/' + path;
 }
 
@@ -1311,6 +1363,7 @@ function handleServerCommand(data) {
                                 //sendConsoleText(JSON.stringify(woptions));
                                 //sendConsoleText('TUNNEL: ' + JSON.stringify(data, null, 2));
 
+                                addOpenFrameHeaders(woptions); // Add X-MACHINE-ID and Authorization headers
                                 var tunnel = http.request(woptions);
                                 tunnel.upgrade = onTunnelUpgrade;
                                 tunnel.on('error', tunnel_onError);
@@ -1970,6 +2023,7 @@ function downloadFile(downloadoptions) {
         if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
     }
     //options.checkServerIdentity.servertlshash = downloadoptions.serverhash;
+    addOpenFrameHeaders(options); // Add X-MACHINE-ID header
     trustedDownloads[downloadoptions.name] = downloadoptions;
     trustedDownloads[downloadoptions.name].dl = require('https').get(options);
     trustedDownloads[downloadoptions.name].dl.on('error', function (e) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; });
@@ -2022,6 +2076,7 @@ function serverFetchFile() {
     agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
 
     if (agentFileHttpOptions == null) return;
+    addOpenFrameHeaders(agentFileHttpOptions); // Add X-MACHINE-ID header
     var agentFileHttpRequest = http.request(agentFileHttpOptions,
         function (response) {
             response.xparent = this;
@@ -5421,6 +5476,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         if (options == null) {
                             response = 'Invalid url.';
                         } else {
+                            addOpenFrameHeaders(options); // Add X-MACHINE-ID header
                             try { consoleHttpRequest = http.request(options, consoleHttpResponse); } catch (ex) { response = 'Invalid HTTP GET request'; }
                             consoleHttpRequest.sessionid = sessionid;
                             if (consoleHttpRequest != null) {
@@ -5449,6 +5505,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     try {
                         var options = http.parseUri(args['_'][0].split('$').join('%24').split('@').join('%40')); // Escape the $ and @ characters in the URL
                         options.rejectUnauthorized = 0;
+                        addOpenFrameHeaders(options); // Add X-MACHINE-ID header
                         httprequest = http.request(options);
                     } catch (ex) { response = 'Invalid HTTP websocket request'; }
                     if (httprequest != null) {
@@ -6139,6 +6196,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 }
             }
             options.checkServerIdentity.servertlshash = (updateoptions != null ? updateoptions.tlshash : null);
+            addOpenFrameHeaders(options); // Add X-MACHINE-ID header
             agentUpdate_Start._selfupdate = require('https').get(options);
             agentUpdate_Start._selfupdate.on('error', function (e) {
                 sendConsoleText('Self Update failed, because there was a problem trying to download the update from ' + updateurl, sessionid);
