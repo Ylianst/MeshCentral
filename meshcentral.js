@@ -15,7 +15,7 @@
 "use strict";
 
 const common = require('./common.js');
-const { zipExtract } = require('./backup.js');
+const { zipExtract, moveExtractedFolders } = require('./backup.js');
 
 // If app metrics is available
 if (process.argv[2] == '--launch') { try { require('appmetrics-dash').monitor({ url: '/', title: 'MeshCentral', port: 88, host: '127.0.0.1' }); } catch (ex) { } }
@@ -92,6 +92,7 @@ function CreateMeshCentralServer(config, args) {
         obj.webViewsPath = obj.path.join(__dirname, 'views');
         obj.webPublicPath = obj.path.join(__dirname, 'public');
         obj.webEmailsPath = obj.path.join(__dirname, 'emails');
+        obj.webOverrideBasePath = obj.path.join(__dirname, '../../meshcentral-web'); // set even if absent, a restore may create it
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/views'))) { obj.webViewsOverridePath = obj.path.join(__dirname, '../../meshcentral-web/views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../../meshcentral-web/public'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../../meshcentral-web/emails'); }
@@ -104,6 +105,7 @@ function CreateMeshCentralServer(config, args) {
         obj.webViewsPath = obj.path.join(__dirname, 'views');
         obj.webPublicPath = obj.path.join(__dirname, 'public');
         obj.webEmailsPath = obj.path.join(__dirname, 'emails');
+        obj.webOverrideBasePath = obj.path.join(__dirname, '../meshcentral-web'); // set even if absent, a restore may create it
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/views'))) { obj.webViewsOverridePath = obj.path.join(__dirname, '../meshcentral-web/views'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/public'))) { obj.webPublicOverridePath = obj.path.join(__dirname, '../meshcentral-web/public'); }
         if (obj.fs.existsSync(obj.path.join(__dirname, '../meshcentral-web/emails'))) { obj.webEmailsOverridePath = obj.path.join(__dirname, '../meshcentral-web/emails'); }
@@ -2408,9 +2410,22 @@ function CreateMeshCentralServer(config, args) {
             if (restoreFile) {
                 obj.debug('main', obj.common.format("Server stopped, updating settings: {0}", restoreFile));
                 console.log("Updating settings folder...");     // do not alter. This specific log message, with the process.exit(123) further on, triggers a process restart. See obj.launchChildServer>childProcess.stdout.on function
-                zipExtract(restoreFile, obj.datapath, 'meshcentral-data/', restorePassword)
-                    .then((res) => {
-                        res['res'] ? console.log(res['mes']) : console.error(res['mes']);
+                const webBase = obj.webOverrideBasePath;
+                const destinations = {
+                    'meshcentral-views': obj.webViewsOverridePath || obj.path.join(webBase, 'views'),
+                    'meshcentral-public': obj.webPublicOverridePath || obj.path.join(webBase, 'public'),
+                    'meshcentral-emails': obj.webEmailsOverridePath || obj.path.join(webBase, 'emails'),
+                    'meshcentral-files': obj.filespath,
+                    'meshcentral-recordings': obj.recordpath
+                };
+                zipExtract(restoreFile, obj.datapath, Object.keys(destinations), restorePassword)
+                    .then(async (res) => {
+                        if (res.res) {
+                            console.log(res.mes);
+                            const move = await moveExtractedFolders(obj.datapath, destinations);
+                            move.moved.forEach(function (folder) { console.log('Restored ' + folder); });
+                            if (!move.res) { console.error(move.mes); }
+                        } else { console.error(res.mes); }
                         process.exit(123);      // this triggers the childserver process restart
                     });
             } else {
