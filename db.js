@@ -3716,8 +3716,19 @@ module.exports.CreateDB = function (parent, func) {
 			console.error('@zip.js/zip.js module failed, aborting: ' + ex.message);
 		}
 
-		const minimatchModule = require('minimatch');
-		const minimatch = minimatchModule.minimatch || minimatchModule;
+		const GLOB_NOCASE = (typeof parent.config.settings.autobackup.globnocase === 'boolean')
+        ? parent.config.settings.autobackup.globnocase
+        : (process.platform === 'win32');
+        
+		// path.matchesGlob() doesn't support case-insensitive matching or dot-files, normalizeGlob() fixes this.
+		function normalizeGlob(str) {
+			str = str.replace(/(^|\/)\./g, '$1\uE200');
+			if (GLOB_NOCASE) return str.toLowerCase();
+			return str.replace(/[a-zA-Z]/g, function (ch) {
+				const code = ch.charCodeAt(0);
+				return String.fromCharCode(code <= 90 ? (0xE100 + (code - 65)) : (0xE000 + (code - 97)));
+			});
+		}
 
 		const zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5), 1), 9);
 
@@ -3740,39 +3751,39 @@ module.exports.CreateDB = function (parent, func) {
 			return p.split(path.sep).join('/').replace(/^\/+/, '');
 		}
 
+		// patterns: array of pre-normalized glob strings
 		function matchesGlob(name, patterns) {
-			if (!patterns || patterns.length === 0) return false;
-			const opts = { dot: true, nocase: (process.platform === 'win32') };
+			if (patterns.length === 0) return false;
+			name = normalizeGlob(name);
 			return patterns.some(function (pattern) {
-				return minimatch(name, pattern, opts) || minimatch(name + '/', pattern, opts);
+				return path.matchesGlob(name, pattern) || path.matchesGlob(name + '/', pattern);
 			});
 		}
 
-		function shouldSkipDirectory(name, skipPatterns) {
-			if (!skipPatterns || skipPatterns.length === 0) return false;
-			const opts = { dot: true, nocase: (process.platform === 'win32') };
-			return skipPatterns.some(function (pattern) {
-				return minimatch(name, pattern, opts) ||
-					   minimatch(name + '/', pattern, opts) ||
-					   minimatch(name + '/__dummy__', pattern, opts);
-			});
+		// Returns true if name or any parent folder matches a skip pattern.
+		function isUnderSkippedFolder(name, skipPatterns) {
+			if (skipPatterns.length === 0) return false;
+			let prefix = '';
+			for (const part of normalizeGlob(name).split('/')) {
+				prefix = prefix ? (prefix + '/' + part) : part;
+				if (skipPatterns.some(function (pattern) { return path.matchesGlob(prefix, pattern); })) { return true; }
+			}
+			return false;
 		}
 
 		async function addDirectoryTree(zipWriter, sourceDir, archiveRoot, options) {
 			options = options || {};
-			const ignoreFiles = options.ignoreFiles || [];
-			const skipFolders = options.skipFolders || [];
+			// Compiled once per tree, reused for every entry.
+			const ignoreFiles = (options.ignoreFiles || []).map(normalizeGlob);
+			const skipFolders = (options.skipFolders || []).map(normalizeGlob);
 
-			const exclude = (name) => {
-				const currentZipName = zipName(path.join(archiveRoot, name));
-				if (shouldSkipDirectory(currentZipName, skipFolders)) return true;
-				if (matchesGlob(currentZipName, ignoreFiles)) return true;
-				return false;
-			};
+			// fs.glob's exclude callback is unreliable per-entry (not always called with the full
+			// path), so it only skips directories during traversal; the loop below filters individual entries.
+			const exclude = (name) => isUnderSkippedFolder(zipName(path.join(archiveRoot, String(name))), skipFolders);
 
 			const rootStat = await fs.promises.stat(sourceDir);
 			const rootZipName = zipName(archiveRoot);
-			if (!shouldSkipDirectory(rootZipName, skipFolders) && !matchesGlob(rootZipName, ignoreFiles)) {
+			if (!isUnderSkippedFolder(rootZipName, skipFolders) && !matchesGlob(rootZipName, ignoreFiles)) {
 				await zipWriter.add(rootZipName.endsWith('/') ? rootZipName : rootZipName + '/', undefined, {
 					directory: true,
 					lastModDate: rootStat.mtime
@@ -3780,8 +3791,13 @@ module.exports.CreateDB = function (parent, func) {
 			}
 
 			for await (const file of fs.promises.glob('**/*', { cwd: sourceDir, exclude })) {
-				const fullFsPath = path.join(sourceDir, file);
 				const currentZipName = zipName(path.join(archiveRoot, file));
+
+				// Apply ignore-file and skip-folder globs against the full archive-relative path.
+				if (matchesGlob(currentZipName, ignoreFiles)) continue;
+				if (isUnderSkippedFolder(currentZipName, skipFolders)) continue;
+
+				const fullFsPath = path.join(sourceDir, file);
 				const stat = await fs.promises.stat(fullFsPath);
 
 				if (stat.isDirectory()) {
@@ -3879,35 +3895,28 @@ module.exports.CreateDB = function (parent, func) {
 					globIgnoreFiles.push(datapathFoldername + '/' + databaseName + '.sqlite*');
 				}
 
-				const skipFolders = parent.config.settings.autobackup.backupskipfoldersglob
-					? parent.config.settings.autobackup.backupskipfoldersglob
-					: [];
+				const treeOptions = {
+					ignoreFiles: globIgnoreFiles,
+					skipFolders: parent.config.settings.autobackup.backupskipfoldersglob || []
+				};
 
-				await addDirectoryTree(
-					zipWriter,
-					path.join(datapathParentPath, datapathFoldername),
-					datapathFoldername,
-					{
-						ignoreFiles: globIgnoreFiles,
-						skipFolders: skipFolders
-					}
-				);
+				await addDirectoryTree(zipWriter, path.join(datapathParentPath, datapathFoldername), datapathFoldername, treeOptions);
 
 				if (parent.config.settings.autobackup.backupwebfolders) {
 					if (parent.webViewsOverridePath) {
-						await addDirectoryTree(zipWriter, parent.webViewsOverridePath, 'meshcentral-views');
+						await addDirectoryTree(zipWriter, parent.webViewsOverridePath, 'meshcentral-views', treeOptions);
 					}
 					if (parent.webPublicOverridePath) {
-						await addDirectoryTree(zipWriter, parent.webPublicOverridePath, 'meshcentral-public');
+						await addDirectoryTree(zipWriter, parent.webPublicOverridePath, 'meshcentral-public', treeOptions);
 					}
 					if (parent.webEmailsOverridePath) {
-						await addDirectoryTree(zipWriter, parent.webEmailsOverridePath, 'meshcentral-emails');
+						await addDirectoryTree(zipWriter, parent.webEmailsOverridePath, 'meshcentral-emails', treeOptions);
 					}
 				}
 
 				if (parent.config.settings.autobackup.backupotherfolders) {
-					await addDirectoryTree(zipWriter, parent.filespath, 'meshcentral-files');
-					await addDirectoryTree(zipWriter, parent.recordpath, 'meshcentral-recordings');
+					await addDirectoryTree(zipWriter, parent.filespath, 'meshcentral-files', treeOptions);
+					await addDirectoryTree(zipWriter, parent.recordpath, 'meshcentral-recordings', treeOptions);
 				}
 
 				if (obj.newDBDumpFile != null) {
