@@ -981,6 +981,10 @@
               "default": [],
               "description": "Glob for ignoring directories in the data directory. For example [\"**/signedagents\"]"
             },
+            "globNocase": {
+              "type": "boolean",
+              "description": "Enable case-insensitive glob matching. Defaults: true on Windows, false elsewhere."
+            },
             "googleDrive": {
               "type": "object",
               "description": "Enabled automated upload of the server backups to a Google Drive account, once enabled you need to go in \"My Server\" tab as administrator to associate the account.",
