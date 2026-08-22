@@ -108,8 +108,9 @@ function processBlock(state, block, err) {
                     if (block.data.length >= 12) {
                         command = block.data.readUInt16BE(8);
                         cmdsize = block.data.readUInt32BE(4);
-                        if (block.data.length == (cmdsize + 8)) {
-                            block.data = block.data.slice(8, block.data.length);
+                        // Same padding issue as in meshdesktopmultiplex.js.
+                        if (block.data.length >= (cmdsize + 8)) {
+                            block.data = block.data.slice(8, cmdsize + 8);
                         } else {
                             console.log('TODO-PARTIAL-JUMBO', command, cmdsize, block.data.length);
                             return; // TODO
