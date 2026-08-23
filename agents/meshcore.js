@@ -4544,6 +4544,28 @@ function consoleHttpResponse(response) {
 }
 
 // Open a local file on current user's desktop
+function getLinuxDesktopEnvironment(uid) {
+    var env = {};
+    for (var i in process.env) { env[i] = process.env[i]; }
+
+    // Services do not inherit the graphical user's environment. Get it from
+    // the active user's processes so xdg-open can contact their desktop.
+    var sessions = require('user-sessions');
+    env.HOME = sessions.getHomeFolder(uid);
+    var sessionVariables = ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS', 'WAYLAND_DISPLAY', 'DISPLAY'];
+    for (var j in sessionVariables) {
+        var value = sessions.findEnv(uid, sessionVariables[j]);
+        if (value != null) { env[sessionVariables[j]] = value; }
+    }
+
+    // A systemd user session has predictable runtime and bus paths. Use these
+    // as a fallback when no process exposed the corresponding environment.
+    var runtimeDir = '/run/user/' + uid;
+    if (env.XDG_RUNTIME_DIR == null) { env.XDG_RUNTIME_DIR = runtimeDir; }
+    if (env.DBUS_SESSION_BUS_ADDRESS == null) { env.DBUS_SESSION_BUS_ADDRESS = 'unix:path=' + runtimeDir + '/bus'; }
+    return env;
+}
+
 function openFileOnDesktop(file) {
     var child = null;
     try {
@@ -4588,7 +4610,8 @@ function openFileOnDesktop(file) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: require('user-sessions').consoleUid() });
+                var uid = require('user-sessions').consoleUid();
+                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: uid, env: getLinuxDesktopEnvironment(uid) });
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', file]);
@@ -4647,7 +4670,8 @@ function openUserDesktopUrl(url) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });
+                var uid = require('user-sessions').consoleUid();
+                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: uid, env: getLinuxDesktopEnvironment(uid) });
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
