@@ -3349,7 +3349,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
-                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
+                    webRdpClient: (domain.mstscclient === 'guacamole') ? 'guacamole' : 'legacy'
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
@@ -7493,13 +7494,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup RDP unless indicated as disabled
                 if (domain.mstsc !== false) {
-                    obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, 'mstsc'); });
+                    obj.app.get(url + 'mstsc.html', function (req, res) { handleMSTSCRequest(req, res, (domain.mstscclient === 'guacamole') ? 'mstscguac' : 'mstsc'); });
                     obj.app.ws(url + 'mstscrelay.ashx', function (ws, req) {
                         const domain = getDomain(req);
                         if (domain == null) { parent.debug('web', 'mstsc: failed checks.'); try { ws.close(); } catch (e) { } return; }
                         // If no user is logged in and we have a default user, set it now.
                         if ((req.session.userid == null) && (typeof obj.args.user == 'string') && (obj.users['user/' + domain.id + '/' + obj.args.user.toLowerCase()])) { req.session.userid = 'user/' + domain.id + '/' + obj.args.user.toLowerCase(); }
-                        try { require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
+                        try {
+                            if (domain.mstscclient === 'guacamole') { require('./guacrelay.js').CreateGuacamoleRelay(obj, ws, req, obj.args, domain); }
+                            else { require('./apprelays.js').CreateMstscRelay(obj, obj.db, ws, req, obj.args, domain); }
+                        } catch (ex) { console.log(ex); }
                     });
                 }
 

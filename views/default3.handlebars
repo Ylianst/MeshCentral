@@ -36,6 +36,8 @@
     <script type="text/javascript" src="scripts/agent-redir-rtc-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-desktop-0.0.2{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-rdp-0.0.1{{{min}}}.js"></script>
+    <script type="text/javascript">var webRdpClient = '{{{webRdpClient}}}';</script>
+    <script type="text/javascript" src="scripts/agent-guacamole-rdp-1.0.0.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
@@ -10829,7 +10831,7 @@
             // Show the right buttons
             QV('disconnectbutton1span', (deskState != 0));
             QV('connectbutton1span', (deskState == 0) && ((rights & 8) || (rights & 256)) && (currentNode.agent != null) && (currentNode.agent.caps & 1));
-            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
+            QV('connectbutton1rspan', ((features & 0x40000000) == 0) && (deskState == 0) && (rights & 8) && (currentNode.agent != null) && ((webRdpClient == 'guacamole') || (currentNode.agent.id == 3) || (currentNode.agent.id == 4)));
             if (mtype == 1) {
                 QV('connectbutton1hspan',
                     (deskState == 0) &&
@@ -10856,7 +10858,7 @@
             // Show the right settings
             QV('td7amtkvm', ((currentNode.intelamt != null) && ((typeof currentNode.intelamt.sku != 'number') || ((currentNode.intelamt.sku & 16) == 0)) && ((currentNode.intelamt.ver != null) || (currentNode.agent == null))) && ((deskState == 0) || (desktop.contype == 2)));
             QV('td7meshkvm', (webRtcDesktop) || ((currentNode.agent != null) && (currentNode.agent.caps & 1) && ((deskState == 0) || (desktop.contype == 1))));
-            QV('td7rdpkvm', ((currentNode.agent != null) && ((currentNode.agent.id == 3) || (currentNode.agent.id == 4)) && ((deskState == 0) || (desktop.contype == 4))));
+            QV('td7rdpkvm', ((currentNode.agent != null) && ((webRdpClient == 'guacamole') || (currentNode.agent.id == 3) || (currentNode.agent.id == 4)) && ((deskState == 0) || (desktop.contype == 4))));
 
             // Enable buttons
             var inputAllowed = ((features2 & 0x2000) == 0) && ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));

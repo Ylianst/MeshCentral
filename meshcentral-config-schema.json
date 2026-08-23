@@ -287,6 +287,15 @@
           "default": null,
           "description": "With any database, decrypt sensitive information within records using this secret key, don't use a key to encrypt records."
         },
+        "guacd": {
+          "type": "object",
+          "description": "Connection settings for the optional Apache Guacamole Web-RDP relay. guacd must share MeshCentral's loopback network namespace so it can use the one-shot MeshAgent tunnel listener.",
+          "properties": {
+            "host": { "type": "string", "default": "127.0.0.1" },
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 4822 },
+            "connectTimeoutMs": { "type": "integer", "minimum": 1000, "default": 10000 }
+          }
+        },
         "dbExpire": {
           "type": "object",
           "description": "Amount of time to keep various events in the database, in seconds. Below are the default values",
@@ -2025,6 +2034,12 @@
             "type": "boolean",
             "default": true,
             "description": "When enabled, activates the built-in web-based RDP client."
+          },
+          "mstscClient": {
+            "type": "string",
+            "enum": ["legacy", "guacamole"],
+            "default": "legacy",
+            "description": "Selects the implementation used by Web-RDP. The guacamole client requires a guacd service configured in settings.guacd."
           },
           "ssh": {
             "type": "boolean",
