@@ -4588,7 +4588,18 @@ function openFileOnDesktop(file) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: require('user-sessions').consoleUid() });
+                // Same as openUserDesktopUrl: run as the interactive user with their graphical-session
+                // env, and prefer gio (xdg-open's KDE path breaks on Plasma with no KDE_SESSION_VERSION).
+                var luid = require('user-sessions').consoleUid();
+                var lenv = {};
+                for (var le in process.env) { lenv[le] = process.env[le]; }
+                var lvars = ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS', 'WAYLAND_DISPLAY', 'DISPLAY', 'HOME'];
+                for (var lv in lvars) { var lval = require('user-sessions').findEnv(luid, lvars[lv]); if (lval != null) { lenv[lvars[lv]] = lval; } }
+                if (require('fs').existsSync('/usr/bin/gio')) {
+                    child = require('child_process').execFile('/usr/bin/gio', ['gio', 'open', file], { uid: luid, env: lenv });
+                } else {
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: luid, env: lenv });
+                }
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', file]);
@@ -4647,7 +4658,20 @@ function openUserDesktopUrl(url) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });
+                // The opener needs the interactive user's graphical-session env or it can't reach the
+                // session bus (Wayland/GNOME/KDE) and nothing opens. Prefer 'gio open': xdg-open's
+                // desktop detection is fragile (e.g. Plasma with no KDE_SESSION_VERSION falls back to
+                // a missing kfmclient), while gio hands off to the session's default handler directly.
+                var luid = require('user-sessions').consoleUid();
+                var lenv = {};
+                for (var le in process.env) { lenv[le] = process.env[le]; }
+                var lvars = ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS', 'WAYLAND_DISPLAY', 'DISPLAY', 'HOME'];
+                for (var lv in lvars) { var lval = require('user-sessions').findEnv(luid, lvars[lv]); if (lval != null) { lenv[lvars[lv]] = lval; } }
+                if (require('fs').existsSync('/usr/bin/gio')) {
+                    child = require('child_process').execFile('/usr/bin/gio', ['gio', 'open', url], { uid: luid, env: lenv });
+                } else {
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: luid, env: lenv });
+                }
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
