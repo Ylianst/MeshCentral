@@ -2436,6 +2436,11 @@
                 "type": "boolean",
                 "default": true,
                 "description": "Ask the device user for permission before an administrator's microphone can be played through the device's speakers. Enabled by default; set to false only where local consent is obtained by other means."
+              },
+              "camprompt": {
+                "type": "boolean",
+                "default": true,
+                "description": "Ask the device user for permission before an administrator can view the device's camera. Enabled by default; set to false only where local consent is obtained by other means."
               }
             }
           },

@@ -1605,6 +1605,10 @@ function CreateMeshCentralServer(config, args) {
                 // audible in someone's room must be an explicit local decision,
                 // so it is only cleared when set to false outright.
                 if (obj.config.domains[i].userconsentflags.micprompt !== false) { flags |= 128; }
+                // Camera prompt likewise defaults to ON, and for a stronger
+                // version of the same reason: being watched without knowing is
+                // at least as intrusive as being overheard.
+                if (obj.config.domains[i].userconsentflags.camprompt !== false) { flags |= 256; }
                 obj.config.domains[i].userconsentflags = flags;
             }
 

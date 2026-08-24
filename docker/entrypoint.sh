@@ -287,10 +287,10 @@ function dynamic_config() {
     fi
 
     # MIC_CONSENT
-    # Whether the device user is asked before an administrator's microphone is
-    # played through that device's speakers. Defaults to true when unset: making
-    # a remote person audible in someone's room should require a local decision,
-    # so it is only disabled by asking for that explicitly.
+    # Whether the device user is asked before an administrator listens through
+    # that device's microphone. Defaults to true when unset: listening to
+    # someone's room should require a local decision, so it is only disabled by
+    # asking for that explicitly.
     MIC_CONSENT=${MIC_CONSENT,,}
     if [[ "$MIC_CONSENT" == "false" ]]; then
         echo "Setting userConsentFlags.micprompt... false (microphone consent prompt DISABLED)"
@@ -299,6 +299,23 @@ function dynamic_config() {
     else
         echo "Setting userConsentFlags.micprompt... true (default)"
         jq '.domains[""].userConsentFlags.micprompt = true' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    fi
+
+    # CAMERA_CONSENT
+    # Whether the device user is asked before an administrator views that
+    # device's camera. Defaults to true when unset, for a stronger version of
+    # the reason MIC_CONSENT does: being watched without knowing is at least as
+    # intrusive as being overheard, so this is only disabled by asking for it
+    # explicitly.
+    CAMERA_CONSENT=${CAMERA_CONSENT,,}
+    if [[ "$CAMERA_CONSENT" == "false" ]]; then
+        echo "Setting userConsentFlags.camprompt... false (camera consent prompt DISABLED)"
+        jq '.domains[""].userConsentFlags.camprompt = false' \
+            "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
+    else
+        echo "Setting userConsentFlags.camprompt... true (default)"
+        jq '.domains[""].userConsentFlags.camprompt = true' \
             "$CONFIG_FILE" > temp_config.json && mv temp_config.json "$CONFIG_FILE"
     fi
 

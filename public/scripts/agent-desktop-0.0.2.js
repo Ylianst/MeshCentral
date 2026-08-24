@@ -206,6 +206,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
         obj.SendAudioQuery();       // MNG_AUDIO_QUERY: always fire on session init, before same-size guard
         obj.SendMicQuery();         // MNG_MIC_QUERY: learn playback capability without starting anything
+        obj.SendCamQuery();         // MNG_CAM_QUERY: same, for the camera -- opens nothing and grants nothing
         if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
@@ -340,6 +341,80 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                         micDevPtr += micNameLen;
                     }
                     if (obj.onMicDeviceList) { obj.onMicDeviceList(micDevices); }
+                }
+                break;
+            case 109: // MNG_CAM_DATA — one complete JPEG frame from the device camera
+                // [4..5] seq, [6] flags (bit0 = came straight from the camera
+                // as MJPEG, never re-encoded), [7] reserved, [8..] JPEG.
+                // Oversized frames arrive JUMBO-wrapped, but the redirector
+                // (agent-redir-ws-0.1.1.js) has already unwrapped and
+                // reassembled them by the time they reach here, so this sees
+                // one whole frame either way.
+                if (cmdsize > 8) {
+                    if (obj.onCamData) {
+                        obj.onCamData({
+                            seq: (view[4] << 8) + view[5],
+                            passthrough: !!(view[6] & 0x01),
+                            jpeg: view.slice(8)
+                        });
+                    }
+                }
+                break;
+            case 116: // MNG_CAM_SNAPSHOT_DATA — a single still plus its metadata
+                if (cmdsize > 16) {
+                    if (obj.onCamSnapshot) {
+                        obj.onCamSnapshot({
+                            width: (view[4] << 8) + view[5],
+                            height: (view[6] << 8) + view[7],
+                            // Seconds since the Unix epoch, UTC. Built with
+                            // multiplication rather than << 24: JavaScript's
+                            // bitwise operators are signed 32-bit, so shifting
+                            // a byte >= 0x80 into the top position would make
+                            // the whole timestamp negative.
+                            takenAt: ((view[8] * 16777216) + (view[9] << 16) + (view[10] << 8) + view[11]),
+                            format: view[12],
+                            passthrough: !!(view[13] & 0x01),
+                            captureMs: (view[14] << 8) + view[15],
+                            jpeg: view.slice(16)
+                        });
+                    }
+                }
+                break;
+            case 114: // MNG_CAM_DEVICE_LIST — enumerated cameras, response to SendCamDeviceQuery
+                if (cmdsize >= 5) {
+                    var camDevCount = view[4], camDevices = [], camDevPtr = 5;
+                    for (var cdi = 0; cdi < camDevCount && camDevPtr < cmdsize; cdi++) {
+                        var camNameLen = view[camDevPtr]; camDevPtr++;
+                        var camNameBytes = view.slice(camDevPtr, camDevPtr + camNameLen);
+                        var camName = '';
+                        for (var cnb = 0; cnb < camNameBytes.length; cnb++) { camName += String.fromCharCode(camNameBytes[cnb]); }
+                        try { camName = decodeURIComponent(escape(camName)); } catch (cex) { } // best-effort UTF-8 decode
+                        camDevices.push(camName);
+                        camDevPtr += camNameLen;
+                    }
+                    if (obj.onCamDeviceList) { obj.onCamDeviceList(camDevices); }
+                }
+                break;
+            case 106: // MNG_CAM_CAPS — camera availability + consent state
+                if (cmdsize >= 14) {
+                    var camCaps = {
+                        captureAvailable: !!(view[4] & 0x01),
+                        consentGranted: !!(view[4] & 0x02),
+                        // Whether the live stream is forwarding the camera's
+                        // own MJPEG untouched, as opposed to re-encoding raw
+                        // frames -- worth surfacing because it is the
+                        // difference between spending no CPU and spending a
+                        // lot of it on the managed device.
+                        passthrough: !!(view[4] & 0x04),
+                        platform: view[5],
+                        width: (view[6] << 8) + view[7],
+                        height: (view[8] << 8) + view[9],
+                        fps: view[10],
+                        settingsSupported: (view[11] >= 1),
+                        quality: view[12],
+                        deviceCount: view[13]
+                    };
+                    if (obj.onCamCaps) { obj.onCamCaps(camCaps); }
                 }
                 break;
             case 96: // MNG_MIC_CAPS — microphone availability + consent state
@@ -737,6 +812,72 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     // this round-trip -- a later SendMicStart's deviceIndex must reference
     // the most recently received list, not a cached one from an earlier query.
     obj.SendMicDeviceQuery = function () { obj.send(String.fromCharCode(0x00, 0x67, 0x00, 0x04)); }
+
+    // ---------------------------------------------------------------------
+    // Device camera (device -> browser). Same consent contract as the
+    // microphone: START only asks, and the agent captures nothing until its
+    // local user accepts. See kvm_cam.h for the authoritative field layouts
+    // these must match byte-for-byte.
+    // ---------------------------------------------------------------------
+    obj.SendCamQuery = function () { obj.send(String.fromCharCode(0x00, 0x69, 0x00, 0x04)); } // MNG_CAM_QUERY (105 = 0x69)
+
+    // MNG_CAM_START (107 = 0x6B). With no argument, sends the bare 4-byte
+    // frame and the agent keeps whatever settings are already in effect.
+    // With a params object, sends the extended 14-byte frame, which the agent
+    // applies live -- resolution/fps/device changes restart capture (neither
+    // V4L2 nor Media Foundation can be reconfigured mid-stream), while
+    // quality and scene-suppression changes take effect in place.
+    // params.deviceIndex indexes the list last received via
+    // MNG_CAM_DEVICE_LIST; omit it, or use -1, for the system default.
+    // params.skipConsentPrompt is only a *request* the agent's policy-aware
+    // JS layer may honour, never a grant native code makes on its own.
+    obj.SendCamStart = function (params) {
+        if (params == null) { obj.send(String.fromCharCode(0x00, 0x6B, 0x00, 0x04)); return; }
+        var w = Math.max(0, Math.min(4096, params.width | 0));
+        var h = Math.max(0, Math.min(2160, params.height | 0));
+        var flags = (params.suppressStatic === false ? 0x00 : 0x01)
+                  | (params.skipConsentPrompt ? 0x02 : 0x00)
+                  | (params.forceRaw ? 0x04 : 0x00);
+        var deviceIndex = (params.deviceIndex == null || params.deviceIndex < 0) ? 0xFF : Math.max(0, Math.min(254, params.deviceIndex | 0));
+        obj.send(String.fromCharCode(
+            0x00, 0x6B, 0x00, 0x0E,
+            (w >> 8) & 0xFF, w & 0xFF,
+            (h >> 8) & 0xFF, h & 0xFF,
+            Math.max(0, Math.min(60, params.fps | 0)),
+            Math.max(0, Math.min(100, params.quality | 0)),
+            flags,
+            Math.max(0, Math.min(255, params.staticThreshold | 0)),
+            deviceIndex,
+            0x00
+        ));
+    }
+    obj.SendCamStop = function () { obj.send(String.fromCharCode(0x00, 0x6C, 0x00, 0x04)); } // MNG_CAM_STOP (108 = 0x6C)
+
+    // MNG_CAM_DEVICE_QUERY (113 = 0x71). Response arrives as
+    // MNG_CAM_DEVICE_LIST (case 114 above). As with the microphone, the
+    // ordering is only valid for this round-trip: a later deviceIndex must
+    // reference the most recently received list, not a cached one.
+    obj.SendCamDeviceQuery = function () { obj.send(String.fromCharCode(0x00, 0x71, 0x00, 0x04)); }
+
+    // MNG_CAM_SNAPSHOT (115 = 0x73): one still, independent of streaming.
+    // Width/height of 0 mean the camera's native size; quality defaults
+    // higher than the stream's, since a single frame's bytes are not repeated
+    // many times a second.
+    obj.SendCamSnapshot = function (params) {
+        var p = params || {};
+        var w = Math.max(0, Math.min(4096, p.width | 0));
+        var h = Math.max(0, Math.min(2160, p.height | 0));
+        var deviceIndex = (p.deviceIndex == null || p.deviceIndex < 0) ? 0xFF : Math.max(0, Math.min(254, p.deviceIndex | 0));
+        obj.send(String.fromCharCode(
+            0x00, 0x73, 0x00, 0x0C,
+            (w >> 8) & 0xFF, w & 0xFF,
+            (h >> 8) & 0xFF, h & 0xFF,
+            Math.max(0, Math.min(100, p.quality | 0)),
+            deviceIndex,
+            (p.skipConsentPrompt ? 0x02 : 0x00),
+            0x00
+        ));
+    }
 
     obj.intToStr = function (x) { return String.fromCharCode((x >> 24) & 0xFF, (x >> 16) & 0xFF, (x >> 8) & 0xFF, x & 0xFF); }
     obj.shortToStr = function (x) { return String.fromCharCode((x >> 8) & 0xFF, x & 0xFF); }

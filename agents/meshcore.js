@@ -318,6 +318,8 @@ function getCoreTranslation() {
     setDefaultCoreTranslation(ret, 'privacyBar', 'Sharing desktop with: {0}');
     setDefaultCoreTranslation(ret, 'micConsent', '{0} would like to listen through this computer\'s microphone. Allow?');
     setDefaultCoreTranslation(ret, 'micNotify', '{0} is now listening through this computer\'s microphone.');
+    setDefaultCoreTranslation(ret, 'camConsent', '{0} would like to see through this computer\'s camera. Allow?');
+    setDefaultCoreTranslation(ret, 'camNotify', '{0} is now watching through this computer\'s camera.');
 
     return (ret);
 }
@@ -2989,6 +2991,19 @@ function tunnel_kvm_end()
             }
         } catch (ex) { }
         this.httprequest._micConsentPromise = null;
+
+        // Exactly the same for the camera.
+        this.httprequest.camConsentGranted = false;
+        this.httprequest.camConsentPending = false;
+        try {
+            var camPr = this.httprequest._camConsentPromise;
+            if (camPr != null) {
+                this.httprequest._camConsentCancelled = true;
+                if (typeof camPr.close == 'function') { camPr.close(); }
+                else if ((camPr.__childPromise != null) && (typeof camPr.__childPromise.close == 'function')) { camPr.__childPromise.close(); }
+            }
+        } catch (ex) { }
+        this.httprequest._camConsentPromise = null;
     }
 
     // Only clear the "current session" pointer if this is the tunnel it was
@@ -3705,6 +3720,194 @@ function micConsentDenied(e) {
     try {
         tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'micconsent', granted: false }));
         tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "The user declined the microphone request.", msgid: 2 }));
+    } catch (ex) { }
+}
+
+// ---------------------------------------------------------------------------
+// Camera consent.
+//
+// A direct mirror of the microphone block above, for the same reasons and with
+// the same division of trust: native code (kvm_cam_start(), in
+// linux_cam.c/windows_cam.c) is the only place that sees every MNG_CAM_START
+// and knows the true consent state, so it decides when a prompt is needed and
+// signals MNG_CAM_CONSENT_NEEDED; agentcore.c turns that into a call to
+// onCamConsentNeeded() here, and consumes it rather than forwarding it to the
+// browser. Native never grants consent to itself -- the decision below, made
+// by the trusted agent JS layer, is the only thing that can send
+// MNG_CAM_CONSENT back down.
+//
+// Consent is scoped to the session: closing the tunnel or stopping capture
+// revokes it, and a later start prompts again.
+// ---------------------------------------------------------------------------
+
+// Called from native code (via agentcore.c's MNG_CAM_CONSENT_NEEDED
+// interception) when a camera start was attempted but local consent has not
+// been granted.
+//   skipPrompt: 1 if the browser request that triggered this asked to skip the
+//   interactive prompt. Only a *request*: native never grants consent on its
+//   own regardless of it, so the authorization decision is still made here.
+function onCamConsentNeeded(skipPrompt) {
+    if (_activeDesktopTunnel == null || _activeDesktopTunnel.httprequest == null) { return; }
+    camConsentHandleStart(_activeDesktopTunnel, skipPrompt === 1);
+}
+
+function camConsentHandleStart(tunnel, skipPrompt) {
+    var httprequest = tunnel.httprequest;
+
+    // NOTE: this function only ever runs in response to native's own
+    // MNG_CAM_CONSENT_NEEDED, which native sends only when it has just checked
+    // its own consent state and found it missing (kvm_cam_start()'s
+    // fail-closed gate). So httprequest.camConsentGranted -- this side's cache
+    // of a *previous* grant -- can never be validly true here: MNG_CAM_STOP
+    // resets native's consent directly without going through this JS layer at
+    // all, so a stop followed by a new start always lands here with a stale
+    // cached "true". Trusting it would make the second start silently return
+    // without ever telling native to resume, stranding the browser in
+    // "requesting" forever -- exactly the bug that had to be fixed for the
+    // microphone. Always fall through and re-decide below.
+    httprequest.camConsentGranted = false;
+
+    // A prompt is already on screen; drop duplicates rather than stacking
+    // dialogs if the operator clicks repeatedly (or a retry lands).
+    if (httprequest.camConsentPending === true) { return false; }
+
+    // Consent for the camera is required unless the server cleared bit 256
+    // (userConsentFlags.camprompt). It defaults to on: pointing a camera at
+    // someone should never happen without them knowing.
+    var consentRequired = ((httprequest.consent == null) || ((httprequest.consent & 256) != 0));
+    if (!consentRequired || skipPrompt === true) {
+        MeshServerLogEx(30, null, (skipPrompt === true ? "Starting camera capture without a prompt (operator requested quiet viewing, " : "Starting camera capture, consent not required by policy (") + httprequest.remoteaddr + ")", httprequest);
+        camConsentGranted.call({ tunnel: tunnel });
+        return true;
+    }
+
+    httprequest.camConsentPending = true;
+
+    var consentMessage = currentTranslation['camConsent'].replace(/\{0\}/g, httprequest.realname).replace(/\{1\}/g, httprequest.username);
+    var consentTitle = 'MeshCentral';
+    if (httprequest.soptions != null) {
+        if (httprequest.soptions.consentTitle != null) { consentTitle = httprequest.soptions.consentTitle; }
+        if (httprequest.soptions.consentMsgCam != null) { consentMessage = httprequest.soptions.consentMsgCam.replace(/\{0\}/g, httprequest.realname).replace(/\{1\}/g, httprequest.username); }
+    }
+
+    tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant camera access...", msgid: 1 }));
+
+    var pr;
+    if (process.platform == 'win32') {
+        var enhanced = false;
+        if (httprequest.oldStyle === false) { try { require('win-userconsent'); enhanced = true; } catch (ex) { } }
+        if (enhanced) {
+            var ipr = server_getUserImage(httprequest.userid);
+            ipr.consentTitle = consentTitle;
+            ipr.consentMessage = consentMessage;
+            ipr.consentTimeout = httprequest.consentTimeout;
+            // Never auto-accept a camera on timeout: silence is not consent.
+            ipr.consentAutoAccept = false;
+            ipr.tsid = tunnel.tsid;
+            ipr.username = httprequest.realname;
+            ipr.translation = { Allow: currentTranslation['allow'], Deny: currentTranslation['deny'], Auto: currentTranslation['autoAllowForFive'], Caption: consentMessage };
+            pr = ipr.then(function (img) {
+                this.consent = require('win-userconsent').create(this.consentTitle, this.consentMessage, this.username, { b64Image: img.split(',').pop(), uid: this.tsid, timeout: this.consentTimeout * 1000, timeoutAutoAccept: false, translations: this.translation, background: color_options.background, foreground: color_options.foreground });
+                this.__childPromise.close = this.consent.close.bind(this.consent);
+                // server_getUserImage() above is a round-trip to the server, so
+                // the operator can already have cancelled while it was in
+                // flight -- onCamConsentCancelled() would then have run and
+                // found nothing to close, because this.consent did not exist
+                // until the line above. Close it now rather than leaving a
+                // dialog on screen nobody is waiting to answer.
+                if (httprequest._camConsentCancelled === true) { this.consent.close(); }
+                return (this.consent);
+            });
+        } else {
+            pr = require('message-box').create(consentTitle, consentMessage, httprequest.consentTimeout, null, tunnel.tsid);
+        }
+    } else {
+        pr = require('message-box').create(consentTitle, consentMessage, httprequest.consentTimeout, null, tunnel.tsid);
+    }
+
+    pr.tunnel = tunnel;
+    httprequest._camConsentPromise = pr;
+    pr.then(camConsentGranted, camConsentDenied);
+    return false;
+}
+
+// Called from native code (via agentcore.c's MNG_CAM_CONSENT_CANCEL
+// interception) when the operator stopped asking before the local user
+// answered. Closing rejects the promise, so camConsentDenied() runs and clears
+// the pending state as it would for a refusal.
+function onCamConsentCancelled() {
+    if ((_activeDesktopTunnel == null) || (_activeDesktopTunnel.httprequest == null)) { return; }
+    var httprequest = _activeDesktopTunnel.httprequest;
+    if (httprequest.camConsentPending !== true) { return; }
+
+    var pr = httprequest._camConsentPromise;
+    httprequest._camConsentPromise = null;
+    httprequest.camConsentPending = false;
+    httprequest._camConsentCancelled = true;
+
+    try {
+        if (pr != null) {
+            if (typeof pr.close == 'function') { pr.close(); }
+            else if ((pr.__childPromise != null) && (typeof pr.__childPromise.close == 'function')) { pr.__childPromise.close(); }
+        }
+    } catch (ex) { }
+}
+
+function camConsentGranted() {
+    var tunnel = this.tunnel;
+    if ((tunnel == null) || (tunnel.httprequest == null)) { return; }
+    var httprequest = tunnel.httprequest;
+
+    httprequest.camConsentPending = false;
+    httprequest.camConsentGranted = true;
+    httprequest._camConsentPromise = null;
+
+    MeshServerLogEx(30, null, "Local user granted camera access (" + httprequest.remoteaddr + ")", httprequest);
+    try { tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: null, msgid: 0 })); } catch (ex) { }
+
+    // Tell the native layer that consent is granted, then start capture. The
+    // browser learns the outcome from the MNG_CAM_CAPS that follows.
+    try {
+        var kvm = httprequest.desktop.kvm;
+        var frame = Buffer.from(String.fromCharCode(0x00, 110, 0x00, 0x04));   // MNG_CAM_CONSENT
+        kvm.write(frame);
+    } catch (ex) { }
+
+    if (httprequest.consent && (httprequest.consent & 1)) {
+        // Notification is enabled for this domain: say plainly that the camera
+        // is now open.
+        var notifyMessage = currentTranslation['camNotify'].replace(/\{0\}/g, httprequest.realname);
+        var notifyTitle = 'MeshCentral';
+        if (httprequest.soptions != null) {
+            if (httprequest.soptions.notifyTitle != null) { notifyTitle = httprequest.soptions.notifyTitle; }
+            if (httprequest.soptions.notifyMsgCam != null) { notifyMessage = httprequest.soptions.notifyMsgCam.replace(/\{0\}/g, httprequest.realname); }
+        }
+        try { require('notifybar-desktop')(notifyTitle + '\n' + notifyMessage, require('MeshAgent')._tsid); } catch (ex) { }
+    }
+}
+
+function camConsentDenied(e) {
+    var tunnel = this.tunnel;
+    if ((tunnel == null) || (tunnel.httprequest == null)) { return; }
+    var httprequest = tunnel.httprequest;
+
+    httprequest.camConsentPending = false;
+    httprequest.camConsentGranted = false;
+    httprequest._camConsentPromise = null;
+
+    // The operator withdrew the request themselves, so the prompt was closed
+    // from this side rather than answered. Nothing was denied and nobody is
+    // waiting to hear about it; reporting a refusal here would be wrong.
+    if (httprequest._camConsentCancelled === true) {
+        httprequest._camConsentCancelled = false;
+        return;
+    }
+
+    MeshServerLogEx(34, null, "Local user denied camera access (" + httprequest.remoteaddr + ")", httprequest);
+
+    try {
+        tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'camconsent', granted: false }));
+        tunnel.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "The user declined the camera request.", msgid: 2 }));
     } catch (ex) { }
 }
 
