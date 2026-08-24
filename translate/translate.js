@@ -86,6 +86,14 @@ var minifyMeshCentralSourceFiles = [
     "../views/sharing-mobile.handlebars",
     "../views/mstsc.handlebars",
     "../views/ssh.handlebars",
+    // These four were missing from this list, so "minifyall" silently skipped
+    // them and their -min.js copies went stale as the sources moved on. That
+    // is invisible until a domain turns minify on, at which point it serves
+    // whichever old build happened to be committed last.
+    "../public/scripts/agent-audio-0.1.0.js",
+    "../public/scripts/agent-audio-worklet-0.1.0.js",
+    "../public/scripts/agent-camera-0.1.0.js",
+    "../public/scripts/agent-mic-0.1.0.js",
     "../public/scripts/agent-desktop-0.0.2.js",
     "../public/scripts/agent-rdp-0.0.1.js",
     "../public/scripts/agent-redir-rtc-0.1.0.js",

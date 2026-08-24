@@ -34,6 +34,7 @@
     <script type="text/javascript" src="scripts/agent-rdp-0.0.1{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-audio-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/agent-mic-0.1.0{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/agent-camera-0.1.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/qrcode.min.js"></script>
     <script type="text/javascript" src="scripts/xterm{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/xterm-addon-fit{{{min}}}.js"></script>
@@ -236,6 +237,7 @@
                                 <td tabindex=0 id=MainDev class="topbar_td style3x" onmouseup=go(10,event) onkeypress="if (event.key == 'Enter') go(10)">General</td>
                                 <td tabindex=0 id=MainDevDesktop class="topbar_td style3x" onmouseup=go(11,event) onkeypress="if (event.key == 'Enter') go(11)">Desktop</td>
                                 <td tabindex=0 id=MainDevMic class="topbar_td style3x" onmouseup=go(22,event) onkeypress="if (event.key == 'Enter') go(22)">Mic</td>
+                                <td tabindex=0 id=MainDevCamera class="topbar_td style3x" onmouseup=go(23,event) onkeypress="if (event.key == 'Enter') go(23)">Camera</td>
                                 <td tabindex=0 id=MainDevTerminal class="topbar_td style3x" onmouseup=go(12,event) onkeypress="if (event.key == 'Enter') go(12)">Terminal</td>
                                 <td tabindex=0 id=MainDevFiles class="topbar_td style3x" onmouseup=go(13,event) onkeypress="if (event.key == 'Enter') go(13)">Files</td>
                                 <td tabindex=0 id=MainDevRegistry class="topbar_td style3x" onmouseup=go(9,event) onkeypress="if (event.key == 'Enter') go(9)">Registry</td>
@@ -1239,6 +1241,89 @@
                     </div>
                 </div>
             </div>
+            <div id=p23 style="display:none">
+                <div id=p23main style="overflow-y:auto">
+                    <div id="p23title">
+                        <div id="p23BackButton" style="float:left"><div class="backButton" tabindex=0 onclick=goBack() title="Back" onkeypress="if (event.key == 'Enter') goBack()"><div class="backButtonEx"></div></div></div>
+                        <h1>Camera<span id=p23deviceName></span></h1>
+                    </div>
+                    <div id=p23body style="max-width:760px">
+                        <div id=p23info style="font-size:12px;color:gray;margin-bottom:8px"></div>
+                        <div id=p23statusText style="font-size:14px;margin-bottom:8px"></div>
+
+                        <div id=p23viewport style="position:relative;max-width:640px;background:#101010;border-radius:4px;overflow:hidden;aspect-ratio:4/3">
+                            <canvas id=p23canvas style="display:block;width:100%;height:100%;object-fit:contain"></canvas>
+                            <div id=p23placeholder style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px;text-align:center;padding:8px">The camera is not running.</div>
+                        </div>
+                        <div id=p23stats style="font-size:12px;color:gray;margin:6px 0 10px;min-height:15px"></div>
+
+                        <input type=button id=p23startstop value="Start Camera" onclick=p23Toggle(event) />
+                        <input type=button id=p23snap value="Take Photo" onclick=p23Snapshot(event) />
+
+                        <div id="p23unsupportedNotice" class="warningbox" style="display:none;margin-top:12px">This device's agent does not support camera settings yet -- it will use its default settings.</div>
+
+                        <div id=p23snapwrap style="display:none;margin-top:16px;padding:12px;border:1px solid rgba(128,128,128,0.35);border-radius:4px">
+                            <div style="font-weight:bold;margin-bottom:6px">Last Photo</div>
+                            <img id=p23snapimg alt="Captured photo" style="display:block;max-width:100%;max-height:320px;border-radius:3px;background:#101010" />
+                            <table id=p23snapmeta style="font-size:12px;color:gray;margin-top:8px;border-collapse:collapse"></table>
+                            <div style="margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+                                <label>Save as
+                                    <select id=p23snapformat style="margin-left:4px"></select>
+                                </label>
+                                <input type=button id=p23snapsave value="Save Photo" onclick=p23SaveSnapshot() />
+                            </div>
+                            <div id=p23snapformatnote style="font-size:11px;color:gray;margin-top:6px"></div>
+                        </div>
+
+                        <div id=p23settings style="margin-top:16px">
+                            <div style="font-weight:bold;margin-bottom:4px">Camera</div>
+                            <div style="display:flex;align-items:center">
+                                <select id=p23device onchange=p23DeviceChanged() style="flex:1;max-width:300px">
+                                    <option value="-1">System Default</option>
+                                </select>
+                                <span id=p23deviceRefresh title="Refresh camera list" onclick=p23QueryDevices() onkeypress="if (event.key == 'Enter') p23QueryDevices()" tabindex=0 style="cursor:pointer;margin-left:6px;font-size:16px">&#8635;</span>
+                            </div>
+
+                            <div style="font-weight:bold;margin:14px 0 4px">Profile</div>
+                            <select id=p23preset onchange=camSettingsPresetChanged() style="max-width:300px">
+                                <option value="balanced">Balanced (Default)</option>
+                                <option value="lowbandwidth">Low Bandwidth</option>
+                                <option value="highquality">High Quality</option>
+                                <option value="smooth">Smooth Motion</option>
+                                <option value="custom">Custom</option>
+                            </select>
+
+                            <div style="font-weight:bold;margin:14px 0 4px">Advanced</div>
+                            <div id="p23advanced">
+                                <label style="display:block">Resolution<br />
+                                    <select id="p23resolution" onchange=p23AdvancedChanged()>
+                                        <option value="0x0">Camera Default</option>
+                                        <option value="320x240">320 x 240 (QVGA)</option>
+                                        <option value="640x480">640 x 480 (VGA)</option>
+                                        <option value="800x600">800 x 600 (SVGA)</option>
+                                        <option value="1280x720">1280 x 720 (720p)</option>
+                                        <option value="1920x1080">1920 x 1080 (1080p)</option>
+                                    </select>
+                                </label>
+                                <label style="display:block">Frame Rate (fps)<br /><input type="number" id="p23fps" min="1" max="60" style="width:60px" onchange=p23AdvancedChanged() /></label>
+                                <label style="display:block">JPEG Quality (1-100)<br /><input type="number" id="p23quality" min="1" max="100" style="width:60px" onchange=p23AdvancedChanged() /></label>
+                                <div style="font-size:11px;color:gray;margin:2px 0 8px">Only used when the camera cannot produce JPEG itself. When it can, its own frames are forwarded untouched and this has no effect.</div>
+                                <label style="display:block"><input type="checkbox" id="p23suppress" onchange=p23AdvancedChanged() />Skip unchanged frames -- an idle room costs almost no bandwidth</label>
+                                <label style="display:block">Motion Sensitivity<br />
+                                    <select id="p23threshold" onchange=p23AdvancedChanged()>
+                                        <option value="1">Highest (send almost every frame)</option>
+                                        <option value="3">High</option>
+                                        <option value="6">Medium</option>
+                                        <option value="12">Low (only obvious movement)</option>
+                                    </select>
+                                </label>
+                                <label style="display:block"><input type="checkbox" id="p23forceraw" onchange=p23AdvancedChanged() />Re-encode on the device instead of forwarding the camera's own JPEG</label>
+                                <div style="font-size:11px;color:gray;margin:2px 0 0">Leave this off. Turning it on makes the managed device spend CPU re-compressing every frame, and is only useful to override a camera whose built-in JPEG looks wrong.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div id=p20 style="display:none">
                 <div id=p20main style="overflow-y:auto">
                     <div id="p20title">
@@ -1743,6 +1828,20 @@
         };
         var micsettings = { preset: 'balanced', deviceName: '', deviceIndex: -1 }; // deviceIndex -1 = System Default
         for (var mpk in micPresets.balanced) { micsettings[mpk] = micPresets.balanced[mpk]; }
+        var deskCam = null;
+        // Named camera capture profiles. Field names match SendCamStart()'s
+        // params object exactly (agent-desktop-0.0.2.js), so a preset or the
+        // Custom form values can be handed to it/deskCam.applySettings() as-is.
+        // "quality" only matters on the re-encode fallback: when the camera can
+        // produce JPEG itself its frames are forwarded untouched (see kvm_cam.h).
+        var camPresets = {
+            balanced:     { width: 640,  height: 480,  fps: 15, quality: 75, suppressStatic: true,  staticThreshold: 3,  forceRaw: false },
+            lowbandwidth: { width: 320,  height: 240,  fps: 5,  quality: 50, suppressStatic: true,  staticThreshold: 6,  forceRaw: false },
+            highquality:  { width: 1280, height: 720,  fps: 15, quality: 90, suppressStatic: true,  staticThreshold: 3,  forceRaw: false },
+            smooth:       { width: 640,  height: 480,  fps: 30, quality: 70, suppressStatic: false, staticThreshold: 1,  forceRaw: false }
+        };
+        var camsettings = { preset: 'balanced', deviceName: '', deviceIndex: -1 }; // deviceIndex -1 = System Default
+        for (var cpk in camPresets.balanced) { camsettings[cpk] = camPresets.balanced[cpk]; }
         var terminal;
         var files;
         var debugLevel = parseInt('{{{debuglevel}}}');
@@ -1993,6 +2092,9 @@
             t = null;
             try { t = localStorage.getItem('micsettings'); } catch (ex) {}
             if (t != null) { try { micsettings = JSON.parse(t); } catch (ex) {} }
+            t = null;
+            try { t = localStorage.getItem('camsettings'); } catch (ex) {}
+            if (t != null) { try { camsettings = JSON.parse(t); } catch (ex) {} }
 
             // Terminal special keys
             var x = '';
@@ -3721,11 +3823,11 @@
                                     nodes = newnodes;
 
                                     // If we are looking at a node that is no longer visible, move back to "My Devices"
-                                    if ((xxcurrentView >= 9) && (xxcurrentView < 23) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
+                                    if ((xxcurrentView >= 9) && (xxcurrentView < 24) && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                                 }
                             }
                             mainUpdate(4 + 128 + 8192 + 16384);
-                            if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 9) && (xxcurrentView < 23)) { go(1); } }
+                            if (currentNode && !IsNodeViewable(currentNode)) { currentNode = null; if ((xxcurrentView >= 9) && (xxcurrentView < 24)) { go(1); } }
                             //meshserver.send({ action: 'files' }); // TODO: Why do we need to do this??
 
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
@@ -3749,7 +3851,7 @@
                             // If we are looking at a mesh that is now deleted, move back to "My Account"
                             if (xxcurrentView >= 20 && xxcurrentView < 30 && currentMesh._id == message.event.meshid) { setDialogMode(0); go(2); }
                             // If we are looking at a node in the deleted mesh, move back to "My Devices"
-                            if (xxcurrentView >= 9 && xxcurrentView < 23 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
+                            if (xxcurrentView >= 9 && xxcurrentView < 24 && currentNode && !IsNodeViewable(currentNode)) { setDialogMode(0); go(1); }
                             break;
                         }
                         case 'addnode': {
@@ -3779,7 +3881,7 @@
                             if (index != -1) {
                                 var node = nodes[index];
                                 if (currentNode == node) {
-                                    if (xxcurrentView >= 9 && xxcurrentView < 23) { setDialogMode(0); go(1); }
+                                    if (xxcurrentView >= 9 && xxcurrentView < 24) { setDialogMode(0); go(1); }
                                     currentNode = null;
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                 }
@@ -3865,7 +3967,7 @@
                                         // We don't see the new mesh, remove this device
                                         // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                         if ((currentNode != null) && (currentNode._id == node._id)) {
-                                            if ((xxcurrentView >= 9) && (xxcurrentView < 23) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
+                                            if ((xxcurrentView >= 9) && (xxcurrentView < 24) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
                                         }
                                         var index = -1;
                                         for (var i in nodes) { if (nodes[i]._id == message.event.nodeid) { index = i; break; } }
@@ -3902,7 +4004,7 @@
 
                                     // TODO: Correctly disconnect from this node (Desktop/Terminal/Files...)
                                     if ((currentNode != null) && (currentNode._id == node._id)) {
-                                        if ((xxcurrentView >= 9) && (xxcurrentView < 23) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
+                                        if ((xxcurrentView >= 9) && (xxcurrentView < 24) && !IsNodeViewable(currentNode)) { currentNode = null; setDialogMode(0); go(1); }
                                     }
                                     nodes.splice(index, 1);
                                     mainUpdate(4 | 16);
@@ -7882,6 +7984,11 @@
                 QH('p17deviceName', nname);
                 QH('p18deviceName', nname);
                 QH('p19deviceName', nname);
+                // The Mic and Camera panels carry the same span but were never
+                // filled in, so their titles read just "Mic"/"Camera" while
+                // every other device tab names the device it is showing.
+                QH('p22deviceName', nname);
+                QH('p23deviceName', nname);
 
                 // Node attributes
                 var x = '<table style=width:100%>';
@@ -8393,7 +8500,7 @@
                 refreshDeviceEvents();
 
                 // Update the web page title
-                if ((currentNode) && (xxcurrentView >= 9) && (xxcurrentView < 23)) {
+                if ((currentNode) && (xxcurrentView >= 9) && (xxcurrentView < 24)) {
                     document.title = currentNode.name + (mesh?(' - ' + mesh.name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
                 } else {
                     document.title = decodeURIComponent('{{{extitle}}}');
@@ -8501,7 +8608,7 @@
 
                 // Change the URL
                 var urlviewmode = '';
-                if (((features & 0x10000000) == 0) && (xxcurrentView >= 9) && (xxcurrentView <= 22) && (currentNode != null)) {
+                if (((features & 0x10000000) == 0) && (xxcurrentView >= 9) && (xxcurrentView <= 23) && (currentNode != null)) {
                     urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2];
                     for (var i in urlargs) { urlviewmode += ('&' + i + '=' + urlargs[i]); }
                     try { window.history.replaceState({}, document.title, window.location.pathname + urlviewmode); } catch (ex) { }
@@ -9074,6 +9181,312 @@
             putstore('micsettings', JSON.stringify(micsettings));
 
             if (deskMic) { deskMic.applySettings(micsettings); }
+        }
+
+        // ===================================================================
+        // Camera panel (p23): a normal device tab like Desktop/Terminal/Files,
+        // built to the same rules as the Mic panel (p22). Opening it never
+        // connects or starts anything by itself -- p23Toggle()/p23Snapshot()
+        // are the explicit actions.
+        // ===================================================================
+
+        function p23Show() {
+            camSettingsPopulate();
+            p23UpdateStatus();
+        }
+
+        // Connects the KVM tunnel if it isn't already, with desktop video
+        // suppressed -- nobody reaching the camera through this panel is
+        // looking at the screen, and paying for a video stream nobody watches
+        // is the whole thing this panel exists to avoid. See
+        // autoUnpauseOnConnect in agent-desktop-0.0.2.js and the one-way
+        // resume in go() that restores video if the Desktop tab is opened
+        // later. Runs `then` once the session is live.
+        function p23EnsureSession(then) {
+            if (desktop != null) {
+                // If a connection is still in progress, the handler installed
+                // by whichever panel started it will drive this instead.
+                if (desktop.State == 3) { p23QueryDevices(); then(); }
+                return true;
+            }
+            connectDesktop(null, 3);
+            if (desktop == null) return false; // e.g. no rights; connectDesktop already reported it
+            desktop._quickStartWantsVideo = (xxcurrentView == 11);
+            if (desktop.m) { desktop.m.autoUnpauseOnConnect = desktop._quickStartWantsVideo; }
+            var origOnStateChanged = desktop.onStateChanged;
+            desktop.onStateChanged = function (xdesktop, state) {
+                if (origOnStateChanged) { origOnStateChanged(xdesktop, state); }
+                if ((state == 3) && (xdesktop === desktop)) {
+                    if (!desktop._quickStartWantsVideo && desktop.m && desktop.m.SendPause) { desktop.m.SendPause(); }
+                    p23QueryDevices();
+                    then();
+                }
+                p23UpdateStatus();
+            };
+            return true;
+        }
+
+        // Starts with skipConsentPrompt: an operator on the dedicated Camera
+        // tab has no desktop view to be looking at, so there is nothing for an
+        // interactive prompt to add here. Still only a *request* -- the
+        // agent's policy-aware JS layer decides whether to honour it, and
+        // native never grants consent to itself. See camConsentHandleStart()
+        // in agents/meshcore.js.
+        function p23Toggle(event) {
+            if (event) { event.stopPropagation(); }
+            if (deskCam && (deskCam.state == 'live' || deskCam.state == 'requesting')) { deskCam.stop(); p23UpdateStatus(); return; }
+            p23EnsureSession(function () { if (deskCam) { deskCam.start(true); } });
+            p23UpdateStatus();
+        }
+
+        function p23Snapshot(event) {
+            if (event) { event.stopPropagation(); }
+            p23EnsureSession(function () {
+                if (!deskCam) return;
+                deskCam.takeSnapshot({
+                    // 0 means the camera's native size. A still is sent once,
+                    // so unlike the stream it can afford full resolution and a
+                    // high quality setting.
+                    width: 0, height: 0, quality: 92,
+                    deviceIndex: camsettings.deviceIndex,
+                    skipConsentPrompt: true
+                });
+                p23SetStatus('Taking a photo...');
+            });
+            p23UpdateStatus();
+        }
+
+        function p23SetStatus(text) { var e = Q('p23statusText'); if (e) { e.textContent = text; } }
+
+        function p23UpdateStatus() {
+            var btn = Q('p23startstop');
+            if (!btn) return;
+
+            var infoText = Q('p23info');
+            if (deskCam && deskCam.caps) {
+                var c = deskCam.caps;
+                var bits = [(c.platform == 2 ? 'Windows' : (c.platform == 1 ? 'Linux' : 'agent')) + ' agent'];
+                if (c.width && c.height) { bits.push(c.width + ' x ' + c.height); }
+                if (c.fps) { bits.push(c.fps + ' fps'); }
+                if (c.deviceCount) { bits.push(c.deviceCount + ((c.deviceCount == 1) ? ' camera' : ' cameras')); }
+                if (!c.captureAvailable) { bits.push('no camera detected'); }
+                infoText.textContent = bits.join(' · ');
+            } else {
+                infoText.textContent = '';
+            }
+
+            var state = deskCam ? deskCam.state : 'unavailable';
+            var live = (state == 'live');
+            QV('p23placeholder', !live);
+            var snapBtn = Q('p23snap');
+            // A photo can be taken without streaming first -- the agent opens
+            // the camera just for the one frame -- but there still has to be a
+            // device that has one.
+            if (snapBtn) { snapBtn.disabled = (state == 'unavailable'); }
+
+            switch (state) {
+                case 'live':
+                    btn.value = 'Stop Camera';
+                    p23SetStatus('Viewing this device’s camera.');
+                    break;
+                case 'requesting':
+                    btn.value = 'Cancel';
+                    p23SetStatus('Waiting for the device user to allow camera access...');
+                    break;
+                case 'unavailable':
+                    btn.value = 'Start Camera';
+                    p23SetStatus((desktop && desktop.State == 3) ? 'This device has no usable camera.' : 'Not connected.');
+                    break;
+                default: // idle
+                    btn.value = 'Start Camera';
+                    p23SetStatus('Camera is off.');
+                    break;
+            }
+        }
+
+        function p23StatsUpdate(stats) {
+            var e = Q('p23stats');
+            if (!e) return;
+            if (!deskCam || deskCam.state != 'live') { e.textContent = ''; return; }
+            var bits = [];
+            if (stats.width && stats.height) { bits.push(stats.width + ' x ' + stats.height); }
+            bits.push(stats.fps + ' fps');
+            bits.push(stats.kbps + ' kbps');
+            // Worth showing plainly: it is the difference between the managed
+            // device spending no CPU on video and spending a lot of it.
+            bits.push(stats.passthrough ? 'camera JPEG, no re-encoding' : 're-encoded on device');
+            e.textContent = bits.join(' · ');
+        }
+
+        function p23SnapshotReceived(snap) {
+            var img = Q('p23snapimg');
+            if (img) { img.src = snap.url; }
+            QV('p23snapwrap', true);
+
+            var rows = [
+                ['Taken', snap.takenAt.toLocaleString()],
+                ['Resolution', snap.width + ' x ' + snap.height],
+                ['Size', (snap.bytes < 1024) ? (snap.bytes + ' B') : (Math.round(snap.bytes / 1024) + ' KB')],
+                ['Format', snap.format],
+                ['Source', snap.passthrough ? 'Straight from the camera, not re-encoded' : 'Encoded on the device'],
+                ['Capture time', snap.captureMs + ' ms']
+            ];
+            var html = '';
+            for (var i = 0; i < rows.length; i++) {
+                html += '<tr><td style="padding:1px 10px 1px 0;vertical-align:top;white-space:nowrap">' + rows[i][0] + '</td><td style="padding:1px 0">' + EscapeHtml(rows[i][1]) + '</td></tr>';
+            }
+            QH('p23snapmeta', html);
+
+            p23PopulateSaveFormats();
+            p23UpdateStatus();
+        }
+
+        // Formats are feature-detected rather than assumed: a browser that
+        // cannot encode WebP silently returns PNG from toDataURL, which would
+        // otherwise save a file with the wrong extension.
+        function p23PopulateSaveFormats() {
+            var sel = Q('p23snapformat');
+            if (!sel || !deskCam) return;
+            if (sel.options.length > 0) return;    // already built
+            var fmts = deskCam.supportedSaveFormats(), html = '';
+            for (var i = 0; i < fmts.length; i++) {
+                html += '<option value="' + fmts[i].id + '">' + EscapeHtml(fmts[i].label) + '</option>';
+            }
+            QH('p23snapformat', html);
+            var note = Q('p23snapformatnote');
+            if (note) {
+                note.textContent = 'JPEG saves the device’s exact bytes with no re-encoding. Other formats are converted here in your browser, so the device does no extra work.';
+            }
+        }
+
+        function p23SaveSnapshot() {
+            if (!deskCam || !deskCam.lastSnapshot) return;
+            var sel = Q('p23snapformat');
+            var fmt = sel ? sel.value : 'jpeg';
+            var name = 'camera-' + (currentNode ? currentNode.name.replace(/[^A-Za-z0-9._-]/g, '_') : 'device');
+            deskCam.saveSnapshot(deskCam.lastSnapshot, fmt, name);
+        }
+
+        function p23QueryDevices() {
+            if (desktop && desktop.m && desktop.m.SendCamDeviceQuery) { desktop.m.SendCamDeviceQuery(); }
+        }
+
+        // devices: display names, in the order the agent will interpret a later
+        // deviceIndex against -- valid only for this round-trip, which is why
+        // the persisted choice is a name resolved back to an index here rather
+        // than a stored raw index.
+        function p23DeviceListReceived(devices) {
+            var sel = Q('p23device');
+            if (!sel) return;
+            var html = '<option value="-1">System Default</option>';
+            for (var i = 0; i < devices.length; i++) {
+                html += '<option value="' + i + '">' + EscapeHtml(devices[i]) + '</option>';
+            }
+            QH('p23device', html);
+            var idx = -1;
+            if (camsettings.deviceName) {
+                for (var j = 0; j < devices.length; j++) { if (devices[j] === camsettings.deviceName) { idx = j; break; } }
+            }
+            sel.value = idx;
+        }
+
+        function p23DeviceChanged() {
+            var sel = Q('p23device');
+            if (!sel) return;
+            var idx = parseInt(sel.value, 10);
+            camsettings.deviceIndex = idx;
+            camsettings.deviceName = (idx >= 0 && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].textContent : '';
+            putstore('camsettings', JSON.stringify(camsettings));
+            if (deskCam) { deskCam.applySettings(camsettings); }
+        }
+
+        function camSettingsSetAdvancedEnabled(enabled) {
+            var ids = ['p23resolution', 'p23fps', 'p23quality', 'p23suppress', 'p23threshold', 'p23forceraw'];
+            for (var i in ids) { var e = Q(ids[i]); if (e) { e.disabled = !enabled; } }
+        }
+
+        function camSettingsFillForm(s) {
+            Q('p23resolution').value = (s.width || 0) + 'x' + (s.height || 0);
+            // A resolution the dropdown doesn't offer (a preset tuned by hand,
+            // or one restored from an older stored profile) would otherwise
+            // leave the select blank and silently reset on the next save.
+            if (Q('p23resolution').selectedIndex < 0) { Q('p23resolution').value = '0x0'; }
+            Q('p23fps').value = s.fps;
+            Q('p23quality').value = s.quality;
+            Q('p23suppress').checked = (s.suppressStatic !== false);
+            Q('p23threshold').value = s.staticThreshold;
+            if (Q('p23threshold').selectedIndex < 0) { Q('p23threshold').value = '3'; }
+            Q('p23forceraw').checked = !!s.forceRaw;
+        }
+
+        function camSettingsPopulate() {
+            Q('p23preset').value = camPresets[camsettings.preset] ? camsettings.preset : 'custom';
+            camSettingsFillForm(camsettings);
+
+            var unsupported = !!(deskCam && deskCam.caps && deskCam.caps.settingsSupported === false);
+            QV('p23unsupportedNotice', unsupported);
+            camSettingsSetAdvancedEnabled(!unsupported && (Q('p23preset').value == 'custom'));
+        }
+
+        function camSettingsPresetChanged() {
+            var name = Q('p23preset').value;
+            if (name != 'custom' && camPresets[name]) { camSettingsFillForm(camPresets[name]); }
+            var unsupported = !!(deskCam && deskCam.caps && deskCam.caps.settingsSupported === false);
+            camSettingsSetAdvancedEnabled(!unsupported && (name == 'custom'));
+            camSettingsApply();
+        }
+
+        function p23AdvancedChanged() {
+            // Editing a field by hand always means Custom -- there is no
+            // meaning to "tweak one field of Balanced" other than turning it
+            // into a Custom profile with that one difference.
+            Q('p23preset').value = 'custom';
+            camSettingsSetAdvancedEnabled(!(deskCam && deskCam.caps && deskCam.caps.settingsSupported === false));
+            camSettingsApply();
+        }
+
+        // Reads the form and applies it: persists, and re-applies live if a
+        // session is already running. The agent restarts capture only for the
+        // settings that genuinely require it (resolution, frame rate, device);
+        // quality and suppression take effect in place.
+        function camSettingsApply() {
+            var name = Q('p23preset').value;
+            var resolved;
+            if (name != 'custom' && camPresets[name]) {
+                resolved = camPresets[name];
+            } else {
+                var wh = (Q('p23resolution').value || '0x0').split('x');
+                resolved = {
+                    width: parseInt(wh[0], 10) || 0,
+                    height: parseInt(wh[1], 10) || 0,
+                    fps: parseInt(Q('p23fps').value, 10) || 15,
+                    quality: parseInt(Q('p23quality').value, 10) || 75,
+                    suppressStatic: Q('p23suppress').checked,
+                    staticThreshold: parseInt(Q('p23threshold').value, 10) || 3,
+                    forceRaw: Q('p23forceraw').checked
+                };
+                name = 'custom';
+            }
+
+            var deviceName = camsettings.deviceName, deviceIndex = camsettings.deviceIndex;
+            camsettings = { preset: name, deviceName: deviceName, deviceIndex: deviceIndex };
+            for (var k in resolved) { camsettings[k] = resolved[k]; }
+            putstore('camsettings', JSON.stringify(camsettings));
+
+            if (deskCam) { deskCam.applySettings(camsettings); }
+        }
+
+        function deskCamApplyState(state, detail) {
+            p23UpdateStatus();
+            var tabBtn = Q('MainDevCamera');
+            if (tabBtn) {
+                tabBtn.classList.remove('micRequesting', 'micLive');
+                if (state == 'requesting') { tabBtn.classList.add('micRequesting'); }
+                else if (state == 'live') { tabBtn.classList.add('micLive'); }
+            }
+            // Surface the outcome rather than failing silently: being unsure
+            // whether a camera is open is worse than a little noise.
+            if (detail) { p11setConsoleMsg(detail, 5000); }
         }
 
         function deviceToastFunction() {
@@ -10136,6 +10549,22 @@
                         desktop.m.onMicDeviceList = function(devices) { p22DeviceListReceived(devices); };
                         desktop.onMicConsent = function(granted) { if (!granted) { deskMic.onConsentDenied(); } };
                     }
+                    if (typeof CreateAgentCamera !== 'undefined') {
+                        // Never auto-started, for the same reason the
+                        // microphone isn't: only an explicit click, and then
+                        // only after the device user agrees.
+                        deskCam = CreateAgentCamera(desktop);
+                        deskCam.setCanvas(Q('p23canvas'));
+                        deskCam.onStateChanged = deskCamApplyState;
+                        deskCam.onStats = p23StatsUpdate;
+                        deskCam.onSnapshot = p23SnapshotReceived;
+                        deskCam.applySettings(camsettings); // seed the persisted/default profile before the first start()
+                        desktop.m.onCamCaps = function(caps) { deskCam.onCaps(caps); p23UpdateStatus(); };
+                        desktop.m.onCamData = function(frame) { deskCam.onData(frame); };
+                        desktop.m.onCamSnapshot = function(snap) { deskCam.onSnapshotData(snap); };
+                        desktop.m.onCamDeviceList = function(devices) { deskCam.onDeviceList(devices); p23DeviceListReceived(devices); };
+                        desktop.onCamConsent = function(granted) { if (!granted) { deskCam.onConsentDenied(); } };
+                    }
                     desktop.m.onKeyboardStateChanged = function(obj, state) {
                         QS('p11numlock').display = ((state & 1) ? 'inline-block' : 'none');
                         QS('p11scrolllock').display = ((state & 2) ? 'inline-block' : 'none');
@@ -10378,6 +10807,12 @@
                         // indicator clears when the session ends.
                         if (deskMic != null) { deskMic.stop(); deskMic = null; }
                         QV('DeskMicButton', false);
+                        // Same for the camera. dispose() also releases the
+                        // object URL held for the last photo, which would
+                        // otherwise keep a full-resolution image alive for as
+                        // long as the page stayed open.
+                        if (deskCam != null) { deskCam.stop(); deskCam.dispose(); deskCam = null; }
+                        QV('p23snapwrap', false);
                         // Disconnect and clean up the remote desktop
                         desktop.Stop();
                     }
@@ -20603,10 +21038,11 @@
         }
 
         function getTabGroup(v) {
-            // 9 (Registry) and 22 (Mic) sit outside the 10-19 block that
-            // Math.floor(v/10) naturally groups as "device tabs", so both are
-            // folded in by hand -- same reason, same fix, for the same group.
-            return ((v === 9) || (v === 22)) ? 1 : Math.floor(v / 10);
+            // 9 (Registry), 22 (Mic) and 23 (Camera) sit outside the 10-19
+            // block that Math.floor(v/10) naturally groups as "device tabs",
+            // so all three are folded in by hand -- same reason, same fix,
+            // for the same group.
+            return ((v === 9) || (v === 22) || (v === 23)) ? 1 : Math.floor(v / 10);
         }
 
         function go(x, event) {
@@ -20622,7 +21058,7 @@
             // If "shift" is pressed, open a new tab.
             if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
-                if ((x >= 9) && (x <= 22)) {
+                if ((x >= 9) && (x <= 23)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
                 } else if ((x >= 20) && (x <= 29)) {
                     if (currentMesh) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotomesh=' + currentMesh._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentMesh._id); }
@@ -20659,6 +21095,7 @@
             xxcurrentView = x;
 
             if (x == 22) { p22Show(); }
+            if (x == 23) { p23Show(); }
 
             // If a connection was started from the Mic panel (video paused,
             // since nobody was looking -- see p22Toggle()), opening the
@@ -20677,7 +21114,7 @@
             // Change the URL
             if (((features & 0x10000000) == 0) && (xxcurrentView > 0)) {
                 var urlviewmode = '';
-                if ((xxcurrentView >= 9) && (xxcurrentView <= 22)) { // Device Link
+                if ((xxcurrentView >= 9) && (xxcurrentView <= 23)) { // Device Link
                     if (currentNode != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotonode=' + currentNode._id.split('/')[2]; }
                 } else if ((xxcurrentView >= 20) && (xxcurrentView <= 29)) { // Device Group Link
                     if (currentMesh != null) { urlviewmode = '?viewmode=' + xxcurrentView + '&gotomesh=' + currentMesh._id.split('/')[2]; }
@@ -20712,7 +21149,7 @@
             if (goBackStack.length > 0) { backView = goBackStack[goBackStack.length - 1]; }
 
             // My Devices
-            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 9 && x < 23))) {
+            if (x == 1 || (backView == 1) || ((backView == 0) && (x >= 9 && x < 24))) {
                 QC('MainMenuMyDevices').add(mainMenuActiveClass);
                 QC('LeftMenuMyDevices').add(leftMenuActiveClass);
             } else if (x == 2 || (backView == 2) || ((backView == 0) && (x >= 20 && x < 30))) {
@@ -20745,7 +21182,7 @@
             QV('topbar', x != 0);
             if ((x == 0) && (webPageFullScreen)) { QC('body').add('arg_hide'); }
 
-            QV('MainSubMenuSpan', (x >= 9) && (x < 23));
+            QV('MainSubMenuSpan', (x >= 9) && (x < 24));
             QV('UserDummyMenuSpan', (x == 51) || ((x < 10) && (x != 6) && webPageFullScreen));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
@@ -20790,7 +21227,7 @@
             if (x == 9) { setupRegistry(); }
 
             // Update the web page title
-            if ((currentNode) && (x >= 9) && (x < 23)) {
+            if ((currentNode) && (x >= 9) && (x < 24)) {
                 document.title = currentNode.name + ((meshes[currentNode.meshid])?(' - ' + meshes[currentNode.meshid].name):'') + ' - ' + decodeURIComponent('{{{extitle}}}');
             } else {
                 document.title = decodeURIComponent('{{{extitle}}}');
