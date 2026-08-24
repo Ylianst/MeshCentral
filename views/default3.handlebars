@@ -20291,6 +20291,8 @@
                 document.getElementById('idx_dlgOkButton').onclick = function () {
                     p50groupActionFunctionDelExec(3);
                 };
+                // Keep the modal open; the rewired OK button must handle closing once the user confirms.
+                return false;
             }
         }
 
