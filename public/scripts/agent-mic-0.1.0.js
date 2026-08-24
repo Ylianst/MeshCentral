@@ -47,7 +47,7 @@ var CreateAgentMic = function (desktop) {
 
     var actx = null, worklet = null, decoder = null;
     var jitter = [], nextSeq = -1, jitterDepth = 3, gapCount = 0;
-    var gapTimer = null, consentTimer = null, levelTimer = null;
+    var gapTimer = null, consentTimer = null, levelTimer = null, retryTimer = null;
 
     function setState(state, detail) {
         if (obj.state === state) { return; }
@@ -72,6 +72,7 @@ var CreateAgentMic = function (desktop) {
 
         if (caps.consentGranted) {
             if (consentTimer) { clearTimeout(consentTimer); consentTimer = null; }
+            if (retryTimer) { clearInterval(retryTimer); retryTimer = null; }
             // The user accepted, so audio is about to arrive: open the player.
             if (obj.state !== 'live') { beginPlayback(); }
         } else if (obj.state === 'live') {
@@ -104,17 +105,37 @@ var CreateAgentMic = function (desktop) {
     // instance is shared with the Desktop panel's own mic button, which must
     // never inherit a "skip the prompt" request made from the Mic panel.
     // ---------------------------------------------------------------------
+    function sendStart(skipConsentPrompt) {
+        if (desktop && desktop.m && desktop.m.SendMicStart) {
+            var startParams = obj.params ? Object.assign({}, obj.params) : {};
+            startParams.skipConsentPrompt = !!skipConsentPrompt;
+            desktop.m.SendMicStart(startParams);
+        }
+    }
+
     obj.start = function (skipConsentPrompt) {
         if (obj.state === 'live' || obj.state === 'requesting') { return; }
         if (!supported()) { setState('unavailable', 'This browser cannot decode audio.'); return; }
         if (!obj.caps || !obj.caps.captureAvailable) { setState('unavailable', 'This device has no microphone.'); return; }
 
         setState('requesting', 'Asking the user for permission to use their microphone...');
-        if (desktop && desktop.m && desktop.m.SendMicStart) {
-            var startParams = obj.params ? Object.assign({}, obj.params) : {};
-            startParams.skipConsentPrompt = !!skipConsentPrompt;
-            desktop.m.SendMicStart(startParams);
-        }
+        sendStart(skipConsentPrompt);
+
+        // This request crosses several async hops before an answer can come
+        // back (the agent's master/slave pipe, then the server relay), any
+        // one of which occasionally loses a one-shot signal -- the operator
+        // then sees this stuck in 'requesting' until they reconnect by hand.
+        // Re-sending is always safe rather than a hack around a specific
+        // cause: once granted, a repeat MNG_MIC_START is an explicit
+        // no-op fast path in native (kvm_mic_start()); while still awaiting
+        // an actual interactive prompt, micConsentHandleStart()'s existing
+        // micConsentPending guard drops the duplicate before it can show a
+        // second dialog. So this can only ever shorten a stall, never
+        // double-prompt or double-start.
+        retryTimer = setInterval(function () {
+            if (obj.state !== 'requesting') { clearInterval(retryTimer); retryTimer = null; return; }
+            sendStart(skipConsentPrompt);
+        }, 3000);
 
         // An unattended machine would otherwise leave the operator waiting
         // indefinitely with no indication of what is happening.
@@ -277,6 +298,7 @@ var CreateAgentMic = function (desktop) {
         if (gapTimer) { clearInterval(gapTimer); gapTimer = null; }
         if (levelTimer) { clearInterval(levelTimer); levelTimer = null; }
         if (consentTimer) { clearTimeout(consentTimer); consentTimer = null; }
+        if (retryTimer) { clearInterval(retryTimer); retryTimer = null; }
         if (decoder != null) { try { decoder.close(); } catch (ex) { } decoder = null; }
         if (worklet != null) { try { worklet.disconnect(); } catch (ex) { } worklet = null; }
         if (actx != null) { try { actx.close(); } catch (ex) { } actx = null; }

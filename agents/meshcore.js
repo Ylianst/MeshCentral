@@ -3480,10 +3480,12 @@ function registry_consentpromise_rejected(e)
 // MNG_MIC_START and already knows the true consent state, so it decides when
 // a prompt is needed and tells JS via MNG_MIC_CONSENT_NEEDED -- an internal,
 // browser-invisible signal that agentcore.c turns into a call to
-// onMicConsentNeeded() below. That happens twice per session: once
-// speculatively when the KVM slave starts (so the operator does not have to
-// click first to find out a prompt is coming), and again for every
-// MNG_MIC_START a browser sends while consent is still missing.
+// onMicConsentNeeded() below. That happens once for every MNG_MIC_START a
+// browser sends while consent is still missing -- there is deliberately no
+// speculative check at KVM session open (see the session-start comment in
+// linux_kvm.c's kvm_relay_setup() / Windows/kvm.c's equivalent): that used
+// to prompt the local user just for opening a desktop session, even when
+// the operator never touched the microphone.
 //
 // _activeDesktopTunnel (set where the desktop session is created, cleared in
 // tunnel_kvm_end()) is how onMicConsentNeeded() finds the session to prompt
@@ -3495,7 +3497,8 @@ var _activeDesktopTunnel = null;
 
 // Called from native code (via agentcore.c's MNG_MIC_CONSENT_NEEDED
 // interception) when a microphone start was attempted -- by a browser click,
-// or speculatively at session open -- but local consent has not been granted.
+// or a background retry of one (see agent-mic-0.1.0.js's start()) -- but
+// local consent has not been granted.
 // There is no frame to hold here: native never opens the microphone without
 // consent regardless of this call, so this only needs to (continue to) show
 // the same prompt a click would.
