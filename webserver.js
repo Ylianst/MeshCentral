@@ -1232,8 +1232,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
         if (req.session == null) { req.session = {}; }
 
+        const blockingMode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+
         // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) {
+        if (blockingMode !== 'username' && obj.checkAllowLogin(req) === false) {
             // Wait and redirect the user
             setTimeout(function () {
                 req.session.messageid = 114; // IP address blocked, try again later.
@@ -1247,6 +1249,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((xusername == null) && (xpassword == null) && (req.body.token != null)) {
             const sec = parent.decryptSessionData(req.session.e);
             xusername = sec.tuser; xpassword = sec.tpass;
+        }
+console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, xusername));
+        // Check if the user is locked out
+        if (blockingMode === 'username' && obj.checkAllowLogin(null, xusername) === false) {
+            // Wait and redirect the user
+            setTimeout(function () {
+                req.session.messageid = 110; // Account locked
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
         }
 
         // Authenticate the user
@@ -1461,19 +1473,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.messageid = 110; // Account locked.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp, msgid: 109, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         } else if (err == 'denied') {
                             parent.debug('web', 'handleLoginRequest: login failed, access denied');
                             req.session.messageid = 111; // Access denied.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Denied user login from ' + req.clientIp, msgid: 155, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                             req.session.messageid = 112; // Login failed, check username and password.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp, msgid: 110, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         }
                     }
 
@@ -10611,39 +10623,129 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
         if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
         if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
-    }
-    obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
-        if (parent.config.settings.maxinvalidlogin === false) return;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        if (parent.config.settings.maxinvalidlogin != null) {
-            if (typeof parent.config.settings.maxinvalidlogin.exclude == 'string') {
-                const excludeSplit = parent.config.settings.maxinvalidlogin.exclude.split(',');
-                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
-            } else if (Array.isArray(parent.config.settings.maxinvalidlogin.exclude)) {
-                for (var i in parent.config.settings.maxinvalidlogin.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalidlogin.exclude[i])) return; }
+        if (typeof parent.config.settings.maxinvalidlogin.blocking != 'string') {
+            parent.config.settings.maxinvalidlogin.blocking = 'iprange';
+        } else {
+            parent.config.settings.maxinvalidlogin.blocking = parent.config.settings.maxinvalidlogin.blocking.toLowerCase();
+            if (['iprange', 'ip', 'username'].indexOf(parent.config.settings.maxinvalidlogin.blocking) < 0) {
+                parent.config.settings.maxinvalidlogin.blocking = 'iprange';
             }
         }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
-        if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
-        if (typeof obj.badLoginTable[ip] == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return; } }  // Check cooloff period
-        if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
-        if ((obj.badLoginTable[ip].length >= parent.config.settings.maxinvalidlogin.count) && (parent.config.settings.maxinvalidlogin.coolofftime != null)) {
-            obj.badLoginTable[ip] = Date.now() + (parent.config.settings.maxinvalidlogin.coolofftime * 60000); // Move to cooloff period
-        }
     }
-    obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
+    function getBadLoginKey(ip, username) {
+        if (typeof ip === 'object' && ip != null) { ip = ip.clientIp; }
+
+        const mode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+
+        if (mode === 'username') {
+            return (typeof username === 'string' && username.length > 0) ? username.toLowerCase() : null;
+        }
+
+        if (mode === 'ip') { return ip; }
+        if (mode === 'iprange') {
+            const splitip = ip.split('.');
+            if (splitip.length === 4) { // Check if IP v4
+                return `${splitip[0]}.${splitip[1]}.${splitip[2]}.*`;
+            }
+            return ip;
+        }
+        return null; // Return null if mode is 'username'
+    }
+    obj.isKeyAllowed = function (key) {
+        if (!parent.config.settings.maxinvalidlogin || !key) return true;
+console.log('Checking if key is allowed:', key);
+        const entry = obj.badLoginTable[key];
+    console.log('Entry for key:', entry);
+        if (entry == null) return true;
+
+        const now = Date.now();
+
+        // Check cooloff period (number timestamp)
+        if (typeof entry === 'number') {
+            if (entry < now) {
+                delete obj.badLoginTable[key];
+                return true;
+            }
+            return false;
+        }
+console.log('Entry is an array:', entry);
+        // Check sliding window timestamps (array)
+        const cutoffTime = now - (parent.config.settings.maxinvalidlogin.time * 60000);
+        while (entry.length > 0 && entry[0] < cutoffTime) {
+            entry.shift();
+        }
+console.log('Entry after cleanup:', entry);
+        if (entry.length === 0) {
+            delete obj.badLoginTable[key];
+            return true;
+        }
+console.log('Entry length:', entry.length, 'Max allowed:', parent.config.settings.maxinvalidlogin.count);
+        return entry.length < parent.config.settings.maxinvalidlogin.count;
+    };
+    obj.setbadLogin = function (ip, username) {
+        if (!parent.config.settings.maxinvalidlogin) return;
+
+        const rawIp = (typeof ip === 'object' && ip != null) ? ip.clientIp : ip;
+
+        // Check IP exclusion list (only applicable if a valid IP is present)
+        if (typeof rawIp === 'string' && parent.config.settings.maxinvalidlogin.exclude) {
+            const excludes = Array.isArray(parent.config.settings.maxinvalidlogin.exclude)
+                ? parent.config.settings.maxinvalidlogin.exclude
+                : parent.config.settings.maxinvalidlogin.exclude.split(',');
+
+            const ipcheck = require('ipcheck');
+            for (const pattern of excludes) {
+                if (ipcheck.match(rawIp, pattern.trim())) return;
+            }
+        }
+
+        // Resolve key based on configuration ('ip', 'iprange', or 'username')
+        const key = getBadLoginKey(ip, username);
+        if (!key) return;
+
+        // Periodic cleanup trigger
+        if (++obj.badLoginTableLastClean > 100) { 
+            obj.cleanBadLoginTable(); 
+        }
+
+        const now = Date.now();
+
+        // Check cooloff period
+        if (typeof obj.badLoginTable[key] === 'number') {
+            if (obj.badLoginTable[key] < now) { 
+                delete obj.badLoginTable[key]; 
+            } else { 
+                return; 
+            }
+        }
+
+        // Record bad attempt timestamp
+        if (obj.badLoginTable[key] == null) {
+            obj.badLoginTable[key] = [now];
+        } else {
+            obj.badLoginTable[key].push(now);
+        }
+
+        // Enter cooloff period if threshold reached
+        const maxCount = parent.config.settings.maxinvalidlogin.count;
+        const cooloff = parent.config.settings.maxinvalidlogin.coolofftime;
+        if (cooloff != null && obj.badLoginTable[key].length >= maxCount) {
+            obj.badLoginTable[key] = now + (cooloff * 60000);
+        }
+    };
+    obj.checkAllowLogin = function (ip, username) { // Check if a login key is allowed to login
         if (parent.config.settings.maxinvalidlogin === false) return true;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
-        var ipTable = obj.badLoginTable[ip];
-        if (ipTable == null) return true;
-        if (typeof ipTable == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return false; } } // Check cooloff period
-        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-        if (ipTable.length == 0) { delete obj.badLoginTable[ip]; return true; }
-        return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
+
+        const mode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+        if (mode === 'username') {
+            if (typeof username === 'string' && username.length > 0) {
+                return obj.isKeyAllowed(username.toLowerCase());
+            }
+            return true;
+        }
+
+        const ipKey = getBadLoginKey(ip);
+        return obj.isKeyAllowed(ipKey); // No more than x bad logins in x minutes
     }
     obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
         if (parent.config.settings.maxinvalidlogin === false) return;

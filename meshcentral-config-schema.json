@@ -1102,6 +1102,16 @@
               "default": 10,
               "description": "Maximum number of invalid login attempts from an IP address in the time period."
             },
+            "blocking": {
+              "type": "string",
+              "default": "iprange",
+              "enum": [
+                "iprange",
+                "ip",
+                "username"
+              ],
+              "description": "Selects what is blocked when the invalid login limit is reached. 'iprange' (default) keeps the current behavior of blocking IPv4 /24 ranges, 'ip' blocks the exact client IP, and 'username' blocks only the login name."
+            },
             "coolofftime": {
               "type": "integer",
               "default": null,
