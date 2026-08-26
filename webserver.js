@@ -1250,7 +1250,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const sec = parent.decryptSessionData(req.session.e);
             xusername = sec.tuser; xpassword = sec.tpass;
         }
-console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, xusername));
+
         // Check if the user is locked out
         if (blockingMode === 'username' && obj.checkAllowLogin(null, xusername) === false) {
             // Wait and redirect the user
@@ -9001,8 +9001,27 @@ console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, x
             parent.debug('web', 'WSERROR: Session expired.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'expired', msg: 'expired-1' })); ws.close(); } catch (e) { } return;
         }
 
-        // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
+        const blockingMode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+        
+        // Check if blocking mode is ip and this is a banned ip address
+        if (blockingMode !== 'username' && obj.checkAllowLogin(req) === false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
+        // Check if blocking mode is username and this is a banned username
+        if (blockingMode === 'username') {
+            let username = null;
+            if (req.query && req.query.user) {
+                username = req.query.user;
+                if (username.startsWith('~t:')) { tokenUser = username; }
+            } else if (req.headers && req.headers['x-meshauth']) {
+                try {
+                    username = Buffer.from(req.headers['x-meshauth'].split(',')[0], 'base64').toString();
+                } catch (e) {}
+            } else if (req.session) {
+                if (req.session.loginToken) { username = req.session.loginToken; }
+                if (req.session.userid) { username = req.session.userid.split('/')[2]; }
+            }
+            if(username && obj.checkAllowLogin(null, username) === false) { parent.debug('web', 'WSERROR: Locked user.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'locked', msg: 'locked-1' })); ws.close(); } catch (e) { } return; }
+        }
+        
         try {
             // Hold this websocket until we are ready.
             ws._socket.pause();
@@ -9135,6 +9154,7 @@ console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, x
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
+                            console.log("1");
                             //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
                             //obj.setbadLogin(req);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2a' })); ws.close(); } catch (e) { }
@@ -9267,6 +9287,8 @@ console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, x
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
+                            parent.debug("Failed login for user:", s[0]);
+                            obj.setbadLogin(req, s[0]);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2d' })); ws.close(); } catch (e) { }
                         }
                     }
@@ -10653,9 +10675,9 @@ console.log("blockingMode", blockingMode, xusername, obj.checkAllowLogin(null, x
     }
     obj.isKeyAllowed = function (key) {
         if (!parent.config.settings.maxinvalidlogin || !key) return true;
-console.log('Checking if key is allowed:', key);
+
         const entry = obj.badLoginTable[key];
-    console.log('Entry for key:', entry);
+    
         if (entry == null) return true;
 
         const now = Date.now();
@@ -10668,18 +10690,18 @@ console.log('Checking if key is allowed:', key);
             }
             return false;
         }
-console.log('Entry is an array:', entry);
+
         // Check sliding window timestamps (array)
         const cutoffTime = now - (parent.config.settings.maxinvalidlogin.time * 60000);
         while (entry.length > 0 && entry[0] < cutoffTime) {
             entry.shift();
         }
-console.log('Entry after cleanup:', entry);
+
         if (entry.length === 0) {
             delete obj.badLoginTable[key];
             return true;
         }
-console.log('Entry length:', entry.length, 'Max allowed:', parent.config.settings.maxinvalidlogin.count);
+
         return entry.length < parent.config.settings.maxinvalidlogin.count;
     };
     obj.setbadLogin = function (ip, username) {

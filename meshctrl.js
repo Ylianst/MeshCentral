@@ -137,6 +137,7 @@ if (args['_'].length == 0) {
             break;
         }
         case 'removeuserfromdevicegroup': {
+            console.log(args.id + ' ' + args.group + ' ' + args.userid);
             if ((args.id == null) && (args.group == null)) { console.log(winRemoveSingleQuotes("Device group identifier missing, use --id '[groupid]' or --group [groupname]")); }
             else if (args.userid == null) { console.log("Remove user from group missing useid, use --userid [userid]"); }
             else { ok = true; }
@@ -588,8 +589,7 @@ if (args['_'].length == 0) {
                         console.log("       4096 = Desktop Limited Input         8192 = Limit Events           ");
                         console.log("      16384 = Chat / Notify                32768 = Uninstall Agent        ");
                         console.log("      65536 = No Remote Desktop           131072 = Remote Commands        ");
-                        console.log("     262144 = Reset / Power off          4194304 = No Registry            ");
-                        console.log("    8388608 = No Software                                                 ");
+                        console.log("     262144 = Reset / Power off      4194304 = No Registry              ");
                         break;
                     }
                     case 'removefromusergroup': {
@@ -727,6 +727,7 @@ if (args['_'].length == 0) {
                         console.log("  --nofiles              - Hide the files tab from this user.");
                         console.log("  --noregistry           - Hide the registry tab from this user.");
                         console.log("  --nosoftware           - Hide the software tab from this user.");
+                        console.log("  --noregistry           - Hide the registry tab from this user.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
                         console.log("  --limitedevents        - User can only see his own events.");
                         console.log("  --chatnotify           - Allow chat and notification options.");
@@ -1561,12 +1562,14 @@ function serverConnect() {
                 // Remove a device group from a user group
                 if (args.meshid != null) {
                     var meshid = args.meshid;
+                    console.log('meshid: ' + meshid);
                     if ((args.domain != null) && (userid.indexOf('/') < 0)) { meshid = 'mesh/' + args.domain + '/' + meshid; }
                     ws.send(JSON.stringify({ action: 'removemeshuser', meshid: meshid, userid: ugrpid, responseid: 'meshctrl' }));
                     break;
                 }
 
                 if ((args.id != null) && (args.id.startsWith('mesh/'))) {
+                    console.log('meshid_2: ' + args.id);
                     ws.send(JSON.stringify({ action: 'removemeshuser', meshid: args.id, userid: ugrpid, responseid: 'meshctrl' }));
                     break;
                 }
@@ -1672,6 +1675,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
+                if (args.softwareread) { meshrights |= 16777216; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
@@ -1683,6 +1687,7 @@ function serverConnect() {
                 break;
             }
             case 'removeuserfromdevicegroup': {
+                console.log('Removing user ' + args.userid + ' from device group ' + (args.id ? args.id : args.group));
                 var op = { action: 'removemeshuser', userid: args.userid, responseid: 'meshctrl' };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
@@ -1701,6 +1706,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
+                if (args.softwareread) { meshrights |= 16777216; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
@@ -2630,13 +2636,17 @@ function serverConnect() {
                         console.log('Authentication token required, use --token [number].');
                     } else if (data.msg == 'nokey') {
                         console.log('URL key is invalid or missing, please specify ?key=xxx in url');
-                    } else {
+                    }  else {
                         if ((args.loginkeyfile != null) || (args.loginkey != null)) {
                             console.log('Invalid login, check the login key and that this computer has the correct time.');
                         } else {
                             console.log('Invalid login.');
                         }
                     }
+                } else if (data.cause == 'locked') {
+                    console.log('Account locked. Please contact the administrator.');
+                } else if (data.cause == 'banned') {
+                    console.log('Access temporarily blocked due to too many failed login attempts.');
                 }
                 process.exit();
                 break;
