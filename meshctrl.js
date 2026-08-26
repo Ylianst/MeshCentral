@@ -2630,7 +2630,7 @@ function serverConnect() {
                         console.log('Authentication token required, use --token [number].');
                     } else if (data.msg == 'nokey') {
                         console.log('URL key is invalid or missing, please specify ?key=xxx in url');
-                    }  else {
+                    } else {
                         if ((args.loginkeyfile != null) || (args.loginkey != null)) {
                             console.log('Invalid login, check the login key and that this computer has the correct time.');
                         } else {

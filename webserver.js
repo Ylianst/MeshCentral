@@ -9154,9 +9154,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
-                            console.log("1");
                             //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
-                            //obj.setbadLogin(req);
+                            parent.debug("Failed login for user:", req.query.user);
+                            obj.setbadLogin(req, req.query.user);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2a' })); ws.close(); } catch (e) { }
                         }
                     }
