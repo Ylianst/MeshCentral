@@ -88,7 +88,7 @@ function sessionDispatch(tsid, parent, method, args)
     child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.on('data', function (c) { });
     child.on('exit', function (c) { this.exitCode = c; });
-    child.waitExit();
+    child.waitExit(10000);
     if (child.exitCode == 0)
     {
         return (child.stdout.str.trim()); // If the return code was 0, then relay the response from stdout
