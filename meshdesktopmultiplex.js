@@ -684,8 +684,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             if (data.length >= 12) {
                 command = data.readUInt16BE(8);
                 cmdsize = data.readUInt32BE(4);
-                if (data.length == (cmdsize + 8)) {
-                    data = data.slice(8, data.length);
+                // The agent pads jumbo packets up to an 8-byte boundary, so data.length is
+                // usually 1..7 bytes longer than (cmdsize + 8). The previous exact-equality
+                // check classified those complete frames as partial and dropped them.
+                if (data.length >= (cmdsize + 8)) {
+                    data = data.slice(8, cmdsize + 8);
                 } else {
                     console.log('TODO-PARTIAL-JUMBO', command, cmdsize, data.length);
                     return; // TODO
