@@ -702,6 +702,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function processWebSocketData(msg) {
         var command, i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
         try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
+        if (command == null) return;
         if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
         var commandHandler = serverCommands[command.action];
@@ -990,6 +991,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
                 
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                    if (node == null) return;
                     var mesh = parent.meshes[node.meshid];
                     if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
                         var agent = parent.wsagents[command.nodeid];
@@ -1093,6 +1095,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // User filtered events
                     if ((command.userid != null) && ((user.siteadmin & SITERIGHT_MANAGEUSERS) != 0)) {
+                        if (typeof command.userid != 'string') return;
                         const userSplit = command.userid.split('/');
                         if ((userSplit.length != 3) || (userSplit[1] != domain.id)) return;
 
@@ -1120,6 +1123,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else if (command.nodeid != null) { // Device filtered events
                         // Check that the user has access to this nodeid
 
+                        if (typeof command.nodeid != 'string') return;
                         const nodeSplit = command.nodeid.split('/');
                         if (nodeSplit.length == 1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
 
@@ -2415,7 +2419,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (mesh.invite != null) { delete mesh.invite; }
                             if (change != '') { change += ' and invite code changed'; } else { change += 'Device group "' + mesh.name + '" invite code changed'; }
                             changesids.push(6);
-                        } else if ((typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
+                        } else if ((command.invite != null) && (typeof command.invite == 'object') && (Array.isArray(command.invite.codes)) && (typeof command.invite.flags == 'number')) {
                             // Set invite codes
                             if ((mesh.invite == null) || (mesh.invite.codes != command.invite.codes) || (mesh.invite.flags != command.invite.flags)) {
                                 // Check if an invite code is not already in use.
@@ -3000,7 +3004,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (nodeif.netif) {
                                         for (var j in nodeif.netif) { if (nodeif.netif[j].mac && (nodeif.netif[j].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif[j].mac) == -1)) { macs.push(nodeif.netif[j].mac); } }
                                     } else if (nodeif.netif2) {
-                                        for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if (nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
+                                        for (var j in nodeif.netif2) { for (var k in nodeif.netif2[j]) { if ((nodeif.netif2[j][k] != null) && nodeif.netif2[j][k].mac && (nodeif.netif2[j][k].mac != '00:00:00:00:00:00') && (macs.indexOf(nodeif.netif2[j][k].mac) == -1)) { macs.push(nodeif.netif2[j][k].mac); } } }
                                     }
                                     if (macs.length == 0) {
                                         if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'No known MAC addresses for this device' })); } catch (ex) { } }
@@ -3377,7 +3381,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else {
                             if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                             if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) { err = "Invalid nodeid"; } // Invalid domain, operation only valid for current domain
-                            else if ((command.userloc) && (command.userloc.length != 2) && (command.userloc.length != 0)) { err = "Invalid user location"; }
+                            else if ((command.userloc) && ((common.validateArray(command.userloc) == false) || ((command.userloc.length != 2) && (command.userloc.length != 0)))) { err = "Invalid user location"; }
+                            else if ((command.tags != null) && (common.validateString(command.tags, 0, 4096) == false) && (common.validateStrArray(command.tags) == false)) { err = "Invalid tags"; }
                         }
                     } catch (ex) { console.log(ex); err = "Validation exception: " + ex; }
 
@@ -3479,7 +3484,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             }
                         }
                         if (command.desc != null && (command.desc != node.desc)) { change = 1; node.desc = command.desc; changes.push('description'); }
-                        if (command.intelamt != null) {
+                        if ((command.intelamt != null) && (node.intelamt != null)) {
                             if ((parent.parent.amtManager == null) || (node.intelamt.pass == null) || (node.intelamt.pass == '') || ((node.intelamt.warn != null) && (((node.intelamt.warn) & 9) != 0))) { // Only allow changes to Intel AMT credentials if AMT manager is not running, or manager warned of unknown/trying credentials.
                                 if ((command.intelamt.user != null) && (command.intelamt.pass != null) && ((command.intelamt.user != node.intelamt.user) || (command.intelamt.pass != node.intelamt.pass))) {
                                     change = 1;
@@ -3616,6 +3621,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 {
                     // Argument validation
                     if (common.validateString(command.msg, 1, 4096) == false) break; // Check event
+                    var decodedMsg;
+                    try { decodedMsg = decodeURIComponent(command.msg); } catch (ex) { break; }
 
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -3623,7 +3630,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Add an event for this device
                         var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
-                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodeURIComponent(command.msg), domain: domain.id };
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodedMsg, domain: domain.id };
                         parent.parent.DispatchEvent(targets, obj, event);
                     });
                     break;
@@ -4724,6 +4731,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // This is only available when plugins are enabled since it could cause stress on the server
                 if ((user.siteadmin != SITERIGHT_ADMIN) || (parent.parent.pluginHandler == null)) break; // Must be full admin with plugins enabled
                 for (var i in command.nodes) {
+                    if ((command.nodes[i] == null) || (typeof command.nodes[i]._id != 'string')) continue;
                     parent.sendMeshAgentCore(user, domain, command.nodes[i]._id, 'default');
                 }
                 break;
@@ -5061,7 +5069,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (parent.parent.webpush == null) break;
 
                 // Adds a web push session to the user. Start by sanitizing the input.
-                if ((typeof command.sub != 'object') && (typeof command.sub.keys != 'object') && (typeof command.sub.endpoint != 'string')) break;
+                if ((command.sub == null) || (typeof command.sub != 'object') || (command.sub.keys == null) || (typeof command.sub.keys != 'object') || (typeof command.sub.endpoint != 'string')) break;
                 if (common.validateString(command.sub.endpoint, 1, 1024) == false) break; // Check endpoint
                 if (common.validateString(command.sub.keys.auth, 1, 64) == false) break; // Check key auth
                 if (common.validateString(command.sub.keys.p256dh, 1, 256) == false) break; // Check key dh
@@ -5100,6 +5108,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             }
             case 'previousLogins': {
                 // TODO: Make a better database call to get filtered data.
+                if ((command.userid != null) && (typeof command.userid != 'string')) break;
                 if (command.userid == null) {
                     var splitUser = user._id.split('/');
                     // Get previous logins for self
@@ -5662,9 +5671,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 var amtDevices = [];
 
                 // Decode a JSON file from the Intel SCS migration tool
-                if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
+                if ((typeof command.amtdevices == 'object') && (command.amtdevices.ApplicationData != null) && (typeof command.amtdevices.ApplicationData == 'object') && (command.amtdevices.ApplicationData.Application == 'Intel vPro(R) Manageability Migration Tool') && (command.amtdevices['ManagedSystems'] != null) && (typeof command.amtdevices['ManagedSystems'] == 'object') && (Array.isArray(command.amtdevices['ManagedSystems']['ManagedSystemsList']))) {
                     for (var i in command.amtdevices['ManagedSystems']['ManagedSystemsList']) {
                         const importDev = command.amtdevices['ManagedSystems']['ManagedSystemsList'][i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         var host = null;
                         if ((typeof importDev.Fqdn == 'string') && (importDev.Fqdn != '')) { host = importDev.Fqdn; }
                         if ((host == null) && (typeof importDev.IPv4 == 'string') && (importDev.IPv4 != '')) { host = importDev.IPv4; }
@@ -5691,6 +5701,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((typeof command.amtdevices == 'object') && (typeof command.amtdevices.webappversion == 'string') && (Array.isArray(command.amtdevices.computers))) {
                     for (var i in command.amtdevices.computers) {
                         const importDev = command.amtdevices.computers[i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         if ((typeof importDev.host == 'string') && (importDev.host != '') && (importDev.host != '127.0.0.1') && (importDev.host.toLowerCase() != 'localhost')) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -5721,6 +5732,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (Array.isArray(command.amtdevices)) {
                     for (var i in command.amtdevices) {
                         const importDev = command.amtdevices[i];
+                        if ((importDev == null) || (typeof importDev != 'object')) continue;
                         if ((typeof importDev.fqdn == 'string') && (importDev.fqdn != '') && (importDev.fqdn != '127.0.0.1') && (importDev.fqdn.toLowerCase() != 'localhost')) {
                             // Create a new Intel AMT device
                             const nodeid = 'node/' + domain.id + '/' + parent.crypto.randomBytes(48).toString('base64').replace(/\+/g, '@').replace(/\//g, '$');
@@ -6717,6 +6729,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     delete doc.domain;
                     delete doc._id;
 
+                    if (doc?.hardware?.windows?.volumes) {
+                        for (var i in doc.hardware.windows.volumes) { if (doc.hardware.windows.volumes[i] == null) { delete doc.hardware.windows.volumes[i]; } }
+                    }
+
                     // If this is not an admin user, don't send any BitLocker recovery info
                     if (rights != MESHRIGHT_ADMIN && doc?.hardware?.windows) {
                         if (doc.hardware.windows?.volumes) {
@@ -6746,6 +6762,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var b;
                         if ((rights == MESHRIGHT_ADMIN) && (b = doc.hardware?.windows?.bitlocker)) {
                             for (const robj of Object.values(b)) {
+                                if (robj == null) continue;
                                 robj.recoveryPassword = robj.rp; delete robj.rp;
                                 robj.lastSeen = new Date(robj.t); delete robj.t;
                             }
