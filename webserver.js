@@ -8107,9 +8107,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var domain = getDomain(req);
                 // Serve theme pack files if domain has a theme pack configured
                 if (domain && domain.themepack) {
-                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
-                    // Prevent directory traversal
-                    if (themeFilePath.indexOf('..') >= 0) return next();
+                    // Keep theme pack names as a single folder under theme-pack
+                    if ((typeof domain.themepack !== 'string') || (domain.themepack.indexOf('..') >= 0) || (domain.themepack.indexOf('/') >= 0) || (domain.themepack.indexOf('\\') >= 0)) { return next(); }
+
+                    var themePublicRoot = obj.path.resolve(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+                    var requestPath = (typeof req.path === 'string') ? req.path : '';
+                    while ((requestPath.length > 0) && ((requestPath.charAt(0) === '/') || (requestPath.charAt(0) === '\\'))) { requestPath = requestPath.slice(1); }
+
+                    // Resolve the requested file and keep it inside the theme public folder
+                    var themeFilePath = obj.path.resolve(themePublicRoot, requestPath);
+                    var themePublicRootCmp = isWindowsPlatform ? themePublicRoot.toLowerCase() : themePublicRoot;
+                    var themeFilePathCmp = isWindowsPlatform ? themeFilePath.toLowerCase() : themeFilePath;
+                    if ((themePublicRootCmp.length > 1) && themePublicRootCmp.endsWith(obj.path.sep)) { themePublicRootCmp = themePublicRootCmp.slice(0, -1); }
+                    if ((themeFilePathCmp.length > 1) && themeFilePathCmp.endsWith(obj.path.sep)) { themeFilePathCmp = themeFilePathCmp.slice(0, -1); }
+                    if ((themeFilePathCmp !== themePublicRootCmp) && (themeFilePathCmp.startsWith(themePublicRootCmp + obj.path.sep) === false)) { return next(); }
 
                     obj.fs.stat(themeFilePath, function (err, stats) {
                         if (err || !stats.isFile()) return next();
