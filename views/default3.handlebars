@@ -11087,6 +11087,14 @@
                         desktop.m.GrabMouseInput = function() {
                             _origGrab.call(desktop.m);
                             var c = desktop.m.CanvasId;
+                            // On mobile, input comes from the dtouch* handlers below; the mouse handlers
+                            // _origGrab installed only fire here from synthetic touch-compat events (e.g.
+                            // Firefox's delayed click off the Connect tap landing on the canvas), so drop them.
+                            c.onmousedown = null;
+                            c.onmouseup = null;
+                            c.onmousemove = null;
+                            c.onmousewheel = null;
+                            c.DOMMouseScroll = null;
                             c.ontouchstart = null;
                             c.ontouchmove = null;
                             c.ontouchend = null;
@@ -11384,26 +11392,37 @@
                         deskLastClipboardSent = null;
                     }
                     if (updateSessionTimer == null) { updateSessionTimer = setInterval(updateSessionTime, 1000); }
-                    // On mobile, wake the agent to start streaming.
-                    // SendRefresh alone is sometimes ignored before the first mouse event.
-                    // Synthetic mousedown+mouseup guarantees the agent starts sending frames.
+                    // Mobile: wake streaming without injecting input. A mouse event moves/clicks the
+                    // remote cursor; unpause+refresh starts frames without touching it. The agent can
+                    // miss a single early refresh after connect, so retry over the first ~2.5s.
                     if (document.body.classList.contains('is-mobile')) {
                         // Re-trigger landscape fullscreen if phone is already in landscape
                         // when reconnecting (no orientationchange event fires in this case)
                         setTimeout(function() { if (typeof _doOrientationUpdate === 'function') _doOrientationUpdate(); }, 600);
+                        var _kickStream = function() { if (desktop && desktop.State === 3 && desktop.m) { desktop.m.SendUnPause(); desktop.m.SendRefresh(); } };
+                        setTimeout(_kickStream, 300);
+                        setTimeout(_kickStream, 800);
+                        setTimeout(_kickStream, 1600);
+                        setTimeout(_kickStream, 2600);
+                        // Latch the first frame so the fallback can tell whether streaming started.
+                        var _gotFrame = false, _wm = desktop.m;
+                        if (_wm && _wm.ProcessPictureMsg) {
+                            var _origPPM = _wm.ProcessPictureMsg;
+                            _wm.ProcessPictureMsg = function() { _gotFrame = true; _wm.ProcessPictureMsg = _origPPM; return _origPPM.apply(this, arguments); };
+                        }
+                        // Last resort: if nothing streamed after the retries, nudge once. This moves the
+                        // remote cursor, so only when the no-input wake clearly failed.
                         setTimeout(function() {
-                            if (!desktop || desktop.State !== 3) return;
-                            desktop.m.SendRefresh();
+                            if (!desktop || desktop.State !== 3 || _gotFrame) return;
                             var dm = desktop.m;
                             if (dm && dm.CanvasId) {
                                 var r = dm.CanvasId.getBoundingClientRect();
                                 if (r.width > 0) {
                                     var ev = { pageX: r.left + window.scrollX + r.width / 2, pageY: r.top + window.scrollY + r.height / 2, button: 0, buttons: 0, which: 1 };
-                                    dm.mousedown(ev);
-                                    dm.mouseup(ev);
+                                    dm.Alternate = 0; dm.mousemove(ev);
                                 }
                             }
-                        }, 500);
+                        }, 3500);
                     }
                     break;
                 default:
