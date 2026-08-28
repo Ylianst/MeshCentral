@@ -2637,6 +2637,10 @@ function serverConnect() {
                             console.log('Invalid login.');
                         }
                     }
+                } else if (data.cause == 'locked') {
+                    console.log('Account locked. Please contact the administrator.');
+                } else if (data.cause == 'banned') {
+                    console.log('Access temporarily blocked due to too many failed login attempts.');
                 }
                 process.exit();
                 break;
