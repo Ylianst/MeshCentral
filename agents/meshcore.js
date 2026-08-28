@@ -2909,13 +2909,18 @@ function terminal_promise_consent_resolved()
     {
         try
         {
-            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
+            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : (fs.existsSync('/usr/local/bin/bash') ? '/usr/local/bin/bash' : false); // BSD pkg bash
             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
             var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
             var env = { HISTCONTROL: 'ignoreboth' };
             if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
-            if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
+            var termPath = process.env['PATH'] || '/usr/bin:/bin';
+            if (process.platform == 'freebsd') {
+                if ((':' + termPath + ':').indexOf(':/usr/local/bin:') == -1)  { termPath = '/usr/local/bin:'  + termPath; }
+                if ((':' + termPath + ':').indexOf(':/usr/local/sbin:') == -1) { termPath = '/usr/local/sbin:' + termPath; }
+            }
+            env['PATH'] = termPath;
             if (typeof this.httprequest.terminalUserVariable == 'string' && this.httprequest.terminalUserVariable != '') {
                 if (this.httprequest.terminalUserVariable == 'realname') {
                     env['MESHCENTRAL_USER'] = (this.httprequest.realname ? this.httprequest.realname : 'unknown');
