@@ -7409,6 +7409,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             return;
                         }
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                            // Device share guest cookies are for relay sessions only, not control.ashx
+                            if (isDeviceShareGuestCookie(cookie)) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth' })); } catch (ex) { }
+                                try { ws.close(); } catch (ex) { }
+                                return;
+                            }
                             if (user == null) { // User is not authenticated, perform inner server authentication
                                 if (req.headers['x-meshauth'] === '*') {
                                     PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user, authData); }); // User is authenticated
@@ -8980,6 +8986,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Resume the socket to perform inner authentication
         try { ws._socket.resume(); } catch (ex) { }
+    }
+
+    // Device share guest cookies include these fields and are intended for meshrelay.ashx only
+    function isDeviceShareGuestCookie(cookie) {
+        return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.cf == 'number') && (typeof cookie.gn == 'string'));
     }
 
     // Authenticates a session and forwards
