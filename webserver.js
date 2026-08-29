@@ -4515,7 +4515,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                     parent.debug('web', 'handleSharingRequest: Sending guest sharing page for \"' + c.uid + '\", guest \"' + c.gn + '\".');
                     res.set({ 'Cache-Control': 'no-store' });
-                    render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
+                    render(req, res, getRenderPage('sharing', req, domain), getRenderArgs({ authCookie: authCookie, authRelayCookie: '', domainurl: encodeURIComponent(domain.url).replace(/'/g, '%27'), nodeid: c.nid, serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, expire: c.expire, viewOnly: (c.vo == 1) ? 1 : 0, agentId: (node.agent != null) ? node.agent.id : 0, nodeName: encodeURIComponent(node.name).replace(/'/g, '%27'), features: c.p, features2: features2 }, req, domain));
                 }
             });
         });

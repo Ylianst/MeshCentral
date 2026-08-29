@@ -315,6 +315,7 @@
         var domainUrl = '{{{domainurl}}}';
         var authCookie = '{{{authCookie}}}';
         var viewOnly = parseInt('{{{viewOnly}}}');
+        var agentId = parseInt('{{{agentId}}}');
         var urlargs = parseUriArgs();
         var debugmode = urlargs.debug;
         var attemptWebRTC = false;
@@ -510,7 +511,7 @@
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
             // Android agents (id 14) get an on-screen key panel; input UI is otherwise disabled for them.
-            QV('DeskAndroidPanel', (deskState == 3) && (viewOnly != 1) && (currentNode != null) && (currentNode.agent != null) && (currentNode.agent.id == 14));
+            QV('DeskAndroidPanel', (deskState == 3) && (viewOnly != 1) && (agentId == 14));
             QV('DeskWD', viewOnly != 1);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', viewOnly != 1);

@@ -1028,10 +1028,14 @@
                                         <input type="button" value="Home" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(36)" style="height:28px">
                                         <input type="button" value="Recent" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(93)" style="height:28px">
                                         <input type="button" value="Apps" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(200)" style="height:28px">
-                                        <input type="button" value="Notifications" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(201)" style="height:28px">
-                                        <input type="button" value="Quick" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(202)" style="height:28px">
-                                        <input type="button" value="Lock" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(203)" style="height:28px">
-                                        <input type="button" value="Power" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(204)" style="height:28px">
+                                        <input type="button" value="More" onkeypress="return false" onkeydown="return false" onclick="deskAndroidToggleMore()" style="height:28px">
+                                        <div id="DeskAndroidMoreBg" style="display:none;position:fixed;inset:0;z-index:998" onclick="deskAndroidToggleMore()"></div>
+                                        <div id="DeskAndroidMore" style="display:none;position:absolute;bottom:32px;right:2px;min-width:150px;background:#f0f0f0;border:1px solid #808080;box-shadow:0 -1px 4px rgba(0,0,0,0.3);z-index:999;text-align:left">
+                                            <div onclick="deskAndroidKey(201);deskAndroidToggleMore()" style="padding:8px 12px;border-bottom:1px solid #d0d0d0;cursor:pointer">Notifications</div>
+                                            <div onclick="deskAndroidKey(202);deskAndroidToggleMore()" style="padding:8px 12px;border-bottom:1px solid #d0d0d0;cursor:pointer">Quick Settings</div>
+                                            <div onclick="deskAndroidKey(203);deskAndroidToggleMore()" style="padding:8px 12px;border-bottom:1px solid #d0d0d0;cursor:pointer">Lock Screen</div>
+                                            <div onclick="deskAndroidKey(204);deskAndroidToggleMore()" style="padding:8px 12px;cursor:pointer">Power Menu</div>
+                                        </div>
                                     </span>
                                     <label><span id="DeskControlSpan" style="display:none"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false">Input</span></label>
                                 </div>
@@ -4706,6 +4710,12 @@
             if ((desktop == null) || (desktop.State != 3)) return;
             desktop.m.SendKeyMsgKC(1, kc);
             desktop.m.SendKeyMsgKC(2, kc);
+        }
+        function deskAndroidToggleMore() {
+            var m = Q('DeskAndroidMore'), b = Q('DeskAndroidMoreBg');
+            var show = (m.style.display == 'none');
+            m.style.display = show ? 'block' : 'none';
+            b.style.display = show ? 'block' : 'none';
         }
 
         function updateDesktopButtons() {
