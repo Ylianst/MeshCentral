@@ -98,6 +98,16 @@
                     <input id="DeskWD" type=button value="Send" onkeypress="return false" onkeydown="return false" onclick="deskSendKeys()" />
                     <input id="DeskClip" style="" type="button" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
                     <input id="DeskType" style="" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                    <span id="DeskAndroidPanel" style="display:none">
+                        <input type="button" value="Back" title="Back" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(27)" />
+                        <input type="button" value="Home" title="Home" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(36)" />
+                        <input type="button" value="Recent" title="Recent apps" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(93)" />
+                        <input type="button" value="Apps" title="App drawer" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(200)" />
+                        <input type="button" value="Notifications" title="Open notification shade" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(201)" />
+                        <input type="button" value="Quick" title="Quick settings" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(202)" />
+                        <input type="button" value="Lock" title="Lock screen" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(203)" />
+                        <input type="button" value="Power" title="Power menu" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(204)" />
+                    </span>
                     <label><span id="DeskControlSpan" title="Toggle mouse and keyboard input"><input id="DeskControl" type="checkbox" onkeypress="return false" onkeydown="return false" onclick="toggleKvmControl()" />Input</span></label>&nbsp;
                 </div>
             </div>
@@ -499,6 +509,8 @@
             QV('DeskClip', false); // Clipboard not supported on this page
             QE('DeskClip', deskState == 3);
             QE('DeskType', deskState == 3);
+            // Android agents (id 14) get an on-screen key panel; input UI is otherwise disabled for them.
+            QV('DeskAndroidPanel', (deskState == 3) && (viewOnly != 1) && (currentNode != null) && (currentNode.agent != null) && (currentNode.agent.id == 14));
             QV('DeskWD', viewOnly != 1);
             QE('DeskWD', deskState == 3);
             QV('deskkeys', viewOnly != 1);
@@ -1062,6 +1074,13 @@
                 */
                 return desktop.m.handleKeyUp(e);
             }
+        }
+
+        // Android on-screen input panel. Key codes 200+ map to Android global actions in the agent.
+        function deskAndroidKey(kc) {
+            if ((desktop == null) || (desktop.State != 3)) return;
+            desktop.m.SendKeyMsgKC(1, kc);
+            desktop.m.SendKeyMsgKC(2, kc);
         }
 
         // Remote desktop typing
