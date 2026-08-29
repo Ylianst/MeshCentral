@@ -14,6 +14,26 @@
 /*jshint esversion: 6 */
 "use strict";
 
+// Return true if the source IP is allowed to enroll a new agent. Server and
+// domain lists are both enforced when present, matching the existing allowed
+// IP configuration semantics.
+function isAgentConnectionAllowedByEnrollmentPolicy(settings, domain, ip, nodeExists) {
+    if (nodeExists) return true;
+    const ipcheck = require('ipcheck');
+    const ipLists = [settings.agentallowedipnewagents, domain.agentallowedipnewagents];
+    for (var i = 0; i < ipLists.length; i++) {
+        if (ipLists[i] == null) continue;
+        var match = false;
+        try {
+            for (var j = 0; j < ipLists[i].length; j++) {
+                if (ipcheck.match(ip, ipLists[i][j])) { match = true; break; }
+            }
+        } catch (ex) { }
+        if (match == false) return false;
+    }
+    return true;
+}
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
@@ -746,7 +766,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             var device, mesh;
 
             // See if this node exists in the database
-            if ((nodes == null) || (nodes.length == 0)) {
+            const nodeExists = ((nodes != null) && (nodes.length > 0));
+            if (isAgentConnectionAllowedByEnrollmentPolicy(parent.parent.config.settings, domain, obj.remoteaddr, nodeExists) == false) {
+                parent.blockedAgents++;
+                parent.parent.debug('agent', 'New agent from blocked IP address ' + obj.remoteaddr + ', holding connection.');
+                return;
+            }
+
+            if (nodeExists == false) {
                 // This device does not exist, use the meshid given by the device
 
                 // Check if we already have too many devices for this domain

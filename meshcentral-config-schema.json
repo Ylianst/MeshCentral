@@ -684,6 +684,14 @@
           "default": null,
           "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
         },
+        "agentAllowedIPNewAgents": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": null,
+          "description": "When set, only new agents from allowed IP address ranges can enroll. Existing agents can reconnect from other addresses unless agentAllowedIP or agentBlockedIP restricts them. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIPNewAgents.txt\""
+        },
         "agentBlockedIP": {
           "type": [
             "string",
@@ -2380,6 +2388,14 @@
             ],
             "default": null,
             "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
+          },
+          "agentAllowedIPNewAgents": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "default": null,
+            "description": "When set, only new agents from allowed IP address ranges can enroll in this domain. Existing agents can reconnect from other addresses unless agentAllowedIP or agentBlockedIP restricts them. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIPNewAgents.txt\""
           },
           "agentBlockedIP": {
             "type": [
