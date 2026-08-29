@@ -4134,6 +4134,16 @@ module.exports.CreateDB = function (parent, func) {
             if ((err == null) && (docs.length > 0)) {
                 performTypedRecordDecrypt(docs)
                 for (var i in docs) {
+                    // Preserve user rights during migration.
+                    // NeDB stored rights as a top-level integer; ensure it survives the
+                    // record transform so migrated users keep their permissions (including admin).
+                    if ((docs[i].type === 'user') && ((docs[i].rights === undefined) || (docs[i].rights === null))) {
+                        docs[i].rights = 4294967295; // Default to full admin if missing
+                        console.log('   WARNING: user "' + (docs[i].name || docs[i].email || docs[i]._id) + '" had no rights field, defaulting to full admin (0xFFFFFFFF).');
+                    }
+                    if ((docs[i].type === 'user') && (docs[i].rights === 0)) {
+                        console.log('   WARNING: user "' + (docs[i].name || docs[i].email || docs[i]._id) + '" has rights=0 after migration. Verify permissions after restart.');
+                    }
                     obj.pendingTransfer++;
                     normalRecordsTransferCount++;
                     obj.Set(common.unEscapeLinksFieldName(docs[i]), function () { obj.pendingTransfer--; });
