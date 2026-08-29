@@ -14,6 +14,89 @@
 /*jshint esversion: 6 */
 "use strict";
 
+const MAX_AGENT_INPUT_DEPTH = 32;
+
+// Validate JSON commands received from an agent. This is intentionally limited
+// to executable browser markup instead of rejecting words such as "script" or
+// "onerror" in ordinary inventory, log or console text. Empty nested objects and
+// arrays are valid agent values; only an empty top-level request is rejected.
+function getAgentInputValidationError(command) {
+    if ((command == null) || (typeof command != 'object') || Array.isArray(command)) return 'invalidObject';
+    if (Object.keys(command).length == 0) return 'emptyObject';
+    return validateAgentInputRec(command, 0);
+}
+
+function validateAgentInputRec(value, depth) {
+    // Agent JSON is expected to be shallow. Limit recursion so validation itself
+    // cannot be abused with an excessively nested request.
+    if (depth > MAX_AGENT_INPUT_DEPTH) return 'maxDepth';
+    if (typeof value == 'string') return containsExecutableAgentMarkup(value) ? 'executableMarkup' : null;
+    if ((value == null) || (typeof value != 'object')) return null;
+
+    const keys = Object.keys(value);
+    for (var i = 0; i < keys.length; i++) {
+        if (containsExecutableAgentMarkup(keys[i])) return 'executableMarkup';
+        const error = validateAgentInputRec(value[keys[i]], depth + 1);
+        if (error != null) return error;
+    }
+    return null;
+}
+
+function containsExecutableAgentMarkup(value) {
+    // NUL characters do not make executable HTML safe and can obscure signatures
+    // in logs. Do not otherwise collapse whitespace in markup because it can turn
+    // harmless prose into a false positive.
+    const markup = value.split('\u0000').join('');
+
+    // Inspect each possible tag once. Besides bounding regexp work on large
+    // inventory strings, this catches incomplete tags at the end of a value.
+    var tagStart = markup.indexOf('<');
+    while (tagStart >= 0) {
+        var tagEnd = markup.indexOf('>', tagStart + 1);
+        if (tagEnd < 0) tagEnd = markup.length;
+        const tag = markup.substring(tagStart, tagEnd);
+
+        // Elements that create a script-capable parsing or loading context.
+        if (/^<\s*\/?\s*(?:script|iframe|object|embed|svg|math|style|link|meta|base)(?:[\s\/]|$)/i.test(tag)) return true;
+
+        // Inline event handlers and iframe-style inline documents. Requiring a
+        // tag boundary and an equals sign avoids rejecting ordinary uses of
+        // "onload" or "onerror" in logs and software descriptions.
+        if (/[\s\/'"`]on[a-z][a-z0-9_-]*\s*=/i.test(tag)) return true;
+        if (/[\s\/'"`]srcdoc\s*=/i.test(tag)) return true;
+        if (/=\s*['"]?\s*(?:(?:javascript|vbscript):|data:\s*(?:text\/html|image\/svg\+xml)(?:[;,]|$))/i.test(normalizeAgentUrlText(tag))) return true;
+
+        if (tagEnd == markup.length) break;
+        tagStart = markup.indexOf('<', tagEnd + 1);
+    }
+
+    // Large opaque payloads (for example clipboard or desktop data) commonly do
+    // not contain any URL or CSS syntax. Avoid making normalized copies of them.
+    if ((markup.indexOf(':') < 0) && (markup.indexOf('&') < 0) && (markup.indexOf('(') < 0)) return false;
+
+    // Character references are decoded inside HTML URL attributes. Decode numeric
+    // references and the whitespace/colon names useful for scheme obfuscation,
+    // then remove URL-ignored ASCII controls before checking active schemes.
+    const urlText = normalizeAgentUrlText(markup);
+    if (/^\s*(?:(?:javascript|vbscript):|data:\s*(?:text\/html|image\/svg\+xml)(?:[;,]|$))/i.test(urlText)) return true;
+    if (/url\s*\(\s*['"]?\s*(?:(?:javascript|vbscript):|data:\s*(?:text\/html|image\/svg\+xml)(?:[;,]|$))/i.test(urlText)) return true;
+
+    // Legacy CSS execution primitives remain relevant when untrusted strings are
+    // interpolated into style attributes or old embedded browser controls.
+    if (/(?:expression\s*\(|-moz-binding\s*:\s*url\s*\(|behavior\s*:\s*url\s*\()/i.test(markup)) return true;
+    return false;
+}
+
+function normalizeAgentUrlText(value) {
+    var result = value.replace(/&#(?:x([0-9a-f]+)|([0-9]+));?/gi, function (match, hex, dec) {
+        const code = parseInt((hex != null) ? hex : dec, (hex != null) ? 16 : 10);
+        if ((code < 0) || (code > 0x10FFFF)) return match;
+        try { return String.fromCodePoint(code); } catch (ex) { return match; }
+    });
+    result = result.replace(/&(colon|tab|newline);/gi, function (match, name) { return ({ colon: ':', tab: '\t', newline: '\n' })[name.toLowerCase()]; });
+    return result.replace(/[\u0000-\u001F\u007F]+/g, '');
+}
+
 // Construct a MeshAgent object, called upon connection
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
@@ -436,7 +519,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 var str = msg.toString('utf8'), command = null;
                 if (str[0] == '{') {
                     try { command = JSON.parse(str); } catch (ex) { } // If the command can't be parsed, ignore it.
-                    if ((command != null) && (command.action === 'agentName') && (typeof command.value == 'string') && (command.value.length > 0) && (command.value.length < 256)) { obj.agentName = command.value; }
+                    if (command != null) {
+                        const validationError = getAgentInputValidationError(command);
+                        if (validationError != null) { rejectAgentInput(validationError); }
+                        else if ((command.action === 'agentName') && (typeof command.value == 'string') && (command.value.length > 0) && (command.value.length < 256)) { obj.agentName = command.value; }
+                    }
                 }
                 return;
             }
@@ -1193,6 +1280,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     // Process incoming agent JSON data
+    function rejectAgentInput(validationError) {
+        parent.parent.debug('agent', 'Rejected agent JSON input (' + validationError + ') from ' + obj.remoteaddrport + '.');
+    }
+
     function processAgentData(msg) {
         if (obj.agentInfo == null) return;
         var i, str = msg.toString('utf8'), command = null;
@@ -1205,7 +1296,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 console.log('Unable to parse agent JSON (' + obj.remoteaddrport + '): ' + str, ex);
                 return;
             }
-            if (typeof command != 'object') { return; }
+            const validationError = getAgentInputValidationError(command);
+            if (validationError != null) {
+                rejectAgentInput(validationError);
+                return;
+            }
             switch (command.action) {
                 case 'msg':
                     {
