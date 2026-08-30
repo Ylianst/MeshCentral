@@ -331,7 +331,7 @@
                             <input type=button id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />&nbsp;
                             <input type=button id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />&nbsp;
                             <input type=button id=ScrollToTopButton onclick="onDevicesScroll(true);" style="display:none;margin-right:4px" value="Scroll To Top" />
-                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc"/>&nbsp;
+                            <input id=SearchInput type=input autocomplete=off placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc - Separate multiple terms with , for OR, e.g. device1,device2,u:user1,g:group1"/>&nbsp;
                             <span id=SearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x"/></span>
                             <select id=DevFilterSelect onchange=onOnlineCheckBox(event) title="Device Filter">
                                 <option value=0>All</option>
@@ -358,7 +358,7 @@
                             </span>
                             <input type="button" onclick="onDevicesScroll(true);" value="Scroll To Top" />&nbsp;
                             <input type="button" onclick="showMultiDesktopSettings()" value="Settings" />&nbsp;
-                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc" />&nbsp;
+                            <input id=KvmSearchInput type=search placeholder=Filter onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) autocomplete=off onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc - Separate multiple terms with , for OR, e.g. device1,device2,u:user1,g:group1" />&nbsp;
                             <span id=KvmSearchInputClearButton style="display:none;position:relative"><img src="images/x16.png" type="button" onclick="clearDeviceSearch()" style="position:absolute;cursor:pointer;left:-18px;top:-8px" srcset="images/x32.png 2x" /></span>
                         </td>
                         <td id=devMapToolbar class=style14 style="display:none">
@@ -6533,18 +6533,19 @@
         function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
 
-        function parseSearchAndInput(x) {
-            var s = x.split(' ' + "and" + ' '), r = null;
-            for (var i in s) {
-                var r2 = getDevicesThatMatchFilter(s[i]);
-                if (r == null) { r = r2; } else { var r3 = []; for (var j in r2) { if (r.indexOf(r2[j]) >= 0) { r3.push(r2[j]); } } r = r3; }
+       function parseSearchOrInput(x) {
+            if (x == '') { return parseSearchAndInput(x); } // Empty search, return all devices.
+            var parts = x.split(','), r = null; // Comma = OR, each part keeps its own prefix (u:, g:, t:, etc.)
+            for (var p in parts) {
+                var s = parts[p].split(' ' + "or" + ' ');
+                for (var i in s) {
+                    var trimmed = s[i].trim();
+                    if (trimmed == '') { continue; } // Skip empty pieces from stray/extra commas
+                    var r2 = parseSearchAndInput(trimmed);
+                    if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j]) < 0) { r.push(r2[j]); } } }
+                }
             }
-            return r;
-        }
-
-        function parseSearchOrInput(x) {
-            var s = x.split(' ' + "or" + ' '), r = null;
-            for (var i in s) { var r2 = parseSearchAndInput(s[i]); if (r == null) { r = r2; } else { for (var j in r2) { if (r.indexOf(r2[j] >= 0)) { r.push(r2[j]); } } } }
+            if (r == null) { r = []; }
             return r;
         }
 
