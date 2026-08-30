@@ -61,7 +61,7 @@ function serverConnect() {
     // Setup the HTTP proxy if needed
     if (args.proxy != null) {
         const HttpsProxyAgent = require('https-proxy-agent');
-        options.agent = new HttpsProxyAgent(require('url').parse(args.proxy));
+        options.agent = new HttpsProxyAgent(new URL(args.proxy));
     }
     
     // Authentication setup

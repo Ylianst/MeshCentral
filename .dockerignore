@@ -10,3 +10,5 @@ docs/
 *.sln
 *.njsproj
 *.md
+examples
+tests

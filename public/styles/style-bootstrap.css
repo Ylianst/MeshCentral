@@ -1,7 +1,11 @@
-﻿
-:root {
-    --sub-menu-bg: linear-gradient(180deg,#fff,#fff,#e9ecef);
+﻿:root {
+    --sub-menu-bg: linear-gradient(180deg, #fff, #fff, #e9ecef);
     --sub-menu-color: #888;
+}
+
+[data-bs-theme="dark"] {
+    --sub-menu-bg: var(--bs-body-bg, #212529);
+    --sub-menu-color: var(--bs-body-color, #f8f9fa);
 }
 
 :focus {
@@ -9,7 +13,8 @@
 }
 
 
-html, body {
+html,
+body {
     width: 100%;
     height: 100%;
 }
@@ -92,7 +97,7 @@ body {
     grid-gap: 0px;
     grid-template-areas: "header header" "sidebar nav" "sidebar content" "sidebar footer";
     -ms-grid-columns: 90px 1fr;
-    grid-template-columns: 90px auto;
+    grid-template-columns: 70px auto;
     -ms-grid-rows: 66px 24px 1fr 45px;
     grid-template-rows: 66px 24px auto 45px;
 }
@@ -122,25 +127,63 @@ body {
 }
 
 .AgentInviteMasthead {
-    background:url(logo.png) 0px 0px;
-    background-color:#036;
-    background-repeat:no-repeat;height:66px;width:100%;overflow:hidden;
+    background: url(logo.png) 0px 0px;
+    background-color: #036;
+    background-repeat: no-repeat;
+    height: 66px;
+    width: 100%;
+    overflow: hidden;
 }
 
 #masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: auto;
     margin: 0;
-    padding: 0;
-    overflow: hidden;
-    text-align: right;
+    padding: 0 1rem;
     background-color: #036;
     background-image: url(../logo.png);
-    background-position-x: 0px;
-    background-position-y: 0px;
-    background-attachment: initial;
+    background-position: 0 0;
     background-repeat: no-repeat;
-    /*width: 960px;*/
     height: 66px;
+}
+
+.masthead-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    width: 100%;
+}
+
+.idle-timeout-notify {
+    color: yellow;
+}
+
+.masthead-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.masthead-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex: 0 0 auto;
+}
+
+.notification-icon {
+    cursor: pointer;
+}
+
+.user-menu-container {
+    display: flex;
+    align-items: center;
 }
 
 .fullscreen #masthead {
@@ -163,28 +206,152 @@ body {
     display: none;
 }
 
+.masthead-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.masthead-title {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.masthead-titles-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+}
+
 #masthead .title {
-    float: left;
-    height: 66px;
     color: #c8c8c8;
-    padding-left: 14px;
     font-size: 46px;
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     text-shadow: 1px 1px 2px #000;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 #masthead .title2 {
-    float: left;
-    height: 66px;
     color: #c8c8c8;
-    padding-left: 5px;
-    padding-top: 12px;
     font-size: 14px;
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
     text-shadow: 1px 1px 2px #000;
+    cursor: pointer;
+    padding-top: 12px;
+    padding-bottom: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
 }
+
+@media (max-width: 1500px) {
+    #masthead .title {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 1300px) {
+    #masthead .title {
+        font-size: 34px;
+        white-space: normal;
+        line-height: 1.1;
+    }
+
+    #masthead .title2 {
+        font-size: 13px;
+        padding-top: 10px;
+        padding-bottom: 20px;
+        white-space: normal;
+        line-height: 1.2;
+    }
+}
+
+@media (max-width: 1100px) {
+    .masthead-left {
+        gap: 0.75rem;
+    }
+
+    .masthead-titles-container {
+        max-width: 100%;
+    }
+
+    #masthead .title {
+        font-size: 30px;
+    }
+}
+
+.masthead-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-direction: row;
+    /* Ensure horizontal layout */
+}
+
+.notification-icon {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+}
+
+.notification-icon:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#notificationCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 40px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    position: static;
+    flex: 0 0 auto;
+    min-width: unset;
+    margin: 0;
+    top: auto;
+    right: auto;
+}
+
+#notificationCount:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#notificationBadge {
+    font-size: 0.65rem !important;
+    box-shadow: -0.1px 1px 2px #000000;
+    -webkit-box-shadow: -0.1px 1px 2px #000000;
+    -moz-box-shadow: -0.1px 1px 2px #000000;
+}
+
+.user-menu-container {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    /* Prevent flex item from growing or shrinking */
+}
+
+
 
 #page_leftbar {
     -ms-grid-column: 1;
@@ -192,12 +359,13 @@ body {
     -ms-grid-row-span: 3;
     height: 100%;
     /* height: calc(100vh - 66px); */
-    width: 90px;
+    width: 70px;
     z-index: 1000;
     background: #113962;
-    background: linear-gradient(to bottom, #104893 0%,#113962 100%);
+    background: linear-gradient(to bottom, #104893 0%, #113962 100%);
     color: white;
     overflow-y: hidden;
+    overflow-x: hidden;
     display: none;
 }
 
@@ -230,13 +398,16 @@ body {
     display: none;
 }
 
-.menu_stack #topbar, .login #topbar, .arg_hide #topbar {
+.menu_stack #topbar,
+.login #topbar,
+.arg_hide #topbar {
     -ms-grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 2;
 }
 
-.logoncontrolspan, .logoncontrolspan2 {
+.logoncontrolspan,
+.logoncontrolspan2 {
     color: white;
 }
 
@@ -244,13 +415,14 @@ body {
     width: 100px;
     height: 24px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .nonenglish .topbar_td {
     height: 24px;
     cursor: pointer;
-    padding-left:16px;
-    padding-right:16px;
+    padding-left: 16px;
+    padding-right: 16px;
 }
 
 .topbar_td_end {
@@ -267,17 +439,17 @@ body {
 }
 
 .textnewui {
-    color: white;
+    color: white !important;
     font-weight: bold;
     padding-top: 5px;
     cursor: pointer;
     position: absolute;
-    right: 0; 
+    right: 0;
     margin-right: 10px;
 }
 
 .LogoffLinkColor {
-    color:white;
+    color: white !important;
 }
 
 #logoutControlSpan2 {
@@ -300,7 +472,19 @@ body {
 }
 
 /* #UserDummyMenuSpan,  */
-#MainSubMenuSpan, #MeshSubMenuSpan, #EventsSubMenuSpan, #UserSubMenuSpan, #UsersSubMenuSpan, #ServerSubMenuSpan, #MainMenuSpan, #MainSubMenu, #MeshSubMenu, #UserSubMenu, #ServerSubMenu, #UserDummyMenu, #PluginSubMenu {
+#MainSubMenuSpan,
+#MeshSubMenuSpan,
+#EventsSubMenuSpan,
+#UserSubMenuSpan,
+#UsersSubMenuSpan,
+#ServerSubMenuSpan,
+#MainMenuSpan,
+#MainSubMenu,
+#MeshSubMenu,
+#UserSubMenu,
+#ServerSubMenu,
+#UserDummyMenu,
+#PluginSubMenu {
     width: 100%;
     height: 24px;
     color: var(--bs-secondary-color);
@@ -345,10 +529,10 @@ body {
 }
 
 .boxsize {
-    -ms-box-sizing:border-box;
-    -moz-box-sizing:border-box;
-    box-sizing:border-box;
-    -webkit-box-sizing:border-box; 
+    -ms-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
 }
 
 .night #column_l {
@@ -372,7 +556,9 @@ body {
     overflow: hidden;
 }
 
-.menu_stack.fullscreen #column_l, .login #column_l, .arg_hide #column_l {
+.menu_stack.fullscreen #column_l,
+.login #column_l,
+.arg_hide #column_l {
     -ms-grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 3;
@@ -406,24 +592,28 @@ body {
 
 #welcomeimage {
     text-align: center;
-    width:50%;
+    width: 50%;
 }
 
 @media (max-width: 800px) {
     .fullscreen #welcomeimage {
         display: none;
     }
-    #devListToolbar, #kvmListToolbar {
+
+    #devListToolbar,
+    #kvmListToolbar {
         flex-wrap: wrap;
         gap: 8px;
         width: 100%;
         min-width: 0;
     }
+
     #devListToolbarSpan {
         flex-wrap: wrap;
         gap: 8px;
     }
-    #devListToolbarSpan > .d-flex.ms-auto {
+
+    #devListToolbarSpan>.d-flex.ms-auto {
         flex-basis: 100%;
         flex-wrap: wrap;
         gap: 8px;
@@ -438,14 +628,22 @@ body {
 
 #logincell {
     text-align: center;
-    width:50%;
+    width: 50%;
 }
 
 .night #logincell a {
     color: blue;
 }
 
-#loginpanel, #createpanel, #resetpanel, #tokenpanel, #resettokenpanel, #resetpasswordpanel, #resetpasswordpanel, #checkemailpanel, #waitpushpanel {
+#loginpanel,
+#createpanel,
+#resetpanel,
+#tokenpanel,
+#resettokenpanel,
+#resetpasswordpanel,
+#resetpasswordpanel,
+#checkemailpanel,
+#waitpushpanel {
     display: inline-block;
     margin: 0;
     background-color: #979797;
@@ -456,7 +654,8 @@ body {
     color: black;
 }
 
-#passwordPolicyCallout, #rpasswordPolicyCallout {
+#passwordPolicyCallout,
+#rpasswordPolicyCallout {
     left: -10px;
     width: 100px;
     position: absolute;
@@ -472,23 +671,23 @@ body {
 }
 
 #footer {
-    -ms-grid-column: 2;
-    -ms-grid-row: 4;
-    grid-area: footer;
-    clear: both;
-    overflow: auto;
+    position: fixed;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    text-align: center;
     background-color: #113962;
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding: 5px 0;
+    text-align: center;
+    z-index: 1000;
 }
 
 .fulldesk #footer {
     display: none;
 }
 
-.menu_stack.fullscreen #footer, .login #footer, .arg_hide #footer {
+.menu_stack.fullscreen #footer,
+.login #footer,
+.arg_hide #footer {
     -ms-grid-column: 1;
     -ms-grid-column-span: 2;
     -ms-grid-row: 4;
@@ -540,10 +739,10 @@ body {
     text-decoration: underline;
 }
 
-    #footer a:hover {
-        color: #fff;
-        text-decoration: none;
-    }
+#footer a:hover {
+    color: #fff;
+    text-decoration: none;
+}
 
 #verifyEmailId2 {
     color: yellow;
@@ -555,7 +754,7 @@ body {
     z-index: 1000;
     background-color: #EEE;
     box-shadow: 0px 0px 15px #666;
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
     border-radius: 5px;
     position: fixed;
     top: 180px;
@@ -573,12 +772,16 @@ body {
     cursor: move;
 }
 
+#dialogHeader .modal-title {
+    color: inherit !important;
+}
+
 #id_dialogclose {
     float: right;
     padding: 3px;
     margin-right: 3px;
     cursor: pointer;
-    background-color: white; 
+    background-color: white;
 }
 
 #id_dialogtitle {
@@ -612,23 +815,28 @@ body {
     padding: 10px;
 }
 
-#dialog2, #dialog3, #dialog7 {
+#dialog2,
+#dialog3,
+#dialog7 {
     margin: 3px;
 }
 
-#d3uploadMode, #d3localFile {
+#d3uploadMode,
+#d3localFile {
     float: right;
     width: 260px;
 }
 
-#d3serveraction, #d2serveraction {
+#d3serveraction,
+#d2serveraction {
     width: 100%;
     background-color: #d3d9d6;
     text-align: left;
     padding: 3px;
 }
 
-#d3serverfiles, #d2serverfiles {
+#d3serverfiles,
+#d2serverfiles {
     width: 100%;
     height: 150px;
     background-color: white;
@@ -638,7 +846,8 @@ body {
 }
 
 
-#d3upload, #d3localmode {
+#d3upload,
+#d3localmode {
     margin: 3px 0 3px 0;
     display: flex;
     justify-content: space-between;
@@ -649,7 +858,9 @@ body {
     border-bottom: 1px solid gray;
 }
 
-#d7otherset, #d7otherset2, #d7rdpflags {
+#d7otherset,
+#d7otherset2,
+#d7rdpflags {
     border: 1px solid #666;
     max-height: 180px;
     overflow-y: scroll;
@@ -662,13 +873,15 @@ body {
     overflow: auto;
 }
 
-#idx_dlgCancelButton, #idx_dlgCancelButton2 {
+#idx_dlgCancelButton,
+#idx_dlgCancelButton2 {
     float: right;
     min-width: 80px;
     margin-left: 5px;
 }
 
-#idx_dlgOkButton, #idx_dlgOkButton2 {
+#idx_dlgOkButton,
+#idx_dlgOkButton2 {
     float: right;
     min-width: 80px;
     margin-left: 5px;
@@ -691,7 +904,8 @@ body {
     resize: none;
 }
 
-#idx_deskFullBtn2, #idx_termFullBtn2 {
+#idx_deskFullBtn2,
+#idx_termFullBtn2 {
     float: left;
     font-size: 16px;
     cursor: pointer;
@@ -699,7 +913,8 @@ body {
     margin-right: 5px;
 }
 
-.fulldesk #idx_deskFullBtn2, .fulldesk #idx_termFullBtn2 {
+.fulldesk #idx_deskFullBtn2,
+.fulldesk #idx_termFullBtn2 {
     display: block;
 }
 
@@ -717,28 +932,28 @@ body {
 }
 
 .deviceBarCheckbox {
-    width:22px;
-    float:left;
-    background-color:white;
+    width: 22px;
+    float: left;
+    background-color: white;
 }
 
 .night .deviceBarCheckbox {
-    background-color:black;
+    background-color: black;
 }
 
 #devs {
-    color:black;
+    color: black;
 }
 
 .deviceBarIcon {
-    float:left;
-    height:18px;
-    width:18px;
-    background-color:white
+    float: left;
+    height: 18px;
+    width: 18px;
+    background-color: white
 }
 
 .night .deviceBarIcon {
-    background-color:black;
+    background-color: black;
 }
 
 #devListToolbarViewIcons {
@@ -757,19 +972,25 @@ body {
     border-spacing: 0;
 }
 
-#SearchInput, #KvmSearchInput {
+#SearchInput,
+#KvmSearchInput {
     width: 120px;
 }
 
-#SearchInput.search, #KvmSearchInput.search {
+#SearchInput.search,
+#KvmSearchInput.search {
     background-color: #FDFFBE;
 }
 
-.night #SearchInput.search, .night #KvmSearchInput.search {
+.night #SearchInput.search,
+.night #KvmSearchInput.search {
     background-color: grey;
 }
 
-#devListToolbarView, #devListToolbarSort, #devListToolbarSize, #devListToolbarSettings {
+#devListToolbarView,
+#devListToolbarSort,
+#devListToolbarSize,
+#devListToolbarSettings {
     float: right;
 }
 
@@ -777,7 +998,7 @@ body {
     margin-left: 5px;
 }
 
-/* Example if <table> is relplaced with <div><p> then image can be defined in css 
+/* Example if <table> is relplaced with <div><p> then image can be defined in css
 #NoMeshesPanel {
     background: url(../images/info.png) no-repeat 23px 20px;
     height: 48px;
@@ -808,166 +1029,375 @@ NoMeshesPanel img {
 }
 
 .deviceNotifyDot {
-    position:absolute;
-    right:10px;
-    top:0px;
-    height:16px;
+    position: absolute;
+    right: 10px;
+    top: 0px;
+    height: 16px;
 }
 
 .deviceNotifyDotSub {
-    text-align:center;
-    color:#FFF;
-    height:16px;
-    width:16px;
-    background-color:#00F;
-    padding:2px;
-    border-radius:10px;
+    text-align: center;
+    color: #FFF;
+    height: 16px;
+    width: 16px;
+    background-color: #00F;
+    padding: 2px;
+    border-radius: 10px;
     box-shadow: 2px 2px 10px black;
-    cursor:pointer;
-    margin-left:3px;
+    cursor: pointer;
+    margin-left: 3px;
     font-size: 14px;
-    float:left;
+    float: left;
 }
 
-    .deviceNotifyDotSub:hover {
-        background-color:#44F;
-    }
+.deviceNotifyDotSub:hover {
+    background-color: #44F;
+}
 
 .deviceNotifySmallDot {
-    position:absolute;
-    right:10px;
-    top:4px;
-    height:10px;
+    position: absolute;
+    right: 10px;
+    top: 4px;
+    height: 10px;
 }
 
 .deviceNotifySmallDotSub {
-    text-align:center;
-    color:#FFF;
-    height:14px;
-    width:14px;
-    padding:2px;
-    background-color:#00F;
-    border-radius:10px;
+    text-align: center;
+    color: #FFF;
+    height: 14px;
+    width: 14px;
+    padding: 2px;
+    background-color: #00F;
+    border-radius: 10px;
     box-shadow: 2px 2px 10px black;
-    cursor:pointer;
-    margin-left:2px;
+    cursor: pointer;
+    margin-left: 2px;
     font-size: 6px;
-    float:left;
+    float: left;
 }
 
-    .deviceNotifySmallDotSub:hover {
-        background-color:#44F;
-    }
+.deviceNotifySmallDotSub:hover {
+    background-color: #44F;
+}
 
-.NotifyIcon1 { width:48px; height:48px; background: url(../images/notify48.png) 0px 0px; }
-.NotifyIcon2 { width:48px; height:48px; background: url(../images/notify48.png) -48px 0px; }
-.NotifyIcon3 { width:48px; height:48px; background: url(../images/notify48.png) -96px 0px; }
-.NotifyIcon4 { width:48px; height:48px; background: url(../images/notify48.png) -144px 0px; }
-.NotifyIcon5 { width:48px; height:48px; background: url(../images/notify48.png) -192px 0px; }
-.NotifyIcon6 { width:48px; height:48px; background: url(../images/notify48.png) -240px 0px; }
-.NotifyIcon7 { width:48px; height:48px; background: url(../images/notify48.png) -288px 0px; }
-.NotifyIcon8 { width:48px; height:48px; background: url(../images/notify48.png) -336px 0px; }
-.NotifyIcon9 { width:48px; height:48px; background: url(../images/notify48.png) -384px 0px; }
-.NotifyIconSmall1 { width:24px; height:24px; background: url(../images/notify24.png) 0px 0px; }
-.NotifyIconSmall2 { width:24px; height:24px; background: url(../images/notify24.png) -24px 0px; }
-.NotifyIconSmall3 { width:24px; height:24px; background: url(../images/notify24.png) -48px 0px; }
-.NotifyIconSmall4 { width:24px; height:24px; background: url(../images/notify24.png) -72px 0px; }
-.NotifyIconSmall5 { width:24px; height:24px; background: url(../images/notify24.png) -96px 0px; }
-.NotifyIconSmall6 { width:24px; height:24px; background: url(../images/notify24.png) -120px 0px; }
-.NotifyIconSmall7 { width:24px; height:24px; background: url(../images/notify24.png) -144px 0px; }
-.NotifyIconSmall8 { width:24px; height:24px; background: url(../images/notify24.png) -168px 0px; }
-.NotifyIconSmall9 { width:24px; height:24px; background: url(../images/notify24.png) -192px 0px; }
-.NotifyIconTiny1 { width:16px; height:16px; background: url(../images/notify16.png) 0px 0px; }
-.NotifyIconTiny2 { width:16px; height:16px; background: url(../images/notify16.png) -16px 0px; }
-.NotifyIconTiny3 { width:16px; height:16px; background: url(../images/notify16.png) -32px 0px; }
-.NotifyIconTiny4 { width:16px; height:16px; background: url(../images/notify16.png) -48px 0px; }
-.NotifyIconTiny5 { width:16px; height:16px; background: url(../images/notify16.png) -64px 0px; }
-.NotifyIconTiny6 { width:16px; height:16px; background: url(../images/notify16.png) -80px 0px; }
-.NotifyIconTiny7 { width:16px; height:16px; background: url(../images/notify16.png) -96px 0px; }
-.NotifyIconTiny8 { width:16px; height:16px; background: url(../images/notify16.png) -112px 0px; }
-.NotifyIconTiny9 { width:16px; height:16px; background: url(../images/notify16.png) -128px 0px; }
+.NotifyIcon1 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) 0px 0px;
+}
+
+.NotifyIcon2 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -48px 0px;
+}
+
+.NotifyIcon3 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -96px 0px;
+}
+
+.NotifyIcon4 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -144px 0px;
+}
+
+.NotifyIcon5 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -192px 0px;
+}
+
+.NotifyIcon6 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -240px 0px;
+}
+
+.NotifyIcon7 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -288px 0px;
+}
+
+.NotifyIcon8 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -336px 0px;
+}
+
+.NotifyIcon9 {
+    width: 48px;
+    height: 48px;
+    background: url(../images/notify48.png) -384px 0px;
+}
+
+.NotifyIconSmall1 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) 0px 0px;
+}
+
+.NotifyIconSmall2 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -24px 0px;
+}
+
+.NotifyIconSmall3 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -48px 0px;
+}
+
+.NotifyIconSmall4 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -72px 0px;
+}
+
+.NotifyIconSmall5 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -96px 0px;
+}
+
+.NotifyIconSmall6 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -120px 0px;
+}
+
+.NotifyIconSmall7 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -144px 0px;
+}
+
+.NotifyIconSmall8 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -168px 0px;
+}
+
+.NotifyIconSmall9 {
+    width: 24px;
+    height: 24px;
+    background: url(../images/notify24.png) -192px 0px;
+}
+
+.NotifyIconTiny1 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) 0px 0px;
+}
+
+.NotifyIconTiny2 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -16px 0px;
+}
+
+.NotifyIconTiny3 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -32px 0px;
+}
+
+.NotifyIconTiny4 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -48px 0px;
+}
+
+.NotifyIconTiny5 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -64px 0px;
+}
+
+.NotifyIconTiny6 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -80px 0px;
+}
+
+.NotifyIconTiny7 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -96px 0px;
+}
+
+.NotifyIconTiny8 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -112px 0px;
+}
+
+.NotifyIconTiny9 {
+    width: 16px;
+    height: 16px;
+    background: url(../images/notify16.png) -128px 0px;
+}
 
 .deviceBatteryLarge {
-    position:absolute;
-    left:10px;
-    top:140px;
-    width:28px;
-    height:48px;
-    border:none;
-    box-shadow:none;
+    position: absolute;
+    left: 10px;
+    top: 140px;
+    width: 28px;
+    height: 48px;
+    border: none;
+    box-shadow: none;
 }
 
-.deviceBatteryLarge1 { background: url(../images/batteries48.png) 0px 0px; }
-.deviceBatteryLarge2 { background: url(../images/batteries48.png) -28px 0px; }
-.deviceBatteryLarge3 { background: url(../images/batteries48.png) -56px 0px; }
-.deviceBatteryLarge4 { background: url(../images/batteries48.png) -84px 0px; }
-.deviceBatteryLarge5 { background: url(../images/batteries48.png) -112px 0px; }
-.deviceBatteryLarge6 { background: url(../images/batteries48.png) -140px 0px; }
-.deviceBatteryLarge7 { background: url(../images/batteries48.png) -168px 0px; }
-.deviceBatteryLarge8 { background: url(../images/batteries48.png) -196px 0px; }
-.deviceBatteryLarge9 { background: url(../images/batteries48.png) -224px 0px; }
-.deviceBatteryLarge10 { background: url(../images/batteries48.png) -252px 0px; }
-.deviceBatteryLarge11 { background: url(../images/batteries48.png) -280px 0px; }
+.deviceBatteryLarge1 {
+    background: url(../images/batteries48.png) 0px 0px;
+}
+
+.deviceBatteryLarge2 {
+    background: url(../images/batteries48.png) -28px 0px;
+}
+
+.deviceBatteryLarge3 {
+    background: url(../images/batteries48.png) -56px 0px;
+}
+
+.deviceBatteryLarge4 {
+    background: url(../images/batteries48.png) -84px 0px;
+}
+
+.deviceBatteryLarge5 {
+    background: url(../images/batteries48.png) -112px 0px;
+}
+
+.deviceBatteryLarge6 {
+    background: url(../images/batteries48.png) -140px 0px;
+}
+
+.deviceBatteryLarge7 {
+    background: url(../images/batteries48.png) -168px 0px;
+}
+
+.deviceBatteryLarge8 {
+    background: url(../images/batteries48.png) -196px 0px;
+}
+
+.deviceBatteryLarge9 {
+    background: url(../images/batteries48.png) -224px 0px;
+}
+
+.deviceBatteryLarge10 {
+    background: url(../images/batteries48.png) -252px 0px;
+}
+
+.deviceBatteryLarge11 {
+    background: url(../images/batteries48.png) -280px 0px;
+}
 
 .deviceBatterySmall {
-    position:absolute;
-    left:26px;
-    top:32px;
-    width:14px;
-    height:24px;
-    border:none;
-    box-shadow:none;
+    position: absolute;
+    left: 26px;
+    top: 32px;
+    width: 14px;
+    height: 24px;
+    border: none;
+    box-shadow: none;
 }
 
-.deviceBatterySmall1 { background: url(../images/batteries24.png) 0px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall2 { background: url(../images/batteries24.png) -14px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall3 { background: url(../images/batteries24.png) -28px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall4 { background: url(../images/batteries24.png) -42px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall5 { background: url(../images/batteries24.png) -56px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall6 { background: url(../images/batteries24.png) -70px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall7 { background: url(../images/batteries24.png) -84px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall8 { background: url(../images/batteries24.png) -98px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall9 { background: url(../images/batteries24.png) -112px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall10 { background: url(../images/batteries24.png) -126px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
-.deviceBatterySmall11 { background: url(../images/batteries24.png) -140px 0px; background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x); }
+.deviceBatterySmall1 {
+    background: url(../images/batteries24.png) 0px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall2 {
+    background: url(../images/batteries24.png) -14px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall3 {
+    background: url(../images/batteries24.png) -28px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall4 {
+    background: url(../images/batteries24.png) -42px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall5 {
+    background: url(../images/batteries24.png) -56px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall6 {
+    background: url(../images/batteries24.png) -70px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall7 {
+    background: url(../images/batteries24.png) -84px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall8 {
+    background: url(../images/batteries24.png) -98px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall9 {
+    background: url(../images/batteries24.png) -112px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall10 {
+    background: url(../images/batteries24.png) -126px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
+
+.deviceBatterySmall11 {
+    background: url(../images/batteries24.png) -140px 0px;
+    background-image: image-set(url(../images/batteries24.png) 1x, url(../images/batteries48.png) 2x);
+}
 
 .deviceNotifyLargeDot {
-    position:absolute;
-    right:10px;
-    top:170px;
-    height:40px;
+    position: absolute;
+    right: 10px;
+    top: 170px;
+    height: 40px;
 }
 
 .deviceNotifyLargeDotSub {
-    text-align:center;
-    width:40px;
-    height:40px;
-    color:#FFF;
-    padding:2px;
-    background-color:#00F;
-    border-radius:20px;
+    text-align: center;
+    width: 40px;
+    height: 40px;
+    color: #FFF;
+    padding: 2px;
+    background-color: #00F;
+    border-radius: 20px;
     box-shadow: 2px 2px 10px black;
-    cursor:pointer;
-    margin-left:4px;
+    cursor: pointer;
+    margin-left: 4px;
 }
 
-    .deviceNotifyLargeDotSub:hover {
-        background-color:#44F;
-    }
+.deviceNotifyLargeDotSub:hover {
+    background-color: #44F;
+}
 
 .userAuthStrategyLogo {
-    text-align:center;
-    position:absolute;
-    right:20px;
-    top:125px;
-    width:64px;
-    height:64px;
-    color:#FFF;
-    padding:2px;
-    background-color:#FFF;
-    border-radius:20px;
+    text-align: center;
+    position: absolute;
+    right: 20px;
+    top: 125px;
+    width: 64px;
+    height: 64px;
+    color: #FFF;
+    padding: 2px;
+    background-color: #FFF;
+    border-radius: 20px;
     box-shadow: 2px 2px 10px black;
-    z-index:1;
+    z-index: 1;
 }
 
 #xdevices {
@@ -980,6 +1410,104 @@ NoMeshesPanel img {
 #xdevices th {
     color: gray;
     text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bs-body-bg);
+}
+
+[data-bs-theme="dark"] #xdevices,
+[data-bs-theme="dark"] #NoMeshesPanel,
+[data-bs-theme="dark"] #serverStatsTable,
+[data-bs-theme="dark"] #p2info,
+[data-bs-theme="dark"] #p6info,
+[data-bs-theme="dark"] #p10info,
+[data-bs-theme="dark"] #p17info,
+[data-bs-theme="dark"] #p18info,
+[data-bs-theme="dark"] #p19pages,
+[data-bs-theme="dark"] #p20info,
+[data-bs-theme="dark"] #p20info2,
+[data-bs-theme="dark"] #p20info3,
+[data-bs-theme="dark"] #p21info,
+[data-bs-theme="dark"] #p30info,
+[data-bs-theme="dark"] #p51info {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-body-bg, #000);
+}
+
+/* Some Bootswatch themes set raw table cells to white; keep generated app surfaces dark. */
+[data-bs-theme="dark"] #xdevices table,
+[data-bs-theme="dark"] #xdevices tbody,
+[data-bs-theme="dark"] #xdevices tr,
+[data-bs-theme="dark"] #xdevices td,
+[data-bs-theme="dark"] #xdevices th,
+[data-bs-theme="dark"] #NoMeshesPanel table,
+[data-bs-theme="dark"] #NoMeshesPanel tbody,
+[data-bs-theme="dark"] #NoMeshesPanel tr,
+[data-bs-theme="dark"] #NoMeshesPanel td,
+[data-bs-theme="dark"] #NoMeshesPanel th,
+[data-bs-theme="dark"] #serverStatsTable table,
+[data-bs-theme="dark"] #serverStatsTable tbody,
+[data-bs-theme="dark"] #serverStatsTable tr,
+[data-bs-theme="dark"] #serverStatsTable td,
+[data-bs-theme="dark"] #serverStatsTable th,
+[data-bs-theme="dark"] #p2info table,
+[data-bs-theme="dark"] #p2info tbody,
+[data-bs-theme="dark"] #p2info tr,
+[data-bs-theme="dark"] #p2info td,
+[data-bs-theme="dark"] #p2info th,
+[data-bs-theme="dark"] #p6info table,
+[data-bs-theme="dark"] #p6info tbody,
+[data-bs-theme="dark"] #p6info tr,
+[data-bs-theme="dark"] #p6info td,
+[data-bs-theme="dark"] #p6info th,
+[data-bs-theme="dark"] #p10info table,
+[data-bs-theme="dark"] #p10info tbody,
+[data-bs-theme="dark"] #p10info tr,
+[data-bs-theme="dark"] #p10info td,
+[data-bs-theme="dark"] #p10info th,
+[data-bs-theme="dark"] #p17info table,
+[data-bs-theme="dark"] #p17info tbody,
+[data-bs-theme="dark"] #p17info tr,
+[data-bs-theme="dark"] #p17info td,
+[data-bs-theme="dark"] #p17info th,
+[data-bs-theme="dark"] #p18info table,
+[data-bs-theme="dark"] #p18info tbody,
+[data-bs-theme="dark"] #p18info tr,
+[data-bs-theme="dark"] #p18info td,
+[data-bs-theme="dark"] #p18info th,
+[data-bs-theme="dark"] #p20info table,
+[data-bs-theme="dark"] #p20info tbody,
+[data-bs-theme="dark"] #p20info tr,
+[data-bs-theme="dark"] #p20info td,
+[data-bs-theme="dark"] #p20info th,
+[data-bs-theme="dark"] #p20info2 table,
+[data-bs-theme="dark"] #p20info2 tbody,
+[data-bs-theme="dark"] #p20info2 tr,
+[data-bs-theme="dark"] #p20info2 td,
+[data-bs-theme="dark"] #p20info2 th,
+[data-bs-theme="dark"] #p20info3 table,
+[data-bs-theme="dark"] #p20info3 tbody,
+[data-bs-theme="dark"] #p20info3 tr,
+[data-bs-theme="dark"] #p20info3 td,
+[data-bs-theme="dark"] #p20info3 th,
+[data-bs-theme="dark"] #p21info table,
+[data-bs-theme="dark"] #p21info tbody,
+[data-bs-theme="dark"] #p21info tr,
+[data-bs-theme="dark"] #p21info td,
+[data-bs-theme="dark"] #p21info th,
+[data-bs-theme="dark"] #p30info table,
+[data-bs-theme="dark"] #p30info tbody,
+[data-bs-theme="dark"] #p30info tr,
+[data-bs-theme="dark"] #p30info td,
+[data-bs-theme="dark"] #p30info th,
+[data-bs-theme="dark"] #p51info table,
+[data-bs-theme="dark"] #p51info tbody,
+[data-bs-theme="dark"] #p51info tr,
+[data-bs-theme="dark"] #p51info td,
+[data-bs-theme="dark"] #p51info th {
+    color: inherit;
+    background-color: transparent !important;
 }
 
 #xdevicesmap {
@@ -1035,7 +1563,9 @@ NoMeshesPanel img {
     text-shadow: 0px 0px 15px #FFF;
 }
 
-#p2 a, #p6 a, #p10 a {
+#p2 a,
+#p6 a,
+#p10 a {
     cursor: pointer;
 }
 
@@ -1047,7 +1577,9 @@ NoMeshesPanel img {
     margin-top: 7px;
 }
 
-#p2AccountImage, #p2AccountImage2, #MainUserImageEx {
+#p2AccountImage,
+#p2AccountImage2,
+#MainUserImageEx {
     width: 200px;
     height: 200px;
     border-radius: 8px;
@@ -1063,10 +1595,17 @@ NoMeshesPanel img {
     display: inline-block;
 }
 
-    .p2AccountActions span {
-        color: green;
-        font-size: 10px;
-    }
+.p2AccountActions span {
+    color: green;
+    font-size: 10px;
+}
+
+.auth-app-qrcode {
+    background: #FFF;
+    display: inline-block;
+    line-height: 0;
+    padding: 8px;
+}
 
 #p2AccountActions .mL {
     margin-left: 40px;
@@ -1085,11 +1624,17 @@ NoMeshesPanel img {
     padding-left: 15px;
 }
 
-#p2noMeshFound, #serverStats, #serverWarnings, #serverCertWarnings {
+#p2noMeshFound,
+#serverStats,
+#serverWarnings,
+#serverCertWarnings {
     margin-left: 40px;
 }
 
-#p2ServerActionsBackup, #p2ServerActionsRestore, #p2ServerActionsVersion, #p2ServerActionsErrors {
+#p2ServerActionsBackup,
+#p2ServerActionsRestore,
+#p2ServerActionsVersion,
+#p2ServerActionsErrors {
     margin-left: 0px;
 }
 
@@ -1113,11 +1658,14 @@ NoMeshesPanel img {
     padding: 0;
 }
 
-    .p3usersTable th {
-        color: var(--sub-menu-bg);
-    }
+.p3usersTable th {
+    color: var(--sub-menu-bg);
+}
 
-#p3events, #p16events, #p31events, #p41events {
+#p3events,
+#p16events,
+#p31events,
+#p41events {
     height: calc(100vh - 245px);
     overflow-y: scroll;
 }
@@ -1170,11 +1718,13 @@ NoMeshesPanel img {
     background-color: lightsteelblue;
 }
 
-    #p5PublicShare div {
-        padding: 4px;
-    }
+#p5PublicShare div {
+    padding: 4px;
+}
 
-#bigok, #p11bigok, #p13bigok {
+#bigok,
+#p11bigok,
+#p13bigok {
     width: 256px;
     overflow: hidden;
     position: absolute;
@@ -1186,7 +1736,9 @@ NoMeshesPanel img {
     z-index: 99999;
 }
 
-#bigfail, #p11bigfail, #p13bigfail {
+#bigfail,
+#p11bigfail,
+#p13bigfail {
     width: 256px;
     overflow: hidden;
     position: absolute;
@@ -1208,7 +1760,8 @@ NoMeshesPanel img {
     display: inline-block;
 }
 
-#serverCpuChart, #serverMemoryChart {
+#serverCpuChart,
+#serverMemoryChart {
     width: 60px;
     height: 60px;
 }
@@ -1219,7 +1772,8 @@ NoMeshesPanel img {
     width: 100%;
 }
 
-#p10BackButton, #p11BackButton {
+#p10BackButton,
+#p11BackButton {
     float: left;
 }
 
@@ -1238,19 +1792,24 @@ NoMeshesPanel img {
     font-weight: bold;
 }
 
-    #p10html2 thead tr {
-        background-color: #AAA;
-        font-weight: bold;
-    }
+#p10html2 thead tr {
+    background-color: #AAA;
+    font-weight: bold;
+}
 
-    #p10html2 thead img {
-        float: right;
-        cursor: pointer;
-        padding: 3px;
-    }
+#p10html2 thead img {
+    float: right;
+    cursor: pointer;
+    padding: 3px;
+}
 
 #p10html2 .altBack {
     background-color: #DDD;
+}
+
+.mobileFileActionDropdown,
+.mobileActionDropdown {
+    display: none !important;
 }
 
 .pwState {
@@ -1328,7 +1887,10 @@ NoMeshesPanel img {
     padding-right: 10px;
 }
 
-#p12warning, #p12warning2, #p11warning, #p11warning2 {
+#p12warning,
+#p12warning2,
+#p11warning,
+#p11warning2 {
     max-width: 100%;
     display: none;
     cursor: pointer;
@@ -1340,6 +1902,20 @@ NoMeshesPanel img {
     height: 200px;
     width: 200px;
     float: right;
+}
+
+#p6title {
+    align-items: flex-start !important;
+    min-height: 0;
+    position: relative;
+}
+
+#p6title>#MainMeshImage {
+    float: none;
+    object-fit: contain;
+    position: absolute;
+    right: 10px;
+    top: 0;
 }
 
 #DeskTools {
@@ -1532,13 +2108,13 @@ a {
     opacity: 0.5;
 }
 
-    .night .lbbutton {
-        background-color: black;
-    }
+.night .lbbutton {
+    background-color: black;
+}
 
-    .lbbutton:hover {
-        opacity: 1;
-    }
+.lbbutton:hover {
+    opacity: 1;
+}
 
 nav .lbbuttonsel {
     width: 100%;
@@ -1758,17 +2334,17 @@ nav .lbbuttonsel2 {
     font-weight: bold;
 }
 
-    .style3x:hover {
-        background-color: #606060;
-    }
+.style3x:hover {
+    background-color: #606060;
+}
 
-    .style3x.fullselect {
-        background-color: #003366;
-    }
+.style3x.fullselect {
+    background-color: #003366;
+}
 
-    .style3x.semiselect {
-        background-color: #606060;
-    }
+.style3x.semiselect {
+    background-color: #606060;
+}
 
 .style3sel {
     text-align: center;
@@ -1931,16 +2507,19 @@ nav .lbbuttonsel2 {
     cursor: default;
     -khtml-user-drag: element;
     clear: both;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-    .filelist:hover {
-        background: #EEE;
-        border-radius: 3px;
-    }
+.filelist:hover {
+    background: #EEE;
+    border-radius: 3px;
+}
 
-    .night .filelist:hover {
-        background: #444;
-    }
+.night .filelist:hover {
+    background: #444;
+}
 
 .noselect {
     -webkit-touch-callout: none;
@@ -2091,7 +2670,7 @@ nav .lbbuttonsel2 {
 #d2notifyMsg,
 #d2devNotes,
 #d2devEvent,
-#d2runcmd, 
+#d2runcmd,
 #d2devMessage,
 #d2smsText,
 #d2emailSubject,
@@ -2122,10 +2701,6 @@ nav .lbbuttonsel2 {
     background-color: #FFFFFF;
 }
 
-.gradTable1 { background-image: linear-gradient(to right, #fff 0%, #d3d9d6 100%); }
-.gradTable2 { background-color: #d3d9d6; }
-.gradTable3 { background-image: linear-gradient(to right, #d3d9d6 0%, #fff 100%); }
-
 .h1 {
     background-position: 0% 0%;
     width: 14px;
@@ -2137,10 +2712,445 @@ nav .lbbuttonsel2 {
     background-color: #d3d9d6;
     background-repeat: repeat;
     background-attachment: scroll;
+    color: var(--title-color, #212529);
+    /* fallback: dark gray */
 }
 
+/* Keep Bootstrap and Bootswatch surfaces readable when MeshCentral switches theme mode. */
+[data-bs-theme="light"] body,
+body[data-bs-theme="light"] {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="dark"] .h1,
+[data-bs-theme="dark"] h1,
 .night .h1 {
     background-image: linear-gradient(to right, #000 0%, #333 100%);
+    color: var(--bs-heading-color, #f8f9fa);
+}
+
+[data-bs-theme="light"] .modal-body h1,
+[data-bs-theme="light"] .modal-body h2,
+[data-bs-theme="light"] .modal-body h3,
+[data-bs-theme="light"] .modal-body h4,
+[data-bs-theme="light"] .modal-body h5,
+[data-bs-theme="light"] .modal-body h6,
+[data-bs-theme="light"] .card-body h1,
+[data-bs-theme="light"] .card-body h2,
+[data-bs-theme="light"] .card-body h3,
+[data-bs-theme="light"] .card-body h4,
+[data-bs-theme="light"] .card-body h5,
+[data-bs-theme="light"] .card-body h6,
+[data-bs-theme="light"] .fs-4,
+[data-bs-theme="light"] .content-heading,
+[data-bs-theme="light"] .panel-title {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .modal-body h1,
+[data-bs-theme="dark"] .modal-body h2,
+[data-bs-theme="dark"] .modal-body h3,
+[data-bs-theme="dark"] .modal-body h4,
+[data-bs-theme="dark"] .modal-body h5,
+[data-bs-theme="dark"] .modal-body h6,
+[data-bs-theme="dark"] .card-body h1,
+[data-bs-theme="dark"] .card-body h2,
+[data-bs-theme="dark"] .card-body h3,
+[data-bs-theme="dark"] .card-body h4,
+[data-bs-theme="dark"] .card-body h5,
+[data-bs-theme="dark"] .card-body h6,
+[data-bs-theme="dark"] .fs-4,
+[data-bs-theme="dark"] .content-heading,
+[data-bs-theme="dark"] .panel-title,
+.night h1,
+.night .fs-4,
+.night .content-heading,
+.night .panel-title {
+    color: var(--bs-heading-color, #f8f9fa);
+}
+
+[data-bs-theme="light"] .content-area,
+[data-bs-theme="light"] .panel-content,
+[data-bs-theme="light"] .card-body,
+[data-bs-theme="light"] .modal-content,
+[data-bs-theme="light"] .table,
+[data-bs-theme="light"] .list-group-item {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card,
+[data-bs-theme="light"] .modal-body,
+[data-bs-theme="light"] .modal-footer {
+    color: #212529;
+    background-color: #ffffff;
+}
+
+[data-bs-theme="light"] .card-title,
+[data-bs-theme="light"] .card-text {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .content-area,
+[data-bs-theme="dark"] .panel-content,
+[data-bs-theme="dark"] .card-body,
+[data-bs-theme="dark"] .modal-content,
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .list-group-item {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-body-bg, #212529);
+}
+
+/* Form elements */
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .form-label,
+[data-bs-theme="light"] .form-text,
+[data-bs-theme="light"] .ms-2 {
+    color: #212529;
+}
+
+[data-bs-theme="light"] .form-control,
+[data-bs-theme="light"] .form-control-sm,
+[data-bs-theme="light"] .form-select,
+[data-bs-theme="light"] .form-select-sm,
+[data-bs-theme="light"] textarea,
+[data-bs-theme="light"] select,
+[data-bs-theme="light"] input[type="text"],
+[data-bs-theme="light"] input[type="password"],
+[data-bs-theme="light"] input[type="email"],
+[data-bs-theme="light"] input[type="number"] {
+    color: #212529;
+    background-color: #ffffff;
+    border-color: #ced4da;
+}
+
+[data-bs-theme="light"] .form-control::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+[data-bs-theme="dark"] .form-label,
+[data-bs-theme="dark"] .form-text,
+[data-bs-theme="dark"] .ms-2 {
+    color: var(--bs-body-color, #f8f9fa);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: var(--bs-tertiary-bg, #2b3035);
+    border-color: var(--bs-border-color, #6c757d);
+    color: var(--bs-body-color, #f8f9fa);
+}
+
+[data-bs-theme="dark"] .modal-content .form-control:focus,
+[data-bs-theme="dark"] .modal-content .form-select:focus,
+[data-bs-theme="dark"] .modal-content textarea:focus,
+[data-bs-theme="dark"] .modal-content select:focus,
+[data-bs-theme="dark"] .modal-content input[type="text"]:focus,
+[data-bs-theme="dark"] .modal-content input[type="password"]:focus,
+[data-bs-theme="dark"] .modal-content input[type="email"]:focus,
+[data-bs-theme="dark"] .modal-content input[type="number"]:focus {
+    color: var(--bs-body-color, #f8f9fa) !important;
+    background-color: var(--bs-tertiary-bg, #2b3035) !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+[data-bs-theme="dark"] input[type="text"],
+[data-bs-theme="dark"] input[type="password"],
+[data-bs-theme="dark"] input[type="email"],
+[data-bs-theme="dark"] input[type="number"],
+[data-bs-theme="dark"] textarea,
+[data-bs-theme="dark"] select,
+[data-bs-theme="dark"] .form-select {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+}
+
+[data-bs-theme="dark"] select option {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+}
+
+[data-bs-theme="light"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
+}
+
+[data-bs-theme="light"] input[type="checkbox"]:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+[data-bs-theme="dark"] input[type="checkbox"] {
+    opacity: 1 !important;
+    appearance: checkbox !important;
+}
+
+.modal-content input[type="checkbox"],
+.modal-content input[type="radio"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0.15rem 0 0 0;
+    vertical-align: top;
+    flex: 0 0 auto;
+    background-color: var(--bs-body-bg, #fff) !important;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    border: var(--bs-border-width, 1px) solid var(--bs-border-color, #6c757d) !important;
+    box-shadow: none;
+}
+
+.modal-content input[type="checkbox"]::before,
+.modal-content input[type="checkbox"]::after,
+.modal-content input[type="radio"]::before,
+.modal-content input[type="radio"]::after {
+    display: none !important;
+    content: none !important;
+}
+
+.modal-content input[type="checkbox"] {
+    border-radius: 0.25rem;
+}
+
+.modal-content input[type="radio"] {
+    border-radius: 50%;
+}
+
+[data-bs-theme="light"] .modal-content input[type="checkbox"],
+[data-bs-theme="light"] .modal-content input[type="radio"] {
+    border-color: rgba(33, 37, 41, 0.45) !important;
+}
+
+[data-bs-theme="dark"] .modal-content input[type="checkbox"],
+[data-bs-theme="dark"] .modal-content input[type="radio"] {
+    border-color: rgba(248, 249, 250, 0.5) !important;
+}
+
+.modal-content label:has(> input[type="checkbox"]),
+.modal-content label:has(> input[type="radio"]) {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    min-height: 1.5rem;
+    padding-left: 1.85rem;
+    line-height: 1.35;
+}
+
+.modal-content label>input[type="checkbox"],
+.modal-content label>input[type="radio"] {
+    position: absolute;
+    top: 0.05rem;
+    left: 0;
+}
+
+.modal-content input[type="checkbox"]+label,
+.modal-content input[type="radio"]+label {
+    display: inline-block;
+    max-width: calc(100% - 2rem);
+    min-height: 1.5rem;
+    margin-left: 0.45rem;
+    line-height: 1.35;
+    vertical-align: top;
+}
+
+.modal-content input[type="checkbox"]:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+}
+
+.modal-content input[type="radio"]:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e") !important;
+}
+
+.modal-content .btn-close::before,
+.modal-content .btn-close::after {
+    display: none !important;
+    content: none !important;
+}
+
+[data-bs-theme="light"] .modal-content a:not(.btn),
+[data-bs-theme="light"] .modal-content .link-primary {
+    color: #0d6efd !important;
+}
+
+[data-bs-theme="light"] .modal-content a:not(.btn):hover,
+[data-bs-theme="light"] .modal-content .link-primary:hover {
+    color: #0a58ca !important;
+}
+
+[data-bs-theme="dark"] .modal-content a:not(.btn),
+[data-bs-theme="dark"] .modal-content .link-primary {
+    color: #8ec5ff !important;
+}
+
+[data-bs-theme="dark"] .modal-content a:not(.btn):hover,
+[data-bs-theme="dark"] .modal-content .link-primary:hover {
+    color: #b6dcff !important;
+}
+
+[data-bs-theme="dark"] select:focus {
+    color: var(--bs-body-color, #f8f9fa);
+    background-color: var(--bs-tertiary-bg, #2b3035);
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+[data-bs-theme="dark"] .form-control::placeholder {
+    color: var(--bs-secondary-color, #adb5bd);
+    opacity: 1;
+}
+
+/* Preserve Bootstrap floating-label behavior in dark themes. */
+[data-bs-theme="dark"] .form-floating>.form-control::placeholder,
+[data-bs-theme="dark"] .form-floating>.form-control-plaintext::placeholder {
+    color: transparent !important;
+}
+
+[data-bs-theme="dark"] .form-floating>.form-control:focus~label,
+[data-bs-theme="dark"] .form-floating>.form-control:not(:placeholder-shown)~label,
+[data-bs-theme="dark"] .form-floating>.form-control-plaintext~label,
+[data-bs-theme="dark"] .form-floating>.form-select~label {
+    color: rgba(var(--bs-body-color-rgb), 0.65) !important;
+}
+
+[data-bs-theme="dark"] .modal-content .form-floating>label {
+    color: rgba(var(--bs-body-color-rgb), 0.72) !important;
+}
+
+[data-bs-theme="dark"] .modal-content .form-floating>label::after {
+    background-color: var(--bs-tertiary-bg, #2b3035) !important;
+}
+
+[data-bs-theme="dark"] .modal-footer .btn-primary {
+    color: #fff !important;
+}
+
+[data-bs-theme="dark"] .modal-footer .btn-primary:disabled,
+[data-bs-theme="dark"] .modal-footer .btn-primary.disabled {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Buttons */
+[data-bs-theme="light"] .btn-secondary,
+[data-bs-theme="light"] .btn-light {
+    color: var(--bs-body-color, #212529) !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-secondary {
+    color: #adb5bd;
+}
+
+/* Context menus */
+[data-bs-theme="light"] .contextMenu {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] .contextMenu {
+    background-color: #343a40;
+    border: 1px solid #495057;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="light"] .cmtext {
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .cmtext {
+    color: #f8f9fa;
+}
+
+/* Navigation and headers */
+[data-bs-theme="light"] .topbar_td,
+[data-bs-theme="light"] .masthead {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+[data-bs-theme="dark"] .topbar_td,
+[data-bs-theme="dark"] .masthead {
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+/* Keep the legacy tab active/hover effect above theme base colors. */
+[data-bs-theme="light"] .topbar_td.style3sel,
+[data-bs-theme="light"] .topbar_td.style3x.fullselect,
+[data-bs-theme="dark"] .topbar_td.style3sel,
+[data-bs-theme="dark"] .topbar_td.style3x.fullselect {
+    color: #fff;
+    background-color: #003366;
+}
+
+[data-bs-theme="light"] .topbar_td.style3x:hover,
+[data-bs-theme="light"] .topbar_td.style3x.semiselect,
+[data-bs-theme="dark"] .topbar_td.style3x:hover,
+[data-bs-theme="dark"] .topbar_td.style3x.semiselect {
+    color: #fff;
+    background-color: #606060;
+}
+
+/* Tables */
+[data-bs-theme="light"] .table,
+[data-bs-theme="light"] .table td,
+[data-bs-theme="light"] .table th,
+[data-bs-theme="light"] .table tr {
+    --bs-table-bg: #ffffff;
+    --bs-table-striped-bg: #f8f9fa;
+    --bs-table-hover-bg: #e9ecef;
+    color: #212529 !important;
+}
+
+/* Power state indicators in tables */
+[data-bs-theme="light"] .table .pwState {
+    border: 1px solid #dee2e6;
+    min-width: 2px;
+}
+
+[data-bs-theme="light"] .table .pwsBlack {
+    background-color: #212529 !important;
+}
+
+[data-bs-theme="light"] .table .pwsTransparent {
+    background-color: #f8f9fa !important;
+    border-left: none;
+    border-right: none;
+}
+
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: #212529;
+    --bs-table-striped-bg: #2c3034;
+    --bs-table-hover-bg: #32383e;
+    color: #f8f9fa;
+}
+
+/* Tabs */
+[data-bs-theme="light"] .nav-tabs .nav-link {
+    color: #495057;
+}
+
+[data-bs-theme="dark"] .nav-tabs .nav-link {
+    color: #f8f9fa;
+}
+
+/* Custom scrollbars */
+[data-bs-theme="light"] ::-webkit-scrollbar-thumb {
+    background-color: #adb5bd;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: #6c757d;
 }
 
 .h2end {
@@ -2244,20 +3254,20 @@ nav .lbbuttonsel2 {
 .baricon {
     float: left;
     height: 24px;
-    width: 24px;
-    background-color: white;
+    width: 30px;
+    background: transparent
 }
 
-    .night .baricon {
-        background-color: black;
-    }
+.night .baricon {
+    background: transparent
+}
 
-    .baricon div {
-        width: 16px;
-        margin-top: 4px;
-        margin-left: 2px;
-        height: 16px;
-    }
+.baricon div {
+    width: 16px;
+    margin-top: 4px;
+    margin-left: 2px;
+    height: 16px;
+}
 
 .bar2 {
     font-size: large;
@@ -2303,7 +3313,7 @@ nav .lbbuttonsel2 {
 
 .contextMenu {
     background: #F9F9F9;
-    box-shadow: 0 0 12px rgba( 0, 0, 0, .3 );
+    box-shadow: 0 0 12px rgba(0, 0, 0, .3);
     border: 1px solid #ccc;
     /*border-radius: 4px;*/
     display: none;
@@ -2330,15 +3340,18 @@ nav .lbbuttonsel2 {
     position: relative;
 }
 
-    .cmtext:hover {
-        color: #f9f9f9;
-        background: #444;
-    }
+.cmtext:hover {
+    color: #f9f9f9;
+    background: #444;
+}
 
 .gray {
-    /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/ /* Firefox 10+, Firefox on Android */
-    filter: gray; /* IE6-9 */
-    -webkit-filter: grayscale(100%) opacity(60%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
+    /*filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale");*/
+    /* Firefox 10+, Firefox on Android */
+    filter: gray;
+    /* IE6-9 */
+    -webkit-filter: grayscale(100%) opacity(60%);
+    /* Chrome 19+, Safari 6+, Safari 6+ iOS */
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
     -moz-opacity: 0.60;
     opacity: .60;
@@ -2355,10 +3368,10 @@ nav .lbbuttonsel2 {
 }
 
 .notifiyBox {
-    position: absolute;
+    position: fixed;
     z-index: 1000;
     top: 80px;
-    right: 10rem;
+    right: 8.3rem;
     width: 300px;
     text-align: left;
     background-color: #F0ECCD;
@@ -2372,53 +3385,46 @@ nav .lbbuttonsel2 {
     max-height: 200px;
 }
 
+body:not(.fullscreen) .notifiyBox {
+    position: absolute;
+    right: calc(50vw - 512px + 10rem);
+}
+
 .night .notifiyBox {
     color: black;
 }
 
-    .notifiyBox:before {
-        content: ' ';
-        position: absolute;
-        width: 0;
-        height: 0;
-        right: 5px;
-        top: -30px;
-        border: 15px solid;
-        border-color: transparent #666 #666 transparent;
-    }
+.notifiyBox:before {
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 5px;
+    top: -30px;
+    border: 15px solid;
+    border-color: transparent #666 #666 transparent;
+}
 
-    .notifiyBox:after {
-        content: ' ';
-        position: absolute;
-        width: 0;
-        height: 0;
-        right: 7px;
-        top: -24px;
-        border: 12px solid;
-        border-color: transparent #F0ECCD #F0ECCD transparent;
-    }
+.notifiyBox:after {
+    content: ' ';
+    position: absolute;
+    width: 0;
+    height: 0;
+    right: 7px;
+    top: -24px;
+    border: 12px solid;
+    border-color: transparent #F0ECCD #F0ECCD transparent;
+}
 
 .notification {
     width: 100%;
     min-height: 30px;
 }
 
-    .notification:hover {
-        background-color: #EFE8B6;
-    }
-
-#notificationCount {
-    min-width: 28px;
-    font-size: 20px;
-    border-radius: 5px;
-    text-align: center;
-    margin: 8px;
-    cursor: pointer;
-    padding: 4px;
-    position: absolute;
-    right: 9rem;
-    top: 0.2em;
+.notification:hover {
+    background-color: #EFE8B6;
 }
+
 #notificationBadge {
     box-shadow: -0.1px 1px 2px #000000;
     -webkit-box-shadow: -0.1px 1px 2px #000000;
@@ -2426,9 +3432,11 @@ nav .lbbuttonsel2 {
     top: 0.95rem;
     left: 1.6rem !important;
 }
+
 #notificationCount:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
 .night #notificationCount {
     color: black;
 }
@@ -2461,11 +3469,11 @@ nav .lbbuttonsel2 {
     background-color: gray;
 }
 
-    .areaProgress div {
-        height: 2px;
-        width: 0%;
-        background-color: red;
-    }
+.areaProgress div {
+    height: 2px;
+    width: 0%;
+    background-color: red;
+}
 
 .areaFoot {
     padding-top: 2px;
@@ -2541,7 +3549,8 @@ nav .lbbuttonsel2 {
     position: relative;
     overflow: hidden;
     width: 100%;
-    max-height: calc(100vh - 270px); /*  + 24px height of submenu */
+    max-height: calc(100vh - 270px);
+    /*  + 24px height of submenu */
     height: calc(100vh - 270px);
 }
 
@@ -2561,7 +3570,7 @@ nav .lbbuttonsel2 {
 #DeskFocus {
     overflow: hidden;
     color: transparent;
-    border: 3px dotted rgba(255,0,0,.2);
+    border: 3px dotted rgba(255, 0, 0, .2);
     position: absolute;
     border-radius: 5px;
 }
@@ -2590,16 +3599,16 @@ nav .lbbuttonsel2 {
 }
 
 .deskToolsTopTab {
-    position:absolute;
-    background-color:lightgray;
-    padding:2px;
-    top:2px;
-    left:0px;
-    width:80px;
-    bottom:2px;
-    border-top-left-radius:4px;
-    border-top-right-radius:4px;
-    cursor:pointer;
+    position: absolute;
+    background-color: lightgray;
+    padding: 2px;
+    top: 2px;
+    left: 0px;
+    width: 80px;
+    bottom: 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    cursor: pointer;
 }
 
 #deskToolsAreaTop {
@@ -2619,9 +3628,9 @@ nav .lbbuttonsel2 {
     background-color: gray;
 }
 
-    .night #deskToolsAreaTop {
-        background-color: #222;
-    }
+.night #deskToolsAreaTop {
+    background-color: #222;
+}
 
 #deskToolsArea {
     position: absolute;
@@ -2642,22 +3651,22 @@ nav .lbbuttonsel2 {
     padding: 3px;
 }
 
-    #deskToolsHeader .colmn1 {
-        width: 50px;
-        padding-right: 5px;
-        float: left;
-    }
+#deskToolsHeader .colmn1 {
+    width: 50px;
+    padding-right: 5px;
+    float: left;
+}
 
 #deskToolsServiceHeader {
     border-bottom: 1px solid darkgray;
     padding: 3px;
 }
 
-    #deskToolsServiceHeader .colmn1 {
-        width: 50px;
-        padding-right: 5px;
-        float: left;
-    }
+#deskToolsServiceHeader .colmn1 {
+    width: 50px;
+    padding-right: 5px;
+    float: left;
+}
 
 #DeskToolsProcesses {
     overflow-y: scroll;
@@ -2665,7 +3674,7 @@ nav .lbbuttonsel2 {
     top: 24px;
     bottom: 0px;
     width: 100%;
-    color:black;
+    color: black;
 }
 
 #DeskToolsServices {
@@ -2674,24 +3683,24 @@ nav .lbbuttonsel2 {
     top: 24px;
     bottom: 0px;
     width: 100%;
-    color:black;
+    color: black;
 }
 
 .deskToolsBar {
     padding: 3px;
 }
 
-    .deskToolsBar:hover {
-        background-color: #EFE8B6;
-    }
- 
-    .night .deskToolsBar {
-        color: #ddd;
-    }
+.deskToolsBar:hover {
+    background-color: #EFE8B6;
+}
 
-    .night .deskToolsBar:hover {
-        background-color: #444;
-    }
+.night .deskToolsBar {
+    color: #ddd;
+}
+
+.night .deskToolsBar:hover {
+    background-color: #444;
+}
 
 #deskarea4 {
     grid-area: deskarea4;
@@ -2746,28 +3755,33 @@ nav .lbbuttonsel2 {
     padding: 0;
 }
 
-#p13toolbar {
+#p13toolbar,
+#p9toolbar {
     width: 100%;
 }
 
-    #p13toolbar .areaHead {
-        border-bottom: 2px solid black;
-    }
+#p13toolbar .areaHead,
+#p9toolbar .areaHead {
+    border-bottom: 2px solid black;
+}
 
-    #p13toolbar .areaHead2 {
-        width: 100%;
-        background: var(--bs-secondary-bg);
-        padding: 4px 0px;
-    }
-
-
-    #p13toolbar .areaHead3 {
-        background: var(--bs-secondary-bg);
-        height: 28px;
-    }
+#p13toolbar .areaHead2,
+#p9toolbar .areaHead2 {
+    width: 100%;
+    background: var(--bs-secondary-bg);
+    padding: 4px 0px;
+}
 
 
-#p13filetable {
+#p13toolbar .areaHead3,
+#p9toolbar .areaHead3 {
+    background: var(--bs-secondary-bg);
+    height: 28px;
+}
+
+
+#p13filetable,
+#p9filetable {
     width: 100%;
     height: calc(100vh - 323px);
     overflow: auto;
@@ -2775,7 +3789,8 @@ nav .lbbuttonsel2 {
     user-select: none;
 }
 
-.room4submenu #p13filetable {
+.room4submenu #p13filetable,
+.room4submenu #p9filetable {
     height: calc(100vh - 349px);
 }
 
@@ -2800,7 +3815,10 @@ nav .lbbuttonsel2 {
     height: calc(100vh - 65px);
 }
 
-#p13toolbarBottom, #p13toolbar {
+#p13toolbarBottom,
+#p13toolbar,
+#p9toolbarBottom,
+#p9toolbar {
     width: 100%;
 }
 
@@ -2864,7 +3882,8 @@ nav .lbbuttonsel2 {
 }
 */
 
-.night #p16events, #p31events {
+.night #p16events,
+#p31events {
     color: #222;
 }
 
@@ -2912,7 +3931,8 @@ nav .lbbuttonsel2 {
     width: 28px;
 }
 
-.viewSelector3, .uiSelector7 {
+.viewSelector3,
+.uiSelector7 {
     margin-left: 2px;
     margin-top: 2px;
     background: url(../images/views.png) -56px 0px;
@@ -2984,9 +4004,9 @@ nav .lbbuttonsel2 {
     width: 28px;
 }
 
-    .fulldesk .viewSelector5 {
-        background: url(../images/views.png) -252px 0px;
-    }
+.fulldesk .viewSelector5 {
+    background: url(../images/views.png) -252px 0px;
+}
 
 .backButtonEx {
     margin-left: 2px;
@@ -3007,10 +4027,10 @@ nav .lbbuttonsel2 {
     opacity: 0.3;
 }
 
-    .uiSelector:hover {
-        opacity: 0.5;
-        background-color: #AAA;
-    }
+.uiSelector:hover {
+    opacity: 0.5;
+    background-color: #AAA;
+}
 
 .uiSelector_end {
     width: 32px;
@@ -3077,10 +4097,10 @@ nav .lbbuttonsel2 {
     opacity: 0.3;
 }
 
-    .backButton:hover {
-        opacity: 0.5;
-        background-color: #AAA;
-    }
+.backButton:hover {
+    opacity: 0.5;
+    background-color: #AAA;
+}
 
 .hoverButton {
     opacity: 0.5;
@@ -3088,9 +4108,9 @@ nav .lbbuttonsel2 {
     height: 10px;
 }
 
-    .hoverButton:hover {
-        opacity: 1;
-    }
+.hoverButton:hover {
+    opacity: 1;
+}
 
 .tagSpan {
     background-color: lightgray;
@@ -3098,20 +4118,20 @@ nav .lbbuttonsel2 {
     border-radius: 5px;
 }
 
-    .night .tagSpan {
-        color: black;
-    }
+.night .tagSpan {
+    color: black;
+}
 
 .suggestionBox {
-    position:absolute;
+    position: absolute;
     background-color: #6CC;
-    border-radius:4px;
-    padding:6px;
+    border-radius: 4px;
+    padding: 6px;
     box-shadow: 0px 0px 15px #666;
 }
 
 .suggestionBoxItem {
-    background-color:#5BB;
+    background-color: #5BB;
     padding: 4px;
     cursor: pointer;
     margin-top: 2px;
@@ -3119,9 +4139,9 @@ nav .lbbuttonsel2 {
     border-radius: 4px;
 }
 
-    .suggestionBoxItem:hover {
-        background-color:#4AA;
-    }
+.suggestionBoxItem:hover {
+    background-color: #4AA;
+}
 
 .suggestionBoxSubItem {
     font-size: 11px;
@@ -3140,9 +4160,9 @@ nav .lbbuttonsel2 {
     cursor: pointer;
 }
 
-    .traceEvent:hover {
-        background-color:#BBB;
-    }
+.traceEvent:hover {
+    background-color: #BBB;
+}
 
 .night .traceEvent {
     background-color: #222;
@@ -3156,10 +4176,11 @@ nav .lbbuttonsel2 {
 #p42tbl {
     width: 100%;
     border-collapse: separate;
-    border-spacing:0 5px;
+    border-spacing: 0 5px;
 }
 
-#p42tbl th, #p7tbl td {
+#p42tbl th,
+#p7tbl td {
     text-align: left;
     padding: 4px;
 }
@@ -3192,7 +4213,10 @@ nav .lbbuttonsel2 {
     width: 10%;
 }
 
-.pActDisable, .pActDelete, .pActInstall, .pActUpgrade {
+.pActDisable,
+.pActDelete,
+.pActInstall,
+.pActUpgrade {
     cursor: pointer;
 }
 
@@ -3228,17 +4252,18 @@ nav .lbbuttonsel2 {
     border-bottom: 1px dotted blue;
 }
 
-#p19headers > span:nth-child(n+2) {
+#p19headers>span:nth-child(n+2) {
     border-left: 1px solid black;
 }
 
-#p19headers > span {
+#p19headers>span {
     padding-left: 4px;
     padding-right: 4px;
     cursor: pointer;
     font-weight: lighter;
 }
-#p19headers > span.on {
+
+#p19headers>span.on {
     font-weight: bold;
 }
 
@@ -3296,13 +4321,13 @@ nav .lbbuttonsel2 {
 }
 
 #notesPanel table {
-        color: black;
-        background-color: #EEE;
-        border-color: #AAA;
-        border-width: 1px;
-        border-style: solid;
-        border-collapse: collapse;
-        width: 100%;
+    color: black;
+    background-color: #EEE;
+    border-color: #AAA;
+    border-width: 1px;
+    border-style: solid;
+    border-collapse: collapse;
+    width: 100%;
 }
 
 #notesPanel thead {
@@ -3317,13 +4342,27 @@ nav .lbbuttonsel2 {
 
 .sidebar .nav-link {
     font-size: xx-large;
+
 }
-  
-.card:hover, #p2AccountImage:hover, #p2canvas:hover {
+
+.nav-link {
+    width: unset !important;
+}
+
+.nav {
+    --bs-nav-link-padding-x: 19px !important;
+}
+
+.card:hover,
+#p2AccountImage:hover,
+#p2canvas:hover {
     background: #f3f5f7 !important;
 }
 
-.form-control, .form-control-sm, .form-select, .form-select-sm {
+.form-control,
+.form-control-sm,
+.form-select,
+.form-select-sm {
     border: 1px solid #adb5bd !important;
 }
 
@@ -3339,13 +4378,33 @@ nav .lbbuttonsel2 {
     color: #000;
 }
 
-.table td,
-.table th {
-    padding: 0.05rem !important; /* Decrease padding to reduce row height */
+/* Keep Bootstrap close buttons visible across light and dark themes. */
+.btn-close {
+    background: #ffffff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    opacity: 0.8 !important;
+    transition: all 0.2s ease-in-out;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-.btn-close {
-    background-color: white !important;
+[data-bs-theme="dark"] .btn-close {
+    background: #2b3035 url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3e%3c/svg%3e") center/1em auto no-repeat !important;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/*  Text directly displayed in div light/dark mode visibility */
+[data-bs-theme="light"] .col-md-10:not(.text-muted),
+[data-bs-theme="light"] .col-lg-10:not(.text-muted) {
+    color: #212529 !important;
+}
+
+[data-bs-theme="dark"] .col-md-10:not(.text-muted),
+[data-bs-theme="dark"] .col-lg-10:not(.text-muted) {
+    color: #f8f9fa !important;
+}
+
+.btn-close:hover {
     opacity: 1 !important;
 }
 
@@ -3353,22 +4412,1197 @@ nav .lbbuttonsel2 {
     border: none;
 }
 
-/* hide .sidebar when on mobile */
+/* Shared styles for all custom icons */
+.custom-icon svg {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    width: 1em !important;
+    height: 1em !important;
+    display: inline-block !important;
+}
+
+.custom-icon svg path {
+    display: none !important;
+}
+
+body.is-mobile #page_leftbar {
+    display: none !important;
+}
+
+/* Device list: separator between items */
+/* List view (xxdevice2) rows — add padding and a subtle divider line */
+body.is-mobile #xdevices tr[name="xxdevice2"]>td:first-child {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Group-header divs that are direct children of xdevices */
+body.is-mobile #xdevices>div {
+    margin-top: 10px !important;
+}
+
+/* p5toolbarBottom: same transparent fix as p13toolbarBottom */
+#p5toolbarBottom .style6 {
+    background: transparent !important;
+}
+
+/* All nav title bars (no back button): same style as device sub-panels
+   but with left padding instead of the blue back button.
+   Covers: My Devices(1) | My Events(3) | My Users(4) | My Files(5) |
+           My Server(6) | Stats(40) | Trace(41) | Plugins(42) |
+           User Groups(50) | Recordings(52) | My Reports(60) */
+body.is-mobile #p1title,
+body.is-mobile #p3title,
+body.is-mobile #p4title,
+body.is-mobile #p5title,
+body.is-mobile #p6title,
+body.is-mobile #p40title,
+body.is-mobile #p41title,
+body.is-mobile #p42title,
+body.is-mobile #p50title,
+body.is-mobile #p52title,
+body.is-mobile #p60title {
+    padding: 0 12px 0 15px !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.15);
+    align-items: center !important;
+    display: flex !important;
+}
+
+body.night.is-mobile #p1title,
+body.night.is-mobile #p3title,
+body.night.is-mobile #p4title,
+body.night.is-mobile #p5title,
+body.night.is-mobile #p6title,
+body.night.is-mobile #p40title,
+body.night.is-mobile #p41title,
+body.night.is-mobile #p42title,
+body.night.is-mobile #p50title,
+body.night.is-mobile #p52title,
+body.night.is-mobile #p60title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* My Server: server icon small, right-aligned */
+body.is-mobile #MainMeshImage {
+    width: 32px !important;
+    height: 32px !important;
+    object-fit: contain;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* "More" dropdowns: mobileActionDropdown (My Users/Files) +
+   mobileFileActionDropdown (Device Files tab) — shared styling 
+   Pill shape, item dividers, proper light/dark colours. */
+.mobileActionDropdown .dropdown-menu,
+.mobileFileActionDropdown .dropdown-menu {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28) !important;
+    padding: 0 !important;
+    min-width: 200px !important;
+}
+
+.mobileActionDropdown .dropdown-item,
+.mobileFileActionDropdown .dropdown-item {
+    padding: 10px 16px !important;
+    font-size: 15px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.mobileActionDropdown .dropdown-item:last-child,
+.mobileFileActionDropdown .dropdown-item:last-child {
+    border-bottom: none !important;
+}
+
+/* Dark mode */
+.night .mobileActionDropdown .dropdown-menu,
+.night .mobileFileActionDropdown .dropdown-menu {
+    background: #1c1c1e !important;
+    border-color: #3a3a3c !important;
+}
+
+.night .mobileActionDropdown .dropdown-item,
+.night .mobileFileActionDropdown .dropdown-item {
+    color: #e5e5e7 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    background: transparent !important;
+}
+
+.night .mobileActionDropdown .dropdown-item:hover,
+.night .mobileActionDropdown .dropdown-item:focus,
+.night .mobileFileActionDropdown .dropdown-item:hover,
+.night .mobileFileActionDropdown .dropdown-item:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: #fff !important;
+}
+
+/* Title bar text: consistent 1rem across ALL panel titles
+   One rule covers both device sub-panels (p10–p19) and main-nav panels
+   (p3–p6) so font size, colour and line-height are identical everywhere. */
+body.is-mobile #p3title .fs-4,
+body.is-mobile #p4title .fs-4,
+body.is-mobile #p5title .fs-4,
+body.is-mobile #p6title .fs-4,
+body.is-mobile #p10title .fs-4,
+body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4,
+body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4,
+body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4,
+body.is-mobile #p17title .fs-4,
+body.is-mobile #p19title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
+/* All main-nav panels: flex-column so content fills height
+   Covers My Events(3), My Users(4), My Files(5), My Server(6),
+   Server Stats(40)/Trace(41)/Plugins(42),
+   User Groups(50)/Recordings(52), My Reports(60) */
+body.is-mobile #p1,
+body.is-mobile #p3,
+body.is-mobile #p4,
+body.is-mobile #p5,
+body.is-mobile #p6,
+body.is-mobile #p20,
+body.is-mobile #p21,
+body.is-mobile #p30,
+body.is-mobile #p31,
+body.is-mobile #p40,
+body.is-mobile #p41,
+body.is-mobile #p42,
+body.is-mobile #p50,
+body.is-mobile #p51,
+body.is-mobile #p52,
+body.is-mobile #p60 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+body.is-mobile #p1title,
+body.is-mobile #p3title,
+body.is-mobile #p4title,
+body.is-mobile #p5title,
+body.is-mobile #p40title,
+body.is-mobile #p41title,
+body.is-mobile #p42title,
+body.is-mobile #p50title,
+body.is-mobile #p52title,
+body.is-mobile #p60title {
+    flex-shrink: 0 !important;
+}
+
+/* Events list fills remaining space */
+body.is-mobile #p3events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Users list fills remaining space */
+body.is-mobile #p3users {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Files table fills remaining space */
+body.is-mobile #p5filetable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* My Server: p6info fills remaining space. Also handles xdevices for p1. */
+body.is-mobile #p6info,
+body.is-mobile #xdevices {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Content areas that fill remaining flex height */
+body.is-mobile #p50groups,
+body.is-mobile #p52recordings,
+body.is-mobile #p41events,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+body.is-mobile #serverMainStats {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* User profile image: <picture> wraps a <img width="200" height="200">.
+   Must target the inner img since the HTML attribute beats CSS on the picture. */
+body.is-mobile #MainUserImage img,
+body.is-mobile #MainUserImageEx {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Group/mesh image in p20 (group detail): same issue — target inner img */
+body.is-mobile #p20main #MainMeshImage img,
+body.is-mobile #p20main #MainMeshImage {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+/* Title text consistency: also cover the user/group detail panels */
+body.is-mobile #p40title .fs-4,
+body.is-mobile #p41title .fs-4,
+body.is-mobile #p42title .fs-4,
+body.is-mobile #p50title .fs-4,
+body.is-mobile #p51title .fs-4,
+body.is-mobile #p52title .fs-4,
+body.is-mobile #p60title .fs-4,
+body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25 !important;
+    font-weight: 600 !important;
+}
+
+body.is-mobile #MainSubMenuSpan,
+body.is-mobile #MeshSubMenuSpan,
+body.is-mobile #EventsSubMenuSpan,
+body.is-mobile #UserSubMenuSpan,
+body.is-mobile #UsersSubMenuSpan,
+body.is-mobile #ServerSubMenuSpan {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    height: clamp(44px, 13vw, 54px) !important;
+    z-index: 500 !important;
+    overflow: hidden !important;
+    background: #113962 !important;
+    border-top: 1px solid #000 !important;
+    display: flex;
+    align-items: stretch;
+}
+
+body.is-mobile #MainSubMenu,
+body.is-mobile #MeshSubMenu,
+body.is-mobile #EventsSubMenu,
+body.is-mobile #UserSubMenu,
+body.is-mobile #UsersSubMenu,
+body.is-mobile #ServerSubMenu {
+    /* Become a flex item that fills the span, and a flex container for the tr row */
+    display: flex !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    height: clamp(44px, 13vw, 54px) !important;
+    background: transparent !important;
+}
+
+/* tbody is an auto-inserted anonymous box — make it layout-transparent */
+body.is-mobile #MainSubMenu tbody,
+body.is-mobile #MeshSubMenu tbody,
+body.is-mobile #EventsSubMenu tbody,
+body.is-mobile #UserSubMenu tbody,
+body.is-mobile #UsersSubMenu tbody,
+body.is-mobile #ServerSubMenu tbody {
+    display: contents !important;
+}
+
+/* tr becomes the flex item filling the table, and a flex container for the tds */
+body.is-mobile #MainSubMenu tr,
+body.is-mobile #MeshSubMenu tr,
+body.is-mobile #EventsSubMenu tr,
+body.is-mobile #UserSubMenu tr,
+body.is-mobile #UsersSubMenu tr,
+body.is-mobile #ServerSubMenu tr {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    align-items: stretch !important;
+}
+
+body.is-mobile .topbar_td {
+    /* display:flex WITHOUT !important — makes the td a flex container so
+       align-items/justify-content center text, while still letting
+       QV()'s inline display:none override it for permission-hidden tabs. */
+    display: flex;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* Adaptive height and font: scales with viewport width.
+       clamp(min, preferred, max) — preferred grows with screen size via vw units. */
+    height: clamp(44px, 13vw, 54px) !important;
+    padding: 0 clamp(4px, 1.5vw, 10px) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: clamp(12px, 3.5vw, 15px) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Trailing spacer td — hide it on mobile so it doesn't eat space from the right */
+body.is-mobile .topbar_td_end {
+    display: none !important;
+}
+
+body.is-mobile .topbar_td.style3x {
+    color: rgba(255, 255, 255, 0.7) !important;
+    background: transparent !important;
+}
+
+body.is-mobile .topbar_td.style3x:hover,
+body.is-mobile .topbar_td.style3x:active {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: #fff !important;
+}
+
+body.is-mobile .topbar_td.style3sel {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    border-bottom: 3px solid #fff !important;
+}
+
+/* Classic Mobile tab shuffle: the active device sub-tab is hidden from the bottom bar.
+   Hiding it frees up space so all other tabs remain visible without horizontal scroll.
+   Using display:none !important to beat QV()'s inline style. */
+/* mob-active-tab: replaced by scrollable submenu, no longer needed */
+/* body.is-mobile .mob-active-tab { display: none !important; } */
+
+/* Collapse #topbar to 0 height on mobile */
+body.is-mobile #topbar {
+    height: 0 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
+
+/* Hide the main navigation row — accessible via the hamburger menu on mobile */
+body.is-mobile #MainMenuSpan {
+    display: none !important;
+}
+
+/* Footer sits at bottom:0 z-index:1000 and covers the bottom tab bar */
+body.is-mobile #footer {
+    display: none !important;
+}
+
+/* Container: full width, no side borders/margins. */
+body.is-mobile #container {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    padding-left: 0 !important;
+    grid-template-columns: 0 1fr !important;
+    grid-template-rows: 66px 0 auto 0 !important;
+}
+
+/* Content area: pad bottom so the fixed 44px tab bar doesn't overlap content */
+/* column_l: zero horizontal padding so structural bars (toolbars, title bars,
+   canvas, terminal) stretch edge-to-edge like a native app. Bottom padding
+   reserves space for the fixed 44px tab bar. */
+body.is-mobile #column_l {
+    /* Match padding-bottom to the tab bar height so nothing is hidden behind it */
+    padding: 0 0 clamp(44px, 13vw, 54px) 0 !important;
+}
+
+/* Content areas: 10px breathing room so text/cards/tables don't press against
+   screen edges. Structural bars, canvas, terminal stay full-width (not listed). */
+body.is-mobile #p10info,
+body.is-mobile #p2info,
+body.is-mobile #p6info,
+body.is-mobile #p20main,
+body.is-mobile #p21main,
+body.is-mobile #p30info,
+body.is-mobile #p31events,
+body.is-mobile #p51info,
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap,
+body.is-mobile #p3events,
+body.is-mobile #p3users,
+body.is-mobile #p50groups,
+body.is-mobile #serverMainStats,
+body.is-mobile #p5filetable,
+body.is-mobile #p13filetable,
+body.is-mobile #p9filetable,
+body.is-mobile #p16events,
+body.is-mobile #p17info,
+body.is-mobile #p15agentConsole,
+body.is-mobile #p15agentConsoleText {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+/* Details tab: section header icons are 64px — too large on a phone.
+   The JS renders each section as <img src=details/xxx64.png width=64> in a
+   <td style=width:64px> table cell. Shrink to 32px on mobile. */
+body.is-mobile #p17info img[src*="details/"] {
+    width: 32px !important;
+    height: 32px !important;
+}
+
+body.is-mobile #p17info td[style*="width:64px"] {
+    width: 36px !important;
+}
+
+/* Panel title bar: full-width, masthead-integrated
+   #column_l has padding: 0 15px which makes everything 30px narrower than the
+   screen. Negative margins break the title bars out to true full width.
+   Back button: flush to left screen edge, masthead blue (#036), rounded on
+   the right only — visually "attached" to the masthead above. */
+
+body.is-mobile #p10title,
+body.is-mobile #p11title,
+body.is-mobile #p12title,
+body.is-mobile #p13title,
+body.is-mobile #p14title,
+body.is-mobile #p15title,
+body.is-mobile #p16title,
+body.is-mobile #p17title,
+body.is-mobile #p18title,
+body.is-mobile #p19title,
+body.is-mobile #p20title,
+body.is-mobile #p21title,
+body.is-mobile #p30title,
+body.is-mobile #p31title,
+body.is-mobile #p51title {
+    padding: 0 12px 0 0 !important;
+    background: #fff;
+    min-height: 50px;
+    position: relative !important;
+    z-index: 1 !important;
+    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.15);
+    align-items: stretch !important;
+    gap: 0;
+}
+
+/* p20title is nested inside p20main which has padding-left/right: 10px.
+   Negative margins cancel that padding so the title bar spans full width. */
+/* p20title and p6title live inside their scrollable parent (p20main / p6info)
+   which has padding: 0 10px. Negative margins cancel that so they span full width. */
+body.is-mobile #p20title,
+body.is-mobile #p6title {
+    margin-left: -10px !important;
+    margin-right: -10px !important;
+}
+
+/* Server console (p15) without the back button: add left indent to match
+   other title bars that DO have the back button providing the indent.
+   The JS adds class 'no-back-btn' to p15title when view is 115. */
+body.is-mobile #p15title.no-back-btn {
+    padding-left: 15px !important;
+}
+
+/* Option bars (areaHead) below the title bar: slightly tinted so they're
+   visually distinct from the pure-white title bar. Overrides --sub-menu-bg
+   (the white gradient) for a consistent look on all device panels. */
+body.is-mobile {
+    --sub-menu-bg: #f0f2f5;
+}
+
+/* Night mode: keep the white title bar (it reads well as a card against the
+   dark column_l background). Only adjust the separator line colour. */
+body.night.is-mobile #p10title,
+body.night.is-mobile #p11title,
+body.night.is-mobile #p12title,
+body.night.is-mobile #p13title,
+body.night.is-mobile #p14title,
+body.night.is-mobile #p15title,
+body.night.is-mobile #p16title,
+body.night.is-mobile #p17title,
+body.night.is-mobile #p18title,
+body.night.is-mobile #p19title,
+body.night.is-mobile #p20title,
+body.night.is-mobile #p21title,
+body.night.is-mobile #p30title,
+body.night.is-mobile #p31title,
+body.night.is-mobile #p51title {
+    box-shadow: 0 1px 0 0 #444 !important;
+}
+
+/* Back button: flush to screen left edge, masthead colour, pill-shaped right side */
+/* Back buttons: NO display:flex !important — QV() hides them with
+   element.style.display='none' (inline style). CSS !important would
+   override that, keeping the button visible even when it should hide
+   (e.g. server console reuses p15 but shouldn't show p15BackButton). */
+body.is-mobile #p10BackButton,
+body.is-mobile #p11BackButton,
+body.is-mobile #p12BackButton,
+body.is-mobile #p13BackButton,
+body.is-mobile #p14BackButton,
+body.is-mobile #p15BackButton,
+body.is-mobile #p16BackButton,
+body.is-mobile #p17BackButton,
+body.is-mobile #p18BackButton,
+body.is-mobile #p19BackButton,
+body.is-mobile #p20BackButton,
+body.is-mobile #p21BackButton,
+body.is-mobile #p30BackButton,
+body.is-mobile #p31BackButton,
+body.is-mobile #p51BackButton {
+    background: #036;
+    border-radius: 0 0 12px 0;
+    padding: 0 14px !important;
+    margin: 0 12px 0 0;
+    display: flex;
+    /* no !important — allows QV() to override with display:none */
+    align-items: center;
+    align-self: stretch;
+    flex-shrink: 0;
+}
+
+body.is-mobile #p10BackButton .fa-square-caret-left,
+body.is-mobile #p11BackButton .fa-square-caret-left,
+body.is-mobile #p12BackButton .fa-square-caret-left,
+body.is-mobile #p13BackButton .fa-square-caret-left,
+body.is-mobile #p14BackButton .fa-square-caret-left,
+body.is-mobile #p15BackButton .fa-square-caret-left,
+body.is-mobile #p16BackButton .fa-square-caret-left,
+body.is-mobile #p17BackButton .fa-square-caret-left,
+body.is-mobile #p18BackButton .fa-square-caret-left,
+body.is-mobile #p19BackButton .fa-square-caret-left,
+body.is-mobile #p20BackButton .fa-square-caret-left,
+body.is-mobile #p21BackButton .fa-square-caret-left,
+body.is-mobile #p30BackButton .fa-square-caret-left,
+body.is-mobile #p31BackButton .fa-square-caret-left,
+body.is-mobile #p51BackButton .fa-square-caret-left {
+    color: #fff !important;
+    font-size: 1.2rem !important;
+}
+
+/* Title text: 1rem, dark, vertically centred, truncates with … when too long.
+   flex:1 + min-width:0 allows the text to shrink in the flex row. */
+body.is-mobile #p10title .fs-4,
+body.is-mobile #p11title .fs-4,
+body.is-mobile #p12title .fs-4,
+body.is-mobile #p13title .fs-4,
+body.is-mobile #p14title .fs-4,
+body.is-mobile #p15title .fs-4,
+body.is-mobile #p16title .fs-4,
+body.is-mobile #p17title .fs-4,
+body.is-mobile #p18title .fs-4,
+body.is-mobile #p19title .fs-4,
+body.is-mobile #p20title .fs-4,
+body.is-mobile #p21title .fs-4,
+body.is-mobile #p30title .fs-4,
+body.is-mobile #p31title .fs-4,
+body.is-mobile #p51title .fs-4 {
+    font-size: 1rem !important;
+    color: #212529 !important;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Right-side icon containers in title bars: always a single horizontal row, never shrink. */
+body.is-mobile #devListToolbarViewIcons,
+body.is-mobile #devListToolbarViewIcons2,
+body.is-mobile #devListToolbarViewIcons3 {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Hide group/mesh name: JS appends <span class="deviceGroupName"> - GroupName </span> */
+body.is-mobile .deviceGroupName {
+    display: none !important;
+}
+
+/* adjustPanels() computes panel heights from 100vh without knowing about the
+   44px fixed tab bar on mobile. Override each panel to add 44px to the offset
+   so content stops above the tab bar. !important beats the JS inline style. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap {
+    max-height: calc(100vh - 90px) !important;
+}
+
+/* adjustPanels() sizes panels using calc(100vh - N). These overrides keep the
+   same N but use 100dvh so the browser URL bar is accounted for. */
+body.is-mobile #xdevices,
+body.is-mobile #xdevicesmap {
+    max-height: calc(100dvh - 241px) !important;
+}
+
+body.is-mobile #p2info {
+    height: calc(100dvh - 215px) !important;
+    max-height: calc(100dvh - 215px) !important;
+}
+
+body.is-mobile #p3events {
+    height: calc(100dvh - 245px) !important;
+}
+
+body.is-mobile #p3users,
+body.is-mobile #p50groups {
+    max-height: calc(100dvh - 245px) !important;
+}
+
+body.is-mobile #serverMainStats {
+    height: calc(100dvh - 245px) !important;
+    max-height: calc(100dvh - 245px) !important;
+}
+
+body.is-mobile #p5filetable {
+    height: calc(100dvh - 294px) !important;
+}
+
+/* All device panels: flex column that fills column_l's content height.
+   IMPORTANT: display and flex-direction must NOT have !important here.
+   QV() hides panels with element.style.display='none' (inline style).
+   CSS !important beats inline styles, so display:flex !important would
+   make panels impossible to hide and break tab navigation. Without
+   !important, inline style.display='none' correctly overrides the CSS. */
+body.is-mobile #p10,
+body.is-mobile #p11,
+body.is-mobile #p12,
+body.is-mobile #p13,
+body.is-mobile #p15,
+body.is-mobile #p16,
+body.is-mobile #p17 {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    overflow: hidden !important;
+}
+
+/* Title bars: never collapse */
+body.is-mobile #p10title,
+body.is-mobile #p11title,
+body.is-mobile #p12title,
+body.is-mobile #p13title,
+body.is-mobile #p15title,
+body.is-mobile #p16title,
+body.is-mobile #p17title {
+    flex-shrink: 0 !important;
+}
+
+/* p10 General: p10info fills remaining space and scrolls internally */
+body.is-mobile #p10info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p11 Desktop: same flex-column pattern as Console.
+   deskarea0 fills p11's remaining height as a flex column:
+     deskarea1 (connect bar)  -> flex-shrink:0, natural height
+     deskarea3x (canvas)      -> flex:1, fills all remaining space
+     deskarea4 (controls bar) -> flex-shrink:0, always visible at bottom
+   No !important on display/flex-direction so QV() can still hide deskarea0
+   if ever needed, but !important is fine for the structural properties. */
+body.is-mobile #deskarea0 {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+}
+
+body.is-mobile #deskarea1 {
+    flex-shrink: 0 !important;
+}
+
+body.is-mobile #deskarea4 {
+    flex-shrink: 0 !important;
+}
+
+body.is-mobile #deskarea3x,
+body.is-mobile .room4submenu #deskarea3x {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+
+/* p12 Terminal: termTable (div) fills remaining space; inner <table> is
+   absolutely positioned to span 100% so CSS table sizing distributes rows:
+   areaHead row -> min-height; termarea3x row -> fills remainder; areaFoot -> min-height */
+body.is-mobile #termTable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+body.is-mobile #termTable>table {
+    position: absolute !important;
+    inset: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+body.is-mobile #termarea3x {
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
+}
+
+body.is-mobile #termarea3xdiv {
+    height: 100% !important;
+}
+
+/* p15 Console: override CSS table display to flex-column so row heights
+   distribute correctly. display:flex on <table>/<tbody> is well-supported
+   and gives us proper flex semantics (no table-height-distribution quirks).
+   Row order: areaHead(shrink) | areaProgress(shrink) | output(flex:1) | input(shrink) */
+body.is-mobile #consoleTable {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    width: 100% !important;
+}
+
+body.is-mobile #consoleTable>tbody {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+}
+
+/* All rows: block, don't grow (single-td rows so display:block is fine) */
+body.is-mobile #consoleTable>tbody>tr {
+    display: block !important;
+    flex-shrink: 0 !important;
+    width: 100% !important;
+}
+
+/* td cells: when tr is display:block, td loses automatic table-cell width.
+   Make all td elements full-width block elements. */
+body.is-mobile #consoleTable>tbody>tr>td {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Output row (3rd): fills all remaining space */
+body.is-mobile #consoleTable>tbody>tr:nth-child(3) {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    display: flex !important;
+}
+
+/* p15agentConsole td: fills the flex output row, scrolls its content */
+body.is-mobile #p15agentConsole {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    display: block !important;
+}
+
+body.is-mobile #p15agentConsoleText {
+    height: auto !important;
+    max-height: none !important;
+    /* Base CSS hardcodes width:930px - overrides to full viewport width */
+    width: 100% !important;
+    max-width: 100% !important;
+    /* pre defaults to white-space:pre which never wraps, causing horizontal scroll.
+       pre-wrap preserves spacing/newlines but wraps at the container edge. */
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* p16 Events: events list fills remaining space after title + filter bar */
+body.is-mobile #p16events {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p17 Details: details content fills remaining space */
+body.is-mobile #p17info {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Prevent window-level scroll on mobile. */
+html.is-mobile,
+body.is-mobile {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+
+/* Center the remote desktop canvas inside its container on mobile. */
+body.is-mobile #DeskParent {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+body.is-mobile #Desk {
+    position: relative !important;
+    top: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+/* Canvas area: 66px masthead + ~35px deskarea1 + ~35px deskarea4 + 44px tab-bar padding = 180px.
+   This makes total document height exactly 100vh with no page scroll needed. */
+body.is-mobile #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile .room4submenu #deskarea3x {
+    max-height: calc(100vh - 180px) !important;
+    height: calc(100vh - 180px) !important;
+}
+
+body.is-mobile.fulldesk #deskarea3x {
+    max-height: 100% !important;
+    height: 100% !important;
+}
+
+/* Fullscreen mode: hide both toolbars so the canvas fills the entire viewport.
+   All controls move into the floating button panel. */
+body.is-mobile.fulldesk #p11title,
+body.is-mobile.fulldesk #deskarea1,
+body.is-mobile.fulldesk #deskarea4 {
+    display: none !important;
+}
+
+/* Floating button: hidden normally, only shown in fullscreen on mobile */
+body.is-mobile.fulldesk #deskFsBtn {
+    display: flex !important;
+}
+
+/* Sticky modifier key chips inside the More panel */
+.desk-mod-key {
+    border-radius: 6px;
+    background: var(--bs-secondary-bg, #e9ecef);
+    color: var(--bs-body-color, #212529);
+    border: 1px solid var(--bs-border-color, #ced4da);
+    font-size: 11px;
+    font-weight: bold;
+    padding: 5px 8px;
+    min-width: 46px;
+    cursor: pointer;
+    line-height: 1;
+    text-align: center;
+}
+
+.desk-mod-key.armed {
+    background: rgba(234, 179, 8, 0.85);
+    border-color: #ca8a04;
+    color: #000;
+}
+
+/* Top desktop toolbar: compact single row, horizontal scroll for overflow */
+/* deskarea1 (connect/disconnect bar): compact single row */
+body.is-mobile #deskarea1 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
+/* Hide secondary/non-mobile-friendly items from the top desktop toolbar.
+   .deskareaicon (rotate L/R, view mode toggle) are kept — useful on mobile.
+   #idx_deskFullBtn2 (exit fullscreen ✖) shown only when actually in fullscreen,
+   vertically centred (float:right conflicts with flex parent). */
+body.is-mobile #autoconnectbutton1,
+body.is-mobile #connectbutton1rspan,
+body.is-mobile #connectbutton1hspan,
+body.is-mobile #desktopCustomUiButtons,
+body.is-mobile #desktopCustomUpperRight,
+body.is-mobile #deskFocusBtn {
+    display: none !important;
+}
+
+body.is-mobile #idx_deskFullBtn2 {
+    display: none !important;
+}
+
+body.is-mobile.fulldesk #idx_deskFullBtn2 {
+    display: flex !important;
+    align-items: center !important;
+    float: none !important;
+    align-self: center !important;
+}
+
+/* Bottom desktop toolbar: compact single row */
+body.is-mobile #deskarea4 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Keyboard shortcut selector: constrain width on mobile so it doesn't
+   crowd the other buttons in the scrollable deskarea4 bar. */
+/* Keyboard shortcut selector: compact Bootstrap look on mobile */
+body.is-mobile #deskkeys {
+    max-width: 110px !important;
+    font-size: 11px !important;
+    /* ensure Bootstrap form-select styling is applied */
+    appearance: auto;
+}
+
+/* Type and keyboard toggle moved into More panel - free toolbar space */
+body.is-mobile #DeskType {
+    display: none !important;
+}
+
+body.is-mobile #DeskSoftKbdBtn {
+    display: none !important;
+}
+
+/* Move Actions + Settings into the More panel on mobile */
+body.is-mobile #deskActionsBtn,
+body.is-mobile #deskActionsSettings {
+    display: none !important;
+}
+
+/* Replace the desktop icon spray with the More button on mobile */
+body.is-mobile #deskarea4Icons {
+    display: none !important;
+}
+
+body.is-mobile #deskMobileActions {
+    display: flex !important;
+    flex-shrink: 0 !important;
+}
+
+body.is-mobile #deskMobileActions .btn {
+    white-space: nowrap !important;
+}
+
+/* Clipboard dialog button moved into the More panel on mobile */
+body.is-mobile #DeskClip {
+    display: none !important;
+}
+
+
+
+/* fulldesk = remote-desktop fullscreen mode (body class added by deskToggleFull()).
+   NOT 'fullscreen' - that class is always on body in the Modern UI (it is the
+   normal grid layout mode) and would apply these rules to every mobile page view,
+   making column_l overflow-y:auto and creating a double scrollbar on all views. */
+body.is-mobile.fulldesk #container {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+body.is-mobile.fulldesk #column_l {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* Canvas scale-fill in landscape fullscreen.
+   deskAdjust() and onScreenSizeChange set portrait-sized pixel values via
+   inline styles. !important in CSS always beats inline styles, so the canvas
+   is permanently 100%x100% of DeskParent whenever both classes are present —
+   regardless of how many times deskAdjust() fires. */
+body.is-mobile.is-landscape.fulldesk #Desk {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+body.is-mobile.is-landscape.fulldesk #DeskParent {
+    overflow: hidden !important;
+}
+
+/* Native 1:1 zoom: DeskParent becomes content-sized (native resolution) inside
+   deskarea3x. JS in dtouchmove manually sets deskarea3x.scrollLeft/Top to pan.
+   overflow:hidden on deskarea3x is kept (base CSS) — JS can still scroll it. */
+body.is-mobile.native-zoom #DeskParent {
+    position: relative !important;
+    display: block !important;
+    width: var(--native-desk-w, 100%) !important;
+    height: var(--native-desk-h, 100%) !important;
+}
+
+body.is-mobile.native-zoom #Desk {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Mobile terminal */
+
+/* deskAdjust() sets termarea3x height via inline style based on desktop layout.
+   On mobile the offsets are different: 66px masthead + ~50px p12title +
+   ~44px areaHead + ~44px areaFoot + 44px bottom-tab-bar = 248px.
+   !important beats the inline style set by JS. */
+body.is-mobile #termarea3x {
+    height: calc(100vh - 252px) !important;
+}
+
+body.is-mobile #termarea3xdiv {
+    height: calc(100vh - 252px) !important;
+}
+
+/* Terminal toolbar and footer: scroll horizontally instead of wrapping rows */
+body.is-mobile #termTable .areaHead,
+body.is-mobile #termTable .areaFoot {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    align-items: center !important;
+}
+
+/* Files panel toolbar: same no-wrap treatment as Terminal (both rows) */
+body.is-mobile #p13toolbar .areaHead,
+body.is-mobile #p13toolbar .areaHead2,
+body.is-mobile #p9toolbar .areaHead,
+body.is-mobile #p9toolbar .areaHead2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    align-items: center !important;
+}
+
+/* Files "More" dropdown: scrollable list so all items are reachable */
+body.is-mobile .mobileFileActionDropdown .dropdown-menu {
+    max-height: 50vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* On mobile, hide the Actions button from Terminal/Files toolbars — it wraps
+   on small screens and is accessible via device actions elsewhere. */
+body.is-mobile #termActionsBtn,
+body.is-mobile #filesActionsBtn {
+    display: none !important;
+}
+
+/* Tab key button: hidden everywhere except mobile */
+body.is-mobile #tabbutton {
+    display: inline-flex !important;
+}
+
+/*  Mobile files panel */
+
+/* p13filetable: flex:1 fills all remaining space in the p13 flex column,
+   replacing the fragile fixed-height calc. adjustPanels() inline style is
+   cancelled by height:auto !important. */
+body.is-mobile #p13filetable {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* p13toolbarBottom: the status bar below the file list (shows "3 files: 0 bytes").
+   style6 uses a white gradient background that appears as a visible bar in dark mode
+   on both desktop and mobile. Transparent inherits the panel background,
+   matching both light and dark themes. */
+#p13toolbarBottom .style6 {
+    background: transparent !important;
+}
+
+/* These apply on any narrow viewport (desktop narrow window, tablet, phone). */
 @media (max-width: 768px) {
-    #page_leftbar {
-        display: none !important;
+
+    #container,
+    .fullscreen #container,
+    #column_l,
+    .fullscreen #column_l {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        /* overflow: hidden (not overflow-x: hidden) — setting only one axis
+           forces the other to 'auto' per CSS spec, creating an unwanted scrollbar */
+        overflow: hidden;
+    }
+
+    /* masthead needs overflow:visible so its dropdown menu can extend below it */
+    #masthead {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        overflow: visible;
     }
 
     .fullscreen #container {
-        width: 100vw !important;
-        min-width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
+        grid-template-columns: 70px minmax(0, 1fr);
     }
 
     #masthead .title {
-        font-size: 36px;
+        font-size: 22px;
+        padding-top: 4px;
+    }
+
+    #masthead .title2 {
+        font-size: 12px;
+        padding-top: 2px;
+        padding-bottom: 10px;
+    }
+
+    .masthead-left {
+        gap: 0.5rem;
+        max-width: calc(100% - 120px);
+    }
+
+    .masthead-titles-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
     }
 
     #masthead {
@@ -3377,7 +5611,106 @@ nav .lbbuttonsel2 {
         background-repeat: no-repeat !important;
         padding-right: 20px !important;
     }
-    #MainMeshImage /*, #p2AccountImageFrame */ {
+
+    #p10info {
+        overflow-x: hidden !important;
+    }
+
+    #p10info>table {
+        table-layout: fixed;
+    }
+
+    #p10info>table>tbody>tr>td:first-child {
+        width: calc(100% - 140px) !important;
+    }
+
+    #p10info>table>tbody>tr>td:nth-child(2),
+    #p10info>table>tbody>tr>td:nth-child(3) {
+        width: 0 !important;
+    }
+
+    #p10info>table>tbody>tr>td:nth-child(4) {
+        width: 140px !important;
+    }
+
+    #p10info #MainComputerImage {
+        width: 120px;
+        height: 120px;
+    }
+
+    #p13toolbar,
+    #p13toolbar tbody,
+    #p13toolbar tr,
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2 {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #p13toolbar .areaHead,
+    #p13toolbar .areaHead2,
+    #p13toolbar .areaHead>.d-flex,
+    #p13toolbar .areaHead2>.d-flex,
+    #p4toolbarActions,
+    #p4toolbarActions>.d-flex,
+    #p5filehead,
+    #p5filehead>.d-flex {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        min-width: 0;
+        row-gap: 4px;
+    }
+
+    #p13toolbar .areaHead {
+        column-gap: 4px;
+    }
+
+    #p13toolbar .areaHead>.d-flex.ms-auto {
+        margin-left: 0 !important;
+    }
+
+    #p13toolbar .areaHead input,
+    #p13toolbar .areaHead button,
+    #p13toolbar .areaHead2 input,
+    #p13toolbar .areaHead2 button,
+    #p4toolbarActions input,
+    #p4toolbarActions button,
+    #p5filehead input,
+    #p5filehead button {
+        margin-bottom: 4px;
+    }
+
+    #p5toolbar,
+    #p5toolbar tbody,
+    #p5toolbar tr,
+    #p5filehead,
+    #p5filesubhead {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    #UserSearchInput {
+        max-width: 150px;
+    }
+
+    .desktopFileAction,
+    .desktopAction {
+        display: none !important;
+    }
+
+    .mobileFileActionDropdown,
+    .mobileActionDropdown {
+        display: inline-flex !important;
+    }
+
+    #MainMeshImage
+
+    /*, #p2AccountImageFrame */
+        {
         /* text-align: center !important; */
         float: none !important;
         width: 100px !important;
@@ -3388,10 +5721,9 @@ nav .lbbuttonsel2 {
         float: none !important;
         text-align: left;
     }
+
     #userDropdown {
-        display: inline-block !important;
-        position: absolute !important;
-        right: 10px !important;
+        display: flex !important;
     }
 
     #userDropdownName {
@@ -3403,18 +5735,7 @@ nav .lbbuttonsel2 {
     }
 
     #userDropdownMenuDivider.userDropdownMobileOnly {
-        display: block !important;
-    }
-
-    .userDropdownSubmenu {
-        right: 100%;
-        left: auto;
-        top: 13rem !important;
-        margin-left: 0;
-        margin-right: 4px;
-    }
-    .userDropdownUISettings {
-        position: relative;
+        display: block;
     }
 
     .userDropdownSubmenu {
@@ -3430,24 +5751,17 @@ nav .lbbuttonsel2 {
         padding: 0 !important;
         border-radius: 0 !important;
     }
-    
-    .userDropdownSubmenu .userDropdownMenuItem {
-        background-color: #f5f5f5;
-        border-left: 3px solid #444444 !important;
+
+    .userDropdownUISettings {
+        position: relative;
     }
+
     .userDropdownMenuItem:hover {
         border-radius: unset !important;
     }
 
-    #notificationCount {
-        right: 4rem;
-    }
     .notifiyBox {
         right: 3.5rem;
-    }
-
-    .notifiyBox:after {
-        margin-right: 40px;
     }
 
     .notifiyBox:after {
@@ -3459,39 +5773,31 @@ nav .lbbuttonsel2 {
     }
 
     body {
-        min-width: 100vw !important;
+        min-width: 0 !important;
     }
-
-
-    /* #container {
-        width: 100vw !important;
-        padding-left: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    } */
 }
 
 /* css fixes for select2 */
 /* .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
     display: inline;
 }
-    
+
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice {
     display: inline-flex;
 }
-    
+
 .select2-container--bootstrap-5 .select2-selection--multiple .select2-search {
     display: inline !important;
 } */
 /* User Dropdown Menu Styles */
 #userDropdown {
-    position: absolute;
-    display: inline-block;
+    display: flex;
+    align-items: center;
     z-index: 1000;
-    right: 10px;
     background: #00000026;
     border-radius: 4px;
 }
+
 #userDropdownButton {
     display: flex;
     align-items: center;
@@ -3523,105 +5829,395 @@ nav .lbbuttonsel2 {
     font-size: 12px;
 }
 
-#userDropdownMenu {
-	display: none;
-	position: absolute;
-	top: 100%;
-	right: 0;
-	background-color: #ffffff;
-	box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.3);
-	border-radius: 4px;
-	z-index: 10000;
-	min-width: 200px;
-	margin-top: 4px;
-	transform: translateX(0);
-	font-family: sans-serif;
+#userDropdown {
+    position: relative;
 }
 
+#userDropdownMenu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: #f3f3f3;
+    box-shadow: 0 0 12px #0000004d;
+    border-radius: 10px;
+    z-index: 10000;
+    min-width: 200px;
+    margin-top: 4px;
+    transform: translateX(0);
+    font-family: sans-serif;
+    font-size: small;
+}
+
+
+
 #userDropdownMenuContainer {
-	padding: 6px 0;
+    padding: 6px 0;
 }
 
 .userDropdownMenuItem {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 10px 12px;
-	cursor: pointer;
-	color: #333;
-	white-space: nowrap;
-	transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+    font-size: small;
 }
 
 .userDropdownMenuItem:hover {
-	background-color: #f5f5f5;
-	border-radius: 4px;
+    background-color: #8181814a;
+    border-radius: 4px;
 }
 
 .userDropdownMenuIcon {
-	width: 18px;
-	height: 18px;
-	object-fit: contain;
-	flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .userDropdownMenuItem span {
-	flex-grow: 1;
-	text-align: left;
-	color: #333;
-	font-size: 14px;
-	line-height: 1.2;
+    flex-grow: 1;
+    text-align: left;
+    font-size: small;
+    line-height: 1.2;
 }
 
 #userDropdownMenuDivider {
-	border-top: 1px solid #eee;
-	margin: 4px 0;
+    border-top: var(--bs-border-width) solid #000000;
+    opacity: .25;
+    margin: 4px 0;
+}
+
+.night #userDropdownMenuDivider {
+    border-top: var(--bs-border-width) solid;
+}
+
+.userDropdownUISettings {
+    position: relative;
 }
 
 .userDropdownSubmenu {
-	position: absolute;
-	right: 96%;
-	top: 0;
-	background-color: #ffffff;
-	box-shadow: 0px 4px 12px rgb(0 0 0 / 95%);
-	border-radius: 4px;
-	margin-right: 4px;
-	min-width: 200px;
-	z-index: 10001;
-	padding: 6px 0;
+    position: absolute;
+    right: 96%;
+    top: 0;
+    background-color: #f3f3f3;
+    box-shadow: 0 0 12px #0000004d;
+    border-radius: 10px;
+    margin-right: 4px;
+    min-width: 200px;
+    z-index: 10001;
+    padding: 6px 0;
+    font-size: small;
+    display: none;
 }
 
 .userDropdownSubmenu .userDropdownMenuItem {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 10px 12px;
-	color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
 }
 
 .userDropdownSubmenu .userDropdownMenuItem:hover {
-	background-color: #f5f5f5;
-	border-radius: 4px;
+    background-color: #8181814a;
+    border-radius: 4px;
 }
 
 .userDropdownSubmenu .userDropdownMenuIcon {
-	width: 18px;
-	height: 18px;
-	object-fit: contain;
-	flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .userDropdownMobileOnly {
-	display: none;
+    display: none;
 }
 
 .userDropdownUISettings img:last-child {
-	margin-left: auto;
-	width: 14px;
-	height: 14px;
-	opacity: 0.7;
+    margin-left: auto;
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
 }
 
-body:not(.fullscreen) #userDropdown {
-    right: calc(50vw - 470px);
+.night #userDropdownMenu,
+.night .userDropdownSubmenu {
+    background-color: #292c2c;
+}
+
+.userDropdownUISettings .fa-chevron-right {
+    transition: transform 0.3s ease;
+    transform: rotate(0deg);
+}
+
+.userDropdownUISettings .fa-chevron-right.rotated {
+    transform: rotate(90deg);
+}
+
+/* Icon customization modal */
+.icon-customization {
+    color: var(--bs-body-color);
+}
+
+.icon-customization-intro {
+    gap: 0.25rem;
+}
+
+.icon-customization-intro-icon {
+    width: 64px;
+    height: 64px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 64px;
+}
+
+.icon-customization-card {
+    overflow: hidden;
+    background: var(--bs-body-bg) !important;
+    border-color: var(--bs-border-color) !important;
+    box-shadow: none;
+}
+
+.icon-customization-card.border-success {
+    border-color: var(--bs-success) !important;
+}
+
+.icon-customization-card .card-header {
+    min-height: 72px;
+    background: var(--bs-tertiary-bg);
+    border-bottom-color: var(--bs-border-color);
+}
+
+.icon-customization-card .card-body {
+    background: var(--bs-body-bg);
+}
+
+.icon-customization-card-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+    background: var(--bs-secondary-bg);
+}
+
+.icon-customization .icon-upload-component .input-group {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    align-items: stretch;
+    width: 100%;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.icon-customization .icon-upload-component .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    height: 2.5rem;
+    font-size: 1rem;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color) !important;
+    border-radius: var(--bs-border-radius) !important;
+    box-shadow: none !important;
+    margin-top: 0 !important;
+}
+
+.icon-customization .icon-upload-component .btn-outline-primary {
+    flex: 0 0 6.25rem;
+    width: 6.25rem;
+    height: 2.5rem;
+    min-width: 0;
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+    font-size: 1rem;
+    line-height: 1;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-primary) !important;
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-primary) !important;
+    border-radius: var(--bs-border-radius) !important;
+    box-shadow: none !important;
+    margin-top: 0 !important;
+}
+
+.icon-customization .icon-upload-component .btn-outline-primary:hover,
+.icon-customization .icon-upload-component .btn-outline-primary:focus {
+    color: #fff !important;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary) !important;
+    box-shadow: none !important;
+    margin-top: 0 !important;
+}
+
+@media (max-width: 640px) {
+    .icon-customization .icon-upload-component .input-group {
+        flex-wrap: wrap;
+    }
+
+    .icon-customization .icon-upload-component .btn-outline-primary {
+        flex-basis: 100%;
+        width: 100%;
+    }
+}
+
+.icon-preview-container {
+    display: block;
+    min-height: 44px;
+}
+
+.icon-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.icon-preview-row .text-muted {
+    flex: 0 0 auto;
+}
+
+.icon-preview-item {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+}
+
+.icon-customization .icon-preview-container .btn-outline-danger {
+    color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+}
+
+.icon-customization .icon-preview-container .icon-reset-button {
+    color: #fff !important;
+    background-color: var(--bs-danger) !important;
+    border-color: var(--bs-danger) !important;
+    white-space: normal;
+}
+
+.icon-customization .icon-preview-container .icon-reset-button:hover,
+.icon-customization .icon-preview-container .icon-reset-button:focus {
+    color: #fff !important;
+    background-color: var(--bs-danger);
+    border-color: var(--bs-danger);
+}
+
+@media (min-width: 769px) {
+    .userDropdownSubmenu {
+        position: absolute;
+        display: none;
+        opacity: 0;
+        transform: translateX(12px);
+        transition: opacity 0.2s ease, transform 0.3s ease;
+    }
+
+    .userDropdownSubmenu.show {
+        display: block;
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Mobile scrollable submenu — desktop: wrapper divs are invisible pass-throughs */
+.mobile-submenu-scroll,
+.mobile-submenu-scroll-inner {
+    display: contents;
+}
+
+.mobile-submenu-arrow {
+    display: none;
+}
+
+/* Mobile: when MainSubMenuSpan is shown, make it a flex row for scrollable tabs.
+   No !important here so JS inline style="display:none" still hides it correctly. */
+body.is-mobile #MainSubMenuSpan {
+    align-items: center;
+    overflow: visible;
+    height: 24px;
+    position: relative;
+    z-index: 1;
+}
+
+body.is-mobile #MainSubMenuSpan:not([style*="display:none"]):not([style*="display: none"]) {
+    display: flex;
+}
+
+body.is-mobile .mobile-submenu-scroll {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner {
+    display: block;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    flex: 1;
+    min-width: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+body.is-mobile .mobile-submenu-scroll-inner::-webkit-scrollbar {
+    display: none;
+}
+
+body.is-mobile #MainSubMenu {
+    display: inline-table !important;
+    width: auto !important;
+    height: 24px;
+    table-layout: auto !important;
+}
+
+body.is-mobile #MainSubMenu .topbar_td {
+    width: auto !important;
+    min-width: unset !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    white-space: nowrap !important;
+}
+
+body.is-mobile .mobile-submenu-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    min-width: 44px;
+    height: 100%;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    border: none;
+    padding: 0;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+}
+
+body.is-mobile .mobile-submenu-arrow:hover,
+body.is-mobile .mobile-submenu-arrow:active {
+    background: #505050;
+}
+
+body.is-mobile .mobile-submenu-arrow i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

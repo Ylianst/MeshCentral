@@ -14,9 +14,10 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 
 var settings = {};
 const crypto = require('crypto');
+const RUNCOMMAND_RESPONSE_ID = crypto.randomUUID(); // unique per process, see PR description: avoids concurrent 'runcommand' invocations under the same login cross-talking on each other's --reply output
 const args = require('minimist')(process.argv.slice(2));
 const path = require('path');
-const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
+const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'serverversion', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
 if (args['_'].length == 0) {
@@ -26,6 +27,7 @@ if (args['_'].length == 0) {
     console.log("Supported actions:");
     console.log("  Help [action]               - Get help on an action.");
     console.log("  ServerInfo                  - Show server information.");
+    console.log("  ServerVersion               - Show server version.");
     console.log("  UserInfo                    - Show user information.");
     console.log("  ListUsers                   - List user accounts.");
     console.log("  ListUserSessions            - List online users.");
@@ -96,6 +98,7 @@ if (args['_'].length == 0) {
         case 'config': { performConfigOperations(args); return; }
         case 'indexagenterrorlog': { indexAgentErrorLog(); return; }
         case 'serverinfo': { ok = true; break; }
+        case 'serverversion': { ok = true; break; }
         case 'userinfo': { ok = true; break; }
         case 'listusers': { ok = true; break; }
         case 'listusersessions': { ok = true; break; }
@@ -378,6 +381,14 @@ if (args['_'].length == 0) {
                         console.log("  --json                 - Show result as JSON.");
                         break;
                     }
+                    case 'serverversion': {
+                        console.log("Get the version of the MeshCentral server, Example usages:\r\n");
+                        console.log("  MeshCtrl ServerVersion --loginuser myaccountname --loginpass mypassword");
+                        console.log("  MeshCtrl ServerVersion --loginuser myaccountname --loginkeyfile key.txt");
+                        console.log("\r\nOptional arguments:\r\n");
+                        console.log("  --json                 - Show result as JSON.");
+                        break;
+                    }
                     case 'userinfo': {
                         console.log("Get account information for the login account, Example usages:\r\n");
                         console.log("  MeshCtrl UserInfo --loginuser myaccountname --loginpass mypassword");
@@ -578,7 +589,8 @@ if (args['_'].length == 0) {
                         console.log("       4096 = Desktop Limited Input         8192 = Limit Events           ");
                         console.log("      16384 = Chat / Notify                32768 = Uninstall Agent        ");
                         console.log("      65536 = No Remote Desktop           131072 = Remote Commands        ");
-                        console.log("     262144 = Reset / Power off      ");
+                        console.log("     262144 = Reset / Power off          4194304 = No Registry            ");
+                        console.log("    8388608 = No Software                                                 ");
                         break;
                     }
                     case 'removefromusergroup': {
@@ -714,6 +726,8 @@ if (args['_'].length == 0) {
                         console.log("  --limiteddesktop       - Limit remote desktop keys.");
                         console.log("  --noterminal           - Hide the terminal tab from this user.");
                         console.log("  --nofiles              - Hide the files tab from this user.");
+                        console.log("  --noregistry           - Hide the registry tab from this user.");
+                        console.log("  --nosoftware           - Hide the software tab from this user.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
                         console.log("  --limitedevents        - User can only see his own events.");
                         console.log("  --chatnotify           - Allow chat and notification options.");
@@ -760,6 +774,8 @@ if (args['_'].length == 0) {
                         console.log("  --limiteddesktop       - Limit remote desktop keys.");
                         console.log("  --noterminal           - Hide the terminal tab from this user.");
                         console.log("  --nofiles              - Hide the files tab from this user.");
+                        console.log("  --noregistry           - Hide the registry tab from this user.");
+                        console.log("  --nosoftware           - Hide the software tab from this user.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
                         console.log("  --limitedevents        - User can only see his own events.");
                         console.log("  --chatnotify           - Allow chat and notification options.");
@@ -865,6 +881,8 @@ if (args['_'].length == 0) {
                     case 'editdevice': {
                         console.log("Change information about a device, Example usages:\r\n");
                         console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --name 'device1'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --addtag 'newtag'"));
+                        console.log(winRemoveSingleQuotes("  MeshCtrl EditDevice --id 'deviceid' --removetag 'oldtag'"));
                         console.log("\r\nRequired arguments:\r\n");
                         if (process.platform == 'win32') {
                             console.log("  --id [deviceid]        - The device identifier.");
@@ -873,13 +891,17 @@ if (args['_'].length == 0) {
                         }
                         console.log("\r\nOptional arguments:\r\n");
                         if (process.platform == 'win32') {
-                            console.log("  --name [name]          - Change device name.");
-                            console.log("  --desc [description]   - Change device description.");
-                            console.log("  --tags [tag1,tags2]    - Change device tags.");
+                            console.log("  --name [name]           - Change device name.");
+                            console.log("  --desc [description]    - Change device description.");
+                            console.log("  --tags [tag1,tag2]      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag [tag1,tag2]    - Add tags to existing tags.");
+                            console.log("  --removetag [tag1,tag2] - Remove tags from existing tags.");
                         } else {
-                            console.log("  --name '[name]'        - Change device name.");
-                            console.log("  --desc '[description]' - Change device description.");
-                            console.log("  --tags '[tag1,tags2]'  - Change device tags.");
+                            console.log("  --name '[name]'           - Change device name.");
+                            console.log("  --desc '[description]'    - Change device description.");
+                            console.log("  --tags '[tag1,tag2]'      - Set device tags (replaces all existing tags).");
+                            console.log("  --addtag '[tag1,tag2]'    - Add tags to existing tags.");
+                            console.log("  --removetag '[tag1,tag2]' - Remove tags from existing tags.");
                         }
                         console.log("  --icon [number]        - Change the device icon (1 to 8).");
                         console.log("  --consent [flags]      - Sum of the following numbers:");
@@ -1190,14 +1212,15 @@ function displayConfigHelp() {
     console.log("  --removefromdomain [domain]   - Remove values from the domain.");
     console.log("\r\nWith adddomain, removedomain, settodomain and removefromdomain you can add the key and value pair. For example:\r\n");
     console.log("  --adddomain \"MyDomain\" --title \"My Server Name\" --newAccounts false");
+    console.log("  --settodomain \"MyDomain\" --themePack \"Stylish-UI\"");
     console.log("  --settodomain \"MyDomain\" --title \"My Server Name\"");
     console.log("  --removefromdomain \"MyDomain\" --title");
 }
 
 function performConfigOperations(args) {
-    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'customFiles'];
+    var domainValues = ['title', 'title2', 'titlepicture', 'trustedcert', 'welcomepicture', 'welcometext', 'userquota', 'meshquota', 'newaccounts', 'usernameisemail', 'newaccountemaildomains', 'newaccountspass', 'newaccountsrights', 'geolocation', 'lockagentdownload', 'userconsentflags', 'Usersessionidletimeout', 'auth', 'ldapoptions', 'ldapusername', 'ldapuserbinarykey', 'ldapuseremail', 'footer', 'certurl', 'loginKey', 'userallowedip', 'agentallowedip', 'agentnoproxy', 'agentconfig', 'orphanagentuser', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'hide', 'customFiles', 'themePack'];
     var domainObjectValues = ['ldapoptions', 'httpheaders', 'yubikey', 'passwordrequirements', 'limits', 'amtacmactivation', 'redirects', 'sessionrecording', 'customFiles'];
-    var domainArrayValues = ['newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig'];
+    var domainArrayValues = ['newaccountemaildomains', 'newaccountsrights', 'loginkey', 'agentconfig', 'themePack'];
     var configChange = false;
     var fs = require('fs');
     var path = require('path');
@@ -1325,7 +1348,7 @@ function serverConnect() {
     // Setup the HTTP proxy if needed
     if (args.proxy != null) {
         const HttpsProxyAgent = require('https-proxy-agent');
-        options.agent = new HttpsProxyAgent(require('url').parse(args.proxy));
+        options.agent = new HttpsProxyAgent(new URL(args.proxy));
     }
 
     // Password authentication
@@ -1372,6 +1395,7 @@ function serverConnect() {
         //console.log('Connected.');
         switch (settings.cmd) {
             case 'serverinfo': { break; }
+            case 'serverversion': { ws.send(JSON.stringify({ action: 'serverversion', responseid: 'meshctrl' })); break; }
             case 'userinfo': { break; }
             case 'listusers': { ws.send(JSON.stringify({ action: 'users', responseid: 'meshctrl' })); break; }
             case 'listusersessions': { ws.send(JSON.stringify({ action: 'wssessioncount', responseid: 'meshctrl' })); break; }
@@ -1647,12 +1671,14 @@ function serverConnect() {
                 if (args.desktopviewonly) { meshrights |= 256; }
                 if (args.noterminal) { meshrights |= 512; }
                 if (args.nofiles) { meshrights |= 1024; }
+                if (args.noregistry) { meshrights |= 4194304; }
+                if (args.nosoftware) { meshrights |= 8388608; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
                 if (args.chatnotify) { meshrights |= 16384; }
                 if (args.uninstall) { meshrights |= 32768; }
-                var op = { action: 'addmeshuser', usernames: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
+                var op = { action: 'addmeshuser', userids: [args.userid], meshadmin: meshrights, responseid: 'meshctrl' };
                 if (args.id) { op.meshid = args.id; } else if (args.group) { op.meshname = args.group; }
                 ws.send(JSON.stringify(op));
                 break;
@@ -1674,6 +1700,8 @@ function serverConnect() {
                 if (args.desktopviewonly) { meshrights |= 256; }
                 if (args.noterminal) { meshrights |= 512; }
                 if (args.nofiles) { meshrights |= 1024; }
+                if (args.noregistry) { meshrights |= 4194304; }
+                if (args.nosoftware) { meshrights |= 8388608; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
@@ -1727,14 +1755,20 @@ function serverConnect() {
                 break;
             }
             case 'editdevice': {
-                var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
-                if (typeof args.name == 'string') { op.name = args.name; }
-                if (typeof args.name == 'number') { op.name = '' + args.name; }
-                if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
-                if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
-                if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
-                if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
-                ws.send(JSON.stringify(op));
+                if (args.addtag || args.removetag) {
+                    // we need to fetch the node data first to then modify the tags
+                    var nodeid = args.id;
+                    ws.send(JSON.stringify({ action: 'nodes', id: args.id, responseid: 'meshctrl' }));
+                } else {
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.tags) { if (args.tags === true) { op.tags = ''; } else if (typeof args.tags == 'string') { op.tags = args.tags.split(','); } else if (typeof args.tags == 'number') { op.tags = '' + args.tags; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    ws.send(JSON.stringify(op));
+                }
                 break;
             }
             case 'runcommand': {
@@ -1742,7 +1776,7 @@ function serverConnect() {
                 if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
                 var reply = false;
                 if (args.reply) { reply = true; }
-                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser, reply: reply }));
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: RUNCOMMAND_RESPONSE_ID, runAsUser: runAsUser, reply: reply }));
                 break;
             }
             case 'shell':
@@ -2075,6 +2109,23 @@ function serverConnect() {
                 }
                 break;
             }
+            case 'serverversion': { // SERVERVERSION
+                if (settings.cmd == 'serverversion') {
+                    if (data.responseid == 'meshctrl') {
+                        if (data.result != 'OK') { console.log(data.result); process.exit(); }
+                        if (args.json) {
+                            console.log(JSON.stringify(data.tags, null, 2));
+                        } else {
+                            var svmsg = 'MeshCentral version: ' + data.tags.current;
+                            if (typeof data.tags.latest == 'string') { svmsg += ' (latest: ' + data.tags.latest + ')'; }
+                            if (typeof data.tags.stable == 'string') { svmsg += ' (stable: ' + data.tags.stable + ')'; }
+                            console.log(svmsg);
+                        }
+                        process.exit();
+                    }
+                }
+                break;
+            }
             case 'events': {
                 if (settings.cmd == 'listevents') {
                     if (args.raw) {
@@ -2131,7 +2182,8 @@ function serverConnect() {
                 if ((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) {
                     var protocol = 1; // Terminal
                     if ((settings.cmd == 'upload') || (settings.cmd == 'download')) { protocol = 5; } // Files
-                    if ((args.id.split('/') != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
+                    if (args.powershell) { protocol = 6; } // PowerShell
+                    if ((args.id.split('/').length != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
                     ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
                     connectTunnel(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + encodeURIComponent(args.id) + '&id=' + id + '&auth=' + data.cookie));
@@ -2245,7 +2297,7 @@ function serverConnect() {
                 if (((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) && (data.result == 'OK')) return;
                 if ((data.type == 'runcommands') && (settings.cmd != 'runcommand')) return;
                 if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
-                if (data.responseid == 'meshctrl') {
+                if ((data.responseid == 'meshctrl') || (data.responseid == RUNCOMMAND_RESPONSE_ID)) {
                     if (data.meshid) { console.log(data.result, data.meshid); }
                     else if (data.userid) { console.log(data.result, data.userid); }
                     else console.log(data.result);
@@ -2471,6 +2523,43 @@ function serverConnect() {
                         }
                     }
                 }
+                if ((settings.cmd == 'editdevice') && (data.responseid == 'meshctrl')) {
+                    // Find the node to get its current tags
+                    var targetNode = null;
+                    for (var i in data.nodes) {
+                        for (var j in data.nodes[i]) {
+                            if (data.nodes[i][j]._id == args.id) { targetNode = data.nodes[i][j]; break; }
+                        }
+                        if (targetNode != null) { break; }
+                    }
+                    if (targetNode == null) {
+                        console.log('Node not found.');
+                        process.exit();
+                        return;
+                    }
+                    // Start with current tags or empty array
+                    var tags = (Array.isArray(targetNode.tags)) ? targetNode.tags.slice() : [];
+                    // Add tags: --addtag tag1,tag2
+                    if (args.addtag) {
+                        var addtags = (typeof args.addtag == 'string') ? args.addtag.split(',') : ['' + args.addtag];
+                        for (var i in addtags) { var t = addtags[i].trim(); if (t && (tags.indexOf(t) < 0)) { tags.push(t); } }
+                    }
+                    // Remove tags: --removetag tag1,tag2
+                    if (args.removetag) {
+                        var removetags = (typeof args.removetag == 'string') ? args.removetag.split(',') : ['' + args.removetag];
+                        var removetrimmed = removetags.map(function(r) { return r.trim(); });
+                        tags = tags.filter(function(t) { return removetrimmed.indexOf(t) < 0; });
+                    }
+                    // Build and send the changedevice op
+                    var op = { action: 'changedevice', nodeid: args.id, responseid: 'meshctrl' };
+                    if (typeof args.name == 'string') { op.name = args.name; }
+                    if (typeof args.name == 'number') { op.name = '' + args.name; }
+                    if (args.desc) { if (args.desc === true) { op.desc = ''; } else if (typeof args.desc == 'string') { op.desc = args.desc; } else if (typeof args.desc == 'number') { op.desc = '' + args.desc; } }
+                    if (args.icon) { op.icon = parseInt(args.icon); if ((typeof op.icon != 'number') || isNaN(op.icon) || (op.icon < 1) || (op.icon > 8)) { console.log("Icon must be between 1 and 8."); process.exit(1); return; } }
+                    if (args.consent) { op.consent = parseInt(args.consent); if ((typeof op.consent != 'number') || isNaN(op.consent) || (op.consent < 1)) { console.log("Invalid consent flags."); process.exit(1); return; } }
+                    op.tags = tags;
+                    ws.send(JSON.stringify(op));
+                }
                 break;
             }
             case 'meshes': { // LISTDEVICEGROUPS
@@ -2549,6 +2638,10 @@ function serverConnect() {
                             console.log('Invalid login.');
                         }
                     }
+                } else if (data.cause == 'locked') {
+                    console.log('Account locked. Please contact the administrator.');
+                } else if (data.cause == 'banned') {
+                    console.log('Access temporarily blocked due to too many failed login attempts.');
                 }
                 process.exit();
                 break;
@@ -2704,7 +2797,7 @@ function getDevicesThatMatchFilter(nodes, x) {
     } else {
         // Device name search
         try {
-            var rs = x.split(/\s+/).join('|'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+            var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
             for (var d in nodes) {
                 //if (showRealNames) {
                 //if (nodes[d].rnamel != null && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(nodes[d]); }
@@ -2725,7 +2818,7 @@ function connectTunnel(url) {
     var options = { rejectUnauthorized: false, checkServerIdentity: onVerifyServer }
 
     // Setup the HTTP proxy if needed
-    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(require('url').parse(args.proxy)); }
+    if (args.proxy != null) { const HttpsProxyAgent = require('https-proxy-agent'); options.agent = new HttpsProxyAgent(new URL(args.proxy)); }
 
     // Connect the WebSocket
     console.log('Connecting...');
@@ -2755,7 +2848,7 @@ function connectTunnel(url) {
                 if (typeof process.stdout.getWindowSize == 'function') { termSize = process.stdout.getWindowSize(); }
                 if (termSize != null) { settings.tunnelws.send(JSON.stringify({ ctrlChannel: '102938', type: 'options', cols: termSize[0], rows: termSize[1] })); }
                 settings.tunnelwsstate = 1;
-                settings.tunnelws.send('1'); // Terminal
+                settings.tunnelws.send((args.powershell ? 6 : 1)); // Powershell or Terminal
                 process.stdin.setEncoding('utf8');
                 process.stdin.setRawMode(true);
                 process.stdout.setEncoding('utf8');
@@ -2893,7 +2986,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     //console.log('displayDeviceInfo', sysinfo, lastconnect, network, nodes);
 
     // Fetch the node information
-    var node = null;;
+    var node = null;
     if (sysinfo != null && (sysinfo.node != null)) {
         // Node information came with system information
         node = sysinfo.node;
@@ -2925,7 +3018,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
     if (node.desc != null) { output["Description"] = node.desc; outputCount++; }
     if (node.icon != null) { output["Icon"] = node.icon; outputCount++; }
     if (node.tags) { output["Tags"] = node.tags; outputCount++; }
-    if (node.av) {
+    if (node.av && node.av.length > 0) {
         var av = [];
         for (var i in node.av) {
             if (typeof node.av[i]['product'] == 'string') {
@@ -2939,26 +3032,43 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
         }
         output["AntiVirus"] = av; outputCount++;
     }
+    // Defender for Windows Server
+    if(typeof node.defender == 'object') {
+        output["Windows Defender"] = node.defender; outputCount++; 
+    }
+    if (node.pr && node.pr.length > 0) {
+        var pr = [];
+        for (var i in node.pr) { pr.push(node.pr[i]); }
+        output["Pending Reboot"] = pr; outputCount++;
+    }            
     if (typeof node.wsc == 'object') {
-        output["WindowsSecurityCenter"] = node.wsc; outputCount++;
+        output["Windows Security Center"] = node.wsc; outputCount++;
+    }
+    if (typeof node.lsc == 'object') {
+        output["Linux Security Center"] = node.lsc; outputCount++;
     }
     if (outputCount > 0) { info["General"] = output; }
 
     // Operating System
     var hardware = null;
     if ((sysinfo != null) && (sysinfo.hardware != null)) { hardware = sysinfo.hardware; }
-    if ((hardware && hardware.windows && hardware.windows.osinfo) || node.osdesc) {
+    if ((hardware && hardware.windows && hardware.windows.osinfo) || (hardware && hardware.linux) || node.osdesc) {
         var output = {}, outputCount = 0;
         if (node.rname) { output["Name"] = node.rname; outputCount++; }
         if (node.osdesc) { output["Version"] = node.osdesc; outputCount++; }
         if (hardware && hardware.windows && hardware.windows.osinfo) { var m = hardware.windows.osinfo; if (m.OSArchitecture) { output["Architecture"] = m.OSArchitecture; outputCount++; } }
+        if (hardware && hardware.linux) {
+            if (hardware.linux.arch) { output["Architecture"] = hardware.linux.arch; outputCount++; }
+            if (hardware.linux.kernel_release) { output["Kernel Release"] = hardware.linux.kernel_release; outputCount++; }
+            if (hardware.linux.kernel_build) { output["Kernel Build"] = hardware.linux.kernel_build; outputCount++; }
+        }
         if (outputCount > 0) { info["Operating System"] = output; }
     }
 
     // MeshAgent
     if (node.agent) {
         var output = {}, outputCount = 0;
-        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit (glibc/2.24 NOKVM)", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
+        var agentsStr = ["Unknown", "Windows 32bit console", "Windows 64bit console", "Windows 32bit service", "Windows 64bit service", "Linux 32bit", "Linux 64bit", "MIPS", "XENx86", "Android", "Linux ARM", "macOS x86-32bit", "Android x86", "PogoPlug ARM", "Android", "Linux Poky x86-32bit", "macOS x86-64bit", "ChromeOS", "Linux Poky x86-64bit", "Linux NoKVM x86-32bit", "Linux NoKVM x86-64bit", "Windows MinCore console", "Windows MinCore service", "NodeJS", "ARM-Linaro", "ARMv6l / ARMv7l", "ARMv8 64bit", "ARMv6l / ARMv7l / NoKVM", "MIPS24KC (OpenWRT)", "Apple Silicon", "FreeBSD x86-64", "Unknown", "Linux ARM 64 bit", "Alpine Linux x86 64 Bit (MUSL)", "Assistant (Windows)", "Armada370 - ARM32/HF (libc/2.26)", "OpenWRT x86-64", "OpenBSD x86-64", "Unknown", "Unknown", "MIPSEL24KC (OpenWRT)", "ARMADA/CORTEX-A53/MUSL (OpenWRT)", "Windows ARM 64bit console", "Windows ARM 64bit service", "ARMVIRT32 (OpenWRT)", "RISC-V x86-64"];
         if ((node.agent != null) && (node.agent.id != null) && (node.agent.ver != null)) {
             var str = '';
             if (node.agent.id <= agentsStr.length) { str = agentsStr[node.agent.id]; } else { str = agentsStr[0]; }
@@ -2970,6 +3080,7 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
         } else {
             if (node.lastconnect) { output["Last agent connection"] = new Date(node.lastconnect).toLocaleString(); outputCount++; }
         }
+        output["Agent status"] = (node.conn & 1) != 0 ? "Connected now" : "Offline"; outputCount++;
         if (node.lastaddr) {
             var splitip = node.lastaddr.split(':');
             if (splitip.length > 2) {
@@ -3076,6 +3187,8 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             // BIOS
             if (ident.bios_vendor) { output["Vendor"] = ident.bios_vendor; outputCount++; }
             if (ident.bios_version) { output["Version"] = ident.bios_version; outputCount++; }
+            if (ident.bios_serial) { output["Serial"] = ident.bios_serial; outputCount++; }
+            if (ident.bios_mode) { output["Mode"] = ident.bios_mode; outputCount++; }
             if (outputCount > 0) { info["BIOS"] = output; }
             output = {}, outputCount = 0;
 
@@ -3088,6 +3201,28 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
             if (ident.cpu_name) { output["CPU"] = ident.cpu_name; }
             if (ident.gpu_name) { for (var i in ident.gpu_name) { output["GPU" + (parseInt(i) + 1)] = ident.gpu_name[i]; } }
             if (outputCount > 0) { info["Motherboard"] = output; }
+            output = {}, outputCount = 0;
+
+            // System
+            if (ident.chassis_manufacturer) { output["Manufacturer"] = ident.chassis_manufacturer; outputCount++; }
+            if (ident.product_name) { output["Product Name"] = ident.product_name; outputCount++; }
+            if (ident.chassis_serial) { output["Serial"] = ident.chassis_serial; outputCount++; }
+            if (ident.chassis_assettag) { output["Asset Tag"] = ident.chassis_assettag; outputCount++; }
+            if (outputCount > 0) { info["System"] = output; }
+            output = {}, outputCount = 0;
+        }
+
+        // TPM
+        if (hardware.tpm) {
+            var output = {}, outputCount = 0, tpm = hardware.tpm;
+            if (tpm.SpecVersion) { output["SpecVersion"] = parseFloat(tpm.SpecVersion).toFixed(1); outputCount++; }
+            if (tpm.ManufacturerId) { output["Identifier"] = tpm.ManufacturerId; outputCount++; }
+            if (tpm.ManufacturerVersion) { output["Version"] = tpm.ManufacturerVersion; outputCount++; }
+            if (tpm.IsActivated != null) { output["Activated"] = (tpm.IsActivated ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsEnabled != null) { output["Enabled"] = (tpm.IsEnabled ? "Yes" : "No"); outputCount++; }
+            if (tpm.IsOwned != null) { output["Owned"] = (tpm.IsOwned ? "Yes" : "No"); outputCount++; }
+            if (outputCount > 0) { info["TPM"] = output; }
+            output = {}, outputCount = 0;
         }
 
         // Memory
@@ -3097,9 +3232,10 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
                 hardware.windows.memory.sort(function (a, b) { if (a.BankLabel > b.BankLabel) return 1; if (a.BankLabel < b.BankLabel) return -1; return 0; });
                 for (var i in hardware.windows.memory) {
                     var m = hardware.windows.memory[i], moutput = {}, moutputCount = 0;
-                    if (m.Capacity) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    if (m.Capacity && m.Speed) { moutput["Capacity/Speed"] = (m.Capacity / 1024 / 1024) + " Mb, " + m.Speed + " Mhz"; moutputCount++; }
+                    else if (m.Capacity) { moutput["Capacity"] = (m.Capacity / 1024 / 1024) + " Mb"; moutputCount++; }
                     if (m.PartNumber) { moutput["Part Number"] = ((m.Manufacturer && m.Manufacturer != 'Undefined') ? (m.Manufacturer + ', ') : '') + m.PartNumber; moutputCount++; }
-                    if (moutputCount > 0) { minfo[m.BankLabel] = moutput; info["Memory"] = minfo; }
+                    if (moutputCount > 0) { minfo[m.BankLabel ? m.BankLabel : (m.DeviceLocator ? m.DeviceLocator : 'Unknown')] = moutput; info["Memory"] = minfo; }
                 }
             }
         }
@@ -3120,6 +3256,12 @@ function displayDeviceInfo(sysinfo, lastconnect, network, nodes) {
                 }
             }
         }
+    
+        // Windows volumes
+        if ((hardware?.windows?.volumes)) { info["Volumes"] = hardware.windows.volumes; }
+    
+        // Bitlocker cache
+        if ((hardware?.windows?.bitlocker)) { info["Bitlocker cache"] = hardware.windows.bitlocker; }
     }
 
     // Display everything

@@ -6,6 +6,12 @@ CheckStartupType() {
   # 3 = init.d
   # 5 = BSD
 
+  # Add freebsd usr service path
+  plattype=`uname | awk '{ tst=tolower($0);a=split(tst, res, "freebsd"); print a }'`
+  if [[ $plattype == 2 ]]
+   then mkdir -p /usr/local/etc/rc.d
+  fi
+  
   # echo "Checking if Linux or BSD Platform"
   plattype=`uname | awk '{ tst=tolower($0);a=split(tst, res, "bsd"); if(a==1) { print "LINUX"; } else { print "BSD"; }}'`
   if [[ $plattype == 'BSD' ]]

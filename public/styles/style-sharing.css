@@ -10,13 +10,13 @@
     opacity: 0.5;
 }
 
-    .night .slbbutton {
-        background-color: black;
-    }
+.night .slbbutton {
+    background-color: black;
+}
 
-    .slbbutton:hover {
-        opacity: 1;
-    }
+.slbbutton:hover {
+    opacity: 1;
+}
 
 .slbbuttonsel {
     opacity: 0.9;

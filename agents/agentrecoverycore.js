@@ -258,6 +258,11 @@ require('MeshAgent').AddCommandHandler(function (data)
                                                         fs.mkdirSync(cmd.path);
                                                         break;
                                                     }
+                                                    case 'mkfile': {
+                                                        // Create a new empty file
+                                                        fs.closeSync(fs.openSync(cmd.path, 'w'));
+                                                        break;
+                                                    }
                                                     case 'rm': {
                                                         // Delete, possibly recursive delete
                                                         for (var i in cmd.delfiles)
@@ -408,7 +413,7 @@ function processConsoleCommand(cmd, args, rights, sessionid)
     if (response != null) { sendConsoleText(response, sessionid); }
 }
 
-// Get a formated response for a given directory path
+// Get a formatted response for a given directory path
 function getDirectoryInfo(reqpath)
 {
     var response = { path: reqpath, dir: [] };

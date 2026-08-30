@@ -26,7 +26,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
     // Check relay authentication
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
         const rcookie = parent.parent.decodeCookie(obj.req.query.rauth, parent.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
-        if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; }
+        if (rcookie != null) { if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; } }
     }
 
     // Relay session count (we may remove this in the future)

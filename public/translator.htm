@@ -662,7 +662,11 @@
                 try { x = JSON.parse(this.responseText); } catch (ex) { }
                 if ((x == null) || (x.response == null)) { messagebox("Server Translation", "ERROR: Unable to parse server response."); return; }
                 if (x.response == 'ok') {
-                    messagebox("Server Translation", "Server translation initiated, this will take a minute or two. Once done, you can refresh the MeshCentral web pages to see the changes.<br /><br />When ready, please mail the file \"meshcentral-data/translate.json\" to <a href=\"mailto:ylianst@gmail.com\">ylianst@gmail.com</a> for inclusion on the official build.");
+                    var text = "The server translation process is now running.<br />Please allow up to 5 minutes for completion.<br /><br />";
+                    text += "If this is your <b>first translation</b>,<br />Please restart your MeshCentral server after the 5 minutes.<br /></br />";
+                    text += "If you are <b>updating a translation</b>,<br />Please refresh your MeshCentral web browser tabs after the 5 minutes.<br /><br />";
+                    text += "To submit your work, please email the generated <b>translate.json</b> file (located in <code>meshcentral-data/</code>) to one of the developers.";
+                    messagebox("Server Translation", text);
                 } else {
                     messagebox("Server Translation", "ERROR: " + x.response);
                 }

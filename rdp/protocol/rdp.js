@@ -135,16 +135,27 @@ function RdpClient(config) {
     log.debug('screen ' + this.mcs.clientCoreData.obj.desktopWidth.value + 'x' + this.mcs.clientCoreData.obj.desktopHeight.value);
 
     // config keyboard layout
-    switch (config.locale) {
-        case 'fr':
-            log.debug('french keyboard layout');
-            this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout.FRENCH;
-            break;
-        case 'en':
-        default:
-            log.debug('english keyboard layout');
-            this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout.US;
-    }
+    // config.locale is a browser language tag (ex: 'en-GB', 'de-AT', 'fr-CH'). The region
+    // can select a different layout, since 'en-GB' is not 'en-US', so the full tag is
+    // looked up first and only then the language on its own.
+    var localeToKeyboardLayout = {
+        'ar':    'ARABIC',        'bg':    'BULGARIAN',        'cs':    'CZECH',
+        'da':    'DANISH',        'de':    'GERMAN',           'de-ch': 'SWISS_GERMAN',
+        'el':    'GREEK',         'en':    'US',               'en-gb': 'UNITED_KINGDOM',
+        'en-ie': 'IRISH',         'es':    'SPANISH',          'fi':    'FINNISH',
+        'fr':    'FRENCH',        'fr-be': 'BELGIAN_FRENCH',   'fr-ca': 'CANADIAN_FRENCH',
+        'fr-ch': 'SWISS_FRENCH',  'he':    'HEBREW',           'hu':    'HUNGARIAN',
+        'is':    'ICELANDIC',     'it':    'ITALIAN',          'ja':    'JAPANESE',
+        'ko':    'KOREAN',        'nb':    'NORWEGIAN',        'nl':    'DUTCH',
+        'nl-be': 'BELGIAN_DUTCH', 'nn':    'NORWEGIAN',        'no':    'NORWEGIAN',
+        'zh':    'CHINESE_US_KEYBOARD'
+    };
+    var browserLocale = String(config.locale || 'en').toLowerCase().replace('_', '-');
+    var keyboardLayoutName = localeToKeyboardLayout[browserLocale]
+        || localeToKeyboardLayout[browserLocale.split('-')[0]]
+        || 'US';
+    log.debug(keyboardLayoutName.toLowerCase() + ' keyboard layout');
+    this.mcs.clientCoreData.obj.kbdLayout.value = t125.gcc.KeyboardLayout[keyboardLayoutName];
 
     this.cliprdr.on('clipboard', (content) => {
         this.emit('clipboard', content)

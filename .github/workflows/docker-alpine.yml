@@ -1,0 +1,139 @@
+name: Docker-Builder-Alpine
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # Daily at 00:00 UTC
+  release:
+    types: [ published ]
+
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    name: Run Translations
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+      - name: Run translate.js (ignore errors)
+        run: node translate.js || true
+        working-directory: translate
+      - name: Run translate extractall
+        run: node translate extractall
+        working-directory: translate
+      - name: Run translate.js minifyall
+        run: node translate.js minifyall
+        working-directory: translate
+      - name: Run translate.js translateall
+        run: node translate.js translateall
+        working-directory: translate
+      - name: Upload repo with translations
+        uses: actions/upload-artifact@v5
+        with:
+          name: repo-with-preparations
+          path: ./
+  build-images:
+    runs-on: ubuntu-latest
+    needs: prepare
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - variant: mongodb
+            suffix: -mongodb
+            postgresql: false
+            mongodb: true
+            mariadb: false
+          - variant: postgresql
+            suffix: -postgresql
+            postgresql: true
+            mongodb: false
+            mariadb: false
+          - variant: mariadb
+            suffix: -mariadb
+            postgresql: false
+            mongodb: false
+            mariadb: true
+          - variant: complete
+            suffix:
+            postgresql: true
+            mongodb: true
+            mariadb: true
+          - variant: slim
+            suffix: -slim
+            postgresql: false
+            mongodb: false
+            mariadb: false
+    name: Build Docker Image (${{ matrix.variant }})
+    steps:
+      - name: Download repo artifact
+        uses: actions/download-artifact@v5
+        with:
+          name: repo-with-preparations
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          cache-image: false
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          cache-binary: false
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: compile metadata information
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/meshcentral
+            docker.io/${{ secrets.DOCKER_USERNAME }}/meshcentral
+          tags: |
+            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            type=ref,event=tag,suffix=${{ matrix.suffix }}
+            type=raw,value=latest,enable=${{startsWith(github.ref, 'refs/tags/') && matrix.variant != 'complete'}},suffix=${{ matrix.suffix }}
+            type=raw,value=latest,enable=${{startsWith(github.ref, 'refs/tags/') && matrix.variant == 'complete'}}
+      - name: Build and push Docker image (${{ matrix.variant }}
+        uses: docker/build-push-action@v6
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          context: .
+          file: ./docker/Dockerfile
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+          build-args: |
+            DISABLE_MINIFY=yes
+            DISABLE_TRANSLATE=yes
+            DISABLE_EXTRACT=yes
+            INCLUDE_MONGODB_TOOLS=${{ matrix.mongodb }}
+            INCLUDE_POSTGRESQL_TOOLS=${{ matrix.postgresql }}
+            INCLUDE_MARIADB_TOOLS=${{ matrix.mariadb }}
+  rerun-on-failure:
+    needs: build-images
+    if: failure() && fromJSON(github.run_attempt) < 3
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          GH_DEBUG: api
+        run: gh workflow run rerun.yaml -r ${{ github.head_ref || github.ref_name }} -F run_id=${{ github.run_id }}

@@ -479,7 +479,22 @@ module.exports.CreateAmtProvisioningServer = function (parent, config) {
 
             // Save activation data to amtactivation.log
             var domain = parent.config.domains[dev.domainid];
-            obj.logAmtActivation(domain, { time: new Date(), action: 'acmactivate-bare-metal', domain: dev.domainid, amtUuid: dev.guid, newmebx: config.newmebxpassword, mesh: dev.meshid, amtRealm: dev.aquired.realm, amtver: dev.aquired.version, host: dev.aquired.host, ip: dev.addr, user: dev.aquired.user, pass: dev.aquired.pass, tls: dev.aquired.tls, tlshash: dev.aquired.hash });
+            obj.logAmtActivation(domain, {
+                time: new Date(),
+                action: 'acmactivate-bare-metal',
+                domain: dev.domainid,
+                amtUuid: dev.guid,
+                newmebx: config.newmebxpassword,
+                mesh: dev.meshid,
+                amtRealm: dev.aquired.realm,
+                amtver: dev.aquired.version,
+                host: dev.aquired.host,
+                ip: dev.addr,
+                user: dev.aquired.user,
+                password: dev.aquired.pass,
+                tls: dev.aquired.tls,
+                tlshash: dev.aquired.hash
+            });
 
             // Update device in the database
             if (UpdateDevice(dev) == false) return;

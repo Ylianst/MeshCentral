@@ -42,9 +42,9 @@ module.exports.CreateDB = function (parent, func) {
     const SQLITE_AUTOVACUUM = ['none', 'full', 'incremental'];
     const SQLITE_SYNCHRONOUS = ['off', 'normal', 'full', 'extra'];
     obj.sqliteConfig = {
-        maintenance: '',
+        maintenance: 'PRAGMA optimize;',
         startupVacuum: false,
-        autoVacuum: 'full',
+        autoVacuum: 'incremental',
         incrementalVacuum: 100,
         journalMode: 'delete',
         journalSize: 4096000,
@@ -140,6 +140,11 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbQuery('DELETE FROM power WHERE time < ?', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
             sqlDbQuery('DELETE FROM serverstats WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
             sqlDbQuery('DELETE FROM smbios WHERE expire < ?', [new Date()], function (doc, err) { }); // Delete events where expiration date is in the past
+		} else if (obj.databaseType == DB_POSTGRESQL) { // PostgreSQL
+            sqlDbQuery('DELETE FROM events WHERE time < $1', [new Date(Date.now() - (expireEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expireEventsSeconds
+            sqlDbQuery('DELETE FROM power WHERE time < $1', [new Date(Date.now() - (expirePowerEventsSeconds * 1000))], function (doc, err) { }); // Delete events older than expirePowerSeconds
+            sqlDbQuery('DELETE FROM serverstats WHERE time < $1', [new Date(Date.now() - (expireServerStatsSeconds * 1000))], function (doc, err) { }); // Delete server stats older than expireServerStatsSeconds
+            sqlDbQuery('DELETE FROM smbios WHERE expire < $1', [new Date()], function (doc, err) { }); // Delete SMBIOS records where expiration date is in the past
         } else if (obj.databaseType == DB_ACEBASE) { // AceBase
             //console.log('Performing AceBase maintenance');
             obj.file.query('events').filter('time', '<', new Date(Date.now() - (expireEventsSeconds * 1000))).remove().then(function () {
@@ -236,7 +241,7 @@ module.exports.CreateDB = function (parent, func) {
                                     obj.Remove('si' + node._id);                          // Remove system information
                                     obj.Remove('al' + node._id);                          // Remove error log last time
                                     if (obj.RemoveSMBIOS) { obj.RemoveSMBIOS(node._id); } // Remove SMBios data
-                                    obj.RemoveAllNodeEvents(node._id);                    // Remove all events for this node
+                                    obj.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node
                                     obj.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node
                                     if (typeof node.pmt == 'string') { obj.Remove('pmt_' + node.pmt); } // Remove Push Messaging Token
                                     obj.Get('ra' + node._id, function (err, nodes) {
@@ -262,7 +267,7 @@ module.exports.CreateDB = function (parent, func) {
                                                     parent.DispatchEvent(targets, obj, event);
                                                 }
                                             } else if (i.startsWith('ugrp/')) {
-                                                var cusergroup = parent.userGroups[i];
+                                                var cusergroup = parent.webserver.userGroups[i];
                                                 if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
                                                     // Remove the user link & save the user
                                                     delete cusergroup.links[node._id];
@@ -449,7 +454,7 @@ module.exports.CreateDB = function (parent, func) {
 
                         } else if (obj.databaseType == DB_POSTGRESQL) {
                             // Postgres
-                            sqlDbQuery('DELETE FROM Main WHERE ((extra != NULL) AND (extra LIKE (\'mesh/%\')) AND (extra != ANY ($1)))', [meshlist], function (err, response) { });
+                            sqlDbQuery('DELETE FROM main WHERE extra LIKE \'mesh/%\' AND extra <> ALL ($1)', [meshlist], function (err, response) { });
                         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                             // MariaDB
                             sqlDbQuery('DELETE FROM Main WHERE (extra LIKE ("mesh/%") AND (extra NOT IN ?)', [meshlist], function (err, response) { });
@@ -752,7 +757,8 @@ module.exports.CreateDB = function (parent, func) {
                     'CREATE TABLE IF NOT EXISTS serverstats (time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(time), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS power (id INT NOT NULL AUTO_INCREMENT, time DATETIME, nodeid CHAR(255), doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
                     'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255), time DATETIME, expire DATETIME, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
-                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))'
+                    'CREATE TABLE IF NOT EXISTS plugin (id INT NOT NULL AUTO_INCREMENT, doc JSON, PRIMARY KEY(id), CHECK (json_valid(doc)))',
+                    'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
                 ], function (err) {
                     parent.debug('db', 'Checking indexes...');
                     sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -762,6 +768,7 @@ module.exports.CreateDB = function (parent, func) {
                     sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+					sqlDbExec('CREATE INDEX ndxeventidsfkid ON eventids(fkid)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
                     sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
@@ -777,23 +784,26 @@ module.exports.CreateDB = function (parent, func) {
         // SQLite3 database setup
         obj.databaseType = DB_SQLITE;
         const sqlite3 = require('sqlite3');
-        let configParams = parent.config.settings.sqlite3;
-        if (typeof configParams == 'string') {databaseName = configParams} else {databaseName = configParams.name ? configParams.name : 'meshcentral';};
-        obj.sqliteConfig.startupVacuum = configParams.startupvacuum ? configParams.startupvacuum : false;
-        obj.sqliteConfig.autoVacuum = configParams.autovacuum ? configParams.autovacuum.toLowerCase() : 'incremental';
-        obj.sqliteConfig.incrementalVacuum = configParams.incrementalvacuum ? configParams.incrementalvacuum : 100;
-        obj.sqliteConfig.journalMode = configParams.journalmode ? configParams.journalmode.toLowerCase() : 'delete';
+        let configParams = parent.config.settings.sqlite3 || {};
+        databaseName = (typeof configParams == 'string') ? configParams : (configParams.name || 'meshcentral');
+        obj.sqliteConfig.startupVacuum = (typeof configParams.startupvacuum == 'boolean') ? configParams.startupvacuum : false;
+        obj.sqliteConfig.autoVacuum = (typeof configParams.autovacuum == 'string') ? configParams.autovacuum.toLowerCase() : 'incremental';
+        if (!(['none','full','incremental'].includes(obj.sqliteConfig.autoVacuum))) { obj.sqliteConfig.autoVacuum = 'incremental'; }
+        const incrementalVacuum = Number(configParams.incrementalvacuum);
+        obj.sqliteConfig.incrementalVacuum = (Number.isInteger(incrementalVacuum) && incrementalVacuum >= 0) ? incrementalVacuum : 100;
+
         //allowed modes, 'none' excluded because not usefull for this app, maybe also remove 'memory'?
-        if (!(['delete', 'truncate', 'persist', 'memory', 'wal'].includes(obj.sqliteConfig.journalMode))) { obj.sqliteConfig.journalMode = 'delete'};
-        obj.sqliteConfig.journalSize = configParams.journalsize ? configParams.journalsize : 409600;
+        obj.sqliteConfig.journalMode = (typeof configParams.journalmode == 'string' && ['delete', 'truncate', 'persist', 'memory', 'wal'].includes(configParams.journalmode.toLowerCase())) ? configParams.journalmode.toLowerCase() : 'delete';
+        const journalSize = Number(configParams.journalsize);
+        obj.sqliteConfig.journalSize = Number.isInteger(journalSize) ? journalSize : 4096000;
+
         //wal can use the more performant 'normal' mode, see https://www.sqlite.org/pragma.html#pragma_synchronous
         obj.sqliteConfig.synchronous = (obj.sqliteConfig.journalMode == 'wal') ? 'normal' : 'full';
-        if (obj.sqliteConfig.journalMode == 'wal') {obj.sqliteConfig.maintenance += 'PRAGMA wal_checkpoint(PASSIVE);'};
-        if (obj.sqliteConfig.autoVacuum == 'incremental') {obj.sqliteConfig.maintenance += 'PRAGMA incremental_vacuum(' + obj.sqliteConfig.incrementalVacuum + ');'};
-        obj.sqliteConfig.maintenance += 'PRAGMA optimize;';
-        
+        if (obj.sqliteConfig.journalMode == 'wal') {obj.sqliteConfig.maintenance += 'PRAGMA wal_checkpoint(PASSIVE);'}
+        if (obj.sqliteConfig.autoVacuum == 'incremental') {obj.sqliteConfig.maintenance += 'PRAGMA incremental_vacuum(' + obj.sqliteConfig.incrementalVacuum + ');'}
+
         parent.debug('db', 'SQlite config options: ' + JSON.stringify(obj.sqliteConfig, null, 4));
-        if (obj.sqliteConfig.journalMode == 'memory') { console.log('[WARNING] journal_mode=memory: this can lead to database corruption if there is a crash during a transaction. See https://www.sqlite.org/pragma.html#pragma_journal_mode') };
+        if (obj.sqliteConfig.journalMode == 'memory') { console.log('[WARNING] journal_mode=memory: this can lead to database corruption if there is a crash during a transaction. See https://www.sqlite.org/pragma.html#pragma_journal_mode') }
         //.cached not usefull
         obj.file = new sqlite3.Database(path.join(parent.datapath, databaseName + '.sqlite'), sqlite3.OPEN_READWRITE, function (err) {
             if (err && (err.code == 'SQLITE_CANTOPEN')) {
@@ -808,6 +818,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE TABLE power (id INTEGER PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON);
                         CREATE TABLE smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON);
                         CREATE TABLE plugin (id INTEGER PRIMARY KEY, doc JSON);
+                        CREATE TABLE pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
                         CREATE INDEX ndxtypedomainextra ON main (type, domain, extra);
                         CREATE INDEX ndxextra ON main (extra);
                         CREATE INDEX ndxextraex ON main (extraex);
@@ -822,19 +833,21 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxsmbiosexpire ON smbios (expire);
                         `, function (err) {
                             // Completed DB creation of SQLite3
-                            sqliteSetOptions(func);
-                            //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-                            setupFunctions(func);
+                            sqliteSetOptions(function () { setupFunctions(func); }); 
                         }
                     );
                 });
                 return;
-            } else if (err) { console.log("SQLite Error: " + err); process.exit(0); }
+            } else if (err) { console.log("SQLite Error: " + err); process.exit(1); }
 
             //for existing db's
-            sqliteSetOptions();
-            //setupFunctions could be put in the sqliteSetupOptions, but left after it for clarity
-            setupFunctions(func);
+            // Create any missing tables (e.g., pluginpermissions added in updates)
+            obj.file.exec(`
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+            `, function (err) {
+                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                sqliteSetOptions(function () { setupFunctions(func); });
+            });
         });
     } else if (parent.args.acebase) {
         // AceBase database setup
@@ -922,47 +935,67 @@ module.exports.CreateDB = function (parent, func) {
         }
     } else if (parent.args.postgres) {
         // Postgres SQL
-        let connectinArgs = parent.args.postgres;
-        connectinArgs.database = (databaseName = (connectinArgs.database != null) ? connectinArgs.database : 'meshcentral');
+        let connectionArgs = parent.args.postgres;
+        connectionArgs.database = (databaseName = (connectionArgs.database != null) ? connectionArgs.database : 'meshcentral');
 
         let DatastoreTest;
         obj.databaseType = DB_POSTGRESQL;
         const { Client } = require('pg');
-        Datastore = new Client(connectinArgs);
-        //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
-        connectinArgs.database = 'postgres';
-        DatastoreTest = new Client(connectinArgs);
-        DatastoreTest.connect();
-        connectinArgs.database = databaseName; //put the name back for backupconfig info
-        DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
-            if (res.rowCount != 0) { // database exists now check tables exists
-                DatastoreTest.end();
-                Datastore.connect();
-                Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
-                    if (err == null) {
-                      (res.rowCount ==0) ? postgreSqlCreateTables(func) : setupFunctions(func)
-                    } else
-                    if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
-                        postgreSqlCreateTables(func);
-                    } else {
-                        console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
-                    };
-                });
-            } else { // If not present, create the tables and indexes
-                //not needed, just use a create db statement: const pgtools = require('pgtools'); 
-                DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
-                    if (err == null) {
-                        // Create the tables and indexes
-                        DatastoreTest.end();
-                        Datastore.connect();
-                        postgreSqlCreateTables(func);
-                    } else {
-                            console.log('Postgresql database create error: ', err.message);
-                            process.exit(0);
-                    }
-                });
-            }
-        });
+        Datastore = new Client(connectionArgs);
+        // Check if we should skip database creation check
+        if (connectionArgs.createdatabase === false ) {
+            // Skip database check/creation, just connect and run the SELECT query
+            Datastore.connect();
+            Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                if (err == null) {
+                    // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                    // This ensures new tables (like pluginpermissions) get created on upgrades
+                    postgreSqlCreateTables(func);
+                } else if (err.code == '42P01') { //42P01 = undefined table
+                    postgreSqlCreateTables(func);
+                } else {
+                    console.log('Postgresql connection error: ', err.message); 
+                    process.exit(0);
+                }
+            });
+        } else {
+            //Connect to and check pg db first to check if own db exists. Otherwise errors out on 'database does not exist'
+            connectionArgs.database = 'postgres';
+            DatastoreTest = new Client(connectionArgs);
+            DatastoreTest.connect();
+            connectionArgs.database = databaseName; //put the name back for backupconfig info
+            DatastoreTest.query('SELECT 1 FROM pg_catalog.pg_database WHERE datname = $1', [databaseName], function (err, res) { // check database exists first before creating
+                if (res.rowCount != 0) { // database exists now check tables exists
+                    DatastoreTest.end();
+                    Datastore.connect();
+                    Datastore.query('SELECT doc FROM main WHERE id = $1', ['DatabaseIdentifier'], function (err, res) {
+                        if (err == null) {
+                            // Always call postgreSqlCreateTables since it uses CREATE TABLE IF NOT EXISTS
+                            // This ensures new tables (like pluginpermissions) get created on upgrades
+                            postgreSqlCreateTables(func);
+                        } else
+                        if (err.code == '42P01') { //42P01 = undefined table, https://www.postgresql.org/docs/current/errcodes-appendix.html
+                            postgreSqlCreateTables(func);
+                        } else {
+                            console.log('Postgresql database exists, other error: ', err.message); process.exit(0);
+                        };
+                    });
+                } else { // If not present, create the tables and indexes
+                    //not needed, just use a create db statement: const pgtools = require('pgtools'); 
+                    DatastoreTest.query('CREATE DATABASE "'+ databaseName + '";', [], function (err, res) {
+                        if (err == null) {
+                            // Create the tables and indexes
+                            DatastoreTest.end();
+                            Datastore.connect();
+                            postgreSqlCreateTables(func);
+                        } else {
+                                console.log('Postgresql database create error: ', err.message);
+                                process.exit(0);
+                        }
+                    });
+                }
+            });
+        }
     } else if (parent.args.mongodb) {
         // Use MongoDB
         obj.databaseType = DB_MONGODB;
@@ -1141,8 +1174,8 @@ module.exports.CreateDB = function (parent, func) {
                 }
             });
 
-            // Setup plugin info collection
-            if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
+        // Setup plugin info collection
+        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); obj.pluginpermissionsfile = db.collection('pluginpermissions'); }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -1327,41 +1360,42 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     function sqliteSetOptions(func) {
-        //get current auto_vacuum mode for comparison
+        // Read current auto_vacuum mode; switching into or out of 'none' requires a VACUUM to take effect. See https://www.sqlite.org/pragma.html#pragma_auto_vacuum
         obj.file.get('PRAGMA auto_vacuum;', function(err, current){
-            let pragma = 'PRAGMA journal_mode=' + obj.sqliteConfig.journalMode + ';' + 
-                'PRAGMA synchronous='+ obj.sqliteConfig.synchronous + ';' +
-                'PRAGMA journal_size_limit=' + obj.sqliteConfig.journalSize + ';' +
-                'PRAGMA auto_vacuum=' + obj.sqliteConfig.autoVacuum + ';' +
-                'PRAGMA incremental_vacuum=' + obj.sqliteConfig.incrementalVacuum + ';' +
-                'PRAGMA optimize=0x10002;';
-            //check new autovacuum mode, if changing from or to 'none', a VACUUM needs to be done to activate it. See https://www.sqlite.org/pragma.html#pragma_auto_vacuum
-            if ( obj.sqliteConfig.startupVacuum
-                || (current.auto_vacuum == 0 && obj.sqliteConfig.autoVacuum !='none')
-                || (current.auto_vacuum != 0 && obj.sqliteConfig.autoVacuum =='none'))
-                {
-                    pragma += 'VACUUM;';
-                };
+            if (err || !current) { parent.debug('db', 'Could not read auto_vacuum: ' + (err ? err.message : 'no row')); current = { auto_vacuum: 0 }; }
+            let pragma = `PRAGMA journal_mode=${obj.sqliteConfig.journalMode}` +
+                `;PRAGMA synchronous=${obj.sqliteConfig.synchronous}` +
+                `;PRAGMA journal_size_limit=${obj.sqliteConfig.journalSize}` +
+                `;PRAGMA auto_vacuum=${obj.sqliteConfig.autoVacuum}` +
+                `;PRAGMA incremental_vacuum(${obj.sqliteConfig.incrementalVacuum})` +
+                `;PRAGMA optimize=0x10002;PRAGMA foreign_keys = ON;`;
+            // VACUUM needed only when crossing the 'none' boundary in either direction
+            if (obj.sqliteConfig.startupVacuum || ((current.auto_vacuum == 0) != (obj.sqliteConfig.autoVacuum == 'none'))) { pragma += 'VACUUM;'; }
             parent.debug ('db', 'Config statement: ' + pragma);
-            
+
             obj.file.exec( pragma,
                 function (err) {
                 if (err) { parent.debug('db', 'Config pragma error: ' + (err.message)) };
-                sqliteGetPragmas(['journal_mode', 'journal_size_limit', 'freelist_count', 'auto_vacuum', 'page_size', 'wal_autocheckpoint', 'synchronous'], function (pragma, pragmaValue) {
-                    parent.debug('db', 'PRAGMA: ' + pragma + '=' + pragmaValue);
-                });
+                // check if debug db is enabled to prevent unneccessary calls
+                if ((parent.debugSources != null) && ((parent.debugSources == '*') || (parent.debugSources.indexOf('db') >= 0))) {
+                    sqliteGetPragmas(['journal_mode', 'journal_size_limit', 'freelist_count', 'auto_vacuum', 'page_size', 'wal_autocheckpoint', 'synchronous'], function (pragma, pragmaValue) {
+                        parent.debug('db', 'PRAGMA: ' + pragma + '=' + pragmaValue);
+                    });
+                }
+                if (func) { func(); }
             });
         });
-        //setupFunctions(func);
     }
 
     function sqliteGetPragmas (pragmas, func){
-        //pragmas can only be gotting one by one
+        //pragmas can only be gotten one by one
         pragmas.forEach (function (pragma) {
             obj.file.get('PRAGMA ' + pragma + ';', function(err, res){
-                if (pragma == 'auto_vacuum') { res[pragma] = SQLITE_AUTOVACUUM[res[pragma]] };
-                if (pragma == 'synchronous') { res[pragma] = SQLITE_SYNCHRONOUS[res[pragma]] };
-                if (func) { func (pragma, res[pragma]); }
+                if (err || !res) { return; }
+                let value = res[pragma];
+                if (pragma == 'auto_vacuum') { value = SQLITE_AUTOVACUUM[value]; }
+                else if (pragma == 'synchronous') { value = SQLITE_SYNCHRONOUS[value]; }
+                if (func) { func (pragma, value); }
             });
         });
     }
@@ -1376,7 +1410,8 @@ module.exports.CreateDB = function (parent, func) {
             'CREATE TABLE IF NOT EXISTS serverstats (time TIMESTAMP PRIMARY KEY, expire TIMESTAMP, doc JSON)',
             'CREATE TABLE IF NOT EXISTS power (id SERIAL PRIMARY KEY, time TIMESTAMP, nodeid CHAR(255), doc JSON)',
             'CREATE TABLE IF NOT EXISTS smbios (id CHAR(255) PRIMARY KEY, time TIMESTAMP, expire TIMESTAMP, doc JSON)',
-            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)'
+            'CREATE TABLE IF NOT EXISTS plugin (id SERIAL PRIMARY KEY, doc JSON)',
+            'CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)'
         ], function (results) {
             parent.debug('db', 'Creating indexes...');
             sqlDbExec('CREATE INDEX ndxtypedomainextra ON main (type, domain, extra)', null, function (err, response) { });
@@ -1584,18 +1619,18 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = -1; } // In SQLite, no limit is -1
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
                 } else {
                     if (extrasids == null) {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
                             if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                             func(err, performTypedRecordDecrypt(docs));
                         });
                     } else {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + '))) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + '))) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
                             if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                             func(err, performTypedRecordDecrypt(docs));
                         });
@@ -1843,9 +1878,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -1863,6 +1895,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE plugin SET doc=JSON_SET(doc,"$.status",$1) WHERE id=$2', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc=json_patch(doc,$1) WHERE id=$2', [JSON.stringify(args),id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0) { func(null, [docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON DUPLICATE KEY UPDATE doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if (obj.databaseType == DB_ACEBASE) {
             // Database actions on the main collection. AceBase: https://github.com/appy-one/acebase
@@ -1898,7 +1932,7 @@ module.exports.CreateDB = function (parent, func) {
             }
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (meshes.length == 0) { func(null, []); return; }
-                var query = obj.file.query('meshcentral').skip(skip).take(limit).filter('type', '==', type).filter('domain', '==', domain);
+                var query = obj.file.query('meshcentral').sort('name', true).skip(skip).take(limit).filter('type', '==', type).filter('domain', '==', domain);
                 if (id) { query = query.filter('_id', '==', id); }
                 if (extrasids == null) {
                     query = query.filter('meshid', 'in', meshes);
@@ -2124,13 +2158,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) {
-                obj.file.query('meshcentral').filter('type', '==', 'cfile').sort('_id').get(function (snapshots) {
-                    const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs);
-                });
-            }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
@@ -2155,6 +2182,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).remove().then(function () { if (func) { func(); } }); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.file.ref('plugin').child(encodeURIComponent(id)).update({ status: status }).then(function (ref) { if (func) { func(); } }) };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.file.ref('plugin').child(encodeURIComponent(id)).set(args).then(function (ref) { if (func) { func(); } }) };
+                obj.getPluginPermissions = function (pluginName, func) { obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).get(function(snapshot) { if (snapshot.exists()) { func(null, [snapshot.val()]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.file.ref('pluginpermissions').child('pluginpermission//' + pluginName).set(data, func); };
             }
         } else if (obj.databaseType == DB_POSTGRESQL) {
             // Database actions on the main collection (Postgres)
@@ -2182,12 +2211,12 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = 0xFFFFFFFF; }
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4)) LIMIT $5 OFFSET $6', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4)) ORDER BY LOWER(doc->>\'name\') LIMIT $5 OFFSET $6', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     if (extrasids == null) {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3)) LIMIT $4 OFFSET $5', [type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }, true);
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3)) ORDER BY LOWER(doc->>\'name\') LIMIT $4 OFFSET $5', [type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }, true);
                     } else {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra = ANY ($3)) OR (id = ANY ($4))) LIMIT $5 OFFSET $6', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra = ANY ($3)) OR (id = ANY ($4))) ORDER BY LOWER(doc->>\'name\') LIMIT $5 OFFSET $6', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                     }
                 }
             };
@@ -2395,9 +2424,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2415,6 +2441,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = $1', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery("UPDATE plugin SET doc= jsonb_set(doc::jsonb,'{status}',$1) WHERE id=$2", [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE plugin SET doc= doc::jsonb || ($1) WHERE id=$2', [args,id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0 && docs[0].doc) { func(null, [typeof docs[0].doc === 'string' ? JSON.parse(docs[0].doc) : docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON CONFLICT (id) DO UPDATE SET doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
             // Database actions on the main collection (MariaDB or MySQL)
@@ -2444,9 +2472,9 @@ module.exports.CreateDB = function (parent, func) {
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?) LIMIT ? OFFSET ?', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
-                    sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
@@ -2645,9 +2673,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { sqlDbQuery('SELECT doc FROM main WHERE type = "cfile" ORDER BY id', func); }
-            
             // Get database information (TODO: Complete this)
             obj.getDbStats = function (func) {
                 obj.stats = { c: 4 };
@@ -2749,14 +2774,14 @@ module.exports.CreateDB = function (parent, func) {
                 if (extrasids == null) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 });
+                    var f = obj.file.find(x, { type: 0 }).collation({ locale: 'en', strength: 2 }).sort({ name: 1 });
                     if (skip > 0) f = f.skip(skip); // Skip records
                     if (limit > 0) f = f.limit(limit); // Limit records
                     f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     const x = { type: type, domain: domain, $or: [ { meshid: { $in: meshes } }, { _id: { $in: extrasids } } ] };
                     if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 });
+                    var f = obj.file.find(x, { type: 0 }).collation({ locale: 'en', strength: 2 }).sort({ name: 1 });
                     if (skip > 0) f = f.skip(skip); // Skip records
                     if (limit > 0) f = f.limit(limit); // Limit records
                     f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
@@ -2767,12 +2792,20 @@ module.exports.CreateDB = function (parent, func) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
                     var f = obj.file.find(x, { type: 0 });
-                    f.count(function (err, count) { func(err, count); });
+                    if (f.countDocuments){
+                        f.countDocuments(function (err, count) { func(err, count); });
+                    } else {
+                        f.count(function (err, count) { func(err, count); });
+                    }
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -2939,9 +2972,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).toArray(func); }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 6 };
@@ -2972,6 +3002,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.deleteOne({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; id = require('mongodb').ObjectId(id); obj.pluginsfile.updateOne({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginpermissionsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginpermissionsfile.updateOne({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
 
         } else {
@@ -3011,15 +3043,26 @@ module.exports.CreateDB = function (parent, func) {
                 //if (id) { x._id = id; }
                 //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             //};
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+                if (extrasids == null) {
+                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                } else {
+                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                    if (id) { x._id = id; }
+                    obj.file.count(x, function (err, count) { func(err, count); });
+                }
+            };
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (extrasids == null) {
                     const x = { type: type, domain: domain, meshid: { $in: meshes } };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).sort({ name: 1 }).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
                     if (id) { x._id = id; }
-                    obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
+                    obj.file.find(x).sort({ name: 1 }).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -3027,7 +3070,7 @@ module.exports.CreateDB = function (parent, func) {
                 if (id) { x._id = id; }
                 obj.file.find(x, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            obj.GetAllType = function (type, func) { obj.file.find({ type: type }, function (err, docs) { func(err, common.unEscapeAllLinksFieldName(performTypedRecordDecrypt(docs))); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
@@ -3145,9 +3188,6 @@ module.exports.CreateDB = function (parent, func) {
             // Write a configuration file to the database
             obj.setConfigFile = function (path, data, func) { obj.Set({ _id: 'cfile/' + path, type: 'cfile', data: data.toString('base64') }, func); }
 
-            // List all configuration files
-            obj.listConfigFiles = function (func) { obj.file.find({ type: 'cfile' }).sort({ _id: 1 }).exec(func); }
-
             // Get database information
             obj.getDbStats = function (func) {
                 obj.stats = { c: 5 };
@@ -3177,8 +3217,9 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { obj.pluginsfile.remove({ _id: id }, func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { obj.pluginsfile.update({ _id: id }, { $set: { status: status } }, func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; obj.pluginsfile.update({ _id: id }, { $set: args }, func); };
+                obj.getPluginPermissions = function (pluginName, func) { obj.pluginsfile.findOne({ _id: 'pluginpermission//' + pluginName }, function(err, doc) { func(err, doc ? [doc] : []); }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; obj.pluginsfile.update({ _id: 'pluginpermission//' + pluginName }, { $set: data }, { upsert: true }, func); };
             }
-
         }
 
         // Get all configuration files
@@ -3401,6 +3442,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath }, function (error, stdout, stderr) {
                 if ((error != null) && (error != '')) {
                         func(1, "Mongodump error, backup will not be performed. Check path or use mongodumppath & mongodumpargs");
+						
+						let processedError = error.message;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
+							processedError = processedError.replaceAll(encodeURIComponent(parent.config.settings.postgres.password), "****");
+						}
+						parent.debug('backup', 'MongoDB/MongoJS DumpTool: ' + processedError);
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });
@@ -3412,6 +3460,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath, timeout: 1000*30 }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
                         func(1, "mysqldump error, backup will not be performed. Check path or use mysqldumppath");
+						
+						let processedError = error.message;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" &&	parent.config.settings.postgres.password.length > 0) {
+							processedError = processedError.replaceAll(encodeURIComponent(parent.config.settings.postgres.password), "****");
+						}
+						parent.debug('backup', 'MariaDB/MySQL DumpTool: ' + processedError);
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
 
@@ -3427,6 +3482,13 @@ module.exports.CreateDB = function (parent, func) {
             child_process.exec(cmd, { cwd: backupPath }, function(error, stdout, stdin) {
                 if ((error != null) && (error != '')) {
                         func(1, "pg_dump error, backup will not be performed. Check path or use pgdumppath.");
+						
+						let processedError = error.message;
+						if (typeof parent?.config?.settings?.postgres?.password === "string" && parent.config.settings.postgres.password.length > 0) {
+							processedError = processedError.replaceAll(encodeURIComponent(parent.config.settings.postgres.password), "****");
+						}
+						parent.debug('backup', 'PostgreSQL DumpTool: ' + processedError);				
+						
                         return;
                 } else {parent.config.settings.autobackup.backupintervalhours = backupInterval;}
             });        
@@ -3548,8 +3610,8 @@ module.exports.CreateDB = function (parent, func) {
     obj.performBackup = function (func) {
         parent.debug('backup','Entering performBackup');
         try {
-            if (obj.performingBackup) return 'Backup alreay in progress.';
-            if (parent.config.settings.autobackup.backupintervalhours == -1) { if (func) { func('Backup disabled.'); return 'Backup disabled.' }};
+            if (obj.performingBackup) { return 'Backup already in progress.' };
+            if (parent.config.settings.autobackup.backupintervalhours == -1) { return 'Backup disabled.' };
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
@@ -3645,12 +3707,13 @@ module.exports.CreateDB = function (parent, func) {
         let archive = null;
         let zipLevel = Math.min(Math.max(Number(parent.config.settings.autobackup.zipcompression ? parent.config.settings.autobackup.zipcompression : 5),1),9);
 
-        //if password defined, create encrypted zip
-        if (parent.config.settings.autobackup && (typeof parent.config.settings.autobackup.zippassword == 'string')) {
+        //if password defined, or a password entered for the manual backup, create encrypted zip
+        if ((parent.config.settings.autobackup.zippasswordrequest != '') && ((typeof parent.config.settings.autobackup.zippassword == 'string') || (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')))  {
             try {
                 //Only register format once, otherwise it triggers an error
                 if (archiver.isRegisteredFormat('zip-encrypted') == false) { archiver.registerFormat('zip-encrypted', require('archiver-zip-encrypted')); }
-                archive = archiver.create('zip-encrypted', { zlib: { level: zipLevel }, encryptionMethod: 'aes256', password: parent.config.settings.autobackup.zippassword });
+                archive = archiver.create('zip-encrypted', { zlib: { level: zipLevel }, encryptionMethod: 'aes256',
+                    password: (typeof parent.config.settings.autobackup.zippasswordrequest == 'string')?parent.config.settings.autobackup.zippasswordrequest:parent.config.settings.autobackup.zippassword });
                 if (func) { func('Creating encrypted ZIP'); }
             } catch (ex) { // registering encryption failed, do not fall back to non-encrypted, fail backup and skip old backup removal as a precaution to not lose any backups
                 obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
@@ -3661,6 +3724,7 @@ module.exports.CreateDB = function (parent, func) {
             if (func) { func('Creating a NON-ENCRYPTED ZIP'); }
             archive = archiver('zip', { zlib: { level: zipLevel } });
         }
+        delete parent.config.settings.autobackup.zippasswordrequest;
 
         //original behavior, just a filebackup if dbdump fails : (obj.backupStatus == 0 || obj.backupStatus == BACKUPFAIL_DBDUMP)
         if (obj.backupStatus == 0) {

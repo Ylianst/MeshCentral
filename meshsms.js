@@ -147,16 +147,16 @@ module.exports.CreateMeshSMS = function (parent) {
             } else {
                 var sms = parent.config.sms.url.split('{{phone}}').join(encodeURIComponent(to)).split('{{message}}').join(encodeURIComponent(msg));
                 parent.debug('email', 'SMS URL: ' + sms);
-                sms = require('url').parse(sms);
+                sms = new URL(sms);
                 if (sms.protocol == 'https:') {
                     // HTTPS GET request
-                    const options = { hostname: sms.hostname, port: sms.port ? sms.port : 443, path: sms.path, method: 'GET', rejectUnauthorized: false };
+                    const options = { hostname: sms.hostname, port: sms.port ? sms.port : 443, path: sms.pathname + sms.search, method: 'GET', rejectUnauthorized: false };
                     const request = require('https').request(options, function (res) { parent.debug('email', 'SMS result: ' + res.statusCode); if (func != null) { func(res.statusCode == 200, (res.statusCode == 200) ? null : res.statusCode, null); } res.on('data', function (d) { }); });
                     request.on('error', function (err) { parent.debug('email', 'SMS error: ' + err); if (func != null) { func(false, err, null); } });
                     request.end();
                 } else {
                     // HTTP GET request
-                    const options = { hostname: sms.hostname, port: sms.port ? sms.port : 80, path: sms.path, method: 'GET' };
+                    const options = { hostname: sms.hostname, port: sms.port ? sms.port : 80, path: sms.pathname + sms.search, method: 'GET' };
                     const request = require('http').request(options, function (res) { parent.debug('email', 'SMS result: ' + res.statusCode); if (func != null) { func(res.statusCode == 200, (res.statusCode == 200) ? null : res.statusCode, null); } res.on('data', function (d) { }); });
                     request.on('error', function (err) { parent.debug('email', 'SMS error: ' + err); if (func != null) { func(false, err, null); } });
                     request.end();

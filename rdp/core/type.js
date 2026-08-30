@@ -303,7 +303,15 @@ inherits(SingleType, Type);
  * @param s
  */
 SingleType.prototype.writeValue = function(s) {
-	this.writeBufferCallback.call(s.buffer, this.value, s.offset);
+    var safeValue = this.value;
+    if (typeof safeValue === 'number') { // FIX: Sanitize coordinates to prevent crashes
+        safeValue = Math.round(safeValue); // Round to nearest integer (fixes -1.01 issues)
+        if (safeValue < 0) safeValue = 0; // Clamp to 0 if negative
+        // nbBytes is 1 (UInt8), 2 (UInt16), or 4 (UInt32)
+        var max = Math.pow(2, this.nbBytes * 8) - 1;
+        if (safeValue > max) safeValue = max; // Clamp to max value allowed by the buffer size (prevents overflow crashes)
+    }
+    this.writeBufferCallback.call(s.buffer, safeValue, s.offset);
 	s.offset += this._size_();
 };
 

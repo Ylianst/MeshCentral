@@ -29,6 +29,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
     obj.runAsProduction = false;
     obj.redirWebServerHooked = false;
     obj.zerossl = false;
+    obj.custom = false;
     obj.csr = null;
     obj.configErr = null;
     obj.configOk = false;
@@ -60,6 +61,7 @@ module.exports.CreateLetsEncrypt = function (parent) {
     obj.getCertificate = function(certs, func) {
         obj.runAsProduction = (obj.parent.config.letsencrypt.production === true);
         obj.zerossl = ((typeof obj.parent.config.letsencrypt.zerossl == 'object') ? obj.parent.config.letsencrypt.zerossl : false);
+        obj.custom = ((typeof obj.parent.config.letsencrypt.custom == 'object') ? obj.parent.config.letsencrypt.custom : false);
         obj.log("Getting certs from local store (" + (obj.runAsProduction ? "Production" : "Staging") + ")");
         if (certs.CommonName.indexOf('.') == -1) { obj.configErr = "Add \"cert\" value to settings in config.json before using Let's Encrypt."; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
         if (obj.parent.config.letsencrypt == null) { obj.configErr = "No Let's Encrypt configuration"; parent.addServerWarning(obj.configErr); obj.log("WARNING: " + obj.configErr); func(certs); return; }
@@ -180,6 +182,18 @@ module.exports.CreateLetsEncrypt = function (parent) {
                         hmacKey: obj.zerossl.hmackey
                     }
                 });
+            } else if (obj.custom) {
+                if (obj.custom.kid == "") { obj.log("EAB KID hasn't been set, invalid configuration."); return; }
+                if (obj.custom.hmackey == "") { obj.log("EAB HMAC KEY hasn't been set, invalid configuration."); return; }
+                if (obj.custom.server == "") { obj.log("Custom ACME server URL hasn't been set, invalid configuration."); return; }
+                obj.client = new acme.Client({
+                    directoryUrl: obj.custom.server,
+                    accountKey: accountKey,
+                    externalAccountBinding: {
+                        kid: obj.custom.kid,
+                        hmacKey: obj.custom.hmackey
+                    }
+                });
             } else {
                 obj.client = new acme.Client({
                     directoryUrl: obj.runAsProduction ? acme.directory.letsencrypt.production : acme.directory.letsencrypt.staging,
@@ -194,7 +208,13 @@ module.exports.CreateLetsEncrypt = function (parent) {
             acme.forge.createCsr(certRequest).then(function (r) {
                 obj.csr = r[1];
                 obj.tempPrivateKey = r[0];
-                if(obj.zerossl) { obj.log("Requesting certificate from ZeroSSL..."); } else { obj.log("Requesting certificate from Let's Encrypt..."); }
+                if(obj.zerossl) { 
+                    obj.log("Requesting certificate from ZeroSSL...");
+                } else if(obj.custom) {
+                    obj.log("Requesting certificate from Custom ACME server...");
+                } else {
+                    obj.log("Requesting certificate from Let's Encrypt...");
+                }
                 obj.client.auto({
                     csr: obj.csr,
                     email: obj.parent.config.letsencrypt.email,

@@ -684,8 +684,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             if (data.length >= 12) {
                 command = data.readUInt16BE(8);
                 cmdsize = data.readUInt32BE(4);
-                if (data.length == (cmdsize + 8)) {
-                    data = data.slice(8, data.length);
+                // The agent pads jumbo packets up to an 8-byte boundary, so data.length is
+                // usually 1..7 bytes longer than (cmdsize + 8). The previous exact-equality
+                // check classified those complete frames as partial and dropped them.
+                if (data.length >= (cmdsize + 8)) {
+                    data = data.slice(8, cmdsize + 8);
                 } else {
                     console.log('TODO-PARTIAL-JUMBO', command, cmdsize, data.length);
                     return; // TODO
@@ -1052,8 +1055,8 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
     // Check relay authentication
     if ((user == null) && (obj.req.query != null) && (obj.req.query.rauth != null)) {
         const rcookie = parent.parent.decodeCookie(obj.req.query.rauth, parent.parent.loginCookieEncryptionKey, 240); // Cookie with 4 hour timeout
-        if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; } else if (rcookie.nouser === 1) { obj.rnouser = true; }
-        if (rcookie.nodeid != null) { obj.nodeid = rcookie.nodeid; }
+        if (rcookie != null) { if (rcookie.ruserid != null) { obj.ruserid = rcookie.ruserid; } else if (rcookie.nouser === 1) { obj.rnouser = true; } }
+        if (rcookie != null) { if (rcookie.nodeid != null) { obj.nodeid = rcookie.nodeid; } }
     }
 
     // If there is no authentication, drop this connection
@@ -1340,6 +1343,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 if (user != null) { rcookieData.ruserid = user._id; } else if (obj.nouser === true) { rcookieData.nouser = 1; }
                 const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
                 const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/meshrelay.ashx?p=2&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, usage: 2, rights: cookie.r, guestuserid: user._id, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
+                if (typeof domain.terminaluservariable == 'string') { command.soptions.terminalUserVariable = domain.terminaluservariable; }
                 if (typeof domain.consentmessages == 'object') {
                     if (typeof domain.consentmessages.title == 'string') { command.soptions.consentTitle = domain.consentmessages.title; }
                     if (typeof domain.consentmessages.desktop == 'string') { command.soptions.consentMsgDesktop = domain.consentmessages.desktop; }
@@ -1348,6 +1352,13 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                     if ((typeof domain.consentmessages.consenttimeout == 'number') && (domain.consentmessages.consenttimeout > 0)) { command.soptions.consentTimeout = domain.consentmessages.consenttimeout; }
                     if (domain.consentmessages.autoacceptontimeout === true) { command.soptions.consentAutoAccept = true; }
                     if (domain.consentmessages.autoacceptifnouser === true) { command.soptions.consentAutoAcceptIfNoUser = true; }
+                    if (domain.consentmessages.autoacceptifdesktopnouser === true) { command.soptions.consentAutoAcceptIfDesktopNoUser = true; }
+                    if (domain.consentmessages.autoacceptifterminalnouser === true) { command.soptions.consentAutoAcceptIfTerminalNoUser = true; }
+                    if (domain.consentmessages.autoacceptiffilenouser === true) { command.soptions.consentAutoAcceptIfFileNoUser = true; }
+                    if (domain.consentmessages.autoacceptiflocked === true) { command.soptions.consentAutoAcceptIfLocked = true; }
+                    if (domain.consentmessages.autoacceptifdesktoplocked === true) { command.soptions.consentAutoAcceptIfDesktopLocked = true; }
+                    if (domain.consentmessages.autoacceptifterminallocked === true) { command.soptions.consentAutoAcceptIfTerminalLocked = true; }
+                    if (domain.consentmessages.autoacceptiffilelocked === true) { command.soptions.consentAutoAcceptIfFileLocked = true; }
                     if (domain.consentmessages.oldstyle === true) { command.soptions.oldStyle = true; }
                 }
                 if (typeof domain.notificationmessages == 'object') {

@@ -33,6 +33,9 @@ var SPI_SETMOUSETRAILS = 0x005D;
 var GM = require('_GenericMarshal');
 var user32 = GM.CreateNativeProxy('user32.dll');
 user32.CreateMethod('SystemParametersInfoA');
+user32.CreateMethod('GetLastInputInfo');
+var kernel32 = GM.CreateNativeProxy('kernel32.dll');
+kernel32.CreateMethod('GetTickCount');
 
 //
 // This function is a helper method to dispatch method calls to different user sessions
@@ -189,6 +192,108 @@ function mousetrails_get(tsid)
     return (v.toBuffer().readUInt32LE());
 }
 
+//
+// This function returns the number of seconds since the last keyboard or mouse input from the user.
+// It uses GetLastInputInfo from user32.dll to retrieve the last input tick count,
+// then compares it against the current tick count from GetTickCount.
+//
+// Both GetTickCount and the dwTime field from GetLastInputInfo are 32-bit values that wrap
+// around after approximately 49.7 days. This function handles the wraparound case correctly.
+//
+// MSDN documentation:
+// https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlastinputinfo
+//
+function idle_getSeconds(tsid)
+{
+    if (tsid != null || tsid === null) // TSID is not undefined or is explicitly null
+    {
+        // Need to dispatch to different session first
+        return (sessionDispatch(tsid, 'idle', 'getSeconds', []));
+    }
+    
+    // Allocate 8 bytes for the LASTINPUTINFO struct:
+    //   UINT  cbSize  (offset 0, 4 bytes) - must be set to 8 before calling
+    //   DWORD dwTime  (offset 4, 4 bytes) - tick count of last input event
+    var lii = GM.CreateVariable(8);
+
+    // cbSize must be set to the size of the struct (8) before calling
+    lii.toBuffer().writeUInt32LE(8, 0);
+
+    var ret = user32.GetLastInputInfo(lii);
+    if (ret.Val == 0)
+    {
+        throw ('Error occured trying to get last input info');
+    }
+
+    // Read dwTime from byte offset 4
+    var dwTime = lii.toBuffer().readUInt32LE(4);
+
+    // GetTickCount returns the number of milliseconds since system boot (32-bit, wraps after ~49.7 days)
+    var tickNow = kernel32.GetTickCount().Val;
+
+    // Handle 32-bit wraparound case
+    var idleMs;
+    if (tickNow >= dwTime)
+    {
+        // Normal case: no wraparound
+        idleMs = tickNow - dwTime;
+    }
+    else
+    {
+        // Wraparound occurred: tickNow wrapped to 0 while dwTime is still large
+        // Calculate the time from dwTime to the wrap point (0xFFFFFFFF) plus time since wrap
+        idleMs = (0xFFFFFFFF - dwTime) + tickNow + 1;
+    }
+
+    return Math.floor(idleMs / 1000);
+}
+
+//
+// This function returns the minimum idle time across all active/connected user sessions.
+// This is useful for detecting if ANY user (console or RDP) is actively using the machine.
+// Returns a promise that resolves to the minimum idle seconds, or -1 if no users are logged in.
+//
+function idle_getSecondsAllSessions()
+{
+    var promise = require('promise');
+    return new promise(function (resolve, reject)
+    {
+        require('user-sessions').enumerateUsers().then(function (sessions)
+        {
+            var minIdleSeconds = Infinity;
+            for (var sessionId in sessions)
+            {
+                var session = sessions[sessionId];
+                
+                // Only check Active sessions with a logged-in user (Username is present)
+                // Skip "Connected" sessions (console when disconnected) and "Listening" sessions
+                if (session.State === 'Active' && session.Username && session.Username !== '')
+                {
+                    try
+                    {
+                        var idleSeconds = parseFloat(sessionDispatch(session.SessionId, 'idle', 'getSeconds', []));
+                        if (idleSeconds < minIdleSeconds)
+                        {
+                            minIdleSeconds = idleSeconds;
+                        }
+                    }
+                    catch (e)
+                    {
+                        // Session might not support GetLastInputInfo, skip it
+                    }
+                }
+            }
+            
+            // If no active user sessions found, return -1 to indicate "no users logged in"
+            resolve(minIdleSeconds === Infinity ? -1 : Math.floor(minIdleSeconds));
+        }).catch(function (err)
+        {
+            reject(err);
+        });
+    });
+}
+
 module.exports = { background: { get: background_get, set: background_set } };
 module.exports.mouse = { getTrails: mousetrails_get, setTrails: mousetrails_set };
+module.exports.idle = { getSeconds: idle_getSeconds, getSecondsAllSessions: idle_getSecondsAllSessions };
 module.exports.dispatch = dispatch;

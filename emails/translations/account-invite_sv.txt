@@ -1,5 +1,0 @@
-[[[SERVERNAME]]] - Kontoinbjudan
-Ett konto skapades åt dig på servern [[[SERVERNAME]]] ([[[SERVERURL]]] / [[[URLARGS1]]], du kan komma åt det nu med användarnamnet "[[[ACCOUNTNAME]]]" och lösenord "[[[PASSWORD]]]".
-~
-Vänliga hälsningar,
-~[[[USERNAME]]]

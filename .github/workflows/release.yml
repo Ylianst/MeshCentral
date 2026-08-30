@@ -1,5 +1,6 @@
 name: Release
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -12,14 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Release
-        uses: justincy/github-action-npm-release@2.0.2
+        uses: SerenModz21/github-action-npm-release@master
         id: release
-        with: 
-          token: ${{ secrets.MY_TOKEN }}
       - name: Print release output
         if: ${{ steps.release.outputs.released == 'true' }}
         run: echo Release ID ${{ steps.release.outputs.release_id }}
+      - name: Trigger Docker builds
+        if: ${{ steps.release.outputs.released == 'true' }}
+        run: |
+          gh workflow run docker-alpine.yml -r ${{ steps.release.outputs.release_tag }}
+          gh workflow run docker-debian.yml -r ${{ steps.release.outputs.release_tag }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

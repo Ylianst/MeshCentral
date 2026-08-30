@@ -439,7 +439,9 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 socket.tag.first = false;
 
                 // Setup this node with certificate authentication
-                if (socket.tag.clientCert && socket.tag.clientCert.subject && socket.tag.clientCert.subject.O && socket.tag.clientCert.subject.O.length == 64) {
+                // Note: getPeerCertificate() returns subject.O as an array when the certificate
+                // carries repeated O attributes; require a string so the .split() below cannot throw.
+                if (socket.tag.clientCert && socket.tag.clientCert.subject && (typeof socket.tag.clientCert.subject.O == 'string') && socket.tag.clientCert.subject.O.length == 64) {
                     // This is a node where the MeshID is indicated within the CIRA certificate
                     var domainid = '', meshid;
                     var xx = socket.tag.clientCert.subject.O.split('/');
@@ -459,6 +461,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
 
                     // Fetch the node
                     obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.nodeid + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length !== 1)) {
                             var mesh = obj.parent.webserver.meshes[socket.tag.meshid];
                             if (mesh == null) {
@@ -678,6 +681,11 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     }
                 }
 
+                // A real Intel AMT device always sends PROTOCOLVERSION before USERAUTH. Without it,
+                // socket.tag.SystemId is undefined and SystemId.split() below (including inside the
+                // async DNS/DB callbacks) throws uncaught and terminates the server process.
+                if (typeof socket.tag.SystemId != 'string') { SendUserAuthFail(socket); return -1; }
+
                 // If this is a agent-less mesh, use the device guid 3 times as ID.
                 if (initialMesh.mtype == 1) {
                     // Intel AMT GUID (socket.tag.SystemId) will be used as NodeID
@@ -692,6 +700,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     socket.tag.connectTime = Date.now();
 
                     obj.db.Get(socket.tag.nodeid, function (err, nodes) {
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.nodeid + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length !== 1)) {
                             // Check if we already have too many devices for this domain
                             if (domain.limits && (typeof domain.limits.maxdevices == 'number')) {
@@ -770,6 +779,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                 } else if (initialMesh.mtype == 2) { // If this is a agent mesh, search the mesh for this device UUID
                     // Intel AMT GUID (socket.tag.SystemId) will be used to search the node
                     obj.db.getAmtUuidMeshNode(initialMesh.domain, initialMesh.mtype, socket.tag.SystemId, function (err, nodes) { // TODO: Need to optimize this request with indexes
+                        if (err) { parent.debug('mps', 'CIRA db.Get error for ' + socket.tag.SystemId + ': ' + err); obj.close(socket); return; }
                         if ((nodes == null) || (nodes.length === 0) || (obj.parent.webserver.meshes == null)) {
                             // New CIRA connection for unknown node, create a new device.
                             unknownNodeCount++;
@@ -1108,7 +1118,7 @@ module.exports.CreateMpsServer = function (parent, db, args, certificates) {
                     if (len < 9) return 0;
                     var RecipientChannel = common.ReadInt(data, 1);
                     var LengthOfData = common.ReadInt(data, 5);
-                    if (SourceLen > 1048576) return -1;
+                    if (LengthOfData > 1048576) return -1;
                     if (len < (9 + LengthOfData)) return 0;
                     parent.debug('mpscmddata', '--> CHANNEL_DATA', RecipientChannel, LengthOfData);
                     var cirachannel = socket.tag.channels[RecipientChannel];

@@ -1,6 +1,0 @@
-[[[SERVERNAME]]] - 邮件验证
-嗨[[[USERNAME]]]，[[[SERVERNAME]]] ([[[SERVERURL]]][[[URLARGS1]]]) 正在执行邮件验证。转到以下链接以完成该过程：
-~
-~[[[SERVERURL]]]/checkmail?c=[[[COOKIE]]][[[URLARGS2]]]
-~
-如果您没有发起此请求，请忽略此邮件。

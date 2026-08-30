@@ -125,10 +125,12 @@ var CreateRDPDesktop = function (canvasid, domainUrl) {
             }
         };
         obj.socket.onclose = function () { changeState(0); };
+        window.addEventListener('blur', obj.m.releaseModifiers);
         changeState(1);
     }
 
     obj.Stop = function () {
+        window.removeEventListener('blur', obj.m.releaseModifiers);
         obj.Canvas.fillRect(0, 0, obj.ScreenWidth, obj.ScreenHeight);
         if (obj.socket) { obj.socket.close(); }
     }
@@ -200,6 +202,13 @@ var CreateRDPDesktop = function (canvasid, domainUrl) {
         obj.socket.send(JSON.stringify(['scancode', Mstsc.scancode(e), true]));
         e.preventDefault();
         return false;
+    }
+    obj.m.releaseModifiers = function () {
+        if (!obj.socket || (obj.State != 3)) return;
+        // Release modifier keys so they can't get stuck on the remote when the browser loses
+        // focus during an Alt+Tab (issue #330). L/R Shift, L/R Ctrl, L/R Alt, L/R Win.
+        var mods = [42, 54, 29, 57373, 56, 57400, 57435, 57436];
+        for (var i = 0; i < mods.length; i++) { obj.socket.send(JSON.stringify(['scancode', mods[i], false])); }
     }
     obj.m.mousewheel = function (e) {
         if (!obj.socket || (obj.State != 3)) return;

@@ -190,7 +190,16 @@ var KeyboardLayout = {
     JAPANESE : 0x00000411,
     KOREAN : 0x00000412,
     DUTCH : 0x00000413,
-    NORWEGIAN : 0x00000414
+    NORWEGIAN : 0x00000414,
+    // Region specific layouts, where the region selects a different layout
+    // than the plain language does.
+    SWISS_GERMAN : 0x00000807,
+    UNITED_KINGDOM : 0x00000809,
+    BELGIAN_FRENCH : 0x0000080c,
+    BELGIAN_DUTCH : 0x00000813,
+    CANADIAN_FRENCH : 0x00001009,
+    SWISS_FRENCH : 0x0000100c,
+    IRISH : 0x00001809
 };
 
 /**
