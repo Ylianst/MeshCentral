@@ -6533,7 +6533,16 @@
         function onUserSearchFocus(x) { userSearchFocus = x; }
         function onConsoleFocus(x) { consoleFocus = x; }
 
-       function parseSearchOrInput(x) {
+       function parseSearchAndInput(x) {
+            var s = x.split(' ' + "and" + ' '), r = null;
+            for (var i in s) {
+                var r2 = getDevicesThatMatchFilter(s[i]);
+                if (r == null) { r = r2; } else { var r3 = []; for (var j in r2) { if (r.indexOf(r2[j]) >= 0) { r3.push(r2[j]); } } r = r3; }
+            }
+            return r;
+        }
+		
+		function parseSearchOrInput(x) {
             if (x == '') { return parseSearchAndInput(x); } // Empty search, return all devices.
             var parts = x.split(','), r = null; // Comma = OR, each part keeps its own prefix (u:, g:, t:, etc.)
             for (var p in parts) {
