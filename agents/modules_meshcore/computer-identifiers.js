@@ -80,6 +80,7 @@ function linux_identifiers()
                 if (require('fs').existsSync('/sys/firmware/devicetree/base/model')) {
                     if (require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim().startsWith('Raspberry')) {
                         identifiers['board_vendor'] = 'Raspberry Pi';
+                        identifiers['bios_vendor'] = 'Raspberry Pi';
                         identifiers['board_name'] = require('fs').readFileSync('/sys/firmware/devicetree/base/model').toString().trim();
                         identifiers['board_serial'] = require('fs').readFileSync('/sys/firmware/devicetree/base/serial-number').toString().trim();
                         const memorySlots = [];
