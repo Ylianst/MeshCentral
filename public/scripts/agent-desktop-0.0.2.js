@@ -590,6 +590,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (event.addy) { Y += event.addy; }
 
             if (X >= 0 && X <= obj.Canvas.canvas.width && Y >= 0 && Y <= obj.Canvas.canvas.height) {
+                // Map the displayed (view-rotated) canvas position back to desktop coordinates,
+                // like amt-desktop does; without this every rotated view sends wrong mouse positions.
+                if (obj.rotation != 0) { var rotatedX = obj.crotX(X, Y); Y = obj.crotY(X, Y); X = rotatedX; }
                 var Button = 0;
                 var Delta = 0;
                 if (Action == obj.KeyAction.UP || Action == obj.KeyAction.DOWN) {

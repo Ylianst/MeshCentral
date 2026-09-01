@@ -95,8 +95,12 @@
         var notificationSupport = true;
 
         // File transfer state
+        var maxMessengerFileSize = 100 * 1024 * 1024;
+        var maxMessengerFileNameLength = 1024;
+        var maxMessengerFileChunkSize = 65536;
+        var maxMessengerFileDownloads = 10;
         var fileUploads = [];
-        var fileDownloads = {};
+        var fileDownloads = Object.create(null);
         var currentFileUpload = null;
         var currentFileDownload = null;
 
@@ -173,7 +177,7 @@
         }
 
         function onUserInputFocus(x) { userInputFocus = x; }
-        function displayClear() { chatTextSession = new Date().toString() + '\r\n'; QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = {}; }
+        function displayClear() { chatTextSession = new Date().toString() + '\r\n'; QH('xmsg', ''); cancelAllFileTransfers(); fileUploads = [], fileDownloads = Object.create(null); }
 
         // Polyfill FileReader if needed
         if (!FileReader.prototype.readAsBinaryString) {
@@ -447,22 +451,26 @@
                         break;
                     }
                     case 'file': { startFileDownload(data); break; }
-                    case 'fileUploadCancel': { cancelFileTransfer(data.id); break; }
+                    case 'fileUploadCancel': { if (isValidFileTransferId(data.id)) { cancelFileTransfer(data.id); } break; }
                     case 'fileUploadStart': {
-                        if (fileDownloads[data.id]) {
+                        if (isValidFileTransferId(data.id) && Object.prototype.hasOwnProperty.call(fileDownloads, data.id)) {
                             currentFileDownload = fileDownloads[data.id];
-                            currentFileDownload.data = '';
+                            currentFileDownload.data = [];
+                            currentFileDownload.received = 0;
                             changeFileInfo(data.id, 2, 0);
                             continueFileDownload(data);
                             send({ action: 'fileUploadAck', id: data.id });
                         } break;
                     }
                     case 'fileUploadEnd': {
-                        if (currentFileDownload && (currentFileDownload.id == data.id)) {
+                        if (isValidFileTransferId(data.id) && currentFileDownload && (currentFileDownload.id == data.id) && (currentFileDownload.received == currentFileDownload.size)) {
                             changeFileInfo(data.id, 3, 200);
                             currentFileDownload.done = 1;
                             currentFileDownload = null;
                             send({ action: 'fileUploadAck', id: data.id });
+                        } else if (isValidFileTransferId(data.id)) {
+                            send({ action: 'fileUploadCancel', id: data.id });
+                            cancelFileTransfer(data.id);
                         }
                         currentFileDownload = null;
                         break;
@@ -472,10 +480,14 @@
                         break;
                     }
                     case 'fileData': {
-                        if (currentFileDownload && (currentFileDownload.id == data.id)) {
-                            currentFileDownload.data += data.data;
-                            changeFileInfo(data.id, 2, (currentFileDownload.data.length * 200 / currentFileDownload.size));
+                        if (isValidFileTransferId(data.id) && currentFileDownload && (currentFileDownload.id == data.id) && (typeof data.data == 'string') && (data.data.length <= maxMessengerFileChunkSize) && ((currentFileDownload.received + data.data.length) <= currentFileDownload.size)) {
+                            currentFileDownload.data.push(data.data);
+                            currentFileDownload.received += data.data.length;
+                            changeFileInfo(data.id, 2, (currentFileDownload.received * 200 / currentFileDownload.size));
                             send({ action: 'fileUploadAck', id: data.id });
+                        } else if (isValidFileTransferId(data.id)) {
+                            send({ action: 'fileUploadCancel', id: data.id });
+                            cancelFileTransfer(data.id);
                         }
                         break;
                     }
@@ -545,11 +557,19 @@
         }
 
         function startFileDownload(file) {
-            if (state != 2) return;
+            if ((state != 2) || !isValidFileTransferMetadata(file) || Object.prototype.hasOwnProperty.call(fileDownloads, file.id) || (Object.keys(fileDownloads).length >= maxMessengerFileDownloads)) return;
             fileDownloads[file.id] = file;
             chatTextSession += ((new Date()).toLocaleTimeString() + ' - ' + "Download" + '> ' + file.name + ' (' + file.size + ' ' + "bytes" + ')\r\n');
-            QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="font-size:14px;width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:20px;overflow:hidden;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
+            QA('xmsg', '<div style="clear:both"></div><div id="FILEUP-' + file.id + '" class="remoteBubble" style="font-size:14px;width:240px;cursor:pointer" onclick="saveFileTransfer(\'' + file.id + '\')"><div id="FILEUP-ICON-' + file.id + '" class="fileicon" style="float:left;width:32px;height:32px"></div><div><div id="FILEUP-NAME-' + file.id + '" style="height:20px;overflow:hidden;white-space:nowrap;" title="' + EscapeHtml(file.name) + '">' + EscapeHtml(file.name) + '</div><div style="width:200px;background-color:lightgray;margin-left:32px;border-radius:3px;margin-top:3px;height:11px"><div id="FILEUP-PROGRESS-' + file.id + '" style="width:0px;background-color:green;border-radius:3px;height:11px">&nbsp;</div></div></div></div>');
             Q('xmsgparent').scrollTop = Q('xmsgparent').scrollHeight;
+        }
+
+        function isValidFileTransferId(id) { return (typeof id == 'number') && isFinite(id) && (id >= 0) && (id < 1); }
+        function isValidFileTransferMetadata(file) {
+            return (file != null) && (typeof file == 'object') && isValidFileTransferId(file.id) &&
+                (typeof file.name == 'string') && (file.name.length > 0) && (file.name.length <= maxMessengerFileNameLength) &&
+                (typeof file.size == 'number') && isFinite(file.size) && (file.size > 0) && (file.size <= maxMessengerFileSize) &&
+                ((file.type == null) || ((typeof file.type == 'string') && (file.type.length <= 255)));
         }
 
         // Change the file icon and progress
@@ -567,9 +587,13 @@
 
         // Convert a string into a blob
         function data2blob(data) {
-            var bytes = new Array(data.length);
-            for (var i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
-            return new Blob([new Uint8Array(bytes)]);
+            var input = Array.isArray(data) ? data : [data], parts = [];
+            for (var i = 0; i < input.length; i++) {
+                var bytes = new Uint8Array(input[i].length);
+                for (var j = 0; j < input[i].length; j++) { bytes[j] = input[i].charCodeAt(j); }
+                parts.push(bytes);
+            }
+            return new Blob(parts);
         };
 
         function saveFileTransfer(id) {

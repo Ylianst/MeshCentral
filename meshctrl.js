@@ -14,6 +14,7 @@ try { require('ws'); } catch (ex) { console.log('Missing module "ws", type "npm 
 
 var settings = {};
 const crypto = require('crypto');
+const RUNCOMMAND_RESPONSE_ID = crypto.randomUUID(); // unique per process, see PR description: avoids concurrent 'runcommand' invocations under the same login cross-talking on each other's --reply output
 const args = require('minimist')(process.argv.slice(2));
 const path = require('path');
 const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'serverversion', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
@@ -1775,7 +1776,7 @@ function serverConnect() {
                 if (args.runasuser) { runAsUser = 1; } else if (args.runasuseronly) { runAsUser = 2; }
                 var reply = false;
                 if (args.reply) { reply = true; }
-                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: 'meshctrl', runAsUser: runAsUser, reply: reply }));
+                ws.send(JSON.stringify({ action: 'runcommands', nodeids: [args.id], type: ((args.powershell) ? 2 : 0), cmds: args.run, responseid: RUNCOMMAND_RESPONSE_ID, runAsUser: runAsUser, reply: reply }));
                 break;
             }
             case 'shell':
@@ -2296,7 +2297,7 @@ function serverConnect() {
                 if (((settings.cmd == 'shell') || (settings.cmd == 'upload') || (settings.cmd == 'download')) && (data.result == 'OK')) return;
                 if ((data.type == 'runcommands') && (settings.cmd != 'runcommand')) return;
                 if ((settings.multiresponse != null) && (settings.multiresponse > 1)) { settings.multiresponse--; break; }
-                if (data.responseid == 'meshctrl') {
+                if ((data.responseid == 'meshctrl') || (data.responseid == RUNCOMMAND_RESPONSE_ID)) {
                     if (data.meshid) { console.log(data.result, data.meshid); }
                     else if (data.userid) { console.log(data.result, data.userid); }
                     else console.log(data.result);
@@ -2637,6 +2638,10 @@ function serverConnect() {
                             console.log('Invalid login.');
                         }
                     }
+                } else if (data.cause == 'locked') {
+                    console.log('Account locked. Please contact the administrator.');
+                } else if (data.cause == 'banned') {
+                    console.log('Access temporarily blocked due to too many failed login attempts.');
                 }
                 process.exit();
                 break;

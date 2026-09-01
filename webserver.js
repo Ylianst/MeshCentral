@@ -882,11 +882,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return domain;
     }
 
+    // True when the address is IPv4/IPv6 loopback (not a general private-network address)
+    function isLoopbackAddress(addr) {
+        if (typeof addr != 'string') { return false; }
+        if (addr.indexOf('::ffff:') == 0) { addr = addr.substring(7); }
+        if ((addr == '127.0.0.1') || (addr == '::1') || (addr == 'localhost')) { return true; }
+        return /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(addr);
+    }
+
+    // Domainid URL selection is only for real local connections, not a Host: localhost header alone
+    function isLocalhostDomainSelect(req) {
+        if ((req == null) || (req.hostname != 'localhost') || (req.query == null) || (req.query.domainid == null)) { return false; }
+        if (isLoopbackAddress(req.clientIp) == false) { return false; }
+        var peer = null;
+        if ((req.connection != null) && (typeof req.connection.remoteAddress == 'string')) { peer = req.connection.remoteAddress; }
+        else if ((req.socket != null) && (typeof req.socket.remoteAddress == 'string')) { peer = req.socket.remoteAddress; }
+        if ((peer != null) && (isLoopbackAddress(peer) == false)) { return false; }
+        return true;
+    }
+
     // Return the current domain of the request
     // Request or connection says open regardless of the response
     function getDomain(req) {
         if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
-        if ((req.hostname == 'localhost') && (req.query.domainid != null)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // This is a localhost access with the domainid specified in the URL
+        if (isLocalhostDomainSelect(req)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // Local access with the domainid specified in the URL
         if (req.hostname != null) { const d = obj.dnsDomains[req.hostname.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
         const x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
@@ -1232,8 +1251,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.body == null) { res.sendStatus(404); return; } // Post body is empty or can't be parsed
         if (req.session == null) { req.session = {}; }
 
+        const blockingMode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+
         // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) {
+        if (blockingMode !== 'username' && obj.checkAllowLogin(req) === false) {
             // Wait and redirect the user
             setTimeout(function () {
                 req.session.messageid = 114; // IP address blocked, try again later.
@@ -1247,6 +1268,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((xusername == null) && (xpassword == null) && (req.body.token != null)) {
             const sec = parent.decryptSessionData(req.session.e);
             xusername = sec.tuser; xpassword = sec.tpass;
+        }
+
+        // Check if the user is locked out
+        if (blockingMode === 'username' && obj.checkAllowLogin(null, xusername) === false) {
+            // Wait and redirect the user
+            setTimeout(function () {
+                req.session.messageid = 110; // Account locked
+                if (direct === true) { handleRootRequestEx(req, res, domain); } else { res.redirect(domain.url + getQueryPortion(req)); }
+            }, 2000 + (obj.crypto.randomBytes(2).readUInt16BE(0) % 4095));
+            return;
         }
 
         // Authenticate the user
@@ -1461,19 +1492,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             req.session.messageid = 110; // Account locked.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'User login attempt on locked account from ' + req.clientIp, msgid: 109, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         } else if (err == 'denied') {
                             parent.debug('web', 'handleLoginRequest: login failed, access denied');
                             req.session.messageid = 111; // Access denied.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Denied user login from ' + req.clientIp, msgid: 155, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         } else {
                             parent.debug('web', 'handleLoginRequest: login failed, bad username and password');
                             req.session.messageid = 112; // Login failed, check username and password.
                             const ua = obj.getUserAgentInfo(req);
                             obj.parent.DispatchEvent(['*', 'server-users', xuserid], obj, { action: 'authfail', userid: xuserid, username: xusername, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp, msgid: 110, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                            obj.setbadLogin(req);
+                            obj.setbadLogin(req, xusername);
                         }
                     }
 
@@ -4034,7 +4065,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // The download page puts the filename inside a JavaScript string (var filename = '...'),
                 // so escape backslashes and single quotes to keep it inside that string.
                 var filenamejs = filename.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: req.path + '?download=1', filename: filenamejs, filesize: stat.size }, req, domain));
+                var fileurljs = (req.path + '?download=1').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+                render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 1, fileurl: fileurljs, filename: filenamejs, filesize: stat.size }, req, domain));
             }
         } else {
             render(req, res, getRenderPage((domain.sitestyle >= 2) ? 'download2' : 'download', req, domain), getRenderArgs({ rootCertLink: getRootCertLink(domain), messageid: 2 }, req, domain));
@@ -5005,6 +5037,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             var totalsize = readTotalFileSize(xfile.fullpath);
             if ((xfile.quota == null) || (totalsize < xfile.quota)) { // Check if the quota is not already broken
                 if (fields.name != null) {
+                    if ((fields.name.length != 1) || (typeof fields.name[0] != 'string') ||
+                        (fields.size == null) || (fields.size.length != 1) || (typeof fields.size[0] != 'string') ||
+                        (fields.type == null) || (fields.type.length != 1) || (typeof fields.type[0] != 'string') ||
+                        (fields.data == null) || (fields.data.length != 1) || (typeof fields.data[0] != 'string')) { res.sendStatus(400); return; }
 
                     // See if we need to create the folder
                     var domainx = 'domain';
@@ -5128,11 +5164,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // More typical upload method, the file data is in a multipart mime post.
             for (var i in files.files) {
                 var file = files.files[i];
-                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+                // Keep only a plain filename for the temporary target, matching the single-file upload handler above.
+                var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                var safeOriginalFilename = obj.path.basename(originalFilename);
+                if ((safeOriginalFilename !== originalFilename) || (obj.common.IsFilenameValid(safeOriginalFilename) == false)) { res.sendStatus(404); return; }
+                const ftarget = getRandomPassword() + '-' + safeOriginalFilename;
                 const targetPath = obj.path.join(serverpath, ftarget);
                 const uploadTempPath = resolveSafeUploadTempPath(file.path);
                 if (uploadTempPath == null) { res.sendStatus(400); return; }
-                cmd.files.push({ name: file.originalFilename, target: ftarget });
+                cmd.files.push({ name: safeOriginalFilename, target: ftarget });
                 // Rename the file
                 obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
@@ -7409,6 +7449,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             return;
                         }
                         PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                            // Device share guest cookies are for relay sessions only, not control.ashx
+                            if (isDeviceShareGuestCookie(cookie)) {
+                                try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth' })); } catch (ex) { }
+                                try { ws.close(); } catch (ex) { }
+                                return;
+                            }
                             if (user == null) { // User is not authenticated, perform inner server authentication
                                 if (req.headers['x-meshauth'] === '*') {
                                     PerformWSSessionInnerAuth(ws, req, domain, function (ws1, req1, domain, user) { obj.meshUserHandler.CreateMeshUser(obj, obj.db, ws1, req1, obj.args, domain, user, authData); }); // User is authenticated
@@ -8101,9 +8147,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 var domain = getDomain(req);
                 // Serve theme pack files if domain has a theme pack configured
                 if (domain && domain.themepack) {
-                    var themeFilePath = obj.path.join(obj.parent.datapath, 'theme-pack', domain.themepack, 'public', req.path);
-                    // Prevent directory traversal
-                    if (themeFilePath.indexOf('..') >= 0) return next();
+                    // Keep theme pack names as a single folder under theme-pack
+                    if ((typeof domain.themepack !== 'string') || (domain.themepack.indexOf('..') >= 0) || (domain.themepack.indexOf('/') >= 0) || (domain.themepack.indexOf('\\') >= 0)) { return next(); }
+
+                    var themePublicRoot = obj.path.resolve(obj.parent.datapath, 'theme-pack', domain.themepack, 'public');
+                    var requestPath = (typeof req.path === 'string') ? req.path : '';
+                    while ((requestPath.length > 0) && ((requestPath.charAt(0) === '/') || (requestPath.charAt(0) === '\\'))) { requestPath = requestPath.slice(1); }
+
+                    // Resolve the requested file and keep it inside the theme public folder
+                    var themeFilePath = obj.path.resolve(themePublicRoot, requestPath);
+                    var themePublicRootCmp = isWindowsPlatform ? themePublicRoot.toLowerCase() : themePublicRoot;
+                    var themeFilePathCmp = isWindowsPlatform ? themeFilePath.toLowerCase() : themeFilePath;
+                    if ((themePublicRootCmp.length > 1) && themePublicRootCmp.endsWith(obj.path.sep)) { themePublicRootCmp = themePublicRootCmp.slice(0, -1); }
+                    if ((themeFilePathCmp.length > 1) && themeFilePathCmp.endsWith(obj.path.sep)) { themeFilePathCmp = themeFilePathCmp.slice(0, -1); }
+                    if ((themeFilePathCmp !== themePublicRootCmp) && (themeFilePathCmp.startsWith(themePublicRootCmp + obj.path.sep) === false)) { return next(); }
 
                     obj.fs.stat(themeFilePath, function (err, stats) {
                         if (err || !stats.isFile()) return next();
@@ -8825,6 +8882,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         ws.on('message', function (data) {
             var command;
             try { command = JSON.parse(data.toString('utf8')); } catch (e) { return; }
+            if (command == null) return;
             if (obj.common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
 
             switch (command.action) {
@@ -8982,6 +9040,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         try { ws._socket.resume(); } catch (ex) { }
     }
 
+    // Device share guest cookies include these fields and are intended for meshrelay.ashx only
+    function isDeviceShareGuestCookie(cookie) {
+        return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.cf == 'number') && (typeof cookie.gn == 'string'));
+    }
+
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         // Check if the session expired
@@ -8989,8 +9052,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             parent.debug('web', 'WSERROR: Session expired.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'expired', msg: 'expired-1' })); ws.close(); } catch (e) { } return;
         }
 
-        // Check if this is a banned ip address
-        if (obj.checkAllowLogin(req) == false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
+        const blockingMode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+        
+        // Check if blocking mode is ip and this is a banned ip address
+        if (blockingMode !== 'username' && obj.checkAllowLogin(req) === false) { parent.debug('web', 'WSERROR: Banned connection.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'banned', msg: 'banned-1' })); ws.close(); } catch (e) { } return; }
+        // Check if blocking mode is username and this is a banned username
+        if (blockingMode === 'username') {
+            let username = null;
+            if (req.query && req.query.user) {
+                username = req.query.user;
+                if (username.startsWith('~t:')) { tokenUser = username; }
+            } else if (req.headers && req.headers['x-meshauth']) {
+                try {
+                    username = Buffer.from(req.headers['x-meshauth'].split(',')[0], 'base64').toString();
+                } catch (e) {}
+            } else if (req.session) {
+                if (req.session.loginToken) { username = req.session.loginToken; }
+                if (req.session.userid) { username = req.session.userid.split('/')[2]; }
+            }
+            if(username && obj.checkAllowLogin(null, username) === false) { parent.debug('web', 'WSERROR: Locked user.'); try { ws.send(JSON.stringify({ action: 'close', cause: 'locked', msg: 'locked-1' })); ws.close(); } catch (e) { } return; }
+        }
+        
         try {
             // Hold this websocket until we are ready.
             ws._socket.pause();
@@ -9124,7 +9206,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
                             //obj.parent.DispatchEvent(['*', 'server-users', 'user/' + domain.id + '/' + obj.args.user.toLowerCase()], obj, { action: 'authfail', userid: 'user/' + domain.id + '/' + obj.args.user.toLowerCase(), username: obj.args.user, domain: domain.id, msg: 'Invalid user login attempt from ' + req.clientIp });
-                            //obj.setbadLogin(req);
+                            //parent.debug('web', "Failed login for user:", req.query.user);
+                            obj.setbadLogin(req, req.query.user);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2a' })); ws.close(); } catch (e) { }
                         }
                     }
@@ -9255,6 +9338,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             // If not authenticated, close the websocket connection
                             parent.debug('web', 'ERR: Websocket bad user/pass auth');
+                            //parent.debug('web', "Failed login for user:", s[0]);
+                            obj.setbadLogin(req, s[0]);
                             try { ws.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth-2d' })); ws.close(); } catch (e) { }
                         }
                     }
@@ -10611,39 +10696,129 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof parent.config.settings.maxinvalidlogin.time != 'number') { parent.config.settings.maxinvalidlogin.time = 10; }
         if (typeof parent.config.settings.maxinvalidlogin.count != 'number') { parent.config.settings.maxinvalidlogin.count = 10; }
         if ((typeof parent.config.settings.maxinvalidlogin.coolofftime != 'number') || (parent.config.settings.maxinvalidlogin.coolofftime < 1)) { parent.config.settings.maxinvalidlogin.coolofftime = null; }
-    }
-    obj.setbadLogin = function (ip) { // Set an IP address that just did a bad login request
-        if (parent.config.settings.maxinvalidlogin === false) return;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        if (parent.config.settings.maxinvalidlogin != null) {
-            if (typeof parent.config.settings.maxinvalidlogin.exclude == 'string') {
-                const excludeSplit = parent.config.settings.maxinvalidlogin.exclude.split(',');
-                for (var i in excludeSplit) { if (require('ipcheck').match(ip, excludeSplit[i])) return; }
-            } else if (Array.isArray(parent.config.settings.maxinvalidlogin.exclude)) {
-                for (var i in parent.config.settings.maxinvalidlogin.exclude) { if (require('ipcheck').match(ip, parent.config.settings.maxinvalidlogin.exclude[i])) return; }
+        if (typeof parent.config.settings.maxinvalidlogin.blocking != 'string') {
+            parent.config.settings.maxinvalidlogin.blocking = 'iprange';
+        } else {
+            parent.config.settings.maxinvalidlogin.blocking = parent.config.settings.maxinvalidlogin.blocking.toLowerCase();
+            if (['iprange', 'ip', 'username'].indexOf(parent.config.settings.maxinvalidlogin.blocking) < 0) {
+                parent.config.settings.maxinvalidlogin.blocking = 'iprange';
             }
         }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); }
-        if (++obj.badLoginTableLastClean > 100) { obj.cleanBadLoginTable(); }
-        if (typeof obj.badLoginTable[ip] == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return; } }  // Check cooloff period
-        if (obj.badLoginTable[ip] == null) { obj.badLoginTable[ip] = [Date.now()]; } else { obj.badLoginTable[ip].push(Date.now()); }
-        if ((obj.badLoginTable[ip].length >= parent.config.settings.maxinvalidlogin.count) && (parent.config.settings.maxinvalidlogin.coolofftime != null)) {
-            obj.badLoginTable[ip] = Date.now() + (parent.config.settings.maxinvalidlogin.coolofftime * 60000); // Move to cooloff period
-        }
     }
-    obj.checkAllowLogin = function (ip) { // Check if an IP address is allowed to login
+    function getBadLoginKey(ip, username) {
+        if (typeof ip === 'object' && ip != null) { ip = ip.clientIp; }
+
+        const mode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+
+        if (mode === 'username') {
+            return (typeof username === 'string' && username.length > 0) ? username.toLowerCase() : null;
+        }
+
+        if (mode === 'ip') { return ip; }
+        if (mode === 'iprange') {
+            const splitip = ip.split('.');
+            if (splitip.length === 4) { // Check if IP v4
+                return `${splitip[0]}.${splitip[1]}.${splitip[2]}.*`;
+            }
+            return ip;
+        }
+        return null; // Return null if mode is 'username'
+    }
+    obj.isKeyAllowed = function (key) {
+        if (!parent.config.settings.maxinvalidlogin || !key) return true;
+
+        const entry = obj.badLoginTable[key];
+    
+        if (entry == null) return true;
+
+        const now = Date.now();
+
+        // Check cooloff period (number timestamp)
+        if (typeof entry === 'number') {
+            if (entry < now) {
+                delete obj.badLoginTable[key];
+                return true;
+            }
+            return false;
+        }
+
+        // Check sliding window timestamps (array)
+        const cutoffTime = now - (parent.config.settings.maxinvalidlogin.time * 60000);
+        while (entry.length > 0 && entry[0] < cutoffTime) {
+            entry.shift();
+        }
+
+        if (entry.length === 0) {
+            delete obj.badLoginTable[key];
+            return true;
+        }
+
+        return entry.length < parent.config.settings.maxinvalidlogin.count;
+    };
+    obj.setbadLogin = function (ip, username) {
+        if (!parent.config.settings.maxinvalidlogin) return;
+
+        const rawIp = (typeof ip === 'object' && ip != null) ? ip.clientIp : ip;
+
+        // Check IP exclusion list (only applicable if a valid IP is present)
+        if (typeof rawIp === 'string' && parent.config.settings.maxinvalidlogin.exclude) {
+            const excludes = Array.isArray(parent.config.settings.maxinvalidlogin.exclude)
+                ? parent.config.settings.maxinvalidlogin.exclude
+                : parent.config.settings.maxinvalidlogin.exclude.split(',');
+
+            const ipcheck = require('ipcheck');
+            for (const pattern of excludes) {
+                if (ipcheck.match(rawIp, pattern.trim())) return;
+            }
+        }
+
+        // Resolve key based on configuration ('ip', 'iprange', or 'username')
+        const key = getBadLoginKey(ip, username);
+        if (!key) return;
+
+        // Periodic cleanup trigger
+        if (++obj.badLoginTableLastClean > 100) { 
+            obj.cleanBadLoginTable(); 
+        }
+
+        const now = Date.now();
+
+        // Check cooloff period
+        if (typeof obj.badLoginTable[key] === 'number') {
+            if (obj.badLoginTable[key] < now) { 
+                delete obj.badLoginTable[key]; 
+            } else { 
+                return; 
+            }
+        }
+
+        // Record bad attempt timestamp
+        if (obj.badLoginTable[key] == null) {
+            obj.badLoginTable[key] = [now];
+        } else {
+            obj.badLoginTable[key].push(now);
+        }
+
+        // Enter cooloff period if threshold reached
+        const maxCount = parent.config.settings.maxinvalidlogin.count;
+        const cooloff = parent.config.settings.maxinvalidlogin.coolofftime;
+        if (cooloff != null && obj.badLoginTable[key].length >= maxCount) {
+            obj.badLoginTable[key] = now + (cooloff * 60000);
+        }
+    };
+    obj.checkAllowLogin = function (ip, username) { // Check if a login key is allowed to login
         if (parent.config.settings.maxinvalidlogin === false) return true;
-        if (typeof ip == 'object') { ip = ip.clientIp; }
-        var splitip = ip.split('.');
-        if (splitip.length == 4) { ip = (splitip[0] + '.' + splitip[1] + '.' + splitip[2] + '.*'); } // If this is IPv4, keep only the 3 first
-        var cutoffTime = Date.now() - (parent.config.settings.maxinvalidlogin.time * 60000); // Time in minutes
-        var ipTable = obj.badLoginTable[ip];
-        if (ipTable == null) return true;
-        if (typeof ipTable == 'number') { if (obj.badLoginTable[ip] < Date.now()) { delete obj.badLoginTable[ip]; } else { return false; } } // Check cooloff period
-        while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
-        if (ipTable.length == 0) { delete obj.badLoginTable[ip]; return true; }
-        return (ipTable.length < parent.config.settings.maxinvalidlogin.count); // No more than x bad logins in x minutes
+
+        const mode = parent.config.settings.maxinvalidlogin?.blocking || 'iprange';
+        if (mode === 'username') {
+            if (typeof username === 'string' && username.length > 0) {
+                return obj.isKeyAllowed(username.toLowerCase());
+            }
+            return true;
+        }
+
+        const ipKey = getBadLoginKey(ip);
+        return obj.isKeyAllowed(ipKey); // No more than x bad logins in x minutes
     }
     obj.cleanBadLoginTable = function () { // Clean up the IP address login blockage table, we do this occasionaly.
         if (parent.config.settings.maxinvalidlogin === false) return;

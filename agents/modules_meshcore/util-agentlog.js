@@ -17,7 +17,7 @@ limitations under the License.
 
 function parseLine(entry)
 {
-    var test = entry.match(/^\[.*M\]/);
+    var test = entry.match(/^\[\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}(?: [AP]M)?\s*\]/); // match on timestamp in AM/PM or 24h notation
     if (test == null)
     {
         // check if there is an ASLR base adress in the entry
@@ -37,9 +37,13 @@ function parseLine(entry)
             var line = test[0].match(/(?!:)[0-9]+(?=\]$)/);
             var fn = test[0].match(/(?!\[).+(?= =>)/);
 
-            if (file != null) { this.results.peek().f = file[0].trim(); }
-            if (line != null) { this.results.peek().l = line[0]; }
-            if (fn != null) { this.results.peek().fn = fn[0]; }
+            var wEntry = this.results.peek();
+            if (wEntry != null)
+            {
+                if (file != null) { wEntry.f = file[0].trim(); }
+                if (line != null) { wEntry.l = line[0]; }
+                if (fn != null) { wEntry.fn = fn[0]; }
+            }
         }
         else
         {
@@ -59,21 +63,26 @@ function parseLine(entry)
             }
             else
             {
-                test = entry.match(/^\[.+_[0-9a-fA-F]{16}\]$/);
+                test = entry.match(/^\[.+_[0-9a-fA-F]{16}\]$/); // f.e. [core_dump_fedcba9876543210]
                 if(test!=null)
                 {
                     // Linux Crash ID
-                    test = test[0].match(/(?!_)[0-9a-fA-F]{16}(?=\]$)/);
-                    this.results.peek().h = test[0];
+                    test = test[0].match(/(?!_)[0-9a-fA-F]{16}(?=\]$)/);    // extract hex id
+                    var idEntry = this.results.peek();
+                    if (idEntry != null) { idEntry.h = test[0]; }
                 }
             }
 
-            test = entry.match(/(?!^=>)\/+.+:[0-9]+$/);
+            test = entry.match(/(?!^=>)\/+.+:[0-9]+$/); // f.e. /path/to/file.c:42
             if(test!=null)
             {
                 // Linux Crash Entry
-                if (this.results.peek().s == null) { this.results.peek().s = []; }
-                this.results.peek().s.unshift(test[0]);
+                var srcEntry = this.results.peek();
+                if (srcEntry != null)
+                {
+                    if (srcEntry.s == null) { srcEntry.s = []; }
+                    srcEntry.s.unshift(test[0]);
+                }
             }
             
         }
@@ -84,7 +93,9 @@ function parseLine(entry)
     var dd = test.substring(1, test.length -1);
     var c = dd.split(' ');
     var t = c[1].split(':');
-    if (c[2] == 'PM') { t[0] = parseInt(t[0]) + 12; if (t[0] == 24) { t[0] = 0; } }
+    var hour = parseInt(t[0]);
+    if (c[2] == 'AM' && hour == 12) { hour = 0; } else if (c[2] == 'PM' && hour != 12) { hour += 12; }
+    t[0] = (hour < 10 ? '0' : '') + hour;
 
     var d = Date.parse(c[0] + 'T' + t.join(':'));
     var msg = entry.substring(test.length).trim();
