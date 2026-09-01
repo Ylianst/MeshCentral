@@ -2972,6 +2972,23 @@ body[data-bs-theme="light"] {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e") !important;
 }
 
+.form-switch .form-check-input {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    border-radius: 2em !important;
+    background-image: var(--bs-form-switch-bg) !important;
+    background-position: left center;
+    background-size: contain;
+    width: 2em !important;
+    height: 1em !important;
+}
+
+.form-switch .form-check-input:checked {
+    background-image: var(--bs-form-switch-bg) !important;
+    background-color: var(--bs-primary, #0d6efd) !important;
+    border-color: var(--bs-primary, #0d6efd) !important;
+}
+
 .modal-content .btn-close::before,
 .modal-content .btn-close::after {
     display: none !important;
