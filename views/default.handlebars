@@ -211,7 +211,7 @@
                                         <div tabindex=0 id=uiViewButton6 class=uiSelector onclick="showNotes(false)" title="Personal Notes" onkeypress="if (event.key == 'Enter') showNotes(false)"><div class="uiSelector6"></div></div>
                                         <div tabindex=0 id=uiViewButton4 class=uiSelector onclick=toggleNightMode() title="Toggle night mode" onkeypress="if (event.key == 'Enter') toggleNightMode()"><div class="uiSelector4"></div></div>
                                         <div tabindex=0 id=uiViewButton5 class=uiSelector onclick=toggleFooterBarMode() title="Toggle footer bar" onkeypress="if (event.key == 'Enter') toggleFooterBarMode()"><div class="uiSelector5"></div></div>
-                                        <div class=uiSelector_end>&nbsp;</div>
+                                        <div tabindex=0 id=uiViewButton8 class=uiSelector onclick=toggleBrowserFullscreen() title="Browser Full Screen" onkeypress="if (event.key == 'Enter') toggleBrowserFullscreen()"><div class="viewSelector5"></div></div>
                                     </td>
                                 </tr>
                             </table>
@@ -10172,6 +10172,17 @@
             else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
             else if (elem.mozRequestFullScreen) { elem.mozRequestFullScreen(); }
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT); }
+        }
+
+        // Toggle browser fullscreen
+        function toggleBrowserFullscreen() {
+            if (browserfullscreen) {
+                exitBrowserFullscreen();
+                browserfullscreen = false;
+            } else {
+                enterBrowserFullscreen(Q('body'));
+                browserfullscreen = true;
+            }
         }
 
         // Exit browser fullscreen
