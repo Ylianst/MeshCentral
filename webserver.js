@@ -5164,11 +5164,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // More typical upload method, the file data is in a multipart mime post.
             for (var i in files.files) {
                 var file = files.files[i];
-                const ftarget = getRandomPassword() + '-' + file.originalFilename;
+                // Keep only a plain filename for the temporary target, matching the single-file upload handler above.
+                var originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                var safeOriginalFilename = obj.path.basename(originalFilename);
+                if ((safeOriginalFilename !== originalFilename) || (obj.common.IsFilenameValid(safeOriginalFilename) == false)) { res.sendStatus(404); return; }
+                const ftarget = getRandomPassword() + '-' + safeOriginalFilename;
                 const targetPath = obj.path.join(serverpath, ftarget);
                 const uploadTempPath = resolveSafeUploadTempPath(file.path);
                 if (uploadTempPath == null) { res.sendStatus(400); return; }
-                cmd.files.push({ name: file.originalFilename, target: ftarget });
+                cmd.files.push({ name: safeOriginalFilename, target: ftarget });
                 // Rename the file
                 obj.fs.rename(uploadTempPath, targetPath, function (err) {
                     if (err && (err.code === 'EXDEV')) {
