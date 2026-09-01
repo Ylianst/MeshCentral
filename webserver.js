@@ -882,11 +882,30 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return domain;
     }
 
+    // True when the address is IPv4/IPv6 loopback (not a general private-network address)
+    function isLoopbackAddress(addr) {
+        if (typeof addr != 'string') { return false; }
+        if (addr.indexOf('::ffff:') == 0) { addr = addr.substring(7); }
+        if ((addr == '127.0.0.1') || (addr == '::1') || (addr == 'localhost')) { return true; }
+        return /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(addr);
+    }
+
+    // Domainid URL selection is only for real local connections, not a Host: localhost header alone
+    function isLocalhostDomainSelect(req) {
+        if ((req == null) || (req.hostname != 'localhost') || (req.query == null) || (req.query.domainid == null)) { return false; }
+        if (isLoopbackAddress(req.clientIp) == false) { return false; }
+        var peer = null;
+        if ((req.connection != null) && (typeof req.connection.remoteAddress == 'string')) { peer = req.connection.remoteAddress; }
+        else if ((req.socket != null) && (typeof req.socket.remoteAddress == 'string')) { peer = req.socket.remoteAddress; }
+        if ((peer != null) && (isLoopbackAddress(peer) == false)) { return false; }
+        return true;
+    }
+
     // Return the current domain of the request
     // Request or connection says open regardless of the response
     function getDomain(req) {
         if (req.xdomain != null) { return req.xdomain; } // Domain already set for this request, return it.
-        if ((req.hostname == 'localhost') && (req.query.domainid != null)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // This is a localhost access with the domainid specified in the URL
+        if (isLocalhostDomainSelect(req)) { const d = parent.config.domains[req.query.domainid]; if (d != null) return d; } // Local access with the domainid specified in the URL
         if (req.hostname != null) { const d = obj.dnsDomains[req.hostname.toLowerCase()]; if (d != null) return d; } // If this is a DNS name domain, return it here.
         const x = req.url.split('/');
         if (x.length < 2) return parent.config.domains[''];
