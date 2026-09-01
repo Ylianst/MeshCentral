@@ -106,6 +106,7 @@
     "_runOnServerStarted": "c:\\tmp\\mcstart.bat",
     "_runOnServerUpdated": "c:\\tmp\\mcupdate.bat",
     "_runOnServerError": "c:\\tmp\\mcerror.bat",
+    "_restartOnServerError": false,
     "_log": "main,web,webrequest,cert",
     "_debug": "main,web,webrequest,cert",
     "_syslog": "meshcentral",

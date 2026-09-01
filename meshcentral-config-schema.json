@@ -645,6 +645,11 @@
           "default": null,
           "description": "Execute this when the server has to restart due to an error. The first parameter will be the server version."
         },
+        "RestartOnServerError": {
+          "type": "boolean",
+          "default": true,
+          "description": "When false, the built-in supervisor exits after an unexpected child server error instead of restarting the child. Expected restarts for configuration changes, certificate updates, server updates and administrator requests are not affected. External service managers may start MeshCentral again according to their own restart policy."
+        },
         "publicPushNotifications": {
           "type": "boolean",
           "default": false,
