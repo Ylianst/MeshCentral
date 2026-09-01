@@ -6926,6 +6926,8 @@
         }
 
         var xxModal;
+        var xxModalShown = false;   // true once the current modal's Bootstrap show transition has completed
+        var xxModalHidePending = false; // a hide() was requested while the modal was still fading in
 
         // A dialog/modal opening over the active remote desktop swallows the in-flight key-up (the
         // ondockey* handlers stop forwarding once xxdialogMode is set), leaving that key held down on
@@ -6998,8 +7000,17 @@
                     QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
                 });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
+                xxModalShown = false; xxModalHidePending = false;
+                // mark shown so a hide deferred during the fade-in can fire
+                var shownModal = function (event) {
+                    xxModalShown = true;
+                    document.getElementById(modalId).removeEventListener('shown.bs.modal', shownModal);
+                    if (xxModalHidePending) { xxModalHidePending = false; if (xxModal) xxModal.hide(); }
+                }
+                document.getElementById(modalId).addEventListener('shown.bs.modal', shownModal);
                 var hiddenModal = function (event) {
                     if (xxModal) { xxModal.dispose(); xxModal = null; }
+                    xxModalShown = false; xxModalHidePending = false;
                     if (xxdialogMode != 0) { xxdialogMode = 0; }
                     document.getElementById(modalId).removeEventListener('hidden.bs.modal', hiddenModal);
                 }
@@ -7016,6 +7027,13 @@
                     if (xxModal) { xxModal.hide(); }
                 }
             };
+        }
+
+        // Bootstrap drops hide() during the fade-in, which left tiny-file uploads with a stuck-open dialog.
+        // Defer the hide until shown.bs.modal fires if the modal has not finished showing yet.
+        function hideModal() {
+            if (xxModal == null) return;
+            if (xxModalShown) { xxModal.hide(); } else { xxModalHidePending = true; }
         }
 
         function copyAgentIdValue(id) {
@@ -23009,7 +23027,7 @@
             for (var i = 1; i < 24; i++) { QV('dialog' + i, i == x); } // Edit this line when more dialogs are added
             QV('dialog', x);
             if (c) { if (x == 2) { QH('id_dialogOptions', c); } else { QH('id_dialogMessage', c); } }
-            if (x == 0) { if (xxModal) xxModal.hide(); }
+            if (x == 0) { hideModal(); }
             MoreToggle(false);
         }
 
