@@ -952,6 +952,7 @@ function CreateMeshCentralServer(config, args) {
         if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [i]); } } }
 
         // Read IP lists from files if applicable
+        obj.agentBlockedIpFile = ((typeof obj.args.agentblockedip == 'string') && obj.args.agentblockedip.startsWith('file:')) ? obj.path.join(obj.datapath, obj.args.agentblockedip.substring(5)) : null;
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
         config.settings.userblockedip = obj.args.userblockedip = readIpListFromFile(obj.args.userblockedip);
         config.settings.agentallowedip = obj.args.agentallowedip = readIpListFromFile(obj.args.agentallowedip);
@@ -4053,7 +4054,7 @@ function CreateMeshCentralServer(config, args) {
             if (line.charAt(0) === '#') continue;
             const parts = line.split('#');
             const candidate = parts[0].trim();
-            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.charAt(0) === ':')) {
+            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.indexOf(':') > -1)) {
                 validLines.push(candidate);
             }
         }

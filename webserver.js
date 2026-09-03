@@ -23,6 +23,94 @@ function SerialTunnel(options) {
     return obj;
 }
 
+// Append an exact IP address to an agent block list file.
+function AppendAgentBlockedIp(filename, ip, fsModule) {
+    if ((typeof filename != 'string') || (filename.length == 0) || (typeof ip != 'string') || (ip.length == 0)) { return false; }
+    try {
+        const separator = (fsModule.existsSync(filename) && (fsModule.statSync(filename).size > 0)) ? '\r\n' : '';
+        fsModule.appendFileSync(filename, separator + ip + '\r\n');
+        return true;
+    } catch (ex) { return false; }
+}
+
+// Create a sliding-window limiter for new agent registrations by source IP.
+function CreateAgentRegistrationLimiter(config, nowFunc, ipMatchFunc, onBlockFunc) {
+    if ((config == null) || (typeof config != 'object') || Array.isArray(config)) { return null; }
+    if (!Number.isSafeInteger(config.agents) || (config.agents < 1)) { return null; }
+    if (!Number.isSafeInteger(config.minutes) || (config.minutes < 1)) { return null; }
+
+    const obj = {};
+    const windowMilliseconds = config.minutes * 60000;
+    const autoBlock = (config.autoblock !== false);
+    const registrations = Object.create(null);
+    const now = (typeof nowFunc == 'function') ? nowFunc : Date.now;
+    var operationsSinceClean = 0;
+    var exclusions = [];
+
+    if (typeof config.exclude == 'string') {
+        exclusions = config.exclude.split(',').map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 0; });
+    } else if (Array.isArray(config.exclude)) {
+        exclusions = config.exclude.filter(function (x) { return typeof x == 'string'; }).map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 0; });
+    }
+
+    function normalizeIp(ip) {
+        if ((typeof ip != 'string') || (ip.length == 0) || (ip.length > 128)) { return null; }
+        ip = ip.toLowerCase();
+        if (ip.indexOf('::ffff:') == 0) { ip = ip.substring(7); }
+        if (require('net').isIP(ip) == 0) { return null; }
+        return ip;
+    }
+
+    function isExcluded(ip) {
+        if (exclusions.length == 0) { return false; }
+        const ipMatch = (typeof ipMatchFunc == 'function') ? ipMatchFunc : require('ipcheck').match;
+        for (var i = 0; i < exclusions.length; i++) {
+            try { if (ipMatch(ip, exclusions[i]) == true) { return true; } } catch (ex) { }
+        }
+        return false;
+    }
+
+    function prune(ip, currentTime) {
+        const timestamps = registrations[ip];
+        if (timestamps == null) { return null; }
+        const cutoffTime = currentTime - windowMilliseconds;
+        while ((timestamps.length > 0) && (timestamps[0] <= cutoffTime)) { timestamps.shift(); }
+        if (timestamps.length == 0) { delete registrations[ip]; return null; }
+        return timestamps;
+    }
+
+    obj.clean = function () {
+        const currentTime = now();
+        for (var ip in registrations) { prune(ip, currentTime); }
+        operationsSinceClean = 0;
+    };
+
+    obj.isBlocked = function (ip) {
+        if (autoBlock == false) { return false; }
+        ip = normalizeIp(ip);
+        if ((ip == null) || isExcluded(ip)) { return false; }
+        const timestamps = prune(ip, now());
+        return (timestamps != null) && (timestamps.length >= config.agents);
+    };
+
+    // Returns false when this registration would exceed the configured limit.
+    obj.register = function (ip) {
+        ip = normalizeIp(ip);
+        if (ip == null) { return false; }
+        if (isExcluded(ip)) { return true; }
+        const currentTime = now();
+        var timestamps = prune(ip, currentTime);
+        if ((timestamps != null) && (timestamps.length >= config.agents)) { return false; }
+        if (timestamps == null) { timestamps = registrations[ip] = []; }
+        timestamps.push(currentTime);
+        if ((autoBlock == true) && (timestamps.length == config.agents) && (typeof onBlockFunc == 'function')) { try { onBlockFunc(ip); } catch (ex) { } }
+        if (++operationsSinceClean > 100) { obj.clean(); }
+        return true;
+    };
+
+    return obj;
+}
+
 // ExpressJS login sample
 // https://github.com/expressjs/express/blob/master/examples/auth/index.js
 
@@ -95,6 +183,20 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.relaySessionErrorCount = 0;
     obj.blockedUsers = 0;
     obj.blockedAgents = 0;
+    obj.persistAgentBlockedIp = function (ip) {
+        if (parent.agentBlockedIpFile == null) { return false; }
+        if (AppendAgentBlockedIp(parent.agentBlockedIpFile, ip, obj.fs) == false) {
+            console.log('Unable to permanently block agent IP address ' + ip + ' in ' + parent.agentBlockedIpFile + '; temporary block remains active.');
+            return false;
+        }
+        if (!Array.isArray(parent.config.settings.agentblockedip)) { parent.config.settings.agentblockedip = []; }
+        if (parent.config.settings.agentblockedip.indexOf(ip) < 0) { parent.config.settings.agentblockedip.push(ip); }
+        obj.agentBlockedIp = parent.config.settings.agentblockedip;
+        parent.debug('agent', 'Permanently blocked agent IP address ' + ip + ' in ' + parent.agentBlockedIpFile + '.');
+        return true;
+    };
+    obj.agentRegistrationLimiter = CreateAgentRegistrationLimiter(parent.config.settings.agentenrollmentratelimitbyip, null, null, obj.persistAgentBlockedIp);
+    obj.recordAgentRegistration = function (ip) { return (obj.agentRegistrationLimiter == null) || obj.agentRegistrationLimiter.register(ip); };
     obj.renderPages = null;
     obj.renderLanguages = [];
     obj.destroyedSessions = {};                 // userid/req.session.x --> destroyed session time
@@ -441,7 +543,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         duplicateAgentCount: 0,
         maxDomainDevicesReached: 0,
         agentInTrouble: 0,
-        agentInBigTrouble: 0
+        agentInBigTrouble: 0,
+        agentRegistrationBlockCount: 0
     }
     obj.getAgentStats = function () { return obj.agentStats; }
 
@@ -876,6 +979,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function checkAgentIpAddress(req, res) {
         if ((parent.config.settings.agentblockedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
         if ((parent.config.settings.agentallowedip != null) && (checkIpAddressEx(req, res, parent.config.settings.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
+        const clientIp = (req.clientIp != null) ? req.clientIp : res.clientIp;
+        if ((obj.agentRegistrationLimiter != null) && obj.agentRegistrationLimiter.isBlocked(clientIp)) {
+            obj.blockedAgents++;
+            obj.agentStats.agentRegistrationBlockCount++;
+            parent.debug('agent', 'Agent connection from ' + clientIp + ' blocked by new registration limit.');
+            return null;
+        }
         const domain = (req.url ? getDomain(req) : getDomain(res));
         if ((domain.agentblockedip != null) && (checkIpAddressEx(req, res, domain.agentblockedip, null) == true)) { obj.blockedAgents++; return null; }
         if ((domain.agentallowedip != null) && (checkIpAddressEx(req, res, domain.agentallowedip, null) == false)) { obj.blockedAgents++; return null; }
