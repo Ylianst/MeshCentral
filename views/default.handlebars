@@ -11511,11 +11511,15 @@
             }
         }
 
-        function CreateRemoteFiles(onFileUpdate) {
+        function CreateRemoteFiles(onFileUpdate, onBinaryData) {
             var obj = { protocol: 5 };
             obj.onFileUpdate = onFileUpdate;
+            obj.onBinaryData = onBinaryData;
             obj.xxStateChange = function(state) { }
             obj.ProcessData = function(data) { obj.onFileUpdate(data); }
+            if (onBinaryData) {
+                obj.ProcessBinaryData = function(data) { obj.onBinaryData(data); }
+            }
             return obj;
         }
 
@@ -11528,7 +11532,7 @@
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles, p13gotFilesBinary), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.contype = contype;
                 files.options = { consent: consent }
@@ -12681,7 +12685,7 @@
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z, tag) {
             if (xxdialogMode || !files) return;
-            gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, data: '', state: 0, id: Math.random(), tag: tag }
+            gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, chunks: [], data: '', state: 0, id: Math.random(), tag: tag }
             //console.log('p13downloadFileCancel', gdownloadFile);
             files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
             setDialogMode(2, "Download File", 10, p13downloadFileCancel, '<div>' + EscapeHtml(gdownloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
@@ -12858,7 +12862,7 @@
             uploadFile.xpath = p13filetreelocation.join('/');
             uploadFile.xfiles = files;
             uploadFile.xfilePtr = -1;
-            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=0 />');
+            setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style="display:block;width:100%;margin-bottom:5px" value=0 max=0></progress><div id=d2progressLabel style="text-align:center;margin-top:5px">0%</div>');
             p13uploadNextFile();
         }
 
@@ -12877,13 +12881,20 @@
 
         // Push the next file
         function p13uploadNextFile() {
+            console.log(new Date().toISOString(), '[UPLOAD] p13uploadNextFile called, xfilePtr before:', uploadFile.xfilePtr);
             uploadFile.xfilePtr++;
+            console.log(new Date().toISOString(), '[UPLOAD] p13uploadNextFile called, xfilePtr after:', uploadFile.xfilePtr, 'total files:', uploadFile.xfiles.length);
             if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
                 uploadFile.xptr = 0;
+                uploadFile.blocksInFlight = 0;
+                uploadFile.uploadComplete = false;
+                uploadFile.uploaddoneSent = false;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                console.log(new Date().toISOString(), '[UPLOAD] p13uploadNextFile processing file:', file.name, 'size:', uploadFile.xfile ? uploadFile.xfile.size : (file.xdata ? file.xdata.byteLength : 'N/A'));
                 QH('p13dfileName', EscapeHtml(file.name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
+                Q('d2progressLabel').textContent = '0%';
                 if (file.xdata == null) {
                     uploadFile.xfile = file;
                     // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
@@ -12912,18 +12923,92 @@
 
         // Used to cancel the entire transfer.
         function p13uploadFileTransferDone() {
-            uploadFile = null; // No more files to upload, clean up.
-            setDialogMode(0); // Close the dialog box
-            p13folderup(9999); // Refresh the current folder
+            console.log(new Date().toISOString(), '[UPLOAD] uploadFileTransferDone, closing dialog');
+            uploadFile = null;
+            setDialogMode(0);
+            p13folderup(9999);
+        }
+
+        function p13gotFilesBinary(data) {
+            if (data.length > 0 && data[0] != 1) {
+                var binStr = "";
+                if (data.length < 16000) {
+                    binStr = String.fromCharCode.apply(null, data);
+                } else {
+                    for (var i = 0; i < data.length; i++) { binStr += String.fromCharCode(data[i]); }
+                }
+                p13gotFiles(binStr);
+                return;
+            }
+            if (!gdownloadFile || gdownloadFile.state == 0) return;
+            if (data.length > 4) {
+                var payload = data.subarray(4);
+                gdownloadFile.tsize += payload.length;
+                if (gdownloadFile.tag == 'viewer') {
+                    var str = "";
+                    if (payload.length < 16000) {
+                        str = String.fromCharCode.apply(null, payload);
+                    } else {
+                        for (var i = 0; i < payload.length; i++) { str += String.fromCharCode(payload[i]); }
+                    }
+                    gdownloadFile.data += str;
+                } else {
+                    gdownloadFile.chunks.push(payload);
+                }
+                Q('d2progressBar').value = gdownloadFile.tsize;
+            }
+            var header = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
+            if ((header & 1) != 0) {
+                if (gdownloadFile.tag == 'viewer') {
+                    setDialogMode(4, EscapeHtml(gdownloadFile.file), 3, p13editSaveBack, null, gdownloadFile.file);
+                    QV('d4EncodingButton', true);
+                    QV('d4LineBreakButton', true);
+                    QS('dialog').width = 'auto';
+                    QS('dialog').bottom = '80px';
+                    QS('dialog').top = QS('dialog').left = QS('dialog').right = '100px';
+                    Q('d4editorarea').value = gdownloadFile.data;
+                    gdownloadFile = null;
+                } else {
+                    var blob = new Blob(gdownloadFile.chunks, { type: 'application/octet-stream' });
+                    saveAs(blob, gdownloadFile.file); gdownloadFile = null; setDialogMode(0);
+                }
+            } else {
+                files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id });
+            }
         }
 
         // Receive upload ack from the mesh agent, use this to keep sending more data
         function p13gotUploadData(cmd) {
             if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
+            var ts = new Date().toISOString();
+            if (cmd.action == 'uploadack' && uploadFile.uploaddoneSent) { return; }
+            console.log(ts, '[UPLOAD] got action:', cmd.action, 'reqid:', cmd.reqid);
             switch (cmd.action) {
-                case 'uploadstart': { uploadFile.xdataPriming = 8; p13uploadNextPart(false); break; } // Send 8 more blocks of 16k to fill the websocket.
-                case 'uploadack': { p13uploadNextPart(false); break; }
-                case 'uploaddone': { if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); } break; }
+                case 'uploadstart':
+                    console.log(ts, '[UPLOAD] uploadstart, starting transfer, reqid:', cmd.reqid);
+                    uploadFile.blocksInFlight = 0;
+                    uploadFile.uploadComplete = false;
+                    p13uploadNextPart();
+                    break;
+                case 'uploadack':
+                    if (uploadFile.uploaddoneSent) { break; }
+                    if (uploadFile.blocksInFlight > 0) { uploadFile.blocksInFlight--; }
+                    if (uploadFile.blocksInFlight == 0 && uploadFile.uploadComplete) {
+                        uploadFile.uploaddoneSent = true;
+                        console.log(ts, '[UPLOAD] sending uploaddone');
+                        files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                    } else {
+                        p13uploadNextPart();
+                    }
+                    break;
+                case 'uploaddone':
+                    console.log(ts, '[UPLOAD] uploaddone received from server');
+                    Q('d2progressBar').value = uploadFile.xfile ? uploadFile.xfile.size : uploadFile.xdata.byteLength;
+                    Q('d2progressLabel').textContent = "Upload complete. Remote device saving file to disk...";
+                    p13folderup(9999); // Refresh file list after each file
+                    if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); }
+                    else { p13uploadFileTransferDone(); }
+                    break;
                 case 'uploaderror': { p13uploadFileCancel(); break; }
                 case 'uploadhash': {
                     var file = uploadFile.xfiles[uploadFile.xfilePtr];
@@ -12945,14 +13030,21 @@
         }
 
         // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
-        function p13uploadNextPart(dataPriming) {
+        function p13uploadNextPart() {
+            if (uploadFile == null) return;
+            if (uploadFile.xdata && uploadFile.xptr >= uploadFile.xdata.byteLength) return;
+            if (uploadFile.xfile && uploadFile.xptr >= uploadFile.xfile.size) return;
+            var windowSize = 8;
+            var chunkSize = attemptWebRTC ? 16384 : 65536;
+            console.log(new Date().toISOString(), '[UPLOAD] p13uploadNextPart called, xfilePtr:', uploadFile.xfilePtr, 'xptr:', uploadFile.xptr, 'xdata:', uploadFile.xdata ? uploadFile.xdata.byteLength : 'N/A', 'xfile:', uploadFile.xfile ? uploadFile.xfile.size : 'N/A');
             if (uploadFile.xdata) {
                 var data = uploadFile.xdata, start = uploadFile.xptr;
                 if (start >= data.byteLength) {
                     files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                    return;
                 } else {
                     var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
-                    if (end > data.byteLength) { if (dataPriming == true) { return; } end = data.byteLength; }
+                    if (end > data.byteLength) { end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
                         var datapart = new Uint8Array(end - start + 1);
@@ -12962,13 +13054,18 @@
                         files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
                     }
                     uploadFile.xptr = end;
-                    Q('d2progressBar').value = end;
+                    var total = uploadFile.xfile ? uploadFile.xfile.size : data.byteLength;
+                    Q('d2progressBar').value = Math.min(end, total - 1);
+                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, total - 1) / total) * 100)) + '%';
+                    if (uploadFile.xptr >= data.byteLength) {
+                        uploadFile.uploadComplete = true;
+                    } else if (uploadFile.blocksInFlight < windowSize) { uploadFile.blocksInFlight++; p13uploadNextPart(); }
                 }
             } else if (uploadFile.xfile) {
-                if (uploadFile.xreader != null) return; // Data reading already in process
+                if (uploadFile.xreader != null) return;
                 if (uploadFile.xptr >= uploadFile.xfile.size) return;
                 var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
-                if (end > uploadFile.xfile.size) { if (dataPriming == true) { return; } end = uploadFile.xfile.size; }
+                if (end > uploadFile.xfile.size) { end = uploadFile.xfile.size; }
                 uploadFile.xreader = new FileReader();
                 uploadFile.xreader.onerror = function (err) { console.log(err); }
                 uploadFile.xreader.onload = function () {
@@ -12984,11 +13081,12 @@
                         files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
                     }
                     uploadFile.xptr = end;
-                    Q('d2progressBar').value = end;
+                    Q('d2progressBar').value = Math.min(end, uploadFile.xfile.size - 1);
+                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, uploadFile.xfile.size - 1) / uploadFile.xfile.size) * 100)) + '%';
                     if (uploadFile.xptr >= uploadFile.xfile.size) {
-                        files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                        uploadFile.uploadComplete = true;
                     } else {
-                        if (uploadFile.xdataPriming > 0) { uploadFile.xdataPriming--; p13uploadNextPart(true); }
+                        if (uploadFile.blocksInFlight < windowSize) { uploadFile.blocksInFlight++; p13uploadNextPart(); }
                     }
                 };
                 uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));

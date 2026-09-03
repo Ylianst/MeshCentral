@@ -200,7 +200,9 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
             if (e.data[0] == '~') { obj.m.ProcessData(e.data); } else { obj.xxOnControlCommand(e.data); }
         } else {
             // Send the data to the module
-            if (obj.m.ProcessBinaryCommand) {
+            if (obj.ProcessBinaryData) {
+                obj.ProcessBinaryData(new Uint8Array(e.data));
+            } else if (obj.m.ProcessBinaryCommand) {
                 // If only 1 byte
                 if ((cmdAccLen == 0) && (e.data.byteLength < 4)) return; // Ignore any commands less than 4 bytes.
 
