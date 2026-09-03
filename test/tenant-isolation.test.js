@@ -103,6 +103,25 @@ function ids(docs) { return docs.map((d) => d._id).sort(); }
 
 // --- Tests -----------------------------------------------------------------
 
+test('GetAllTypeForDomain returns only this tenant and keeps the type field', async () => {
+    const { client, db: raw } = await freshDatabase();
+    const { db } = await openDb(A);
+    try {
+        const users = await new Promise((res) => db.GetAllTypeForDomain('user', A, (err, docs) => res(docs)));
+        assert.deepStrictEqual(ids(users), ['user/' + A + '/admin']);
+
+        // The type field must survive: these documents are held in the boot cache and written back
+        // later, and a document saved without `type` stops being returned by every type query.
+        assert.strictEqual(users[0].type, 'user');
+
+        // Guard against the projection trap by round-tripping the object the way the server does.
+        // (SetUser takes no callback in MeshCentral, so the write is awaited through Set.)
+        await new Promise((res) => db.Set(users[0], res));
+        const after = await raw.collection('meshcentral').findOne({ _id: 'user/' + A + '/admin' });
+        assert.strictEqual(after.type, 'user');
+    } finally { await client.close(); }
+});
+
 test('cleanup() does not delete documents whose device group is missing', async () => {
     // Upstream ended cleanup() with deleteMany({meshid: {$nin: meshlist}}) over the whole database.
     // On a shared database that deletes other tenants' devices, and an empty meshlist (a transient

@@ -2913,6 +2913,13 @@ module.exports.CreateDB = function (parent, func) {
                 obj.file.find(x, { type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) { obj.file.find({ type: type }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
+            // Domain-scoped GetAllType. Same query shape as GetAllTypeNoTypeField above, but it
+            // does NOT project the type field away: callers of this one keep the documents (the
+            // boot caches, which later save them back), and a document saved without its `type`
+            // stops being returned by every type query — the user disappears, the mesh drops out
+            // of any mesh listing. Callers that legitimately want the whole database (the CLI
+            // branches, export) keep using GetAllType.
+            obj.GetAllTypeForDomain = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.find({ type: type, domain: domain, _id: { $in: ids } }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithVerifiedEmail = function (domain, email, func) { obj.file.find({ type: 'user', domain: domain, email: email, emailVerified: true }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
