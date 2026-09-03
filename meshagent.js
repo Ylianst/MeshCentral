@@ -677,6 +677,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
+            // Recovery agents are disabled by server policy.
+            if (args.disablerecoveryagent === true) { obj.close(1); return; }
+
             // Inform mesh agent that it's authenticated.
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
