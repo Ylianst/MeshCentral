@@ -1219,6 +1219,16 @@
                             <input id="DeskESC" style="display:none" type="button" class="btn btn-secondary btn-sm me-1" value="ESC" onkeypress="return false" onkeydown="return false" onclick="sendDeskEsc()" />
                             <input id="DeskClip" type="button" class="btn btn-secondary btn-sm me-1" value="Clipboard" onkeypress="return false" onkeydown="return false" onclick="showDeskClip()" />
                             <input id="DeskType" class="btn btn-secondary btn-sm me-1" cmenu="deskPreConfigShortcutContextMenu" type="button" value="Type" onkeypress="return false" onkeydown="return false" onclick="showDeskType()" />
+                            <span id="DeskAndroidPanel" style="display:none">
+                                <input type="button" class="btn btn-secondary btn-sm me-1" value="Back" title="Back" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(27)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1" value="Home" title="Home" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(36)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1" value="Recent" title="Recent apps" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(93)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1" value="Apps" title="App drawer" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(200)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1 d-none d-lg-inline-block" value="Notifications" title="Open notification shade" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(201)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1 d-none d-lg-inline-block" value="Quick" title="Quick settings" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(202)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1 d-none d-lg-inline-block" value="Lock" title="Lock screen" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(203)" />
+                                <input type="button" class="btn btn-secondary btn-sm me-1 d-none d-lg-inline-block" value="Power" title="Power menu" onkeypress="return false" onkeydown="return false" onclick="deskAndroidKey(204)" />
+                            </span>
                             <!-- Mobile-only: toggle button for the soft keyboard -->
                             <button id="DeskSoftKbdBtn" class="btn btn-secondary btn-sm me-1" type="button"
                                 onclick="toggleMobileKeyboard()" title="Show/hide on-screen keyboard"
@@ -9958,6 +9968,12 @@
                 row(cls, 'fa-computer-mouse',    (trackpad ? "Disable Trackpad Mode" : "Enable Trackpad Mode"),  'deskToggleTrackpad();deskCloseMobileActions()') +
                 row(cls, 'fa-hand-pointer',      (swap ? "Disable Right-click Mode" : "Enable Right-click Mode"),   'deskToggleRightClickMode();deskCloseMobileActions()') +
                 row(cls, 'fa-font',              "Type Text",                                'showDeskType();deskCloseMobileActions()') +
+                (isAndroidDevice() ? (
+                    row(cls, 'fa-bell',          "Notifications",                            'deskAndroidKey(201);deskCloseMobileActions()') +
+                    row(cls, 'fa-sliders',       "Quick Settings",                           'deskAndroidKey(202);deskCloseMobileActions()') +
+                    row(cls, 'fa-lock',          "Lock Screen",                              'deskAndroidKey(203);deskCloseMobileActions()') +
+                    row(cls, 'fa-power-off',     "Power Menu",                               'deskAndroidKey(204);deskCloseMobileActions()')
+                ) : '') +
                 row(cls, 'fa-terminal',          'Ctrl + Alt + Del',                        'if(desktop&&desktop.m)desktop.m.sendcad();deskCloseMobileActions()') +
                 row(cls, 'fa-keyboard',          'Send ESC',                                 'sendDeskEsc();deskCloseMobileActions()') +
                 row(cls, 'fa-sliders',           "Keyboard Shortcuts",                       'deskCustomizeKeys();deskCloseMobileActions()') +
@@ -10908,6 +10924,10 @@
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
             QV('DeskType', inputAllowed);
+            // Android agents (id 14) are excluded from inputAllowed above but do accept input, so give
+            // them their own on-screen key/gesture panel when connected with remote control rights.
+            var androidInput = online && (deskState == 3) && (currentNode.agent != null) && (currentNode.agent.id == 14) && ((rights == 0xFFFFFFFF) || ((rights & 8) != 0));
+            QV('DeskAndroidPanel', androidInput);
             QE('DeskWD', deskState == 3);
             QV('DeskWD', inputAllowed);
             QV('deskkeys', inputAllowed);
@@ -12104,6 +12124,16 @@
                 for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
                 desktop.m.SendKeyMsgKC(keyArray);
             }
+        }
+
+        // Android on-screen input panel. Key codes 200+ map to Android global actions in the agent.
+        function deskAndroidKey(kc) {
+            if ((desktop == null) || (desktop.State != 3)) return;
+            desktop.m.SendKeyMsgKC(1, kc);
+            desktop.m.SendKeyMsgKC(2, kc);
+        }
+        function isAndroidDevice() {
+            return (typeof currentNode != 'undefined') && currentNode && currentNode.agent && (currentNode.agent.id == 14);
         }
 
         // Remote desktop typing
