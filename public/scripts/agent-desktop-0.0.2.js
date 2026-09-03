@@ -841,6 +841,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.GrabKeyInput = function () {
         if (obj.xxKeyInputGrab == true) return;
+        // Save the current handlers so UnGrabKeyInput can restore them instead of
+        // leaving the document without any keyboard handler. Only take ownership
+        // of slots this instance does not already own.
+        if (document.onkeydown !== obj.xxKeyDown) { obj._savedOnKeyDown = document.onkeydown; }
+        if (document.onkeyup !== obj.xxKeyUp) { obj._savedOnKeyUp = document.onkeyup; }
+        if (document.onkeypress !== obj.xxKeyPress) { obj._savedOnKeyPress = document.onkeypress; }
         document.onkeyup = obj.xxKeyUp;
         document.onkeydown = obj.xxKeyDown;
         document.onkeypress = obj.xxKeyPress;
@@ -849,9 +855,14 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.UnGrabKeyInput = function () {
         if (obj.xxKeyInputGrab == false) return;
-        document.onkeyup = null;
-        document.onkeydown = null;
-        document.onkeypress = null;
+        // Restore the handlers that were in place before GrabKeyInput, but only
+        // for slots this instance still owns. A newer session may have taken over
+        // the slots meanwhile (disconnect + reconnect of a grabbed session), in
+        // which case leave the current handlers alone.
+        if (document.onkeydown === obj.xxKeyDown) { document.onkeydown = obj._savedOnKeyDown || null; }
+        if (document.onkeyup === obj.xxKeyUp) { document.onkeyup = obj._savedOnKeyUp || null; }
+        if (document.onkeypress === obj.xxKeyPress) { document.onkeypress = obj._savedOnKeyPress || null; }
+        obj._savedOnKeyDown = obj._savedOnKeyUp = obj._savedOnKeyPress = null;
         obj.xxKeyInputGrab = false;
     }
 
