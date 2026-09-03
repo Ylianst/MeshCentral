@@ -1747,8 +1747,16 @@ function CreateMeshCentralServer(config, args) {
             obj.fs.open(obj.path.join(obj.datapath, 'agenterrorlogs.txt'), 'a', function (err, fd) { obj.agentErrorLog = fd; })
         }
 
-        // Perform other database cleanup
-        obj.db.cleanup();
+        // Perform other database cleanup.
+        // Skipped in OpenFrame mode: every tenant server shares one database, and cleanup()
+        // is written for "one server owns the whole database". It rewrites every tenant's
+        // user and mesh documents (db.js, obj.Set inside the GetAllType('user'/'mesh')
+        // callbacks) and deletes fleet-wide. What it repairs — pre-1.0 field formats and
+        // legacy type:'event'/'power'/'smbios' rows in the main collection — never existed
+        // in this database: those types are written to their own collections here.
+        // Routine housekeeping is covered elsewhere: RemoveMeshDocuments() on device group
+        // deletion, the explicit Remove() calls on device deletion, and the TTL indexes.
+        if (process.env.OPENFRAME_MODE !== 'true') { obj.db.cleanup(); }
 
         // Set all nodes to power state of unknown (0)
         obj.db.storePowerEvent({ time: new Date(), nodeid: '*', power: 0, s: 1 }, obj.multiServer); // s:1 indicates that the server is starting up.
