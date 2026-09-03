@@ -2449,6 +2449,11 @@
             "type": "string",
             "description": "This is the text that will be shown in the remote desktop privacy bar. You can use {0} to display the account realname or {1} to display the account identifier in the string."
           },
+          "desktopPrivacyBarMaxWidth": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum width of the remote desktop privacy bar in pixels. When not set, the agent determines the width."
+          },
           "limits": {
             "type": "object",
             "properties": {

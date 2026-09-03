@@ -1335,6 +1335,7 @@ function handleServerCommand(data) {
                                 tunnel.consent = data.consent;
                                 if (global._MSH && _MSH().LocalConsent != null) { tunnel.consent |= parseInt(_MSH().LocalConsent); }
                                 tunnel.privacybartext = data.privacybartext ? data.privacybartext : currentTranslation['privacyBar'];
+                                tunnel.privacybarmaxwidth = ((typeof data.privacybarmaxwidth == 'number') && (data.privacybarmaxwidth > 0)) ? data.privacybarmaxwidth : 0;
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestuserid = data.guestuserid;
@@ -3047,6 +3048,7 @@ function tunnel_kvm_end()
                 this.httprequest.desktop.kvm.users.splice(i, 1);
                 this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                 this.httprequest.desktop.kvm.connectionBar.close();
+                if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = this.httprequest.privacybarmaxwidth; }
                 this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace(/\{0\}/g, this.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                 this.httprequest.desktop.kvm.connectionBar.on('close', function ()
@@ -3100,6 +3102,7 @@ function kvm_consent_ok(ws) {
             ws.httprequest.desktop.kvm.connectionBar.close();
         }
         try {
+            if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = ws.httprequest.privacybarmaxwidth; }
             ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(ws.httprequest.privacybartext.replace(/\{0\}/g, ws.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
         } catch (ex) {
@@ -3218,6 +3221,7 @@ function kvm_consentpromise_resolved(always)
         }
         try
         {
+            if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = this.ws.httprequest.privacybarmaxwidth; }
             this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace(/\{0\}/g, this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, this.ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } catch (ex)
