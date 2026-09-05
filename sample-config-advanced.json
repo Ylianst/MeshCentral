@@ -85,6 +85,7 @@
     "_userBlockedIP": "127.0.0.1,::1,192.168.0.100",
     "_agentAllowedIP": "192.168.0.100/24",
     "_agentBlockedIP": "127.0.0.1,::1",
+    "_agentEnrollmentRateLimitByIP": { "agents": 100, "minutes": 10, "autoBlock": true, "exclude": "192.168.0.0/16" },
     "_authLog": "c:\\temp\\auth.log",
     "_InterUserMessaging": [ "user//admin" ],
     "_manageAllDeviceGroups": [ "user//admin" ],

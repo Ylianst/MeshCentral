@@ -864,6 +864,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             return;
         }
 
+        // Enforce the source IP limit only after confirming that this is a new node.
+        // This operation is synchronous so concurrent registrations cannot pass the limit.
+        if (parent.recordAgentRegistration(obj.remoteaddr) == false) {
+            parent.blockedAgents++;
+            parent.agentStats.agentRegistrationBlockCount++;
+            parent.parent.debug('agent', 'New agent registration limit reached for ' + obj.remoteaddr + ', holding connection.');
+            return;
+        }
+
         // Mark when this device connected
         obj.connectTime = Date.now();
 
