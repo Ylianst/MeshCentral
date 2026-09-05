@@ -316,6 +316,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.userid = user._id;          // Add user id
                         command.remoteaddr = req.clientIp;  // User's IP address
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                        if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
                     } else { if (func) { func(false); } }
@@ -356,6 +357,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             command.userid = user._id;              // Add user id
                             command.remoteaddr = req.clientIp;      // User's IP address
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                            if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         } else { if (func) { func(false); } }
                     });
