@@ -731,7 +731,7 @@ function diagnosticAgent_installCheck(install) {
     require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'register', value: nodeid } });
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent Registered [" + nodeid.length + "/" + nodeid + "]" });
 
-    delete ddb;
+    ddb = undefined;
 
     // Set a recurrent task, to run the Diagnostic Agent every 2 days
     require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' });
@@ -1516,7 +1516,7 @@ function handleServerCommand(data) {
                                     pws.on('exit', function () { 
                                         if (replydata != "") reply.installedBy = replydata;
                                         mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
-                                        delete pws;
+                                        pws = undefined;
                                     });
                                 } else {
                                     mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
@@ -3627,12 +3627,11 @@ function onTunnelData(data)
                         var options = {};
                         try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
                         options.type = require('child_process').SpawnTypes.TERM;
-                        var replydata = "";
                         var cmdchild = require('child_process').execFile('/usr/bin/caffeinate', ['caffeinate', '-u', '-t', '10'], options);
                         cmdchild.descriptorMetadata = 'UserCommandsShell';
-                        cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                        cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
-                        cmdchild.on('exit', function () { delete cmdchild; });
+                        cmdchild.stdout.on('data', function (c) { });
+                        cmdchild.stderr.on('data', function (c) { });
+                        cmdchild.on('exit', function () { cmdchild = undefined; });
                     } catch(err) { }
                 }
                 // Remote desktop using native pipes
