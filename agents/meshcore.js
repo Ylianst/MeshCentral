@@ -5273,30 +5273,28 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'service':
-                if (args['_'].length != 1) {
-                    response = "Proper usage: service status|restart"; // Display usage
-                } else {
+                var op = String(args['_'][0]).toLowerCase();
+                if ((op != 'status') && (op != 'restart')) { response = "Proper usage: service status|restart"; }
+                else {
                     var svcname = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    try { if (global._MSH && _MSH().meshServiceName) { svcname = _MSH().meshServiceName; } } catch (ex) { }
                     try {
-                        svcname = require('MeshAgent').serviceName;
+                        var n = require('MeshAgent').serviceName;
+                        if ((typeof n == 'string') && (n != '')) { svcname = n; }
                     } catch (ex) { }
-                    var s = require('service-manager').manager.getService(svcname);
-                    switch (args['_'][0].toLowerCase()) {
-                        case 'status':
-                            response = 'Service ' + (s.isRunning() ? (s.isMe() ? '[SELF]' : '[RUNNING]') : ('[NOT RUNNING]'));
-                            break;
-                        case 'restart':
-                            if (s.isMe()) {
-                                s.restart();
-                            } else {
-                                response = 'Restarting another agent instance is not allowed';
-                            }
-                            break;
-                        default:
-                            response = "Proper usage: service status|restart"; // Display usage
-                            break;
-                    }
-                    if (process.platform == 'win32') { s.close(); }
+                    var s = null;
+                    try { s = require('service-manager').manager.getService(svcname); } catch (ex) { }
+                    if (s == null) { response = "Service '" + svcname + "' [NOT INSTALLED]"; }
+                    else if (!s.isRunning()) { response = "Service '" + svcname + "' [STOPPED]"; }
+                    else if (op == 'status') { response = "Service '" + svcname + "' [" + (s.isMe() ? 'RUNNING, this agent' : 'RUNNING, another agent instance') + ']'; }
+                    else if (s.isMe()) {
+                        try {
+                            sendConsoleText("Service '" + svcname + "' restarting", sessionid);
+                            response = null;
+                            s.restart();
+                        } catch (rex) { if (String(rex).indexOf('thread is exiting') < 0) { response = 'Restart failed: ' + rex; } }
+                    } else { response = 'Restarting another agent instance is not allowed'; }
+                    if ((process.platform == 'win32') && (s != null)) { s.close(); }
                 }
                 break;
             case 'zip':
