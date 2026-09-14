@@ -4506,7 +4506,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (webRelayPort == 0) { res.sendStatus(404); return; }
 
                     // Create the authentication cookie
-                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, r: 8, expire: c.expire, pid: c.pid, port: c.port };
+                    // Include cf so these cookies match the device-share guest shape used elsewhere.
+                    const authCookieData = { userid: c.uid, domainid: domain.id, nid: c.nid, ip: req.clientIp, p: c.p, gn: c.gn, cf: (typeof c.cf == 'number') ? c.cf : 0, r: 8, expire: c.expire, pid: c.pid, port: c.port };
                     if ((authCookieData.userid == null) && (authCookieData.pid.startsWith('AS:node/'))) { authCookieData.nouser = 1; }
                     const authCookie = obj.parent.encodeCookie(authCookieData, obj.parent.loginCookieEncryptionKey);
 
@@ -9040,9 +9041,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         try { ws._socket.resume(); } catch (ex) { }
     }
 
-    // Device share guest cookies include these fields and are intended for meshrelay.ashx only
+    // Device share guest cookies include these fields and are intended for relay sessions only.
+    // HTTP/HTTPS shares historically omitted cf; desktop/terminal/files shares include it.
     function isDeviceShareGuestCookie(cookie) {
-        return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.cf == 'number') && (typeof cookie.gn == 'string'));
+        return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.gn == 'string'));
     }
 
     // Authenticates a session and forwards
