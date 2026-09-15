@@ -10885,6 +10885,10 @@
             // Enable buttons
             var inputAllowed = ((features2 & 0x2000) == 0) && ((currentNode.agent == null) || (currentNode.agent.id != 14)) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             var online = ((currentNode.conn & 1) != 0); // If Agent (1) connected, enable remote desktop
+            // Android agents (id 14) are excluded from inputAllowed above but do accept input, so give
+            // them their own on-screen key/gesture panel, the Type dialog and the clipboard buttons when
+            // connected with remote control rights.
+            var androidInput = online && (deskState == 3) && (currentNode.agent != null) && (currentNode.agent.id == 14) && ((rights == 0xFFFFFFFF) || ((rights & 8) != 0));
             QE('connectbutton1', online); QE('connectbutton1d', online); // Desktop Connect button and dropdown
             QE('connectbutton1r', online || (currentNode.mtype == 3));  QE('connectbutton1rd', online || (currentNode.mtype == 3)); // Desktop RDP Connect button and dropdown
             if (currentNode.rdpport && currentNode.rdpport != 3389) {
@@ -10897,14 +10901,11 @@
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
             QE('DeskSoftKbdBtn', deskState == 3);
-            QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
+            QV('DeskClip', (inputAllowed || androidInput) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
-            QV('DeskType', inputAllowed);
-            // Android agents (id 14) are excluded from inputAllowed above but do accept input, so give
-            // them their own on-screen key/gesture panel when connected with remote control rights.
-            var androidInput = online && (deskState == 3) && (currentNode.agent != null) && (currentNode.agent.id == 14) && ((rights == 0xFFFFFFFF) || ((rights & 8) != 0));
+            QV('DeskType', inputAllowed || androidInput);
             QV('DeskAndroidPanel', androidInput);
             QE('DeskWD', deskState == 3);
             QV('DeskWD', inputAllowed);
@@ -10916,9 +10917,9 @@
 
             // Enable browser clipboard read if supported
             var autoclipboard = ((desktop) && (desktop.contype == 4)) ? desktopsettings.rdpautoclipboard : desktopsettings.autoclipboard;
-            QV('DeskClipboardOutButton', online && inputAllowed && (desktop != null) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            QV('DeskClipboardOutButton', online && (inputAllowed || androidInput) && (desktop != null) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
-            QV('DeskClipboardInButton', online && inputAllowed && (desktop != null) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            QV('DeskClipboardInButton', online && (inputAllowed || androidInput) && (desktop != null) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             if (deskState != 3) {
                 QV('DeskInputLockedButton', false);
                 QV('DeskInputUnLockedButton', false);
