@@ -144,7 +144,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.PendingOperations.push([r, 0]);
             }
         }
-        tile.error = function () { console.log('DecodeTileError'); }
+        // A tile the browser can't decode must still advance the queue, or every later tile waits forever.
+        tile.onerror = function () { console.log('DecodeTileError #' + r); obj.PendingOperations.push([r, 0]); while (obj.DoPendingOperations()) { } }
     }
 
     obj.DoPendingOperations = function () {
@@ -576,7 +577,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (Object.keys(obj.TouchArray).length == 0 && obj.touchtimer != null) { clearInterval(obj.touchtimer); obj.touchtimer = null; }
     }
 
-    obj.SendMouseMsg = function (Action, event) {
+    obj.SendMouseMsg = function (Action, event, clampToCanvas) {
         if (obj.State != 3) return;
         if (Action != null && obj.Canvas != null) {
             if (!event) { var event = window.event; }
@@ -588,6 +589,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             var Y = ((event.pageY - Offsets[1]) * ScaleFactorHeight);
             if (event.addx) { X += event.addx; }
             if (event.addy) { Y += event.addy; }
+            if (clampToCanvas) { X = Math.min(Math.max(X, 0), obj.Canvas.canvas.width); Y = Math.min(Math.max(Y, 0), obj.Canvas.canvas.height); }
 
             if (X >= 0 && X <= obj.Canvas.canvas.width && Y >= 0 && Y <= obj.Canvas.canvas.height) {
                 // Map the displayed (view-rotated) canvas position back to desktop coordinates,
@@ -653,8 +655,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.xxMouseInputGrab = false;
     obj.xxKeyInputGrab = false;
     obj.xxMouseMove = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.NONE, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-    obj.xxMouseUp = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.UP, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
-    obj.xxMouseDown = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DOWN, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseUp = function (e) { document.removeEventListener('mouseup', obj.xxDocumentMouseUp); if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.UP, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    obj.xxMouseDown = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.DOWN, e); document.addEventListener('mouseup', obj.xxDocumentMouseUp); } if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
+    // A button released outside the canvas never fires mouseup on it, so the remote button stays pressed. Release it at the nearest canvas edge instead.
+    obj.xxDocumentMouseUp = function (e) { document.removeEventListener('mouseup', obj.xxDocumentMouseUp); if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.UP, e, true); }
     obj.xxMouseDblClick = function (e) { if (obj.State == 3) obj.SendMouseMsg(obj.KeyAction.DBLCLICK, e); if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
     obj.xxDOMMouseScroll = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
     obj.xxMouseWheel = function (e) { if (obj.State == 3) { obj.SendMouseMsg(obj.KeyAction.SCROLL, e); return false; } return true; }
