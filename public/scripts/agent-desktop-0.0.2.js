@@ -144,7 +144,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.PendingOperations.push([r, 0]);
             }
         }
-        tile.error = function () { console.log('DecodeTileError'); }
+        // A tile the browser can't decode must still advance the queue, or every later tile waits forever.
+        tile.onerror = function () { console.log('DecodeTileError #' + r); obj.PendingOperations.push([r, 0]); while (obj.DoPendingOperations()) { } }
     }
 
     obj.DoPendingOperations = function () {
