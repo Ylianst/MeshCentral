@@ -6468,7 +6468,7 @@
                 } else if (contype == 1) {
                     // Setup the Mesh Agent remote desktop
                     desk = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('kvmid_' + shortid), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                    desk.m.UseExtendedKeyFlag = (node.agent.id < 5); // Only use extended keys on Windows agents for now
+                    desk.m.UseExtendedKeyFlag = isWindowsNode(node);
                     desk.m.mouseCursorActive(xxcurrentView == 11);
                     desk.shortid = shortid;
                     desk.attemptWebRTC = attemptWebRTC;
@@ -11014,6 +11014,7 @@
                                     desktop.m.hold(true);
                                     webRtcDesktop.webRtcActive = true;
                                     webRtcDesktop.softdesktop = CreateKvmDataChannel(webRtcDesktop.webchannel, CreateAgentRemoteDesktop('Desk', Q('id_mainarea')), desktop.m);
+                                    webRtcDesktop.softdesktop.m.UseExtendedKeyFlag = isWindowsNode(desktopNode);
                                     webRtcDesktop.softdesktop.m.setRotation(desktop.m.rotation);
                                     webRtcDesktop.softdesktop.m.onScreenSizeChange = deskAdjust;
                                     webRtcDesktop.softdesktop.m.ImageType = webpSupport ? 4 : 1; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
@@ -11069,7 +11070,7 @@
                 } else if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
-                    desktop.m.UseExtendedKeyFlag = (desktopNode.agent.id < 5); // Only use extended keys on Windows agents for now
+                    desktop.m.UseExtendedKeyFlag = isWindowsNode(desktopNode);
                     desktop.m.mouseCursorActive(xxcurrentView == 11);
                     desktop.debugmode = debugmode;
                     desktop.m.debugmode = debugmode;
