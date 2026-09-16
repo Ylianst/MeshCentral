@@ -268,6 +268,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                         command.realname = user.realname;   // Add real name
                     }
                     if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                    if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                     delete command.nodeid;              // Remove the nodeid since it's implyed.
                     agent.send(JSON.stringify(command));
                     return true;
@@ -289,6 +290,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                             command.realname = user.realname;       // Add real name
                         }
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                        if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                         parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         return true;
                     }
