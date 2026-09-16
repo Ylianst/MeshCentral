@@ -3176,12 +3176,10 @@
             onSearchInputChanged();
         }
 
-        function onSearchInputChanged() {
-            var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
-            QS('SearchInput')['background-color'] = (x == '') ? '#FFFFFF' : '#FDFFBE';
+        function getDevicesThatMatchFilterMobile(x, rawVal) {
+            var r = [];
             var negate = x.startsWith('!');
             if (negate) x = x.substring(1);
-            var rawVal = Q('SearchInput').value.trim();
             if (negate) rawVal = rawVal.substring(1);
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
@@ -3203,49 +3201,47 @@
 
             if (x == '') {
                 // No search
-                for (var d in nodes) { nodes[d].v = true; }
+                for (var d in nodes) { r.push(d); }
             } else if (ipSearch != null) {
                 // IP address search
-                for (var d in nodes) { nodes[d].v = ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)); }
+                for (var d in nodes) { if ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)) { r.push(d); } }
             } else if (groupSearch != null) {
                 // Group filter
-                for (var d in nodes) { nodes[d].v = (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0); }
+                for (var d in nodes) { if (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(d); } }
             } else if (tagSearch != null) {
                 // Tag filter
                 for (var d in nodes) {
-                    nodes[d].v = ((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0));
+                    if (((nodes[d].tags == null) && (tagSearch == '')) || ((nodes[d].tags != null) && (nodes[d].tags.indexOf(tagSearch) >= 0))) { r.push(d); }
                 }
             } else if (agentTagSearch != null) {
                 // Agent Tag filter
                 for (var d in nodes) {
-                    nodes[d].v = (((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0));
+                    if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0))) { r.push(d); }
                 }
             } else if (userSearch != null) {
                 // User search
                 for (var d in nodes) {
-                    nodes[d].v = false;
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { nodes[d].v = true; } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(d); break; } } }
                 }
             } else if (osSearch != null) {
                 // OS search
-                for (var d in nodes) { nodes[d].v = ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)); }
+                for (var d in nodes) { if ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)) { r.push(d); } }
             } else if (amtSearch != null) {
                 // Intel AMT search
-                for (var d in nodes) { nodes[d].v = (nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch)); }
+                for (var d in nodes) { if ((nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch))) { r.push(d); } }
             } else if (wscSearch != null) {
                 // Windows Security Center
                 for (var d in nodes) {
-                    nodes[d].v = false;
                     if (nodes[d].wsc) {
-                        if ((wscSearch == 1) && (nodes[d].wsc.antiVirus == 'OK') && (nodes[d].wsc.autoUpdate == 'OK') && (nodes[d].wsc.firewall == 'OK')) { nodes[d].v = true; }
-                        else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK')) { nodes[d].v = true; }
-                        else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK')) { nodes[d].v = true; }
-                        else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK')) { nodes[d].v = true; }
+                        if ((wscSearch == 1) && (nodes[d].wsc.antiVirus == 'OK') && (nodes[d].wsc.autoUpdate == 'OK') && (nodes[d].wsc.firewall == 'OK')) { r.push(d); }
+                        else if (((wscSearch == 2) || (wscSearch == 5)) && (nodes[d].wsc.antiVirus != 'OK')) { r.push(d); }
+                        else if (((wscSearch == 3) || (wscSearch == 5)) && (nodes[d].wsc.autoUpdate != 'OK')) { r.push(d); }
+                        else if (((wscSearch == 4) || (wscSearch == 5)) && (nodes[d].wsc.firewall != 'OK')) { r.push(d); }
                     }
                 }
             } else if (x == '*') {
                 // Star filter
-                for (var d in nodes) { nodes[d].v = (stars[nodes[d]._id] == 1); }
+                for (var d in nodes) { if (stars[nodes[d]._id] == 1) { r.push(d); } }
             } else {
                 // Device name search
                 try {
@@ -3253,30 +3249,54 @@
                     for (var d in nodes) {
                         if (features2 & 0x00008000) {
                             if(features2 & 0x10000000){
-                                nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                                if ((rx.test(nodes[d].name.toLowerCase())) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
                             }else {
-                                nodes[d].v = (rx.test(nodes[d].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()));
+                                if ((rx.test(nodes[d].name.toLowerCase())) || ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()))) { r.push(d); }
                             }
                         } else {
                             if(features2 & 0x10000000){
                                 if (showRealNames) {
-                                    nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()));
+                                    if ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()))) { r.push(d); }
                                 } else {
-                                    nodes[d].v = rx.test(nodes[d].name.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()));
+                                    if (rx.test(nodes[d].name.toLowerCase()) || (rx.test(meshes[nodes[d].meshid].name.toLowerCase()))) { r.push(d); }
                                 }
                             }else{
                                 if (showRealNames) {
-                                    nodes[d].v = (nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase());
+                                    if ((nodes[d].rnamel != null) && rx.test(nodes[d].rnamel.toLowerCase())) { r.push(d); }
                                 } else {
-                                    nodes[d].v = rx.test(nodes[d].name.toLowerCase());
+                                    if (rx.test(nodes[d].name.toLowerCase())) { r.push(d); }
                                 }
                             }
                         }
                     }
-                } catch (ex) { for (var d in nodes) { nodes[d].v = true; } }
+                } catch (ex) { for (var d in nodes) { r.push(d); } }
             }
 
-            if (negate) { for (var d in nodes) { nodes[d].v = !nodes[d].v; } }
+            if (negate) { var allIds = []; for (var d in nodes) { allIds.push(d); } return allIds.filter(function(d) { return r.indexOf(d) < 0; }); }
+            return r;
+        }
+
+        function onSearchInputChanged() {
+            var rawFull = Q('SearchInput').value.trim();
+            var lowerFull = rawFull.toLowerCase();
+            putstore('_search', Q('SearchInput').value);
+            QS('SearchInput')['background-color'] = (lowerFull == '') ? '#FFFFFF' : '#FDFFBE';
+
+            if (lowerFull == '') {
+                // No search, show everything
+                for (var d in nodes) { nodes[d].v = true; }
+            } else {
+                // Comma = OR, each part keeps its own prefix (u:, g:, t:, etc.) and can be negated with !
+                var rawParts = rawFull.split(','), lowerParts = lowerFull.split(','), matched = null;
+                for (var p = 0; p < lowerParts.length; p++) {
+                    var lp = lowerParts[p].trim(), rp = rawParts[p].trim();
+                    if (lp == '') { continue; } // Skip empty pieces from stray/extra commas
+                    var r2 = getDevicesThatMatchFilterMobile(lp, rp);
+                    if (matched == null) { matched = r2; } else { for (var j in r2) { if (matched.indexOf(r2[j]) < 0) { matched.push(r2[j]); } } }
+                }
+                if (matched == null) { matched = []; }
+                for (var d in nodes) { nodes[d].v = (matched.indexOf(d) >= 0); }
+            }
 
             // Check power state
             var onlineOnly = Q('OnlineCheckBox').checked;
