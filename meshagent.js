@@ -211,11 +211,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 parent.parent.debug('agent', "Clearing core for agent " + obj.nodeid);
                             } else {
                                 // Setup task limiter options, this system limits how many tasks can run at the same time to spread the server load.
-                                var taskLimiterOptions = { hash: meshcorehash, core: parent.parent.defaultMeshCores[corename], name: corename };
+                                var taskLimiterOptions = { hash: meshcorehash, core: parent.parent.defaultMeshCores[corename], name: corename, command: 10, size: parent.parent.defaultMeshCores[corename].length };
 
-                                // If the agent supports compression, sent the core compressed.
+                                // If the agent supports compression, send the core compressed through MeshCommand_CompressedCoreModule (20)
+                                // server uses zlib.deflate, agent expects zip.deflateRaw. Fixed by stripping 2 byte header and 4 byte trailer
                                 if ((obj.agentInfo.capabilities & 0x100) && (parent.parent.defaultMeshCoresDeflate[corename])) {
-                                    args.core = parent.parent.defaultMeshCoresDeflate[corename];
+                                    const zcore = parent.parent.defaultMeshCoresDeflate[corename];
+                                    taskLimiterOptions.core = zcore.slice(2, zcore.length - 4);
+                                    taskLimiterOptions.command = 20;
                                 }
 
                                 // Update new core with task limiting so not to flood the server. This is a high priority task.
@@ -224,9 +227,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (obj.authenticated == 2) {
                                         // Send the updated core.
                                         delete obj.agentCoreUpdatePending;
-                                        obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0) + argument.hash + argument.core.toString('binary'), function () { parent.parent.taskLimiter.completed(taskid); }); // MeshCommand_CoreModule, start core update
+                                        obj.sendBinary(common.ShortToStr(argument.command) + common.ShortToStr(0) + argument.hash + argument.core.toString('binary'), function () { parent.parent.taskLimiter.completed(taskid); });
                                         parent.agentStats.updatingCoreCount++;
-                                        parent.parent.debug('agent', "Updating core " + argument.name + " for agent " + obj.nodeid);
+                                        parent.parent.debug('agent', "Updating core " + argument.name + " for agent " + obj.nodeid + " (sent " + ((argument.command == 20) ? ("compressed, to " + argument.core.length) + " from ": ("uncompressed, ")) + argument.size + " bytes)");
                                     } else {
                                         // This agent is probably disconnected, nothing to do.
                                         parent.parent.taskLimiter.completed(taskid);

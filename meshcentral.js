@@ -3068,7 +3068,8 @@ function CreateMeshCentralServer(config, args) {
                 // Compress the mesh cores with DEFLATE
                 const callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
                 callback.i = i;
-                require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').Z_BEST_COMPRESSION }, callback);
+                // agents expect a zlib.deflateRaw instead of zlib.deflate, fixed in meshagent.js, maybe change to zlib.deflateRaw here? Compressed cores also served at <server>/meshagents?cores
+                require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').constants.Z_BEST_COMPRESSION }, callback);
             }
         }
 
