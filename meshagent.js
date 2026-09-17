@@ -157,6 +157,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         delete obj.name;
         delete obj.nonce;
         delete obj.nodeid;
+        delete obj.actualDbNodeKey;
+        delete obj.newlyCreatedNode;
+        delete obj.hardwareIdentityRebindChecked;
         delete obj.unauth;
         delete obj.remoteaddr;
         delete obj.remoteaddrport;
@@ -689,6 +692,375 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function sendPing() { obj.send('{"action":"ping"}'); }
     function sendPong() { obj.send('{"action":"pong"}'); }
 
+    // ===================================================================================
+    // Hardware Identity Rebind
+    //
+    // MeshCentral normally identifies an agent by the certificate-derived NodeID.
+    // A complete uninstall/reinstall can generate a new certificate and NodeID,
+    // which would normally create a duplicate device record.
+    //
+    // This logic allows a newly-created node to be associated with an existing
+    // offline node when strong hardware identifiers prove that it is the same
+    // physical machine.
+    //
+    // Authoritative identity:
+    //   product_uuid (SMBIOS / system UUID)
+    //
+    // Serial numbers, MAC addresses, hostnames, manufacturer/model information,
+    // and operating-system identifiers are intentionally not used for automatic
+    // rebinds.
+    // ===================================================================================
+
+    function normalizeHardwareIdentityValue(value) {
+        if (typeof value != 'string') return null;
+
+        var normalized = value
+            .trim()
+            .toLowerCase()
+            .replace(/[{}\s-]/g, '');
+
+        // SMBIOS product UUID must contain exactly 128 bits represented as
+        // 32 hexadecimal characters.
+        if (!/^[0-9a-f]{32}$/.test(normalized)) return null;
+
+        // Reject known unusable UUID values.
+        if (
+            (normalized == '00000000000000000000000000000000') ||
+            (normalized == 'ffffffffffffffffffffffffffffffff')
+        ) {
+            return null;
+        }
+
+        // Store and compare one canonical representation.
+        return (
+            normalized.substring(0, 8) + '-' +
+            normalized.substring(8, 12) + '-' +
+            normalized.substring(12, 16) + '-' +
+            normalized.substring(16, 20) + '-' +
+            normalized.substring(20, 32)
+        );
+    }
+
+    function getHardwareIdentity(sysinfo) {
+        if (
+            (sysinfo == null) ||
+            (sysinfo.hardware == null) ||
+            (sysinfo.hardware.identifiers == null) ||
+            (typeof sysinfo.hardware.identifiers != 'object')
+        ) {
+            return null;
+        }
+
+        // product_uuid is the authoritative hardware identity for automatic
+        // rebinds. Do not fall back to hostname, MAC address, Windows product
+        // serial, vendor/model, or other identifiers.
+        var uuid = normalizeHardwareIdentityValue(
+            sysinfo.hardware.identifiers.product_uuid
+        );
+
+        if (uuid == null) {
+            return null;
+        }
+
+        return { uuid: uuid };
+    }
+
+    function hardwareIdentitiesMatch(currentIdentity, candidateIdentity) {
+        if (
+            (currentIdentity == null) ||
+            (candidateIdentity == null) ||
+            (currentIdentity.uuid == null) ||
+            (candidateIdentity.uuid == null)
+        ) {
+            return false;
+        }
+
+        return (currentIdentity.uuid == candidateIdentity.uuid);
+    }
+
+    // Resolve an alias created after a prior hardware-identity rebind.
+    //
+    // The certificate-derived NodeID remains obj.nodeid. obj.dbNodeKey may be
+    // changed to the original logical MeshCentral node so the device keeps its
+    // name, tags, notes, group membership, permissions, and history.
+    function resolveHardwareIdentityAlias(callback) {
+        // Hardware identity rebinding is disabled unless explicitly enabled.
+        if (args.hardwareidentityrebind !== true) {
+            callback();
+            return;
+        }
+
+        if (obj.actualDbNodeKey == null) {
+            obj.actualDbNodeKey = obj.dbNodeKey;
+        }
+
+        var aliasKey = 'hwi' + obj.actualDbNodeKey;
+
+        db.Get(aliasKey, function (err, aliases) {
+            if (
+                (err != null) ||
+                (aliases == null) ||
+                (aliases.length != 1) ||
+                (typeof aliases[0].target != 'string')
+            ) {
+                callback();
+                return;
+            }
+
+            var alias = aliases[0];
+            var targetNodeKey = alias.target;
+            var expectedPrefix = 'node/' + domain.id + '/';
+
+            // Never permit an alias to cross domains.
+            if (
+                (targetNodeKey.indexOf(expectedPrefix) != 0) ||
+                (targetNodeKey == obj.actualDbNodeKey)
+            ) {
+                db.Remove(aliasKey);
+                callback();
+                return;
+            }
+
+            // If another certificate identity is actively using the target,
+            // don't take it over. This protects against cloned hardware IDs.
+            var connectedAgent = parent.wsagents[targetNodeKey];
+
+            if (
+                (connectedAgent != null) &&
+                (connectedAgent !== obj) &&
+                (connectedAgent.nodeid != obj.nodeid)
+            ) {
+                parent.parent.debug(
+                    'agent',
+                    'Hardware identity alias collision: ' +
+                    obj.actualDbNodeKey +
+                    ' attempted to use connected node ' +
+                    targetNodeKey + '.'
+                );
+
+                callback();
+                return;
+            }
+
+            // Make sure the alias target still exists. If the original node was
+            // deleted, remove the stale alias and allow a new node to be created.
+            db.Get(targetNodeKey, function (err2, targetNodes) {
+                if (
+                    (err2 != null) ||
+                    (targetNodes == null) ||
+                    (targetNodes.length != 1)
+                ) {
+                    db.Remove(aliasKey);
+                    callback();
+                    return;
+                }
+
+                obj.dbNodeKey = targetNodeKey;
+
+                parent.parent.debug(
+                    'agent',
+                    'Resolved hardware identity alias ' +
+                    obj.actualDbNodeKey +
+                    ' -> ' +
+                    targetNodeKey + '.'
+                );
+
+                callback();
+            });
+        });
+    }
+
+    function tryHardwareIdentityRebind(sysinfo) {
+        // Hardware identity rebinding is disabled unless explicitly enabled.
+        if (args.hardwareidentityrebind !== true) return;
+
+        // Only perform automatic matching for a node that was just created.
+        if (obj.newlyCreatedNode !== true) return;
+
+        // Only perform this expensive scan once per connection.
+        if (obj.hardwareIdentityRebindChecked === true) return;
+        obj.hardwareIdentityRebindChecked = true;
+
+        var currentIdentity = getHardwareIdentity(sysinfo);
+
+        if (currentIdentity == null) {
+            parent.parent.debug(
+                'agent',
+                'Hardware identity rebind skipped for ' +
+                obj.dbNodeKey +
+                ': no reliable hardware identity.'
+            );
+            return;
+        }
+
+        db.GetAllTypeNoTypeField('sysinfo', domain.id, function (err, docs) {
+            if ((err != null) || (docs == null)) return;
+
+            var currentSysInfoKey = 'si' + obj.dbNodeKey;
+            var matches = [];
+
+            for (var i = 0; i < docs.length; i++) {
+                var candidate = docs[i];
+
+                if (
+                    (candidate == null) ||
+                    (candidate._id == currentSysInfoKey) ||
+                    (typeof candidate._id != 'string') ||
+                    (candidate._id.indexOf('sinode/' + domain.id + '/') != 0)
+                ) {
+                    continue;
+                }
+
+                var candidateIdentity = getHardwareIdentity(candidate);
+
+                if (hardwareIdentitiesMatch(currentIdentity, candidateIdentity)) {
+                    matches.push(candidate);
+                }
+            }
+
+            // Never guess. A hardware identity must map to exactly one previous
+            // MeshCentral record.
+            if (matches.length == 0) {
+                parent.parent.debug(
+                    'agent',
+                    'Hardware identity rebind: no previous match for ' +
+                    obj.dbNodeKey + '.'
+                );
+                return;
+            }
+
+            if (matches.length > 1) {
+                parent.parent.debug(
+                    'agent',
+                    'Hardware identity rebind refused for ' +
+                    obj.dbNodeKey +
+                    ': ' +
+                    matches.length +
+                    ' existing records have the same hardware identity.'
+                );
+
+                console.log(
+                    'Hardware identity rebind refused for ' +
+                    obj.dbNodeKey +
+                    ': multiple matching devices were found.'
+                );
+
+                return;
+            }
+
+            var previousSysInfo = matches[0];
+
+            // SysInfo IDs are "si" + the normal node key.
+            var previousNodeKey = previousSysInfo._id.substring(2);
+
+            if (previousNodeKey == obj.dbNodeKey) return;
+
+            db.Get(previousNodeKey, function (nodeErr, previousNodes) {
+                if (
+                    (nodeErr != null) ||
+                    (previousNodes == null) ||
+                    (previousNodes.length != 1)
+                ) {
+                    return;
+                }
+
+                var previousNode = previousNodes[0];
+
+                // An online node must never be silently replaced. A match against
+                // an online machine indicates cloned/duplicated hardware identity
+                // information or another exceptional condition.
+                var previousState =
+                    parent.parent.GetConnectivityState(previousNodeKey);
+
+                if (
+                    (previousState != null) &&
+                    ((previousState.connectivity & 1) != 0)
+                ) {
+                    parent.parent.debug(
+                        'agent',
+                        'Hardware identity rebind refused: matching node ' +
+                        previousNodeKey +
+                        ' is already online.'
+                    );
+                    return;
+                }
+
+                var newNodeKey = obj.dbNodeKey;
+                var newMeshKey = obj.dbMeshKey;
+                var actualNodeKey =
+                    obj.actualDbNodeKey || newNodeKey;
+
+                // Persist the new certificate identity -> original logical node
+                // mapping. On the next reconnect MeshCentral will resolve this
+                // before deciding whether a new node must be created.
+                db.Set({
+                    _id: 'hwi' + actualNodeKey,
+                    type: 'hardwareidentityalias',
+                    domain: domain.id,
+                    target: previousNodeKey,
+                    uuid: currentIdentity.uuid,
+                    time: Date.now()
+                });
+
+                parent.parent.debug(
+                    'agent',
+                    'Hardware identity rebind: ' +
+                    newNodeKey +
+                    ' matched existing node ' +
+                    previousNodeKey +
+                    ' (' +
+                    previousNode.name +
+                    ').'
+                );
+
+                console.log(
+                    'Hardware identity rebind: reactivating "' +
+                    previousNode.name +
+                    '" instead of creating duplicate node ' +
+                    newNodeKey + '.'
+                );
+
+                // Remove the transient duplicate created before sysinfo became
+                // available. The original node and all of its metadata/history
+                // remain untouched.
+                db.Remove(newNodeKey);
+                db.Remove('if' + newNodeKey);
+                db.Remove('nt' + newNodeKey);
+                db.Remove('lc' + newNodeKey);
+                db.Remove('si' + newNodeKey);
+                db.Remove('al' + newNodeKey);
+
+                if (db.RemoveSMBIOS) {
+                    db.RemoveSMBIOS(newNodeKey);
+                }
+
+                db.RemoveAllNodeEvents(domain.id, newNodeKey);
+                db.removeAllPowerEventsForNode(newNodeKey);
+
+                parent.parent.DispatchEvent(
+                    parent.CreateMeshDispatchTargets(
+                        newMeshKey,
+                        [newNodeKey]
+                    ),
+                    obj,
+                    {
+                        etype: 'node',
+                        action: 'removenode',
+                        nodeid: newNodeKey,
+                        domain: domain.id,
+                        nolog: 1
+                    }
+                );
+
+                // Reconnect. The persistent hardware alias will resolve the new
+                // agent certificate to previousNodeKey before the node lookup.
+                setTimeout(function () {
+                    obj.close(1);
+                }, 250);
+            });
+        });
+    }
+
     // Once we get all the information about an agent, run this to hook everything up to the server
     function completeAgentConnection() {
         if ((obj.authenticated != 1) || (obj.meshid == null) || obj.pendingCompleteAgentConnection || (obj.agentInfo == null)) { return; }
@@ -763,8 +1135,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         }
         */
 
-        // Check that the node exists
-        db.Get(obj.dbNodeKey, function (err, nodes) {
+        // Resolve a certificate NodeID that was previously associated with an
+        // existing physical device before deciding whether a new node is needed.
+        resolveHardwareIdentityAlias(function () {
+            // Check that the node exists
+            db.Get(obj.dbNodeKey, function (err, nodes) {
             if (obj.agentInfo == null) { return; }
             var device, mesh;
 
@@ -796,6 +1171,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 return;
             } else {
                 device = nodes[0];
+                obj.newlyCreatedNode = false;
                 obj.name = device.name;
 
                 // This device exists, meshid given by the device must be ignored, use the server side one.
@@ -867,6 +1243,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             }
 
             completeAgentConnection3(device, mesh);
+            });
         });
     }
 
@@ -910,6 +1287,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         var agentName = obj.agentName ? obj.agentName : obj.agentInfo.computerName;
         var device = { type: 'node', mtype: mesh.mtype, _id: obj.dbNodeKey, icon: obj.agentInfo.platformType, meshid: obj.dbMeshKey, name: agentName, rname: obj.agentInfo.computerName, domain: domain.id, agent: { ver: obj.agentInfo.agentVersion, id: obj.agentInfo.agentId, caps: obj.agentInfo.capabilities }, host: null, firstconnect: obj.connectTime  };
         db.Set(device);
+        obj.newlyCreatedNode = true;
 
         // Event the new node
         if ((obj.agentInfo) && (obj.agentInfo.capabilities & 0x20)) {
@@ -1219,6 +1597,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Connection is a success, clean up
         obj.nodeid = obj.unauth.nodeid;
         obj.dbNodeKey = 'node/' + domain.id + '/' + obj.nodeid;
+
+        // Keep the certificate-derived node key separate from the logical database
+        // node key. A reinstalled agent may receive a new certificate/NodeID while
+        // still representing hardware that already exists in MeshCentral.
+        obj.actualDbNodeKey = obj.dbNodeKey;
         delete obj.nonce;
         delete obj.agentnonce;
         delete obj.unauth;
@@ -1466,6 +1849,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Store the document and notify viewers that the sysinfo hash changed.
                         var saveSysInfo = function () {
                             db.Set(command.data);
+
+                            // A new certificate-derived NodeID may belong to hardware
+                            // that already has a MeshCentral record. SysInfo is the
+                            // first point where strong hardware identifiers are
+                            // available, so attempt a conservative rebind here.
+                            if (obj.newlyCreatedNode === true) {
+                                tryHardwareIdentityRebind(command.data);
+                            }
+
                             // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
                             var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
