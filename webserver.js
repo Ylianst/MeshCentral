@@ -4096,6 +4096,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Check if this user has permission to manage this computer
         obj.GetNodeWithRights(domain, user, 'node/' + domain.id + '/' + req.query.n, function (node, rights, visible) {
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
+            if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0)) { res.sendStatus(404); return; } // This user is not allowed to use files on this device
 
             // All good, start the file transfer
             req.query.id = getRandomLowerCase(12);
