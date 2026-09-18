@@ -71,6 +71,7 @@
     "_noAgentUpdate": 1,
     "_agentUpdateSystem": 1,
     "_temporaryAgentUpdate": false,
+    "_disableRecoveryAgent": false,
     "_amtScanner": false,
     "_meshScanner": false,
     "_meshErrorLogPath": "c:\\tmp",
