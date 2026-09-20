@@ -470,9 +470,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 obj.receivedCommands += 1; // Agent can't send the same command twice on the same connection ever. Block DOS attack path.
 
                 if (isIgnoreHashCheck()) {
+                    // The server's TLS certificate hash is not checked in this mode, but we still
+                    // record the value the agent reported so the agent's signature can be verified.
+                    obj.agentSeenCerthash = msg.substring(2, 50);
                     // Send the agent web hash back to the agent
                     // Send 384 bits SHA384 hash of TLS cert + 384 bits nonce
-                    obj.sendBinary(common.ShortToStr(1) + msg.substring(2, 50) + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
+                    obj.sendBinary(common.ShortToStr(1) + obj.agentSeenCerthash + obj.nonce); // Command 1, hash + nonce. Use the web hash given by the agent.
                 } else {
                     // Check that the server hash matches our own web certificate hash (SHA384)
                     obj.agentSeenCerthash = msg.substring(2, 50);
@@ -1173,46 +1176,44 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // Verify the agent signature
     function processAgentSignature(msg) {
-        if (isIgnoreHashCheck() == false) {
-            var verified = false;
+        var verified = false;
 
-            // This agent did not report a valid TLS certificate hash, fail now.
-            if (obj.agentSeenCerthash == null) return false;
+        // This agent did not report a valid TLS certificate hash, fail now.
+        if (obj.agentSeenCerthash == null) return false;
 
-            // Raw RSA signatures have an exact length of 256 or 384. PKCS7 is larger.
-            if ((msg.length != 384) && (msg.length != 256)) {
-                // Verify a PKCS7 signature.
-                var msgDer = null;
-                try { msgDer = forge.asn1.fromDer(forge.util.createBuffer(msg, 'binary')); } catch (ex) { }
-                if (msgDer != null) {
-                    try {
-                        const p7 = forge.pkcs7.messageFromAsn1(msgDer);
-                        const sig = p7.rawCapture.signature;
+        // Raw RSA signatures have an exact length of 256 or 384. PKCS7 is larger.
+        if ((msg.length != 384) && (msg.length != 256)) {
+            // Verify a PKCS7 signature.
+            var msgDer = null;
+            try { msgDer = forge.asn1.fromDer(forge.util.createBuffer(msg, 'binary')); } catch (ex) { }
+            if (msgDer != null) {
+                try {
+                    const p7 = forge.pkcs7.messageFromAsn1(msgDer);
+                    const sig = p7.rawCapture.signature;
 
-                        // Verify with key hash
-                        var buf = Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary');
-                        var verifier = parent.crypto.createVerify('RSA-SHA384');
-                        verifier.update(buf);
-                        verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
-                        if (verified !== true) {
-                            // Not a valid signature
-                            parent.agentStats.invalidPkcsSignatureCount++;
-                            parent.setAgentIssue(obj, "invalidPkcsSignature");
-                            return false;
-                        }
-                    } catch (ex) { };
-                }
+                    // Verify with key hash
+                    var buf = Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary');
+                    var verifier = parent.crypto.createVerify('RSA-SHA384');
+                    verifier.update(buf);
+                    verified = verifier.verify(obj.unauth.nodeCertPem, sig, 'binary');
+                    if (verified !== true) {
+                        // Not a valid signature
+                        parent.agentStats.invalidPkcsSignatureCount++;
+                        parent.setAgentIssue(obj, "invalidPkcsSignature");
+                        return false;
+                    }
+                } catch (ex) { };
             }
+        }
 
-            if (verified == false) {
-                // Verify the RSA signature. This is the fast way, without using forge.
-                const verify = parent.crypto.createVerify('SHA384');
-                verify.end(Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
-                if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
-                    parent.agentStats.invalidRsaSignatureCount++;
-                    parent.setAgentIssue(obj, "invalidRsaSignature");
-                    return false;
-                }
+        if (verified == false) {
+            // Verify the RSA signature. This is the fast way, without using forge.
+            const verify = parent.crypto.createVerify('SHA384');
+            verify.end(Buffer.from(obj.agentSeenCerthash + obj.nonce + obj.agentnonce, 'binary')); // Test using the private key hash
+            if (verify.verify(obj.unauth.nodeCertPem, Buffer.from(msg, 'binary')) !== true) {
+                parent.agentStats.invalidRsaSignatureCount++;
+                parent.setAgentIssue(obj, "invalidRsaSignature");
+                return false;
             }
         }
 
