@@ -13050,8 +13050,10 @@
                         var datapart = new Uint8Array(end - start + 1);
                         datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
                         files.send(datapart);
+                        uploadFile.blocksInFlight++;
                     } else {
                         files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                        uploadFile.blocksInFlight++;
                     }
                     uploadFile.xptr = end;
                     var total = uploadFile.xfile ? uploadFile.xfile.size : data.byteLength;
@@ -13059,7 +13061,7 @@
                     Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, total - 1) / total) * 100)) + '%';
                     if (uploadFile.xptr >= data.byteLength) {
                         uploadFile.uploadComplete = true;
-                    } else if (uploadFile.blocksInFlight < windowSize) { uploadFile.blocksInFlight++; p13uploadNextPart(); }
+                    } else if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
                 }
             } else if (uploadFile.xfile) {
                 if (uploadFile.xreader != null) return;
@@ -13077,8 +13079,10 @@
                         var datapart = new Uint8Array(data.byteLength + 1);
                         datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
                         files.send(datapart);
+                        uploadFile.blocksInFlight++;
                     } else {
                         files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                        uploadFile.blocksInFlight++;
                     }
                     uploadFile.xptr = end;
                     Q('d2progressBar').value = Math.min(end, uploadFile.xfile.size - 1);
@@ -13086,7 +13090,7 @@
                     if (uploadFile.xptr >= uploadFile.xfile.size) {
                         uploadFile.uploadComplete = true;
                     } else {
-                        if (uploadFile.blocksInFlight < windowSize) { uploadFile.blocksInFlight++; p13uploadNextPart(); }
+                        if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
                     }
                 };
                 uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
