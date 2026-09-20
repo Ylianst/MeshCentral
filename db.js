@@ -1694,7 +1694,8 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = -1; } // In SQLite, no limit is -1
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
+                    const sqliteIdFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdFilter + ' ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
@@ -1714,7 +1715,8 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [id, type, domain], function (err, docs) {
+                    const sqliteIdCountFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdCountFilter, [id, type, domain], function (err, docs) {
                         func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
                     });
                 } else {
@@ -2286,7 +2288,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = 0xFFFFFFFF; }
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4)) ORDER BY LOWER(doc->>\'name\') LIMIT $5 OFFSET $6', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5))) ORDER BY LOWER(doc->>\'name\') LIMIT $6 OFFSET $7', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     if (extrasids == null) {
                         sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3)) ORDER BY LOWER(doc->>\'name\') LIMIT $4 OFFSET $5', [type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }, true);
@@ -2297,7 +2299,7 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4))', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5)))', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids], function (err, docs) { func(err, docs); });
                 } else {
                     if (extrasids == null) {
                         sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3))', [type, domain, meshes], function (err, docs) { func(err, docs); }, true);
@@ -2547,7 +2549,7 @@ module.exports.CreateDB = function (parent, func) {
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 }
@@ -2556,7 +2558,7 @@ module.exports.CreateDB = function (parent, func) {
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [id, type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
                 } else {
                     sqlDbQuery('SELECT COUNT(doc) FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
                 }
