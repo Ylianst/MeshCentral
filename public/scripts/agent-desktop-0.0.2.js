@@ -22,7 +22,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.PendingOperations = [];
     obj.tilesReceived = 0;
     obj.TilesDrawn = 0;
-    obj.KillDraw = 0;
+    var drawGeneration = 0, decodeRefreshRequested = false, renderStats = null;
     obj.ipad = false;
     obj.tabletKeyboardVisible = false;
     obj.LastX = 0;
@@ -50,7 +50,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.username;
     obj.oldie = false;
     obj.ImageType = 1; // 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+    obj.ImageBitmapMinBytes = 65536;
     obj.CompressionLevel = 50;
+    obj.AutoWebP = (typeof webpSupport != 'undefined') && (webpSupport === true);
+    obj.AutoAVIF = null;
+    obj.AutoEncoding = null;
+    var encodingProbe = null, avifPending = false;
+    // Direct-relay auto mode has no multiplexor to measure the link, so the viewer estimates its own
+    // receive rate and per-codec decode cost and reports them straight to the agent (bytes, active ms,
+    // per-codec ms-per-megapixel, and the last time a multiplexor probe was seen so we defer to it).
+    var directFeedback = { bytes: 0, ms: 0, last: 0, decode: [0, 0, 0, 0], probed: 0 };
     obj.ScalingLevel = 1024;
     obj.FrameRateTimer = 100;
     obj.SwapMouse = false;
@@ -87,11 +96,16 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
 
     obj.Start = function () {
+        obj.AutoEncoding = null;
         obj.State = 0;
         obj.accumulator = null;
+        obj.ResetDraw();
     }
 
     obj.Stop = function () {
+        obj.AutoEncoding = null;
+        obj.State = 0;
+        obj.ResetDraw();
         obj.setRotation(0);
         obj.UnGrabKeyInput();
         obj.UnGrabMouseInput();
@@ -126,43 +140,189 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     // KVM Control.
     // Routines for processing incoming packets from the AJAX server, and handling individual messages.
-    obj.ProcessPictureMsg = function (data, X, Y) {
-        //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
-        var tile = new Image();
-        tile.xcount = obj.tilesReceived++;
-        var r = obj.tilesReceived, tdata = data.slice(4), ptr = 0, strs = [];
-        // String.fromCharCode.apply() can't handle very large argument count, so we have to split like this.
-        while ((tdata.byteLength - ptr) > 50000) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr, ptr + 50000))); ptr += 50000; }
-        if (ptr > 0) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr))); } else { strs.push(String.fromCharCode.apply(null, tdata)); }
-        tile.src = 'data:image/jpeg;base64,' + btoa(strs.join(''));
-        tile.onload = function () {
-            //console.log('DecodeTile #' + this.xcount);
-            if ((obj.Canvas != null) && (obj.KillDraw < r) && (obj.State != 0)) {
-                obj.PendingOperations.push([r, 2, tile, X, Y]);
-                while (obj.DoPendingOperations()) { }
-            } else {
-                obj.PendingOperations.push([r, 0]);
-            }
+    function renderTime() { return ((typeof performance != 'undefined') && performance.now) ? performance.now() : Date.now(); }
+
+    obj.SetRenderStats = function (enabled) {
+        renderStats = enabled ? { started: renderTime(), tiles: 0, bytes: 0, drawn: 0, failed: 0, discarded: 0, bitmap: 0, image: 0, fallback: 0, pendingMax: 0, decodeMs: 0, decodeMaxMs: 0, queueMs: 0, queueMaxMs: 0, drawMs: 0, drawMaxMs: 0 } : null;
+    }
+
+    obj.GetRenderStats = function () {
+        if (renderStats == null) return null;
+        var stats = {};
+        for (var key in renderStats) { if (key != 'started') stats[key] = renderStats[key]; }
+        stats.elapsedMs = renderTime() - renderStats.started;
+        stats.pending = obj.PendingOperations.length;
+        return stats;
+    }
+
+    function releaseTile(op) {
+        clearTimeout(op.timer);
+        if (op.image && op.image.close) { op.image.close(); }
+        if (op.element) { op.element.onload = op.element.onerror = null; op.element.removeAttribute('src'); }
+        if (op.url) { URL.revokeObjectURL(op.url); }
+        op.image = op.element = op.url = null;
+    }
+
+    obj.ResetDraw = function () {
+        encodingProbe = null;
+        directFeedback.bytes = directFeedback.ms = directFeedback.last = 0;
+        // Decode callbacks from an earlier screen or connection must not draw on this one.
+        drawGeneration++;
+        for (var i = 0; i < obj.PendingOperations.length; i++) {
+            var op = obj.PendingOperations[i];
+            if (op.stats) op.stats.discarded++;
+            releaseTile(op);
         }
-        tile.error = function () { console.log('DecodeTileError'); }
+        obj.PendingOperations = [];
+        obj.tilesReceived = obj.TilesDrawn = 0;
+        decodeRefreshRequested = false;
+    }
+
+    function renderError(stats, source, error) {
+        var message = (source + ': ' + String(error)).slice(0, 512);
+        if (stats) { stats.failed++; stats.lastError = message; stats.lastErrorMs = renderTime() - stats.started; }
+        if (obj.debugmode > 0) console.log(message);
+    }
+
+    function failedTile(op, error) {
+        renderError(op.stats, 'Image', error);
+        if (op.avif && obj.ImageType == 0 && obj.AutoAVIF === true && obj.parent && obj.State != 0) {
+            obj.AutoAVIF = false;
+            decodeRefreshRequested = true;
+            obj.SendCompressionLevel(0);
+            return;
+        }
+        // Retry once until a manual refresh, format change or screen reset. A bad cached tile must not cause a refresh loop.
+        if (!decodeRefreshRequested && obj.parent && obj.State != 0) {
+            decodeRefreshRequested = true;
+            obj.send(String.fromCharCode(0x00, 0x06, 0x00, 0x04));
+        }
+    }
+
+    // Report the estimated link rate and per-codec decode cost straight to the agent. Used in direct-relay
+    // auto mode; when a multiplexor is probing (it measures the link more precisely) this stays quiet.
+    function sendDirectFeedback() {
+        if (obj.ImageType != 0 || !obj.AutoEncoding || obj.State == 0 || !obj.parent) return;
+        if (directFeedback.probed && (Date.now() - directFeedback.probed < 5000)) return;
+        if (directFeedback.ms < 700 || directFeedback.bytes < 8192) return; // Wait for a real burst before estimating.
+        var rate = Math.max(1024, Math.min(125000000, Math.round(directFeedback.bytes * 1000 / directFeedback.ms)));
+        var avif = obj.AutoEncoding.formats & 4;
+        obj.send(String.fromCharCode(0, 90, 0, avif ? 14 : 12) + obj.intToStr(rate) + obj.shortToStr(Math.ceil(directFeedback.decode[0])) + obj.shortToStr(Math.ceil(directFeedback.decode[1])) + (avif ? obj.shortToStr(Math.ceil(directFeedback.decode[2])) : ''));
+        directFeedback.bytes = 0; directFeedback.ms = 0;
+    }
+
+    obj.ProcessPictureMsg = function (data, X, Y) {
+        if (obj.State == 0) return;
+        var probe = encodingProbe;
+        var tdata = data.subarray(4), blob = null, mime = 'image/jpeg';
+        if ((tdata[0] == 137) && (tdata[1] == 80)) { mime = 'image/png'; }
+        else if ((tdata[0] == 82) && (tdata[1] == 73)) { mime = 'image/webp'; }
+        else if (((tdata[0] == 73) && (tdata[1] == 73)) || ((tdata[0] == 77) && (tdata[1] == 77))) { mime = 'image/tiff'; }
+        else if (tdata[4] == 102 && tdata[5] == 116 && tdata[6] == 121 && tdata[7] == 112 && tdata[8] == 97 && tdata[9] == 118 && tdata[10] == 105 && tdata[11] == 102) { mime = 'image/avif'; }
+        var codecIndex = mime == 'image/avif' ? 2 : mime == 'image/webp' ? 1 : 0;
+        if (obj.ImageType == 0 && obj.AutoEncoding) obj.AutoEncoding.type = mime == 'image/avif' ? 5 : mime == 'image/webp' ? 4 : 1;
+        var recv = renderTime();
+        // Pair each tile's size with the gap since the previous tile; during a burst that gap is the link transfer time.
+        if (obj.ImageType == 0) {
+            if (directFeedback.last && (recv - directFeedback.last) > 0 && (recv - directFeedback.last) < 1000) { directFeedback.ms += (recv - directFeedback.last); directFeedback.bytes += tdata.byteLength; }
+            directFeedback.last = recv;
+            sendDirectFeedback();
+        }
+        obj.tilesReceived++;
+        var op = { generation: drawGeneration, x: X, y: Y, ready: false, image: null, stats: renderStats, probe: probe, avif: mime == 'image/avif', started: recv, recv: recv, codecIndex: codecIndex };
+        encodingProbe = null;
+        if (op.stats) {
+            op.started = renderTime();
+            op.stats.tiles++;
+            op.stats.bytes += tdata.byteLength;
+            op.stats.pendingMax = Math.max(op.stats.pendingMax, obj.PendingOperations.length + 1);
+        }
+        obj.PendingOperations.push(op);
+        op.timer = setTimeout(function () { finish(null, 'Decode timed out'); }, 15000);
+
+        function finish(image, error) {
+            if (op.ready || (op.generation != drawGeneration)) {
+                if (image && image.close) image.close();
+                return;
+            }
+            clearTimeout(op.timer);
+            op.ready = true;
+            op.image = image;
+            if (op.element) { op.element.onload = op.element.onerror = null; }
+            // Record decode cost per codec (ms per megapixel) for the direct-relay feedback.
+            if (obj.ImageType == 0 && image) { var px = (image.width * image.height) || 0; if (px > 0) directFeedback.decode[op.codecIndex] = Math.min(1000, (renderTime() - op.recv) * 1000000 / px); }
+            if (op.stats) {
+                op.decoded = renderTime();
+                var elapsed = op.decoded - op.started;
+                op.stats.decodeMs += elapsed;
+                op.stats.decodeMaxMs = Math.max(op.stats.decodeMaxMs, elapsed);
+            }
+            if (image == null) failedTile(op, error);
+            while (obj.DoPendingOperations()) { }
+        }
+
+        function loadImage() {
+            if (op.ready || (op.generation != drawGeneration)) return;
+            if (op.stats) op.stats.image++;
+            var tile = op.element = new Image();
+            tile.onload = function () { finish(tile); }
+            tile.onerror = function () { finish(null, 'Decode failed'); }
+            try {
+                if (blob && (typeof URL != 'undefined') && URL.createObjectURL) {
+                    op.url = URL.createObjectURL(blob);
+                    tile.src = op.url;
+                } else {
+                    var strs = [];
+                    for (var ptr = 0; ptr < tdata.byteLength; ptr += 50000) { strs.push(String.fromCharCode.apply(null, tdata.subarray(ptr, ptr + 50000))); }
+                    tile.src = 'data:' + mime + ';base64,' + btoa(strs.join(''));
+                }
+            } catch (ex) { finish(null, ex); }
+        }
+
+        function fallback() {
+            if (op.ready || (op.generation != drawGeneration)) return;
+            if (op.stats) op.stats.fallback++;
+            loadImage();
+        }
+
+        // Blob setup costs more than base64 for small tiles in Chromium.
+        try { if ((tdata.byteLength >= obj.ImageBitmapMinBytes) && (typeof Blob != 'undefined')) blob = new Blob([tdata], { type: mime }); } catch (ex) { }
+        if (blob && (typeof createImageBitmap == 'function')) {
+            if (op.stats) op.stats.bitmap++;
+            try { createImageBitmap(blob).then(finish, fallback); } catch (ex) { fallback(); }
+        } else {
+            loadImage();
+        }
     }
 
     obj.DoPendingOperations = function () {
-        if (obj.PendingOperations.length == 0) return false;
-        for (var i = 0; i < obj.PendingOperations.length; i++) { // && KillDraw < tilesDrawn
-            var Msg = obj.PendingOperations[i];
-            if (Msg[0] == (obj.TilesDrawn + 1)) {
-                if (obj.onPreDrawImage != null) obj.onPreDrawImage(); // Notify that we are about to draw on the canvas.
-                if (Msg[1] == 1) { obj.ProcessCopyRectMsg(Msg[2]); }
-                else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); delete Msg[2]; }
-                obj.PendingOperations.splice(i, 1);
-                obj.TilesDrawn++;
-                if ((obj.TilesDrawn == obj.tilesReceived) && (obj.KillDraw < obj.TilesDrawn)) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
-                return true;
+        if ((obj.PendingOperations.length == 0) || !obj.PendingOperations[0].ready) return false;
+        var op = obj.PendingOperations.shift();
+        obj.TilesDrawn++;
+        try {
+            if (op.image && obj.Canvas && (obj.State != 0)) {
+                if (obj.onPreDrawImage != null) obj.onPreDrawImage();
+                if ((op.generation == drawGeneration) && (obj.State != 0)) {
+                    var started = op.stats ? renderTime() : 0;
+                    obj.Canvas.drawImage(op.image, obj.rotX(op.x, op.y), obj.rotY(op.x, op.y));
+                    if (op.probe && obj.ImageType == 0 && obj.parent) {
+                        var elapsed = Math.min(15000, Math.max(0, Math.ceil(renderTime() - op.started)));
+                        obj.send(String.fromCharCode(0, 90, 0, 12) + op.probe + obj.intToStr(elapsed));
+                    }
+                    if (op.stats) {
+                        var drawMs = renderTime() - started, queueMs = started - op.decoded;
+                        op.stats.drawn++;
+                        op.stats.drawMs += drawMs;
+                        op.stats.drawMaxMs = Math.max(op.stats.drawMaxMs, drawMs);
+                        op.stats.queueMs += queueMs;
+                        op.stats.queueMaxMs = Math.max(op.stats.queueMaxMs, queueMs);
+                    }
+                }
             }
-        }
-        if (obj.oldie && obj.PendingOperations.length > 0) { obj.TilesDrawn++; }
-        return false;
+        } catch (ex) { failedTile(op, ex); }
+        finally { releaseTile(op); }
+        if (obj.PendingOperations.length == 0) { obj.TilesDrawn = obj.tilesReceived = 0; }
+        return true;
     }
 
     obj.ProcessCopyRectMsg = function (str) {
@@ -187,28 +347,64 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.send(String.fromCharCode(0x00, 0x08, 0x00, 0x05, 0x01));
     }
 
-    obj.SendCompressionLevel = function (type, level, scaling, frametimer) { // Type: 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+    function checkAvifSupport() {
+        if (obj.AutoAVIF != null || avifPending) return;
+        avifPending = true;
+        function available(supported) {
+            avifPending = false;
+            obj.AutoAVIF = supported;
+            if (supported && obj.ImageType == 0 && obj.State != 0) obj.SendCompressionLevel(0);
+        }
+        var factory = CreateAgentRemoteDesktop;
+        if (typeof factory.avifSupport == 'boolean') { available(factory.avifSupport); return; }
+        if (factory.avifCallbacks) { factory.avifCallbacks.push(available); return; }
+        factory.avifCallbacks = [available];
+        var probe = new Image(), timer = setTimeout(function () { finish(false); }, 5000);
+        function finish(supported) {
+            if (!factory.avifCallbacks) return;
+            clearTimeout(timer);
+            probe.onload = probe.onerror = null;
+            probe.removeAttribute('src');
+            factory.avifSupport = supported;
+            var callbacks = factory.avifCallbacks;
+            factory.avifCallbacks = null;
+            for (var i = 0; i < callbacks.length; i++) callbacks[i](supported);
+        }
+        probe.onload = function () { finish(probe.width == 1 && probe.height == 1); };
+        probe.onerror = function () { finish(false); };
+        probe.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUEAAADrbWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAOcGl0bQAAAAAAAQAAAB5pbG9jAAAAAEQAAAEAAQAAAAEAAAETAAAAJAAAAChpaW5mAAAAAAABAAAAGmluZmUCAAAAAAEAAGF2MDFDb2xvcgAAAABqaXBycAAAAEtpcGNvAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAQcGl4aQAAAAADCAgIAAAADGF2MUOBIAAAAAAAE2NvbHJuY2x4AAEADQAGgAAAABdpcG1hAAAAAAAAAAEAAQQBAoMEAAAALG1kYXQSAAoHOAAGkBDQaTIXGUJjBMPPPPNBIACQQRHVQ0SY9gqP6M4=';
+    }
+
+    obj.SendCompressionLevel = function (type, level, scaling, frametimer) { // Type: 0 = Auto, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP, 5 = AVIF
+        if (obj.ImageType != type) decodeRefreshRequested = false;
         obj.ImageType = type;
         if (level) { obj.CompressionLevel = level; }
         if (scaling) { obj.ScalingLevel = scaling; }
         if (frametimer) { obj.FrameRateTimer = frametimer; }
-        obj.send(String.fromCharCode(0x00, 0x05, 0x00, 0x0A, type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer));
+        if (type != 0) { obj.AutoEncoding = null; encodingProbe = null; }
+        // Auto mode advertises the image formats this browser can decode; the agent replies with the ones it can encode.
+        obj.send(String.fromCharCode(0, 5, 0, type == 0 ? 16 : 10, type == 0 ? 1 : type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer) + (type == 0 ? 'AUTO' + String.fromCharCode(1, 1 | (obj.AutoWebP ? 2 : 0) | (obj.AutoAVIF === true ? 4 : 0)) : ''));
+        if (type == 0) checkAvifSupport();
     }
 
     obj.SendRefresh = function () {
+        obj.ResetDraw();
         obj.send(String.fromCharCode(0x00, 0x06, 0x00, 0x04));
     }
 
     obj.ProcessScreenMsg = function (width, height) {
         if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
-        if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) return; // Ignore change if screen is same size.
+        if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) {
+            // A replacement capture child needs the settings even when its dimensions match.
+            obj.SendCompressionLevel(obj.ImageType);
+            return;
+        }
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
         obj.rotation = 0;
         obj.FirstDraw = true;
         obj.ScreenWidth = obj.width = width;
         obj.ScreenHeight = obj.height = height;
-        obj.KillDraw = obj.tilesReceived;
-        while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
+        obj.ResetDraw();
         obj.SendCompressionLevel(obj.ImageType);
         obj.SendUnPause();
         obj.SendRemoteInputLock(2); // Query input lock state
@@ -221,24 +417,34 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
         if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
 
-        // Fix for view being too large for String.fromCharCode.apply()
-        var chunkSize = 10000;
-        let result = '';
-        for (let i = 0; i < view.length; i += chunkSize) { result += String.fromCharCode.apply(null, view.slice(i, i + chunkSize)); }
         // Record the command if needed
         if (obj.recordedData != null) {
+            var result = '';
+            for (var i = 0; i < view.length; i += 10000) { result += String.fromCharCode.apply(null, view.subarray(i, i + 10000)); }
             if (cmdsize > 65000) {
-                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + result));
+                obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + result));
             } else {
                 obj.recordedData.push(recordingEntry(2, 1, result));
             }
         }
 
         switch (cmd) {
+            case 5:
+                // Agent reply to an AUTO request: view[9] is the bitmask of image formats it can encode (1 JPEG, 2 WebP, 4 AVIF).
+                if (cmdsize == 12 && view[4] == 65 && view[5] == 85 && view[6] == 84 && view[7] == 79 && view[8] == 1 && obj.ImageType == 0) {
+                    obj.AutoEncoding = { formats: view[9] & 7 };
+                }
+                break;
+            case 90:
+                if (cmdsize == 8 && obj.ImageType == 0 && obj.AutoEncoding && obj.State != 0) { encodingProbe = String.fromCharCode(view[4], view[5], view[6], view[7]); directFeedback.probed = Date.now(); }
+                if (cmdsize == 12 && view[8] == 80 && view[9] == 73 && view[10] == 78 && view[11] == 71 && obj.ImageType == 0 && obj.AutoEncoding && obj.State != 0 && obj.parent) {
+                    obj.send(String.fromCharCode(0, 90, 0, 8, view[4], view[5], view[6], view[7]));
+                }
+                break;
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
                 //console.log('TILE', X, Y, cmdsize);
-                obj.ProcessPictureMsg(view.slice(4), X, Y);
+                obj.ProcessPictureMsg(view.subarray(4), X, Y);
                 break;
             case 7: // Screen size
                 obj.ProcessScreenMsg(X, Y);
@@ -981,10 +1187,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         var now = Date.now();
         if (typeof data == 'number') {
             obj.recordedSize += data;
-            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data) + obj.intToStr(now >> 32) + obj.intToStr(now & 32);
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data) + obj.intToStr(Math.floor(now / 0x100000000)) + obj.intToStr(now);
         } else {
             obj.recordedSize += data.length;
-            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data.length) + obj.intToStr(now >> 32) + obj.intToStr(now & 32) + data;
+            return obj.shortToStr(type) + obj.shortToStr(flags) + obj.intToStr(data.length) + obj.intToStr(Math.floor(now / 0x100000000)) + obj.intToStr(now) + data;
         }
     }
 

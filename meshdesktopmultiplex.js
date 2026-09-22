@@ -85,7 +85,10 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
     obj.lastDisplayLocationData = null; // Pointer to the last display location and size command from the agent.
     obj.lastKeyState = null;            // Pointer to the last key state command from the agent.
     obj.desktopPaused = true;           // Current desktop pause state, it's true if all viewers are paused.
-    obj.imageType = 1;                  // Current image type, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+    obj.autoFormats = 1;                // Image formats offered by every viewer (bit1 JPEG, bit2 WebP, bit4 AVIF), intersected.
+    obj.encodingCapabilities = null;    // The agent's AUTO reply, listing the image formats it can actually encode.
+    var encodingSequence = 0;           // Rolling id for the bandwidth probes sent to viewers.
+    obj.imageType = 1;                  // Current image type, 0 = Auto, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP, 5 = AVIF
     obj.imageCompression = 50;          // Current image compression, this is the highest value of all viewers.
     obj.imageScaling = 1024;            // Current image scaling, this is the highest value of all viewers.
     obj.imageFrameRate = 50;            // Current framerate setting, this is the lowest values of all viewers.
@@ -123,6 +126,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             peer.sendQueue = [];
             peer.paused = false;
             peer.startTime = Date.now();
+            updateCompression();
 
             // Add the user to the userids list if needed
             if ((peer.user != null) && (obj.userIds.indexOf(peer.user._id) == -1)) { obj.userIds.push(peer.user._id); }
@@ -207,6 +211,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             if (obj.viewerConnected == true) {
                 if (obj.protocolOptions != null) { obj.sendToAgent(JSON.stringify(obj.protocolOptions)); } // Send connection options
                 obj.sendToAgent('2'); // Send remote desktop connect
+                updateCompression(true);
             }
         }
 
@@ -243,6 +248,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 var i = obj.viewers.indexOf(peer);
                 if (i == -1) return false;
                 obj.viewers.splice(i, 1);
+                updateCompression();
             }
 
             // Resume flow control if this was the peer that was limiting traffic (because it was the fastest one).
@@ -487,6 +493,88 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         }
     }
 
+    function sendImage(viewer, image) {
+        // Do not push an AVIF tile to a viewer whose browser cannot decode it.
+        if (image.codec == 2 && !(viewer.autoFormats & 4) && viewer.imageType != 5) { setTimeout(function () { sendViewerNext(viewer); }, 0); return; }
+        var avif = obj.encodingCapabilities && (obj.encodingCapabilities[9] & obj.autoFormats & 4);
+        if (image.pixels && (image.data.length >= 65536 || (avif && image.pixels >= 262144 && image.data.length >= 8192))) startEncodingProbe(viewer, image.data.length, image.pixels, image.codec);
+        viewer.ws.send(image.data, function () { sendViewerNext(viewer); });
+    }
+
+    // Ask a viewer to time a tile so the agent can measure this link and pick the cheapest image format.
+    function startEncodingProbe(viewer, bytes, pixels, codec) {
+        var now = Date.now();
+        if (obj.imageType != 0 || obj.imageCompression >= 100 || viewer.imageType != 0 || !obj.encodingCapabilities || !(obj.encodingCapabilities[9] & obj.autoFormats & 6) ||
+            (viewer.encodingProbe && now - viewer.encodingProbe.started <= 10000) || (viewer.lastEncodingProbe && now - viewer.lastEncodingProbe < 1000)) return;
+        var probe = Buffer.alloc(8);
+        probe.writeUInt16BE(90, 0); probe.writeUInt16BE(8, 2);
+        encodingSequence = (encodingSequence + 1) >>> 0;
+        probe.writeUInt32BE(encodingSequence, 4);
+        viewer.lastEncodingProbe = now;
+        viewer.encodingProbe = { id: encodingSequence, started: now, bytes: bytes, pixels: pixels, codec: codec };
+        // A separate PING measures round-trip time so it can be removed from the transfer estimate.
+        var ping = Buffer.alloc(12);
+        probe.copy(ping); ping.writeUInt16BE(12, 2); ping.write('PING', 8);
+        viewer.encodingProbe.latencyPending = true;
+        viewer.ws.send(ping);
+        viewer.ws.send(probe);
+    }
+
+    function encodingFeedback(viewer, data) {
+        var probe = viewer.encodingProbe, now = Date.now();
+        if (data.length != 12 || obj.imageType != 0 || !probe || data.readUInt32BE(4) != probe.id) return;
+        delete viewer.encodingProbe;
+        var elapsed = now - probe.started, decode = data.readUInt32BE(8);
+        if (elapsed <= 0 || elapsed > 10000 || decode > elapsed || decode > 15000) return;
+        var samples = viewer.encodingLatency ? viewer.encodingLatency.samples : [], rtt = 0;
+        for (var i in samples) { if (now >= samples[i].time && now - samples[i].time <= 10000) rtt = rtt ? Math.min(rtt, samples[i].ms) : samples[i].ms; }
+        // Millisecond clocks cannot resolve tiny transfers after subtracting RTT.
+        var rate = Math.max(1024, Math.min(125000000, probe.bytes * 1000 / Math.max(rtt ? 4 : 1, elapsed - decode - rtt)));
+        var previous = viewer.encodingFeedback;
+        if (previous && now - previous.time > 10000) previous = null;
+        var drop = previous && rate <= previous.rate * 0.5;
+        var weight = previous && rate < previous.rate ? 0.75 : 0.5;
+        // Averaging a steep drop with the old rate can hide it for several large transfers.
+        var feedback = { time: now, rate: previous && !drop ? previous.rate * (1 - weight) + rate * weight : rate, decode: previous ? previous.decode : [0, 0, 0, 0] };
+        feedback.decode[probe.codec] = Math.min(1000, decode * 1000000 / probe.pixels);
+        viewer.encodingFeedback = feedback;
+        // Report the slowest link and worst per-codec decode across all viewers so the agent serves them all.
+        var slowest = 125000000, jpeg = 0, webp = 0, avif = 0;
+        for (var i in obj.viewers) {
+            var f = obj.viewers[i].encodingFeedback;
+            if (!f || now - f.time > 10000) return;
+            slowest = Math.min(slowest, f.rate);
+            jpeg = Math.max(jpeg, f.decode[0]);
+            webp = Math.max(webp, f.decode[1]);
+            avif = Math.max(avif, f.decode[2] || 0);
+        }
+        if (!drop && obj.lastEncodingFeedback && now - obj.lastEncodingFeedback < 1000) return;
+        obj.lastEncodingFeedback = now;
+        var command = Buffer.alloc(obj.encodingCapabilities && (obj.encodingCapabilities[9] & obj.autoFormats & 4) ? 14 : 12);
+        command.writeUInt16BE(90, 0);
+        command.writeUInt16BE(command.length, 2);
+        command.writeUInt32BE(Math.round(slowest), 4);
+        command.writeUInt16BE(Math.ceil(jpeg), 8);
+        command.writeUInt16BE(Math.ceil(webp), 10);
+        if (command.length >= 14) command.writeUInt16BE(Math.ceil(avif), 12);
+        obj.sendToAgent(command);
+    }
+
+    function encodingLatency(viewer, data) {
+        var probe = viewer.encodingProbe, now = Date.now();
+        if (data.length != 8 || obj.imageType != 0 || !probe || !probe.latencyPending || data.readUInt32BE(4) != probe.id) return;
+        probe.latencyPending = false;
+        var elapsed = now - probe.started;
+        if (elapsed < 1 || elapsed > 10000) return;
+        var samples = viewer.encodingLatency ? viewer.encodingLatency.samples.filter(function (s) { return now >= s.time && now - s.time <= 10000; }) : [];
+        samples.push({ time: now, ms: elapsed });
+        if (samples.length > 16) samples.shift();
+        // Use the recent floor so a delayed ping does not inflate available bandwidth.
+        var minimum = elapsed;
+        for (var i in samples) minimum = Math.min(minimum, samples[i].ms);
+        viewer.encodingLatency = { time: now, ms: minimum, samples: samples };
+    }
+
     // Send more data to the viewer
     function sendViewerNext(viewer) {
         if ((viewer.sendQueue == null) || (obj.viewers == null)) return;
@@ -508,9 +596,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 //if ((image.next != null) && ((viewer.dataPtr + 1) != image.next)) { console.log('SVIEW-S2', viewer.dataPtr, image.next); } // DEBUG
                 viewer.dataPtr = image.next;
                 if (viewer.slowRelay) {
-                    setTimeout(function () { try { viewer.ws.send(image.data, function () { sendViewerNext(viewer); }); } catch (ex) { } }, viewer.slowRelay);
+                    setTimeout(function () { try { sendImage(viewer, image); } catch (ex) { } }, viewer.slowRelay);
                 } else {
-                    try { viewer.ws.send(image.data, function () { sendViewerNext(viewer); }); } catch (ex) { }
+                    try { sendImage(viewer, image); } catch (ex) { }
                 }
 
                 // Flow control, pause the agent if needed
@@ -542,6 +630,42 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         }
     }
 
+    // Recompute the aggregate encoding across all viewers and send it to the agent (image tiles only).
+    function updateCompression(force) {
+        if (obj.viewers == null || obj.viewers.length == 0) return;
+        var type = null, quality = null, scaling = null, frameRate = null, formats = 7;
+        for (var i in obj.viewers) {
+            var viewer = obj.viewers[i];
+            formats &= viewer.autoFormats || 1;
+            if (type == null) { type = viewer.imageType; } else if (viewer.imageType != type) { type = 1; }
+            if (quality == null || viewer.imageCompression > quality) quality = viewer.imageCompression;
+            if (scaling == null || viewer.imageScaling > scaling) scaling = viewer.imageScaling;
+            if (frameRate == null || viewer.imageFrameRate < frameRate) frameRate = viewer.imageFrameRate;
+        }
+        if (!force && obj.autoFormats == formats && obj.imageType == type && obj.imageCompression == quality && obj.imageScaling == scaling && obj.imageFrameRate == frameRate) return;
+        // A viewer that lost a format needs the cached tiles resent in one it can still decode.
+        var refresh = (obj.imageType == 0 && ((obj.autoFormats & 6) & ~(type == 0 ? formats : 1)));
+        obj.imageType = type;
+        obj.autoFormats = formats;
+        obj.imageCompression = quality;
+        obj.imageScaling = scaling;
+        obj.imageFrameRate = frameRate;
+        obj.lastEncodingFeedback = 0;
+        for (var i in obj.viewers) { delete obj.viewers[i].encodingProbe; delete obj.viewers[i].encodingFeedback; }
+        var cmd = Buffer.alloc(type == 0 ? 16 : 10);
+        cmd.writeUInt16BE(5, 0);
+        cmd.writeUInt16BE(cmd.length, 2);
+        cmd[4] = type == 0 ? 1 : type;
+        cmd[5] = quality;
+        cmd.writeUInt16BE(scaling, 6);
+        cmd.writeUInt16BE(frameRate, 8);
+        if (type == 0) { cmd.write('AUTO', 10); cmd[14] = 1; cmd[15] = formats; }
+        // The agent reads its first message after 'c' as the protocol selection, so wait for connect.
+        if (!obj.viewerConnected) return;
+        obj.sendToAgent(cmd);
+        if (refresh) obj.sendToAgent(Buffer.from([0, 6, 0, 4]));
+    }
+
     // Process incoming viewer data
     obj.processViewerData = function (viewer, data) {
         if (typeof data == 'string') {
@@ -550,6 +674,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                     if (obj.agent != null) {
                         if (obj.protocolOptions != null) { obj.sendToAgent(JSON.stringify(obj.protocolOptions)); } // Send connection options
                         obj.sendToAgent('2'); // Send remote desktop connect
+                        obj.viewerConnected = true;
+                        updateCompression(true);
                     }
                     obj.viewerConnected = true;
                 }
@@ -574,6 +700,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
 
         //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
+            case 90: // Encoding feedback: a PING latency reply (8 bytes) or a probe timing (12 bytes)
+                if (data.length == 8) encodingLatency(viewer, data); else encodingFeedback(viewer, data);
+                break;
             case 1: // Key Events, forward to agent
                 if (viewer.viewOnly == false) { obj.sendToAgent(data); }
                 break;
@@ -582,39 +711,15 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 5: // Compression
                 if (data.length < 10) return;
-                viewer.imageType = data[4]; // Image type: 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
+                // A 16-byte AUTO request carries the browser's decodable image formats in bits 1/2/4.
+                viewer.autoFormats = (data.length == 16 && data[4] == 1 && data.toString('ascii', 10, 14) == 'AUTO' && data[14] == 1) ? (data[15] & 7) | 1 : 0;
+                viewer.imageType = viewer.autoFormats ? 0 : data[4]; // 0 = Auto, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP, 5 = AVIF
                 viewer.imageCompression = data[5];
                 viewer.imageScaling = data.readUInt16BE(6);
                 viewer.imageFrameRate = data.readUInt16BE(8);
-                //console.log('Viewer-Compression', viewer.imageType, viewer.imageCompression, viewer.imageScaling, viewer.imageFrameRate);
-                
-                // See if this changes anything
-                var viewersimageType = null;
-                var viewersimageCompression = null;
-                var viewersimageScaling = null;
-                var viewersimageFrameRate = null;
-                for (var i in obj.viewers) {
-                    if (viewersimageType == null) { viewersimageType = obj.viewers[i].imageType; } else if (obj.viewers[i].imageType != viewersimageType) { viewersimageType = 1; }; // Default to JPEG if viewers has different image formats
-                    if ((viewersimageCompression == null) || (obj.viewers[i].imageCompression > viewersimageCompression)) { viewersimageCompression = obj.viewers[i].imageCompression; };
-                    if ((viewersimageScaling == null) || (obj.viewers[i].imageScaling > viewersimageScaling)) { viewersimageScaling = obj.viewers[i].imageScaling; };
-                    if ((viewersimageFrameRate == null) || (obj.viewers[i].imageFrameRate < viewersimageFrameRate)) { viewersimageFrameRate = obj.viewers[i].imageFrameRate; };
-                }
-                if ((obj.imageCompression != viewersimageCompression) || (obj.imageScaling != viewersimageScaling) || (obj.imageFrameRate != viewersimageFrameRate)) {
-                    // Update and send to agent new compression settings
-                    obj.imageType = viewersimageType;
-                    obj.imageCompression = viewersimageCompression;
-                    obj.imageScaling = viewersimageScaling;
-                    obj.imageFrameRate = viewersimageFrameRate
-                    //console.log('Send-Agent-Compression', obj.imageType, obj.imageCompression, obj.imageScaling, obj.imageFrameRate);
-                    var cmd = Buffer.alloc(10);
-                    cmd.writeUInt16BE(5, 0); // Command 5, compression
-                    cmd.writeUInt16BE(10, 2); // Command size, 10 bytes long
-                    cmd[4] = obj.imageType; // Image type: 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP
-                    cmd[5] = obj.imageCompression; // Image compression level
-                    cmd.writeUInt16BE(obj.imageScaling, 6); // Scaling level
-                    cmd.writeUInt16BE(obj.imageFrameRate, 8); // Frame rate timer
-                    obj.sendToAgent(cmd);
-                }
+                updateCompression();
+                // Give this viewer the agent's format capabilities so its UI can hide unsupported codecs.
+                if (viewer.imageType == 0 && obj.encodingCapabilities) obj.sendToViewer(viewer, obj.encodingCapabilities);
                 break;
             case 6: // Refresh, handle this on the server
                 //console.log('Viewer-Refresh');
@@ -697,15 +802,21 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         }
             
         switch (command) {
+            case 5: // Agent reply to an AUTO request: the image formats it can encode (bit1 JPEG, bit2 WebP, bit4 AVIF).
+                if (data.length == 12 && cmdsize == 12 && data.toString('ascii', 4, 8) == 'AUTO' && data[8] == 1) {
+                    obj.encodingCapabilities = data;
+                    obj.sendToAllViewers(data);
+                }
+                break;
             case 3: // Tile, check dimentions and store
                 if ((data.length < 10) || (obj.lastData == null)) break;
                 var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
                 var dimensions = require('image-size').imageSize(data.slice(8));
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
                 obj.counter++;
-                
-                // Keep a reference to this image & how many tiles it covers
-                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData };
+
+                // Keep a reference to this image & how many tiles it covers (pixels/codec drive the bandwidth probe)
+                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData, pixels: dimensions.width * dimensions.height, codec: dimensions.type == 'avif' ? 2 : dimensions.type == 'webp' ? 1 : 0 };
                 obj.images[obj.lastData].next = obj.counter;
                 obj.lastData = obj.counter;
                 obj.imagesCounters[obj.counter] = (sw * sh);
@@ -753,6 +864,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 7: // Screen Size, clear the screen state and compute the tile count
                 if (data.length < 8) break;
+                // A replacement capture child starts at default encoding, so resend settings even at the same size.
+                updateCompression(true);
                 if ((obj.width === data.readUInt16BE(4)) && (obj.height === data.readUInt16BE(6))) break; // Same screen size as before, skip this.
                 obj.counter++;
                 obj.lastScreenSizeCmd = data;
