@@ -55,11 +55,60 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     obj.AutoWebP = (typeof webpSupport != 'undefined') && (webpSupport === true);
     obj.AutoAVIF = null;
     obj.AutoEncoding = null;
-    var encodingProbe = null, avifPending = false;
-    // Direct-relay auto mode has no multiplexor to measure the link, so the viewer estimates its own
-    // receive rate and per-codec decode cost and reports them straight to the agent (bytes, active ms,
-    // per-codec ms-per-megapixel, and the last time a multiplexor probe was seen so we defer to it).
-    var directFeedback = { bytes: 0, ms: 0, last: 0, decode: [0, 0, 0, 0], probed: 0 };
+    obj.AgentImageTypes = null;
+    obj.BrowserImageTypes = 3 | (obj.AutoWebP ? 8 : 0);
+    obj.AdaptiveSupported = null;
+    obj.RequestedImageType = null;
+    obj.onEncodingChanged = null;
+    var encodingProbe = null, imageTransfer = null, avifPending = false, capabilitiesRequested = false, capabilityTimer = null;
+    var directFeedback = { rate: 0, time: 0, decode: [0, 0, 0] };
+
+    obj.GetSupportedImageTypes = function () { return (obj.AgentImageTypes == null ? 1 : obj.AgentImageTypes) & obj.BrowserImageTypes; }
+    obj.GetEncodingStatus = function (details) {
+        var names = { 1: 'JPEG', 2: 'PNG', 3: 'TIFF', 4: 'WEBP', 5: 'AVIF' };
+        var automatic = obj.ImageType == 0, status = obj.AutoEncoding;
+        var type = obj.CurrentEncodingType || (automatic ? 1 : obj.ImageType);
+        var quality = automatic ? status && status.quality : obj.CompressionLevel;
+        var text = (automatic ? 'Auto: ' : '') + names[type] + (quality ? ' q' + quality : '');
+        if (details && automatic && status) {
+            if (status.frameRate) text += ', ' + (1000 / status.frameRate).toFixed(1) + ' fps';
+            if (status.rate) text += ', ' + (status.rate * 8 / 1000000).toFixed(2) + ' Mbps';
+        }
+        return text;
+    }
+    function encodingChanged() { if (obj.onEncodingChanged) obj.onEncodingChanged(obj); }
+    function resetEncoding() {
+        clearTimeout(capabilityTimer);
+        capabilityTimer = null;
+        capabilitiesRequested = false;
+        obj.AgentImageTypes = obj.AdaptiveSupported = obj.AutoEncoding = obj.CurrentEncodingType = null;
+    }
+    function requestCapabilities() {
+        if (capabilitiesRequested || !obj.parent || obj.State == 0) return;
+        capabilitiesRequested = true;
+        capabilityTimer = setTimeout(function () {
+            capabilityTimer = null;
+            if (obj.AgentImageTypes == null) {
+                obj.AgentImageTypes = 1;
+                obj.AdaptiveSupported = false;
+                obj.SendCompressionLevel(obj.RequestedImageType == null ? obj.ImageType : obj.RequestedImageType);
+                encodingChanged();
+            }
+        }, 5000);
+        obj.send(String.fromCharCode(0, 90, 0, 8) + 'CAPS');
+        checkAvifSupport();
+        var tiff = new Image(), timer = setTimeout(function () { done(false); }, 5000);
+        function done(ok) {
+            clearTimeout(timer);
+            tiff.onload = tiff.onerror = null;
+            tiff.removeAttribute('src');
+            if (ok) { obj.BrowserImageTypes |= 4; if (obj.RequestedImageType == 3 && obj.State != 0) obj.SendCompressionLevel(3); }
+            encodingChanged();
+        }
+        tiff.onload = function () { done(tiff.width == 1 && tiff.height == 1); };
+        tiff.onerror = function () { done(false); };
+        tiff.src = 'data:image/tiff;base64,SUkqAAgAAAAKAAABBAABAAAAAQAAAAEBBAABAAAAAQAAAAIBAwADAAAAhgAAAAMBAwABAAAAAQAAAAYBAwABAAAAAgAAABEBBAABAAAAjAAAABUBAwABAAAAAwAAABYBBAABAAAAAQAAABcBBAABAAAAAwAAABwBAwABAAAAAQAAAAAAAAAIAAgACAAAAAA=';
+    }
     obj.ScalingLevel = 1024;
     obj.FrameRateTimer = 100;
     obj.SwapMouse = false;
@@ -96,14 +145,14 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
 
     obj.Start = function () {
-        obj.AutoEncoding = null;
+        resetEncoding();
         obj.State = 0;
         obj.accumulator = null;
         obj.ResetDraw();
     }
 
     obj.Stop = function () {
-        obj.AutoEncoding = null;
+        resetEncoding();
         obj.State = 0;
         obj.ResetDraw();
         obj.setRotation(0);
@@ -165,7 +214,8 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.ResetDraw = function () {
         encodingProbe = null;
-        directFeedback.bytes = directFeedback.ms = directFeedback.last = 0;
+        imageTransfer = null;
+        directFeedback = { rate: 0, time: 0, decode: [0, 0, 0] };
         // Decode callbacks from an earlier screen or connection must not draw on this one.
         drawGeneration++;
         for (var i = 0; i < obj.PendingOperations.length; i++) {
@@ -186,11 +236,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     function failedTile(op, error) {
         renderError(op.stats, 'Image', error);
-        if (op.avif && obj.ImageType == 0 && obj.AutoAVIF === true && obj.parent && obj.State != 0) {
-            obj.AutoAVIF = false;
-            decodeRefreshRequested = true;
-            obj.SendCompressionLevel(0);
-            return;
+        if ((op.codecIndex == 1 || op.codecIndex == 2) && obj.parent && obj.State != 0) {
+            var type = op.codecIndex == 2 ? 5 : 4;
+            obj.BrowserImageTypes &= ~(1 << (type - 1));
+            if (type == 5) obj.AutoAVIF = false; else obj.AutoWebP = false;
+            obj.SendCompressionLevel(obj.ImageType == 0 ? 0 : 1);
+            encodingChanged();
         }
         // Retry once until a manual refresh, format change or screen reset. A bad cached tile must not cause a refresh loop.
         if (!decodeRefreshRequested && obj.parent && obj.State != 0) {
@@ -199,16 +250,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         }
     }
 
-    // Report the estimated link rate and per-codec decode cost straight to the agent. Used in direct-relay
-    // auto mode; when a multiplexor is probing (it measures the link more precisely) this stays quiet.
     function sendDirectFeedback() {
-        if (obj.ImageType != 0 || !obj.AutoEncoding || obj.State == 0 || !obj.parent) return;
-        if (directFeedback.probed && (Date.now() - directFeedback.probed < 5000)) return;
-        if (directFeedback.ms < 700 || directFeedback.bytes < 8192) return; // Wait for a real burst before estimating.
-        var rate = Math.max(1024, Math.min(125000000, Math.round(directFeedback.bytes * 1000 / directFeedback.ms)));
+        if (obj.ImageType != 0 || !obj.AutoEncoding || obj.State == 0 || !obj.parent || !directFeedback.rate) return;
         var avif = obj.AutoEncoding.formats & 4;
-        obj.send(String.fromCharCode(0, 90, 0, avif ? 14 : 12) + obj.intToStr(rate) + obj.shortToStr(Math.ceil(directFeedback.decode[0])) + obj.shortToStr(Math.ceil(directFeedback.decode[1])) + (avif ? obj.shortToStr(Math.ceil(directFeedback.decode[2])) : ''));
-        directFeedback.bytes = 0; directFeedback.ms = 0;
+        obj.send(String.fromCharCode(0, 90, 0, avif ? 14 : 12) + obj.intToStr(Math.round(directFeedback.rate)) + obj.shortToStr(Math.ceil(directFeedback.decode[0])) + obj.shortToStr(Math.ceil(directFeedback.decode[1])) + (avif ? obj.shortToStr(Math.ceil(directFeedback.decode[2])) : ''));
     }
 
     obj.ProcessPictureMsg = function (data, X, Y) {
@@ -220,13 +265,21 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         else if (((tdata[0] == 73) && (tdata[1] == 73)) || ((tdata[0] == 77) && (tdata[1] == 77))) { mime = 'image/tiff'; }
         else if (tdata[4] == 102 && tdata[5] == 116 && tdata[6] == 121 && tdata[7] == 112 && tdata[8] == 97 && tdata[9] == 118 && tdata[10] == 105 && tdata[11] == 102) { mime = 'image/avif'; }
         var codecIndex = mime == 'image/avif' ? 2 : mime == 'image/webp' ? 1 : 0;
+        obj.CurrentEncodingType = mime == 'image/avif' ? 5 : mime == 'image/webp' ? 4 : mime == 'image/png' ? 2 : mime == 'image/tiff' ? 3 : 1;
         if (obj.ImageType == 0 && obj.AutoEncoding) obj.AutoEncoding.type = mime == 'image/avif' ? 5 : mime == 'image/webp' ? 4 : 1;
         var recv = renderTime();
-        // Pair each tile's size with the gap since the previous tile; during a burst that gap is the link transfer time.
-        if (obj.ImageType == 0) {
-            if (directFeedback.last && (recv - directFeedback.last) > 0 && (recv - directFeedback.last) < 1000) { directFeedback.ms += (recv - directFeedback.last); directFeedback.bytes += tdata.byteLength; }
-            directFeedback.last = recv;
-            sendDirectFeedback();
+        var transfer = imageTransfer;
+        imageTransfer = null;
+        var measured = transfer && transfer.direct && transfer.bytes == tdata.byteLength && tdata.byteLength >= 8192 && recv >= transfer.started && recv - transfer.started <= 120000;
+        if (measured) {
+            var rate = Math.max(1024, Math.min(125000000, tdata.byteLength * 1000 / Math.max(1, recv - transfer.started)));
+            directFeedback.rate = !directFeedback.rate || recv - directFeedback.time > 60000 || rate < directFeedback.rate ? rate : directFeedback.rate * 0.75 + rate * 0.25;
+            directFeedback.time = recv;
+        }
+        if (transfer && transfer.bytes == tdata.byteLength && obj.AutoEncoding) {
+            obj.AutoEncoding.quality = transfer.quality;
+            obj.AutoEncoding.frameRate = transfer.frameRate;
+            if (transfer.rate || directFeedback.rate) obj.AutoEncoding.rate = transfer.rate || directFeedback.rate;
         }
         obj.tilesReceived++;
         var op = { generation: drawGeneration, x: X, y: Y, ready: false, image: null, stats: renderStats, probe: probe, avif: mime == 'image/avif', started: recv, recv: recv, codecIndex: codecIndex };
@@ -258,6 +311,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 op.stats.decodeMaxMs = Math.max(op.stats.decodeMaxMs, elapsed);
             }
             if (image == null) failedTile(op, error);
+            else if (measured) sendDirectFeedback();
             while (obj.DoPendingOperations()) { }
         }
 
@@ -353,7 +407,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         function available(supported) {
             avifPending = false;
             obj.AutoAVIF = supported;
-            if (supported && obj.ImageType == 0 && obj.State != 0) obj.SendCompressionLevel(0);
+            if (supported) obj.BrowserImageTypes |= 16; else obj.BrowserImageTypes &= ~16;
+            if (supported && obj.State != 0) obj.SendCompressionLevel(obj.RequestedImageType == null ? obj.ImageType : obj.RequestedImageType);
+            encodingChanged();
         }
         var factory = CreateAgentRemoteDesktop;
         if (typeof factory.avifSupport == 'boolean') { available(factory.avifSupport); return; }
@@ -376,6 +432,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     }
 
     obj.SendCompressionLevel = function (type, level, scaling, frametimer) { // Type: 0 = Auto, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP, 5 = AVIF
+        obj.RequestedImageType = type;
+        requestCapabilities();
+        if (type == 0 && obj.AdaptiveSupported === false) type = 1;
+        if (type != 0 && !(obj.GetSupportedImageTypes() & (1 << (type - 1)))) type = 1;
         if (obj.ImageType != type) decodeRefreshRequested = false;
         obj.ImageType = type;
         if (level) { obj.CompressionLevel = level; }
@@ -383,7 +443,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (frametimer) { obj.FrameRateTimer = frametimer; }
         if (type != 0) { obj.AutoEncoding = null; encodingProbe = null; }
         // Auto mode advertises the image formats this browser can decode; the agent replies with the ones it can encode.
-        obj.send(String.fromCharCode(0, 5, 0, type == 0 ? 16 : 10, type == 0 ? 1 : type, obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(obj.FrameRateTimer) + (type == 0 ? 'AUTO' + String.fromCharCode(1, 1 | (obj.AutoWebP ? 2 : 0) | (obj.AutoAVIF === true ? 4 : 0)) : ''));
+        obj.send(String.fromCharCode(0, 5, 0, type == 0 ? 16 : 10, type == 0 ? 1 : type, type == 0 ? 60 : obj.CompressionLevel) + obj.shortToStr(obj.ScalingLevel) + obj.shortToStr(type == 0 ? 50 : obj.FrameRateTimer) + (type == 0 ? 'AUTO' + String.fromCharCode(1, 1 | (obj.AutoWebP ? 2 : 0) | (obj.AutoAVIF === true ? 4 : 0)) : ''));
         if (type == 0) checkAvifSupport();
     }
 
@@ -396,7 +456,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if (obj.debugmode > 0) { console.log('ScreenSize: ' + width + ' x ' + height); }
         if ((obj.ScreenWidth == width) && (obj.ScreenHeight == height)) {
             // A replacement capture child needs the settings even when its dimensions match.
-            obj.SendCompressionLevel(obj.ImageType);
+            obj.SendCompressionLevel(obj.RequestedImageType == null ? obj.ImageType : obj.RequestedImageType);
             return;
         }
         obj.Canvas.setTransform(1, 0, 0, 1, 0, 0);
@@ -405,7 +465,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.ScreenWidth = obj.width = width;
         obj.ScreenHeight = obj.height = height;
         obj.ResetDraw();
-        obj.SendCompressionLevel(obj.ImageType);
+        obj.SendCompressionLevel(obj.RequestedImageType == null ? obj.ImageType : obj.RequestedImageType);
         obj.SendUnPause();
         obj.SendRemoteInputLock(2); // Query input lock state
         // No need to event the display size change now, it will be evented on first draw.
@@ -430,13 +490,29 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
         switch (cmd) {
             case 5:
-                // Agent reply to an AUTO request: view[9] is the bitmask of image formats it can encode (1 JPEG, 2 WebP, 4 AVIF).
-                if (cmdsize == 12 && view[4] == 65 && view[5] == 85 && view[6] == 84 && view[7] == 79 && view[8] == 1 && obj.ImageType == 0) {
-                    obj.AutoEncoding = { formats: view[9] & 7 };
+                if (cmdsize == 12 && view[8] == 1) {
+                    var tag = String.fromCharCode.apply(null, view.subarray(4, 8));
+                    if (tag == 'CAPS' || tag == 'AUTO') {
+                        clearTimeout(capabilityTimer); capabilityTimer = null;
+                        obj.AgentImageTypes = tag == 'CAPS' ? view[9] & 31 : (view[10] || (1 | ((view[9] & 6) << 2)));
+                        obj.AdaptiveSupported = tag == 'AUTO' || !!(view[11] & 1);
+                        if (tag == 'AUTO' && obj.ImageType == 0) {
+                            if (!obj.AutoEncoding) obj.AutoEncoding = {};
+                            obj.AutoEncoding.formats = view[9] & 7;
+                        }
+                        if (tag == 'CAPS') obj.SendCompressionLevel(obj.RequestedImageType == null ? obj.ImageType : obj.RequestedImageType);
+                        encodingChanged();
+                    }
                 }
                 break;
             case 90:
-                if (cmdsize == 8 && obj.ImageType == 0 && obj.AutoEncoding && obj.State != 0) { encodingProbe = String.fromCharCode(view[4], view[5], view[6], view[7]); directFeedback.probed = Date.now(); }
+                if (cmdsize == 24 && view[4] == 84 && view[5] == 73 && view[6] == 76 && view[7] == 69 && obj.State != 0) {
+                    imageTransfer = { direct: true, started: renderTime(), bytes: ((view[12] * 0x1000000) + (view[13] << 16) + (view[14] << 8) + view[15]), quality: view[21], frameRate: (view[22] << 8) | view[23] };
+                }
+                if (cmdsize == 24 && view[4] == 83 && view[5] == 84 && view[6] == 65 && view[7] == 84 && obj.State != 0) {
+                    imageTransfer = { direct: false, rate: ((view[16] * 0x1000000) + (view[17] << 16) + (view[18] << 8) + view[19]), bytes: ((view[12] * 0x1000000) + (view[13] << 16) + (view[14] << 8) + view[15]), quality: view[21], frameRate: (view[22] << 8) | view[23] };
+                }
+                if (cmdsize == 8 && obj.ImageType == 0 && obj.AutoEncoding && obj.State != 0) encodingProbe = String.fromCharCode(view[4], view[5], view[6], view[7]);
                 if (cmdsize == 12 && view[8] == 80 && view[9] == 73 && view[10] == 78 && view[11] == 71 && obj.ImageType == 0 && obj.AutoEncoding && obj.State != 0 && obj.parent) {
                     obj.send(String.fromCharCode(0, 90, 0, 8, view[4], view[5], view[6], view[7]));
                 }

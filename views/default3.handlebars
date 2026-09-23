@@ -6432,6 +6432,7 @@
         }
 
         function showMultiDesktopSettings() {
+            desktopSettingsMultiple = true;
             QV('td7amtkvm', false);
             QV('td7meshkvm', true);
             QV('td7rdpkvm', false);
@@ -6491,6 +6492,7 @@
                     desk.webrtcconfig = webrtcconfiguration;
                     desk.onStateChanged = onMultiDesktopStateChange;
                     //desk.onConsoleMessageChange = function () { console.log('CONSOLEMSG:', desk.consoleMessage); }
+                    desk.m.onEncodingChanged = updateDesktopSettingsMode;
                     desk.m.ImageType = multidesktopsettings.agentencoding; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desk.m.CompressionLevel = multidesktopsettings.quality;
                     desk.m.ScalingLevel = multidesktopsettings.scaling;
@@ -11126,6 +11128,7 @@
                         }
                     }
                     desktop.onMetadataChange = function (metadata) { updateMetadata(desktop, 'deskmetadata'); }
+                    desktop.m.onEncodingChanged = updateDesktopSettingsMode;
                     desktop.m.ImageType = desktopsettings.agentencoding; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -11505,13 +11508,8 @@
                 try {
                     var encStr = '';
                     if ((desktop.contype == 1) && desktop.m) {
-                        var m = desktop.m;
-                        var adaptive = (desktopsettings.agentMode == 'adaptive') || (m.ImageType == 0);
-                        var codec = '', extra = '';
-                        var names = { 1: 'JPEG', 2: 'PNG', 3: 'TIFF', 4: 'WEBP', 5: 'AVIF' };
-                        codec = adaptive ? ((m.AutoEncoding && names[m.AutoEncoding.type]) ? names[m.AutoEncoding.type] : 'image') : (names[m.ImageType] || '');
-                        if (!adaptive && m.CompressionLevel) { extra = ' q' + m.CompressionLevel; }
-                        encStr = (adaptive ? 'Auto: ' : '') + codec + extra;
+                        encStr = desktop.m.GetEncodingStatus();
+                        Q('DeskEncStatus').title = desktop.m.GetEncodingStatus(true);
                     }
                     QH('DeskEncStatus', encStr);
                 } catch (ex) { }
@@ -11594,7 +11592,20 @@
         }
 
         // Show or hide the manual codec/quality/frame-rate rows based on the Adaptive/Manual switch
+        var desktopSettingsMultiple = false;
         function updateDesktopSettingsMode() {
+            var targets = desktopSettingsMultiple ? Object.keys(multiDesktop || {}).map(function (key) { return multiDesktop[key].m; }) : ((desktop && desktop.contype == 1) ? [desktop.m] : []);
+            var supported = targets.length ? 31 : 1, adaptive = true;
+            for (var i = 0; i < targets.length; i++) {
+                if (targets[i].GetSupportedImageTypes) supported &= targets[i].GetSupportedImageTypes();
+                if (targets[i].AdaptiveSupported === false) adaptive = false;
+            }
+            var codec = d7encoding.value, options = '', names = ['JPEG', 'PNG', 'TIFF', 'WEBP', 'AVIF'];
+            for (var i = 0; i < names.length; i++) { if (supported & (1 << i)) options += '<option value="' + (i + 1) + '">' + names[i] + '</option>'; }
+            QH('d7encoding', options);
+            d7encoding.value = (supported & (1 << (parseInt(codec) - 1))) ? codec : 1;
+            d7agentmode.options[0].disabled = !adaptive;
+            if (!adaptive && d7agentmode.value == 'adaptive') d7agentmode.value = 'manual';
             var manual = (d7agentmode.value == 'manual');
             QV('d7row_encoding', manual);
             QV('d7row_quality', manual);
@@ -11652,6 +11663,7 @@
         }
 
         function applyDesktopSettings() {
+            desktopSettingsMultiple = false;
             var r = '', ops = (features & 512) ? [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 1] : [60, 50, 40, 30, 20, 10, 5, 1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);

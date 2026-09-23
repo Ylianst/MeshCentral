@@ -87,6 +87,8 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
     obj.desktopPaused = true;           // Current desktop pause state, it's true if all viewers are paused.
     obj.autoFormats = 1;                // Image formats offered by every viewer (bit1 JPEG, bit2 WebP, bit4 AVIF), intersected.
     obj.encodingCapabilities = null;    // The agent's AUTO reply, listing the image formats it can actually encode.
+    var agentTransfer = null, upstreamFeedback = null;
+    obj.imageCapabilities = null;
     var encodingSequence = 0;           // Rolling id for the bandwidth probes sent to viewers.
     obj.imageType = 1;                  // Current image type, 0 = Auto, 1 = JPEG, 2 = PNG, 3 = TIFF, 4 = WebP, 5 = AVIF
     obj.imageCompression = 50;          // Current image compression, this is the highest value of all viewers.
@@ -496,16 +498,21 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
     function sendImage(viewer, image) {
         // Do not push an AVIF tile to a viewer whose browser cannot decode it.
         if (image.codec == 2 && !(viewer.autoFormats & 4) && viewer.imageType != 5) { setTimeout(function () { sendViewerNext(viewer); }, 0); return; }
-        var avif = obj.encodingCapabilities && (obj.encodingCapabilities[9] & obj.autoFormats & 4);
-        if (image.pixels && (image.data.length >= 65536 || (avif && image.pixels >= 262144 && image.data.length >= 8192))) startEncodingProbe(viewer, image.data.length, image.pixels, image.codec);
+        if (image.metadata) {
+            var metadata = Buffer.from(image.metadata), rate = upstreamFeedback && Date.now() - upstreamFeedback.time <= 60000 ? upstreamFeedback.rate : 0;
+            if (viewer.encodingFeedback && Date.now() - viewer.encodingFeedback.time <= 60000) rate = rate ? Math.min(rate, viewer.encodingFeedback.rate) : viewer.encodingFeedback.rate;
+            metadata.writeUInt32BE(Math.round(rate), 16);
+            viewer.ws.send(metadata);
+        }
+        if (image.pixels && image.data.length >= 8192) startEncodingProbe(viewer, image.data.length, image.pixels, image.codec);
         viewer.ws.send(image.data, function () { sendViewerNext(viewer); });
     }
 
     // Ask a viewer to time a tile so the agent can measure this link and pick the cheapest image format.
     function startEncodingProbe(viewer, bytes, pixels, codec) {
         var now = Date.now();
-        if (obj.imageType != 0 || obj.imageCompression >= 100 || viewer.imageType != 0 || !obj.encodingCapabilities || !(obj.encodingCapabilities[9] & obj.autoFormats & 6) ||
-            (viewer.encodingProbe && now - viewer.encodingProbe.started <= 10000) || (viewer.lastEncodingProbe && now - viewer.lastEncodingProbe < 1000)) return;
+        if (obj.imageType != 0 || viewer.imageType != 0 || !obj.encodingCapabilities || !(obj.encodingCapabilities[9] & obj.autoFormats & 7) ||
+            (viewer.encodingProbe && now - viewer.encodingProbe.started <= 120000) || (viewer.lastEncodingProbe && now - viewer.lastEncodingProbe < 1000)) return;
         var probe = Buffer.alloc(8);
         probe.writeUInt16BE(90, 0); probe.writeUInt16BE(8, 2);
         encodingSequence = (encodingSequence + 1) >>> 0;
@@ -525,13 +532,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         if (data.length != 12 || obj.imageType != 0 || !probe || data.readUInt32BE(4) != probe.id) return;
         delete viewer.encodingProbe;
         var elapsed = now - probe.started, decode = data.readUInt32BE(8);
-        if (elapsed <= 0 || elapsed > 10000 || decode > elapsed || decode > 15000) return;
+        if (elapsed <= 0 || elapsed > 120000 || decode > elapsed || decode > 15000) return;
         var samples = viewer.encodingLatency ? viewer.encodingLatency.samples : [], rtt = 0;
         for (var i in samples) { if (now >= samples[i].time && now - samples[i].time <= 10000) rtt = rtt ? Math.min(rtt, samples[i].ms) : samples[i].ms; }
         // Millisecond clocks cannot resolve tiny transfers after subtracting RTT.
         var rate = Math.max(1024, Math.min(125000000, probe.bytes * 1000 / Math.max(rtt ? 4 : 1, elapsed - decode - rtt)));
         var previous = viewer.encodingFeedback;
-        if (previous && now - previous.time > 10000) previous = null;
+        if (previous && now - previous.time > 60000) previous = null;
         var drop = previous && rate <= previous.rate * 0.5;
         var weight = previous && rate < previous.rate ? 0.75 : 0.5;
         // Averaging a steep drop with the old rate can hide it for several large transfers.
@@ -542,12 +549,13 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         var slowest = 125000000, jpeg = 0, webp = 0, avif = 0;
         for (var i in obj.viewers) {
             var f = obj.viewers[i].encodingFeedback;
-            if (!f || now - f.time > 10000) return;
+            if (!f || now - f.time > 60000) return;
             slowest = Math.min(slowest, f.rate);
             jpeg = Math.max(jpeg, f.decode[0]);
             webp = Math.max(webp, f.decode[1]);
             avif = Math.max(avif, f.decode[2] || 0);
         }
+        if (upstreamFeedback && now - upstreamFeedback.time <= 60000) slowest = Math.min(slowest, upstreamFeedback.rate);
         if (!drop && obj.lastEncodingFeedback && now - obj.lastEncodingFeedback < 1000) return;
         obj.lastEncodingFeedback = now;
         var command = Buffer.alloc(obj.encodingCapabilities && (obj.encodingCapabilities[9] & obj.autoFormats & 4) ? 14 : 12);
@@ -700,7 +708,11 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
 
         //console.log('ViewerData', data.length, command, cmdsize);
         switch (command) {
-            case 90: // Encoding feedback: a PING latency reply (8 bytes) or a probe timing (12 bytes)
+            case 90: // Encoding feedback or a capability query.
+                if (data.length == 8 && data.toString('ascii', 4, 8) == 'CAPS') {
+                    if (obj.imageCapabilities) obj.sendToViewer(viewer, obj.imageCapabilities); else obj.sendToAgent(data);
+                    break;
+                }
                 if (data.length == 8) encodingLatency(viewer, data); else encodingFeedback(viewer, data);
                 break;
             case 1: // Key Events, forward to agent
@@ -802,7 +814,17 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
         }
             
         switch (command) {
+            case 90:
+                if (data.length == 24 && cmdsize == 24 && data.toString('ascii', 4, 8) == 'TILE') {
+                    agentTransfer = { started: Date.now(), bytes: data.readUInt32BE(12), metadata: Buffer.from(data) };
+                    agentTransfer.metadata.write('STAT', 4);
+                }
+                break;
             case 5: // Agent reply to an AUTO request: the image formats it can encode (bit1 JPEG, bit2 WebP, bit4 AVIF).
+                if (data.length == 12 && cmdsize == 12 && data.toString('ascii', 4, 8) == 'CAPS' && data[8] == 1) {
+                    obj.imageCapabilities = data;
+                    obj.sendToAllViewers(data);
+                }
                 if (data.length == 12 && cmdsize == 12 && data.toString('ascii', 4, 8) == 'AUTO' && data[8] == 1) {
                     obj.encodingCapabilities = data;
                     obj.sendToAllViewers(data);
@@ -810,13 +832,24 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 3: // Tile, check dimentions and store
                 if ((data.length < 10) || (obj.lastData == null)) break;
+                var transfer = agentTransfer, metadata = null;
+                agentTransfer = null;
+                if (transfer && transfer.bytes == data.length - 8) {
+                    var now = Date.now(), elapsed = now - transfer.started;
+                    metadata = transfer.metadata;
+                    if (transfer.bytes >= 8192 && elapsed >= 0 && elapsed <= 120000) {
+                        var rate = Math.max(1024, Math.min(125000000, transfer.bytes * 1000 / Math.max(1, elapsed)));
+                        if (upstreamFeedback && now - upstreamFeedback.time <= 60000 && rate > upstreamFeedback.rate) rate = upstreamFeedback.rate * 0.75 + rate * 0.25;
+                        upstreamFeedback = { time: now, rate: rate };
+                    }
+                }
                 var x = data.readUInt16BE(4), y = data.readUInt16BE(6);
                 var dimensions = require('image-size').imageSize(data.slice(8));
                 var sx = (x / 16), sy = (y / 16), sw = (dimensions.width / 16), sh = (dimensions.height / 16);
                 obj.counter++;
 
                 // Keep a reference to this image & how many tiles it covers (pixels/codec drive the bandwidth probe)
-                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData, pixels: dimensions.width * dimensions.height, codec: dimensions.type == 'avif' ? 2 : dimensions.type == 'webp' ? 1 : 0 };
+                obj.images[obj.counter] = { next: null, prev: obj.lastData, data: jumboData, metadata: metadata, pixels: dimensions.width * dimensions.height, codec: dimensions.type == 'avif' ? 2 : dimensions.type == 'webp' ? 1 : 0 };
                 obj.images[obj.lastData].next = obj.counter;
                 obj.lastData = obj.counter;
                 obj.imagesCounters[obj.counter] = (sw * sh);
@@ -864,6 +897,7 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
                 break;
             case 7: // Screen Size, clear the screen state and compute the tile count
                 if (data.length < 8) break;
+                agentTransfer = null;
                 // A replacement capture child starts at default encoding, so resend settings even at the same size.
                 updateCompression(true);
                 if ((obj.width === data.readUInt16BE(4)) && (obj.height === data.readUInt16BE(6))) break; // Same screen size as before, skip this.
