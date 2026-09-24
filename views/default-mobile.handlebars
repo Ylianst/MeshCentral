@@ -1010,6 +1010,7 @@
                         <div id=deskarea4 style="position:absolute;bottom:0px;width:100%;height:32px">
                             <div style=padding-top:2px;padding-bottom:2px;background:#C0C0C0>
                                 <div style=float:right;text-align:right;padding-right:2px>
+                                    <span id="DeskEncStatus" style="vertical-align:top;line-height:26px;white-space:nowrap" title="Current desktop encoding and quality"></span>&nbsp;
                                     <span id=DeskLockButton><img src='images/icon-lock.png' onclick=deviceLockFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>
                                     <span id=DeskChatButton><img src='images/icon-chat.png' onclick=deviceChat(event) height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
                                     <span id=DeskToastButton><img src='images/icon-notify.png' onclick=deviceToastFunction() height=16 width=16 style=padding-top:5px;cursor:pointer /></span>&nbsp;
@@ -1262,6 +1263,20 @@
                     <table style="width:100%">
                         <tr>
                             <td>
+                                Connection
+                            </td>
+                            <td style="width:100px">
+                                <select id="d7agentmode" style="float:right;width:200px" dir="rtl" onchange="updateDesktopSettingsMode()">
+                                    <option value="adaptive">Adaptive (automatic)</option>
+                                    <option value="manual">Manual</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr id="d7modehintrow">
+                            <td colspan="2" style="font-size:11px;opacity:0.7" id="d7modehint"></td>
+                        </tr>
+                        <tr id="d7row_quality">
+                            <td>
                                 Quality
                             </td>
                             <td style="width:100px">
@@ -1285,7 +1300,7 @@
                                 </select>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="d7row_framerate">
                             <td>
                                 Rate
                             </td>
@@ -1298,7 +1313,7 @@
                                 </select>
                             </td>
                         </tr>
-                        <tr>
+                        <tr id="d7row_encoding">
                             <td>
                                 Encoding
                             </td>
@@ -1308,6 +1323,7 @@
                                     <option value=2>PNG</option>
                                     <option value=3>TIFF</option>
                                     <option selected=selected value=4>WEBP</option>
+                                    <option value=5>AVIF</option>
                                 </select>
                             </td>
                         </tr>
@@ -1440,8 +1456,8 @@
         check_webp_feature('lossy', function (f, x) {
             webpSupport = x;
             if (!x) {
-                d7encoding.options[1].disabled = true;
-                d7encoding.value = 1;
+                for (var i = 0; i < d7encoding.options.length; i++) { if (d7encoding.options[i].value == '4') d7encoding.options[i].disabled = true; }
+                if (d7encoding.value == '4') d7encoding.value = 1;
             }
         });
 
@@ -1532,6 +1548,18 @@
                 meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
                 meshserver.send({ action: 'files' });
                 authCookieRenewTimer = setInterval(function () { meshserver.send({ action: 'authcookie' }); }, 1800000); // Request a cookie refresh every 30 minutes.
+                // Live desktop encoding readout (mobile has no updateSessionTime); clears itself when disconnected.
+                if (!window.deskEncTimer) window.deskEncTimer = setInterval(function () {
+                    if (Q('DeskEncStatus') == null) return;
+                    var s = '';
+                    try {
+                        if (desktop && (desktop.contype == 1) && desktop.m) {
+                            s = desktop.m.GetEncodingStatus();
+                            Q('DeskEncStatus').title = desktop.m.GetEncodingStatus(true);
+                        }
+                    } catch (ex) { }
+                    QH('DeskEncStatus', s);
+                }, 1000);
             }
             QV('topMenuIcon', state == 2);
         }
@@ -4689,7 +4717,7 @@
 
         var desktop;
         var desktopNode;
-        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, autolock: false, agentencoding: 4 };
+        var desktopsettings = { encoding: 2, showfocus: false, showmouse: true, showcad: true, quality: 40, scaling: 1024, framerate: 50, autolock: false, agentencoding: 0, agentMode: 'adaptive', agentManualCodec: 4 };
         function setupDesktop() {
             // Setup the remote desktop
             if ((desktopNode != currentNode) && (desktop != null)) { desktop.Stop(); desktopNode = null; desktop = null; }
@@ -4815,6 +4843,7 @@
                             p11clearConsoleMsg();
                         }
                     }
+                    desktop.m.onEncodingChanged = updateDesktopSettingsMode;
                     desktop.m.ImageType = desktopsettings.agentencoding; // Send 4 if WebP is supported, otherwise send 1 for JPEG.
                     desktop.m.CompressionLevel = desktopsettings.quality; // Number from 1 to 100. 50 or less is best.
                     desktop.m.ScalingLevel = desktopsettings.scaling;
@@ -4905,13 +4934,36 @@
             setDialogMode(7, "Remote Desktop Settings", 3, showDesktopSettingsChanged);
         }
 
+        // Show or hide the manual codec/quality/frame-rate rows based on the Adaptive/Manual switch
+        var desktopSettingsMultiple = false;
+        function updateDesktopSettingsMode() {
+            var targets = (desktop && desktop.contype == 1) ? [desktop.m] : [];
+            var supported = targets.length ? 31 : 1, adaptive = true;
+            for (var i = 0; i < targets.length; i++) {
+                if (targets[i].GetSupportedImageTypes) supported &= targets[i].GetSupportedImageTypes();
+                if (targets[i].AdaptiveSupported === false) adaptive = false;
+            }
+            var codec = d7encoding.value, options = '', names = ['JPEG', 'PNG', 'TIFF', 'WEBP', 'AVIF'];
+            for (var i = 0; i < names.length; i++) { if (supported & (1 << i)) options += '<option value="' + (i + 1) + '">' + names[i] + '</option>'; }
+            QH('d7encoding', options);
+            d7encoding.value = (supported & (1 << (parseInt(codec) - 1))) ? codec : 1;
+            d7agentmode.options[0].disabled = !adaptive;
+            if (!adaptive && d7agentmode.value == 'adaptive') d7agentmode.value = 'manual';
+            var manual = (d7agentmode.value == 'manual');
+            QV('d7row_encoding', manual);
+            QV('d7row_quality', manual);
+            QV('d7row_framerate', manual);
+            QH('d7modehint', manual ? "You choose the codec, quality and frame rate." : "The connection selects codec, quality and frame rate automatically.");
+        }
+
         function showDesktopSettingsChanged() {
             desktopsettings.encoding = d7desktopmode.value;
             desktopsettings.quality = d7bitmapquality.value;
             desktopsettings.scaling = d7bitmapscaling.value;
             desktopsettings.framerate = d7framelimiter.value;
             desktopsettings.autolock = d7deskAutoLock.checked;
-            desktopsettings.agentencoding = d7encoding.value;
+            desktopsettings.agentMode = d7agentmode.value;
+            if (desktopsettings.agentMode == 'manual') { desktopsettings.agentManualCodec = d7encoding.value; desktopsettings.agentencoding = d7encoding.value; } else { desktopsettings.agentencoding = 0; }
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             if (desktop) {
@@ -4927,12 +4979,18 @@
         }
 
         function applyDesktopSettings() {
+            desktopSettingsMultiple = false;
             var r = '', ops = (features & 512) ? [100, 90, 70, 50, 40, 30, 20, 10, 5, 1] : [50, 40, 30, 20, 10, 5, 1];
             for (var i in ops) { r += '<option value=' + ops[i] + '>' + ops[i] + '%</option>'; }
             QH('d7bitmapquality', r);
             d7desktopmode.value = desktopsettings.encoding;
             d7bitmapquality.value = 40; // Default value
-            if (desktopsettings.agentencoding) { d7encoding.value = desktopsettings.agentencoding; } else { desktopsettings.agentencoding = 4; }
+            // Migrate settings saved before the Adaptive/Manual switch existed
+            if (desktopsettings.agentMode == null) { desktopsettings.agentMode = (desktopsettings.agentencoding == 0) ? 'adaptive' : 'manual'; }
+            if (desktopsettings.agentManualCodec == null) { desktopsettings.agentManualCodec = (desktopsettings.agentencoding != null && desktopsettings.agentencoding != 0) ? desktopsettings.agentencoding : 4; }
+            d7agentmode.value = desktopsettings.agentMode;
+            d7encoding.value = desktopsettings.agentManualCodec;
+            updateDesktopSettingsMode();
             if (ops.indexOf(parseInt(desktopsettings.quality)) >= 0) { d7bitmapquality.value = desktopsettings.quality; }
             d7bitmapscaling.value = desktopsettings.scaling;
             if (desktopsettings.framerate) { d7framelimiter.value = desktopsettings.framerate; }
