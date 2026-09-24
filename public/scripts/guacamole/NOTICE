@@ -1,0 +1,15 @@
+Apache Guacamole
+Copyright 2020 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/).
+
+The bundled all.min.js is Apache Guacamole guacamole-common-js 1.6.0,
+obtained from the official Apache Maven artifact:
+https://repo1.maven.org/maven2/org/apache/guacamole/guacamole-common-js/1.6.0/guacamole-common-js-1.6.0.zip
+
+SHA-256 (all.min.js):
+cc89f710ecc544477dbe6bfea453fab752dafa1b1ab9770f523676e7b744b44a
+
+Apache Guacamole is licensed under the Apache License, Version 2.0.
+The license text is available in MeshCentral's root LICENSE file.
