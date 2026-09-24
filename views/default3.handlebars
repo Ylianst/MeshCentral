@@ -18,6 +18,8 @@
     <link id="theme-stylesheet" href="styles/bootstrap{{{min}}}.css" rel="stylesheet" title="CSS">
     <link href="styles/select2.min.css" rel="stylesheet" title="CSS">
     <link href="styles/select2-bootstrap-5-theme.min.css" rel="stylesheet" title="CSS">
+    <link type="text/css" href="styles/agentcatalog.css?v={{{agentBuildStyleVersion}}}" media="screen" rel="stylesheet" />
+    <script src="scripts/agentbuildmanager{{{min}}}.js?v={{{agentBuildScriptVersion}}}"></script>
     {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
@@ -482,6 +484,7 @@
                                     onkeypress="if (event.key == 'Enter') go(115)">Console</td>
                                 <td tabindex=0 id=ServerTrace class="topbar_td style3x" onmouseup=go(41,event)
                                     onkeypress="if (event.key == 'Enter') go(41)">Trace</td>
+                                <td tabindex=0 id=ServerAgentBuilds class="topbar_td style3x" style="display:none" onmouseup=go(44,event) onkeypress="if (event.key == 'Enter') go(44)">Agent builds</td>
                                 <td tabindex=0 id=ServerPlugins class="topbar_td style3x" onmouseup=go(42,event)
                                     onkeypress="if (event.key == 'Enter') go(42)">Plugins</td>
                                 <td class="topbar_td_end style3">&nbsp;</td>
@@ -1979,6 +1982,14 @@
                 <iframe id="p43iframe" frameBorder=0
                     style="width:100%;height:calc(100vh - 245px);max-height:calc(100vh - 245px)"></iframe>
             </div>
+            <div id=p44 style="display:none">
+                <div id="p44info">
+                    <div id="p44title"><div class="fs-4 fw-bold">Agent builds</div></div>
+                    <div class="areaHead"><div class="agent-catalog-toolbar"><label for="p44group" class="visually-hidden">Show</label><select id="p44group" aria-label="Show" onchange="filterAgentCatalog()"><option value="defaults">Current defaults</option><option value="builds">Additional builds</option><option value="bundled">Bundled agents</option><option value="archived">Archived builds</option></select><input id="p44search" type="search" placeholder="Filter agent files" aria-label="Filter agent files" oninput="filterAgentCatalog()" /><input id="p44refresh" value="Refresh" type="button" class="btn btn-primary btn-sm" onclick="refreshAgentCatalog()" /><input value="Upload build" type="button" class="btn btn-primary btn-sm" onclick="agentManagerOpen('upload')" /><input value="Import build" type="button" class="btn btn-primary btn-sm" onclick="agentManagerOpen('import')" /><input value="Deployments" type="button" class="btn btn-primary btn-sm" onclick="agentManagerOpen('jobs')" /><span id="p44count"></span></div></div>
+                    <p id="p44status" role="status" aria-live="polite"></p>
+                    <p class="agent-note">To install a build, open a device and click its Mesh Agent entry.</p><div id="p44content"></div>
+                </div>
+            </div>
             <div id=p50 style="display:none">
                 <div id="p50title" class="d-flex align-items-center">
                     <div class="fs-4 fw-bold">My User Groups</div>
@@ -2881,6 +2892,7 @@
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
+            QS('p44info')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p6info')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p6info')['max-height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p10info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
@@ -3266,6 +3278,7 @@
             if (!userinfo) return;
             var serverFeatures = parseInt('{{{serverfeatures}}}');
             var siteRights = userinfo.siteadmin;
+            QV('ServerAgentBuilds', siteRights == 0xFFFFFFFF);
             var accountSettingsLocked = ((siteRights != 0xFFFFFFFF) && ((siteRights & 1024) != 0)) || ((features2 & 0x100) != 0); // Not admin and have account features locked, or using a loginToken
 
             // Update account actions
@@ -3472,6 +3485,8 @@
 
         function onMessage(server, message) {
             switch (message.action) {
+                case 'agentbuild': { onAgentBuild(message); break; }
+                case 'agentbuildadmin': { onAgentBuildAdmin(message); break; }
                 case 'trace': {
                     serverTrace.unshift(message);
                     displayServerTrace();
@@ -5141,6 +5156,7 @@
         // Go to the correct starting view page
         function gotoStartViewPage() {
             var xviewmode = parseInt('{{viewmode}}');
+            if ((xviewmode == 44) && (userinfo == null)) return;
             if (xxcurrentView != -1) return;
             if ('{{currentNode}}'.toLowerCase() != '') { // The .toLowerCase here is the minifier will not optimize this out.
                 if (getNodeFromId('{{currentNode}}') == null) return; // This node is not loaded yet
@@ -7248,6 +7264,8 @@
                 }
             }
 
+            if (userinfo.siteadmin == 0xFFFFFFFF && ((features2 & 0x100) == 0)) addedOptions.push({ v: 120, name: "Deploy agent build" });
+
             var addedOptionsStr = '';
             addedOptions.sort(nameSort);
             for (var i in addedOptions) { addedOptionsStr += '<option value=' + addedOptions[i].v + (addedOptions[i].s ? ' selected' : '') + '>' + addedOptions[i].name + '</option>'; }
@@ -7269,6 +7287,7 @@
 
         function groupActionFunctionEx() {
             var op = Q('d2groupop').value;
+            if (op == 120) { queueAgentBuildDeployment(getCheckedDevices()); return; }
             if (op == 100) {
                 // Group wake
                 meshserver.send({ action: 'wakedevices', nodeids: getCheckedDevices() });
@@ -8873,6 +8892,7 @@
             var deviceSwitch = ((currentNode == null) || (currentNode._id != nodeid));
             if (!currentNode || currentNode._id != node._id || refresh == true) {
                 currentNode = node;
+                if (deviceSwitch || !canManageAgentBuild(node)) closeAgentBuild();
 
                 // Pre defined scripts
                 QV('deskPreConfigScriptContextMenu1', (currentNode.mtype == 2) && isWindowsNode(currentNode)); // Windows devices
@@ -8976,8 +8996,9 @@
                     if (node.agent.ver != 0) { str += ' v' + node.agent.ver; }
                     if (node.agent.id == 14) { str = EscapeHtml(node.agent.core); }
                     if ((node.agent.root === false) && ((node.conn & 1) != 0)) { str += ', ' + "Restricted"; }
-                    x += addDeviceAttribute("Mesh Agent", str);
+                    x += addDeviceAttribute("Mesh Agent", addLinkConditional(str, 'showAgentBuild()', canManageAgentBuild(node)));
                 }
+
 
                 // Attribute: Intel AMT
                 if (node.intelamt != null) {
@@ -23088,7 +23109,433 @@
             return (v === 9) ? 1 : Math.floor(v / 10);
         }
 
+        function showAgentManagerDialog(title) {
+            setModalContent('xxAddAgent', title, '<div id="agentManagerBody"></div>');
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { agentManagerSubmit(); if (agentManager) xxdialogMode = 2; return false; });
+            var manager = agentManager;
+            Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { if (agentManager === manager) agentManagerClosed(); }, { once: true });
+        }
+        function closeAgentManagerDialog() { hideModal(); }
+        function queueAgentBuildDeployment(nodeids) {
+            Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { agentManagerOpen('bulk', { nodeids: nodeids }); }, { once: true });
+            hideModal();
+        }
+
+        var agentBuildRequestId = 0, agentBuildDevice = null, agentBuildNodeId = '', agentBuildTimer = null, agentBuildPoll = null, agentBuildButtonText = '', agentBuildCancelText = '', agentBuildOperation = null, agentBuildDone = false, agentBuildRequestOp = '', agentBuildStale = false;
+        function canManageAgentBuild(node) {
+            return userinfo && ((features2 & 0x100) == 0) && node && (node.mtype == 2) && node.agent && !(node.agent.caps & 0x60) && !((meshes[node.meshid] || {}).flags & 1) && ((GetNodeRights(node) >>> 0) == 0xFFFFFFFF);
+        }
+
+        function agentBuildButton(text) {
+            var button = Q('idx_dlgOkButton');
+            if (button.tagName == 'INPUT') { button.value = text; } else { button.textContent = text; }
+        }
+
+        function showAgentBuild() {
+            if (xxdialogMode || !canManageAgentBuild(currentNode)) return false;
+            agentBuildNodeId = currentNode._id;
+            var html = '<div id="p10agentBuild"><div id="p10buildProgress" role="status" aria-live="polite" style="display:none"></div><div id="p10buildContent"><div class="agent-build-toolbar"><b id="p10buildDevice">' + EscapeHtml(currentNode.name) + '</b><a href="#" onclick="refreshAgentBuild(true);return false">' + "Refresh" + '</a></div>';
+            html += '<div id="p10buildStatus" role="status" aria-live="polite"></div><div id="p10buildControls" style="display:none">';
+            html += '<div class="agent-build-fields"><label for="p10buildPolicy">' + "Update policy" + '</label><select id="p10buildPolicy" onchange="agentBuildSelectionChanged(true)"><option value="default">' + "Follow server default" + '</option><option value="hold">' + "Hold installed binary" + '</option><option value="pin">' + "Pin selected build" + '</option></select></div>';
+            html += '<div id="p10buildPin"><div class="agent-build-fields"><label for="p10buildRelease">' + "Build" + '</label><select id="p10buildRelease" onchange="agentBuildFilesChanged()"></select><label for="p10buildFile">' + "Agent file" + '</label><select id="p10buildFile" onchange="agentBuildSelectionChanged(true)"></select></div><div id="p10buildAvailable"></div><div id="p10buildRequirements"></div></div>';
+            html += '<p id="p10buildDescription"></p><label id="p10buildConfirm"><input id="p10buildCompatible" type="checkbox" onchange="agentBuildSelectionChanged()" /> ' + "I can recover this device locally if the update fails to reconnect." + '</label>';
+            html += '<p id="p10buildWarning">' + "Applying a change interrupts active sessions. Offline devices apply it on their next connection." + '</p><details id="p10buildCurrent"><summary>' + "Installed build and policy" + '</summary><div id="p10buildCurrentDetails"></div></details></div>';
+            if (userinfo.siteadmin == 0xFFFFFFFF) html += '<div class="agent-build-catalog"><a id="p10buildCatalog" href="#" onclick="return openAgentBuildCatalog()">' + "View all agent builds" + '</a></div>';
+            html += '</div><p id="p10buildApplyStatus" role="status" aria-live="polite"></p><details id="p10buildUpdateHelp" style="display:none"><summary>' + "Enable device updates" + '</summary><p>' + "First apply Hold installed binary to prevent the server default from replacing this agent." + '</p><p>' + "Then enable binary updates on the device and reconnect. Check its disableUpdate setting and service permissions. Refresh this dialog before selecting the build again." + '</p></details></div>';
+            var button = Q('idx_dlgOkButton');
+            agentBuildButtonText = (button.tagName == 'INPUT') ? button.value : button.textContent;
+            var cancel = Q('idx_dlgCancelButton');
+            agentBuildCancelText = cancel ? ((cancel.tagName == 'INPUT') ? cancel.value : cancel.textContent) : '';
+            agentBuildOperation = null; agentBuildDone = false; agentBuildStale = false;
+            setModalContent('xxAddAgent', "Mesh Agent", html);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { applyAgentBuildPolicy(); if (agentBuildNodeId) xxdialogMode = 2; return false; });
+            var nodeid = agentBuildNodeId;
+            Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { if (agentBuildNodeId === nodeid) closeAgentBuild(true); }, { once: true });
+            agentBuildButton("Apply");
+            refreshAgentBuild();
+            return false;
+        }
+
+        function closeAgentBuild(closed) {
+            if (!agentBuildNodeId) return false;
+            agentBuildRequestId++;
+            if (agentBuildPoll != null) { clearTimeout(agentBuildPoll); agentBuildPoll = null; }
+            agentBuildNodeId = '';
+            agentBuildDevice = null;
+            if (agentBuildTimer != null) { clearTimeout(agentBuildTimer); agentBuildTimer = null; }
+            agentBuildButton(agentBuildButtonText);
+            agentBuildCancelButton(agentBuildCancelText);
+            agentBuildOperation = null; agentBuildDone = false; agentBuildStale = false;
+            if (Q('p10agentBuild')) Q('p10agentBuild').remove();
+            if (!closed) hideModal();
+            return false;
+        }
+
+        function refreshAgentBuild(force) {
+            if (!canManageAgentBuild(currentNode) || (currentNode._id !== agentBuildNodeId) || !Q('p10agentBuild')) return;
+            if (force !== true) agentBuildDevice = null;
+            agentBuildOperation = null;
+            if (!agentBuildDevice) QV('p10buildControls', false);
+            requestAgentBuild({ op: 'get', nodeid: agentBuildNodeId, refresh: force === true });
+        }
+
+        function openInstalledAgentBuild(index) {
+            var match = ((agentBuildDevice || {}).installed || {}).matches;
+            match = match && match[index];
+            if (!match || !match.group) return false;
+            return openAgentBuildCatalog(match);
+        }
+
+        function openAgentBuildCatalog(match) {
+            if (!userinfo || (userinfo.siteadmin != 0xFFFFFFFF)) return false;
+            agentCatalogFocus = match || null;
+            Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { go(44); }, { once: true });
+            closeAgentBuild();
+            return false;
+        }
+
+        function pollAgentBuild() {
+            if (agentBuildPoll != null) clearTimeout(agentBuildPoll);
+            agentBuildPoll = setTimeout(function () {
+                agentBuildPoll = null;
+                if (agentBuildDevice && Q('p10agentBuild') && canManageAgentBuild(currentNode) && currentNode._id === agentBuildNodeId) requestAgentBuild({ op: 'status', nodeid: agentBuildNodeId });
+            }, agentBuildBusy() ? 1000 : 5000);
+        }
+
+        function agentBuildCancelButton(text) {
+            var button = Q('idx_dlgCancelButton');
+            if (button) { if (button.tagName == 'INPUT') { button.value = text; } else { button.textContent = text; } }
+        }
+
+        function agentBuildBusy() {
+            if (agentBuildOperation) return agentBuildOperation.state === 'saving';
+            var progress = (agentBuildDevice || {}).deployment;
+            return progress && ['pending', 'updating', 'reconnecting'].indexOf(progress.state) >= 0 && (agentBuildDevice.status !== 'offline' || (agentBuildDevice.policy.deployment || {}).requestedOnline || progress.startedAt);
+        }
+
+        function agentBuildHtml(id, html) {
+            var element = Q(id), states = {};
+            if (element.innerHTML === html) return;
+            var details = element.querySelectorAll('details');
+            for (var i = 0; i < details.length; i++) states[details[i].querySelector('summary').textContent] = details[i].open;
+            QH(id, html);
+            details = element.querySelectorAll('details');
+            for (var i = 0; i < details.length; i++) {
+                var key = details[i].querySelector('summary').textContent;
+                if (states[key] != null) details[i].open = states[key];
+            }
+        }
+
+        function agentBuildRequestFailed(error) {
+            if (agentBuildRequestOp !== 'set' && agentBuildDevice) {
+                agentBuildStale = true;
+                QH('p10buildStatus', EscapeHtml("Status refresh failed. Showing the last received result; retrying automatically."));
+                agentBuildSelectionChanged();
+                pollAgentBuild();
+                return;
+            }
+            agentBuildOperation = { state: 'error', error: error };
+            if (agentBuildDevice) agentBuildDevice.canChange = false;
+            renderAgentBuildProgress(agentBuildDevice);
+            agentBuildButton("Apply"); QE('idx_dlgOkButton', false);
+        }
+
+        function requestAgentBuild(command) {
+            command.action = 'agentbuild';
+            agentBuildRequestOp = command.op;
+            command.requestid = ++agentBuildRequestId;
+            if (agentBuildTimer != null) clearTimeout(agentBuildTimer);
+            if (agentBuildPoll != null) { clearTimeout(agentBuildPoll); agentBuildPoll = null; }
+            if (command.op !== 'status') {
+                QE('idx_dlgOkButton', command.op === 'get' && agentBuildDone);
+                QE('p10buildPolicy', false); QE('p10buildRelease', false); QE('p10buildFile', false);
+                if (command.op === 'set') {
+                    agentBuildButton("Saving...");
+                    agentBuildCancelButton("Close");
+                    renderAgentBuildProgress(agentBuildDevice);
+                } else if (!agentBuildDevice) { QH('p10buildStatus', "Loading..."); }
+                QH('p10buildApplyStatus', ''); QV('p10buildUpdateHelp', false);
+            }
+            meshserver.send(command);
+            agentBuildTimer = setTimeout(function () {
+                agentBuildTimer = null;
+                agentBuildRequestId++;
+                if (!Q('p10buildProgress')) return;
+                agentBuildRequestFailed("Status could not be confirmed. Refresh before trying again.");
+            }, 30000);
+        }
+
+        function renderAgentBuildProgress(message, changed) {
+            var operation = agentBuildOperation, policy = (message || {}).policy || {}, progress = (message || {}).deployment;
+            var held = policy.mode === 'hold' && policy.time, state = operation ? operation.state : (held ? 'held' : (progress || {}).state);
+            var visible = state && (!changed || operation || agentBuildBusy());
+            QV('p10buildProgress', visible);
+            if (!visible) return;
+            var titles = { saving: "Saving update policy", pending: "Waiting for the agent", updating: "Updating agent", reconnecting: "Waiting for the agent to reconnect", confirmed: "Build installed and verified", held: "Updates held", blocked: "Update blocked", unconfirmed: "Installation not confirmed", error: "Unable to confirm the change" };
+            var detail = '', finished = state === 'confirmed' || state === 'held', attention = ['error', 'blocked', 'unconfirmed'].indexOf(state) >= 0;
+            if (state === 'saving') detail = "Checking the selection and saving the policy.";
+            if (state === 'pending') detail = message.status === 'offline' ? "The policy is saved. This device will apply it when it connects." : "The policy is saved. Waiting for the agent to check its binary.";
+            if (state === 'updating') detail = "The agent is replacing its binary. Active sessions may disconnect.";
+            if (state === 'reconnecting') detail = "Waiting for the agent to return and report its installed binary.";
+            if (state === 'confirmed') detail = (policy.mode === 'pin' ? policy.name + ' / ' + policy.filename : "Server default") + '. ' + "The reported binary matches the requested build.";
+            if (state === 'held') detail = "The policy is saved. Automatic binary updates are held for this device.";
+            if (state === 'blocked') detail = message.status === 'disabled' ? "The device has disabled binary updates." : (!message.serverUpdates ? "Binary updates are disabled on this server." : "The selected build is unavailable. Refresh for details.");
+            if (state === 'unconfirmed') detail = "No confirmation after five minutes. Check connectivity or recover this device locally.";
+            if (state === 'error') detail = operation.error;
+            var html = '<div class="agent-progress-title">' + (!finished && !attention ? '<span class="agent-progress-spinner" aria-hidden="true"></span>' : '') + EscapeHtml(titles[state] || '') + '</div><div>' + EscapeHtml(detail) + '</div>';
+            if (!held && state !== 'error') {
+                var steps = ["Save policy", "Update if needed", "Reconnect", "Verify build"], step = state === 'saving' ? 0 : (state === 'pending' || state === 'updating' || state === 'blocked' ? 1 : (state === 'confirmed' ? 4 : 2));
+                html += '<ol class="agent-progress-steps">';
+                for (var i = 0; i < steps.length; i++) html += '<li class="' + (i < step ? 'complete' : i === step ? 'current' : '') + '"' + (i === step ? ' aria-current="step"' : '') + '>' + EscapeHtml(steps[i]) + '</li>';
+                html += '</ol>';
+            }
+            if (progress && progress.transfer && state === 'updating') {
+                var percent = Math.floor(progress.transfer.sent * 100 / progress.transfer.total);
+                html += '<label>' + format("File sent: {0}%", percent) + '<progress max="100" value="' + percent + '">' + percent + '%</progress></label>';
+            }
+            html += '<div class="agent-progress-hint">' + (finished ? "You can close this dialog." : (state === 'saving' ? "You can close this dialog and check the result later." : "You can close this dialog. The saved policy continues to apply; closing does not cancel it.")) + '</div>';
+            Q('p10buildProgress').className = finished ? 'complete' : attention ? 'attention' : 'working';
+            QH('p10buildProgress', html);
+            agentBuildCancelButton("Close");
+        }
+
+        function renderAgentBuildStatus(message) {
+            var policy = message.policy;
+            var status = { connected: "Agent connected", offline: "Device offline", unavailable: "Pinned build is unavailable. Updates are held.", disabled: "The agent has disabled native updates.", updating: "Agent update in progress", matched: "Agent matches the pinned build" };
+            QH('p10buildStatus', EscapeHtml(message.error || status[message.status] || ''));
+            var installed = message.installed || {}, hash = message.reportedHash || installed.hash || (message.deployment || {}).reportedHash;
+            var matches = hash === installed.hash ? (installed.matches || []) : [];
+            var html = '<b>' + (message.reportedHash ? "Installed build" : "Last identified build") + '</b>';
+            if (!matches.length) html += '<div>' + (hash ? "No matching build in the catalog." : "Waiting for the agent to report its binary.") + '</div>';
+            for (var i = 0; i < matches.length; i++) {
+                var match = matches[i], label = EscapeHtml(match.name) + ' / ' + EscapeHtml(match.filename);
+                if (userinfo.siteadmin == 0xFFFFFFFF && match.group) label = '<a href="#" onclick="return openInstalledAgentBuild(' + i + ')">' + label + '</a>';
+                html += '<div>' + label + '</div>';
+                if (match.commit) {
+                    var commit = '<code title="' + EscapeHtml(match.commit) + '">' + EscapeHtml(match.commit.substring(0, 12)) + '</code>';
+                    if (/^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) commit = '<a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + commit + '</a>';
+                    html += '<div>' + "Source revision" + ': ' + commit + '</div>';
+                }
+            }
+            if (installed.version && hash === installed.hash) {
+                html += '<div>' + "Reported source revision" + ': <code>' + EscapeHtml(installed.version.commit) + '</code></div>';
+                if (installed.version.compiled) html += '<div>' + "Compiled" + ': ' + EscapeHtml(installed.version.compiled) + '</div>';
+            }
+            html += '<div class="agent-current-policy"><b>' + "Update policy" + '</b>: ' + (policy.mode === 'pin' ? EscapeHtml(policy.name) + ' / ' + EscapeHtml(policy.filename) : (policy.mode === 'hold' ? "Hold installed binary" : "Follow server default")) + '</div>';
+            if (hash || policy.sha256) html += '<details><summary>' + "Hashes" + '</summary>' + (hash ? '<div class="agent-hash">SHA384: <code>' + EscapeHtml(hash) + '</code></div>' : '') + (policy.sha256 ? '<div class="agent-hash">' + "Pinned file SHA256" + ': <code>' + EscapeHtml(policy.sha256) + '</code></div>' : '') + '</details>';
+            agentBuildHtml('p10buildCurrentDetails', html);
+        }
+
+        function onAgentBuild(message) {
+            if ((message.requestid !== agentBuildRequestId) || (message.nodeid !== agentBuildNodeId) || !Q('p10agentBuild') || !canManageAgentBuild(currentNode) || (currentNode._id !== agentBuildNodeId)) return;
+            if (agentBuildTimer != null) { clearTimeout(agentBuildTimer); agentBuildTimer = null; }
+            if (message.error && !message.policy) {
+                agentBuildRequestFailed(message.error);
+                return;
+            }
+            agentBuildStale = false;
+            if (message.saved) {
+                message = Object.assign({}, agentBuildDevice, message, { deployment: message.deployment, reportedHash: message.reportedHash });
+                message.statusOnly = false;
+                agentBuildOperation = null;
+            }
+            if (message.statusOnly) {
+                if (!agentBuildDevice || agentBuildDevice.policy.revision !== message.policy.revision) { refreshAgentBuild(); return; }
+                var hashChanged = message.reportedHash && message.reportedHash !== (agentBuildDevice.installed || {}).hash;
+                Object.assign(agentBuildDevice, message, { deployment: message.deployment, reportedHash: message.reportedHash });
+                renderAgentBuildStatus(agentBuildDevice);
+                agentBuildSelectionChanged();
+                if (hashChanged) { requestAgentBuild({ op: 'get', nodeid: agentBuildNodeId }); } else { pollAgentBuild(); }
+                return;
+            }
+            var selection = null;
+            if (agentBuildDevice && !message.saved && agentBuildRequestOp === 'get' && agentBuildDevice.policy.revision === message.policy.revision) {
+                var file = agentBuildDevice.options[Q('p10buildFile').value];
+                if (Q('p10buildPolicy').value !== 'pin' || (file && message.options.some(function (x) { return x.id === file.id && x.filename === file.filename && x.sha256 === file.sha256; }))) {
+                    selection = { mode: Q('p10buildPolicy').value, build: Q('p10buildRelease').value, file: file, checked: Q('p10buildCompatible').checked };
+                }
+            }
+            agentBuildDevice = message;
+            var order = { compatible: 0, unknown: 1, blocked: 2 };
+            message.options.sort(function (a, b) { return order[(a.compatibility || {}).status || 'unknown'] - order[(b.compatibility || {}).status || 'unknown']; });
+            var policy = message.policy, html = '', builds = [];
+            if ((policy.mode === 'pin') && !message.options.some(function (x) { return (x.id === policy.build) && (x.filename === policy.filename) && (x.sha256 === policy.sha256); })) {
+                message.options.push({ id: policy.build, name: policy.name, filename: policy.filename, sha256: policy.sha256, requirements: policy.requirements, cached: true });
+            }
+            for (var i in message.options) {
+                var option = message.options[i];
+                if (builds.indexOf(option.id) >= 0) continue;
+                builds.push(option.id);
+                html += '<option value="' + EscapeHtml(option.id) + '">' + EscapeHtml(option.name) + (option.channel ? (' (' + EscapeHtml(option.channel) + ')') : '') + '</option>';
+            }
+            QH('p10buildRelease', html);
+            Q('p10buildPolicy').value = selection ? selection.mode : policy.mode;
+            if (selection) Q('p10buildRelease').value = selection.build;
+            else if (policy.mode === 'pin') Q('p10buildRelease').value = policy.build;
+            QE('p10buildPolicy', true); QE('p10buildRelease', true); QE('p10buildFile', true);
+            QV('p10buildControls', true);
+            renderAgentBuildStatus(message);
+            pollAgentBuild();
+            var ready = 0, blocked = 0, unknown = 0;
+            for (var i in message.options) {
+                if (message.options[i].cached) continue;
+                var status = (message.options[i].compatibility || {}).status;
+                if (status === 'compatible') ready++; else if (status === 'blocked') blocked++; else unknown++;
+            }
+            QH('p10buildAvailable', message.options.length ? format("Requirements met: {0}. Not checked: {1}. Not compatible: {2}.", ready, unknown, blocked) : "No additional builds are available for this agent type.");
+            agentBuildFilesChanged(true, selection);
+        }
+
+        function agentBuildFilesChanged(current, selection) {
+            if (!agentBuildDevice) return;
+            var html = '', selected = null, policy = (selection && selection.file) || agentBuildDevice.policy;
+            for (var i in agentBuildDevice.options) {
+                var option = agentBuildDevice.options[i];
+                if (option.id !== Q('p10buildRelease').value) continue;
+                html += '<option value="' + i + '">' + EscapeHtml(option.filename) + (' (' + (option.cached ? "Pinned copy" : agentBuildCompatibilityLabel((option.compatibility || {}).status)) + ')') + '</option>';
+                if (current && (option.filename === policy.filename) && (option.sha256 === policy.sha256)) selected = i;
+            }
+            QH('p10buildFile', html);
+            if (selected != null) Q('p10buildFile').value = selected;
+            if (selection) Q('p10buildCompatible').checked = selection.checked;
+            agentBuildSelectionChanged(!selection);
+        }
+
+        function agentBuildCompatibilityLabel(status) {
+            return status === 'compatible' ? "Requirements met" : status === 'blocked' ? "Not compatible" : "Not checked";
+        }
+
+        function agentBuildCompatibilityDetails(option) {
+            if (option.cached) return EscapeHtml(option.requirements || '');
+            var result = option.compatibility || { status: 'unknown', checks: [] };
+            var html = '<b>' + agentBuildCompatibilityLabel(result.status) + '</b>', passed = '';
+            if (!result.checks || !result.checks.length) html += '<div>' + "Connect the device and refresh to check its runtime requirements." + '</div><div>' + EscapeHtml(option.requirements || '') + '</div>';
+            for (var i in result.checks) {
+                var check = result.checks[i];
+                var row = '<div class="agent-requirement"><b>' + EscapeHtml(check.name) + '</b>: ' + EscapeHtml(check.required) + '<br />' + "Detected" + ': ' + EscapeHtml(check.detected) + (check.advice ? ('<br />' + EscapeHtml(check.advice)) : '') + '</div>';
+                if (check.status === 'pass') passed += row; else html += row;
+            }
+            if (passed) html += '<details><summary>' + "Passed checks" + '</summary>' + passed + '</details>';
+            if (agentBuildDevice.checkedAt) html += '<div class="agent-check-time">' + "Last checked" + ': ' + EscapeHtml(new Date(agentBuildDevice.checkedAt).toLocaleString()) + '</div>';
+            html += '<div>' + (option.kvm ? "Includes remote desktop support." : "No remote desktop support.") + '</div>';
+            return html;
+        }
+
+        function agentBuildApplyReason(pin, option, changed) {
+            if (!agentBuildDevice.canChange) return agentBuildDevice.error || (agentBuildDevice.status === 'updating' ? "Wait for the agent update to finish." : "Policy changes are temporarily unavailable. Refresh to try again.");
+            if (!pin || !changed) return '';
+            if (!agentBuildDevice.serverUpdates) return "Installation blocked: binary updates are disabled on this server.";
+            if (agentBuildDevice.status === 'disabled') return "Installation blocked: this device has disabled binary updates. Passing the runtime checks does not enable updates.";
+            if (!option) return "No agent file is available to install.";
+            if (option.cached) return "Select an available build file to change this pin.";
+            if ((option.compatibility || {}).status === 'blocked') return "Installation blocked: this file does not meet the device requirements.";
+            if (!Q('p10buildCompatible').checked) return "Confirm local recovery before installing this file.";
+            return '';
+        }
+
+        function agentBuildSelectionChanged(reset) {
+            if (!agentBuildDevice) return;
+            if (reset) Q('p10buildCompatible').checked = false;
+            agentBuildDone = false;
+            var value = Q('p10buildPolicy').value, pin = value === 'pin';
+            var option = pin ? agentBuildDevice.options[Q('p10buildFile').value] : null, policy = agentBuildDevice.policy;
+            var changed = (value !== policy.mode) || (pin && option && ((option.id !== policy.build) || (option.filename !== policy.filename) || (option.sha256 !== policy.sha256)));
+            QV('p10buildPin', pin);
+            QH('p10buildDescription', pin ? "Keep this exact agent file until the policy changes." : ((value === 'hold') ? "Binary updates are held. Agent core updates continue." : (policy.mode === 'pin' ? "Returning to the server default can downgrade this agent." : "This device follows the current agent binary for its type and domain.")));
+            agentBuildHtml('p10buildRequirements', option ? agentBuildCompatibilityDetails(option) : '');
+            QV('p10buildConfirm', agentBuildDevice.canChange && pin && changed && option && !option.cached && (option.compatibility || {}).status !== 'blocked' && agentBuildDevice.serverUpdates && agentBuildDevice.status !== 'disabled');
+            QV('p10buildWarning', changed);
+            var busy = agentBuildBusy();
+            agentBuildDone = !changed && !busy && !agentBuildOperation && ((agentBuildDevice.deployment || {}).state === 'confirmed' || (policy.mode === 'hold' && policy.time));
+            QE('p10buildPolicy', !busy); QE('p10buildRelease', !busy); QE('p10buildFile', !busy); QE('p10buildCompatible', !busy);
+            renderAgentBuildProgress(agentBuildDevice, changed);
+            agentBuildButton(agentBuildDone ? "Done" : (busy ? "Working..." : (pin ? "Install and pin" : "Apply")));
+            var reason = busy ? '' : agentBuildApplyReason(pin, option, changed);
+            QH('p10buildApplyStatus', EscapeHtml(reason));
+            QV('p10buildUpdateHelp', pin && changed && agentBuildDevice.status === 'disabled');
+            QE('idx_dlgOkButton', agentBuildDone || (!busy && !agentBuildStale && agentBuildDevice.canChange && changed && !reason));
+        }
+
+        function applyAgentBuildPolicy() {
+            if (agentBuildDone) return closeAgentBuild();
+            if (agentBuildBusy()) return false;
+            if (!agentBuildDevice || Q('idx_dlgOkButton').disabled || !canManageAgentBuild(currentNode) || (currentNode._id !== agentBuildNodeId)) return false;
+            var command = { op: 'set', nodeid: agentBuildNodeId, revision: agentBuildDevice.policy.revision, mode: Q('p10buildPolicy').value };
+            if (command.mode === 'pin') {
+                var option = agentBuildDevice.options[Q('p10buildFile').value];
+                if (!option || option.cached || (option.compatibility || {}).status === 'blocked') return false;
+                command.build = option.id; command.filename = option.filename; command.sha256 = option.sha256;
+            }
+            agentBuildOperation = { state: 'saving', mode: command.mode };
+            requestAgentBuild(command);
+            return false;
+        }
+
+        function filterAgentCatalog(focused) {
+            if (!focused) agentCatalogFocus = null;
+            var content = Q('p44content'), group = Q('p44group').value, search = Q('p44search').value.toLowerCase().trim(), count = 0;
+            var sizes = content.querySelectorAll('[data-agent-bytes]');
+            for (var i = 0; i < sizes.length; i++) {
+                var bytes = Number(sizes[i].getAttribute('data-agent-bytes'));
+                if (!Number.isFinite(bytes) || (bytes <= 0)) { sizes[i].textContent = '-'; continue; }
+                sizes[i].textContent = (bytes >= 1048576) ? ((bytes / 1048576).toFixed(1) + ' MiB') : ((bytes >= 1024) ? ((bytes / 1024).toFixed(1) + ' KiB') : (bytes + ' B'));
+            }
+            var sections = content.querySelectorAll('[data-agent-group]');
+            for (var i = 0; i < sections.length; i++) {
+                var section = sections[i], rows = section.querySelectorAll('[data-agent-row]'), visible = 0;
+                var name = section.getAttribute('data-agent-name') || '';
+                for (var j = 0; j < rows.length; j++) {
+                    var match = ((name + ' ' + rows[j].textContent).toLowerCase().indexOf(search) >= 0);
+                    if (agentCatalogFocus) match = match && (!agentCatalogFocus.build || section.getAttribute('data-agent-build') === agentCatalogFocus.build) && rows[j].getAttribute('data-agent-file') === agentCatalogFocus.filename && rows[j].getAttribute('data-agent-hash') === agentCatalogFocus.hash;
+                    rows[j].style.display = match ? '' : 'none';
+                    if (match) visible++;
+                }
+                if (agentCatalogFocus && visible && section.getAttribute('data-agent-build') === agentCatalogFocus.build && section.getAttribute('data-agent-archived') === 'true') { group = 'archived'; Q('p44group').value = group; }
+                var selected = (section.getAttribute('data-agent-archived') === 'true' ? 'archived' : section.getAttribute('data-agent-group')) === group;
+                section.style.display = (selected && visible) ? '' : 'none';
+                if (selected) { count += visible; if (search && section.firstElementChild.tagName === 'DETAILS') section.firstElementChild.open = true; }
+            }
+            QH('p44count', (count === 1) ? "1 file" : format("{0} files", count));
+            if (Q('p44empty')) QV('p44empty', count === 0);
+        }
+
+        var agentCatalogRequest = null;
+        var agentCatalogFocus = null;
+        function refreshAgentCatalog() {
+            if (agentCatalogRequest != null) { agentCatalogRequest.abort(); agentCatalogRequest = null; }
+            QH('p44content', '');
+            if ((userinfo == null) || (userinfo.siteadmin != 0xFFFFFFFF)) return;
+            QH('p44status', "Loading...");
+            QE('p44refresh', false);
+            var request = new XMLHttpRequest();
+            agentCatalogRequest = request;
+            function complete(content) {
+                if (agentCatalogRequest !== request) return;
+                agentCatalogRequest = null;
+                QE('p44refresh', true);
+                if ((userinfo == null) || (userinfo.siteadmin != 0xFFFFFFFF)) { QH('p44status', ''); return; }
+                QH('p44status', content ? '' : "Unable to load agent builds. Try refreshing.");
+                if (content) {
+                    QH('p44content', content.innerHTML);
+                    if (agentCatalogFocus) { Q('p44group').value = agentCatalogFocus.group; Q('p44search').value = agentCatalogFocus.filename; }
+                    filterAgentCatalog(true);
+                }
+            }
+            request.onload = function () {
+                var content = null;
+                if (request.status == 200) {
+                    try { content = new DOMParser().parseFromString(request.responseText, 'text/html').getElementById('agentCatalogContent'); } catch (ex) { }
+                }
+                complete(content);
+            };
+            request.onerror = request.ontimeout = function () { complete(null); };
+            request.open('GET', 'meshagents?catalog=1&fragment=1' + (urlargs.key ? ('&key=' + encodeURIComponent(urlargs.key)) : ''));
+            request.timeout = 15000;
+            request.send();
+        }
+
         function go(x, event) {
+            if ((x == 44) && ((userinfo == null) || (userinfo.siteadmin != 0xFFFFFFFF))) x = 2;
             if (event && ((event.which == 3) || (event.button == 2))) return; // ignore right clicks as they are handled elsewhere
             // Remind the user to add two factor authentication
             if ((features & 0x00040000) && (count2factoraAuths() == 0) && (x > 2)) {
@@ -23141,6 +23588,7 @@
             // Edit this line when adding a new screen
             for (var i = 0; i < 61; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
+            if (x == 44) refreshAgentCatalog();
 
             // Get out of fullscreen if needed
             if (fullscreen) { deskToggleFull(); }
@@ -23177,7 +23625,7 @@
 
             // Define class for Menu(s) as fully or semi active.
             var mainMenuActiveClass = (x < 9 ? 'fullselect' : 'semiselect');
-            var leftMenuActiveClass = (((x < 9) || (x == 115) || (x == 40) || (x == 41) || (x == 42)) ? 'lbbuttonsel2' : 'lbbuttonsel');
+            var leftMenuActiveClass = (((x < 9) || (x == 115) || (x == 40) || (x == 41) || (x == 42) || (x == 44)) ? 'lbbuttonsel2' : 'lbbuttonsel');
 
             var backView = 0;
             if (goBackStack.length > 0) { backView = goBackStack[goBackStack.length - 1]; }
@@ -23219,10 +23667,10 @@
             QV('MainSubMenuSpan', (x >= 9) && (x < 20));
             QV('MeshSubMenuSpan', (x >= 20) && (x < 30));
             QV('UserSubMenuSpan', (x >= 30) && (x < 40));
-            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43);
+            QV('ServerSubMenuSpan', x == 6 || x == 115 || x == 40 || x == 41 || x == 42 || x == 43 || x == 44);
             QV('UsersSubMenuSpan', x == 4 || x == 50 || x == 52);
             QV('EventsSubMenuSpan', (x == 3) || (x == 60));
-            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 9: 'MainDevRegistry', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
+            var panels = { 3: 'EventsLive', 4: 'UsersGeneral', 9: 'MainDevRegistry', 10: 'MainDev', 11: 'MainDevDesktop', 12: 'MainDevTerminal', 13: 'MainDevFiles', 14: 'MainDevAmt', 15: 'MainDevConsole', 16: 'MainDevEvents', 17: 'MainDevInfo', 18: 'MainDevApps', 19: 'MainDevPlugins', 20: 'MeshGeneral', 21: 'MeshSummary', 30: 'UserGeneral', 31: 'UserEvents', 6: 'ServerGeneral', 40: 'ServerStats', 41: 'ServerTrace', 42: 'ServerPlugins', 44: 'ServerAgentBuilds', 50: 'UsersGroups', 52: 'UsersRecordings', 60: 'EventsReport', 115: 'ServerConsole' };
 
 
             for (var i in panels) {
@@ -23230,6 +23678,7 @@
                 QC(panels[i]).remove('style3sel');
                 QC(panels[i]).add((x == i) ? 'style3sel' : 'style3x');
             }
+            if (x == 44) { Q('ServerAgentBuilds').scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
 
             // If going to the remote desktop tab, adjust the tab.
             if (x == 11) { deskAdjust(); }

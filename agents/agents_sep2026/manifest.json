@@ -1,0 +1,545 @@
+{
+  "schemaVersion": 1,
+  "id": "sep2026",
+  "name": "September 2026 testing agents",
+  "channel": "testing",
+  "source": {
+    "repository": "Ylianst/MeshAgent",
+    "commit": "709f373d2ccb71b82945b56aaf8c9bc28c3fde8a",
+    "commitTime": "2026-09-23T17:04:37Z",
+    "commitUrl": "https://github.com/Ylianst/MeshAgent/commit/709f373d2ccb71b82945b56aaf8c9bc28c3fde8a",
+    "branch": "master",
+    "event": "push",
+    "tag": null,
+    "release": null
+  },
+  "packaged": {
+    "repository": "Ylianst/MeshCentral",
+    "commit": "2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2",
+    "commitTime": "2026-09-23T17:25:57Z",
+    "commitUrl": "https://github.com/Ylianst/MeshCentral/commit/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2",
+    "directory": "agents/agents_sep2026",
+    "firstRelease": "1.2.6"
+  },
+  "verification": {
+    "verifiedAt": "2026-09-24T05:24:23Z",
+    "method": "byte-comparison-with-github-actions-artifacts",
+    "archiveDigestsVerified": true,
+    "embeddedCommitVerified": true,
+    "runtimeTested": false,
+    "architectureAndFeaturesEvidence": "source-build-configuration-at-commit",
+    "hashes": {
+      "sha256": "SHA256 of the complete bundled file",
+      "sha384": "SHA384 of the complete bundled file",
+      "agentSha384": "MeshCentral exeHandler.hashExecutableFile SHA384"
+    }
+  },
+  "workflows": [
+    {
+      "runId": 35893145559,
+      "runAttempt": 1,
+      "path": ".github/workflows/linux-build.yml",
+      "conclusion": "success",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145559",
+      "workflowUrl": "https://github.com/Ylianst/MeshAgent/blob/709f373d2ccb71b82945b56aaf8c9bc28c3fde8a/.github/workflows/linux-build.yml"
+    },
+    {
+      "runId": 35893145729,
+      "runAttempt": 1,
+      "path": ".github/workflows/windows-build.yml",
+      "conclusion": "success",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145729",
+      "workflowUrl": "https://github.com/Ylianst/MeshAgent/blob/709f373d2ccb71b82945b56aaf8c9bc28c3fde8a/.github/workflows/windows-build.yml"
+    },
+    {
+      "runId": 35893145631,
+      "runAttempt": 1,
+      "path": ".github/workflows/mac-build.yml",
+      "conclusion": "success",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145631",
+      "workflowUrl": "https://github.com/Ylianst/MeshAgent/blob/709f373d2ccb71b82945b56aaf8c9bc28c3fde8a/.github/workflows/mac-build.yml"
+    },
+    {
+      "runId": 35893145539,
+      "runAttempt": 1,
+      "path": ".github/workflows/freebsd-build.yml",
+      "conclusion": "success",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145539",
+      "workflowUrl": "https://github.com/Ylianst/MeshAgent/blob/709f373d2ccb71b82945b56aaf8c9bc28c3fde8a/.github/workflows/freebsd-build.yml"
+    }
+  ],
+  "githubArtifacts": [
+    {
+      "id": 10765084070,
+      "name": "meshagent-macos-x86_64",
+      "runId": 35893145631,
+      "createdAt": "2026-09-23T17:06:40Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "060f9fd220b1d19de1438756b4979c69635acc30d444096b040aef72a615bde5",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145631/artifacts/10765084070"
+    },
+    {
+      "id": 10765304342,
+      "name": "meshagent-binaries-aarch64",
+      "runId": 35893145559,
+      "createdAt": "2026-09-23T17:08:25Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "194fb6f05e38e9356809b705a9997e3b80050039d78fe8c18a9933723015f322",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145559/artifacts/10765304342"
+    },
+    {
+      "id": 10765319051,
+      "name": "meshagent-binaries-x86",
+      "runId": 35893145559,
+      "createdAt": "2026-09-23T17:07:32Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "11f0a4e811765e62a72fe0f84a7f958011fd27e0c2a2c717bc70f83b18d9cce5",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145559/artifacts/10765319051"
+    },
+    {
+      "id": 10765403435,
+      "name": "meshagent-macos-arm64",
+      "runId": 35893145631,
+      "createdAt": "2026-09-23T17:06:40Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "4f4c31d767fcf8ffc5ff43d8782c844a1e6cc6a09b5df643970d831a7754e713",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145631/artifacts/10765403435"
+    },
+    {
+      "id": 10765653685,
+      "name": "meshagent-binaries-armhf",
+      "runId": 35893145559,
+      "createdAt": "2026-09-23T17:10:54Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "cce8d22242b049ecbac96b599926594c1aa5921de7c38dd94cb16d172503015b",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145559/artifacts/10765653685"
+    },
+    {
+      "id": 10765823010,
+      "name": "meshagent-freebsd-x86_64",
+      "runId": 35893145539,
+      "createdAt": "2026-09-23T17:07:43Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "66669da2cb19a9ca6a8f2c3995243f0c700cca458493abe473d48c18d0d49c60",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145539/artifacts/10765823010"
+    },
+    {
+      "id": 10766031973,
+      "name": "meshagent-windows-x86",
+      "runId": 35893145729,
+      "createdAt": "2026-09-23T17:09:17Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "207c197aef063a409ea1837a5ed77751f25b3bb1103a50fe3f28320344b12181",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145729/artifacts/10766031973"
+    },
+    {
+      "id": 10766170384,
+      "name": "meshagent-windows-ARM64",
+      "runId": 35893145729,
+      "createdAt": "2026-09-23T17:09:46Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "f3608d3aba3c7a5aa6a2fee542d3479c61535295514ef7fb997d819b9671d94c",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145729/artifacts/10766170384"
+    },
+    {
+      "id": 10766390016,
+      "name": "meshagent-windows-x64",
+      "runId": 35893145729,
+      "createdAt": "2026-09-23T17:09:25Z",
+      "expiresAt": "2026-12-22T17:04:40Z",
+      "archiveSha256": "1a0084d4d8c43a7e3f627111b5371a26cb09d019f95586114f63171e7b0af7fb",
+      "url": "https://github.com/Ylianst/MeshAgent/actions/runs/35893145729/artifacts/10766390016"
+    }
+  ],
+  "artifacts": [
+    {
+      "filename": "MeshService.exe",
+      "agentId": 3,
+      "platform": "windows",
+      "cpu": "x86",
+      "format": "PE",
+      "features": {
+        "kvm": true
+      },
+      "size": 3946496,
+      "hashes": {
+        "sha256": "7f0f68f1ac7d90c9ff1e374e84d8c019e7e2f67586f60cf98cccaa95bbb6a6b3",
+        "sha384": "f2b7bf0e0971ff12d095df7c0847f96b3aa4566e89c981e5292fa8f1e15b424821b232d69050b58b10bc4795677d3394",
+        "agentSha384": "f2b7bf0e0971ff12d095df7c0847f96b3aa4566e89c981e5292fa8f1e15b424821b232d69050b58b10bc4795677d3394"
+      },
+      "githubArtifactId": 10766031973,
+      "archivePath": "MeshService.exe",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/MeshService.exe",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "peMachine": "0x14c",
+        "linkTime": "2026-09-23T17:09:13Z",
+        "peSubsystemVersion": "6.0",
+        "embeddedAuthenticode": "absent"
+      }
+    },
+    {
+      "filename": "MeshService64.exe",
+      "agentId": 4,
+      "platform": "windows",
+      "cpu": "x86_64",
+      "format": "PE",
+      "features": {
+        "kvm": true
+      },
+      "size": 3558912,
+      "hashes": {
+        "sha256": "e996afaeb1b3bc45c26f2ef999ae4e1c9a8b2735ede8f3e771075f7750cea776",
+        "sha384": "1e32a089ce9614f4ea31f1d9173b2c353c6081f18e84ec69bd1d460970ea2efa2c384700a53d620d55c6a52ca8cf2316",
+        "agentSha384": "1e32a089ce9614f4ea31f1d9173b2c353c6081f18e84ec69bd1d460970ea2efa2c384700a53d620d55c6a52ca8cf2316"
+      },
+      "githubArtifactId": 10766390016,
+      "archivePath": "MeshService64.exe",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/MeshService64.exe",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "peMachine": "0x8664",
+        "linkTime": "2026-09-23T17:09:23Z",
+        "peSubsystemVersion": "6.0",
+        "embeddedAuthenticode": "absent"
+      }
+    },
+    {
+      "filename": "meshagent_x86",
+      "agentId": 5,
+      "platform": "linux",
+      "cpu": "x86",
+      "format": "ELF",
+      "features": {
+        "kvm": true
+      },
+      "size": 4374504,
+      "hashes": {
+        "sha256": "8bd8651f941fd6f1a864be31506f2f2ab8b286970adfcdef8a637176689b0549",
+        "sha384": "8eed08628b3c32525dc3f7150c3dd839031d4a46e3fc4d522c004fe01922b2b60ae1ad2e0a2fd2361712d094ac056a2d",
+        "agentSha384": "8eed08628b3c32525dc3f7150c3dd839031d4a46e3fc4d522c004fe01922b2b60ae1ad2e0a2fd2361712d094ac056a2d"
+      },
+      "githubArtifactId": 10765319051,
+      "archivePath": "meshagent_x86",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_x86",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib/ld-linux.so.2",
+        "neededLibraries": [
+          "libm.so.6",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.38"
+      }
+    },
+    {
+      "filename": "meshagent_x86-64",
+      "agentId": 6,
+      "platform": "linux",
+      "cpu": "x86_64",
+      "format": "ELF",
+      "features": {
+        "kvm": true
+      },
+      "size": 4101496,
+      "hashes": {
+        "sha256": "d2ea1afb7f5efa61728b10ee13ca7d6f1d5ebe503069d5b0ab65d42a9e5d9754",
+        "sha384": "2ec618fb3dc599fdf35f4f9ca2cc7d2b8eac6f253e95227c4292c0bcd79dbbf7f5cbaf153fa05192f17842fa3c5972af",
+        "agentSha384": "2ec618fb3dc599fdf35f4f9ca2cc7d2b8eac6f253e95227c4292c0bcd79dbbf7f5cbaf153fa05192f17842fa3c5972af"
+      },
+      "githubArtifactId": 10765319051,
+      "archivePath": "meshagent_x86-64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_x86-64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "neededLibraries": [
+          "libm.so.6",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.38"
+      }
+    },
+    {
+      "filename": "meshagent_osx-x86-64",
+      "agentId": 16,
+      "platform": "macos",
+      "cpu": "x86_64",
+      "format": "Mach-O",
+      "features": {
+        "kvm": true
+      },
+      "size": 4068672,
+      "hashes": {
+        "sha256": "0b75760776195189dd52bde0c43c9d5d39abcaa2f6c72738dec2b43bba4909be",
+        "sha384": "6f92b5069ff9f7042c4d8a956e4d228035a4cbacdc3bc1f215b857ce2c13e1dc5bbfac3f17c57911115025365142b2e2",
+        "agentSha384": "6f92b5069ff9f7042c4d8a956e4d228035a4cbacdc3bc1f215b857ce2c13e1dc5bbfac3f17c57911115025365142b2e2"
+      },
+      "githubArtifactId": 10765084070,
+      "archivePath": "meshagent_osx-x86-64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_osx-x86-64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "minimumMacos": "15.0.0",
+        "sdk": "15.5.0",
+        "embeddedSignature": "absent"
+      }
+    },
+    {
+      "filename": "meshagent_x86_nokvm",
+      "agentId": 19,
+      "platform": "linux",
+      "cpu": "x86",
+      "format": "ELF",
+      "features": {
+        "kvm": false
+      },
+      "size": 3995432,
+      "hashes": {
+        "sha256": "cbdda1aebe6a0b93ddbb34e92ac79bf28b43938e9f8889bda09b266c10d42d38",
+        "sha384": "aad5a4fa53f7f984880a334d14ed0410b90a57cf095125789bb78adc283178023a3fa05bfbaa3ac8ee6cf8275d1e7586",
+        "agentSha384": "aad5a4fa53f7f984880a334d14ed0410b90a57cf095125789bb78adc283178023a3fa05bfbaa3ac8ee6cf8275d1e7586"
+      },
+      "githubArtifactId": 10765319051,
+      "archivePath": "meshagent_x86_nokvm",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_x86_nokvm",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib/ld-linux.so.2",
+        "neededLibraries": [
+          "libm.so.6",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.38"
+      }
+    },
+    {
+      "filename": "meshagent_x86-64_nokvm",
+      "agentId": 20,
+      "platform": "linux",
+      "cpu": "x86_64",
+      "format": "ELF",
+      "features": {
+        "kvm": false
+      },
+      "size": 3724536,
+      "hashes": {
+        "sha256": "1f898a5f768b73995f5a960fd40cdc4faf6ead43bf7d344d0680187e00bce2ab",
+        "sha384": "381654c6684cd52b6c77858fd9ddc9a53e86143339ab5d921fe9ae2526ab835c9bff0b444caee3a29975d42091c9208a",
+        "agentSha384": "381654c6684cd52b6c77858fd9ddc9a53e86143339ab5d921fe9ae2526ab835c9bff0b444caee3a29975d42091c9208a"
+      },
+      "githubArtifactId": 10765319051,
+      "archivePath": "meshagent_x86-64_nokvm",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_x86-64_nokvm",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "neededLibraries": [
+          "libm.so.6",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.38"
+      }
+    },
+    {
+      "filename": "meshagent_armhf",
+      "agentId": 25,
+      "platform": "linux",
+      "cpu": "arm",
+      "format": "ELF",
+      "features": {
+        "kvm": true
+      },
+      "size": 3442360,
+      "hashes": {
+        "sha256": "ecfe353ff77b04f1d65e5c02e8acb42f499a97fd0eb927939c9a7bf886b1459a",
+        "sha384": "da7ca8499ebd0583f479fa4f0f784161bc443f75f0cfa6e7254cff222c25cb4646d0adbff5723beb9f82c8b67c444b8c",
+        "agentSha384": "da7ca8499ebd0583f479fa4f0f784161bc443f75f0cfa6e7254cff222c25cb4646d0adbff5723beb9f82c8b67c444b8c"
+      },
+      "githubArtifactId": 10765653685,
+      "archivePath": "meshagent_armhf",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_armhf",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib/ld-linux-armhf.so.3",
+        "neededLibraries": [
+          "libpthread.so.0",
+          "libutil.so.1",
+          "libm.so.6",
+          "libdl.so.2",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.28",
+        "armAttributes": {
+          "cpuArch": "v6",
+          "fpArch": "VFPv3",
+          "advancedSimdArch": "NEONv1",
+          "abiVfpArgs": "VFP registers"
+        }
+      }
+    },
+    {
+      "filename": "meshagent_osx-arm-64",
+      "agentId": 29,
+      "platform": "macos",
+      "cpu": "arm64",
+      "format": "Mach-O",
+      "features": {
+        "kvm": true
+      },
+      "size": 3670840,
+      "hashes": {
+        "sha256": "8bca8bce712089e3c21cda2d948ac8cd1c0e95fea565896ff2cea484d4ec3394",
+        "sha384": "bf0c630ef19db8ae61df973c49653fe46e9104141afbd825be335b2b0ed75098d2ad78d0dd2fe48f861e25003a90eb99",
+        "agentSha384": "bf0c630ef19db8ae61df973c49653fe46e9104141afbd825be335b2b0ed75098d2ad78d0dd2fe48f861e25003a90eb99"
+      },
+      "githubArtifactId": 10765403435,
+      "archivePath": "meshagent_osx-arm-64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_osx-arm-64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "minimumMacos": "15.0.0",
+        "sdk": "15.5.0",
+        "embeddedSignature": "ad-hoc"
+      }
+    },
+    {
+      "filename": "meshagent_freebsd_x86-64",
+      "agentId": 30,
+      "platform": "freebsd",
+      "cpu": "x86_64",
+      "format": "ELF",
+      "features": {
+        "kvm": false
+      },
+      "size": 3780032,
+      "hashes": {
+        "sha256": "8ccf877b510af7a8c5a0e77ed1c82e1d66747cd1c46e3f3021680dc1845ac237",
+        "sha384": "460b86640990e0fbb92ecc97615659b380def88eaa61c12418dfdf8a43d48f9cbcd87230fea121974352f58b89e19a9d",
+        "agentSha384": "460b86640990e0fbb92ecc97615659b380def88eaa61c12418dfdf8a43d48f9cbcd87230fea121974352f58b89e19a9d"
+      },
+      "githubArtifactId": 10765823010,
+      "archivePath": "meshagent_freebsd_x86-64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_freebsd_x86-64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/libexec/ld-elf.so.1",
+        "neededLibraries": [
+          "libthr.so.3",
+          "libdl.so.1",
+          "libz.so.6",
+          "libm.so.5",
+          "libc.so.7"
+        ],
+        "freebsdAbi": 1305000
+      }
+    },
+    {
+      "filename": "meshagent_aarch64",
+      "agentId": 32,
+      "platform": "linux",
+      "cpu": "arm64",
+      "format": "ELF",
+      "features": {
+        "kvm": true
+      },
+      "size": 3691176,
+      "hashes": {
+        "sha256": "89617a0936528432afb804ce5569bd321f4b4f75495902d7924ed88df5fc46bc",
+        "sha384": "2a1f4238f70f905fc24b3a4c1e18c9bdf7b5018f1ff538602299142eae1bb79301cf85952675480dd1b6474220b14a62",
+        "agentSha384": "2a1f4238f70f905fc24b3a4c1e18c9bdf7b5018f1ff538602299142eae1bb79301cf85952675480dd1b6474220b14a62"
+      },
+      "githubArtifactId": 10765304342,
+      "archivePath": "meshagent_aarch64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_aarch64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1s  1 Nov 2022"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib/ld-linux-aarch64.so.1",
+        "neededLibraries": [
+          "libm.so.6",
+          "libc.so.6"
+        ],
+        "glibcRequired": "2.34"
+      }
+    },
+    {
+      "filename": "meshagent_alpine-x86-64",
+      "agentId": 33,
+      "platform": "linux",
+      "cpu": "x86_64",
+      "format": "ELF",
+      "features": {
+        "kvm": false
+      },
+      "size": 3769280,
+      "hashes": {
+        "sha256": "e8c6a263154c46ad95932a92163b18c8a4a12a124f7190752ece2c2d82d1e209",
+        "sha384": "44b4a7711829ea2f2c84daa3b1888e52d9c2361f5bb053cb92b4b957a865d2783cb8246ea6d579d7e7b2f1c257d356ca",
+        "agentSha384": "44b4a7711829ea2f2c84daa3b1888e52d9c2361f5bb053cb92b4b957a865d2783cb8246ea6d579d7e7b2f1c257d356ca"
+      },
+      "githubArtifactId": 10765319051,
+      "archivePath": "meshagent_alpine-x86-64",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/meshagent_alpine-x86-64",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1l  24 Aug 2021"
+      ],
+      "binaryMetadata": {
+        "interpreter": "/lib/ld-musl-x86_64.so.1",
+        "neededLibraries": [
+          "libc.so"
+        ],
+        "libc": "musl"
+      }
+    },
+    {
+      "filename": "MeshServiceARM64.exe",
+      "agentId": 43,
+      "platform": "windows",
+      "cpu": "arm64",
+      "format": "PE",
+      "features": {
+        "kvm": true
+      },
+      "size": 3672064,
+      "hashes": {
+        "sha256": "85431566bf3a4ebb8b4c395fe460d2e743331f08e77725a759664dba8ec2f09f",
+        "sha384": "74718d047cd01ee7d36585d65a477b12b5916b638e9b1b5c16d608867605cf31cdc4a76b5d3f58907db33cfd0b7bb6ff",
+        "agentSha384": "74718d047cd01ee7d36585d65a477b12b5916b638e9b1b5c16d608867605cf31cdc4a76b5d3f58907db33cfd0b7bb6ff"
+      },
+      "githubArtifactId": 10766170384,
+      "archivePath": "MeshServiceARM64.exe",
+      "downloadUrl": "https://raw.githubusercontent.com/Ylianst/MeshCentral/2bbe3e55d749a9d7ebb391f316d0bdb71a58bab2/agents/agents_sep2026/MeshServiceARM64.exe",
+      "embeddedOpenSslVersions": [
+        "OpenSSL 1.1.1n  15 Mar 2022"
+      ],
+      "binaryMetadata": {
+        "peMachine": "0xaa64",
+        "linkTime": "2026-09-23T17:09:43Z",
+        "peSubsystemVersion": "6.2",
+        "embeddedAuthenticode": "absent"
+      }
+    }
+  ]
+}

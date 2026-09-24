@@ -2885,6 +2885,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Delete this node including network interface information, events and timeline
                             db.Remove(node._id);                                 // Remove node with that id
+                            db.Remove('ab' + node._id);
+                            db.Remove('abi' + node._id);
+                            db.Remove('abd' + node._id);
+                            db.Remove('abu' + node._id);
                             db.Remove('if' + node._id);                          // Remove interface information
                             db.Remove('nt' + node._id);                          // Remove notes
                             db.Remove('lc' + node._id);                          // Remove last connect time
@@ -3373,6 +3377,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
+            case 'agentbuildadmin': {
+                parent.agentBuildAdmin.command(domain, user, command, req.session.loginToken).then(function (result) {
+                    obj.send({ action: 'agentbuildadmin', requestid: command.requestid, result: result });
+                }).catch(function (err) {
+                    obj.send({ action: 'agentbuildadmin', requestid: command.requestid, error: err.message });
+                });
+                break;
+            }
+            case 'agentbuild': {
+                parent.agentBuilds.command(domain, user, command, req.session.loginToken).then(function (result) {
+                    obj.send(Object.assign({ action: 'agentbuild', requestid: command.requestid }, result));
+                }).catch(function (err) {
+                    obj.send({ action: 'agentbuild', requestid: command.requestid, nodeid: command.nodeid, error: err.message });
+                });
+                break;
+            }
             case 'changedevice':
                 {
                     var err = null;

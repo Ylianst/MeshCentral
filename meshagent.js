@@ -98,6 +98,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
+            parent.agentBuilds.observe(obj, true).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
             delete parent.wsagents[obj.dbNodeKey];
             parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1, null, { remoteaddrport: obj.remoteaddrport, name: obj.name });
         }
@@ -112,6 +113,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (((obj.agentInfo) && (obj.agentInfo.capabilities) && ((obj.agentInfo.capabilities & 0x20) || (obj.agentInfo.capabilities & 0x40))) || ((mesh) && (mesh.flags) && (mesh.flags & 1))) {
             // Delete this node including network interface information and events
             db.Remove(obj.dbNodeKey);                                 // Remove node with that id
+            db.Remove('ab' + obj.dbNodeKey);
+            db.Remove('abd' + obj.dbNodeKey);
             db.Remove('if' + obj.dbNodeKey);                          // Remove interface information
             db.Remove('nt' + obj.dbNodeKey);                          // Remove notes
             db.Remove('lc' + obj.dbNodeKey);                          // Remove last connect time
@@ -290,7 +293,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 */
             }
             else if (cmdid == 12) { // MeshCommand_AgentHash
-                if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
+                if (msg.length == 52) {
+                    obj.agentReportedHash = Buffer.from(msg.substring(4), 'binary').toString('hex');
+                    parent.agentBuilds.observe(obj).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
+                }
+                if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true) && !obj.agentPolicyChanging) {
                     const agenthash = msg.substring(4);
                     const agentUpdateMethod = compareAgentBinaryHash(obj.agentExeInfo, agenthash);
                     if (agentUpdateMethod === 2) { // Use meshcore agent update system
@@ -298,21 +305,25 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             parent.agentStats.agentMeshCoreBinaryUpdate++;
                             obj.agentCoreUpdate = true;
+                            parent.agentBuilds.observe(obj).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
                             obj.sendBinary(common.ShortToStr(10) + common.ShortToStr(0)); // Ask to clear the core
                             obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Ask for meshcore hash
                         }
                     } else if (agentUpdateMethod === 1) { // Use native agent update system
+                        obj.agentUpdatePending = true;
+                        parent.agentBuilds.observe(obj).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
                         // Mesh agent update required, do it using task limiter so not to flood the network. Medium priority task.
                         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) {
-                            if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
+                            if ((obj.authenticated != 2) || obj.agentPolicyChanging) { delete obj.agentUpdatePending; parent.parent.taskLimiter.completed(taskid); return; } // If agent disconnection, complete and exit now.
                             if (obj.nodeid != null) { parent.parent.debug('agent', "Agent update required, NodeID=0x" + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc); }
                             parent.agentStats.agentBinaryUpdate++;
                             if ((obj.agentExeInfo.data == null) && (((obj.agentInfo.capabilities & 0x100) == 0) || (obj.agentExeInfo.zdata == null))) {
                                 // Read the agent from disk
                                 parent.fs.open(obj.agentExeInfo.path, 'r', function (err, fd) {
-                                    if (obj.agentExeInfo == null) return; // Agent disconnected during this call.
-                                    if (err) { parent.parent.debug('agentupdate', "ERROR: " + err); return console.error(err); }
+                                    if (obj.agentExeInfo == null) { delete obj.agentUpdatePending; if (fd != null) parent.fs.close(fd, function () { }); parent.parent.taskLimiter.completed(taskid); return; }
+                                    if (err) { delete obj.agentUpdatePending; parent.parent.taskLimiter.completed(taskid); parent.parent.debug('agentupdate', "ERROR: " + err); return console.error(err); }
                                     obj.agentUpdate = { ptr: 0, buf: Buffer.alloc(parent.parent.agentUpdateBlockSize + 4), fd: fd, taskid: taskid };
+                                    delete obj.agentUpdatePending;
 
                                     // MeshCommand_CoreModule, ask mesh agent to clear the core.
                                     // The new core will only be sent after the agent updates.
@@ -347,6 +358,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             } else {
                                 // Send the agent from RAM
                                 obj.agentUpdate = { ptr: 0, buf: Buffer.alloc(parent.parent.agentUpdateBlockSize + 4), taskid: taskid };
+                                delete obj.agentUpdatePending;
 
                                 // MeshCommand_CoreModule, ask mesh agent to clear the core.
                                 // The new core will only be sent after the agent updates.
@@ -925,7 +937,14 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         completeAgentConnection3(device, mesh);
     }
 
-    function completeAgentConnection3(device, mesh) {
+    async function completeAgentConnection3(device, mesh) {
+        if (obj.agentInfo == null) return;
+        const build = await parent.agentBuilds.resolve(domain, obj.dbNodeKey, obj.agentInfo.agentId, device.firstconnect);
+        if (obj.authenticated != 1) return;
+        obj.agentExeInfo = build.agent;
+        obj.agentBuildPolicy = build.policy;
+        obj.agentBuildNode = { domain: domain.id, enrollment: device.firstconnect || 0, agentId: obj.agentInfo.agentId, name: device.name, meshid: device.meshid };
+        obj.agentBuildError = build.error;
         // Check if this agent is already connected
         const dupAgent = parent.wsagents[obj.dbNodeKey];
         parent.wsagents[obj.dbNodeKey] = obj;
@@ -957,6 +976,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // We are done, ready to communicate with this agent
         delete obj.pendingCompleteAgentConnection;
         obj.authenticated = 2;
+        parent.agentBuilds.observe(obj).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
 
         // Check how many times this agent disconnected in the last few minutes.
         const disconnectCount = parent.wsagentsDisconnections[obj.nodeid];
@@ -973,8 +993,6 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // Not sure why, but in rare cases, obj.agentInfo is undefined here.
         if ((obj.agentInfo == null) || (typeof obj.agentInfo.capabilities != 'number')) { return; } // This is an odd case.
-        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
-        if (domain.meshAgentBinaries && domain.meshAgentBinaries[obj.agentInfo.agentId]) { obj.agentExeInfo = domain.meshAgentBinaries[obj.agentInfo.agentId]; }
 
         // Check if this agent is reconnecting too often.
         if (disconnectCount > 4) {
@@ -1000,6 +1018,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Ask the agent for it's executable binary hash
             obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0));
         } else {
+            // Held agents must still report whether native updates are disabled.
+            if (obj.agentBuildPolicy) obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0));
             // Check the mesh core, if the agent is capable of running one
             if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
                 obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
@@ -1275,15 +1295,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Sent by the agent to update agent information
                         ChangeAgentCoreInfo(command);
 
-                        if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {
+                        if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string') && !obj.agentPolicyChanging) {
                             // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                             parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
                                 // If agent disconnection, complete and exit now.
-                                if ((obj.authenticated != 2) || (obj.agentExeInfo == null)) { parent.parent.taskLimiter.completed(taskid); return; }
+                                if ((obj.authenticated != 2) || (obj.agentExeInfo == null) || obj.agentPolicyChanging) { parent.parent.taskLimiter.completed(taskid); return; }
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
-                                const getme = new URL(obj.agentExeInfo.url);
+                                const getme = new URL(parent.agentBuilds.updateUrl(obj));
                                 const url = '*' + getme.pathname + getme.search;
                                 var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
                                 parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
@@ -1453,6 +1473,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                         break;
                     }
+                case 'agentbuildinfo': {
+                    parent.agentBuilds.receive(obj, command).catch(function (err) { parent.parent.debug('agentupdate', err.message); });
+                    break;
+                }
                 case 'sysinfo': {
                     if ((command.data != null) && (typeof command.data == 'object') && (typeof command.data.hash == 'string')) {
                         // Validate command.data.
@@ -1620,14 +1644,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     break;
                 }
                 case 'agentupdate': {
-                    if ((obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {
+                    if ((obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string') && !obj.agentPolicyChanging) {
+                        obj.agentUpdatePending = true;
                         var func = function agentUpdateFunc(argument, taskid, taskLimiterQueue) { // Medium priority task
                             // If agent disconnection, complete and exit now.
-                            if (obj.authenticated != 2) { parent.parent.taskLimiter.completed(taskid); return; }
+                            delete obj.agentUpdatePending;
+                            if ((obj.authenticated != 2) || obj.agentPolicyChanging) { parent.parent.taskLimiter.completed(taskid); return; }
 
                             // Agent is requesting an agent update
                             obj.agentCoreUpdateTaskId = taskid;
-                            const getme = new URL(obj.agentExeInfo.url);
+                            const getme = new URL(parent.agentBuilds.updateUrl(obj));
                             const url = '*' + getme.pathname + getme.search;
                             var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
                             parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
@@ -2189,7 +2215,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // If the hash matches or is null, no update required.
         if ((agentExeInfo.hash == agentHash) || (agentHash == '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0')) return 0;
         // If this is a macOS x86 or ARM agent type and it matched the universal binary, no update required.
-        if ((agentExeInfo.id == 16) || (agentExeInfo.id == 29)) {
+        if (!agentExeInfo.pinned && ((agentExeInfo.id == 16) || (agentExeInfo.id == 29))) {
             if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
                 if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
             } else {

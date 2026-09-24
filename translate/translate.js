@@ -19,6 +19,7 @@ var minifyLib = 2; // 0 = None, 1 = minify-js, 2 = HTMLMinifier
 var minify = null;
 
 var meshCentralSourceFiles = [
+    "../views/agentcatalog.handlebars",
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
     "../views/default.handlebars",
@@ -62,6 +63,7 @@ var meshCentralSourceFiles = [
 ];
 
 var minifyMeshCentralSourceFiles = [
+    "../views/agentcatalog.handlebars",
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
     "../views/default.handlebars",
@@ -86,6 +88,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/sharing-mobile.handlebars",
     "../views/mstsc.handlebars",
     "../views/ssh.handlebars",
+    "../public/scripts/agentbuildmanager.js",
     "../public/scripts/agent-desktop-0.0.2.js",
     "../public/scripts/agent-rdp-0.0.1.js",
     "../public/scripts/agent-redir-rtc-0.1.0.js",

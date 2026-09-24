@@ -3052,6 +3052,33 @@
             },
             "description": "This is used to add custom HTTP headers to all responses. For example setting \"httpHeaders\": { \"X-Frame-Options\":\"DENY\" } will add the X-Frame-Options header to all responses."
           },
+          "agentBuilds": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Agent build catalog import settings for this domain.",
+            "properties": {
+              "github": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "writeOnly": true,
+                    "description": "GitHub token used by this domain's administrators to browse and import builds. Actions downloads need Actions read, private releases need Contents read, and private PR lookup needs Pull requests read."
+                  },
+                  "artifactNames": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 16,
+                    "items": { "type": "string", "minLength": 1, "maxLength": 128 },
+                    "default": ["meshagent*", "meshservice*"],
+                    "description": "Case-insensitive artifact name patterns for workflow builds. An asterisk matches any text. Only successful runs with matching, unexpired artifacts within the download limit are listed."
+                  }
+                }
+              }
+            }
+          },
           "agentConfig": {
             "type": "array",
             "uniqueItems": true,

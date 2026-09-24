@@ -1130,6 +1130,7 @@ function CreateMeshCentralServer(config, args) {
                                         // Delete this node including network interface information, events and timeline
                                         removeCount++;
                                         db.Remove(node._id);                                 // Remove node with that id
+                                        db.Remove('ab' + node._id);
                                         db.Remove('if' + node._id);                          // Remove interface information
                                         db.Remove('nt' + node._id);                          // Remove notes
                                         db.Remove('lc' + node._id);                          // Remove last connect time

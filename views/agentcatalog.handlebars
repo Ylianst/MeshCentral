@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+<head><meta charset="utf-8" /><title>Agent builds</title></head>
+<body>
+    <div id="agentCatalogContent">
+        {{#each catalog.errors}}<p class="agent-error">{{this}}</p>{{/each}}
+        {{#each catalog.builds}}
+        <section class="agent-build" style="display:none" data-agent-group="builds" data-agent-build="{{id}}" data-agent-archived="{{archived}}" data-agent-name="{{name}} {{channel}}"><details open>
+            <summary class="agent-build-summary"><b class="agent-build-name">{{name}}</b> <span class="agent-muted">{{channel}} / {{artifacts.length}} files</span></summary>
+            <div class="agent-build-tools"><button type="button" data-build="{{id}}" onclick="agentManagerOpen('manage', {build:this.getAttribute('data-build')})">Manage build</button>{{#if archived}} <span>Archived</span>{{/if}}</div><details class="agent-provenance"><summary>Source and verification</summary>
+                {{#if commit}}<div class="agent-source">Source commit: {{#if sourceUrl}}<a href="{{sourceUrl}}" target="_blank" rel="noopener noreferrer">{{commit}}</a>{{else}}{{commit}}{{/if}} {{commitTime}}</div>{{/if}}
+                {{#if workflows}}<div class="agent-source">GitHub Actions: {{#each workflows}}<a href="{{url}}" title="{{id}}" target="_blank" rel="noopener noreferrer">{{name}}</a> {{/each}}</div>{{/if}}
+                {{#if provenance}}<div class="agent-source">Imported from {{provenance.kind}}: {{#if provenance.url}}<a href="{{provenance.url}}" target="_blank" rel="noopener noreferrer">{{provenance.repository}}{{#unless provenance.repository}}{{provenance.url}}{{/unless}}</a>{{/if}} {{provenance.tag}}</div>
+                {{#if provenance.runId}}<div class="agent-source">{{provenance.event}} / {{provenance.branch}} / {{provenance.headRepository}} / Run {{provenance.runId}}, attempt {{provenance.runAttempt}}</div>{{/if}}
+                {{#each provenance.downloads}}<details><summary>{{name}}: {{#if digestVerified}}Download SHA256 verified{{else}}No expected digest supplied{{/if}}</summary><div class="agent-hash">{{url}}<br />SHA256 <code>{{sha256}}</code></div></details>{{/each}}
+                <div class="agent-muted">Source details describe where the files were obtained. They do not prove which source code the binary contains or that it is safe to run.</div>{{/if}}
+                {{#if managed}}<div class="agent-source">Added {{uploadedAt}}. Agent type and desktop support were declared by the uploader.</div>{{/if}}<div class="agent-muted">File checks compare local bytes with the manifest. They do not test an agent on a device.</div>
+            </details>
+            <div class="agent-table"><div role="table" aria-label="Agent files">
+                <div role="rowgroup"><div role="row"><div role="columnheader">Agent file</div><div role="columnheader">Platform</div><div role="columnheader">Requirements</div><div role="columnheader" class="agent-number">Size</div><div role="columnheader">Verification / Usage</div></div></div>
+                <div role="rowgroup">
+                {{#each artifacts}}
+                    <div role="row" data-agent-row data-agent-file="{{filename}}" data-agent-hash="{{agentHash}}">
+                        <div role="cell" class="agent-file">{{filename}}</div>
+                        <div role="cell">{{platform}} / {{cpu}}</div>
+                        <div role="cell" class="agent-requirements">{{#if requirements}}{{requirements}}{{else}}Not specified{{/if}}</div>
+                        <div role="cell" class="agent-number"><span data-agent-bytes="{{size}}">{{size}}</span></div>
+                        <div role="cell"><button type="button" class="agent-usage-link" data-build="{{../id}}" data-file="{{filename}}" data-id="{{id}}" data-hash="{{agentHash}}" onclick="agentManagerOpen('usage',{build:this.getAttribute('data-build'),filename:this.getAttribute('data-file'),agentId:Number(this.getAttribute('data-id')),hash:this.getAttribute('data-hash')})">{{usage.installed}} installed / {{usage.pinned}} pinned</button><details><summary class="{{#if matches}}agent-match{{else}}agent-error{{/if}}">{{status}}</summary><div>ID {{id}} / {{#if kvm}}KVM{{else}}No KVM{{/if}}</div>{{#if signature}}<div>Embedded signature: {{signature}}</div>{{/if}}{{#if sha256}}<div class="agent-hash">SHA256 <code>{{sha256}}</code></div><div class="agent-hash">SHA384 <code>{{sha384}}</code></div>{{/if}}</details></div>
+                    </div>
+                {{/each}}
+                </div>
+            </div></div>
+        </details></section>
+        {{/each}}
+        <section data-agent-group="defaults">
+            <p class="agent-note">Counts are registered devices of each type, including offline, pinned and held agents.</p>
+            <div class="agent-table"><div role="table" aria-label="Current defaults">
+                <div role="rowgroup"><div role="row"><div role="columnheader">Agent file</div><div role="columnheader">Agent type</div><div role="columnheader" class="agent-number">Devices</div><div role="columnheader">Source</div><div role="columnheader" class="agent-number">Size</div><div role="columnheader">Update hash</div></div></div>
+                <div role="rowgroup">
+                {{#each catalog.defaults}}
+                    <div role="row" data-agent-row data-agent-file="{{filename}}" data-agent-hash="{{agentHash}}"><div role="cell" class="agent-file">{{filename}}</div><div role="cell">{{name}} <span class="agent-muted">({{id}})</span></div><div role="cell" class="agent-number agent-device-count"><span class="agent-count-label">Devices: </span>{{#if ../catalog.countsAvailable}}{{devices}}{{else}}Unknown{{/if}}</div><div role="cell">{{source}} / <button type="button" class="agent-usage-link" data-id="{{id}}" data-hash="{{agentHash}}" onclick="agentManagerOpen('usage',{agentId:Number(this.getAttribute('data-id')),hash:this.getAttribute('data-hash')})">{{usage.installed}} installed</button></div><div role="cell" class="agent-number"><span data-agent-bytes="{{size}}">{{size}}</span></div><div role="cell">{{#if agentHash}}<details><summary>SHA384</summary><div class="agent-hash"><code>{{agentHash}}</code></div></details>{{else}}Pending{{/if}}</div></div>
+                {{/each}}
+                </div>
+            </div></div>
+        </section>
+        <section data-agent-group="bundled" style="display:none">
+            <p class="agent-note">MeshCentral {{serverVersion}}: bundled files before signing or overrides. File hashes can differ from agent update hashes.</p>
+            <div class="agent-table"><div role="table" aria-label="Bundled agents">
+                <div role="rowgroup"><div role="row"><div role="columnheader">Agent file</div><div role="columnheader">Agent type</div><div role="columnheader" class="agent-number">Size</div><div role="columnheader">Verification</div></div></div>
+                <div role="rowgroup">
+                {{#each catalog.bundled}}
+                    <div role="row" data-agent-row data-agent-file="{{filename}}" data-agent-hash="{{agentHash}}"><div role="cell" class="agent-file">{{filename}}</div><div role="cell">{{name}} <span class="agent-muted">({{id}})</span></div><div role="cell" class="agent-number"><span data-agent-bytes="{{size}}">{{size}}</span></div><div role="cell"><details><summary>{{status}}</summary>{{#if sha256}}<div class="agent-hash">SHA256 <code>{{sha256}}</code></div><div class="agent-hash">SHA384 <code>{{sha384}}</code></div>{{/if}}</details></div></div>
+                {{/each}}
+                </div>
+            </div></div>
+        </section>
+        <p id="p44empty" style="display:none">No matching agent files.</p>
+    </div>
+</body>
+</html>

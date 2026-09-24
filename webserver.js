@@ -6264,10 +6264,67 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
+    const agentCatalog = require('./agentcatalog.js').CreateAgentCatalog(parent);
+    obj.agentBuilds = require('./agentbuilds.js').CreateAgentBuilds(obj, db, agentCatalog);
+    obj.agentBuildAdmin = require('./agentbuildadmin').CreateAgentBuildAdmin(obj, db, agentCatalog);
+
+    async function handleAgentBuildUpload(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) return;
+        const user = req.session && obj.users[req.session.userid];
+        let origin;
+        try { origin = new URL(req.headers.origin); } catch (ex) { }
+        if (!user || user.domain !== domain.id || user.siteadmin !== 0xFFFFFFFF || req.session.loginToken ||
+            req.headers['x-meshcentral-agentbuild'] !== '1' || !origin || !['http:', 'https:'].includes(origin.protocol) || origin.host !== req.headers.host ||
+            (req.headers['sec-fetch-site'] && req.headers['sec-fetch-site'] !== 'same-origin') ||
+            (domain.loginkey && domain.loginkey.indexOf(req.query.key) === -1)) { res.sendStatus(404); return; }
+        res.set('Cache-Control', 'no-store');
+        req.setTimeout(120000, function () { req.destroy(); });
+        try { res.json(await obj.agentBuildAdmin.receive(domain, user, req)); }
+        catch (ex) { if (!res.headersSent && !res.destroyed) res.status(400).json({ error: ex.message }); }
+    }
+
+
     // Handle a request to download a mesh agent
     obj.handleMeshAgentRequest = function (req, res) {
         var domain = getDomain(req, res);
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
+
+        if (req.query.agentbuild != null) {
+            const cookie = parent.decodeCookie(req.query.agentbuild, parent.loginCookieEncryptionKey, 10);
+            obj.agentBuilds.download(domain, cookie).then(function (file) {
+                res.set('Cache-Control', 'no-store');
+                res.set('Referrer-Policy', 'no-referrer');
+                setContentDispositionHeader(res, 'application/octet-stream', file.filename, null, file.filename);
+                res.send(file.data);
+            }).catch(function () { if (!res.headersSent) res.sendStatus(404); });
+            return;
+        }
+
+        if (req.query.catalog != null) {
+            domain = checkUserIpAddress(req, res);
+            if (domain == null) return;
+            const user = req.session && obj.users[req.session.userid];
+            if (!user || (user.siteadmin != 0xFFFFFFFF) || (user.domain != domain.id) ||
+                ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1))) { res.sendStatus(404); return; }
+            res.set('Cache-Control', 'no-store');
+            res.set('Referrer-Policy', 'no-referrer');
+            const key = (typeof req.query.key == 'string') ? ('&key=' + encodeURIComponent(req.query.key)) : '';
+            if (req.query.fragment != '1') { res.redirect(domain.url + '?viewmode=44' + key); return; }
+            Promise.all([agentCatalog.getCatalog(domain), new Promise(function (resolve) {
+                db.GetAgentTypeCounts(domain.id, function (err, counts) { resolve(err ? null : counts); });
+            })]).then(async function (results) {
+                const catalog = results[0], counts = results[1];
+                for (const agent of catalog.defaults) agent.devices = counts == null ? null : (counts[agent.id] || 0);
+                catalog.defaults.sort(function (a, b) { return b.devices - a.devices || a.id - b.id; });
+                catalog.countsAvailable = counts != null;
+                if (obj.agentBuildUsage) await obj.agentBuildUsage.catalogUsage(domain, catalog);
+                render(req, res, getRenderPage('agentcatalog', req, domain), getRenderArgs({
+                    catalog: catalog, serverVersion: parent.currentVer, lang: 'en'
+                }, req, domain), user);
+            }).catch(function (err) { parent.debug('web', 'Unable to read agent catalog: ' + err.message); if (!res.headersSent) res.sendStatus(500); });
+            return;
+        }
 
         // If required, check if this user has rights to do this
         if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
@@ -6746,6 +6803,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 response += '<td><a download href="' + originalUrl + '?meshcmd=' + agentinfo.id + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">' + agentinfo.rname.replace('agent', 'cmd') + '</a></td></tr>';
             }
             response += '</table>';
+            if (user.siteadmin == 0xFFFFFFFF) { response += '<a href="' + originalUrl + '?catalog=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">Agent builds</a> '; }
             response += '<a href="' + originalUrl + '?cores=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshCores</a> ';
             if (coreDumpsAllowed) { response += '<a href="' + originalUrl + '?dumps=1' + (req.query.key ? ('&key=' + encodeURIComponent(req.query.key)) : '') + '">MeshAgent Crash Dumps</a>'; }
             response += '</body></html>';
@@ -7537,6 +7595,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
                 obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
                 obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
+                obj.app.post(url + 'agentbuildupload.ashx', handleAgentBuildUpload);
                 obj.app.post(url + 'uploadmeshcorefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadMeshCoreFile);
                 obj.app.post(url + 'oneclickrecovery.ashx', obj.bodyParser.urlencoded({ extended: false }), handleOneClickRecoveryFile);
                 obj.app.get(url + 'userfiles/*', handleDownloadUserFiles);
@@ -10333,11 +10392,34 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return jsTags;
     }
 
+    var staticAssetVersions = {};
+    function getStaticAssetVersion(domain, filename) {
+        var override = (domain.webpublicpath != null) ? domain.webpublicpath : obj.parent.webPublicOverridePath;
+        var roots = override ? [override, obj.parent.webPublicPath] : [obj.parent.webPublicPath];
+        for (var i = 0; i < roots.length; i++) {
+            var filepath = obj.path.join(roots[i], filename);
+            try {
+                var stat = obj.fs.statSync(filepath);
+                if (!stat.isFile()) continue;
+                var stamp = stat.size + ':' + stat.mtimeMs + ':' + stat.ctimeMs, cached = staticAssetVersions[filepath];
+                if (!cached || cached.stamp !== stamp) {
+                    cached = staticAssetVersions[filepath] = { stamp: stamp, version: obj.crypto.createHash('sha256').update(obj.fs.readFileSync(filepath)).digest('hex').substring(0, 16) };
+                }
+                return cached.version;
+            } catch (ex) { }
+        }
+        return '';
+    }
+
     // Return the correct render page arguments.
     function getRenderArgs(xargs, req, domain, page) {
         var minify = (domain.minify == true);
         if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
         xargs.min = minify ? '-min' : '';
+        if ((page === 'default') || (page === 'default3')) {
+            xargs.agentBuildScriptVersion = getStaticAssetVersion(domain, 'scripts/agentbuildmanager' + xargs.min + '.js');
+            xargs.agentBuildStyleVersion = getStaticAssetVersion(domain, 'styles/agentcatalog.css');
+        }
         xargs.titlehtml = domain.titlehtml;
         xargs.title = (domain.title != null) ? domain.title : 'MeshCentral';
         if (
