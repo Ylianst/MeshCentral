@@ -492,6 +492,12 @@
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN"
       },
+      "_agentBuilds": {
+        "github": {
+          "token": "YOUR_GITHUB_TOKEN",
+          "artifactNames": [ "meshagent*", "meshservice*" ]
+        }
+      },
       "_agentConfig": [ "coreDumpEnabled=1" ],
       "_assistantConfig": [ "disableUpdate=1" ],
       "_sessionRecording": {

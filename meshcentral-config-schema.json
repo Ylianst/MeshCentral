@@ -3055,7 +3055,7 @@
           "agentBuilds": {
             "type": "object",
             "additionalProperties": false,
-            "description": "Agent build catalog import settings for this domain.",
+            "description": "Optional agent build catalog import settings for this domain. Public GitHub releases can be imported without a token or these settings.",
             "properties": {
               "github": {
                 "type": "object",
@@ -3065,7 +3065,7 @@
                     "type": "string",
                     "maxLength": 255,
                     "writeOnly": true,
-                    "description": "GitHub token used by this domain's administrators to browse and import builds. Actions downloads need Actions read, private releases need Contents read, and private PR lookup needs Pull requests read."
+                    "description": "Not required for public release downloads. Used for GitHub Actions artifacts, including PR and nightly builds, and private repositories. Actions downloads need Actions read, private releases need Contents read, and private PR lookup needs Pull requests read."
                   },
                   "artifactNames": {
                     "type": "array",
