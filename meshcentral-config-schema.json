@@ -589,6 +589,11 @@
           "default": true,
           "description": "Set to false to not allow temporary agents to be updated."
         },
+        "disableRecoveryAgent": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, rejects recovery agent connections (agents with capability bit 0x40)."
+        },
         "amtScanner": {
           "type": "boolean",
           "default": true,
