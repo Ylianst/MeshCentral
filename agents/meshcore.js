@@ -7483,7 +7483,7 @@ function sendNetworkUpdate(force) {
 			try {
                 var probableMainLanIp = getProbableMainLanIp();
                 if (probableMainLanIp != null) {
-                    netInfo.probable_main_lan_ip = probableMainLanIp;
+                    netInfo.probableMainLanIp = probableMainLanIp;
                 }
             } catch (ex) { }
         } else if (process.platform == 'linux') {
