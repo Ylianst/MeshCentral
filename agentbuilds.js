@@ -20,6 +20,10 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
         return (domain.meshAgentBinaries && domain.meshAgentBinaries[id]) || server.meshAgentBinaries[id];
     }
 
+    function agentType(domain, id) {
+        return defaultAgent(domain, id) || server.meshAgentsArchitectureNumbers[id];
+    }
+
     function held(agent) {
         const result = Object.assign({}, agent, { update: false });
         delete result.url;
@@ -76,7 +80,8 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
         else if (agent && agent.agentReportedHash === '0'.repeat(96)) state = 'disabled';
         else if (updating(agent)) state = 'updating';
         else if ((value.mode === 'pin') && agent && (agent.agentReportedHash === value.hash)) state = 'matched';
-        const result = { nodeid: node._id, name: node.name, agentId: node.agent.id, enrollment: node.firstconnect || 0, policy: value, status: state, serverUpdates: !!(base && base.update), canChange: !server.multiServer && !changing.has(node._id) && !updating(agent) };
+        const type = agentType(domain, node.agent.id);
+        const result = { nodeid: node._id, name: node.name, agentId: node.agent.id, enrollment: node.firstconnect || 0, policy: value, status: state, serverUpdates: !!(type && type.update), defaultAvailable: !!(base && base.hashhex), canChange: !server.multiServer && !changing.has(node._id) && !updating(agent) };
         if (agent && agent.agentReportedHash && !/^0+$/.test(agent.agentReportedHash)) result.reportedHash = agent.agentReportedHash;
         if (value.deployment && value.mode !== 'hold') {
             const docs = await get('abd' + node._id);
@@ -84,7 +89,7 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
             const progress = Object.assign({ state: 'pending' }, saved, { requestedAt: value.time, expectedHash: value.deployment.expectedHash });
             const since = value.deployment.requestedOnline ? value.time : progress.firstSeenAt;
             if (!progress.confirmedAt) {
-                if (state === 'disabled' || state === 'unavailable' || !result.serverUpdates) progress.state = 'blocked';
+                if (state === 'disabled' || state === 'unavailable' || !result.serverUpdates || (value.mode === 'default' && !result.defaultAvailable)) progress.state = 'blocked';
                 else if (since && (Date.now() - since >= 300000)) progress.state = 'unconfirmed';
                 else if (state === 'updating') progress.state = 'updating';
                 else if (progress.startedAt) progress.state = 'reconnecting';
@@ -138,18 +143,18 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
     }
 
     async function resolveCurrent(domain, nodeid, agentId, enrollment) {
-        const base = defaultAgent(domain, agentId);
+        const base = defaultAgent(domain, agentId), type = agentType(domain, agentId);
         try {
             const value = await policy(nodeid, enrollment);
-            if (value.mode === 'default') return { agent: base, policy: value };
-            if (value.mode === 'hold') return { agent: held(base), policy: value };
+            if (value.mode === 'default') return { agent: base || held(type), policy: value, error: base ? undefined : 'The server default agent file is unavailable. The installed binary is retained.' };
+            if (value.mode === 'hold') return { agent: held(type), policy: value };
             if ((value.mode !== 'pin') || (value.agentId !== agentId)) throw new Error('Pinned build does not match this agent architecture');
             const data = await readPinned(value);
-            const agent = Object.assign({}, base, {
+            const agent = Object.assign({}, type, {
                 id: agentId, desc: value.name, localname: value.filename, size: data.length, data: data,
                 hash: Buffer.from(value.hash, 'hex').toString('binary'), hashhex: value.hash,
                 fileHash: Buffer.from(value.fileHash, 'hex').toString('binary'), fileHashHex: value.fileHash,
-                update: !!(base && base.update), pinned: true, url: 'https://localhost' + domain.url + 'meshagents'
+                update: !!(type && type.update), pinned: true, url: 'https://localhost' + domain.url + 'meshagents'
             });
             delete agent.zdata;
             delete agent.zhash;
@@ -157,7 +162,7 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
             return { agent: agent, policy: value };
         } catch (ex) {
             server.debug('agentupdate', 'Holding updates for ' + nodeid + ': ' + ex.message);
-            return { agent: held(base), error: 'Pinned build or policy is unavailable. Updates are held.' };
+            return { agent: held(type), error: 'Pinned build or policy is unavailable. Updates are held.' };
         }
     }
 
@@ -185,7 +190,7 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
         const nodes = await get(cookie.n), value = await policy(cookie.n, nodes.length ? nodes[0].firstconnect : 0);
         if ((nodes.length !== 1) || (nodes[0].domain !== domain.id) || (value.mode !== 'pin') || (value.revision !== cookie.r)) throw new Error('Build policy changed');
         if (!nodes[0].agent || (nodes[0].agent.id !== value.agentId)) throw new Error('Agent architecture changed');
-        const base = defaultAgent(domain, value.agentId);
+        const base = agentType(domain, value.agentId);
         if (!base || !base.update) throw new Error('Agent updates are disabled');
         return { data: await readPinned(value), filename: value.filename };
     }
@@ -267,9 +272,10 @@ module.exports.CreateAgentBuilds = function (parent, db, catalog) {
             const current = await policy(node._id, node.firstconnect);
             if (command.revision !== current.revision) throw new Error('The device policy changed. Refresh and try again.');
             if (!['default', 'hold', 'pin'].includes(command.mode)) throw new Error('Invalid update policy');
+            if (command.mode === 'default' && !(defaultAgent(domain, node.agent.id) || {}).hashhex) throw new Error('The server default agent file is unavailable. Restore it before changing this policy.');
             let value = { mode: command.mode };
             if (command.mode === 'pin') {
-                if (!(defaultAgent(domain, node.agent.id) || {}).update) throw new Error('Agent updates are disabled on this server');
+                if (!(agentType(domain, node.agent.id) || {}).update) throw new Error('Agent updates are disabled on this server');
                 const live = parent.wsagents[node._id];
                 if (live && live.agentReportedHash === '0'.repeat(96)) throw new Error('This agent has disabled native updates');
                 const inventory = await catalog.getCatalog(domain, node.agent.id);

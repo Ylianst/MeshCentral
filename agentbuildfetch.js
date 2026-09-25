@@ -42,6 +42,7 @@ exports.createClient = function (transport = https, lookup = dns.lookup) {
             headers['X-GitHub-Api-Version'] = '2022-11-28';
             if (/\/actions\/artifacts\/\d+\/zip$/.test(url.pathname)) headers.Accept = 'application/vnd.github+json';
             if (options.token && authenticated) headers.Authorization = 'Bearer ' + options.token;
+            if (options.etag) headers['If-None-Match'] = options.etag;
         }
         const res = await new Promise((resolve, reject) => {
             let timer;
@@ -63,12 +64,24 @@ exports.createClient = function (transport = https, lookup = dns.lookup) {
             const next = parseUrl(new URL(res.headers.location || '', url).href);
             return response(next.href, options, redirects + 1, authenticated && next.origin === url.origin);
         }
+        if (res.statusCode === 304 && options.conditional) {
+            res.destroy();
+            return { res, url: sourceUrl(url.href) };
+        }
         if (res.statusCode !== 200) {
             res.destroy();
-            if (res.statusCode === 401 || res.statusCode === 403) throw new Error('Download denied or API rate limit reached. Check the GitHub token and repository read permissions.');
-            if (res.statusCode === 404) throw new Error('File or GitHub resource not found, or the token cannot access it.');
-            if (res.statusCode === 410) throw new Error('This GitHub artifact has expired. Select a newer build.');
-            throw new Error('Download failed (HTTP ' + res.statusCode + ').');
+            if (options.conditional && (res.statusCode === 403 || res.statusCode === 429)) {
+                const error = new Error('GitHub denied the release check or its rate limit was reached. The next check has been delayed.');
+                error.retryAt = Math.min(Date.now() + 7 * 86400000, Math.max(Date.now() + 3600000, (Number(res.headers['x-ratelimit-reset']) || 0) * 1000, Date.now() + (Number(res.headers['retry-after']) || 0) * 1000));
+                throw error;
+            }
+            let message = 'Download failed (HTTP ' + res.statusCode + ').';
+            if (res.statusCode === 401 || res.statusCode === 403) message = 'Download denied or API rate limit reached. Check the GitHub token and repository read permissions.';
+            if (res.statusCode === 404) message = 'File or GitHub resource not found, or the token cannot access it.';
+            if (res.statusCode === 410) message = 'This GitHub artifact has expired. Select a newer build.';
+            const error = new Error(message);
+            error.statusCode = res.statusCode;
+            throw error;
         }
         if ((res.headers['content-encoding'] && res.headers['content-encoding'] !== 'identity') || Number(res.headers['content-length']) > options.limit) {
             res.destroy(); throw new Error('Download exceeds the size limit or uses unsupported HTTP compression.');
@@ -90,8 +103,7 @@ exports.createClient = function (transport = https, lookup = dns.lookup) {
         if (options.sha256 && sha256 !== options.sha256) throw new Error('The downloaded SHA256 does not match the expected digest.');
         return { url: sourceUrl(url), finalUrl, size, sha256, digestVerified: !!options.sha256 };
     }
-    async function json(url, token, signal) {
-        const { res } = await response(url, { json: true, token, signal, limit: 4 * 1024 * 1024 });
+    async function readJson(res) {
         const chunks = []; let length = 0;
         try {
             for await (const chunk of res) {
@@ -102,5 +114,13 @@ exports.createClient = function (transport = https, lookup = dns.lookup) {
             return JSON.parse(Buffer.concat(chunks).toString('utf8'));
         } catch (ex) { res.destroy(); throw new Error('Unable to read the GitHub response.'); }
     }
-    return { download, json };
+    async function json(url, token, signal) {
+        const { res } = await response(url, { json: true, token, signal, limit: 4 * 1024 * 1024 });
+        return readJson(res);
+    }
+    async function conditionalJson(url, etag, signal) {
+        const { res } = await response(url, { json: true, conditional: true, etag, signal, limit: 4 * 1024 * 1024 });
+        return { unchanged: res.statusCode === 304, etag: res.headers.etag, data: res.statusCode === 304 ? null : await readJson(res) };
+    }
+    return { download, json, conditionalJson };
 };

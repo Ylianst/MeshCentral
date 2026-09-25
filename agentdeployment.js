@@ -77,6 +77,7 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
         if (!info.canChange) throw new Error('The device already has an update in progress.');
         if (job.mode !== 'hold' && info.status === 'offline') throw new Error('Device offline. It has not been scheduled.');
         if (job.mode !== 'hold' && (!info.serverUpdates || info.status === 'disabled')) throw new Error('Binary updates are disabled.');
+        if (job.mode === 'default' && info.defaultAvailable === false) throw new Error('The server default agent file is unavailable.');
         const file = job.files.find(x => x.agentId === info.agentId);
         if (job.mode === 'pin') {
             const option = info.options.find(x => x.id === job.build && file && x.filename === file.filename && x.sha256 === file.sha256);

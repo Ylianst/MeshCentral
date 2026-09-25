@@ -5,6 +5,89 @@ which build individual devices use. Builds can come from local files, public
 download URLs, GitHub releases or GitHub Actions artifacts. Adding a build to
 the catalog does not install it or change the server's default installers.
 
+## Default agent downloads
+
+MeshCentral obtains its default agent binaries from public GitHub releases.
+The agent executables are not included in the server package. The release manifest selects
+an exact repository, tag, asset, size and full-file SHA384 for each file. It can
+reference several repositories and release versions. These downloads do not
+require a GitHub token and do not use Actions artifacts or a moving `latest` URL.
+
+At startup, MeshCentral checks the persistent cache before signing Windows
+agents or loading installer and update files. Missing files are downloaded and
+verified before being moved into the cache. A complete cache works without
+internet access. A failed download leaves that file unavailable and reports the
+reason, while the server continues starting so administrators can recover it.
+Download attempts have a combined two-minute startup deadline.
+
+Open **Current defaults > Default downloads** to see file status and retry. The
+retry also checks uploaded and imported builds in the default domain for files
+with the expected release hashes. After restoring missing files, restart
+MeshCentral to load them. Closing the dialog does not cancel these downloads.
+Only administrators in the default domain can restore the shared defaults.
+
+For offline installation, copy the release files into
+`meshcentral-data/agentbuilds/` using the filenames in the manifest, or upload
+native binaries through **Upload build** and select **Check files**. Files listed
+in the release manifest must match its size and SHA384. APKs, universal macOS
+binaries and other files unsupported by the native upload review must be copied
+into the directory. Existing `meshcentral-data/agents/` and per-domain
+`agents-<domain>/` overrides retain their precedence.
+
+To disable automatic downloads, merge this into `config.json`:
+
+```json
+{
+  "settings": {
+    "agentDownloads": {
+      "enabled": false
+    }
+  }
+}
+```
+
+The default manifest is `agents/agent-defaults.json` in the MeshCentral package.
+An administrator can supply another using `settings.agentDownloads.manifest`,
+with a path relative to the data directory or an absolute path. This is a
+server-wide setting: choosing different defaults affects installers and devices
+that follow the server default after a restart. Per-device pins and holds still
+apply. Changing the manifest requires a restart.
+
+A missing default does not prevent using a pinned or uploaded build. Devices
+following that missing default retain their installed binary. Selecting a return
+to the default is blocked until the file is restored and loaded.
+
+The initial defaults preserve the binaries previously shipped in MeshCentral
+1.2.6, using the `legacy-1.2.6` migration releases in MeshAgent and
+MeshCentralAndroidAgent. Maintainers must publish those releases before
+publishing this MeshCentral change. The release workflow verifies every pinned
+download before the npm release. See [Agent release format](agent-releases.md)
+for the publication order.
+
+## Release update checks
+
+MeshCentral checks each repository in its default manifest once a day, with a
+small random delay. Checks are shared by all domains and devices on the server.
+The first check runs shortly after startup. **Default downloads > Check for
+updates** starts a manual check. Repeated manual requests within one minute
+reuse the previous result.
+
+Only published stable version tags with an `agent-release.json` asset are
+reported. Drafts, prereleases and migration releases are excluded. The dialog
+shows the latest release, current default tags, last successful check and any
+error. Results and HTTP validators are cached while the server is running.
+Failed requests retain the previous result and delay subsequent checks.
+
+Checks do not download binaries, change defaults or deploy agents. Import an
+available release to inspect its files, check device requirements and test it on
+selected devices. Administrators can then choose a reviewed default manifest
+and restart the server. Pins and holds retain their policies.
+
+Set `settings.agentDownloads.checkIntervalHours` to an integer from 1 to 168
+to change the schedule, or 0 for manual checks only. Setting
+`settings.agentDownloads.enabled` to false disables both scheduled and manual
+network checks as well as downloads. Public release checks need no GitHub token.
+
 ## Access and navigation
 
 Open **My Server > Agent builds**. On mobile, select **Agent builds** from the
@@ -271,6 +354,8 @@ Files are stored beneath `agentbuilds` in the server's data directory, normally
 | `agentbuilds/catalog/<domain-hash>/custom-<build-id>/` | Published uploads and imports, with binaries and `manifest.json`. |
 | `agentbuilds/catalog/<domain-hash>/.state/` | Archive state for catalog entries. |
 | `agentbuilds/<sha256>` | Binary copies retained for pinned deployments. |
+| `agentbuilds/defaults/<sha384>/<filename>` | Verified default release files, retained across server upgrades. |
+| `agentbuilds/<filename>` | Manually supplied default files for offline installation. |
 
 Device policies, deployment jobs and reported build identities are stored in the
 database. Back up the database and `agentbuilds` directory together. Container

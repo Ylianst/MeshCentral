@@ -16,6 +16,13 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Verify agent release downloads and package contents
+        run: |
+          npm pack --dry-run --json --ignore-scripts > "$RUNNER_TEMP/meshcentral-package.json"
+          node agents/check-releases.js --package "$RUNNER_TEMP/meshcentral-package.json"
       - name: Release
         uses: SerenModz21/github-action-npm-release@master
         id: release

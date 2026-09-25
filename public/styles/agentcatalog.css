@@ -110,6 +110,8 @@
     #p10agentBuild .agent-build-fields { grid-template-columns: 86px minmax(0, 1fr); }
 }
 #agentManagerBody { max-height: calc(100vh - 210px); overflow: auto; overflow-wrap: anywhere; }
+#dialog.agent-manager-dialog { top: 5vh; max-height: 90vh; }
+#dialog.agent-manager-dialog #agentManagerBody { max-height: calc(90vh - 110px); }
 #agentManagerBody p { margin: 8px 0; }
 #agentManagerBody progress { width: 100%; }
 .agent-manager-field { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px; align-items: center; margin: 8px 0; }

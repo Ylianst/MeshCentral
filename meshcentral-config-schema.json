@@ -574,6 +574,29 @@
           "default": 0,
           "description": "How many days to retain a BitLocker recovery key after the agent last read it, so a key stays available while a volume is locked or detached. Especially useful for Bitlocker To Go devices. 0 (default) disables carry-forward: only keys read in the latest scan are kept."
         },
+        "agentDownloads": {
+          "type": "object",
+          "description": "Download missing default agent files from the exact public GitHub releases in the default release manifest. Public release downloads do not require a GitHub token.",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true,
+              "description": "Allow downloads of missing default files. Set to false for offline operation; verified cached files and locally supplied files are still loaded."
+            },
+            "manifest": {
+              "type": "string",
+              "description": "Optional default release manifest path, relative to meshcentral-data or absolute. Otherwise use agents/agent-defaults.json shipped with MeshCentral. Changing this file requires a restart."
+            },
+            "checkIntervalHours": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 168,
+              "default": 24,
+              "description": "Check the configured repositories for stable releases at this interval, with a small random delay. Zero disables scheduled checks. Checks never change defaults or deploy agents. All network checks are disabled when enabled is false."
+            }
+          }
+        },
         "noAgentUpdate": {
           "type": "integer",
           "default": 0,

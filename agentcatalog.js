@@ -156,7 +156,9 @@ module.exports.CreateAgentCatalog = function (parent, directory) {
             if (domain.meshAgentBinaries && domain.meshAgentBinaries[id]) { source = 'Domain override'; }
             else if (path.resolve(agent.path) == path.join(root, agent.localname)) { source = 'Bundled'; }
             else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'signedagents')) { source = 'Server signed'; }
-            defaults.push({ id: Number(id), name: agent.desc, filename: agent.localname, source: source, size: agent.size, agentHash: agent.hashhex });
+            else if (agent.release) { source = 'Release'; }
+            else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'agentbuilds')) { source = 'Local file'; }
+            defaults.push({ id: Number(id), name: agent.desc, filename: agent.localname, source: source, size: agent.size, agentHash: agent.hashhex, release: agent.release });
         }
         for (const id of Object.keys(architectures).sort((a, b) => a - b)) {
             if (agentId != null) continue;
@@ -214,7 +216,7 @@ module.exports.CreateAgentCatalog = function (parent, directory) {
             }
             if (build.artifacts.length) builds.push(build);
         }
-        return { defaults: defaults, bundled: bundled, builds: builds, errors: errors };
+        return { defaults: defaults, bundled: bundled, builds: builds, errors: errors, downloads: parent.agentDefaults ? parent.agentDefaults.status() : null };
     }
 
     async function getArtifact(buildId, agentId, selectedFile, domain = {}) {
@@ -254,7 +256,7 @@ module.exports.CreateAgentCatalog = function (parent, directory) {
     async function identify(domain, agentId, hash, inventory) {
         if (!/^[a-f0-9]{96}$/.test(hash) || /^0+$/.test(hash)) return [];
         const matches = [], active = (domain.meshAgentBinaries && domain.meshAgentBinaries[agentId]) || parent.meshAgentBinaries[agentId];
-        if (active && active.hashhex === hash) matches.push({ group: 'defaults', name: 'Server default', filename: active.localname, hash: hash });
+        if (active && active.hashhex === hash) matches.push(Object.assign({ group: 'defaults', name: 'Server default', filename: active.localname, hash: hash }, active.release));
         for (const build of inventory.builds) {
             for (const artifact of build.artifacts) {
                 if (!artifact.matches || artifact.id !== agentId || artifact.agentHash !== hash) continue;

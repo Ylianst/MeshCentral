@@ -39,7 +39,7 @@ function agentManagerOpen(mode, options) {
     if (xxdialogMode || !userinfo || userinfo.siteadmin != 0xFFFFFFFF) return false;
     var button = Q('idx_dlgOkButton'), cancel = Q('idx_dlgCancelButton');
     agentManager = Object.assign({ mode: mode, offset: 0, buttonText: button.tagName === 'INPUT' ? button.value : button.textContent, cancelText: cancel ? (cancel.tagName === 'INPUT' ? cancel.value : cancel.textContent) : '' }, options || {});
-    showAgentManagerDialog(mode === 'import' ? "Import agent build" : mode === 'upload' ? "Upload agent build" : mode === 'usage' ? "Build usage" : mode === 'manage' ? "Manage agent build" : "Agent deployments");
+    showAgentManagerDialog(mode === 'defaults' ? "Default agent downloads" : mode === 'import' ? "Import agent build" : mode === 'upload' ? "Upload agent build" : mode === 'usage' ? "Build usage" : mode === 'manage' ? "Manage agent build" : "Agent deployments");
     if (Q('dialog')) Q('dialog').classList.add('agent-manager-dialog');
     agentBuildCancelButton("Close");
     agentManagerHtml('<p>' + "Loading..." + '</p>'); agentManagerButton("Close", true);
@@ -50,7 +50,59 @@ function agentManagerOpen(mode, options) {
     if (mode === 'bulk') agentManagerBulkForm();
     if (mode === 'jobs') agentManagerJobs(0);
     if (mode === 'job') agentManagerJob(agentManager.id, 0);
+    if (mode === 'defaults') agentManagerDefaults(false);
     return false;
+}
+function agentManagerDefaults(retry) {
+    var current = agentManager;
+    if (retry) current.refreshCatalog = true;
+    if (current.timer) clearTimeout(current.timer);
+    agentManagerButton("Checking...", false);
+    agentManagerRequest('defaults', { op: retry === 'updates' ? 'updates' : retry ? 'retry' : 'status' }).then(function (result) {
+        if (agentManager !== current) return;
+        var html = '<p>' + "These release files supply the server defaults. Checking files restores missing downloads without changing device policies." + '</p>';
+        if (!result.files.length) html += '<p>' + "No default release versions are configured. Configure a release manifest or supply local files." + '</p>';
+        if (!result.enabled) html += '<p>' + "Automatic downloads are disabled. Local files and matching uploaded builds can still be used." + '</p>';
+        if (result.updates) {
+            html += '<div class="agent-manager-row"><b>' + "Release updates" + '</b>';
+            if (result.canManage && result.updates.enabled) html += ' <button type="button" onclick="agentManagerDefaults(\'updates\')"' + (result.updates.checking ? ' disabled' : '') + '>' + (result.updates.checking ? "Checking..." : "Check for updates") + '</button>';
+            html += '</div><div class="agent-muted">' + "Checking for releases does not change the server defaults or install agents." + '</div>';
+            if (!result.updates.intervalHours) html += '<p>' + "Scheduled release checks are disabled." + '</p>';
+            for (var i = 0; i < result.updates.repositories.length; i++) {
+                var repository = result.updates.repositories[i];
+                html += '<div class="agent-manager-row"><b>' + EscapeHtml(repository.repository) + '</b><div class="agent-muted">' + EscapeHtml(repository.tags.join(', ')) + '</div>';
+                if (repository.latest) {
+                    html += '<div>' + (repository.latest.updateAvailable ? "Release available" : "Latest stable release") + ': <a href="' + EscapeHtml(repository.latest.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + EscapeHtml(repository.latest.tag) + '</a></div>';
+                    if (repository.latest.updateAvailable) html += '<div class="agent-muted">' + "Import the release to review its files and test it on selected devices." + '</div>';
+                } else html += '<div>' + (repository.lastSuccess ? "No stable release with an agent manifest found." : "Not checked") + '</div>';
+                if (repository.lastSuccess) html += '<div class="agent-muted">' + "Last successful check" + ': ' + EscapeHtml(new Date(repository.lastSuccess).toLocaleString()) + '</div>';
+                if (repository.error) html += '<div class="agent-error">' + EscapeHtml(repository.error) + '</div>';
+                html += '</div>';
+            }
+        }
+        if (result.restartRequired) html += '<p role="status"><b>' + "Files ready. Restart MeshCentral to load the restored defaults." + '</b></p>';
+        if (!result.busy) {
+            for (var i = 0; i < result.errors.length; i++) html += '<p class="agent-error">' + EscapeHtml(result.errors[i]) + '</p>';
+        }
+        if (result.error) html += '<p class="agent-error">' + EscapeHtml(result.error) + '</p>';
+        for (var i = 0; i < result.files.length; i++) {
+            var file = result.files[i];
+            html += '<div class="agent-manager-row"><b>' + EscapeHtml(file.filename) + '</b><span>' + EscapeHtml(file.status) + '</span><div class="agent-muted"><a href="' + EscapeHtml(file.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + EscapeHtml(file.repository + ' / ' + file.tag) + '</a></div>';
+            if (file.status === 'Downloading') html += '<progress max="' + file.size + '" value="' + (file.received || 0) + '"></progress>';
+            html += '</div>';
+        }
+        html += '<p>' + "For offline recovery, upload the required release files into Agent builds, then check files here. Files must match the configured release hashes." + '</p>';
+        if (!result.canManage) html += '<p>' + "Manage shared defaults from the default server domain." + '</p>';
+        if (result.busy) html += '<p role="status">' + "Checking files. You can close this dialog while downloads continue." + '</p>';
+        agentManagerHtml(html);
+        current.submit = result.canManage && result.files.length ? function () { agentManagerDefaults(true); } : null;
+        agentManagerButton(result.busy ? "Checking..." : current.submit ? "Check files" : "Close", !result.busy);
+        if (result.busy || (result.updates && result.updates.checking)) current.timer = setTimeout(function () { if (agentManager === current) agentManagerDefaults(false); }, 1000);
+        else if (current.refreshCatalog || result.restartRequired) { current.refreshCatalog = false; refreshAgentCatalog(); }
+    }).catch(function (error) {
+        if (agentManager !== current) return;
+        agentManagerError(error); current.submit = function () { agentManagerDefaults(false); }; agentManagerButton("Retry", true);
+    });
 }
 function agentManagerSubmit() {
     if (!agentManager || agentManager.busy) return false;

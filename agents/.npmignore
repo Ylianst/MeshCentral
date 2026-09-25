@@ -1,0 +1,6 @@
+/MeshService*.exe
+/MeshConsole*.exe
+/MeshAgent-*
+/MeshCmd*.exe
+/meshagent_*
+/agents_*/

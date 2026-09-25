@@ -20463,6 +20463,7 @@
                 var match = matches[i], label = EscapeHtml(match.name) + ' / ' + EscapeHtml(match.filename);
                 if (userinfo.siteadmin == 0xFFFFFFFF && match.group) label = '<a href="#" onclick="return openInstalledAgentBuild(' + i + ')">' + label + '</a>';
                 html += '<div>' + label + '</div>';
+                if (match.tag && /^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) html += '<div><a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + EscapeHtml(match.repository + ' / ' + match.tag) + '</a></div>';
                 if (match.commit) {
                     var commit = '<code title="' + EscapeHtml(match.commit) + '">' + EscapeHtml(match.commit.substring(0, 12)) + '</code>';
                     if (/^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) commit = '<a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + commit + '</a>';
@@ -20575,6 +20576,7 @@
 
         function agentBuildApplyReason(pin, option, changed) {
             if (!agentBuildDevice.canChange) return agentBuildDevice.error || (agentBuildDevice.status === 'updating' ? "Wait for the agent update to finish." : "Policy changes are temporarily unavailable. Refresh to try again.");
+            if (changed && Q('p10buildPolicy').value === 'default' && agentBuildDevice.defaultAvailable === false) return "The server default agent file is unavailable. Restore it before changing this policy.";
             if (!pin || !changed) return '';
             if (!agentBuildDevice.serverUpdates) return "Installation blocked: binary updates are disabled on this server.";
             if (agentBuildDevice.status === 'disabled') return "Installation blocked: this device has disabled binary updates. Passing the runtime checks does not enable updates.";
@@ -20644,7 +20646,7 @@
                 }
                 if (agentCatalogFocus && visible && section.getAttribute('data-agent-build') === agentCatalogFocus.build && section.getAttribute('data-agent-archived') === 'true') { group = 'archived'; Q('p44group').value = group; }
                 var selected = (section.getAttribute('data-agent-archived') === 'true' ? 'archived' : section.getAttribute('data-agent-group')) === group;
-                section.style.display = (selected && visible) ? '' : 'none';
+                section.style.display = (selected && (visible || group === 'defaults')) ? '' : 'none';
                 if (selected) { count += visible; if (search && section.firstElementChild.tagName === 'DETAILS') section.firstElementChild.open = true; }
             }
             QH('p44count', (count === 1) ? "1 file" : format("{0} files", count));

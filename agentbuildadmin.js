@@ -7,8 +7,37 @@ exports.CreateAgentBuildAdmin = function (parent, db, catalog) {
     const imports = require('./agentbuildimport').CreateAgentBuildImport(uploads);
     parent.agentBuildUsage = require('./agentbuildusage').CreateAgentBuildUsage(parent, db);
     const deployments = require('./agentdeployment').CreateAgentDeployment(parent, db, catalog, parent.agentBuilds);
+    let defaultDownload = null, defaultError = null;
     async function command(domain, user, request, loginToken) {
         storage.admin(domain, user, loginToken);
+        if (request.area === 'defaults') {
+            const defaults = parent.parent.agentDefaults;
+            if (!defaults) throw new Error('Default agent downloads are unavailable.');
+            if (!['status', 'retry', 'updates'].includes(request.op)) throw new Error('Invalid operation');
+            if (request.op === 'updates') {
+                if (domain.id !== '') throw new Error('Manage shared defaults from the default server domain.');
+                defaults.checkUpdates().catch(() => {});
+            }
+            if (request.op === 'retry') {
+                if (domain.id !== '') throw new Error('Manage shared defaults from the default server domain.');
+                if (!defaultDownload && !defaults.status().busy) {
+                    defaultError = null;
+                    defaultDownload = (async function () {
+                        const files = [], expected = defaults.status().files, inventory = await catalog.getCatalog(domain);
+                        for (const build of inventory.builds) {
+                            for (const artifact of build.artifacts) {
+                                if (!artifact.matches || !expected.some(x => x.sha384 === artifact.sha384 && x.size === artifact.size)) continue;
+                                const item = await catalog.getArtifact(build.id, artifact.id, artifact.filename, domain);
+                                files.push({ path: item.path, size: artifact.size, sha384: artifact.sha384 });
+                            }
+                        }
+                        await defaults.prepare(files);
+                    })().catch(err => { defaultError = err.message; }).finally(() => { defaultDownload = null; });
+                    parent.parent.DispatchEvent(['*', user._id], null, { etype: 'server', action: 'agentbuildcatalog', domain: domain.id, userid: user._id, username: user.name, msg: 'Checking default agent downloads' });
+                }
+            }
+            return Object.assign(defaults.status(), { busy: !!defaultDownload || defaults.status().busy, error: defaultError, canManage: domain.id === '' });
+        }
         if (request.area === 'import') return imports.command(domain, user, request, loginToken);
         if (request.area === 'upload') return uploads.command(domain, user, request, loginToken);
         if (request.area === 'deployment') return deployments.command(domain, user, request, loginToken);
