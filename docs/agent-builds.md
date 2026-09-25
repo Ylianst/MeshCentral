@@ -274,14 +274,14 @@ Choose an update policy:
 
 | Policy | Behavior |
 | --- | --- |
-| Follow server default | Uses the server's normal agent selection and domain overrides. Returning to this policy can downgrade a testing agent. |
-| Hold installed binary | Stops server-managed binary updates for this device. It does not save a copy of the installed binary or stop agent core updates. |
-| Pin selected build | Keeps the device on the exact file selected from the catalog, including across reconnects and server restarts. |
+| Follow server default | Uses the server's normal agent selection and domain overrides. Switching back to this policy can replace a pinned file with an older one. |
+| Keep the installed agent file | Stops server-managed agent updates for this device. It does not save a copy of the installed file or stop agent core updates. |
+| Pin a build | Keeps the device on the exact file selected from the catalog, including across reconnects and server restarts. |
 
 For a pin, select both the **Build** and **Agent file**. Only files with the
 same MeshAgent type ID are offered. Review the compatibility result, acknowledge
 that you can recover the device locally, and select **Install and pin**.
-Use **Apply** for the Default and Hold policies.
+Use **Apply** for the other two policies.
 
 Compatibility checks query the connected device without executing the candidate
 binary. They can check Linux libc, executable loaders and required libraries,
@@ -301,16 +301,17 @@ Saving a policy can disconnect the agent and interrupt active sessions. The
 binary update may restart its service. Offline devices apply a saved policy on
 their next connection.
 
-The dialog reports policy saving, binary transfer, reconnect and verification.
-**Build installed and verified** means the agent reported the expected update
-hash. A saved policy alone does not establish that the build is installed.
-Hold completes when its policy is saved because it requests no binary replacement.
+While a change is in flight the dialog reports policy saving, file transfer,
+reconnect and verification as numbered steps. **Build installed and verified**
+means the agent reported the expected update hash. A saved policy alone does not
+establish that the build is installed. Keeping the installed agent file completes
+as soon as its policy is saved, because it requests no replacement.
 
 Closing the device dialog does not cancel a saved policy. Reopen it to check
-progress. **Installed build and policy** identifies matching catalog files using
-the last reported hash, with source links when available. An unidentified binary
-can still report its compiled version, but version metadata is not independent
-proof of publisher identity.
+progress. The **Installed** row identifies matching catalog files using the last
+reported hash, and **Build details** holds the source links, the reported
+revision and the hashes. An unidentified file can still report its compiled
+version, but version metadata is not independent proof of publisher identity.
 
 ## Deploy to several devices
 

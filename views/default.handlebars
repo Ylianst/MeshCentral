@@ -15,7 +15,7 @@
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
     <link type="text/css" href="styles/agentcatalog.css?v={{{agentBuildStyleVersion}}}" media="screen" rel="stylesheet" />
-    <script src="scripts/agentbuildmanager{{{min}}}.js?v={{{agentBuildScriptVersion}}}"></script>
+    <script src="{{{agentBuildScript}}}?v={{{agentBuildScriptVersion}}}"></script>
     {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
@@ -1345,10 +1345,15 @@
             </div>
             <div id=p44 style="display:none">
                 <div id="p44info">
-                    <div id="p44title"><h1>Agent builds</h1></div>
-                    <div class="areaHead"><div class="agent-catalog-toolbar"><label for="p44group" class="visually-hidden">Show</label><select id="p44group" aria-label="Show" onchange="filterAgentCatalog()"><option value="defaults">Current defaults</option><option value="builds">Additional builds</option><option value="bundled">Bundled agents</option><option value="archived">Archived builds</option></select><input id="p44search" type="search" placeholder="Filter agent files" aria-label="Filter agent files" oninput="filterAgentCatalog()" /><input id="p44refresh" value="Refresh" type="button" onclick="refreshAgentCatalog()" /><input value="Upload build" type="button" onclick="agentManagerOpen('upload')" /><input value="Import build" type="button" onclick="agentManagerOpen('import')" /><input value="Deployments" type="button" onclick="agentManagerOpen('jobs')" /><span id="p44count"></span></div></div>
-                    <p id="p44status" role="status" aria-live="polite"></p>
-                    <p class="agent-note">To install a build, open a device and click its Mesh Agent entry.</p><div id="p44content"></div>
+                    <div id="p44head">
+                        <div id="p44title"><h1>Agent builds</h1></div>
+                        <div class="areaHead"><div class="agent-catalog-toolbar"><div class="agent-catalog-actions"><input value="Upload build" type="button" onclick="agentManagerOpen('upload')" /><input value="Import build" type="button" onclick="agentManagerOpen('import')" /><input value="Deployments" type="button" onclick="agentManagerOpen('jobs')" /><input id="p44defaults" value="Default downloads" type="button" style="display:none" onclick="agentManagerOpen('defaults')" /></div><div class="agent-catalog-filters"><label for="p44group">Show</label><select id="p44group" onchange="filterAgentCatalog()"><option value="all">All agent files</option><option value="defaults">Current defaults</option><option value="builds">Additional builds</option><option value="bundled">Bundled agents</option><option value="archived">Archived builds</option></select><label for="p44search" class="visually-hidden">Filter agent files</label><input id="p44search" type="search" placeholder="Filter agent files" oninput="filterAgentCatalog()" /><input id="p44refresh" value="Refresh" type="button" onclick="refreshAgentCatalog()" /></div></div></div>
+                        <p id="p44count" role="status" aria-live="polite"></p>
+                        <p id="p44focus"></p>
+                        <p id="p44status" role="status" aria-live="polite"></p>
+                        <p id="p44install" class="agent-note">To install a build, open a device and click its Mesh Agent entry.</p>
+                    </div>
+                    <div id="p44list"><div id="p44content"></div><p id="p44empty"></p></div>
                 </div>
             </div>
             <div id=p50 style="display:none">
@@ -20266,15 +20271,26 @@
             return (v === 9) ? 1 : Math.floor(v / 10);
         }
 
-        function showAgentManagerDialog(title) {
+        function showAgentManagerDialog(title, size) {
             setDialogMode(2, title, 43, function (ok) { if (ok) agentManagerSubmit(); else agentManagerClosed(); }, '<div id="agentManagerBody"></div>');
+            // id_dialogclose calls setDialogMode() directly and never reaches xxdialogFunc, and it is
+            // tabindex=0 with its own onkeypress, so both paths need wiring or the upload, the import,
+            // the staged draft and the poll timers are left running.
+            var manager = agentManager, closer = Q('id_dialogclose');
+            var cleanup = function () { if (agentManager === manager) agentManagerClosed(); };
+            if (closer) { closer.addEventListener('click', cleanup, { once: true }); closer.addEventListener('keypress', cleanup, { once: true }); }
         }
         function closeAgentManagerDialog() { setDialogMode(0); }
         function queueAgentBuildDeployment(nodeids) {
             setDialogMode(0); agentManagerOpen('bulk', { nodeids: nodeids });
         }
 
-        var agentBuildRequestId = 0, agentBuildDevice = null, agentBuildNodeId = '', agentBuildTimer = null, agentBuildPoll = null, agentBuildButtonText = '', agentBuildCancelText = '', agentBuildOperation = null, agentBuildDone = false, agentBuildRequestOp = '', agentBuildStale = false;
+        var agentBuildRequestId = 0, agentBuildDevice = null, agentBuildNodeId = '', agentBuildTimer = null, agentBuildPoll = null, agentBuildButtonText = '', agentBuildCancelText = '', agentBuildOperation = null, agentBuildRequestOp = '', agentBuildStale = false, agentBuildChanged = false, agentBuildBlocked = true, agentBuildWatched = false, agentBuildReset = false;
+        var agentBuildModes = {
+            'default': { input: 'p10buildModeDefault', row: 'p10buildRowDefault', note: 'p10buildNoteDefault' },
+            'hold': { input: 'p10buildModeHold', row: 'p10buildRowHold', note: 'p10buildNoteHold' },
+            'pin': { input: 'p10buildModePin', row: 'p10buildRowPin', note: 'p10buildNotePin' }
+        };
         function canManageAgentBuild(node) {
             return userinfo && ((features2 & 0x100) == 0) && node && (node.mtype == 2) && node.agent && !(node.agent.caps & 0x60) && !((meshes[node.meshid] || {}).flags & 1) && ((GetNodeRights(node) >>> 0) == 0xFFFFFFFF);
         }
@@ -20284,25 +20300,72 @@
             if (button.tagName == 'INPUT') { button.value = text; } else { button.textContent = text; }
         }
 
+        function agentBuildCancelButton(text) {
+            var button = Q('idx_dlgCancelButton');
+            if (button) { if (button.tagName == 'INPUT') { button.value = text; } else { button.textContent = text; } }
+        }
+
+        // The button keeps taking focus while blocked, otherwise the reason it points at is unreachable.
+        function agentBuildOk(enabled) {
+            agentBuildBlocked = !enabled;
+            var button = Q('idx_dlgOkButton');
+            if (!button) return;
+            button.disabled = false;
+            button.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+            if (enabled) { button.classList.remove('agent-build-off'); } else { button.classList.add('agent-build-off'); }
+        }
+
+        function agentBuildShowReason() {
+            if (Q('p10buildApplyStatus')) Q('p10buildApplyStatus').scrollIntoView({ block: 'nearest' });
+            if ((QS('p10buildConfirm').display !== 'none') && !Q('p10buildCompatible').checked) Q('p10buildCompatible').focus();
+        }
+
+        function agentBuildMode() { var x = Q('p10agentBuild').querySelector('input[name="p10buildPolicy"]:checked'); return x ? x.value : 'default'; }
+        function agentBuildSetMode(mode) { if (agentBuildModes[mode]) Q(agentBuildModes[mode].input).checked = true; }
+
+        function agentBuildChoiceHtml(mode, label, body) {
+            var ids = agentBuildModes[mode];
+            return '<div class="agent-choice" id="' + ids.row + '"><label class="agent-choice-label" for="' + ids.input + '"><input type="radio" class="form-check-input" name="p10buildPolicy" id="' + ids.input + '" value="' + mode + '" onchange="agentBuildSelectionChanged(true)" /><span>' + label + '</span></label><div class="agent-choice-note" id="' + ids.note + '"></div>' + (body || '') + '</div>';
+        }
+
+        function agentBuildField(label, value) { return '<div class="agent-build-field"><span>' + label + '</span><div>' + value + '</div></div>'; }
+
         function showAgentBuild() {
             if (xxdialogMode || !canManageAgentBuild(currentNode)) return false;
             agentBuildNodeId = currentNode._id;
-            var html = '<div id="p10agentBuild"><div id="p10buildProgress" role="status" aria-live="polite" style="display:none"></div><div id="p10buildContent"><div class="agent-build-toolbar"><b id="p10buildDevice">' + EscapeHtml(currentNode.name) + '</b><a href="#" onclick="refreshAgentBuild(true);return false">' + "Refresh" + '</a></div>';
-            html += '<div id="p10buildStatus" role="status" aria-live="polite"></div><div id="p10buildControls" style="display:none">';
-            html += '<div class="agent-build-fields"><label for="p10buildPolicy">' + "Update policy" + '</label><select id="p10buildPolicy" onchange="agentBuildSelectionChanged(true)"><option value="default">' + "Follow server default" + '</option><option value="hold">' + "Hold installed binary" + '</option><option value="pin">' + "Pin selected build" + '</option></select></div>';
-            html += '<div id="p10buildPin"><div class="agent-build-fields"><label for="p10buildRelease">' + "Build" + '</label><select id="p10buildRelease" onchange="agentBuildFilesChanged()"></select><label for="p10buildFile">' + "Agent file" + '</label><select id="p10buildFile" onchange="agentBuildSelectionChanged(true)"></select></div><div id="p10buildAvailable"></div><div id="p10buildRequirements"></div></div>';
-            html += '<p id="p10buildDescription"></p><label id="p10buildConfirm"><input id="p10buildCompatible" type="checkbox" onchange="agentBuildSelectionChanged()" /> ' + "I can recover this device locally if the update fails to reconnect." + '</label>';
-            html += '<p id="p10buildWarning">' + "Applying a change interrupts active sessions. Offline devices apply it on their next connection." + '</p><details id="p10buildCurrent"><summary>' + "Installed build and policy" + '</summary><div id="p10buildCurrentDetails"></div></details></div>';
+            var html = '<div id="p10agentBuild"><div id="p10buildHead"><div id="p10buildProgress" role="status" aria-live="polite" style="display:none"><div id="p10buildProgressText"></div><div id="p10buildProgressExtra"></div></div><div id="p10buildTransfer" style="display:none"></div>';
+            html += '<div class="agent-build-headline"><b id="p10buildDevice">' + EscapeHtml(currentNode.name) + '</b><span class="agent-build-headtools"><span id="p10buildChecked"></span><button type="button" id="p10buildRefresh" class="agent-linkbutton" onclick="refreshAgentBuild(true)">' + "Refresh" + '</button></span></div>';
+            html += '<div id="p10buildStatus" role="status" aria-live="polite"></div><div id="p10buildSummary"></div><div id="p10buildNotice"></div></div>';
+            html += '<div id="p10buildContent"><details id="p10buildCurrent" style="display:none"><summary>' + "Build details" + '</summary><div id="p10buildCurrentDetails"></div></details>';
+            var pin = '<div id="p10buildPin" class="agent-choice-body" style="display:none">';
+            pin += '<div class="agent-build-field"><label for="p10buildRelease">' + "Build" + '</label><div><select id="p10buildRelease" class="form-select form-select-sm" onchange="agentBuildFilesChanged()"></select></div></div>';
+            pin += '<div class="agent-build-field"><label for="p10buildFile">' + "Agent file" + '</label><div><select id="p10buildFile" class="form-select form-select-sm" aria-describedby="p10buildRequirements" onchange="agentBuildSelectionChanged(true)"></select></div></div>';
+            pin += '<div id="p10buildAvailable"></div><div id="p10buildRequirements"></div>';
+            pin += '<label id="p10buildConfirm" style="display:none"><input id="p10buildCompatible" type="checkbox" class="form-check-input" onchange="agentBuildSelectionChanged()" /><span>' + "I can recover this device locally if the update fails to reconnect." + '</span></label></div>';
+            pin += '<details id="p10buildUpdateHelp" class="agent-choice-body" style="display:none"><summary>' + "Enable agent updates on this device" + '</summary><p>' + format("First choose {0} so the server default does not replace this agent file.", "Keep the installed agent file") + '</p><p>' + "Then enable agent updates on the device and reconnect. Check its disableUpdate setting and service permissions, then refresh this dialog." + '</p></details>';
+            html += '<div id="p10buildControls" style="display:none"><fieldset id="p10buildModes"><legend>' + "Update policy" + '</legend>';
+            html += agentBuildChoiceHtml('default', "Follow server default");
+            html += agentBuildChoiceHtml('hold', "Keep the installed agent file");
+            html += agentBuildChoiceHtml('pin', "Pin a build", pin);
+            html += '</fieldset><p id="p10buildWarning" style="display:none">' + "Applying a change interrupts active sessions. Offline devices apply it on their next connection." + '</p></div>';
             if (userinfo.siteadmin == 0xFFFFFFFF) html += '<div class="agent-build-catalog"><a id="p10buildCatalog" href="#" onclick="return openAgentBuildCatalog()">' + "View all agent builds" + '</a></div>';
-            html += '</div><p id="p10buildApplyStatus" role="status" aria-live="polite"></p><details id="p10buildUpdateHelp" style="display:none"><summary>' + "Enable device updates" + '</summary><p>' + "First apply Hold installed binary to prevent the server default from replacing this agent." + '</p><p>' + "Then enable binary updates on the device and reconnect. Check its disableUpdate setting and service permissions. Refresh this dialog before selecting the build again." + '</p></details></div>';
+            html += '</div><p id="p10buildApplyStatus" role="status" aria-live="polite"></p></div>';
             var button = Q('idx_dlgOkButton');
             agentBuildButtonText = (button.tagName == 'INPUT') ? button.value : button.textContent;
             var cancel = Q('idx_dlgCancelButton');
             agentBuildCancelText = cancel ? ((cancel.tagName == 'INPUT') ? cancel.value : cancel.textContent) : '';
-            agentBuildOperation = null; agentBuildDone = false; agentBuildStale = false;
+            agentBuildOperation = null; agentBuildStale = false; agentBuildChanged = false; agentBuildWatched = false; agentBuildReset = false;
             setDialogMode(2, "Mesh Agent", 43, function (ok) { if (ok) { applyAgentBuildPolicy(); } else { closeAgentBuild(true); } }, html);
             Q('dialog').classList.add('agent-build-dialog');
-            agentBuildButton("Apply");
+            // id_dialogclose calls setDialogMode() directly and never reaches xxdialogFunc, so without
+            // this the status poll keeps running against a dialog the user has already closed.
+            var closing = agentBuildNodeId, closer = Q('id_dialogclose');
+            var cleanup = function () { if (agentBuildNodeId === closing) closeAgentBuild(true); };
+            if (closer) { closer.addEventListener('click', cleanup, { once: true }); closer.addEventListener('keypress', cleanup, { once: true }); }
+            button.setAttribute('aria-describedby', 'p10buildApplyStatus');
+            agentBuildButton("Close");
+            QV('idx_dlgCancelButton', false);
+            agentBuildOk(true);
             refreshAgentBuild();
             return false;
         }
@@ -20316,7 +20379,10 @@
             if (agentBuildTimer != null) { clearTimeout(agentBuildTimer); agentBuildTimer = null; }
             agentBuildButton(agentBuildButtonText);
             agentBuildCancelButton(agentBuildCancelText);
-            agentBuildOperation = null; agentBuildDone = false; agentBuildStale = false;
+            var ok = Q('idx_dlgOkButton');
+            if (ok) { ok.disabled = false; ok.classList.remove('agent-build-off'); ok.removeAttribute('aria-disabled'); ok.removeAttribute('aria-describedby'); }
+            QV('idx_dlgCancelButton', true);
+            agentBuildOperation = null; agentBuildStale = false; agentBuildChanged = false; agentBuildBlocked = true; agentBuildWatched = false; agentBuildReset = false;
             if (Q('p10agentBuild')) Q('p10agentBuild').remove();
             Q('dialog').classList.remove('agent-build-dialog');
             if (!closed) setDialogMode();
@@ -20354,42 +20420,40 @@
             }, agentBuildBusy() ? 1000 : 5000);
         }
 
-        function agentBuildCancelButton(text) {
-            var button = Q('idx_dlgCancelButton');
-            if (button) { if (button.tagName == 'INPUT') { button.value = text; } else { button.textContent = text; } }
-        }
-
         function agentBuildBusy() {
             if (agentBuildOperation) return agentBuildOperation.state === 'saving';
             var progress = (agentBuildDevice || {}).deployment;
             return progress && ['pending', 'updating', 'reconnecting'].indexOf(progress.state) >= 0 && (agentBuildDevice.status !== 'offline' || (agentBuildDevice.policy.deployment || {}).requestedOnline || progress.startedAt);
         }
 
+        // Open state is keyed on a fixed attribute rather than the summary text, so a translated or
+        // reworded summary keeps it. The guard compares what was last written rather than innerHTML,
+        // because an open details reflects an open attribute back into innerHTML and every poll would
+        // then rebuild the block and drop the focus inside it.
         function agentBuildHtml(id, html) {
-            var element = Q(id), states = {};
-            if (element.innerHTML === html) return;
-            var details = element.querySelectorAll('details');
-            for (var i = 0; i < details.length; i++) states[details[i].querySelector('summary').textContent] = details[i].open;
+            var element = Q(id), states = {}, items, key, i;
+            if (!element || (element.agentBuildLast === html)) return;
+            items = element.querySelectorAll('details[data-agent-detail]');
+            for (i = 0; i < items.length; i++) states[items[i].getAttribute('data-agent-detail')] = items[i].open;
             QH(id, html);
-            details = element.querySelectorAll('details');
-            for (var i = 0; i < details.length; i++) {
-                var key = details[i].querySelector('summary').textContent;
-                if (states[key] != null) details[i].open = states[key];
-            }
+            element.agentBuildLast = html;
+            items = element.querySelectorAll('details[data-agent-detail]');
+            for (i = 0; i < items.length; i++) { key = items[i].getAttribute('data-agent-detail'); if (states[key] != null) items[i].open = states[key]; }
         }
 
         function agentBuildRequestFailed(error) {
-            if (agentBuildRequestOp !== 'set' && agentBuildDevice) {
+            QE('p10buildRefresh', true);
+            if ((agentBuildRequestOp !== 'set') && agentBuildDevice) {
                 agentBuildStale = true;
-                QH('p10buildStatus', EscapeHtml("Status refresh failed. Showing the last received result; retrying automatically."));
+                renderAgentBuildStatus(agentBuildDevice);
                 agentBuildSelectionChanged();
                 pollAgentBuild();
                 return;
             }
             agentBuildOperation = { state: 'error', error: error };
-            if (agentBuildDevice) agentBuildDevice.canChange = false;
-            renderAgentBuildProgress(agentBuildDevice);
-            agentBuildButton("Apply"); QE('idx_dlgOkButton', false);
+            if (!agentBuildDevice) { agentBuildHtml('p10buildStatus', '<span class="agent-error">' + EscapeHtml(error) + '</span>'); agentBuildButton("Close"); QV('idx_dlgCancelButton', false); agentBuildOk(true); return; }
+            agentBuildDevice.canChange = false;
+            agentBuildSelectionChanged();
         }
 
         function requestAgentBuild(command) {
@@ -20399,14 +20463,13 @@
             if (agentBuildTimer != null) clearTimeout(agentBuildTimer);
             if (agentBuildPoll != null) { clearTimeout(agentBuildPoll); agentBuildPoll = null; }
             if (command.op !== 'status') {
-                QE('idx_dlgOkButton', command.op === 'get' && agentBuildDone);
-                QE('p10buildPolicy', false); QE('p10buildRelease', false); QE('p10buildFile', false);
-                if (command.op === 'set') {
-                    agentBuildButton("Saving...");
-                    agentBuildCancelButton("Close");
-                    renderAgentBuildProgress(agentBuildDevice);
-                } else if (!agentBuildDevice) { QH('p10buildStatus', "Loading..."); }
-                QH('p10buildApplyStatus', ''); QV('p10buildUpdateHelp', false);
+                agentBuildOk(true);
+                QE('p10buildRelease', false); QE('p10buildFile', false); QE('p10buildRefresh', false);
+                for (var key in agentBuildModes) QE(agentBuildModes[key].input, false);
+                agentBuildHtml('p10buildChecked', EscapeHtml("Checking..."));
+                if (command.op === 'set') { agentBuildButton("Saving..."); QV('idx_dlgCancelButton', false); renderAgentBuildProgress(agentBuildDevice); }
+                else if (!agentBuildDevice) { agentBuildHtml('p10buildStatus', EscapeHtml("Loading...")); }
+                agentBuildHtml('p10buildApplyStatus', ''); QV('p10buildUpdateHelp', false);
             }
             meshserver.send(command);
             agentBuildTimer = setTimeout(function () {
@@ -20417,66 +20480,201 @@
             }, 30000);
         }
 
-        function renderAgentBuildProgress(message, changed) {
-            var operation = agentBuildOperation, policy = (message || {}).policy || {}, progress = (message || {}).deployment;
-            var held = policy.mode === 'hold' && policy.time, state = operation ? operation.state : (held ? 'held' : (progress || {}).state);
-            var visible = state && (!changed || operation || agentBuildBusy());
+        function renderAgentBuildProgress(message) {
+            var operation = agentBuildOperation, progress = (message || {}).deployment;
+            var state = operation ? operation.state : (progress || {}).state;
+            var working = ['saving', 'pending', 'updating', 'reconnecting'].indexOf(state) >= 0;
+            var attention = ['error', 'blocked', 'unconfirmed'].indexOf(state) >= 0;
+            if (working) agentBuildWatched = true;
+            // A confirmed deployment is only news to whoever watched it happen here. On a later open
+            // the status line and the summary rows already say it.
+            var visible = working || attention || ((state === 'confirmed') && agentBuildWatched);
             QV('p10buildProgress', visible);
-            if (!visible) return;
-            var titles = { saving: "Saving update policy", pending: "Waiting for the agent", updating: "Updating agent", reconnecting: "Waiting for the agent to reconnect", confirmed: "Build installed and verified", held: "Updates held", blocked: "Update blocked", unconfirmed: "Installation not confirmed", error: "Unable to confirm the change" };
-            var detail = '', finished = state === 'confirmed' || state === 'held', attention = ['error', 'blocked', 'unconfirmed'].indexOf(state) >= 0;
+            QV('p10buildTransfer', false);
+            if (!visible) { agentBuildHtml('p10buildProgressText', ''); agentBuildHtml('p10buildProgressExtra', ''); return; }
+            var titles = { saving: "Saving update policy", pending: "Waiting for the agent", updating: "Updating agent", reconnecting: "Waiting for the agent to reconnect", confirmed: "Build installed and verified", blocked: "Update blocked", unconfirmed: "Installation not confirmed", error: "Unable to confirm the change" };
+            var steps = { saving: 1, pending: 2, updating: 3, reconnecting: 4 }, busy = agentBuildBusy(), detail = '', extra = '';
             if (state === 'saving') detail = "Checking the selection and saving the policy.";
-            if (state === 'pending') detail = message.status === 'offline' ? "The policy is saved. This device will apply it when it connects." : "The policy is saved. Waiting for the agent to check its binary.";
-            if (state === 'updating') detail = "The agent is replacing its binary. Active sessions may disconnect.";
-            if (state === 'reconnecting') detail = "Waiting for the agent to return and report its installed binary.";
-            if (state === 'confirmed') detail = (policy.mode === 'pin' ? policy.name + ' / ' + policy.filename : "Server default") + '. ' + "The reported binary matches the requested build.";
-            if (state === 'held') detail = "The policy is saved. Automatic binary updates are held for this device.";
-            if (state === 'blocked') detail = message.status === 'disabled' ? "The device has disabled binary updates." : (!message.serverUpdates ? "Binary updates are disabled on this server." : "The selected build is unavailable. Refresh for details.");
-            if (state === 'unconfirmed') detail = "No confirmation after five minutes. Check connectivity or recover this device locally.";
+            if (state === 'pending') detail = (message.status === 'offline') ? "The policy is saved. This device applies it when it connects." : "The policy is saved. Waiting for the agent to check its agent file.";
+            if (state === 'updating') detail = "The agent is replacing its agent file. Active sessions may disconnect.";
+            if (state === 'reconnecting') detail = "Waiting for the agent to return and report its agent file.";
+            if (state === 'confirmed') detail = "The reported agent file matches the requested build.";
+            if (state === 'blocked') detail = (message.status === 'disabled') ? "This device has disabled agent updates." : (!message.serverUpdates ? "Agent updates are disabled on this server." : (((message.policy.mode === 'default') && (message.defaultAvailable === false)) ? "The server default agent file is unavailable. Restore it on the server before this device can update." : "The agent file for this policy is unavailable."));
+            if (state === 'unconfirmed') detail = "No confirmation after five minutes. Refresh to check again, or recover this device locally.";
             if (state === 'error') detail = operation.error;
-            var html = '<div class="agent-progress-title">' + (!finished && !attention ? '<span class="agent-progress-spinner" aria-hidden="true"></span>' : '') + EscapeHtml(titles[state] || '') + '</div><div>' + EscapeHtml(detail) + '</div>';
-            if (!held && state !== 'error') {
-                var steps = ["Save policy", "Update if needed", "Reconnect", "Verify build"], step = state === 'saving' ? 0 : (state === 'pending' || state === 'updating' || state === 'blocked' ? 1 : (state === 'confirmed' ? 4 : 2));
-                html += '<ol class="agent-progress-steps">';
-                for (var i = 0; i < steps.length; i++) html += '<li class="' + (i < step ? 'complete' : i === step ? 'current' : '') + '"' + (i === step ? ' aria-current="step"' : '') + '>' + EscapeHtml(steps[i]) + '</li>';
-                html += '</ol>';
-            }
-            if (progress && progress.transfer && state === 'updating') {
+            if (working) extra += '<div class="agent-build-muted">' + format("Step {0} of 4", steps[state]) + '</div><div class="agent-build-muted">' + "Closing this dialog does not cancel the change." + '</div>';
+            if (attention) extra += '<div><button type="button" class="agent-linkbutton" onclick="refreshAgentBuild(true)">' + "Refresh" + '</button></div>';
+            Q('p10buildProgress').className = attention ? 'attention' : ((state === 'confirmed') ? 'complete' : 'working');
+            agentBuildHtml('p10buildProgressText', '<div class="agent-progress-title">' + (busy ? '<span class="agent-build-spinner" aria-hidden="true"></span>' : '') + EscapeHtml(titles[state] || '') + '</div><div>' + EscapeHtml(detail) + '</div>');
+            agentBuildHtml('p10buildProgressExtra', extra);
+            if (progress && progress.transfer && (state === 'updating')) {
                 var percent = Math.floor(progress.transfer.sent * 100 / progress.transfer.total);
-                html += '<label>' + format("File sent: {0}%", percent) + '<progress max="100" value="' + percent + '">' + percent + '%</progress></label>';
+                QV('p10buildTransfer', true);
+                agentBuildHtml('p10buildTransfer', '<label>' + format("File sent: {0}%", percent) + '<progress max="100" value="' + percent + '">' + percent + '%</progress></label>');
             }
-            html += '<div class="agent-progress-hint">' + (finished ? "You can close this dialog." : (state === 'saving' ? "You can close this dialog and check the result later." : "You can close this dialog. The saved policy continues to apply; closing does not cancel it.")) + '</div>';
-            Q('p10buildProgress').className = finished ? 'complete' : attention ? 'attention' : 'working';
-            QH('p10buildProgress', html);
-            agentBuildCancelButton("Close");
+        }
+
+        function agentBuildStatusText(message) {
+            if (agentBuildStale) return { level: 'agent-warn', text: "Showing the last received status." };
+            if (message.status === 'unavailable') return { level: 'agent-error', text: (message.policy.mode === 'pin') ? "The pinned agent file is unavailable, so updates are held." : "The server default agent file is unavailable, so the installed file is kept." };
+            if (message.status === 'disabled') return { level: 'agent-warn', text: "This device has disabled agent updates." };
+            if (message.status === 'matched') return { level: 'agent-match', text: "Agent matches the pinned build" };
+            if (message.status === 'updating') return { level: '', text: "Agent update in progress" };
+            if (message.status === 'offline') return { level: '', text: "Device offline" };
+            return { level: '', text: "Agent connected" };
         }
 
         function renderAgentBuildStatus(message) {
-            var policy = message.policy;
-            var status = { connected: "Agent connected", offline: "Device offline", unavailable: "Pinned build is unavailable. Updates are held.", disabled: "The agent has disabled native updates.", updating: "Agent update in progress", matched: "Agent matches the pinned build" };
-            QH('p10buildStatus', EscapeHtml(message.error || status[message.status] || ''));
-            var installed = message.installed || {}, hash = message.reportedHash || installed.hash || (message.deployment || {}).reportedHash;
-            var matches = hash === installed.hash ? (installed.matches || []) : [];
-            var html = '<b>' + (message.reportedHash ? "Installed build" : "Last identified build") + '</b>';
-            if (!matches.length) html += '<div>' + (hash ? "No matching build in the catalog." : "Waiting for the agent to report its binary.") + '</div>';
-            for (var i = 0; i < matches.length; i++) {
-                var match = matches[i], label = EscapeHtml(match.name) + ' / ' + EscapeHtml(match.filename);
-                if (userinfo.siteadmin == 0xFFFFFFFF && match.group) label = '<a href="#" onclick="return openInstalledAgentBuild(' + i + ')">' + label + '</a>';
-                html += '<div>' + label + '</div>';
-                if (match.tag && /^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) html += '<div><a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + EscapeHtml(match.repository + ' / ' + match.tag) + '</a></div>';
+            var policy = message.policy, installed = message.installed || {};
+            var hash = message.reportedHash || installed.hash || (message.deployment || {}).reportedHash;
+            var matches = (hash === installed.hash) ? (installed.matches || []) : [];
+            var status = agentBuildStatusText(message), current, effective, i;
+            agentBuildHtml('p10buildStatus', '<span class="' + status.level + '">' + EscapeHtml(status.text) + '</span>');
+            // format() escapes its arguments, so the raw locale string goes in rather than
+            // printDateTime(), which would escape a second time.
+            agentBuildHtml('p10buildChecked', message.checkedAt ? format("Checked {0}", new Date(message.checkedAt).toLocaleString(args.locale)) : '');
+            if (!hash) { current = "Waiting for the agent to report its agent file."; }
+            else if (!matches.length) { current = "The installed agent file does not match any build in the catalog."; }
+            else {
+                current = '';
+                for (i = 0; i < matches.length; i++) {
+                    var label = EscapeHtml(matches[i].name) + ' / ' + EscapeHtml(matches[i].filename);
+                    if ((userinfo.siteadmin == 0xFFFFFFFF) && matches[i].group) label = '<a href="#" onclick="return openInstalledAgentBuild(' + i + ')">' + label + '</a>';
+                    current += '<div>' + label + '</div>';
+                }
+            }
+            if (policy.mode === 'pin') { effective = (message.status === 'matched') ? "Pinned to the installed agent file." : (EscapeHtml(policy.name) + ' / ' + EscapeHtml(policy.filename)); }
+            else { effective = (policy.mode === 'hold') ? "Keep the installed agent file" : "Follow server default"; }
+            agentBuildHtml('p10buildSummary', agentBuildField("Installed", current) + agentBuildField("Policy", effective));
+        }
+
+        function renderAgentBuildDetails(message) {
+            var policy = message.policy, installed = message.installed || {};
+            var hash = message.reportedHash || installed.hash || (message.deployment || {}).reportedHash;
+            var matches = (hash === installed.hash) ? (installed.matches || []) : [], html = '', i;
+            for (i = 0; i < matches.length; i++) {
+                var match = matches[i];
+                if (match.tag && /^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) html += agentBuildField("Source", '<a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + EscapeHtml(match.repository + ' / ' + match.tag) + '</a>');
                 if (match.commit) {
                     var commit = '<code title="' + EscapeHtml(match.commit) + '">' + EscapeHtml(match.commit.substring(0, 12)) + '</code>';
                     if (/^https:\/\/github\.com\/[a-zA-Z0-9_.%/-]+$/.test(match.sourceUrl || '')) commit = '<a href="' + EscapeHtml(match.sourceUrl) + '" target="_blank" rel="noopener noreferrer">' + commit + '</a>';
-                    html += '<div>' + "Source revision" + ': ' + commit + '</div>';
+                    html += agentBuildField("Source revision", commit);
                 }
             }
-            if (installed.version && hash === installed.hash) {
-                html += '<div>' + "Reported source revision" + ': <code>' + EscapeHtml(installed.version.commit) + '</code></div>';
-                if (installed.version.compiled) html += '<div>' + "Compiled" + ': ' + EscapeHtml(installed.version.compiled) + '</div>';
+            if (installed.version && (hash === installed.hash)) {
+                html += agentBuildField("Reported revision", '<code>' + EscapeHtml(installed.version.commit) + '</code>');
+                if (installed.version.compiled) html += agentBuildField("Compiled", EscapeHtml(installed.version.compiled));
             }
-            html += '<div class="agent-current-policy"><b>' + "Update policy" + '</b>: ' + (policy.mode === 'pin' ? EscapeHtml(policy.name) + ' / ' + EscapeHtml(policy.filename) : (policy.mode === 'hold' ? "Hold installed binary" : "Follow server default")) + '</div>';
-            if (hash || policy.sha256) html += '<details><summary>' + "Hashes" + '</summary>' + (hash ? '<div class="agent-hash">SHA384: <code>' + EscapeHtml(hash) + '</code></div>' : '') + (policy.sha256 ? '<div class="agent-hash">' + "Pinned file SHA256" + ': <code>' + EscapeHtml(policy.sha256) + '</code></div>' : '') + '</details>';
+            if (hash) html += agentBuildField("SHA384", '<div class="agent-hash"><code>' + EscapeHtml(hash) + '</code></div>');
+            if (policy.sha256) html += agentBuildField("Pinned file SHA256", '<div class="agent-hash"><code>' + EscapeHtml(policy.sha256) + '</code></div>');
             agentBuildHtml('p10buildCurrentDetails', html);
+            QV('p10buildCurrent', html !== '');
+        }
+
+        // A mode the server would refuse is disabled in place with its reason in the row, so the dead
+        // ends show before a selection is built around them.
+        function agentBuildModeBlocked(mode) {
+            var device = agentBuildDevice;
+            if (mode === 'default') return (device.defaultAvailable === false) ? "The server default agent file is unavailable. Restore it on the server before using this policy." : '';
+            if (mode !== 'pin') return '';
+            if (!device.serverUpdates) return "Agent updates are disabled on this server.";
+            if (device.status === 'disabled') return "This device has disabled agent updates.";
+            if (!device.pinnable) return "No builds are available for this agent type.";
+            return '';
+        }
+
+        function renderAgentBuildChoices(mode, busy) {
+            var device = agentBuildDevice, policy = device.policy;
+            var notes = { 'default': "This device installs the current agent file for its type.", 'hold': "Agent updates are held. The agent core keeps updating.", 'pin': "This device stays on the agent file you choose." };
+            for (var key in agentBuildModes) {
+                var ids = agentBuildModes[key], blocked = agentBuildModeBlocked(key), html = '<div>' + notes[key] + '</div>';
+                if ((key === 'default') && (policy.mode === 'pin')) html += '<div class="agent-warn">' + "Switching back can replace the pinned file with an older one." + '</div>';
+                if (blocked) html += '<div class="agent-warn">' + EscapeHtml(blocked) + '</div>';
+                agentBuildHtml(ids.note, html);
+                if (mode === key) { QC(ids.row).add('selected'); } else { QC(ids.row).remove('selected'); }
+                if (blocked) { QC(ids.row).add('agent-choice-off'); } else { QC(ids.row).remove('agent-choice-off'); }
+                // The mode the policy already uses stays selectable, or it could never be chosen back.
+                QE(ids.input, !busy && device.canChange && ((blocked === '') || (policy.mode === key)));
+            }
+        }
+
+        // The standing fact, shown only while no change is pending, so it never doubles the reason.
+        function agentBuildNotice() {
+            var device = agentBuildDevice, policy = device.policy;
+            if (device.error) return device.error;
+            if (!device.canChange) return (device.status === 'updating') ? "Wait for the agent update to finish." : "Policy changes are temporarily unavailable. Refresh to try again.";
+            if (agentBuildStale) return "The last status check failed and will retry automatically.";
+            if (device.pinCached) return "This build is no longer in the catalog. The stored copy is served to this device.";
+            return '';
+        }
+
+        function agentBuildApplyReason(mode, option, changed) {
+            var device = agentBuildDevice, blocked = agentBuildModeBlocked(mode);
+            if (agentBuildReset) return "The update policy changed on the server. Your selection was reset.";
+            if (!device.canChange || agentBuildStale) return agentBuildNotice();
+            if (blocked) return blocked;
+            if (!changed) return (((device.deployment || {}).state === 'unconfirmed') ? "This device has not confirmed the change. Refresh to check again." : '');
+            if (mode !== 'pin') return '';
+            if (!option) return "Select an agent file.";
+            if (option.cached) return "This build is no longer in the catalog. Select another agent file.";
+            if ((option.compatibility || {}).status === 'blocked') return "This agent file does not meet the device requirements.";
+            if (!Q('p10buildCompatible').checked) return "Confirm local recovery before installing this agent file.";
+            return '';
+        }
+
+        function agentBuildCompatibilityLabel(status) {
+            return (status === 'compatible') ? "Requirements met" : ((status === 'blocked') ? "Not compatible" : "Not checked");
+        }
+
+        function agentBuildCompatibilityRows(result, option) {
+            var html = '', passed = '', i;
+            if (!result.checks || !result.checks.length) {
+                html += '<div>' + "Connect the device and refresh to check its runtime requirements." + '</div>';
+                if (option.requirements) html += '<div>' + EscapeHtml(option.requirements) + '</div>';
+            }
+            for (i in result.checks) {
+                var check = result.checks[i];
+                var row = '<div class="agent-requirement"><b>' + EscapeHtml(check.name) + '</b><div>' + format("Needs {0}", check.required) + '</div><div>' + format("Found {0}", check.detected) + '</div>' + (check.advice ? ('<div>' + EscapeHtml(check.advice) + '</div>') : '') + '</div>';
+                if (check.status === 'pass') { passed += row; } else { html += row; }
+            }
+            if (passed) html += '<details data-agent-detail="passed"><summary>' + "Checks that passed" + '</summary>' + passed + '</details>';
+            if (!option.kvm) html += '<div class="agent-warn">' + "This agent file has no remote desktop support." + '</div>';
+            return html;
+        }
+
+        function agentBuildCompatibilityDetails(option, changed) {
+            if (option.cached) return '<div class="agent-warn">' + "This build is no longer in the catalog." + '</div>' + (option.requirements ? ('<div>' + EscapeHtml(option.requirements) + '</div>') : '');
+            var result = option.compatibility || { status: 'unknown', checks: [] };
+            var level = (result.status === 'compatible') ? 'agent-match' : ((result.status === 'blocked') ? 'agent-error' : 'agent-warn');
+            // Settled and passing collapses to one line, but the checks stay reachable for the file
+            // that is actually installed.
+            if (!changed && (result.status === 'compatible')) return '<details data-agent-detail="requirements"><summary class="' + level + '">' + agentBuildCompatibilityLabel(result.status) + '</summary>' + agentBuildCompatibilityRows(result, option) + '</details>';
+            return '<div class="' + level + '"><b>' + agentBuildCompatibilityLabel(result.status) + '</b></div>' + agentBuildCompatibilityRows(result, option);
+        }
+
+        function agentBuildSelectionChanged(reset) {
+            if (!agentBuildDevice) return;
+            if (reset) Q('p10buildCompatible').checked = false;
+            var device = agentBuildDevice, policy = device.policy, mode = agentBuildMode(), pin = (mode === 'pin');
+            var option = pin ? device.options[Q('p10buildFile').value] : null;
+            var changed = (mode !== policy.mode) || (pin && option && ((option.id !== policy.build) || (option.filename !== policy.filename) || (option.sha256 !== policy.sha256)));
+            var busy = agentBuildBusy(), blocked = agentBuildModeBlocked(mode);
+            var reason = busy ? '' : agentBuildApplyReason(mode, option, changed);
+            agentBuildChanged = !!changed;
+            QV('p10buildPin', pin);
+            QV('p10buildUpdateHelp', pin && (device.status === 'disabled'));
+            renderAgentBuildChoices(mode, busy);
+            QE('p10buildRelease', !busy); QE('p10buildFile', !busy); QE('p10buildCompatible', !busy);
+            agentBuildHtml('p10buildRequirements', (pin && option) ? agentBuildCompatibilityDetails(option, changed) : '');
+            // The session warning has to precede the consent it explains.
+            QV('p10buildWarning', changed && (blocked === ''));
+            QV('p10buildConfirm', device.canChange && pin && changed && option && !option.cached && (blocked === '') && ((option.compatibility || {}).status !== 'blocked'));
+            agentBuildHtml('p10buildNotice', changed ? '' : EscapeHtml(agentBuildNotice()));
+            agentBuildHtml('p10buildApplyStatus', (changed || agentBuildReset || busy) ? EscapeHtml(reason) : '');
+            renderAgentBuildProgress(device);
+            agentBuildButton(busy ? "Working..." : (changed ? (pin ? "Install and pin" : "Apply") : "Close"));
+            QV('idx_dlgCancelButton', changed && !busy);
+            agentBuildOk(!changed || (!busy && !agentBuildStale && device.canChange && (blocked === '') && (reason === '')));
         }
 
         function onAgentBuild(message) {
@@ -20491,62 +20689,73 @@
                 message = Object.assign({}, agentBuildDevice, message, { deployment: message.deployment, reportedHash: message.reportedHash });
                 message.statusOnly = false;
                 agentBuildOperation = null;
+                agentBuildReset = false;
             }
             if (message.statusOnly) {
-                if (!agentBuildDevice || agentBuildDevice.policy.revision !== message.policy.revision) { refreshAgentBuild(); return; }
-                var hashChanged = message.reportedHash && message.reportedHash !== (agentBuildDevice.installed || {}).hash;
+                if (!agentBuildDevice || (agentBuildDevice.policy.revision !== message.policy.revision)) { refreshAgentBuild(true); return; }
+                var hashChanged = message.reportedHash && (message.reportedHash !== (agentBuildDevice.installed || {}).hash);
                 Object.assign(agentBuildDevice, message, { deployment: message.deployment, reportedHash: message.reportedHash });
+                QE('p10buildRefresh', true);
                 renderAgentBuildStatus(agentBuildDevice);
+                renderAgentBuildDetails(agentBuildDevice);
                 agentBuildSelectionChanged();
                 if (hashChanged) { requestAgentBuild({ op: 'get', nodeid: agentBuildNodeId }); } else { pollAgentBuild(); }
                 return;
             }
             var selection = null;
-            if (agentBuildDevice && !message.saved && agentBuildRequestOp === 'get' && agentBuildDevice.policy.revision === message.policy.revision) {
+            if (agentBuildDevice && !message.saved && (agentBuildRequestOp === 'get') && (agentBuildDevice.policy.revision === message.policy.revision)) {
                 var file = agentBuildDevice.options[Q('p10buildFile').value];
-                if (Q('p10buildPolicy').value !== 'pin' || (file && message.options.some(function (x) { return x.id === file.id && x.filename === file.filename && x.sha256 === file.sha256; }))) {
-                    selection = { mode: Q('p10buildPolicy').value, build: Q('p10buildRelease').value, file: file, checked: Q('p10buildCompatible').checked };
+                if ((agentBuildMode() !== 'pin') || (file && message.options.some(function (x) { return (x.id === file.id) && (x.filename === file.filename) && (x.sha256 === file.sha256); }))) {
+                    selection = { mode: agentBuildMode(), build: Q('p10buildRelease').value, file: file, checked: Q('p10buildCompatible').checked };
                 }
-            }
+            } else if (agentBuildDevice && agentBuildChanged && !message.saved) { agentBuildReset = true; }
             agentBuildDevice = message;
-            var order = { compatible: 0, unknown: 1, blocked: 2 };
-            message.options.sort(function (a, b) { return order[(a.compatibility || {}).status || 'unknown'] - order[(b.compatibility || {}).status || 'unknown']; });
-            var policy = message.policy, html = '', builds = [];
+            var policy = message.policy, html = '', builds = [], i;
             if ((policy.mode === 'pin') && !message.options.some(function (x) { return (x.id === policy.build) && (x.filename === policy.filename) && (x.sha256 === policy.sha256); })) {
                 message.options.push({ id: policy.build, name: policy.name, filename: policy.filename, sha256: policy.sha256, requirements: policy.requirements, cached: true });
+                message.pinCached = true;
             }
-            for (var i in message.options) {
+            message.pinnable = message.options.some(function (x) { return !x.cached; });
+            // Builds stay in catalog order so the list does not reshuffle when a device's runtime
+            // facts change. Compatibility ordering is applied per build in agentBuildFilesChanged.
+            for (i in message.options) {
                 var option = message.options[i];
                 if (builds.indexOf(option.id) >= 0) continue;
                 builds.push(option.id);
                 html += '<option value="' + EscapeHtml(option.id) + '">' + EscapeHtml(option.name) + (option.channel ? (' (' + EscapeHtml(option.channel) + ')') : '') + '</option>';
             }
             QH('p10buildRelease', html);
-            Q('p10buildPolicy').value = selection ? selection.mode : policy.mode;
-            if (selection) Q('p10buildRelease').value = selection.build;
-            else if (policy.mode === 'pin') Q('p10buildRelease').value = policy.build;
-            QE('p10buildPolicy', true); QE('p10buildRelease', true); QE('p10buildFile', true);
+            agentBuildSetMode(selection ? selection.mode : policy.mode);
+            if (selection) { Q('p10buildRelease').value = selection.build; }
+            else if (policy.mode === 'pin') { Q('p10buildRelease').value = policy.build; }
+            QE('p10buildRelease', true); QE('p10buildFile', true); QE('p10buildRefresh', true);
             QV('p10buildControls', true);
             renderAgentBuildStatus(message);
+            renderAgentBuildDetails(message);
             pollAgentBuild();
-            var ready = 0, blocked = 0, unknown = 0;
-            for (var i in message.options) {
+            var ready = 0, total = 0;
+            for (i in message.options) {
                 if (message.options[i].cached) continue;
-                var status = (message.options[i].compatibility || {}).status;
-                if (status === 'compatible') ready++; else if (status === 'blocked') blocked++; else unknown++;
+                total++;
+                if (((message.options[i].compatibility || {}).status) === 'compatible') ready++;
             }
-            QH('p10buildAvailable', message.options.length ? format("Requirements met: {0}. Not checked: {1}. Not compatible: {2}.", ready, unknown, blocked) : "No additional builds are available for this agent type.");
+            agentBuildHtml('p10buildAvailable', (total && (ready !== total)) ? format("Requirements met by {0} of {1} agent files.", ready, total) : '');
             agentBuildFilesChanged(true, selection);
         }
 
         function agentBuildFilesChanged(current, selection) {
             if (!agentBuildDevice) return;
-            var html = '', selected = null, policy = (selection && selection.file) || agentBuildDevice.policy;
-            for (var i in agentBuildDevice.options) {
-                var option = agentBuildDevice.options[i];
-                if (option.id !== Q('p10buildRelease').value) continue;
-                html += '<option value="' + i + '">' + EscapeHtml(option.filename) + (' (' + (option.cached ? "Pinned copy" : agentBuildCompatibilityLabel((option.compatibility || {}).status)) + ')') + '</option>';
-                if (current && (option.filename === policy.filename) && (option.sha256 === policy.sha256)) selected = i;
+            var order = { compatible: 0, unknown: 1, blocked: 2 }, files = [], html = '', selected = null, i;
+            var policy = (selection && selection.file) || agentBuildDevice.policy;
+            for (i in agentBuildDevice.options) { if (agentBuildDevice.options[i].id === Q('p10buildRelease').value) files.push(i); }
+            files.sort(function (a, b) {
+                var x = agentBuildDevice.options[a], y = agentBuildDevice.options[b];
+                return order[(x.compatibility || {}).status || 'unknown'] - order[(y.compatibility || {}).status || 'unknown'];
+            });
+            for (i = 0; i < files.length; i++) {
+                var option = agentBuildDevice.options[files[i]];
+                html += '<option value="' + files[i] + '">' + EscapeHtml(option.filename) + ' (' + (option.cached ? "Stored copy" : agentBuildCompatibilityLabel((option.compatibility || {}).status)) + ')</option>';
+                if (current && (option.filename === policy.filename) && (option.sha256 === policy.sha256)) selected = files[i];
             }
             QH('p10buildFile', html);
             if (selected != null) Q('p10buildFile').value = selected;
@@ -20554,72 +20763,18 @@
             agentBuildSelectionChanged(!selection);
         }
 
-        function agentBuildCompatibilityLabel(status) {
-            return status === 'compatible' ? "Requirements met" : status === 'blocked' ? "Not compatible" : "Not checked";
-        }
-
-        function agentBuildCompatibilityDetails(option) {
-            if (option.cached) return EscapeHtml(option.requirements || '');
-            var result = option.compatibility || { status: 'unknown', checks: [] };
-            var html = '<b>' + agentBuildCompatibilityLabel(result.status) + '</b>', passed = '';
-            if (!result.checks || !result.checks.length) html += '<div>' + "Connect the device and refresh to check its runtime requirements." + '</div><div>' + EscapeHtml(option.requirements || '') + '</div>';
-            for (var i in result.checks) {
-                var check = result.checks[i];
-                var row = '<div class="agent-requirement"><b>' + EscapeHtml(check.name) + '</b>: ' + EscapeHtml(check.required) + '<br />' + "Detected" + ': ' + EscapeHtml(check.detected) + (check.advice ? ('<br />' + EscapeHtml(check.advice)) : '') + '</div>';
-                if (check.status === 'pass') passed += row; else html += row;
-            }
-            if (passed) html += '<details><summary>' + "Passed checks" + '</summary>' + passed + '</details>';
-            if (agentBuildDevice.checkedAt) html += '<div class="agent-check-time">' + "Last checked" + ': ' + EscapeHtml(new Date(agentBuildDevice.checkedAt).toLocaleString()) + '</div>';
-            html += '<div>' + (option.kvm ? "Includes remote desktop support." : "No remote desktop support.") + '</div>';
-            return html;
-        }
-
-        function agentBuildApplyReason(pin, option, changed) {
-            if (!agentBuildDevice.canChange) return agentBuildDevice.error || (agentBuildDevice.status === 'updating' ? "Wait for the agent update to finish." : "Policy changes are temporarily unavailable. Refresh to try again.");
-            if (changed && Q('p10buildPolicy').value === 'default' && agentBuildDevice.defaultAvailable === false) return "The server default agent file is unavailable. Restore it before changing this policy.";
-            if (!pin || !changed) return '';
-            if (!agentBuildDevice.serverUpdates) return "Installation blocked: binary updates are disabled on this server.";
-            if (agentBuildDevice.status === 'disabled') return "Installation blocked: this device has disabled binary updates. Passing the runtime checks does not enable updates.";
-            if (!option) return "No agent file is available to install.";
-            if (option.cached) return "Select an available build file to change this pin.";
-            if ((option.compatibility || {}).status === 'blocked') return "Installation blocked: this file does not meet the device requirements.";
-            if (!Q('p10buildCompatible').checked) return "Confirm local recovery before installing this file.";
-            return '';
-        }
-
-        function agentBuildSelectionChanged(reset) {
-            if (!agentBuildDevice) return;
-            if (reset) Q('p10buildCompatible').checked = false;
-            agentBuildDone = false;
-            var value = Q('p10buildPolicy').value, pin = value === 'pin';
-            var option = pin ? agentBuildDevice.options[Q('p10buildFile').value] : null, policy = agentBuildDevice.policy;
-            var changed = (value !== policy.mode) || (pin && option && ((option.id !== policy.build) || (option.filename !== policy.filename) || (option.sha256 !== policy.sha256)));
-            QV('p10buildPin', pin);
-            QH('p10buildDescription', pin ? "Keep this exact agent file until the policy changes." : ((value === 'hold') ? "Binary updates are held. Agent core updates continue." : (policy.mode === 'pin' ? "Returning to the server default can downgrade this agent." : "This device follows the current agent binary for its type and domain.")));
-            agentBuildHtml('p10buildRequirements', option ? agentBuildCompatibilityDetails(option) : '');
-            QV('p10buildConfirm', agentBuildDevice.canChange && pin && changed && option && !option.cached && (option.compatibility || {}).status !== 'blocked' && agentBuildDevice.serverUpdates && agentBuildDevice.status !== 'disabled');
-            QV('p10buildWarning', changed);
-            var busy = agentBuildBusy();
-            agentBuildDone = !changed && !busy && !agentBuildOperation && ((agentBuildDevice.deployment || {}).state === 'confirmed' || (policy.mode === 'hold' && policy.time));
-            QE('p10buildPolicy', !busy); QE('p10buildRelease', !busy); QE('p10buildFile', !busy); QE('p10buildCompatible', !busy);
-            renderAgentBuildProgress(agentBuildDevice, changed);
-            agentBuildButton(agentBuildDone ? "Done" : (busy ? "Working..." : (pin ? "Install and pin" : "Apply")));
-            var reason = busy ? '' : agentBuildApplyReason(pin, option, changed);
-            QH('p10buildApplyStatus', EscapeHtml(reason));
-            QV('p10buildUpdateHelp', pin && changed && agentBuildDevice.status === 'disabled');
-            QE('idx_dlgOkButton', agentBuildDone || (!busy && !agentBuildStale && agentBuildDevice.canChange && changed && !reason));
-        }
-
         function applyAgentBuildPolicy() {
-            if (agentBuildDone) return closeAgentBuild();
             if (agentBuildBusy()) return false;
-            if (!agentBuildDevice || Q('idx_dlgOkButton').disabled || !canManageAgentBuild(currentNode) || (currentNode._id !== agentBuildNodeId)) return false;
-            var command = { op: 'set', nodeid: agentBuildNodeId, revision: agentBuildDevice.policy.revision, mode: Q('p10buildPolicy').value };
+            if (!agentBuildChanged) return closeAgentBuild();
+            if (agentBuildBlocked) { agentBuildShowReason(); return false; }
+            if (!agentBuildDevice || !canManageAgentBuild(currentNode) || (currentNode._id !== agentBuildNodeId)) return false;
+            var command = { op: 'set', nodeid: agentBuildNodeId, revision: agentBuildDevice.policy.revision, mode: agentBuildMode() };
             if (command.mode === 'pin') {
                 var option = agentBuildDevice.options[Q('p10buildFile').value];
-                if (!option || option.cached || (option.compatibility || {}).status === 'blocked') return false;
+                if (!option || option.cached || ((option.compatibility || {}).status === 'blocked')) return false;
                 command.build = option.id; command.filename = option.filename; command.sha256 = option.sha256;
             }
+            agentBuildReset = false;
             agentBuildOperation = { state: 'saving', mode: command.mode };
             requestAgentBuild(command);
             return false;
@@ -20627,37 +20782,163 @@
 
         function filterAgentCatalog(focused) {
             if (!focused) agentCatalogFocus = null;
-            var content = Q('p44content'), group = Q('p44group').value, search = Q('p44search').value.toLowerCase().trim(), count = 0;
-            var sizes = content.querySelectorAll('[data-agent-bytes]');
-            for (var i = 0; i < sizes.length; i++) {
-                var bytes = Number(sizes[i].getAttribute('data-agent-bytes'));
-                if (!Number.isFinite(bytes) || (bytes <= 0)) { sizes[i].textContent = '-'; continue; }
-                sizes[i].textContent = (bytes >= 1048576) ? ((bytes / 1048576).toFixed(1) + ' MiB') : ((bytes >= 1024) ? ((bytes / 1024).toFixed(1) + ' KiB') : (bytes + ' B'));
-            }
+            var content = Q('p44content'), search = Q('p44search').value.toLowerCase().trim();
+            var filtering = (search !== '') || (agentCatalogFocus != null);
             var sections = content.querySelectorAll('[data-agent-group]');
-            for (var i = 0; i < sections.length; i++) {
-                var section = sections[i], rows = section.querySelectorAll('[data-agent-row]'), visible = 0;
-                var name = section.getAttribute('data-agent-name') || '';
-                for (var j = 0; j < rows.length; j++) {
-                    var match = ((name + ' ' + rows[j].textContent).toLowerCase().indexOf(search) >= 0);
-                    if (agentCatalogFocus) match = match && (!agentCatalogFocus.build || section.getAttribute('data-agent-build') === agentCatalogFocus.build) && rows[j].getAttribute('data-agent-file') === agentCatalogFocus.filename && rows[j].getAttribute('data-agent-hash') === agentCatalogFocus.hash;
-                    rows[j].style.display = match ? '' : 'none';
-                    if (match) visible++;
-                }
-                if (agentCatalogFocus && visible && section.getAttribute('data-agent-build') === agentCatalogFocus.build && section.getAttribute('data-agent-archived') === 'true') { group = 'archived'; Q('p44group').value = group; }
-                var selected = (section.getAttribute('data-agent-archived') === 'true' ? 'archived' : section.getAttribute('data-agent-group')) === group;
-                section.style.display = (selected && (visible || group === 'defaults')) ? '' : 'none';
-                if (selected) { count += visible; if (search && section.firstElementChild.tagName === 'DETAILS') section.firstElementChild.open = true; }
+            var totals = { all: 0, defaults: 0, builds: 0, bundled: 0, archived: 0 };
+            var hits = { all: 0, defaults: 0, builds: 0, bundled: 0, archived: 0 };
+            var shownBuilds = 0, items, i, j;
+            items = content.querySelectorAll('[data-agent-bytes]');
+            for (i = 0; i < items.length; i++) {
+                var bytes = Number(items[i].getAttribute('data-agent-bytes'));
+                if (!Number.isFinite(bytes) || (bytes <= 0)) { items[i].textContent = '-'; continue; }
+                items[i].textContent = (bytes >= 1048576) ? ((bytes / 1048576).toFixed(1) + ' MiB') : ((bytes >= 1024) ? ((bytes / 1024).toFixed(1) + ' KiB') : (bytes + ' B'));
             }
-            QH('p44count', (count === 1) ? "1 file" : format("{0} files", count));
-            if (Q('p44empty')) QV('p44empty', count === 0);
+            // The fragment renders with a fixed locale, so its timestamps arrive as source strings and are
+            // formatted here the way the byte counts are. printDateTime escapes for html and this writes
+            // text, so the locale string goes in bare.
+            items = content.querySelectorAll('[data-agent-time]');
+            for (i = 0; i < items.length; i++) {
+                var when = new Date(items[i].getAttribute('data-agent-time'));
+                if (!isNaN(when.getTime())) items[i].textContent = when.toLocaleString(args.locale);
+            }
+            var group = agentCatalogGroup(sections);
+            for (i = 0; i < sections.length; i++) {
+                var section = sections[i], rows = section.querySelectorAll('[data-agent-row]'), matched = 0, failed = 0;
+                var name = section.getAttribute('data-agent-name') || '';
+                var key = (section.getAttribute('data-agent-archived') === 'true') ? 'archived' : section.getAttribute('data-agent-group');
+                for (j = 0; j < rows.length; j++) {
+                    var row = rows[j], match = ((name + ' ' + (row.getAttribute('data-agent-search') || '')).toLowerCase().indexOf(search) >= 0);
+                    if (agentCatalogFocus) match = match && (!agentCatalogFocus.build || (section.getAttribute('data-agent-build') === agentCatalogFocus.build)) && (row.getAttribute('data-agent-file') === agentCatalogFocus.filename) && (row.getAttribute('data-agent-hash') === agentCatalogFocus.hash);
+                    row.style.display = match ? '' : 'none';
+                    if (match) { matched++; if (row.getAttribute('data-agent-verify') === 'error') failed++; }
+                }
+                totals[key] += rows.length; hits[key] += matched;
+                if (key !== 'archived') { totals.all += rows.length; hits.all += matched; }
+                var selected = (group === 'all') ? (key !== 'archived') : (key === group);
+                section.style.display = (selected && matched) ? '' : 'none';
+                if (selected && (key !== 'defaults') && (key !== 'bundled')) shownBuilds += matched;
+                agentCatalogTally(section, matched, rows.length, failed, filtering);
+                var body = section.querySelector('details[data-agent-expand]');
+                if (body) agentCatalogOpenDetails(body, filtering ? (matched > 0) : null);
+            }
+            items = content.querySelectorAll('details[data-agent-detail]:not([data-agent-expand])');
+            for (i = 0; i < items.length; i++) agentCatalogOpenDetails(items[i], null);
+            agentCatalogOptions(group, totals, hits, filtering);
+            agentBuildHtml('p44focus', agentCatalogFocusHtml(sections, hits, group));
+            agentBuildHtml('p44count', agentCatalogCountHtml(group, totals, hits, filtering));
+            agentBuildHtml('p44empty', sections.length ? agentCatalogEmptyHtml(group, totals, hits, search) : '');
+            QV('p44install', shownBuilds > 0);
+            QV('p44defaults', content.querySelector('[data-agent-downloads="1"]') != null);
         }
+
+        // The link from a device only ever names 'defaults' or 'builds' (agentcatalog.js identify), so an
+        // archived build is resolved from the section that holds it before any row is matched, rather than
+        // by patching the group inside the loop.
+        function agentCatalogGroup(sections) {
+            var select = Q('p44group'), group = select.value, i;
+            if (agentCatalogFocus) {
+                group = 'all';
+                for (i = 0; i < sections.length; i++) {
+                    if ((sections[i].getAttribute('data-agent-build') === agentCatalogFocus.build) && (sections[i].getAttribute('data-agent-archived') === 'true')) group = 'archived';
+                }
+            }
+            if (select.value !== group) select.value = group;
+            return group;
+        }
+
+        function agentCatalogTally(section, matched, total, failed, filtering) {
+            var count = section.querySelector('[data-agent-count]'), alert = section.querySelector('[data-agent-alert]');
+            if (count) count.textContent = (filtering && (matched !== total)) ? format("{0} of {1} files", matched, total) : ((total === 1) ? "1 file" : format("{0} files", total));
+            if (alert) alert.textContent = !failed ? '' : ((failed === 1) ? "1 file does not match the manifest" : format("{0} files do not match the manifest", failed));
+        }
+
+        // A refresh rebuilds the whole fragment, so what the admin opened is kept in script. A toggle event
+        // is queued, so the state this code applied arrives in the handler after the fact and must not be
+        // stored as a choice; that is what agentCatalogApplied records. A filter opens the builds that hold
+        // a match, unless one was closed by hand.
+        function agentCatalogOpenDetails(details, force) {
+            var key = details.getAttribute('data-agent-detail'), stored = agentCatalogOpen[key];
+            var open = (force === null) ? (stored === true) : (force && (stored !== false));
+            details.open = open; agentCatalogApplied[key] = open;
+        }
+
+        function agentCatalogToggled(details) {
+            var key = details.getAttribute('data-agent-detail');
+            if (details.open !== agentCatalogApplied[key]) agentCatalogOpen[key] = details.open;
+        }
+
+        function agentCatalogOptions(group, totals, hits, filtering) {
+            var options = Q('p44group').options, i;
+            for (i = 0; i < options.length; i++) {
+                var value = options[i].value;
+                if (options[i].agentCatalogLabel == null) options[i].agentCatalogLabel = options[i].textContent;
+                options[i].textContent = options[i].agentCatalogLabel + ' (' + (filtering ? hits[value] : totals[value]) + ')';
+                // Most servers have never archived a build, so that option appears once it leads somewhere
+                // or is the one in use. Hiding the selected option would render the select blank.
+                options[i].hidden = (value === 'archived') && !totals.archived && (value !== group);
+            }
+        }
+
+        function agentCatalogLabel(value) {
+            var options = Q('p44group').options, i;
+            for (i = 0; i < options.length; i++) { if (options[i].value === value) return options[i].agentCatalogLabel || options[i].textContent; }
+            return value;
+        }
+
+        // The link from a device narrows to one build, filename and hash, so other copies of the same
+        // filename stay hidden and nothing else on the page would say a focus is in effect.
+        function agentCatalogFocusHtml(sections, hits, group) {
+            var focus = agentCatalogFocus, name = '', i;
+            if (!focus || !hits[group]) return '';
+            for (i = 0; i < sections.length; i++) { if (sections[i].getAttribute('data-agent-build') === focus.build) name = sections[i].getAttribute('data-agent-name') || ''; }
+            return '<span>' + (name ? format("Showing one agent file from {0}: {1}", name, focus.filename) : format("Showing one agent file: {0}", focus.filename)) + '</span><button type="button" class="agent-linkbutton" onclick="filterAgentCatalog()">' + "Show all agent files" + '</button>';
+        }
+
+        function agentCatalogCountHtml(group, totals, hits, filtering) {
+            var shown = hits[group], elsewhere, text;
+            if (!shown) return '';
+            elsewhere = filtering ? (hits.all + hits.archived - shown) : 0;
+            text = !filtering ? ((shown === 1) ? "1 file." : format("{0} files.", shown)) : ((shown === 1) ? format("1 of {0} files matches.", totals[group]) : format("{0} of {1} files match.", shown, totals[group]));
+            if (elsewhere) text += ' ' + ((elsewhere === 1) ? "1 more file matches in another view." : format("{0} more files match in other views.", elsewhere));
+            return text;
+        }
+
+        function agentCatalogEmptyHtml(group, totals, hits, search) {
+            var keys = ['defaults', 'builds', 'bundled', 'archived'], nothing, best = '', reason, html, i;
+            if (hits[group]) return '';
+            for (i = 0; i < keys.length; i++) { if ((keys[i] !== group) && hits[keys[i]] && (!best || (hits[keys[i]] > hits[best]))) best = keys[i]; }
+            nothing = { all: "The catalog is empty.", defaults: "No agent files are set as server defaults.", builds: "No builds have been added.", bundled: "No agent files ship with this server.", archived: "No builds are archived." };
+            if (agentCatalogFocus) reason = best ? "The agent file this device reported is in another view." : "The agent file this device reported is no longer in the catalog.";
+            else if (search) reason = format("No files match {0}.", Q('p44search').value.trim());
+            else reason = nothing[group];
+            html = '<span class="agent-warn">' + reason + '</span>';
+            if (best) html += '<button type="button" class="agent-linkbutton" onclick="filterAgentCatalogGroup(\'' + best + '\')">' + ((hits[best] === 1) ? format("Show 1 matching file in {0}", agentCatalogLabel(best)) : format("Show {0} matching files in {1}", hits[best], agentCatalogLabel(best))) + '</button>';
+            else if (search) html += '<button type="button" class="agent-linkbutton" onclick="clearAgentCatalogFilter()">' + "Clear the filter" + '</button>';
+            else if (agentCatalogFocus || (group !== 'all')) html += '<button type="button" class="agent-linkbutton" onclick="filterAgentCatalogGroup(\'all\')">' + "Show all agent files" + '</button>';
+            return html;
+        }
+
+        function filterAgentCatalogGroup(group) {
+            Q('p44group').value = group;
+            filterAgentCatalog();
+            Q('p44group').focus();
+        }
+
+        function clearAgentCatalogFilter() {
+            Q('p44search').value = '';
+            filterAgentCatalog();
+            Q('p44search').focus();
+        }
+
+        var agentCatalogOpen = {}, agentCatalogApplied = {};
 
         var agentCatalogRequest = null;
         var agentCatalogFocus = null;
         function refreshAgentCatalog() {
             if (agentCatalogRequest != null) { agentCatalogRequest.abort(); agentCatalogRequest = null; }
             QH('p44content', '');
+            agentBuildHtml('p44count', ''); agentBuildHtml('p44focus', ''); agentBuildHtml('p44empty', '');
             if ((userinfo == null) || (userinfo.siteadmin != 0xFFFFFFFF)) return;
             QH('p44status', "Loading...");
             QE('p44refresh', false);
@@ -20671,7 +20952,7 @@
                 QH('p44status', content ? '' : "Unable to load agent builds. Try refreshing.");
                 if (content) {
                     QH('p44content', content.innerHTML);
-                    if (agentCatalogFocus) { Q('p44group').value = agentCatalogFocus.group; Q('p44search').value = agentCatalogFocus.filename; }
+                    if (agentCatalogFocus) Q('p44search').value = '';
                     filterAgentCatalog(true);
                 }
             }

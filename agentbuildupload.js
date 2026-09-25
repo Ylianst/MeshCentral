@@ -64,7 +64,7 @@ exports.CreateAgentBuildUpload = function (parent, catalog) {
             await fs.promises.mkdir(destination, { mode: 0o700 });
             const result = await produce(destination), files = result.files;
             if (!files.length || files.length > 16) throw new Error('Select between 1 and 16 agent files.');
-            const names = new Set(), artifacts = [];
+            const names = new Set(), artifacts = [], rejected = [];
             let total = 0;
             for (const file of files) {
                 const filename = file.originalFilename;
@@ -72,16 +72,21 @@ exports.CreateAgentBuildUpload = function (parent, catalog) {
                 names.add(filename.toLowerCase());
                 if (path.dirname(file.path) !== destination) throw new Error('Invalid upload path');
                 const stat = await fs.promises.lstat(file.path);
-                if (!stat.isFile() || stat.size > 64 * 1024 * 1024 || (total += stat.size) > 128 * 1024 * 1024) throw new Error('Each agent file must be at most 64 MiB.');
-                const result = inspect(await fs.promises.readFile(file.path), parent.meshAgentsArchitectureNumbers);
+                if (!stat.isFile() || stat.size > 64 * 1024 * 1024 || (total += stat.size) > 128 * 1024 * 1024) throw new Error(filename + ': each agent file must be at most 64 MiB, 128 MiB in total.');
+                let result;
+                // One unsupported file must not discard the batch. It is reported by name and kept out of
+                // artifacts, because commit() checks that array's length against the review.
+                try { result = inspect(await fs.promises.readFile(file.path), parent.meshAgentsArchitectureNumbers); }
+                catch (ex) { rejected.push({ filename, error: ex.message }); continue; }
                 const stored = 'file-' + artifacts.length;
                 await fs.promises.rename(file.path, path.join(destination, stored));
                 await fs.promises.chmod(path.join(destination, stored), 0o600);
                 artifacts.push(Object.assign({ filename, stored, archivePath: file.archivePath, download: file.download }, result));
             }
-            const draft = { token, created: Date.now(), domain: domain.id, userid: user._id, artifacts, source: result.source, channel: result.channel, name: result.name, workflows: result.workflows, skipped: result.skipped };
+            if (!artifacts.length) throw new Error(rejected.length ? (rejected[0].filename + ': ' + rejected[0].error) : 'Select between 1 and 16 agent files.');
+            const draft = { token, created: Date.now(), domain: domain.id, userid: user._id, artifacts, source: result.source, channel: result.channel, name: result.name, workflows: result.workflows, skipped: result.skipped, rejected };
             await fs.promises.writeFile(path.join(destination, 'draft.json'), JSON.stringify(draft), { flag: 'wx', mode: 0o600 });
-            return { token, expires: draft.created + 1800000, source: draft.source, name: draft.name, skipped: draft.skipped, artifacts: artifacts.map(({ stored, ...artifact }) => artifact) };
+            return { token, expires: draft.created + 1800000, source: draft.source, name: draft.name, skipped: draft.skipped, rejected: draft.rejected, artifacts: artifacts.map(({ stored, ...artifact }) => artifact) };
         } catch (ex) {
             await fs.promises.rm(destination, { recursive: true, force: true });
             throw ex;
@@ -115,15 +120,15 @@ exports.CreateAgentBuildUpload = function (parent, catalog) {
                 const file = draft.artifacts[i], selection = request.files[i];
                 if (selection && selection.include === false) continue;
                 selected.push(file);
-                if (!selection || !file.candidates.some(x => x.id === selection.agentId) || typeof selection.kvm !== 'boolean') throw new Error('Select the agent type and desktop support for every file.');
+                if (!selection || !file.candidates.some(x => x.id === selection.agentId) || typeof selection.kvm !== 'boolean') throw new Error(file.filename + ': select the agent type and desktop support.');
                 const handle = await fs.promises.open(path.join(directory, file.stored), fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
                 let actual;
                 try {
                     const current = await handle.stat();
-                    if (!current.isFile() || current.size > 64 * 1024 * 1024) throw new Error('An uploaded file changed. Upload it again.');
+                    if (!current.isFile() || current.size > 64 * 1024 * 1024) throw new Error(file.filename + ': this file changed. Upload it again.');
                     actual = inspect(await handle.readFile(), parent.meshAgentsArchitectureNumbers);
                 } finally { await handle.close(); }
-                if (actual.hashes.sha256 !== file.hashes.sha256) throw new Error('An uploaded file changed. Upload it again.');
+                if (actual.hashes.sha256 !== file.hashes.sha256) throw new Error(file.filename + ': this file changed. Upload it again.');
                 artifacts.push({ filename: file.filename, agentId: selection.agentId, platform: file.platform, cpu: file.cpu, size: file.size, binaryMetadata: file.binaryMetadata, features: { kvm: selection.kvm }, hashes: file.hashes, archivePath: file.archivePath, download: file.download });
             }
             if (!artifacts.length) throw new Error('Select at least one agent file.');

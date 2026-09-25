@@ -29,7 +29,7 @@ module.exports.inspect = function (data, architectures) {
         if (![1, 2].includes(data[4]) || ![1, 2].includes(data[5]) || data[6] !== 1) throw new Error('Unsupported ELF header.');
         little = data[5] === 1;
         const wide = data[4] === 2, word = wide ? u64 : u32, machine = u16(18);
-        if (![2, 3].includes(u16(16)) || !word(24)) throw new Error('Upload an executable agent, not a library or object file.');
+        if (![2, 3].includes(u16(16)) || !word(24)) throw new Error('Use an executable agent, not a library or object file.');
         cpu = ({ 3: 'x86', 62: 'x86_64', 40: 'arm', 183: 'arm64', 8: little ? 'mipsel' : 'mips', 243: 'riscv64' })[machine];
         metadata.elfClass = wide ? 64 : 32;
         metadata.elfMachine = machine;
@@ -114,7 +114,7 @@ module.exports.inspect = function (data, architectures) {
         const pe = u32(60); range(pe, 24);
         if (u32(pe) !== 0x4550) throw new Error('Invalid PE signature.');
         const machine = u16(pe + 4), sections = u16(pe + 6), optional = pe + 24, size = u16(pe + 20), magic = u16(optional), wide = magic === 0x20b;
-        if (![0x10b, 0x20b].includes(magic) || size < (wide ? 152 : 136) || !sections || sections > 96 || (u16(pe + 22) & 0x2000)) throw new Error('Upload a supported Windows executable agent.');
+        if (![0x10b, 0x20b].includes(magic) || size < (wide ? 152 : 136) || !sections || sections > 96 || (u16(pe + 22) & 0x2000)) throw new Error('Use a supported Windows executable agent.');
         range(optional, size); range(optional + size, sections * 40);
         for (let i = 0; i < sections; i++) { const p = optional + size + i * 40; range(u32(p + 20), u32(p + 16)); }
         platform = 'windows'; cpu = ({ 0x14c: 'x86', 0x8664: 'x86_64', 0xaa64: 'arm64' })[machine];
@@ -143,10 +143,10 @@ module.exports.inspect = function (data, architectures) {
             p += length;
         }
         if (p !== start + size) throw new Error('Invalid Mach-O command count.');
-    } else { throw new Error('Upload a native ELF, PE or Mach-O agent file. Archives and universal binaries are not supported.'); }
+    } else { throw new Error('Use a native ELF, PE or Mach-O agent file. Archives and universal agent files are not supported.'); }
     if (!platform || !cpu || !ids.length) throw new Error('This executable architecture is not supported.');
     if (policyGuids.includes(data.subarray(-16).toString('hex'))) {
-        warnings.push('This file contains embedded connection settings. Upload an unconfigured agent binary.');
+        warnings.push('This file contains embedded connection settings. Use an unconfigured agent file.');
         throw new Error(warnings.at(-1));
     }
     const candidates = ids.filter(id => architectures[id] && architectures[id].update).map(id => ({ id, name: architectures[id].desc }));

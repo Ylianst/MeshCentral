@@ -8,11 +8,11 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
     function audit(job, user, message) {
         server.DispatchEvent(['*', user._id], null, { etype: 'server', action: 'agentbuildjob', domain: job.domain, userid: user._id, username: user.name, job: job.id, msg: message });
     }
-    function summary(job) {
+    function summary(job, user) {
         const counts = job.targets ? {} : Object.assign({}, job.counts);
         for (const target of job.targets ? job.targets.values() : []) counts[target.state] = (counts[target.state] || 0) + 1;
         if (job.targets && ['cancelling', 'cancelled'].includes(job.stage)) counts.cancelled = (counts.cancelled || 0) + job.nodeids.length - job.targets.size;
-        return { id: job.id, name: job.name, mode: job.mode, stage: job.stage, created: job.created, updated: job.updated, total: job.nodeids ? job.nodeids.length : job.total, counts, batchSize: job.batchSize, error: job.error, allowUnknown: job.allowUnknown };
+        return { id: job.id, name: job.name, mode: job.mode, stage: job.stage, created: job.created, updated: job.updated, total: job.nodeids ? job.nodeids.length : job.total, counts, batchSize: job.batchSize, error: job.error, allowUnknown: job.allowUnknown, owner: !user || (job.userid === user._id) };
     }
     function trimJobs() {
         for (const [id, job] of jobs) {
@@ -21,6 +21,7 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
         }
     }
     async function save(job) {
+        if (job.deleted) return;
         job.updated = Date.now();
         const { targets, working, timer, saving, ...record } = job;
         record.total = job.nodeids.length;
@@ -76,7 +77,7 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
         try {
         if (!info.canChange) throw new Error('The device already has an update in progress.');
         if (job.mode !== 'hold' && info.status === 'offline') throw new Error('Device offline. It has not been scheduled.');
-        if (job.mode !== 'hold' && (!info.serverUpdates || info.status === 'disabled')) throw new Error('Binary updates are disabled.');
+        if (job.mode !== 'hold' && (!info.serverUpdates || info.status === 'disabled')) throw new Error('Agent updates are disabled for this device.');
         if (job.mode === 'default' && info.defaultAvailable === false) throw new Error('The server default agent file is unavailable.');
         const file = job.files.find(x => x.agentId === info.agentId);
         if (job.mode === 'pin') {
@@ -212,10 +213,10 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
                     return { agentId: file.agentId, filename: file.filename, sha256: file.sha256 };
                 });
             }
-            const id = crypto.randomBytes(16).toString('hex'), job = { _id: 'abj' + id, type: 'agentbuildjob', id, domain: domain.id, userid: user._id, created: Date.now(), stage: 'preparing', name: build ? build.name : (request.mode === 'hold' ? 'Hold installed binary' : 'Follow server default'), build: build && build.id, files, mode: request.mode, nodeids: Array.from(new Set(request.nodeids)), batchSize: request.batchSize, allowUnknown: request.allowUnknown === true, targets: new Map() };
+            const id = crypto.randomBytes(16).toString('hex'), job = { _id: 'abj' + id, type: 'agentbuildjob', id, domain: domain.id, userid: user._id, created: Date.now(), stage: 'preparing', name: build ? build.name : '', build: build && build.id, files, mode: request.mode, nodeids: Array.from(new Set(request.nodeids)), batchSize: request.batchSize, allowUnknown: request.allowUnknown === true, targets: new Map() };
             await save(job); jobs.set(id, job);
             prepare(job).catch(ex => server.debug('agentupdate', ex.message));
-            return summary(job);
+            return summary(job, user);
             } finally { previews.delete(user._id); }
         }
         if (request.op === 'list') {
@@ -224,17 +225,34 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
             records.sort((a, b) => b.created - a.created);
             const offset = Number.isSafeInteger(request.offset) && request.offset >= 0 ? request.offset : 0;
             const page = [];
-            for (const row of records.slice(offset, offset + 20)) page.push(summary(jobs.get(row.id) || (['preparing', 'running', 'cancelling'].includes(row.stage) ? await load(domain, row.id) : row)));
+            for (const row of records.slice(offset, offset + 20)) page.push(summary(jobs.get(row.id) || (['preparing', 'running', 'cancelling'].includes(row.stage) ? await load(domain, row.id) : row), user));
             trimJobs();
             return { total: records.length, offset, jobs: page };
         }
         const job = await load(domain, request.id);
         if (request.op === 'get') {
             const offset = Number.isSafeInteger(request.offset) && request.offset >= 0 ? request.offset : 0;
-            const targets = Array.from(job.targets.values()).sort((a, b) => a.index - b.index);
-            return Object.assign(summary(job), { offset, targets: targets.slice(offset, offset + 50).map(({ _id, type, domain, ...target }) => target) });
+            const filters = { attention: ['failed', 'skipped'], active: ['starting', 'waiting'], done: ['confirmed'], ready: ['ready'] };
+            const states = request.state ? filters[request.state] : null;
+            if (request.state && !states) throw new Error('Invalid target filter');
+            let targets = Array.from(job.targets.values()).sort((a, b) => a.index - b.index);
+            if (states) targets = targets.filter(x => states.includes(x.state));
+            return Object.assign(summary(job, user), { offset, state: request.state || '', filtered: targets.length, targets: targets.slice(offset, offset + 50).map(({ _id, type, domain, ...target }) => target) });
         }
         if (job.userid !== user._id && request.op !== 'pause' && request.op !== 'cancel') throw new Error('Only the deployment owner can start or resume it.');
+        if (request.op === 'remove') {
+            // A deployment that never ran, or one that has finished, is history the owner can drop. A
+            // schedulable one stays: removing it would forget applied policies without reverting them.
+            if (!['ready', 'complete', 'cancelled'].includes(job.stage)) throw new Error('Cancel this deployment before removing it.');
+            if (job.working || job.timer) throw new Error('Wait for the current checks to finish.');
+            audit(job, user, 'Agent deployment remove: ' + (job.name || job.mode));
+            job.deleted = true;
+            await (job.saving || Promise.resolve()).catch(() => {});
+            jobs.delete(job.id);
+            for await (const target of storage.records(db, 'agentbuildtarget', domain.id, 'abt' + job.id + ':')) await storage.remove(db, target._id);
+            await storage.remove(db, 'abj' + job.id);
+            return { removed: job.id };
+        }
         if (request.op === 'pause' && ['preparing', 'running'].includes(job.stage)) { job.stage = 'paused'; }
         else if (request.op === 'cancel' && !['complete', 'cancelled'].includes(job.stage)) {
             job.stage = 'cancelling';
@@ -243,11 +261,11 @@ exports.CreateAgentDeployment = function (parent, db, catalog, builds) {
             if (request.confirm !== true) throw new Error('Confirm local recovery and the interruption of active sessions.');
             if (job.working) throw new Error('Wait for the current checks to finish.');
             delete job.error;
-            if (job.targets.size !== job.nodeids.length) { job.stage = 'preparing'; await save(job); prepare(job).catch(ex => server.debug('agentupdate', ex.message)); return summary(job); }
+            if (job.targets.size !== job.nodeids.length) { job.stage = 'preparing'; await save(job); prepare(job).catch(ex => server.debug('agentupdate', ex.message)); return summary(job, user); }
             job.stage = 'running';
         } else throw new Error('The deployment state changed. Refresh its status.');
-        await save(job); audit(job, user, 'Agent deployment ' + request.op + ': ' + job.name); schedule(job);
-        return summary(job);
+        await save(job); audit(job, user, 'Agent deployment ' + request.op + ': ' + (job.name || job.mode)); schedule(job);
+        return summary(job, user);
     }
     async function references(domain, build) {
         for await (const job of storage.records(db, 'agentbuildjob', domain.id)) if (job.build === build && !['complete', 'cancelled'].includes(job.stage)) return true;

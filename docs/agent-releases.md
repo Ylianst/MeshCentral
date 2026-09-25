@@ -88,6 +88,10 @@ versioned APK and AAB downloads. To publish an Android testing release, mark
 that draft as a prerelease before publishing. Keep the signing key used by
 existing installations.
 
+The Android APK supplies the server's installer download. APKs are not supported
+by the native agent catalog's **Install and pin** or bulk deployment controls;
+Android app updates use Google Play or APK installation.
+
 Neither workflow overwrites an existing release. These workflows use their
 repository's `GITHUB_TOKEN` to create the draft.
 

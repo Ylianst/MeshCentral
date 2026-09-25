@@ -1,130 +1,223 @@
 #ServerAgentBuilds { padding: 0 16px; }
-#p44info { overflow: auto; background: var(--bs-body-bg, transparent); color: var(--bs-body-color, inherit); }
+#p44info { display: flex; flex-direction: column; overflow: hidden; background: var(--bs-body-bg, transparent); color: var(--bs-body-color, inherit); }
+/* p44info has a definite height (the resize handler in default and default3, absolute top and bottom in
+   default-mobile), so the head and the list split it and only the list scrolls. The head may shrink and
+   scroll itself while the list keeps an absolute floor, the same split the device dialog uses. */
+#p44head { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
+#p44list { flex: 1 1 auto; min-height: 6em; overflow-y: auto; padding-bottom: 8px; }
 #p44 .areaHead { padding: 4px; }
-#p44status:empty { display: none; }
-#p44content { padding-bottom: 8px; }
 #p44 .agent-catalog-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-#p44 .agent-catalog-toolbar select, #p44search { max-width: 100%; min-width: 0; padding: 3px 6px; color: inherit; background: var(--bs-body-bg, transparent); border: 1px solid #8888; }
-#p44search { width: 240px; }
-#p44count { margin-left: auto; padding: 0 4px; opacity: .75; }
+#p44 .agent-catalog-actions, #p44 .agent-catalog-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+#p44 .agent-catalog-filters { margin-inline-start: auto; }
+#p44group, #p44search { max-width: 100%; min-width: 0; padding: 3px 6px; color: inherit; background: var(--bs-body-bg, transparent); border: 1px solid #8888; }
+#p44search { width: 220px; }
+#p44count, #p44status, #p44focus, #p44empty { margin: 6px 4px; }
+#p44focus, #p44empty { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+#p44focus { padding-inline-start: 8px; border-inline-start: 3px solid var(--bs-primary-text-emphasis, #0b3b6f); }
+#p44 .agent-notice { margin: 6px 4px; padding-inline-start: 8px; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); }
+#p44status:empty, #p44count:empty, #p44focus:empty, #p44empty:empty, #p44 [data-agent-alert]:empty { display: none; }
 #p44 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-#p44 section { margin: 0 0 8px; }
+#p44 section { margin: 0 0 12px; }
+#p44 .agent-group-title { margin: 8px 4px 2px; font-size: 1.05em; font-weight: bold; }
 #p44 .agent-note { margin: 6px 4px; opacity: .75; }
 #p44 .agent-muted { opacity: .75; font-size: .9em; }
 #p44 .agent-source { overflow-wrap: anywhere; }
 #p44 .agent-source a { margin-right: 8px; }
 #p44 .agent-provenance { padding: 3px 6px; border-bottom: 1px solid #8885; }
 #p44 .agent-provenance > div { margin: 3px 0; }
+#p44 .agent-build-head { display: flex; align-items: flex-start; gap: 8px; }
+#p44 .agent-build-head > details { flex: 1 1 auto; min-width: 0; }
+#p44 .agent-build-name { margin-right: 8px; }
+#p44 .agent-build-summary, #p44 .agent-catalog-tools { padding: 5px 6px; background: var(--bs-tertiary-bg, #8882); border-bottom: 1px solid #8885; }
+#p44 .agent-catalog-tools { flex: 0 0 auto; display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
 #p44 [role="table"] { display: table; width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; }
-#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(1) { width: 26%; }
-#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(2) { width: 28%; }
-#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(3) { width: 7%; }
-#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(4) { width: 15%; }
+#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(1) { width: 22%; }
+#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(2) { width: 16%; }
+#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(3) { width: 18%; }
+#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(4) { width: 13%; }
 #p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(5) { width: 8%; }
-#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(6) { width: 16%; }
-#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(1) { width: 28%; }
-#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(2) { width: 15%; }
-#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(3) { width: 28%; }
-#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(4) { width: 9%; }
-#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(5) { width: 20%; }
-#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(1) { width: 34%; }
-#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(2) { width: 34%; }
+#p44 [data-agent-group="defaults"] [role="columnheader"]:nth-child(6) { width: 23%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(1) { width: 22%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(2) { width: 13%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(3) { width: 15%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(4) { width: 8%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(5) { width: 17%; }
+#p44 [data-agent-group="builds"] [role="columnheader"]:nth-child(6) { width: 25%; }
+#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(1) { width: 32%; }
+#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(2) { width: 26%; }
 #p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(3) { width: 10%; }
-#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(4) { width: 22%; }
+#p44 [data-agent-group="bundled"] [role="columnheader"]:nth-child(4) { width: 32%; }
 #p44 [role="rowgroup"] { display: table-row-group; }
 #p44 [role="row"] { display: table-row; }
 #p44 [role="columnheader"], #p44 [role="cell"] { display: table-cell; padding: 4px 6px; border-bottom: 1px solid #8885; vertical-align: top; overflow-wrap: anywhere; }
 #p44 [role="columnheader"] { font-weight: bold; background: var(--bs-tertiary-bg, #8882); }
 #p44 .agent-number { text-align: right; white-space: nowrap; }
-#p44 .agent-count-label { display: none; }
 #p44 .agent-file { overflow-wrap: anywhere; }
+#p44 .agent-cell-label { display: none; }
+#p44 .agent-usage > div { font-size: .9em; }
 #p44 .agent-hash { max-width: 340px; overflow-wrap: anywhere; font-size: 12px; margin: 4px 0; }
 #p44 .agent-hash code { display: block; }
 #p44 .agent-match { color: var(--bs-success-text-emphasis, #16833b); }
+#p44 .agent-warn { color: var(--bs-warning-text-emphasis, #4d3300); }
 #p44 .agent-error { color: var(--bs-danger-text-emphasis, #b32424); }
 .night #p44 .agent-match { color: #80d6a2; }
+.night #p44 .agent-warn { color: #e8c07a; }
 .night #p44 .agent-error { color: #ffaaaa; }
+.night #p44focus { border-inline-start-color: #9ec5fe; }
+.night #p44 .agent-notice { border-inline-start-color: #e8c07a; }
 #p44 summary { cursor: pointer; }
-#p44 .agent-build-name { margin-right: 8px; }
-#p44 .agent-build-summary { padding: 5px 6px; background: var(--bs-tertiary-bg, #8882); border-bottom: 1px solid #8885; }
 #p10agentBuild { display: flex; flex-direction: column; line-height: 1.4; overflow: hidden; }
-#p10buildContent { overflow-y: auto; min-height: 0; }
 #xxAddAgentBody #p10agentBuild { max-height: calc(100vh - 220px); }
-.agent-build-dialog #idx_dlgOkButton, .agent-manager-dialog #idx_dlgOkButton { width: auto !important; min-width: 80px; padding: 2px 8px; }
 .agent-build-dialog #p10agentBuild { max-height: calc(75vh - 90px); }
-.agent-build-dialog #p10agentBuild a { color: inherit; }
-#p10agentBuild .agent-build-toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-#p10agentBuild .agent-build-fields { display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 6px; margin: 8px 0; }
-#p10agentBuild select { width: 100%; min-width: 0; padding: 3px; background: var(--bs-body-bg, transparent); color: inherit; border: 1px solid #8888; }
+.agent-build-dialog #idx_dlgOkButton, .agent-manager-dialog #idx_dlgOkButton { width: auto !important; min-width: 80px; padding: 2px 8px; }
+#idx_dlgOkButton.agent-build-off { opacity: .55; }
+/* The head and the reason are the only regions outside the scroller. Both may shrink and scroll
+   themselves while the scroller keeps a floor, so a long status can never squeeze it away. A
+   percentage cap would not do this: the parent sets max-height rather than height, so a percentage
+   resolves against an indefinite height and is dropped. */
+#p10buildHead { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px solid #8886; }
+#p10buildContent { flex: 1 1 auto; min-height: 6em; overflow-y: auto; }
+#p10buildApplyStatus { flex: 0 1 auto; min-height: 0; max-height: 6em; overflow-y: auto; margin: 8px 0 0; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); padding-inline-start: 8px; }
+#p10agentBuild .agent-build-headline, #agentManagerBody .agent-build-headline { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; overflow-wrap: anywhere; }
+#p10agentBuild .agent-build-headtools, #agentManagerBody .agent-build-headtools { display: flex; align-items: baseline; gap: 8px; margin-inline-start: auto; }
+#p10buildChecked { font-size: .9em; opacity: .75; }
+#p10buildStatus { font-weight: bold; margin-top: 4px; }
+#p10buildSummary { margin-top: 6px; }
+#p10buildNotice { margin-top: 6px; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); padding-inline-start: 8px; }
+/* max-content rather than a pixel track: a translated label widens the column instead of wrapping
+   the control. One column below 700px. */
+#p10agentBuild .agent-build-field, #agentManagerBody .agent-build-field { display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); align-items: baseline; gap: 4px 8px; margin: 6px 0; }
+#p10agentBuild .agent-build-field > div, #agentManagerBody .agent-build-field > div { min-width: 0; }
+#p10agentBuild select { width: 100%; min-width: 0; padding: 3px; }
 #p10agentBuild p { margin: 8px 0; }
-#p10buildStatus, #p10buildAvailable { opacity: .75; }
+#p10agentBuild summary { cursor: pointer; }
+#p10agentBuild code { overflow-wrap: anywhere; }
+#p10agentBuild .agent-hash { overflow-wrap: anywhere; font-size: 12px; margin: 2px 0; }
+#p10agentBuild .agent-build-muted { font-size: .9em; opacity: .75; }
+#p10agentBuild .agent-build-catalog { margin-top: 8px; }
+#p10buildCurrent { margin-bottom: 10px; }
+#p10buildCurrentDetails { margin-top: 4px; overflow-wrap: anywhere; }
+#p10buildModes { border: 0; margin: 0; padding: 0; min-width: 0; }
+#p10buildModes legend { float: none; width: auto; margin: 0 0 4px; padding: 0; font-size: inherit; font-weight: bold; }
+#p10agentBuild .agent-choice { margin: 4px 0; padding: 5px 6px; border: 1px solid transparent; }
+#p10agentBuild .agent-choice.selected { border-color: #8886; background: var(--bs-tertiary-bg, #8881); }
+#p10agentBuild .agent-choice-label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; cursor: pointer; }
+#p10agentBuild .agent-choice-off .agent-choice-label { cursor: default; opacity: .8; }
+#p10agentBuild .agent-choice-note, #p10agentBuild .agent-choice-body { margin-inline-start: 24px; }
+#p10agentBuild .agent-choice-note { font-size: .9em; }
+#p10buildConfirm { display: block; margin: 8px 0; }
+#p10buildConfirm input { margin-inline-end: 6px; }
+#p10buildWarning { font-size: .9em; }
 #p10buildRequirements { margin: 6px 0; }
 #p10buildRequirements .agent-requirement { margin: 6px 0; overflow-wrap: anywhere; }
-#p10buildRequirements .agent-check-time { font-size: .9em; opacity: .75; margin-top: 4px; }
-#p10buildConfirm { display: block; }
-#p10buildApplyStatus { flex-shrink: 0; border-left: 3px solid #888; padding-left: 8px; }
-#p10buildApplyStatus:empty { display: none; }
-#p10buildUpdateHelp { flex-shrink: 0; max-height: 25vh; overflow-y: auto; }
-#p10buildUpdateHelp summary { cursor: pointer; }
-#p10buildWarning { font-size: .9em; }
-#p10buildCurrent { margin-top: 8px; }
-#p10buildCurrent summary { cursor: pointer; }
-#p10buildCurrentDetails { margin-top: 4px; overflow-wrap: anywhere; }
-#p10buildCurrentDetails .agent-current-policy { margin: 8px 0; }
-#p10buildProgress { flex-shrink: 0; border: 1px solid #8888; border-left: 4px solid var(--bs-primary, #186ac0); padding: 8px; margin-bottom: 10px; }
-#p10buildProgress.complete { border-left-color: var(--bs-success, #16833b); }
-#p10buildProgress.attention { border-left-color: var(--bs-warning, #c58a00); }
+#p10buildUpdateHelp { margin: 8px 0; }
+#p10buildProgress { border: 1px solid #8888; border-inline-start: 4px solid var(--bs-primary-text-emphasis, #0b3b6f); padding: 8px; margin-bottom: 10px; }
+#p10buildProgress.complete { border-inline-start-color: var(--bs-success-text-emphasis, #0f5526); }
+#p10buildProgress.attention { border-inline-start-color: var(--bs-warning-text-emphasis, #4d3300); }
 #p10buildProgress .agent-progress-title { font-weight: bold; margin-bottom: 4px; }
-#p10buildProgress .agent-progress-hint { margin-top: 6px; font-size: .9em; }
-#p10buildProgress .agent-progress-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; list-style: none; margin: 8px 0; padding: 0; font-size: .85em; }
-#p10buildProgress .agent-progress-steps li { border-top: 3px solid #8885; padding-top: 4px; }
-#p10buildProgress .agent-progress-steps .complete { border-color: var(--bs-success, #16833b); }
-#p10buildProgress .agent-progress-steps .current { border-color: var(--bs-primary, #186ac0); font-weight: bold; }
-#p10buildProgress progress { display: block; width: 100%; height: 8px; }
-#p10buildProgress .agent-progress-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #8885; border-top-color: currentColor; border-radius: 50%; margin-right: 8px; vertical-align: -2px; animation: agent-build-spin 1s linear infinite; }
+#p10buildTransfer { margin-bottom: 10px; }
+#p10buildTransfer progress { display: block; width: 100%; height: 8px; }
+#p10agentBuild .agent-build-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #8885; border-top-color: currentColor; border-radius: 50%; margin-inline-end: 8px; vertical-align: -2px; animation: agent-build-spin 1s linear infinite; }
 @keyframes agent-build-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { #p10buildProgress .agent-progress-spinner { animation: none; } }
-#p10agentBuild .agent-hash { overflow-wrap: anywhere; font-size: 12px; margin: 4px 0; }
-#p10agentBuild .agent-build-catalog { margin-top: 8px; }
-#p10buildRequirements:empty, #p10buildStatus:empty { display: none; }
+/* A frozen partial ring reads as a rendering fault, and the panel title already names the state. */
+@media (prefers-reduced-motion: reduce) { #p10agentBuild .agent-build-spinner { display: none; } }
+#p10agentBuild .agent-match { color: var(--bs-success-text-emphasis, #08421c); }
+#p10agentBuild .agent-warn { color: var(--bs-warning-text-emphasis, #4d3300); }
+#p10agentBuild .agent-error { color: var(--bs-danger-text-emphasis, #7a1414); }
+.night #xxAddAgentBody #p10agentBuild .agent-match { color: #80d6a2; }
+.night #xxAddAgentBody #p10agentBuild .agent-warn { color: #e8c07a; }
+.night #xxAddAgentBody #p10agentBuild .agent-error { color: #ffaaaa; }
+.night #xxAddAgentBody #p10buildNotice, .night #xxAddAgentBody #p10buildApplyStatus { border-inline-start-color: #e8c07a; }
+#p10buildStatus:empty, #p10buildChecked:empty, #p10buildNotice:empty, #p10buildSummary:empty,
+#p10buildAvailable:empty, #p10buildRequirements:empty, #p10buildApplyStatus:empty,
+#p10buildCurrentDetails:empty { display: none; }
+/* A link that is a button. The catalog fragment still emits .agent-usage-link, and the #p44 override
+   keeps that page's current colour until it is reworked. */
+.agent-linkbutton, .agent-usage-link { background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; cursor: pointer; color: var(--bs-link-color, #036); }
+.agent-linkbutton:disabled, .agent-usage-link:disabled { color: inherit; opacity: .6; text-decoration: none; cursor: default; }
+#p44 .agent-linkbutton, #p44 .agent-usage-link { color: inherit; }
+/* default and default-mobile have no Bootstrap and their #dialog is light in both themes, so the
+   project link colour and a painted select beat the inherited ones. */
+.agent-build-dialog #p10agentBuild a, .agent-build-dialog #p10agentBuild .agent-linkbutton { color: #036; }
+.agent-build-dialog #p10agentBuild select { background: #fff; color: #000; border: 1px solid #4d4d4d; }
 @media (max-width: 700px) {
     body:not(.is-mobile) #ServerSubMenuSpan { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
     body:not(.is-mobile) #ServerSubMenuSpan::-webkit-scrollbar { display: none; }
     body:not(.is-mobile) #ServerSubMenu { width: max-content; min-width: 100%; }
     body:not(.is-mobile) #ServerSubMenu .topbar_td { padding: 0 12px; }
     body.is-mobile #ServerAgentBuilds { white-space: normal; text-align: center; line-height: 1.1; }
-    #p44 .agent-catalog-toolbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
-    #p44group { grid-column: 1; grid-row: 1; width: 100%; }
-    #p44refresh { grid-column: 2; grid-row: 1; }
-    #p44search { grid-column: 1; grid-row: 2; width: 100%; box-sizing: border-box; }
-    #p44count { grid-column: 2; grid-row: 2; white-space: nowrap; }
+    #p44 .agent-catalog-filters { width: 100%; margin-inline-start: 0; }
+    #p44group { flex: 1 1 auto; }
+    #p44search { flex: 1 1 100%; width: auto; box-sizing: border-box; }
     #p44 [role="table"], #p44 [role="rowgroup"] { display: block; }
     #p44 [role="table"] > [role="rowgroup"]:first-child { display: none; }
-    #p44 [data-agent-row] { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; padding: 5px 6px; border-bottom: 1px solid #8885; }
-    #p44 [role="cell"] { display: block; min-width: 0; padding: 0; border: 0; text-align: left; }
-    #p44 [role="cell"]:first-child, #p44 [role="cell"]:last-child { grid-column: 1 / -1; }
-    #p44 .agent-number { grid-column: 2; grid-row: 2; text-align: right; }
-    #p44 .agent-device-count { grid-row: 3; }
-    #p44 .agent-count-label { display: inline; }
-    #p44 .agent-requirements { grid-column: 1 / -1; }
-    #p10agentBuild .agent-build-fields { grid-template-columns: 86px minmax(0, 1fr); }
+    #p44 [data-agent-row] { display: block; padding: 5px 6px; border-bottom: 1px solid #8885; }
+    #p44 [role="cell"] { display: block; min-width: 0; padding: 1px 0; border: 0; text-align: left; }
+    #p44 .agent-number { text-align: left; white-space: normal; }
+    #p44 .agent-file { font-weight: bold; }
+    #p44 .agent-cell-label { display: inline; margin-inline-end: 4px; opacity: .75; }
+    #p10agentBuild .agent-build-field { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    #p10agentBuild .agent-build-headtools { margin-inline-start: 0; width: 100%; justify-content: space-between; }
+    #agentManagerBody .agent-build-field { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    #agentManagerBody .agent-build-headtools { margin-inline-start: 0; width: 100%; justify-content: space-between; }
+    .agent-manager-row { grid-template-columns: minmax(0, 1fr); }
 }
-#agentManagerBody { max-height: calc(100vh - 210px); overflow: auto; overflow-wrap: anywhere; }
-#dialog.agent-manager-dialog { top: 5vh; max-height: 90vh; }
-#dialog.agent-manager-dialog #agentManagerBody { max-height: calc(90vh - 110px); }
+/* Same regions as the device dialog: the head may shrink and scroll itself, the scroller keeps a floor,
+   and the reason and the error are pinned beside the footer buttons. A percentage cap cannot work on
+   these children, because both hosts set max-height rather than height. */
+#agentManagerBody { display: flex; flex-direction: column; line-height: 1.4; overflow: hidden; }
+#xxAddAgentBody #agentManagerBody { max-height: calc(100vh - 220px); }
+.agent-manager-dialog #agentManagerBody { max-height: calc(90vh - 110px); }
+#agentManagerHead { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px solid #8886; }
+#agentManagerContent { flex: 1 1 auto; min-height: 6em; overflow-y: auto; overflow-wrap: anywhere; }
+#agentManagerReason, #agentManagerError { flex: 0 1 auto; min-height: 0; max-height: 6em; overflow-y: auto; margin: 8px 0 0; padding-inline-start: 8px; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); }
+#agentManagerError { border-inline-start-color: var(--bs-danger-text-emphasis, #7a1414); }
+#agentManagerState { font-weight: bold; margin-top: 4px; }
+#agentManagerBody .agent-manager-tally { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 6px 0; }
+#agentManagerBody .agent-manager-tally > * { white-space: nowrap; }
+#agentManagerCounts, #agentManagerNotice { margin-top: 6px; }
+#agentManagerState:empty, #agentManagerCounts:empty, #agentManagerNotice:empty, #agentManagerReason:empty,
+#agentManagerError:empty, #agentJobNotice:empty, #agentManageNote:empty, #agentUploadState:empty,
+#agentBatchFiles:empty, #agentManagerBody .agent-review-file p:empty { display: none; }
+/* The legacy dialog is 400px wide (300px on mobile), which cannot hold a device list or a 96 character
+   hash. setDialogMode clears the inline geometry on open, so the size belongs on the class. */
+#dialog.agent-manager-dialog { top: 5vh; max-height: 90vh; width: min(720px, 94vw); left: max(3vw, calc(50% - 360px)); }
 #agentManagerBody p { margin: 8px 0; }
-#agentManagerBody progress { width: 100%; }
-.agent-manager-field { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px; align-items: center; margin: 8px 0; }
-.agent-manager-field input, .agent-manager-field select { width: 100%; min-width: 0; box-sizing: border-box; }
+#agentManagerBody summary { cursor: pointer; }
+#agentManagerBody code { overflow-wrap: anywhere; }
+#agentManagerBody progress { display: block; width: 100%; height: 8px; }
+#agentManagerBody select, #agentManagerBody input[type="text"], #agentManagerBody input[type="url"],
+#agentManagerBody input[type="number"], #agentManagerBody input[type="search"] { width: 100%; min-width: 0; box-sizing: border-box; padding: 3px; }
+#agentManagerBody .agent-muted, #agentManagerBody .agent-build-note { font-size: .9em; opacity: .75; }
+#agentManagerBody .agent-hash { overflow-wrap: anywhere; font-size: 12px; margin: 2px 0; }
+#agentManagerBody .agent-match { color: var(--bs-success-text-emphasis, #08421c); }
+#agentManagerBody .agent-warn { color: var(--bs-warning-text-emphasis, #4d3300); }
+#agentManagerBody .agent-error { color: var(--bs-danger-text-emphasis, #7a1414); }
+.night #xxAddAgentBody #agentManagerBody .agent-match { color: #80d6a2; }
+.night #xxAddAgentBody #agentManagerBody .agent-warn { color: #e8c07a; }
+.night #xxAddAgentBody #agentManagerBody .agent-error { color: #ffaaaa; }
+.night #xxAddAgentBody #agentManagerReason { border-inline-start-color: #e8c07a; }
+.night #xxAddAgentBody #agentManagerError { border-inline-start-color: #ffaaaa; }
+/* default and default-mobile have no Bootstrap and their #dialog is light in both themes. */
+.agent-manager-dialog #agentManagerBody a, .agent-manager-dialog #agentManagerBody .agent-linkbutton { color: #036; }
+.agent-manager-dialog #agentManagerBody select, .agent-manager-dialog #agentManagerBody input[type="text"],
+.agent-manager-dialog #agentManagerBody input[type="url"], .agent-manager-dialog #agentManagerBody input[type="number"],
+.agent-manager-dialog #agentManagerBody input[type="search"] { background: #fff; color: #000; border: 1px solid #4d4d4d; }
 .agent-manager-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
-.agent-manager-toolbar input { min-width: 0; max-width: 100%; }
+#agentManagerBody .agent-manager-toolbar select, #agentManagerBody .agent-manager-toolbar input { width: auto; }
+#agentManagerBody .agent-manager-confirm { display: block; margin: 8px 0; }
+#agentManagerBody .agent-manager-confirm input { margin-inline-end: 6px; }
+.agent-manager-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, max-content); align-items: baseline; gap: 2px 10px; border-bottom: 1px solid #8886; padding: 6px 0; }
+.agent-manager-row .agent-manager-detail { grid-column: 1 / -1; font-size: .9em; }
+.agent-manager-progress { display: block; margin: 6px 0; font-size: .9em; }
 .agent-review-file { border: 1px solid #8888; margin: 10px 0; padding: 8px; min-width: 0; }
 .agent-review-file legend { width: auto; float: none; font-size: inherit; font-weight: bold; margin: 0; }
-.agent-manager-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; border-bottom: 1px solid #8886; padding: 6px 0; }
-.agent-manager-row > div { grid-column: 1 / -1; font-size: .9em; }
+.agent-review-file.agent-review-todo { border-inline-start: 4px solid var(--bs-warning-text-emphasis, #4d3300); }
+.night #xxAddAgentBody .agent-review-file.agent-review-todo { border-inline-start-color: #e8c07a; }
 .agent-build-tools { float: right; margin: 4px; }
-.agent-usage-link { background: none; color: inherit; text-decoration: underline; border: 0; padding: 0; cursor: pointer; font: inherit; }
-@media (max-width: 500px) { .agent-manager-field { grid-template-columns: 1fr; gap: 3px; } }
+.agent-import-row { border-bottom: 1px solid #8886; padding: 5px 0; }
+.agent-import-row button { max-width: 100%; text-align: left; white-space: normal; }
+.agent-import-source { border-inline-start: 3px solid #8888; padding-inline-start: 8px; margin: 8px 0; }
 
 .agent-import-row { border-bottom: 1px solid #8886; padding: 5px 0; }
 .agent-import-row button { max-width: 100%; text-align: left; white-space: normal; }

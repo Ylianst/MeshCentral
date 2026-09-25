@@ -10393,6 +10393,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     var staticAssetVersions = {};
+    // The agent build admin dialogs keep their strings in a shared script instead of inline in the
+    // view, so the translated build of that script has to be picked the same way the view is. An
+    // empty version means the file is not there, which is how a missing translation falls back.
+    function setAgentBuildScript(xargs, domain, lang) {
+        if (lang && (lang != 'en')) {
+            var translated = 'scripts/translations/agentbuildmanager' + xargs.min + '_' + lang + '.js';
+            var version = getStaticAssetVersion(domain, translated);
+            if (version != '') { xargs.agentBuildScript = translated; xargs.agentBuildScriptVersion = version; return; }
+        }
+        xargs.agentBuildScript = 'scripts/agentbuildmanager' + xargs.min + '.js';
+        xargs.agentBuildScriptVersion = getStaticAssetVersion(domain, xargs.agentBuildScript);
+    }
+
     function getStaticAssetVersion(domain, filename) {
         var override = (domain.webpublicpath != null) ? domain.webpublicpath : obj.parent.webPublicOverridePath;
         var roots = override ? [override, obj.parent.webPublicPath] : [obj.parent.webPublicPath];
@@ -10417,7 +10430,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.query.minify == '1') { minify = true; } else if (req.query.minify == '0') { minify = false; }
         xargs.min = minify ? '-min' : '';
         if ((page === 'default') || (page === 'default3')) {
-            xargs.agentBuildScriptVersion = getStaticAssetVersion(domain, 'scripts/agentbuildmanager' + xargs.min + '.js');
+            setAgentBuildScript(xargs, domain, null);
             xargs.agentBuildStyleVersion = getStaticAssetVersion(domain, 'styles/agentcatalog.css');
         }
         xargs.titlehtml = domain.titlehtml;
@@ -10603,7 +10616,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     if (foundLanguage != null) {
                         // Found a match. If the file no longer exists, default to English.
                         obj.fs.exists(fileOptions[foundLanguage] + '.handlebars', function (exists) {
-                            if (exists) { args.lang = foundLanguage; res.render(fileOptions[foundLanguage], args); } else { args.lang = 'en'; res.render(filename, args); }
+                            if (exists) { args.lang = foundLanguage; if (args.agentBuildScript != null) { setAgentBuildScript(args, domain, foundLanguage); } res.render(fileOptions[foundLanguage], args); } else { args.lang = 'en'; res.render(filename, args); }
                         });
                         if (user && (user.llang != foundLanguage)) { user.llang = foundLanguage; obj.db.SetUser(user); }  // Set user 'last language' used if needed.
                         return;

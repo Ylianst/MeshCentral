@@ -2,6 +2,7 @@
 
 exports.get = (db, id) => new Promise((resolve, reject) => db.Get(id, (err, docs) => err ? reject(err) : resolve((docs || [])[0])));
 exports.set = (db, value) => new Promise((resolve, reject) => db.Set(value, err => err ? reject(err) : resolve(value)));
+exports.remove = (db, id) => new Promise((resolve, reject) => db.Remove(id, err => err ? reject(err) : resolve()));
 exports.records = async function* (db, type, domain, prefix = '') {
     let cursor = prefix;
     for (;;) {
