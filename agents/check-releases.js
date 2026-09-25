@@ -17,7 +17,7 @@ async function main() {
         const packages = Array.isArray(data) ? data : Object.values(data);
         if (packages.length !== 1 || !Array.isArray(packages[0].files)) throw new Error('Invalid npm package file list.');
         const names = packages[0].files.map(file => file.path);
-        if (['agents/agent-defaults.json', 'agentdefaults.js', 'agenttypes.js', 'agentreleaseupdates.js', 'agentbuildfetch.js'].some(name => !names.includes(name))) throw new Error('Agent download support is missing from the package.');
+        if (['agents/agent-defaults.json', 'agentbuilds.js', 'agenttypes.js'].some(name => !names.includes(name))) throw new Error('Agent download support is missing from the package.');
         const binaries = names.filter(name => /^agents\/(?:meshagent[_-]|MeshService|MeshConsole|MeshCmd.*\.exe$|agents_[^/]+\/)/i.test(name));
         if (binaries.length) throw new Error('Agent binaries must be release assets: ' + binaries.join(', '));
     }
@@ -33,7 +33,7 @@ async function main() {
             config: { settings: { agentdownloads: { manifest: manifestPath, enabled: !directory } } },
             meshAgentsArchitectureNumbers: require('../agenttypes')()
         };
-        const defaults = require('../agentdefaults').CreateAgentDefaults(parent, { directory: directory || temporary });
+        const defaults = require('../agentbuilds').CreateAgentDefaults(parent, { directory: directory || temporary });
         await defaults.prepare();
         const status = defaults.status();
         if (status.errors.length) throw new Error('Default release files must be published and verified before MeshCentral is released:\n' + status.errors.join('\n'));

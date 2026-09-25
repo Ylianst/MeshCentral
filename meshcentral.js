@@ -1910,7 +1910,7 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
-        obj.agentDefaults = require('./agentdefaults').CreateAgentDefaults(obj);
+        obj.agentDefaults = require('./agentbuilds').CreateAgentDefaults(obj);
         await obj.agentDefaults.prepare();
         obj.agentDefaults.start();
         for (const error of obj.agentDefaults.status().errors) addServerWarning(error);

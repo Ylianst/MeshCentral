@@ -6264,9 +6264,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     }
 
-    const agentCatalog = require('./agentcatalog.js').CreateAgentCatalog(parent);
+    const agentCatalog = require('./agentbuilds.js').CreateAgentCatalog(parent);
     obj.agentBuilds = require('./agentbuilds.js').CreateAgentBuilds(obj, db, agentCatalog);
-    obj.agentBuildAdmin = require('./agentbuildadmin').CreateAgentBuildAdmin(obj, db, agentCatalog);
+    obj.agentBuildAdmin = require('./agentbuilds.js').CreateAgentBuildAdmin(obj, db, agentCatalog);
 
     async function handleAgentBuildUpload(req, res) {
         const domain = checkUserIpAddress(req, res);

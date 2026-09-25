@@ -28,7 +28,7 @@ For more information, [visit MeshCentral.com](https://meshcentral.com).
 
 The [Design and Architecture Guide](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
-The [Agent builds guide](docs/agent-builds.md) covers importing agent binaries, selecting per-device update policies, and deploying builds in batches. Public GitHub releases can be imported without a token; the guide also explains optional credentials for Actions builds and private repositories.
+The [Agent builds guide](https://docs.meshcentral.com/meshcentral/agent-builds/) covers importing agent binaries, selecting per-device update policies, and deploying builds in batches. Public GitHub releases can be imported without a token; the guide also explains optional credentials for Actions builds and private repositories.
 
 ## Video Tutorials
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.
