@@ -7,8 +7,9 @@ Publishing an agent release does not change those defaults or deploy agents.
 
 ## Tags and prereleases
 
-Use version tags such as `1.2.0` for stable releases and `1.2.0-beta.1` for
-testing builds. Agent and MeshCentral version numbers do not need to match.
+For native MeshAgent builds, use version tags such as `1.2.0` for stable releases
+and `1.2.0-beta.1` for beta builds. A `v` prefix is also accepted. Agent and
+MeshCentral version numbers do not need to match.
 The release tag is separate from the agent's embedded build date and commit hash.
 
 Mark beta releases as prereleases in GitHub. MeshCentral's scheduled update
@@ -59,7 +60,8 @@ MeshCentral and appear only once in a default manifest.
 
 The release workflows generate this manifest automatically. For manually
 prepared files, run the following from the MeshCentral repository root, using
-the release's repository, tag and complete file list:
+the release's repository, tag and complete file list. The values below are
+examples:
 
 ```sh
 node agents/release-manifest.js --repository Ylianst/MeshAgent --tag 1.2.0 \
@@ -71,17 +73,20 @@ node agents/release-manifest.js --repository Ylianst/MeshAgent --tag 1.2.0 \
 In MeshAgent:
 
 1. Push a version tag at the commit to release. This starts **Agent Release**.
-   Manual runs must also select a version tag.
+   Manual runs must select an existing version tag, and the workflow must be
+   present on the default branch.
 2. Wait for the Linux, Windows, macOS and FreeBSD builds to finish. All must
    succeed before the workflow creates a draft with the binaries and manifest.
 3. Review the assets and release notes, then publish the draft. Tags with a
    suffix, such as `1.2.0-beta.1`, create prerelease drafts.
 
-MeshCentralAndroidAgent's **Android Release** workflow requires a tag matching
-the app version and the existing Android signing secrets. It creates a draft
-with `meshagent_android.apk` and `agent-release.json`, retaining the versioned
-APK and AAB downloads. Do not change the signing key for an existing Android
-application.
+MeshCentralAndroidAgent's **Android Release** workflow requires a numeric tag
+such as `1.0.24` matching the app's `versionName`, without a `v` prefix or
+prerelease suffix. It requires the existing Android signing secrets and creates
+a draft with `meshagent_android.apk` and `agent-release.json`, retaining the
+versioned APK and AAB downloads. To publish an Android testing release, mark
+that draft as a prerelease before publishing. Keep the signing key used by
+existing installations.
 
 Neither workflow overwrites an existing release. These workflows use their
 repository's `GITHUB_TOKEN` to create the draft.
@@ -95,6 +100,8 @@ private repositories also requires authentication.
 After publishing and checking compatibility, copy the approved release entries
 into `agents/agent-defaults.json`. The manifest can combine files from different
 repositories and versions, so older platforms can keep their existing builds.
+Default downloads require public releases. Credentials configured for catalog
+imports are not used for default downloads or scheduled release checks.
 
 Default downloads use the exact tags and hashes in this manifest. Scheduled
 checks report new stable releases without changing the selected files. Changing
@@ -111,6 +118,8 @@ published and imported without a MeshCentral release.
 The migration workflows preserve the binaries previously bundled with
 MeshCentral 1.2.6, including the September testing builds. They verify the
 original files against recorded hashes without rebuilding or signing them.
+The workflows must be present on their repositories' default branches before
+running them manually.
 
 1. Run **Migrate bundled agents** in MeshAgent with the `legacy` profile, and
    **Migrate bundled Android agent** in MeshCentralAndroidAgent. Each workflow
@@ -120,7 +129,8 @@ original files against recorded hashes without rebuilding or signing them.
    latest-release selection.
 3. To publish the September files for testing, run the native workflow with the
    `september` profile. Publish its `testing-sep2026` draft as a prerelease and
-   leave these files out of the default manifest.
+   leave these files out of the default manifest. New beta builds use version
+   tags such as `1.2.0-beta.1`.
 
 Migration tags identify the packaging commit. The release manifest records the
 source repository, archive commit and original paths for the preserved files.

@@ -8,10 +8,12 @@ the catalog does not install it or change the server's default installers.
 ## Default agent downloads
 
 MeshCentral obtains its default agent binaries from public GitHub releases.
-The agent executables are not included in the server package. The release manifest selects
-an exact repository, tag, asset, size and full-file SHA384 for each file. It can
-reference several repositories and release versions. These downloads do not
-require a GitHub token and do not use Actions artifacts or a moving `latest` URL.
+The agent executables are not included in the server package. The release
+manifest selects an exact repository, tag, asset, size and full-file SHA384 for
+each file. It can reference several repositories and release versions. These
+downloads do not require a GitHub token and do not use Actions artifacts or a
+moving `latest` URL. Private releases are supported by catalog imports, but
+cannot be used for automatic default downloads or scheduled release checks.
 
 At startup, MeshCentral checks the persistent cache before signing Windows
 agents or loading installer and update files. Missing files are downloaded and
@@ -28,11 +30,13 @@ Only administrators in the default domain can restore the shared defaults.
 
 For offline installation, copy the release files into
 `meshcentral-data/agentbuilds/` using the filenames in the manifest, or upload
-native binaries through **Upload build** and select **Check files**. Files listed
-in the release manifest must match its size and SHA384. APKs, universal macOS
-binaries and other files unsupported by the native upload review must be copied
-into the directory. Existing `meshcentral-data/agents/` and per-domain
-`agents-<domain>/` overrides retain their precedence.
+native binaries through **Upload build**, complete the review and select
+**Add build**. Then open **Current defaults > Default downloads** and select
+**Check files**. Files listed in the release manifest must match its size and
+SHA384. APKs, universal macOS binaries and other files unsupported by the native
+upload review must be copied into the directory. Existing
+`meshcentral-data/agents/` and per-domain `agents-<domain>/` overrides retain
+their precedence.
 
 To disable automatic downloads, merge this into `config.json`:
 
@@ -59,10 +63,10 @@ to the default is blocked until the file is restored and loaded.
 
 The initial defaults preserve the binaries previously shipped in MeshCentral
 1.2.6, using the `legacy-1.2.6` migration releases in MeshAgent and
-MeshCentralAndroidAgent. Maintainers must publish those releases before
-publishing this MeshCentral change. The release workflow verifies every pinned
-download before the npm release. See [Agent release format](agent-releases.md)
-for the publication order.
+MeshCentralAndroidAgent. Maintainers must publish those releases before a
+MeshCentral package that uses them as defaults. The release workflow verifies
+every pinned download before the npm release. See
+[Agent release format](agent-releases.md) for the publication order.
 
 ## Release update checks
 
@@ -77,6 +81,11 @@ reported. Drafts, prereleases and migration releases are excluded. The dialog
 shows the latest release, current default tags, last successful check and any
 error. Results and HTTP validators are cached while the server is running.
 Failed requests retain the previous result and delay subsequent checks.
+
+Beta releases such as `1.2.0-beta.1`, and the preserved September release
+`testing-sep2026`, remain available through **Import build > GitHub > Releases**.
+Importing them does not install them or change the defaults; administrators
+choose which devices receive them.
 
 Checks do not download binaries, change defaults or deploy agents. Import an
 available release to inspect its files, check device requirements and test it on
@@ -376,7 +385,7 @@ server cannot honor pins or holds.
 | Requirements pass but Install and pin is disabled | Read the installation blocker. Agent or server update restrictions are separate from compatibility checks; another update may also be in progress. |
 | The agent reports binary updates disabled | Apply Hold first, enable updates locally, reconnect, and refresh the dialog before choosing a build. Removing a line from `.msh` may leave an imported setting in the agent database; `disableUpdate=0` still disables updates. |
 | A build is missing from workflow results | Check the run succeeded, the artifact has not expired, its size is within the import limit, and its name matches `artifactNames`. Check later result pages as well. |
-| GitHub denies a request | Check the configured token, repository access, required permissions and API rate limits. Restart MeshCentral after changing the configuration. |
+| GitHub denies a request | For public releases, check asset availability and API rate limits; a token is not normally required. For Actions or private imports, check the configured token, repository access and permissions. Restart MeshCentral after changing the configuration. |
 | A device is waiting for reconnect or verification | Check whether it is online and inspect the progress details. Lack of confirmation is not proof of failure; recover the device locally if its new agent cannot start. |
 | A build cannot be removed | Check its usage and unfinished deployments. Archive it if it must remain available to existing pins. |
 

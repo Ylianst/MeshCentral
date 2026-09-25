@@ -582,7 +582,7 @@
             "enabled": {
               "type": "boolean",
               "default": true,
-              "description": "Allow downloads of missing default files. Set to false for offline operation; verified cached files and locally supplied files are still loaded."
+              "description": "Allow downloads of missing default files and release update checks. Set to false to disable both; verified cached files and locally supplied files are still loaded."
             },
             "manifest": {
               "type": "string",
