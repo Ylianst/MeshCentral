@@ -663,8 +663,13 @@ function CreateMeshCentralServer(config, args) {
                 if (error != null) {
                     // This is an un-expected restart
                     console.log(error);
-                    console.log('ERROR: MeshCentral failed with critical error, check mesherrors.txt. Restarting in 5 seconds...');
-                    setTimeout(function () { obj.launchChildServer(startArgs); }, 5000);
+                    const restartOnServerError = (obj.config.settings.restartonservererror !== false);
+                    if (restartOnServerError) {
+                        console.log('ERROR: MeshCentral failed with critical error, check mesherrors.txt. Restarting in 5 seconds...');
+                        setTimeout(function () { obj.launchChildServer(startArgs); }, 5000);
+                    } else {
+                        console.log('ERROR: MeshCentral failed with critical error, check mesherrors.txt. Automatic restart is disabled, exiting.');
+                    }
 
                     // Run the server error script if present
                     if (typeof obj.config.settings.runonservererror == 'string') {
@@ -673,6 +678,7 @@ function CreateMeshCentralServer(config, args) {
                         if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
                         child_process.exec(obj.config.settings.runonservererror + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
                     }
+                    if (restartOnServerError == false) { process.exit(1); }
                 }
             }
         });
