@@ -8174,7 +8174,7 @@
             var cleanup = function () { if (agentManager === manager) agentManagerClosed(); };
             if (closer) { closer.addEventListener('click', cleanup, { once: true }); closer.addEventListener('keypress', cleanup, { once: true }); }
         }
-        function closeAgentManagerDialog() { setDialogMode(0); }
+        function closeAgentManagerDialog(after) { setDialogMode(0); if (after) after(); }
         function queueAgentBuildDeployment(nodeids) {
             setDialogMode(0); agentManagerOpen('bulk', { nodeids: nodeids });
         }

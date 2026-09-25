@@ -3,8 +3,15 @@
 /* p44info has a definite height (the resize handler in default and default3, absolute top and bottom in
    default-mobile), so the head and the list split it and only the list scrolls. The head may shrink and
    scroll itself while the list keeps an absolute floor, the same split the device dialog uses. */
-#p44head { flex: 0 1 auto; min-height: 0; overflow-y: auto; }
-#p44list { flex: 1 1 auto; min-height: 6em; overflow-y: auto; padding-bottom: 8px; }
+/* Every scroller here carries a high shrink factor. Flex shrinking is weighted by factor times
+   basis, so with an even factor a long list steals the shrink from the head and collapses it onto
+   its own heading. A high factor makes the scroller give way first, down to its min-height, and the
+   head only yields after that and scrolls itself. A cap on the head cannot replace this: a
+   percentage is dropped against the max-height dialog hosts, and no single vh cap holds for every
+   viewport. A zero basis works for this panel but not for the dialogs, which have no definite
+   height to grow into. */
+#p44head { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 4px; }
+#p44list { flex: 1 1000 auto; min-height: 6em; overflow-y: auto; padding-bottom: 8px; }
 #p44 .areaHead { padding: 4px; }
 #p44 .agent-catalog-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 #p44 .agent-catalog-actions, #p44 .agent-catalog-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
@@ -67,8 +74,14 @@
 .night #p44 .agent-notice { border-inline-start-color: #e8c07a; }
 #p44 summary { cursor: pointer; }
 #p10agentBuild { display: flex; flex-direction: column; line-height: 1.4; overflow: hidden; }
-#xxAddAgentBody #p10agentBuild { max-height: calc(100vh - 220px); }
-.agent-build-dialog #p10agentBuild { max-height: calc(75vh - 90px); }
+/* The modal's own chrome measures 230px: header 63, footer 71, modal-body padding 32, dialog
+   margins 56 and the content borders. Subtracting less makes .modal itself scroll behind the
+   dialog, so this leaves a little slack on top of that. */
+#xxAddAgentBody #p10agentBuild { max-height: calc(100vh - 240px); }
+/* The legacy #dialog is pinned at top: 180px, which pushes the button bar off a short window once
+   the body is tall. The admin dialog already resets this; the device dialog needs the same. */
+#dialog.agent-build-dialog { top: 5vh; max-height: 90vh; }
+.agent-build-dialog #p10agentBuild { max-height: calc(90vh - 110px); }
 .agent-build-dialog #idx_dlgOkButton, .agent-manager-dialog #idx_dlgOkButton { width: auto !important; min-width: 80px; padding: 2px 8px; }
 #idx_dlgOkButton.agent-build-off { opacity: .55; }
 /* The head and the reason are the only regions outside the scroller. Both may shrink and scroll
@@ -76,7 +89,7 @@
    percentage cap would not do this: the parent sets max-height rather than height, so a percentage
    resolves against an indefinite height and is dropped. */
 #p10buildHead { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px solid #8886; }
-#p10buildContent { flex: 1 1 auto; min-height: 6em; overflow-y: auto; }
+#p10buildContent { flex: 1 1000 auto; min-height: 6em; overflow-y: auto; }
 #p10buildApplyStatus { flex: 0 1 auto; min-height: 0; max-height: 6em; overflow-y: auto; margin: 8px 0 0; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); padding-inline-start: 8px; }
 #p10agentBuild .agent-build-headline, #agentManagerBody .agent-build-headline { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; overflow-wrap: anywhere; }
 #p10agentBuild .agent-build-headtools, #agentManagerBody .agent-build-headtools { display: flex; align-items: baseline; gap: 8px; margin-inline-start: auto; }
@@ -166,10 +179,10 @@
    and the reason and the error are pinned beside the footer buttons. A percentage cap cannot work on
    these children, because both hosts set max-height rather than height. */
 #agentManagerBody { display: flex; flex-direction: column; line-height: 1.4; overflow: hidden; }
-#xxAddAgentBody #agentManagerBody { max-height: calc(100vh - 220px); }
+#xxAddAgentBody #agentManagerBody { max-height: calc(100vh - 240px); }
 .agent-manager-dialog #agentManagerBody { max-height: calc(90vh - 110px); }
 #agentManagerHead { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px solid #8886; }
-#agentManagerContent { flex: 1 1 auto; min-height: 6em; overflow-y: auto; overflow-wrap: anywhere; }
+#agentManagerContent { flex: 1 1000 auto; min-height: 6em; overflow-y: auto; overflow-wrap: anywhere; }
 #agentManagerReason, #agentManagerError { flex: 0 1 auto; min-height: 0; max-height: 6em; overflow-y: auto; margin: 8px 0 0; padding-inline-start: 8px; border-inline-start: 3px solid var(--bs-warning-text-emphasis, #4d3300); }
 #agentManagerError { border-inline-start-color: var(--bs-danger-text-emphasis, #7a1414); }
 #agentManagerState { font-weight: bold; margin-top: 4px; }

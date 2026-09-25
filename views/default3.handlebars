@@ -2897,7 +2897,9 @@
             }
             QS('p43iframe')['height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
             QS('p43iframe')['max-height'] = 'calc(100vh - ' + (84 + xh) + 'px)';
-            QS('p44info')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
+            // p44info holds its own scroller now, so it has to end at the viewport bottom. The -50 the
+            // other panels carry made it overshoot, which scrolled the page and put the head under the tabs.
+            QS('p44info')['height'] = 'calc(100vh - ' + (xh + xh2) + 'px)';
             QS('p6info')['height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p6info')['max-height'] = 'calc(100vh - ' + (-50 + xh + xh2) + 'px)';
             QS('p10info')['height'] = 'calc(100vh - ' + (20 + xh + xh2) + 'px)';
@@ -23120,7 +23122,12 @@
             var manager = agentManager;
             Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { if (agentManager === manager) agentManagerClosed(); }, { once: true });
         }
-        function closeAgentManagerDialog() { hideModal(); }
+        function closeAgentManagerDialog(after) {
+            // hideModal is animated and xxdialogMode is only cleared on hidden.bs.modal, so a caller
+            // that navigates has to run after that or go() sees a dialog still open and refuses.
+            if (after) Q('xxAddAgentModal').addEventListener('hidden.bs.modal', after, { once: true });
+            hideModal();
+        }
         function queueAgentBuildDeployment(nodeids) {
             Q('xxAddAgentModal').addEventListener('hidden.bs.modal', function () { agentManagerOpen('bulk', { nodeids: nodeids }); }, { once: true });
             hideModal();

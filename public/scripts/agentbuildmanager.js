@@ -129,7 +129,7 @@ function agentManagerClosed() {
     if (button) { button.disabled = false; button.classList.remove('agent-build-off'); button.removeAttribute('aria-disabled'); button.removeAttribute('aria-describedby'); }
     if (Q('agentManagerBody')) Q('agentManagerBody').remove();
 }
-function agentManagerClose() { agentManagerClosed(); closeAgentManagerDialog(); return false; }
+function agentManagerClose(after) { agentManagerClosed(); closeAgentManagerDialog(after); return false; }
 function agentManagerSubmit() {
     if (!agentManager || agentManager.busy) return false;
     if (agentManager.blocked) { agentManagerShowReason(); return false; }
@@ -182,7 +182,9 @@ function agentManagerRun(area, command, callback) {
         else { current.submit = null; agentManagerButton("Close", true); }
     });
 }
-function agentManagerDevice(nodeid) { agentManagerClose(); gotoDevice(nodeid, 10); }
+// go() refuses a view change while a dialog is open, and the modal host closes asynchronously,
+// so the jump to the device waits until the dialog has actually gone.
+function agentManagerDevice(nodeid) { agentManagerClose(function () { gotoDevice(nodeid, 10); }); }
 
 function agentManagerDefaultsState(result) {
     if (result.busy) return { level: '', text: "Restoring files. You can close this dialog while downloads continue." };
