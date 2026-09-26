@@ -235,6 +235,10 @@ module.exports.CreateDB = function (parent, func) {
 
                                     // Delete this node including network interface information, events and timeline
                                     obj.Remove(node._id);                                 // Remove node with that id
+                                    obj.Remove('ab' + node._id);
+                                    obj.Remove('abi' + node._id);
+                                    obj.Remove('abd' + node._id);
+                                    obj.Remove('abu' + node._id);
                                     obj.Remove('if' + node._id);                          // Remove interface information
                                     obj.Remove('nt' + node._id);                          // Remove notes
                                     obj.Remove('lc' + node._id);                          // Remove last connect time
@@ -559,6 +563,52 @@ module.exports.CreateDB = function (parent, func) {
             return plaintextBytes;
         } catch (ex) { return null; }
     }
+
+    obj.GetAgentBuildRecords = function (type, domain, after, limit, func, prefix) {
+        if (!['node', 'agentbuildpolicy', 'agentbuilddeployment', 'agentbuildusage', 'agentbuildjob', 'agentbuildtarget', 'agentbuildcatalog'].includes(type) || typeof domain !== 'string' || typeof after !== 'string' || !Number.isInteger(limit) || limit < 1 || limit > 500) { func(new Error('Invalid agent build query')); return; }
+        const query = { type: type, domain: domain, _id: { $gt: after } };
+        const end = (typeof prefix === 'string' && prefix) ? prefix + '\uffff' : '\uffff';
+        query._id.$lt = end;
+        if (obj.databaseType == DB_MONGODB) obj.file.find(query).sort({ _id: 1 }).limit(limit).toArray(func);
+        else if (obj.databaseType == DB_MONGOJS) obj.file.find(query).sort({ _id: 1 }).limit(limit, func);
+        else if (obj.databaseType == DB_NEDB) obj.file.find(query).sort({ _id: 1 }).limit(limit).exec(func);
+        else if ([DB_SQLITE, DB_POSTGRESQL, DB_MYSQL, DB_MARIADB].includes(obj.databaseType)) {
+            const numbered = [DB_SQLITE, DB_POSTGRESQL].includes(obj.databaseType);
+            sqlDbQuery(numbered ? 'SELECT doc FROM main WHERE type = $1 AND domain = $2 AND id > $3 AND id < $4 ORDER BY id LIMIT $5' : 'SELECT doc FROM main WHERE type = ? AND domain = ? AND id > ? AND id < ? ORDER BY id LIMIT ?', [type, domain, after, end, limit], func);
+        } else if (obj.databaseType == DB_ACEBASE) {
+            obj.file.query('meshcentral').filter('type', '==', type).filter('domain', '==', domain).filter('_id', '>', after).filter('_id', '<', end).sort('_id', true).take(limit).get().then(function (snapshots) { func(null, common.aceUnEscapeAllFieldNames(snapshots.map(x => x.val()))); }).catch(func);
+        } else { func(new Error('Unsupported database')); }
+    };
+
+    obj.GetAgentTypeCounts = function (domain, func) {
+        function done(err, rows) {
+            const counts = {};
+            if (!err && rows) { for (const row of rows) { if (Number.isInteger(Number(row.id)) && Number(row.id) > 0 && Number(row.id) < 10000) counts[row.id] = Number(row.count); } }
+            func(err, counts);
+        }
+        if ((obj.databaseType == DB_MONGODB) || (obj.databaseType == DB_MONGOJS)) {
+            const pipeline = [{ $match: { type: 'node', domain: domain, mtype: 2, 'agent.id': { $gt: 0, $lt: 10000 }, $or: [{ 'agent.caps': { $bitsAllClear: 96 } }, { 'agent.caps': { $exists: false } }] } }, { $group: { _id: '$agent.id', count: { $sum: 1 } } }, { $project: { _id: 0, id: '$_id', count: 1 } }];
+            if (obj.databaseType == DB_MONGODB) obj.file.aggregate(pipeline).toArray(done); else obj.file.aggregate(pipeline, done);
+        } else if ([DB_SQLITE, DB_POSTGRESQL, DB_MYSQL, DB_MARIADB].includes(obj.databaseType)) {
+            let id, caps, mtype, json, parameter;
+            if (obj.databaseType == DB_POSTGRESQL) {
+                id = "CAST(doc->'agent'->>'id' AS INTEGER)"; caps = "COALESCE(CAST(doc->'agent'->>'caps' AS BIGINT),0)"; mtype = "CAST(doc->>'mtype' AS INTEGER)"; json = 'json_build_object'; parameter = '$1';
+            } else if (obj.databaseType == DB_SQLITE) {
+                id = "json_extract(doc,'$.agent.id')"; caps = "COALESCE(json_extract(doc,'$.agent.caps'),0)"; mtype = "json_extract(doc,'$.mtype')"; json = 'json_object'; parameter = '$1';
+            } else {
+                id = "CAST(JSON_UNQUOTE(JSON_EXTRACT(doc,'$.agent.id')) AS UNSIGNED)"; caps = "COALESCE(CAST(JSON_UNQUOTE(JSON_EXTRACT(doc,'$.agent.caps')) AS UNSIGNED),0)"; mtype = "JSON_EXTRACT(doc,'$.mtype')"; json = 'JSON_OBJECT'; parameter = '?';
+            }
+            sqlDbQuery("SELECT " + json + "('id'," + id + ",'count',COUNT(*)) AS doc FROM main WHERE type = 'node' AND domain = " + parameter + ' AND ' + mtype + ' = 2 AND (' + caps + ' & 96) = 0 AND ' + id + ' BETWEEN 1 AND 9999 GROUP BY ' + id, [domain], done);
+        } else {
+            function count(err, nodes) {
+                const counts = {};
+                if (!err && nodes) { for (const node of nodes) { if (node.mtype === 2 && node.agent && !(node.agent.caps & 96) && Number.isInteger(node.agent.id) && node.agent.id > 0 && node.agent.id < 10000) counts[node.agent.id] = (counts[node.agent.id] || 0) + 1; } }
+                func(err, counts);
+            }
+            if (obj.databaseType == DB_NEDB) obj.file.find({ type: 'node', domain: domain }, { mtype: 1, 'agent.id': 1, 'agent.caps': 1 }).exec(count);
+            else obj.GetAllTypeNoTypeField('node', domain, count);
+        }
+    };
 
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.

@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "releases": [
+    {
+      "repository": "Ylianst/MeshAgent",
+      "tag": "legacy-1.2.6",
+      "files": [
+        {
+          "filename": "MeshCmd.exe",
+          "asset": "MeshCmd.exe",
+          "size": 4629608,
+          "sha384": "b1fe076d82fa63401aaa3b8c4cde44108ae7e1400a15e4df57b6f7b77492130fe352b878edb12ec71a22f6359a79ff95"
+        },
+        {
+          "filename": "MeshCmd64.exe",
+          "asset": "MeshCmd64.exe",
+          "size": 4257384,
+          "sha384": "0f0b70c3ef31ff5ad1a59d89a5685770987334699a915874bc05d631b0984398bdd62d72de109c87e18afc4f1a6fd31c"
+        },
+        {
+          "filename": "MeshCmdARM64.exe",
+          "asset": "MeshCmdARM64.exe",
+          "size": 4450408,
+          "sha384": "faf78f0c8e19e8ebd5596ae917e535a3ef1e1acc29f2beb945ddbf66b7c0a2191bcc7bc6cce1e795be886c3e4235950a"
+        },
+        {
+          "filename": "MeshService.exe",
+          "asset": "MeshService.exe",
+          "size": 3816960,
+          "sha384": "7abe621c6e9f8e1b11c842e052d890c942f285febb1a31897fd30ebccd1f2a12873b3a6e14689fdc7e646352b903d0ca"
+        },
+        {
+          "filename": "MeshService64.exe",
+          "asset": "MeshService64.exe",
+          "size": 3444736,
+          "sha384": "319d3ad514173be85838bf7ba5995e11671d8f8e6df8e51b74c8304c3caf70e754e69db74b1baec1a6430ece213ab293"
+        },
+        {
+          "filename": "MeshServiceARM64.exe",
+          "asset": "MeshServiceARM64.exe",
+          "size": 3637760,
+          "sha384": "08a3372068b5f636c89b909d0dac1d4fafac7ff8bbe55a78b27593dae1606ceef69bfa5078ece112915272b96f8c46bb"
+        },
+        {
+          "filename": "meshagent_aarch64",
+          "asset": "meshagent_aarch64",
+          "size": 3256688,
+          "sha384": "56ad2fafbc15bac635c526c6f106dd0213c0b222265685f00cdd56ad8c3dfe7de6c4d8f52ea9ca183d50bc8d8c198477"
+        },
+        {
+          "filename": "meshagent_aarch64-cortex-a53",
+          "asset": "meshagent_aarch64-cortex-a53",
+          "size": 3084616,
+          "sha384": "cefd8aab52ce01939324e999e1eb541a262e0d4f1c3591f0a8355ead5d2c87b43b3fb05a1dcd04012cdd4b559589cbab"
+        },
+        {
+          "filename": "meshagent_arm",
+          "asset": "meshagent_arm",
+          "size": 3164464,
+          "sha384": "8f9fb5dd78e2e888cb2c7106f59787ddce7bcdb576b7bc2d7b79ef11f48bc143e606c9e6d43742160e20d74a30a661d2"
+        },
+        {
+          "filename": "meshagent_arm-linaro",
+          "asset": "meshagent_arm-linaro",
+          "size": 2223444,
+          "sha384": "8e6e25b093038c3d4da66d3af19e7593649a1eb7cc3b4768c2acea1818b94750f0b9ae9799ecc3563273baa58c4fdecf"
+        },
+        {
+          "filename": "meshagent_armhf",
+          "asset": "meshagent_armhf",
+          "size": 3191132,
+          "sha384": "65f6fe3b530fdbc3c1e7b2577b081fef5742265cccfde27ab015996d3767f153cf3b4b022932c156754e09cda2ee4874"
+        },
+        {
+          "filename": "meshagent_armhf2",
+          "asset": "meshagent_armhf2",
+          "size": 2837724,
+          "sha384": "0ae840520d3b677b9767ea097f3aa5a1e24212529e688200f43935db1541ab9fb441ec2c7ba8002d45299b04695fd037"
+        },
+        {
+          "filename": "meshagent_freebsd_x86-64",
+          "asset": "meshagent_freebsd_x86-64",
+          "size": 4673560,
+          "sha384": "5c2cdda2e7ab5068d990fbc725d8d5e3ea2724a0e001c226c0c7bb9f3a46492880bf260b5dd9e733f87eb68ba7494bd6"
+        },
+        {
+          "filename": "meshagent_linux-armada370-hf",
+          "asset": "meshagent_linux-armada370-hf",
+          "size": 3017852,
+          "sha384": "5faf10353586835cd343fceb3321414e4e487d8f90cbdd104297fbd9c074ada6a100349b74d6c0d2629bceaaa6b5e344"
+        },
+        {
+          "filename": "meshagent_mips",
+          "asset": "meshagent_mips",
+          "size": 4564212,
+          "sha384": "482c484755fe7a00f9e5fad1e83597c2ad99e87c5e1fb4c9e492c7896912edb64419a6c153382e1c047eaf3ae3864221"
+        },
+        {
+          "filename": "meshagent_mips24kc",
+          "asset": "meshagent_mips24kc",
+          "size": 4193384,
+          "sha384": "3ad0a21e1fdd44e1869bfd3e3698d67713445c7a21bee37af41e810e6b6f1ce8fe369140ae7bad31689a5f759cf7bcc6"
+        },
+        {
+          "filename": "meshagent_mipsel24kc",
+          "asset": "meshagent_mipsel24kc",
+          "size": 4189672,
+          "sha384": "e6a3cdbffd233be1b24e81197f41db24efa1708b5bd18b2d7dfebfd89faf6a994b5d4a3048d67bbbab14a77ad7088ae6"
+        },
+        {
+          "filename": "meshagent_openbsd_x86-64",
+          "asset": "meshagent_openbsd_x86-64",
+          "size": 4598560,
+          "sha384": "1d1838f02247522aa19456d89c67b2277f00bbec8e8fd1b2109f2c545b76dd3e80ac9492bfc9ae71f46fdd7737bf088b"
+        },
+        {
+          "filename": "meshagent_openwrt_x86_64",
+          "asset": "meshagent_openwrt_x86_64",
+          "size": 3568912,
+          "sha384": "59fd19f01dc06820bee90cee0152972c47d7912cbefac63407230638e5f1dbe5f29e27fcddbf3e2c26cf78ff9a61b4b0"
+        },
+        {
+          "filename": "meshagent_osx-arm-64",
+          "asset": "meshagent_osx-arm-64",
+          "size": 3670136,
+          "sha384": "6e3fcfed24b6c28671e39445fdb8cd219040939da1488cbd6c167ae1eb7e2e37382f6e34c8a22961f3e1bc8ef4171673"
+        },
+        {
+          "filename": "meshagent_osx-universal-64",
+          "asset": "meshagent_osx-universal-64",
+          "size": 7929976,
+          "sha384": "be19afec2114d3cf348bb4c6b112c6634db2a808a1973d3c5bf31725a752cc44eb359ab3bb740f4a15e392764e28d519"
+        },
+        {
+          "filename": "meshagent_osx-x86-64",
+          "asset": "meshagent_osx-x86-64",
+          "size": 4243736,
+          "sha384": "90f804675a8cbf209cce803f02f98f1c4202291fb8ebe302d003538ea958b4eb1a8607f79ef5ee19d2886194a2039118"
+        },
+        {
+          "filename": "meshagent_pogo",
+          "asset": "meshagent_pogo",
+          "size": 3172672,
+          "sha384": "8b1640947c32ae4c0dde4dd19b7704e6b85c3e17eb08eb12caa11fd66eaeb1b1a2b720e5984fc84a35a43cf9f05fea0d"
+        },
+        {
+          "filename": "meshagent_poky",
+          "asset": "meshagent_poky",
+          "size": 3808888,
+          "sha384": "7f52448c051b4786dca30e1cff389377b2cdc6a5750d4bc7a697a342d2a03783dd6fef156888d001632413f3f2041eec"
+        },
+        {
+          "filename": "meshagent_poky64",
+          "asset": "meshagent_poky64",
+          "size": 3511800,
+          "sha384": "447ccf992ae04bcb2d7f140540c2d8c148745b637851f3e2652a675701a8d724f33bb0a41acd4839a8e1681a5ae01a72"
+        },
+        {
+          "filename": "meshagent_riscv64",
+          "asset": "meshagent_riscv64",
+          "size": 3597928,
+          "sha384": "cfb8c78cb128b5f8fe367de40acd1d34bb9e261b8b37af867f0b50130f847831b8c0db4c9dafc75f5dd80afecce74d30"
+        },
+        {
+          "filename": "meshagent_x86",
+          "asset": "meshagent_x86",
+          "size": 3649628,
+          "sha384": "dc0be75515b02e16978ec7edd824c00462cefd18f78209e79f221e760aee366bb64d113077f768c59f66592f325ed7eb"
+        },
+        {
+          "filename": "meshagent_x86-64",
+          "asset": "meshagent_x86-64",
+          "size": 3757520,
+          "sha384": "1bf04d9ced5c4be006d1ed714da04048d26e8f3ffdd02f39b69a73b6d73da98682dda7401ef33f04c621549aff6c3a28"
+        },
+        {
+          "filename": "meshagent_x86-64_nokvm",
+          "asset": "meshagent_x86-64_nokvm",
+          "size": 3458480,
+          "sha384": "16c1b8d248e6d49d0dd503b39355c35ac311e516e410b7e56d104e1023df3b9be31f39160828034f99a453910b849d3d"
+        },
+        {
+          "filename": "meshagent_x86_nokvm",
+          "asset": "meshagent_x86_nokvm",
+          "size": 3368896,
+          "sha384": "a7fa5a203669c051f15eb07b050ec8c2f2938fe45b932f6692e6352db2519421237c984d0aa2b4b31e77633a98095429"
+        }
+      ]
+    },
+    {
+      "repository": "Ylianst/MeshCentralAndroidAgent",
+      "tag": "legacy-1.2.6",
+      "files": [
+        {
+          "filename": "meshagent_android.apk",
+          "asset": "meshagent_android.apk",
+          "size": 9236275,
+          "sha384": "ea7326b88caa67f16a5a028b35a9d5b2d05fd085e248d08841150560443c5e8bc51fe0751b6c0576b9465653d5f26940"
+        }
+      ]
+    }
+  ]
+}
