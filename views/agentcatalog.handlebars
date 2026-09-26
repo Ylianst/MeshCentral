@@ -6,7 +6,6 @@
         {{#each catalog.errors}}<p class="agent-error">{{this}}</p>{{/each}}
         <div id="p44state" data-agent-downloads="{{#if catalog.downloads}}1{{/if}}">
             {{#if catalog.downloads.restartRequired}}<p class="agent-notice agent-warn">Default files are ready. Restart MeshCentral to load them.</p>{{/if}}
-            {{#each catalog.downloads.errors}}<p class="agent-error">{{this}}</p>{{/each}}
             {{#each catalog.downloads.updates.repositories}}{{#if latest.updateAvailable}}<p class="agent-notice">Release available: <a href="{{latest.sourceUrl}}" target="_blank" rel="noopener noreferrer">{{repository}} {{latest.tag}}</a>. Import this release to review and test its files.</p>{{/if}}{{/each}}
         </div>
         <section style="display:none" data-agent-group="defaults">
@@ -56,6 +55,7 @@
                                     <details data-agent-detail="file:{{../id}}:{{filename}}" ontoggle="agentCatalogToggled(this)"><summary>File details</summary>
                                         <div>{{#if kvm}}Remote desktop supported{{else}}No remote desktop support{{/if}}</div>
                                         {{#if signature}}<div>Embedded signature: {{signature}}</div>{{/if}}
+                                        {{#if customized}}<div>Server branding applied, re-signed</div>{{else}}{{#if signed}}<div>Code-signed by the server</div>{{/if}}{{/if}}
                                         {{#if sha256}}<div class="agent-hash">SHA256 <code>{{sha256}}</code></div><div class="agent-hash">SHA384 <code>{{sha384}}</code></div>{{/if}}
                                         <div class="agent-hash">Update hash <code>{{agentHash}}</code></div>
                                     </details>

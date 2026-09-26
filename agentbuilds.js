@@ -1684,7 +1684,8 @@ function CreateAgentCatalog(parent, directory) {
                     id: artifact.agentId, filename: artifact.filename, platform: artifact.platform, cpu: artifact.cpu,
                     agentHash: artifact.hashes.agentSha384,
                     kvm: artifact.features && (artifact.features.kvm === true), requirements: compatibility(artifact), metadata: artifact.binaryMetadata || {},
-                    signature: (artifact.binaryMetadata || {}).embeddedAuthenticode || (artifact.binaryMetadata || {}).embeddedSignature
+                    signature: (artifact.binaryMetadata || {}).embeddedAuthenticode || (artifact.binaryMetadata || {}).embeddedSignature,
+                    signed: !!(artifact.processing && artifact.processing.signed), customized: !!(artifact.processing && artifact.processing.customized)
                 }, file);
                 row.matches = matches === true;
                 row.status = file.available ? (matches ? 'Matches manifest' : 'Manifest mismatch') : file.status;

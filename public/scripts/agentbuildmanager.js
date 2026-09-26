@@ -410,7 +410,16 @@ function agentManagerManageForm() {
         if (canDefault) options += '<option value="setdefault">' + "Use as the server default agent" + '</option>';
         if (isDefault) options += '<option value="cleardefault">' + "Clear the server default from this build" + '</option>';
         if (build.managed) options += '<option value="remove">' + "Remove this build from the server" + '</option>';
-        html = agentManagerControl('agentManageAction', "Action", options + '</select>') + '<div id="agentManageNote"></div>';
+        var fileRows = '';
+        for (var fi = 0; fi < build.artifacts.length; fi++) {
+            var art = build.artifacts[fi], tags = [art.kvm ? "Remote desktop supported" : "No remote desktop support"];
+            if (art.customized) { tags.push("Server branding applied, re-signed"); }
+            else if (art.signed) { tags.push("Code-signed by the server"); }
+            else if (art.signature && art.signature.indexOf('Present') === 0) { tags.push("Signed before upload"); }
+            var meta = EscapeHtml(tags.join(', ')) + (art.agentHash ? ('<div class="agent-muted">' + "Update hash" + ' ' + EscapeHtml(art.agentHash.substring(0, 16)) + '...</div>') : '');
+            fileRows += '<div class="agent-manager-row"><div><b>' + EscapeHtml(art.filename) + '</b></div><div>' + EscapeHtml(agentManagerAgentType(art.id)) + '</div><div class="agent-manager-detail">' + meta + '</div></div>';
+        }
+        html = (build.uploadedAt ? ('<p class="agent-muted">' + "Added" + ' ' + EscapeHtml(printDateTime(new Date(build.uploadedAt))) + '</p>') : '') + fileRows + agentManagerControl('agentManageAction', "Action", options + '</select>') + '<div id="agentManageNote"></div>';
         if (!build.managed) html += '<p class="agent-muted">' + "This build was not uploaded to this server, so it cannot be removed here." + '</p>';
         agentManagerHtml(html);
         agentManager.submit = function () {
