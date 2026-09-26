@@ -348,6 +348,10 @@ function agentManagerUploadReview() {
         for (j = 0; j < file.candidates.length; j++) types += '<option value="' + file.candidates[j].id + '">' + EscapeHtml(file.candidates[j].name) + ' (' + file.candidates[j].id + ')</option>';
         html += agentManagerControl('agentUploadType' + i, "MeshAgent type", types + '</select>');
         html += agentManagerControl('agentUploadKvm' + i, "Desktop support", '<select id="agentUploadKvm' + i + '" onchange="agentManagerReviewChanged()"><option value="">' + "Select" + '</option><option value="yes">' + "Included" + '</option><option value="no">' + "Not included" + '</option></select>');
+        if (file.platform === 'windows') {
+            html += agentManagerControl('agentUploadSign' + i, "Code signing", '<label><input id="agentUploadSign' + i + '" type="checkbox" onchange="agentManagerReviewChanged()" /> ' + "Code-sign this file with the server certificate" + '</label>');
+            html += agentManagerControl('agentUploadCustomize' + i, "Branding", '<label><input id="agentUploadCustomize' + i + '" type="checkbox" onchange="agentManagerReviewChanged()" /> ' + "Apply the server agent branding and re-sign" + '</label>');
+        }
         for (j = 0; j < file.warnings.length; j++) html += '<p class="agent-warn">' + EscapeHtml(file.warnings[j]) + '</p>';
         html += '<p class="agent-warn" id="agentUploadTodo' + i + '"></p>';
         html += '<details data-agent-detail="hashes' + i + '"><summary>' + "Hashes" + '</summary><div class="agent-hash">SHA256 <code>' + EscapeHtml(file.hashes.sha256) + '</code></div><div class="agent-hash">' + "Update SHA384" + ' <code>' + EscapeHtml(file.hashes.agentSha384) + '</code></div></details></fieldset>';
@@ -360,6 +364,12 @@ function agentManagerReviewChanged() {
     for (i = 0; i < files.length; i++) {
         included = Q('agentUploadInclude' + i).checked; todo = '';
         QE('agentUploadType' + i, included); QE('agentUploadKvm' + i, included);
+        var customizeBox = Q('agentUploadCustomize' + i);
+        if (customizeBox) {
+            QE('agentUploadCustomize' + i, included);
+            // Customization always re-signs, so force and lock the sign box when it is on.
+            if (included && customizeBox.checked) { Q('agentUploadSign' + i).checked = true; QE('agentUploadSign' + i, false); } else { QE('agentUploadSign' + i, included); }
+        }
         if (included) {
             selected++;
             if (!Q('agentUploadType' + i).value) todo = "Select the compiled agent type.";
@@ -380,7 +390,7 @@ function agentManagerReviewChanged() {
 }
 function agentManagerUploadCommit() {
     var current = agentManager, files = [], i;
-    for (i = 0; i < current.draft.artifacts.length; i++) files.push({ include: Q('agentUploadInclude' + i).checked, agentId: Number(Q('agentUploadType' + i).value), kvm: Q('agentUploadKvm' + i).value === 'yes' });
+    for (i = 0; i < current.draft.artifacts.length; i++) files.push({ include: Q('agentUploadInclude' + i).checked, agentId: Number(Q('agentUploadType' + i).value), kvm: Q('agentUploadKvm' + i).value === 'yes', sign: Q('agentUploadSign' + i) ? Q('agentUploadSign' + i).checked : false, customize: Q('agentUploadCustomize' + i) ? Q('agentUploadCustomize' + i).checked : false });
     current.committing = true; agentManagerButton("Adding build...", false, '');
     agentManagerRun('upload', { op: 'commit', token: current.draft.token, name: Q('agentUploadName').value, trusted: Q('agentUploadTrust').checked, files: files }, function () {
         current.draft = null; agentManagerClose(); agentCatalogFocus = null; Q('p44group').value = 'builds'; refreshAgentCatalog();
@@ -392,9 +402,13 @@ function agentManagerManageForm() {
         var build = data.builds.filter(function (x) { return x.id === agentManager.build; })[0], options, html;
         if (!build) { agentManagerError("This build is no longer in the catalog."); agentManager.submit = null; agentManagerButton("Close", true); return; }
         agentManager.buildInfo = build;
+        var isDefault = (data.defaults || []).some(function (x) { return x.defaultBuild && x.defaultBuild.id === build.id; });
+        var canDefault = !build.archived && build.artifacts.some(function (x) { return x.matches; });
         agentManagerSubject(build.name, build.channel + ' / ' + build.artifacts.length + ' ' + "agent files" + (build.archived ? (' / ' + "Archived") : ''));
-        agentManagerStateLine(build.archived ? 'agent-warn' : '', build.archived ? "This build is archived." : '');
+        agentManagerStateLine(build.archived ? 'agent-warn' : '', build.archived ? "This build is archived." : (isDefault ? "This build supplies the server default agent." : ''));
         options = '<select id="agentManageAction" onchange="agentManagerManageChanged()"><option value="' + (build.archived ? 'restore' : 'archive') + '">' + (build.archived ? "Restore to the catalog" : "Archive this build") + '</option>';
+        if (canDefault) options += '<option value="setdefault">' + "Use as the server default agent" + '</option>';
+        if (isDefault) options += '<option value="cleardefault">' + "Clear the server default from this build" + '</option>';
         if (build.managed) options += '<option value="remove">' + "Remove this build from the server" + '</option>';
         html = agentManagerControl('agentManageAction', "Action", options + '</select>') + '<div id="agentManageNote"></div>';
         if (!build.managed) html += '<p class="agent-muted">' + "This build was not uploaded to this server, so it cannot be removed here." + '</p>';
@@ -410,10 +424,12 @@ function agentManagerManageChanged() {
     var notes = {
         archive: "Archiving hides this build from new selections. Devices already pinned to it keep running it and the server keeps its stored copies.",
         restore: "Restoring puts this build back in the list of builds that can be pinned.",
-        remove: "Removing deletes the uploaded files from this server. It is refused while a device or a deployment still references the build."
+        remove: "Removing deletes the uploaded files from this server. It is refused while a device or a deployment still references the build.",
+        setdefault: "New Add Agent downloads will serve this build's files for their agent types on this server. This takes effect immediately.",
+        cleardefault: "Reverts these agent types to the release or bundled default. Devices already installed are not changed."
     };
-    agentBuildHtml('agentManageNote', '<p class="' + ((action === 'remove') ? 'agent-warn' : 'agent-muted') + '">' + notes[action] + '</p>');
-    agentManagerButton((action === 'remove') ? "Remove build" : ((action === 'restore') ? "Restore build" : "Archive build"), true);
+    agentBuildHtml('agentManageNote', '<p class="' + ((action === 'remove' || action === 'setdefault') ? 'agent-warn' : 'agent-muted') + '">' + notes[action] + '</p>');
+    agentManagerButton((action === 'remove') ? "Remove build" : (action === 'restore') ? "Restore build" : (action === 'setdefault') ? "Set as default" : (action === 'cleardefault') ? "Clear default" : "Archive build", true);
 }
 
 function agentManagerUsageSearch() { agentManagerUsage(0); }

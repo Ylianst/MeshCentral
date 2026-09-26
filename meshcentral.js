@@ -1911,9 +1911,12 @@ function CreateMeshCentralServer(config, args) {
         }
 
         obj.agentDefaults = require('./agentbuilds').CreateAgentDefaults(obj);
-        await obj.agentDefaults.prepare();
+        // Never block server startup on default agent downloads. An offline or slow-network server must come up
+        // promptly and run from cached, bundled or manually uploaded builds; downloads finish in the background.
+        const agentDefaultsReady = obj.agentDefaults.prepare();
+        agentDefaultsReady.then(function () { for (const error of obj.agentDefaults.status().errors) { addServerWarning(error); } }, function () { });
+        try { await Promise.race([agentDefaultsReady, new Promise(function (r) { setTimeout(r, 6000); })]); } catch (ex) { }
         obj.agentDefaults.start();
-        for (const error of obj.agentDefaults.status().errors) addServerWarning(error);
 
         // Load the list of MeshCentral tools
         obj.updateMeshTools();
@@ -3565,6 +3568,119 @@ function CreateMeshCentralServer(config, args) {
             console.error("External signing failed for file: " + signingArguments.out);
             return;
         }
+    }
+
+    // Return the agent code-signing certificate (custom agentsigningcert.pem, else the server codesign cert), or null.
+    obj.getAgentSigningCertificate = function () {
+        var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
+        if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
+            agentSignCertInfo = {
+                cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
+                key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
+            }
+        }
+        return agentSignCertInfo || null;
+    }
+
+    // Process one uploaded agent executable: optionally apply agentFileInfo and code-sign it, writing the result to
+    // destPath. Windows PE only. options = { sign, customize, domain, cert? }. This runs once at upload so the same
+    // work is not repeated for a custom binary on every startup like signMeshAgents does for the bundled agents.
+    obj.processAgentExecutable = function (sourcePath, destPath, options, func) {
+        options = options || {};
+        const domain = options.domain || {};
+        if ((options.sign !== true) && (options.customize !== true)) {
+            // As-is: store the uploaded bytes unchanged.
+            try { obj.fs.copyFileSync(sourcePath, destPath); } catch (ex) { func('Unable to store the agent file.'); return; }
+            func(null, { signed: false, customized: false });
+            return;
+        }
+        const cert = options.cert || obj.getAgentSigningCertificate();
+        if (cert == null) { func('This server has no agent code-signing certificate. Upload the binary as-is or configure agentsigningcert.pem.'); return; }
+        const handler = require('./authenticode.js').createAuthenticodeHandler(sourcePath);
+        if (handler == null) { func('This file is not a Windows executable and cannot be signed or customized.'); return; }
+
+        // Signature description, url, timestamp server and proxy (mirrors signMeshAgents).
+        const httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport);
+        var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+        if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
+        var signUrl = 'https://' + httpsHost;
+        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+        var xdomain = (domain.dns == null) ? (domain.id || '') : '';
+        if (xdomain != '') xdomain += '/';
+        signUrl += '/' + xdomain;
+        if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
+        const signDesc = (domain.title ? domain.title : cert.cert.subject.hash);
+        var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
+        if (obj.args.agenttimestampserver === false) { timeStampUrl = null; }
+        else if (typeof obj.args.agenttimestampserver == 'string') { timeStampUrl = obj.args.agenttimestampserver; }
+        var timeStampProxy = null;
+        if (typeof obj.args.agenttimestampproxy == 'string') { timeStampProxy = obj.args.agenttimestampproxy; }
+        else if ((obj.args.agenttimestampproxy !== false) && (typeof obj.args.npmproxy == 'string')) { timeStampProxy = obj.args.npmproxy; }
+
+        // Apply agentFileInfo to the PE resources when customizing.
+        var resChanges = false;
+        if ((options.customize === true) && (domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
+            var versionStrings = handler.getVersionInfo();
+            if (versionStrings != null) {
+                var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                for (var i in versionProperties) {
+                    const prop = versionProperties[i], propl = prop.toLowerCase();
+                    if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
+                }
+                if (domain.agentfileinfo['fileversionnumber'] && (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion'])) { versionStrings['~FileVersion'] = domain.agentfileinfo['fileversionnumber']; resChanges = true; }
+                if (domain.agentfileinfo['productversionnumber'] && (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion'])) { versionStrings['~ProductVersion'] = domain.agentfileinfo['productversionnumber']; resChanges = true; }
+                if (resChanges == true) { handler.setVersionInfo(versionStrings); }
+            }
+            if (domain.agentfileinfo.icon != null) {
+                const agentIconGroups = handler.getIconInfo();
+                if (agentIconGroups != null) {
+                    const agentIconGroupNames = Object.keys(agentIconGroups);
+                    // Unlike signMeshAgents, flag a resource change so writeExecutable rebuilds the section and the icon actually applies.
+                    if (agentIconGroupNames.length > 0) { agentIconGroups[agentIconGroupNames[0]] = domain.agentfileinfo.icon; handler.setIconInfo(agentIconGroups); resChanges = true; }
+                }
+            }
+            if (domain.agentfileinfo.logo != null) {
+                const agentBitmaps = handler.getBitmapInfo();
+                if (agentBitmaps != null) {
+                    const agentBitmapNames = Object.keys(agentBitmaps);
+                    if (agentBitmapNames.length > 0) { agentBitmaps[agentBitmapNames[0]] = domain.agentfileinfo.logo; handler.setBitmapInfo(agentBitmaps); resChanges = true; }
+                }
+            }
+        }
+
+        const signingArguments = { out: destPath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy, resChanges: resChanges };
+        const done = function (err) {
+            try { handler.close(); } catch (ex) { }
+            if (err == null) { obj.callExternalSignJob(signingArguments); }
+            func(err || null, { signed: (err == null), customized: (err == null) && resChanges });
+        };
+        if (resChanges == false) { handler.sign(cert, signingArguments, done); } else { handler.writeExecutable(signingArguments, cert, done); }
+    }
+
+    // Rebuild the in-memory agent table at runtime so a newly set (or cleared) meshcentral-data/agents override is
+    // served without a restart. Reloads are serialized per domain and coalesced (a request arriving mid-reload
+    // triggers one more pass), because updateMeshAgentsTable mutates shared per-architecture state.
+    obj.reloadMeshAgents = function (domain, func) {
+        const key = domain.id || '';
+        if (obj.agentReloadState == null) obj.agentReloadState = {};
+        var state = obj.agentReloadState[key];
+        if (state != null) { state.waiting.push(typeof func == 'function' ? func : function () { }); state.rerun = true; return; }
+        state = obj.agentReloadState[key] = { waiting: [typeof func == 'function' ? func : function () { }], rerun: false };
+        function pass() {
+            state.rerun = false;
+            obj.updateMeshAgentsTable(domain, function () {
+                // Drop entries whose backing file no longer exists (e.g. after clearing an override with nothing to revert to).
+                const table = (domain.id == '') ? obj.meshAgentBinaries : domain.meshAgentBinaries;
+                if (table != null) { for (var archid in table) { try { if (!obj.fs.existsSync(table[archid].path)) delete table[archid]; } catch (ex) { } } }
+                if (domain.id == '') { try { obj.updateMeshAgentInstallScripts(); } catch (ex) { } }
+                if (state.rerun) { pass(); return; }
+                const callbacks = state.waiting;
+                delete obj.agentReloadState[key];
+                for (var i in callbacks) { try { callbacks[i](); } catch (ex) { } }
+            });
+        }
+        pass();
     }
 
     // Update the list of available mesh agents
