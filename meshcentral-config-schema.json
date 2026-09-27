@@ -684,6 +684,14 @@
           "default": null,
           "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
         },
+        "agentAllowedIPNewAgents": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "default": null,
+          "description": "When set, only new agents from allowed IP address ranges can enroll. Existing agents can reconnect from other addresses unless agentAllowedIP or agentBlockedIP restricts them. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIPNewAgents.txt\""
+        },
         "agentBlockedIP": {
           "type": [
             "string",
@@ -691,6 +699,43 @@
           ],
           "default": null,
           "description": "When set, agents from these denied IP address ranges will not be able to connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentBlockedIP.txt\""
+        },
+        "agentEnrollmentRateLimitByIP": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Limits new agent registrations by exact source IP using a sliding time window. Additional registrations are denied until enough registrations fall outside the window. Existing agent reconnections do not count toward the limit.",
+          "properties": {
+            "autoBlock": {
+              "type": "boolean",
+              "default": true,
+              "description": "When true, all agent traffic from an IP that reaches the enrollment limit is blocked. The block is temporary unless settings.agentBlockedIP uses a file: source, in which case the exact IP is appended to that file and blocked permanently. When false, only additional new agent registrations are denied."
+            },
+            "exclude": {
+              "type": [
+                "string",
+                "array"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "default": null,
+              "description": "IP addresses or ranges that are not subject to the new agent registration limit. For example: \"192.168.1.0/24,172.16.0.1\"."
+            },
+            "minutes": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Sliding time window in minutes."
+            },
+            "agents": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Maximum number of new agents that one source IP may register within the time window."
+            }
+          },
+          "required": [
+            "minutes",
+            "agents"
+          ]
         },
         "authLog": {
           "type": "string",
@@ -1101,6 +1146,16 @@
               "type": "integer",
               "default": 10,
               "description": "Maximum number of invalid login attempts from an IP address in the time period."
+            },
+            "blocking": {
+              "type": "string",
+              "default": "iprange",
+              "enum": [
+                "iprange",
+                "ip",
+                "username"
+              ],
+              "description": "Selects what is blocked when the invalid login limit is reached. 'iprange' (default) keeps the current behavior of blocking IPv4 /24 ranges, 'ip' blocks the exact client IP, and 'username' blocks only the login name."
             },
             "coolofftime": {
               "type": "integer",
@@ -2371,6 +2426,14 @@
             "default": null,
             "description": "When set, only agents from allowed IP address ranges can connect to the server. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIP.txt\""
           },
+          "agentAllowedIPNewAgents": {
+            "type": [
+              "string",
+              "array"
+            ],
+            "default": null,
+            "description": "When set, only new agents from allowed IP address ranges can enroll in this domain. Existing agents can reconnect from other addresses unless agentAllowedIP or agentBlockedIP restricts them. Example: \"192.168.2.100,192.168.1.0/24\" \"file:agentAllowedIPNewAgents.txt\""
+          },
           "agentBlockedIP": {
             "type": [
               "string",
@@ -2438,6 +2501,11 @@
           "desktopPrivacyBarText": {
             "type": "string",
             "description": "This is the text that will be shown in the remote desktop privacy bar. You can use {0} to display the account realname or {1} to display the account identifier in the string."
+          },
+          "desktopPrivacyBarMaxWidth": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum width of the remote desktop privacy bar in pixels. When not set, the agent determines the width."
           },
           "limits": {
             "type": "object",

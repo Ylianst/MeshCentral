@@ -223,11 +223,16 @@ var CreateAgentRedirect = function (meshserver, module, serverPublicNamePort, au
                     var view = new Uint8Array(e.data), cmd = (view[0] << 8) + view[1], cmdsize = (view[2] << 8) + view[3];
                     if ((cmd == 27) && (cmdsize == 8)) { cmd = (view[8] << 8) + view[9]; cmdsize = (view[5] << 16) + (view[6] << 8) + view[7]; view = view.slice(8); }
                     //console.log(cmdsize, view.byteLength);
-                    if (cmdsize != view.byteLength) {
+                    // The agent pads packets up to an 8-byte boundary, so view.byteLength is
+                    // usually larger than cmdsize. With '!=' every complete frame was pushed
+                    // into the accumulator (which exists for WebRTC fragmentation) and was only
+                    // released when the next packet arrived - swallowing that next frame.
+                    // Accumulate only when the data is genuinely short; trim padding otherwise.
+                    if (cmdsize > view.byteLength) {
                         //console.log('AccumulatorRequired', cmd, cmdsize, view.byteLength);
                         cmdAccCmd = cmd; cmdAccCmdSize = cmdsize; cmdAccLen = view.byteLength, cmdAcc = [view];
                     } else {
-                        obj.m.ProcessBinaryCommand(cmd, cmdsize, view);
+                        obj.m.ProcessBinaryCommand(cmd, cmdsize, (cmdsize < view.byteLength) ? view.slice(0, cmdsize) : view);
                     }
                 }
             } else if (obj.m.ProcessBinaryData) {

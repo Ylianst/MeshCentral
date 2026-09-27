@@ -153,7 +153,7 @@ function CreateMeshCentralServer(config, args) {
             'nousers', 'mpspass', 'ciralocalfqdn', 'dbexport', 'dbexportmin', 'dbimport',
             'dbmerge', 'dbfix', 'dbencryptkey', 'selfupdate', 'tlsoffload',
             'usenodedefaulttlsciphers', 'tlsciphers', 'userallowedip', 'userblockedip',
-            'swarmallowedip', 'agentallowedip', 'agentblockedip', 'fastcert', 'swarmport',
+            'swarmallowedip', 'agentallowedip', 'agentallowedipnewagents', 'agentblockedip', 'fastcert', 'swarmport',
             'logintoken', 'logintokenkey', 'logintokengen', 'mailtokengen', 'admin',
             'unadmin', 'sessionkey', 'sessiontime', 'minify', 'minifycore',
             'dblistconfigfiles', 'dbshowconfigfile', 'dbpushconfigfiles', 'oldencrypt',
@@ -952,9 +952,11 @@ function CreateMeshCentralServer(config, args) {
         if (config) { for (var i in config) { if ((typeof i == 'string') && (i.length > 0) && (i[0] != '_') && (['settings', 'domaindefaults', 'domains', 'configfiles', 'smtp', 'letsencrypt', 'peers', 'sms', 'messaging', 'sendgrid', 'sendmail', 'firebase', 'firebaserelay', '$schema'].indexOf(i) == -1)) { addServerWarning('Unrecognized configuration option \"' + i + '\".', 3, [i]); } } }
 
         // Read IP lists from files if applicable
+        obj.agentBlockedIpFile = ((typeof obj.args.agentblockedip == 'string') && obj.args.agentblockedip.startsWith('file:')) ? obj.path.join(obj.datapath, obj.args.agentblockedip.substring(5)) : null;
         config.settings.userallowedip = obj.args.userallowedip = readIpListFromFile(obj.args.userallowedip);
         config.settings.userblockedip = obj.args.userblockedip = readIpListFromFile(obj.args.userblockedip);
         config.settings.agentallowedip = obj.args.agentallowedip = readIpListFromFile(obj.args.agentallowedip);
+        config.settings.agentallowedipnewagents = obj.args.agentallowedipnewagents = readIpListFromFile(obj.args.agentallowedipnewagents);
         config.settings.agentblockedip = obj.args.agentblockedip = readIpListFromFile(obj.args.agentblockedip);
         config.settings.swarmallowedip = obj.args.swarmallowedip = readIpListFromFile(obj.args.swarmallowedip);
 
@@ -962,6 +964,7 @@ function CreateMeshCentralServer(config, args) {
         if (typeof obj.args.userallowedip == 'string') { if (obj.args.userallowedip == '') { config.settings.userallowedip = obj.args.userallowedip = null; } else { config.settings.userallowedip = obj.args.userallowedip = obj.args.userallowedip.split(' ').join('').split(','); } }
         if (typeof obj.args.userblockedip == 'string') { if (obj.args.userblockedip == '') { config.settings.userblockedip = obj.args.userblockedip = null; } else { config.settings.userblockedip = obj.args.userblockedip = obj.args.userblockedip.split(' ').join('').split(','); } }
         if (typeof obj.args.agentallowedip == 'string') { if (obj.args.agentallowedip == '') { config.settings.agentallowedip = obj.args.agentallowedip = null; } else { config.settings.agentallowedip = obj.args.agentallowedip = obj.args.agentallowedip.split(' ').join('').split(','); } }
+        if (typeof obj.args.agentallowedipnewagents == 'string') { if (obj.args.agentallowedipnewagents == '') { config.settings.agentallowedipnewagents = obj.args.agentallowedipnewagents = null; } else { config.settings.agentallowedipnewagents = obj.args.agentallowedipnewagents = obj.args.agentallowedipnewagents.split(' ').join('').split(','); } }
         if (typeof obj.args.agentblockedip == 'string') { if (obj.args.agentblockedip == '') { config.settings.agentblockedip = obj.args.agentblockedip = null; } else { config.settings.agentblockedip = obj.args.agentblockedip = obj.args.agentblockedip.split(' ').join('').split(','); } }
         if (typeof obj.args.swarmallowedip == 'string') { if (obj.args.swarmallowedip == '') { obj.args.swarmallowedip = null; } else { obj.args.swarmallowedip = obj.args.swarmallowedip.split(' ').join('').split(','); } }
         if ((typeof obj.args.agentupdateblocksize == 'number') && (obj.args.agentupdateblocksize >= 1024) && (obj.args.agentupdateblocksize <= 65531)) { obj.agentUpdateBlockSize = obj.args.agentupdateblocksize; }
@@ -972,6 +975,7 @@ function CreateMeshCentralServer(config, args) {
         config.settings.userallowedip = await resolveDomainsToIps(config.settings.userallowedip);
         config.settings.userblockedip = await resolveDomainsToIps(config.settings.userblockedip);
         config.settings.agentallowedip = await resolveDomainsToIps(config.settings.agentallowedip);
+        config.settings.agentallowedipnewagents = await resolveDomainsToIps(config.settings.agentallowedipnewagents);
         config.settings.agentblockedip = await resolveDomainsToIps(config.settings.agentblockedip);
         config.settings.swarmallowedip = await resolveDomainsToIps(config.settings.swarmallowedip);
 
@@ -1527,15 +1531,18 @@ function CreateMeshCentralServer(config, args) {
             obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip = readIpListFromFile(obj.config.domains[i].userallowedip);
             obj.config.domains[i].userblockedip = obj.config.domains[i].userblockedip = readIpListFromFile(obj.config.domains[i].userblockedip);
             obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip = readIpListFromFile(obj.config.domains[i].agentallowedip);
+            obj.config.domains[i].agentallowedipnewagents = readIpListFromFile(obj.config.domains[i].agentallowedipnewagents);
             obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip = readIpListFromFile(obj.config.domains[i].agentblockedip);
             if (typeof obj.config.domains[i].userallowedip == 'string') { if (obj.config.domains[i].userallowedip == '') { delete obj.config.domains[i].userallowedip; } else { obj.config.domains[i].userallowedip = obj.config.domains[i].userallowedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].userblockedip == 'string') { if (obj.config.domains[i].userblockedip == '') { delete obj.config.domains[i].userblockedip; } else { obj.config.domains[i].userblockedip = obj.config.domains[i].userblockedip.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentallowedip == 'string') { if (obj.config.domains[i].agentallowedip == '') { delete obj.config.domains[i].agentallowedip; } else { obj.config.domains[i].agentallowedip = obj.config.domains[i].agentallowedip.split(' ').join('').split(','); } }
+            if (typeof obj.config.domains[i].agentallowedipnewagents == 'string') { if (obj.config.domains[i].agentallowedipnewagents == '') { delete obj.config.domains[i].agentallowedipnewagents; } else { obj.config.domains[i].agentallowedipnewagents = obj.config.domains[i].agentallowedipnewagents.split(' ').join('').split(','); } }
             if (typeof obj.config.domains[i].agentblockedip == 'string') { if (obj.config.domains[i].agentblockedip == '') { delete obj.config.domains[i].agentblockedip; } else { obj.config.domains[i].agentblockedip = obj.config.domains[i].agentblockedip.split(' ').join('').split(','); } }
             // Check IP lists and ranges and if DNS return IP addresses
             obj.config.domains[i].userallowedip = await resolveDomainsToIps(obj.config.domains[i].userallowedip);
             obj.config.domains[i].userblockedip = await resolveDomainsToIps(obj.config.domains[i].userblockedip);
             obj.config.domains[i].agentallowedip = await resolveDomainsToIps(obj.config.domains[i].agentallowedip);
+            obj.config.domains[i].agentallowedipnewagents = await resolveDomainsToIps(obj.config.domains[i].agentallowedipnewagents);
             obj.config.domains[i].agentblockedip = await resolveDomainsToIps(obj.config.domains[i].agentblockedip);
             if (typeof obj.config.domains[i].ignoreagenthashcheck == 'string') { if (obj.config.domains[i].ignoreagenthashcheck == '') { delete obj.config.domains[i].ignoreagenthashcheck; } else { obj.config.domains[i].ignoreagenthashcheck = obj.config.domains[i].ignoreagenthashcheck.split(','); } }
             if (typeof obj.config.domains[i].allowedorigin == 'string') { if (obj.config.domains[i].allowedorigin == '') { delete obj.config.domains[i].allowedorigin; } else { obj.config.domains[i].allowedorigin = obj.config.domains[i].allowedorigin.split(','); } }
@@ -3068,7 +3075,8 @@ function CreateMeshCentralServer(config, args) {
                 // Compress the mesh cores with DEFLATE
                 const callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
                 callback.i = i;
-                require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').Z_BEST_COMPRESSION }, callback);
+                // agents expect a zlib.deflateRaw instead of zlib.deflate, fixed in meshagent.js, maybe change to zlib.deflateRaw here? Compressed cores also served at <server>/meshagents?cores
+                require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').constants.Z_BEST_COMPRESSION }, callback);
             }
         }
 
@@ -4053,7 +4061,7 @@ function CreateMeshCentralServer(config, args) {
             if (line.charAt(0) === '#') continue;
             const parts = line.split('#');
             const candidate = parts[0].trim();
-            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.charAt(0) === ':')) {
+            if (candidate.length > 0 && candidate.indexOf('@') === -1 && (candidate.indexOf('.') > -1 || candidate.indexOf(':') > -1)) {
                 validLines.push(candidate);
             }
         }
