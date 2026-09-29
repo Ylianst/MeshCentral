@@ -75,7 +75,7 @@ function isProtocolAllowedByRights(rights, protocol) {
     if ((protocol == 1) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) { return false; }
     if ((protocol == 2) && ((rights & MESHRIGHT_NODESKTOP) != 0)) { return false; }
     if ((protocol == 4) && ((rights & MESHRIGHT_NOREGISTRY) != 0)) { return false; }
-    if ((protocol == 5) && ((rights & MESHRIGHT_NOFILES) != 0)) { return false; }
+    if (((protocol == 5) || (protocol == 10)) && ((rights & MESHRIGHT_NOFILES) != 0)) { return false; }
     return true;
 }
 

@@ -3496,6 +3496,16 @@ function onTunnelData(data)
                 //
                 // Basic file transfer
                 //
+
+                // Check user access rights for files
+                if (((this.httprequest.rights & MESHRIGHT_REMOTECONTROL) == 0) || ((this.httprequest.rights != 0xFFFFFFFF) && ((this.httprequest.rights & MESHRIGHT_NOFILES) != 0))) {
+                    // Disengage this tunnel, user does not have the rights to do this!!
+                    this.httprequest.protocol = 999999;
+                    this.httprequest.s.end();
+                    sendConsoleText("Error: No files control rights.");
+                    return;
+                }
+
                 var stats = null;
                 if ((process.platform != 'win32') && (this.httprequest.xoptions.file.startsWith('/') == false)) { this.httprequest.xoptions.file = '/' + this.httprequest.xoptions.file; }
                 try { stats = require('fs').statSync(this.httprequest.xoptions.file) } catch (ex) { }
