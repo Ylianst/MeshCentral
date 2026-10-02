@@ -3006,7 +3006,10 @@ function CreateMeshCentralServer(config, args) {
                         // We are adding a JS file to the meshcores
                         var moduleName = modulesDir[i].substring(0, modulesDir[i].length - 3);
                         if (moduleName.endsWith('.min')) { moduleName = moduleName.substring(0, moduleName.length - 4); } // Remove the ".min" for ".min.js" files.
-                        const moduleData = ['try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(obj.path.join(moduleDirPath, modulesDir[i])).toString('binary')), '"); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n'];
+                        const modulePath = obj.path.join(moduleDirPath, modulesDir[i]);
+                        var moduleDate = '';
+                        try { moduleDate = ', "' + obj.fs.statSync(modulePath).mtime.toISOString() + '"'; } catch (ex) { }
+                        const moduleData = ['try { addModule("', moduleName, '", "', obj.escapeCodeString(obj.fs.readFileSync(modulePath).toString('binary')), '"', moduleDate, '); addedModules.push("', moduleName, '"); } catch (ex) { }\r\n'];
 
                         // Merge this module
                         // NOTE: "smbios" module makes some non-AI Linux segfault, only include for IA platforms.
