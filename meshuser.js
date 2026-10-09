@@ -118,6 +118,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.deviceSkip = 0; // How many devices to skip
     obj.deviceLimit = 0; // How many devices to view
     obj.visibleDevices = null; // An object of visible nodeid's if the user is in paging mode
+    obj.deviceFilter = null; // Device name filter applied by the server before paging, only used in paging mode
     if (domain.maxdeviceview != null) { obj.deviceLimit = domain.maxdeviceview; }
 
     // Check if we are a cross-domain administrator
@@ -726,6 +727,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((typeof command.skip == 'number') && (command.skip >= 0)) { obj.deviceSkip = command.skip; }
                         if ((typeof command.limit == 'number') && (command.limit > 0)) { obj.deviceLimit = command.limit; }
                         if (obj.deviceLimit > domain.maxdeviceview) { obj.deviceLimit = domain.maxdeviceview; }
+
+                        // Device name filter, applied by the database before paging so it searches all devices, not only the current page.
+                        // The filter stays set for the following requests (page changes, refreshes) until the client changes it.
+                        if (typeof command.filter == 'string') {
+                            var newFilter = command.filter.trim().toLowerCase().substring(0, 128);
+                            if (newFilter == '') { newFilter = null; }
+                            if (newFilter != obj.deviceFilter) { obj.deviceFilter = newFilter; if (typeof command.skip != 'number') { obj.deviceSkip = 0; } }
+                        }
                     }
 
                     var links = [], extraids = null, err = null;
@@ -773,7 +782,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
 
                         //console.log(err, docs, links, extraids, domain.id, 'node', command.id);
 
@@ -872,6 +881,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // If in paging mode, report back the skip and limit values
                             response.skip = obj.deviceSkip;
                             response.limit = obj.deviceLimit;
+                            if (obj.deviceFilter != null) { response.filter = obj.deviceFilter; }
 
                             // Add total device count
                             // Only set response.totalcount if we need to be in paging mode
@@ -881,7 +891,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 // Ask the database for the total device count
                                 if (db.CountAllTypeNoTypeFieldMeshFiltered) {
-                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, count) {
+                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceFilter, function (err, count) {
                                         if ((err != null) || (typeof count != 'number') || ((obj.deviceSkip == 0) && (count < obj.deviceLimit))) {
                                             obj.visibleDevices = null;
                                         } else {
@@ -5271,7 +5281,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 
                 const links = parent.GetAllMeshIdWithRights(user);
                 const extraids = getUserExtraIds();
-                db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                     if (docs == null) return;
                     const ids = [];
                     if (command.nodeids != null) {
@@ -6859,7 +6869,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // If we are not paging, get all devices visible to this user
             const links = parent.GetAllMeshIdWithRights(user);
             const extraids = getUserExtraIds();
-            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                 if (docs == null) return;
 
                 // Create a list of node ids for this user and query them for last device connection time
@@ -8461,7 +8471,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var extraids = getUserExtraIds();
 
             // Request a list of all nodes
-            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                 if (docs == null) { docs = []; }
                 parent.common.unEscapeAllLinksFieldName(docs);
 
