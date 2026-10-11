@@ -826,6 +826,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxeventsusername ON events(domain, userid, time);
                         CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time);
                         CREATE INDEX ndxeventids ON eventids(target);
+                        CREATE INDEX ndxeventidsfkid ON eventids(fkid);
                         CREATE INDEX ndxserverstattime ON serverstats (time);
                         CREATE INDEX ndxserverstatexpire ON serverstats (expire);
                         CREATE INDEX ndxpowernodeidtime ON power (nodeid, time);
@@ -843,9 +844,10 @@ module.exports.CreateDB = function (parent, func) {
             //for existing db's
             // Create any missing tables (e.g., pluginpermissions added in updates)
             obj.file.exec(`
-                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
+                CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid);
             `, function (err) {
-                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                if (err) { console.log("SQLite Error creating pluginpermissions table or eventids index: " + err); }
                 sqliteSetOptions(function () { setupFunctions(func); });
             });
         });
@@ -1496,6 +1498,7 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+            sqlDbExec('CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
