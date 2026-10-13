@@ -36,6 +36,10 @@ const storage = {
     domainKey: domain => crypto.createHash('sha256').update(domain.id || '').digest('hex')
 };
 
+// Build ids are random, so builds are listed newest first.
+const added = build => new Date(build.uploadedAt || 0).getTime() || 0;
+const newestFirst = (a, b) => (added(b) - added(a)) || a.name.localeCompare(b.name);
+
 // Agent file inspection (ELF, PE, Mach-O and Android APK)
 const binary = (function () {
     const policyGuids = ['b996015880544a19b7f7e9be44914c18', 'b996015880544a19b7f7e9be44914c19'];
@@ -658,9 +662,10 @@ function CreateAgentBuildUsage(parent, db) {
         return true;
     }
     function counts(rows, query) {
-        const result = { installed: 0, pinned: 0, pending: 0, updating: 0, unconfirmed: 0 };
+        const result = { installed: 0, pinned: 0, pending: 0, updating: 0, unconfirmed: 0, unreported: 0 };
         for (const row of rows) {
             if (query.agentId != null && row.agentId !== query.agentId) continue;
+            if (!row.hash) result.unreported++;
             if (query.hash && row.hash === query.hash) result.installed++;
             if (row.mode === 'pin' && row.build === query.build && (!query.filename || row.filename === query.filename)) result.pinned++;
             if (query.hash && row.expectedHash === query.hash && ['pending', 'updating', 'unconfirmed', 'blocked', 'reconnecting'].includes(row.state)) {
@@ -685,18 +690,20 @@ function CreateAgentBuildUsage(parent, db) {
             if (!arch || arch.localname !== record.localname) continue;
             let file = catalog.defaults.find(x => x.id === record.agentId);
             if (!file) {
-                file = { id: record.agentId, name: arch.desc, filename: arch.localname, source: 'Unavailable' };
+                file = { id: record.agentId, name: arch.desc, filename: arch.localname, source: 'Unavailable', sourceIs: { unavailable: true }, reports: arch.platform !== 'android' };
                 catalog.defaults.push(file);
             }
             const build = catalog.builds.find(x => x.id === record.build);
             file.defaultBuild = { id: record.build, name: build ? build.name : (record.name || record.build), filename: record.filename };
             if (!((parent.parent.agentBuildDefaults || {})[domain.id] || {})[record.agentId]) file.defaultBuild.unavailable = true;
             else if (file.override) file.defaultBuild.overridden = true;
+            else if (file.sourceIs && (file.sourceIs.other || file.sourceIs.domain)) file.sourceIs = { build: true };
             const artifact = build && build.artifacts.find(x => x.id === record.agentId && x.filename === record.filename);
             if (artifact) { artifact.serverDefault = file.defaultBuild; build.serverDefault = true; }
         }
         for (const file of catalog.defaults) file.usage = counts(rows, { hash: file.agentHash, agentId: file.id });
         for (const build of catalog.builds) for (const file of build.artifacts) file.usage = counts(rows, { hash: file.agentHash, agentId: file.id, build: build.id, filename: file.filename });
+        catalog.builds.sort((a, b) => (!!b.serverDefault - !!a.serverDefault) || newestFirst(a, b));
         return catalog;
     }
     async function references(domain, build) {
@@ -1692,13 +1699,15 @@ function CreateAgentCatalog(parent, directory) {
             if (agentId != null) continue;
             if (Number(id) >= 10000) continue;
             const agent = active[id];
-            let source = 'Server override';
-            if (domain.meshAgentBinaries && domain.meshAgentBinaries[id]) { source = 'Domain override'; }
-            else if (path.resolve(agent.path) == path.join(root, agent.localname)) { source = 'Bundled'; }
-            else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'signedagents')) { source = 'Server signed'; }
-            else if (agent.release) { source = 'Release'; }
-            else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'agentbuilds')) { source = 'Local file'; }
-            defaults.push({ id: Number(id), name: agent.desc, filename: agent.localname, source: source, size: agent.size, agentHash: agent.hashhex, release: agent.release, override: path.dirname(path.resolve(agent.path)) == overrides });
+            let source = 'Server override', key = 'other';
+            if (domain.meshAgentBinaries && domain.meshAgentBinaries[id]) { source = 'Domain override'; key = 'domain'; }
+            else if (path.resolve(agent.path) == path.join(root, agent.localname)) { source = 'Bundled'; key = 'bundled'; }
+            else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'signedagents')) { source = 'Server signed'; key = 'signed'; }
+            else if (agent.release) { source = 'Release'; key = 'release'; }
+            else if (path.dirname(path.resolve(agent.path)) == path.resolve(parent.datapath, 'agentbuilds')) { source = 'Local file'; key = 'local'; }
+            const override = path.dirname(path.resolve(agent.path)) == overrides;
+            // source stays English for the file filter; the page shows the translated label picked by sourceIs.
+            defaults.push({ id: Number(id), name: agent.desc, filename: agent.localname, source: source, sourceIs: { [override ? 'folder' : key]: true }, size: agent.size, agentHash: agent.hashhex, release: agent.release, override: override, reports: (architectures[id] || agent).platform !== 'android' });
         }
         for (const id of Object.keys(architectures).sort((a, b) => a - b)) {
             if (agentId != null) continue;
@@ -1729,7 +1738,7 @@ function CreateAgentCatalog(parent, directory) {
             buildIds.add(manifest.id);
             const source = manifest.source || {};
             const build = {
-                id: manifest.id, name: manifest.name, channel: manifest.channel, managed: entry.managed, archived: await archived(domain, manifest.id), uploadedAt: manifest.uploadedAt,
+                id: manifest.id, name: manifest.name, channel: manifest.channel, channelIs: { [manifest.channel.replace('-', '')]: true }, managed: entry.managed, archived: await archived(domain, manifest.id), uploadedAt: manifest.uploadedAt,
                 commit: typeof source.commit == 'string' ? source.commit : null, sourceUrl: githubUrl(source.commitUrl),
                 commitTime: typeof source.commitTime == 'string' ? source.commitTime : null,
                 provenance: importSource(source), workflows: [], artifacts: []
@@ -1747,6 +1756,7 @@ function CreateAgentCatalog(parent, directory) {
                 const matches = file.available && (file.size == artifact.size) && (file.sha256 == artifact.hashes.sha256) && (file.sha384 == artifact.hashes.sha384);
                 const row = Object.assign({
                     id: artifact.agentId, filename: artifact.filename, platform: artifact.platform, cpu: artifact.cpu,
+                    type: (architectures[artifact.agentId] || {}).desc, reports: artifact.platform !== 'android',
                     agentHash: artifact.hashes.agentSha384,
                     kvm: artifact.features && (artifact.features.kvm === true), requirements: compatibility(artifact), metadata: artifact.binaryMetadata || {},
                     signature: (artifact.binaryMetadata || {}).embeddedAuthenticode || (artifact.binaryMetadata || {}).embeddedSignature,
@@ -2059,7 +2069,7 @@ function CreateAgentBuilds(parent, db, catalog) {
         const data = await catalog.getCatalog(domain, node.agent.id), options = [];
         const artifacts = data.builds.flatMap(build => build.artifacts.filter(artifact => artifact.matches));
         const facts = await requirements(node, artifacts, refresh);
-        for (const build of data.builds) {
+        for (const build of data.builds.slice().sort(newestFirst)) {
             if (build.archived) continue;
             for (const artifact of build.artifacts) {
                 if ((artifact.id === node.agent.id) && artifact.matches) options.push({ id: build.id, name: build.name, channel: build.channel, filename: artifact.filename, platform: artifact.platform, cpu: artifact.cpu, sha256: artifact.sha256, requirements: artifact.requirements, kvm: artifact.kvm, compatibility: compatibility.check(artifact, facts && facts.data) });
@@ -2067,7 +2077,12 @@ function CreateAgentBuilds(parent, db, catalog) {
         }
         const result = await status(domain, node, value);
         result.options = options;
-        const hash = result.reportedHash || (result.deployment || {}).reportedHash;
+        let hash = result.reportedHash || (result.deployment || {}).reportedHash;
+        if (!hash && !parent.wsagents[node._id]) {
+            // An offline device is still on the file it last reported.
+            const usage = (await get('abu' + node._id))[0];
+            if (usage && usage.hash && (usage.enrollment === (node.firstconnect || 0)) && (usage.agentId === node.agent.id)) hash = usage.hash;
+        }
         result.installed = { hash: hash, current: !!result.reportedHash, matches: [] };
         if (hash) {
             result.installed.matches = await catalog.identify(domain, node.agent.id, hash, data);

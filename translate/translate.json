@@ -527,8 +527,8 @@
       "en": "({{id}})",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->11->5->3->1->3->2",
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->3->2",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3->2"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->3->3",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3->6"
       ]
     },
     {
@@ -4691,7 +4691,7 @@
       "zh-chs": "出现失败时会暂停部署。需要安装代理文件时，将跳过离线设备。",
       "zh-cht": "發生失敗時會暫停部署。需要安裝代理檔案時，會略過離線裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->208"
+        "agentbuildmanager.js->0->215"
       ]
     },
     {
@@ -5190,7 +5190,7 @@
       "zh-chs": "关于默认下载",
       "zh-cht": "關於預設下載",
       "xloc": [
-        "agentbuildmanager.js->0->73"
+        "agentbuildmanager.js->0->78"
       ]
     },
     {
@@ -6033,7 +6033,7 @@
       "zh-chs": "操作",
       "zh-cht": "指令",
       "xloc": [
-        "agentbuildmanager.js->0->158",
+        "agentbuildmanager.js->0->164",
         "default-mobile.handlebars->55->1014",
         "default.handlebars->121->1965",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->8",
@@ -7311,7 +7311,7 @@
       "zh-chs": "添加构建",
       "zh-cht": "新增組建",
       "xloc": [
-        "agentbuildmanager.js->0->128"
+        "agentbuildmanager.js->0->133"
       ]
     },
     {
@@ -7468,7 +7468,7 @@
       "zh-chs": "添加于",
       "zh-cht": "新增於",
       "xloc": [
-        "agentbuildmanager.js->0->157",
+        "agentbuildmanager.js->0->163",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->16"
       ]
     },
@@ -7838,44 +7838,7 @@
       "zh-chs": "正在添加构建...",
       "zh-cht": "正在新增組建...",
       "xloc": [
-        "agentbuildmanager.js->0->129"
-      ]
-    },
-    {
-      "en": "Additional builds",
-      "ar": "البنيات الإضافية",
-      "bs": "Dodatne verzije",
-      "ca": "Compilacions addicionals",
-      "cs": "Další sestavení",
-      "da": "Yderligere builds",
-      "de": "Zusätzliche Builds",
-      "el": "Πρόσθετες εκδόσεις",
-      "es": "Compilaciones adicionales",
-      "fi": "Muut koontiversiot",
-      "fr": "Builds supplémentaires",
-      "he": "גרסאות בנייה נוספות",
-      "hi": "अतिरिक्त बिल्ड",
-      "hr": "Dodatne verzije",
-      "hu": "További buildek",
-      "it": "Build aggiuntive",
-      "ja": "追加ビルド",
-      "ko": "추가 빌드",
-      "nl": "Extra builds",
-      "pl": "Dodatkowe kompilacje",
-      "pt": "Compilações adicionais",
-      "pt-br": "Builds adicionais",
-      "ro": "Build-uri suplimentare",
-      "ru": "Дополнительные сборки",
-      "sr": "Dodatne verzije",
-      "sv": "Ytterligare byggen",
-      "tr": "Ek derlemeler",
-      "uk": "Додаткові збірки",
-      "zh-chs": "附加构建",
-      "zh-cht": "附加組建",
-      "xloc": [
-        "default-mobile.handlebars->container->page_content->column_l->p44->p44info->p44head->1->0->1->p44group->2",
-        "default.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2",
-        "default3.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2"
+        "agentbuildmanager.js->0->134"
       ]
     },
     {
@@ -8851,7 +8814,7 @@
       "zh-chs": "代理部署",
       "zh-cht": "代理部署",
       "xloc": [
-        "agentbuildmanager.js->0->43"
+        "agentbuildmanager.js->0->48"
       ]
     },
     {
@@ -8886,8 +8849,8 @@
       "zh-chs": "代理部署",
       "zh-cht": "代理部署",
       "xloc": [
-        "agentbuildmanager.js->0->222",
-        "agentbuildmanager.js->0->44"
+        "agentbuildmanager.js->0->229",
+        "agentbuildmanager.js->0->49"
       ]
     },
     {
@@ -8952,7 +8915,7 @@
       "zh-chs": "代理下载将立即提供此构建的文件。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "代理下載將立即提供此組建的檔案。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->165"
+        "agentbuildmanager.js->0->171"
       ]
     },
     {
@@ -9030,7 +8993,7 @@
       "zh-chs": "代理文件",
       "zh-cht": "代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->83"
+        "agentbuildmanager.js->0->88"
       ]
     },
     {
@@ -9065,7 +9028,7 @@
       "zh-chs": "{0} 中的代理文件在以下项目上优先于此构建：{1}",
       "zh-cht": "{0} 中的代理檔案在以下項目上優先於此組建：{1}",
       "xloc": [
-        "agentbuildmanager.js->0->168"
+        "agentbuildmanager.js->0->174"
       ]
     },
     {
@@ -9294,6 +9257,7 @@
       "zh-chs": "代理类型",
       "zh-cht": "代理類型",
       "xloc": [
+        "agentbuildmanager.js->0->115",
         "agentcatalog.handlebars->agentCatalogContent->11->5->1->0->1",
         "agentcatalog.handlebars->agentCatalogContent->11->5->3->1->3->0",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->1",
@@ -9460,6 +9424,41 @@
         "default3.handlebars->123->603",
         "default3.handlebars->container->column_l->p44->p44info->p44head->p44title->0",
         "default3.handlebars->container->topbar->1->1->ServerSubMenuSpan->ServerSubMenu->1->0->ServerAgentBuilds"
+      ]
+    },
+    {
+      "en": "Agents folder",
+      "ar": "مجلد الوكلاء",
+      "bs": "Folder agenata",
+      "ca": "Carpeta d'agents",
+      "cs": "Složka agentů",
+      "da": "Agentmappe",
+      "de": "Agent-Ordner",
+      "el": "Φάκελος αντιπροσώπων",
+      "es": "Carpeta de agentes",
+      "fi": "Agenttikansio",
+      "fr": "Dossier des agents",
+      "he": "תיקיית הסוכנים",
+      "hi": "एजेंट फ़ोल्डर",
+      "hr": "Mapa agenata",
+      "hu": "Agent mappa",
+      "it": "Cartella degli agenti",
+      "ja": "エージェントフォルダー",
+      "ko": "에이전트 폴더",
+      "nl": "Agentmap",
+      "pl": "Folder agentów",
+      "pt": "Pasta de agentes",
+      "pt-br": "Pasta de agentes",
+      "ro": "Folderul de agenți",
+      "ru": "Папка агентов",
+      "sr": "Fascikla agenata",
+      "sv": "Agentmapp",
+      "tr": "Agent klasörü",
+      "uk": "Папка агентів",
+      "zh-chs": "代理文件夹",
+      "zh-cht": "代理資料夾",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->8"
       ]
     },
     {
@@ -9812,7 +9811,7 @@
       "zh-chs": "所有设备",
       "zh-cht": "所有裝置",
       "xloc": [
-        "agentbuildmanager.js->0->232"
+        "agentbuildmanager.js->0->239"
       ]
     },
     {
@@ -9847,7 +9846,7 @@
       "zh-chs": "所有引用",
       "zh-cht": "所有參照",
       "xloc": [
-        "agentbuildmanager.js->0->178"
+        "agentbuildmanager.js->0->184"
       ]
     },
     {
@@ -9882,7 +9881,7 @@
       "zh-chs": "所有发行版文件均已存在。",
       "zh-cht": "所有發行版本檔案皆已存在。",
       "xloc": [
-        "agentbuildmanager.js->0->54"
+        "agentbuildmanager.js->0->59"
       ]
     },
     {
@@ -10634,7 +10633,7 @@
       "zh-chs": "此部署由另一位管理员创建。您可以暂停或取消它，但只有其所有者才能开始或继续它。",
       "zh-cht": "此部署由另一位管理員建立。您可以暫停或取消它，但只有其擁有者才能開始或繼續它。",
       "xloc": [
-        "agentbuildmanager.js->0->247"
+        "agentbuildmanager.js->0->254"
       ]
     },
     {
@@ -11022,7 +11021,7 @@
       "zh-chs": "应用服务器的代理品牌并重新签名",
       "zh-cht": "套用伺服器的代理品牌並重新簽署",
       "xloc": [
-        "agentbuildmanager.js->0->118"
+        "agentbuildmanager.js->0->123"
       ]
     },
     {
@@ -11710,7 +11709,7 @@
       "zh-chs": "归档构建",
       "zh-cht": "封存組建",
       "xloc": [
-        "agentbuildmanager.js->0->174"
+        "agentbuildmanager.js->0->180"
       ]
     },
     {
@@ -11745,7 +11744,7 @@
       "zh-chs": "归档此构建",
       "zh-cht": "封存此組建",
       "xloc": [
-        "agentbuildmanager.js->0->143"
+        "agentbuildmanager.js->0->149"
       ]
     },
     {
@@ -11780,7 +11779,7 @@
       "zh-chs": "已归档",
       "zh-cht": "已封存",
       "xloc": [
-        "agentbuildmanager.js->0->139",
+        "agentbuildmanager.js->0->145",
         "agentcatalog.handlebars->agentCatalogContent->9->1->3->1"
       ]
     },
@@ -11853,7 +11852,7 @@
       "zh-chs": "归档会将此构建从新的选择中隐藏。已固定到此构建的设备会继续运行它，服务器也会保留其存储的副本。",
       "zh-cht": "封存會將此組建從新的選擇中隱藏。已固定到此組建的裝置會繼續執行它，伺服器也會保留其已儲存的副本。",
       "xloc": [
-        "agentbuildmanager.js->0->162"
+        "agentbuildmanager.js->0->168"
       ]
     },
     {
@@ -12542,7 +12541,7 @@
       "zh-chs": "第 {0} 次尝试",
       "zh-cht": "第 {0} 次嘗試",
       "xloc": [
-        "agentbuildmanager.js->0->332"
+        "agentbuildmanager.js->0->339"
       ]
     },
     {
@@ -13076,7 +13075,7 @@
       "zh-chs": "自动下载已禁用。仍可使用本地文件和匹配的已上传构建。",
       "zh-cht": "自動下載已停用。仍可使用本機檔案和相符的已上傳組建。",
       "xloc": [
-        "agentbuildmanager.js->0->70"
+        "agentbuildmanager.js->0->75"
       ]
     },
     {
@@ -13358,7 +13357,7 @@
       "zh-chs": "返回构建列表",
       "zh-cht": "返回組建清單",
       "xloc": [
-        "agentbuildmanager.js->0->299"
+        "agentbuildmanager.js->0->306"
       ]
     },
     {
@@ -13929,7 +13928,7 @@
       "zh-chs": "批次大小",
       "zh-cht": "批次大小",
       "xloc": [
-        "agentbuildmanager.js->0->206"
+        "agentbuildmanager.js->0->213"
       ]
     },
     {
@@ -14052,7 +14051,7 @@
       "zh-chs": "部署中",
       "zh-cht": "部署中",
       "xloc": [
-        "agentbuildmanager.js->0->188"
+        "agentbuildmanager.js->0->195"
       ]
     },
     {
@@ -14272,8 +14271,8 @@
       "zh-chs": "分支或提交",
       "zh-cht": "分支或提交",
       "xloc": [
-        "agentbuildmanager.js->0->282",
-        "agentbuildmanager.js->0->293"
+        "agentbuildmanager.js->0->289",
+        "agentbuildmanager.js->0->300"
       ]
     },
     {
@@ -14308,7 +14307,7 @@
       "zh-chs": "品牌",
       "zh-cht": "品牌",
       "xloc": [
-        "agentbuildmanager.js->0->117"
+        "agentbuildmanager.js->0->122"
       ]
     },
     {
@@ -14566,7 +14565,8 @@
       "zh-chs": "构建",
       "zh-cht": "組建",
       "xloc": [
-        "agentbuildmanager.js->0->204",
+        "agentbuildmanager.js->0->211",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->6",
         "default-mobile.handlebars->55->1145",
         "default.handlebars->121->3615",
         "default3.handlebars->123->3611"
@@ -14604,7 +14604,7 @@
       "zh-chs": "构建 ID",
       "zh-cht": "組建 ID",
       "xloc": [
-        "agentbuildmanager.js->0->155",
+        "agentbuildmanager.js->0->161",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->2"
       ]
     },
@@ -14745,7 +14745,7 @@
       "zh-chs": "构建名称",
       "zh-cht": "組建名稱",
       "xloc": [
-        "agentbuildmanager.js->0->104"
+        "agentbuildmanager.js->0->109"
       ]
     },
     {
@@ -14780,8 +14780,8 @@
       "zh-chs": "构建使用情况",
       "zh-cht": "組建使用情況",
       "xloc": [
-        "agentbuildmanager.js->0->175",
-        "agentbuildmanager.js->0->38"
+        "agentbuildmanager.js->0->181",
+        "agentbuildmanager.js->0->43"
       ]
     },
     {
@@ -14816,7 +14816,10 @@
       "zh-chs": "构建",
       "zh-cht": "組建",
       "xloc": [
-        "agentbuildmanager.js->0->277"
+        "agentbuildmanager.js->0->284",
+        "default-mobile.handlebars->container->page_content->column_l->p44->p44info->p44head->1->0->1->p44group->2",
+        "default.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2",
+        "default3.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2"
       ]
     },
     {
@@ -14849,6 +14852,41 @@
         "default.handlebars->121->2058",
         "default3.handlebars->123->2051",
         "login2.handlebars->17->26"
+      ]
+    },
+    {
+      "en": "Bundled",
+      "ar": "مضمّن",
+      "bs": "Ugrađeno",
+      "ca": "Inclòs",
+      "cs": "Přibaleno",
+      "da": "Medfølger",
+      "de": "Mitgeliefert",
+      "el": "Ενσωματωμένο",
+      "es": "Incluido",
+      "fi": "Mukana toimitettu",
+      "fr": "Intégré",
+      "he": "מובנה",
+      "hi": "बंडल किया गया",
+      "hr": "Ugrađeno",
+      "hu": "Beépített",
+      "it": "Incluso",
+      "ja": "同梱",
+      "ko": "번들",
+      "nl": "Meegeleverd",
+      "pl": "Wbudowany",
+      "pt": "Incluído",
+      "pt-br": "Incluído",
+      "ro": "Inclus",
+      "ru": "Встроенный",
+      "sr": "Ugrađeno",
+      "sv": "Medföljer",
+      "tr": "Yerleşik",
+      "uk": "Вбудований",
+      "zh-chs": "内置",
+      "zh-cht": "內建",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->10"
       ]
     },
     {
@@ -15766,7 +15804,7 @@
       "zh-chs": "取消剩余部分",
       "zh-cht": "取消其餘部分",
       "xloc": [
-        "agentbuildmanager.js->0->250"
+        "agentbuildmanager.js->0->257"
       ]
     },
     {
@@ -15802,7 +15840,7 @@
       "zh-cht": "已取消",
       "xloc": [
         "agentbuildmanager.js->0->12",
-        "agentbuildmanager.js->0->246"
+        "agentbuildmanager.js->0->253"
       ]
     },
     {
@@ -17074,7 +17112,7 @@
       "zh-chs": "检查新发行版",
       "zh-cht": "檢查新發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->57"
+        "agentbuildmanager.js->0->62"
       ]
     },
     {
@@ -17256,7 +17294,7 @@
       "zh-chs": "正在检查设备...",
       "zh-cht": "正在檢查裝置...",
       "xloc": [
-        "agentbuildmanager.js->0->220"
+        "agentbuildmanager.js->0->227"
       ]
     },
     {
@@ -17291,7 +17329,7 @@
       "zh-chs": "检查新发行版不会更改服务器默认值，也不会安装代理。",
       "zh-cht": "檢查新發行版本不會變更伺服器預設值，也不會安裝代理。",
       "xloc": [
-        "agentbuildmanager.js->0->58"
+        "agentbuildmanager.js->0->63"
       ]
     },
     {
@@ -17326,7 +17364,7 @@
       "zh-chs": "正在检查新发行版...",
       "zh-cht": "正在檢查新發行版本...",
       "xloc": [
-        "agentbuildmanager.js->0->56"
+        "agentbuildmanager.js->0->61"
       ]
     },
     {
@@ -18034,9 +18072,9 @@
       "zh-chs": "清除默认值",
       "zh-cht": "清除預設值",
       "xloc": [
-        "agentbuildmanager.js->0->132",
-        "agentbuildmanager.js->0->173",
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->10"
+        "agentbuildmanager.js->0->137",
+        "agentbuildmanager.js->0->179",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->28"
       ]
     },
     {
@@ -18102,8 +18140,8 @@
       "zh-chs": "清除服务器默认值",
       "zh-cht": "清除伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->130",
-        "agentbuildmanager.js->0->40"
+        "agentbuildmanager.js->0->135",
+        "agentbuildmanager.js->0->45"
       ]
     },
     {
@@ -18237,7 +18275,7 @@
       "zh-chs": "清除此构建提供的服务器默认值",
       "zh-cht": "清除此組建提供的伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->145"
+        "agentbuildmanager.js->0->151"
       ]
     },
     {
@@ -18873,14 +18911,14 @@
       "zh-cht": "關",
       "xloc": [
         "agent-translations.json",
-        "agentbuildmanager.js->0->137",
-        "agentbuildmanager.js->0->185",
-        "agentbuildmanager.js->0->221",
-        "agentbuildmanager.js->0->262",
-        "agentbuildmanager.js->0->45",
-        "agentbuildmanager.js->0->47",
-        "agentbuildmanager.js->0->48",
-        "agentbuildmanager.js->0->79",
+        "agentbuildmanager.js->0->142",
+        "agentbuildmanager.js->0->191",
+        "agentbuildmanager.js->0->228",
+        "agentbuildmanager.js->0->269",
+        "agentbuildmanager.js->0->50",
+        "agentbuildmanager.js->0->52",
+        "agentbuildmanager.js->0->53",
+        "agentbuildmanager.js->0->84",
         "default-mobile.handlebars->55->1159",
         "default-mobile.handlebars->55->1160",
         "default-mobile.handlebars->55->1240",
@@ -19031,7 +19069,7 @@
       "zh-chs": "关闭此对话框不会停止此部署。暂停或取消会停止新的工作。已应用的政策会保持不变。",
       "zh-cht": "關閉此對話方塊不會停止此部署。暫停或取消會停止新的工作。已套用的政策會維持不變。",
       "xloc": [
-        "agentbuildmanager.js->0->257"
+        "agentbuildmanager.js->0->264"
       ]
     },
     {
@@ -19096,7 +19134,7 @@
       "zh-chs": "代码签名",
       "zh-cht": "程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->115"
+        "agentbuildmanager.js->0->120"
       ]
     },
     {
@@ -19131,7 +19169,7 @@
       "zh-chs": "使用服务器证书对此文件进行代码签名",
       "zh-cht": "使用伺服器憑證對此檔案進行程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->116"
+        "agentbuildmanager.js->0->121"
       ]
     },
     {
@@ -19166,7 +19204,7 @@
       "zh-chs": "已由服务器进行代码签名",
       "zh-cht": "已由伺服器進行程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->151",
+        "agentbuildmanager.js->0->157",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->8"
       ]
     },
@@ -19666,7 +19704,7 @@
       "zh-chs": "请在服务器上配置 GitHub 令牌以下载这些文件。",
       "zh-cht": "請在伺服器上設定 GitHub 權杖以下載這些檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->304"
+        "agentbuildmanager.js->0->311"
       ]
     },
     {
@@ -19701,7 +19739,7 @@
       "zh-chs": "请在服务器上配置 GitHub 令牌以下载工作流工件。",
       "zh-cht": "請在伺服器上設定 GitHub 權杖以下載工作流程成品。",
       "xloc": [
-        "agentbuildmanager.js->0->319"
+        "agentbuildmanager.js->0->326"
       ]
     },
     {
@@ -20030,7 +20068,7 @@
       "zh-chs": "开始此部署前，请确认本地恢复。",
       "zh-cht": "開始此部署前，請確認本機復原。",
       "xloc": [
-        "agentbuildmanager.js->0->259"
+        "agentbuildmanager.js->0->266"
       ]
     },
     {
@@ -20675,7 +20713,7 @@
       "zh-chs": "请确认删除此构建也会清除其服务器默认值。",
       "zh-cht": "請確認移除此組建也會清除其伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->169"
+        "agentbuildmanager.js->0->175"
       ]
     },
     {
@@ -20710,7 +20748,7 @@
       "zh-chs": "请确认您信任这些代理文件。",
       "zh-cht": "請確認您信任這些代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->127"
+        "agentbuildmanager.js->0->132"
       ]
     },
     {
@@ -22089,7 +22127,7 @@
       "zh-chs": "复制构建 ID",
       "zh-cht": "複製組建 ID",
       "xloc": [
-        "agentbuildmanager.js->0->156",
+        "agentbuildmanager.js->0->162",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->2->2"
       ]
     },
@@ -22540,6 +22578,76 @@
       "nl": "Cosmo",
       "xloc": [
         "default3.handlebars->123->2272"
+      ]
+    },
+    {
+      "en": "Counts include offline devices. A device is counted as running a file after its agent connects and reports that file's hash.",
+      "ar": "تشمل الأعداد الأجهزة غير المتصلة. يُحتسب الجهاز على أنه يشغّل ملفًا بعد أن يتصل وكيله ويُبلغ عن تجزئة ذلك الملف.",
+      "bs": "Brojevi uključuju uređaje van mreže. Uređaj se računa kao da koristi fajl nakon što se njegov agent poveže i prijavi heš tog fajla.",
+      "ca": "Els recomptes inclouen els dispositius fora de línia. Un dispositiu es compta com que executa un fitxer després que el seu agent es connecti i n'informi el hash.",
+      "cs": "Počty zahrnují zařízení offline. Zařízení se počítá jako používající soubor poté, co se jeho agent připojí a nahlásí hash tohoto souboru.",
+      "da": "Antallene omfatter offline enheder. En enhed tælles som en, der kører en fil, når dens agent har oprettet forbindelse og rapporteret filens hash.",
+      "de": "Die Zahlen schließen Offline-Geräte ein. Ein Gerät wird für eine Datei gezählt, sobald sein Agent sich verbunden und den Hash dieser Datei gemeldet hat.",
+      "el": "Οι αριθμοί περιλαμβάνουν τις συσκευές εκτός σύνδεσης. Μια συσκευή υπολογίζεται ότι εκτελεί ένα αρχείο αφού ο αντιπρόσωπός της συνδεθεί και αναφέρει τον κατακερματισμό του αρχείου.",
+      "es": "Los recuentos incluyen los dispositivos fuera de línea. Un dispositivo se cuenta como que ejecuta un archivo después de que su agente se conecte y notifique el hash de ese archivo.",
+      "fi": "Määrät sisältävät offline-tilassa olevat laitteet. Laite lasketaan tiedoston käyttäjäksi, kun sen agentti on muodostanut yhteyden ja ilmoittanut tiedoston tiivisteen.",
+      "fr": "Les nombres incluent les appareils déconnectés. Un appareil est compté comme exécutant un fichier une fois que son agent s'est connecté et a signalé le hachage de ce fichier.",
+      "he": "הספירות כוללות מכשירים לא מקוונים. מכשיר נספר כמריץ קובץ לאחר שהסוכן שלו מתחבר ומדווח על הגיבוב של אותו קובץ.",
+      "hi": "गिनती में ऑफ़लाइन डिवाइस शामिल हैं। किसी डिवाइस को कोई फ़ाइल चलाने वाला तब गिना जाता है, जब उसका एजेंट कनेक्ट होकर उस फ़ाइल का हैश रिपोर्ट कर देता है।",
+      "hr": "Brojevi uključuju uređaje izvan mreže. Uređaj se računa kao da koristi datoteku nakon što se njegov agent poveže i prijavi sažetak te datoteke.",
+      "hu": "A számok az offline eszközöket is tartalmazzák. Egy eszköz akkor számít egy fájlt futtatónak, miután az Agent csatlakozott, és jelentette a fájl hash-értékét.",
+      "it": "I conteggi includono i dispositivi disconnessi. Un dispositivo viene conteggiato tra quelli che eseguono un file dopo che il suo agente si è connesso e ha segnalato l'hash di quel file.",
+      "ja": "数にはオフラインのデバイスも含まれます。デバイスは、エージェントが接続してそのファイルのハッシュを報告した後に、そのファイルを実行中として数えられます。",
+      "ko": "개수에는 오프라인 장치가 포함됩니다. 장치는 에이전트가 연결되어 해당 파일의 해시를 보고한 후에 그 파일을 실행 중인 것으로 집계됩니다.",
+      "nl": "De aantallen omvatten offline apparaten. Een apparaat telt mee voor een bestand zodra zijn agent verbinding heeft gemaakt en de hash van dat bestand heeft gemeld.",
+      "pl": "Liczby obejmują urządzenia offline. Urządzenie jest liczone jako korzystające z pliku, gdy jego agent połączy się i zgłosi skrót tego pliku.",
+      "pt": "As contagens incluem os dispositivos offline. Um dispositivo é contado como estando a executar um ficheiro depois de o seu agente se ligar e comunicar o hash desse ficheiro.",
+      "pt-br": "As contagens incluem os dispositivos desconectados. Um dispositivo é contado como executando um arquivo depois que seu agente se conecta e informa o hash desse arquivo.",
+      "ro": "Numerele includ dispozitivele offline. Un dispozitiv este numărat ca rulând un fișier după ce agentul său se conectează și raportează hash-ul acelui fișier.",
+      "ru": "Числа включают устройства не в сети. Устройство считается использующим файл после того, как его агент подключится и сообщит хэш этого файла.",
+      "sr": "Brojevi uključuju uređaje van mreže. Uređaj se računa kao da koristi datoteku nakon što se njegov agent poveže i prijavi heš te datoteke.",
+      "sv": "Antalen omfattar enheter som är offline. En enhet räknas som att den kör en fil när dess agent har anslutit och rapporterat filens hashvärde.",
+      "tr": "Sayılara çevrimdışı cihazlar dahildir. Bir cihaz, Agent'ı bağlanıp o dosyanın karmasını bildirdikten sonra o dosyayı çalıştırıyor olarak sayılır.",
+      "uk": "Кількості охоплюють офлайн-пристрої. Пристрій зараховується як такий, що використовує файл, після того як його агент підключиться й повідомить хеш цього файлу.",
+      "zh-chs": "数量包括离线设备。设备的代理连接并报告某个文件的哈希后，该设备才计为正在运行该文件。",
+      "zh-cht": "數量包括離線裝置。裝置的代理連線並回報某個檔案的雜湊後，該裝置才會計為正在執行該檔案。",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->3"
+      ]
+    },
+    {
+      "en": "Counts use the last agent file hash each device reported, so offline devices are included. A device that has not reported a hash yet is not counted as running this file.",
+      "ar": "تستخدم الأعداد آخر تجزئة لملف الوكيل أبلغ عنها كل جهاز، ولذلك تشمل الأجهزة غير المتصلة. لا يُحتسب الجهاز الذي لم يُبلغ عن تجزئة بعد على أنه يشغّل هذا الملف.",
+      "bs": "Brojevi se zasnivaju na posljednjem hešu fajla agenta koji je prijavio svaki uređaj, pa su uključeni i uređaji van mreže. Uređaj koji još nije prijavio heš ne računa se kao da koristi ovaj fajl.",
+      "ca": "Els recomptes fan servir l'últim hash de fitxer d'agent que ha informat cada dispositiu, de manera que inclouen els que estan fora de línia. Un dispositiu que encara no ha informat cap hash no es compta com que executa aquest fitxer.",
+      "cs": "Počty vycházejí z posledního hashe souboru agenta, který každé zařízení nahlásilo, takže zahrnují i zařízení offline. Zařízení, které hash ještě nenahlásilo, se nepočítá jako používající tento soubor.",
+      "da": "Antallene bygger på den seneste agentfil-hash, som hver enhed har rapporteret, så offline enheder er med. En enhed, der endnu ikke har rapporteret en hash, tælles ikke som en, der kører denne fil.",
+      "de": "Die Zahlen beruhen auf dem letzten Agent-Datei-Hash, den jedes Gerät gemeldet hat, und schließen daher Offline-Geräte ein. Ein Gerät, das noch keinen Hash gemeldet hat, wird für diese Datei nicht gezählt.",
+      "el": "Οι αριθμοί βασίζονται στον τελευταίο κατακερματισμό αρχείου αντιπροσώπου που ανέφερε κάθε συσκευή, επομένως περιλαμβάνουν τις συσκευές εκτός σύνδεσης. Μια συσκευή που δεν έχει αναφέρει ακόμη κατακερματισμό δεν υπολογίζεται ότι εκτελεί αυτό το αρχείο.",
+      "es": "Los recuentos usan el último hash de archivo de agente notificado por cada dispositivo, por lo que incluyen los que están fuera de línea. Un dispositivo que aún no ha notificado ningún hash no se cuenta como que ejecuta este archivo.",
+      "fi": "Määrät perustuvat kunkin laitteen viimeksi ilmoittamaan agenttitiedoston tiivisteeseen, joten mukana ovat myös offline-tilassa olevat laitteet. Laitetta, joka ei ole vielä ilmoittanut tiivistettä, ei lasketa tämän tiedoston käyttäjäksi.",
+      "fr": "Les nombres reposent sur le dernier hachage de fichier d'agent signalé par chaque appareil, ce qui inclut les appareils déconnectés. Un appareil qui n'a pas encore signalé de hachage n'est pas compté comme exécutant ce fichier.",
+      "he": "הספירות מבוססות על גיבוב קובץ הסוכן האחרון שדיווח כל מכשיר, ולכן הן כוללות מכשירים לא מקוונים. מכשיר שעדיין לא דיווח על גיבוב אינו נספר כמריץ קובץ זה.",
+      "hi": "गिनती हर डिवाइस द्वारा रिपोर्ट किए गए अंतिम एजेंट फ़ाइल हैश पर आधारित है, इसलिए ऑफ़लाइन डिवाइस भी शामिल हैं। जिस डिवाइस ने अभी तक हैश रिपोर्ट नहीं किया है, उसे यह फ़ाइल चलाने वाला नहीं गिना जाता।",
+      "hr": "Brojevi se temelje na posljednjem sažetku datoteke agenta koji je prijavio svaki uređaj, pa su uključeni i uređaji izvan mreže. Uređaj koji još nije prijavio sažetak ne računa se kao da koristi ovu datoteku.",
+      "hu": "A számok az egyes eszközök által utoljára jelentett Agent fájl hash-értékén alapulnak, ezért az offline eszközöket is tartalmazzák. Az az eszköz, amely még nem jelentett hash-értéket, nem számít e fájlt futtatónak.",
+      "it": "I conteggi usano l'ultimo hash del file dell'agente segnalato da ciascun dispositivo, quindi includono quelli disconnessi. Un dispositivo che non ha ancora segnalato un hash non viene conteggiato tra quelli che eseguono questo file.",
+      "ja": "数は各デバイスが最後に報告したエージェントファイルのハッシュに基づくため、オフラインのデバイスも含まれます。まだハッシュを報告していないデバイスは、このファイルを実行中として数えられません。",
+      "ko": "개수는 각 장치가 마지막으로 보고한 에이전트 파일 해시를 기준으로 하므로 오프라인 장치도 포함됩니다. 아직 해시를 보고하지 않은 장치는 이 파일을 실행 중인 것으로 집계되지 않습니다.",
+      "nl": "De aantallen gebruiken de laatste agentbestandshash die elk apparaat heeft gemeld, dus offline apparaten tellen mee. Een apparaat dat nog geen hash heeft gemeld, telt niet mee voor dit bestand.",
+      "pl": "Liczby opierają się na ostatnim skrócie pliku agenta zgłoszonym przez każde urządzenie, więc obejmują urządzenia offline. Urządzenie, które nie zgłosiło jeszcze skrótu, nie jest liczone jako korzystające z tego pliku.",
+      "pt": "As contagens utilizam o último hash do ficheiro do agente comunicado por cada dispositivo, pelo que incluem os que estão offline. Um dispositivo que ainda não tenha comunicado um hash não é contado como estando a executar este ficheiro.",
+      "pt-br": "As contagens usam o último hash do arquivo do agente informado por cada dispositivo, portanto incluem os desconectados. Um dispositivo que ainda não informou um hash não é contado como executando este arquivo.",
+      "ro": "Numerele folosesc ultimul hash de fișier de agent raportat de fiecare dispozitiv, deci includ și dispozitivele offline. Un dispozitiv care nu a raportat încă un hash nu este numărat ca rulând acest fișier.",
+      "ru": "Числа определяются по последнему хэшу файла агента, сообщенному каждым устройством, поэтому включают устройства не в сети. Устройство, которое еще не сообщило хэш, не считается использующим этот файл.",
+      "sr": "Brojevi se zasnivaju na poslednjem hešu datoteke agenta koji je prijavio svaki uređaj, pa su uključeni i uređaji van mreže. Uređaj koji još nije prijavio heš ne računa se kao da koristi ovu datoteku.",
+      "sv": "Antalen baseras på det senaste hashvärdet för agentfilen som varje enhet har rapporterat, så enheter som är offline ingår. En enhet som ännu inte har rapporterat något hashvärde räknas inte som att den kör den här filen.",
+      "tr": "Sayılar, her cihazın bildirdiği son agent dosyası karmasını kullanır, bu yüzden çevrimdışı cihazlar da dahildir. Henüz karma bildirmemiş bir cihaz bu dosyayı çalıştırıyor olarak sayılmaz.",
+      "uk": "Кількості визначаються за останнім хешем файлу агента, який повідомив кожен пристрій, тому охоплюють офлайн-пристрої. Пристрій, який ще не повідомив хеш, не зараховується як такий, що використовує цей файл.",
+      "zh-chs": "数量依据每台设备最后报告的代理文件哈希计算，因此包括离线设备。尚未报告哈希的设备不计为正在运行此文件。",
+      "zh-cht": "數量依據每台裝置最後回報的代理檔案雜湊計算，因此包括離線裝置。尚未回報雜湊的裝置不會計為正在執行此檔案。",
+      "xloc": [
+        "agentbuildmanager.js->0->190"
       ]
     },
     {
@@ -23635,7 +23743,7 @@
       "zh-chs": "当前服务器默认值",
       "zh-cht": "目前伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->176"
+        "agentbuildmanager.js->0->182"
       ]
     },
     {
@@ -23670,7 +23778,9 @@
       "zh-chs": "自定义",
       "zh-cht": "自訂",
       "xloc": [
-        "agentbuildmanager.js->0->274"
+        "agentbuildmanager.js->0->281",
+        "agentbuildmanager.js->0->32",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->10"
       ]
     },
     {
@@ -23705,7 +23815,7 @@
       "zh-chs": "自定义仓库",
       "zh-cht": "自訂存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->275"
+        "agentbuildmanager.js->0->282"
       ]
     },
     {
@@ -24434,8 +24544,8 @@
       "zh-chs": "默认代理下载",
       "zh-cht": "預設代理下載",
       "xloc": [
-        "agentbuildmanager.js->0->35",
-        "agentbuildmanager.js->0->68"
+        "agentbuildmanager.js->0->40",
+        "agentbuildmanager.js->0->73"
       ]
     },
     {
@@ -25478,8 +25588,8 @@
       "zh-chs": "部署代理构建",
       "zh-cht": "部署代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->195",
-        "agentbuildmanager.js->0->42",
+        "agentbuildmanager.js->0->202",
+        "agentbuildmanager.js->0->47",
         "default-mobile.handlebars->55->572",
         "default.handlebars->121->775",
         "default3.handlebars->123->773"
@@ -26271,7 +26381,7 @@
       "zh-chs": "桌面支持",
       "zh-cht": "桌面支援",
       "xloc": [
-        "agentbuildmanager.js->0->111"
+        "agentbuildmanager.js->0->116"
       ]
     },
     {
@@ -27257,41 +27367,6 @@
       ]
     },
     {
-      "en": "Device counts are registered devices of each agent type, including offline devices and devices that hold or pin another agent file.",
-      "ar": "أعداد الأجهزة هي الأجهزة المسجلة من كل نوع وكيل، بما في ذلك الأجهزة غير المتصلة والأجهزة التي تحتفظ بملف وكيل آخر أو مربوطة به.",
-      "bs": "Broj uređaja obuhvata registrovane uređaje svakog tipa agenta, uključujući uređaje van mreže i uređaje koji zadržavaju ili imaju fiksiran drugi fajl agenta.",
-      "ca": "Els recomptes de dispositius són els dispositius registrats de cada tipus d'agent, inclosos els que estan fora de línia i els que conserven o fixen un altre fitxer d'agent.",
-      "cs": "Počty zařízení zahrnují registrovaná zařízení každého typu agenta, včetně zařízení offline a zařízení, která si ponechávají nebo mají připnutý jiný soubor agenta.",
-      "da": "Antal enheder omfatter registrerede enheder af hver agenttype, inklusive offline enheder og enheder, der tilbageholder eller er fastgjort til en anden agentfil.",
-      "de": "Die Geräteanzahl umfasst die registrierten Geräte jedes Agent-Typs, einschließlich Offline-Geräten und Geräten, die eine andere Agent-Datei beibehalten oder fixieren.",
-      "el": "Οι αριθμοί συσκευών περιλαμβάνουν τις καταχωρισμένες συσκευές κάθε τύπου αντιπροσώπου, μαζί με τις συσκευές εκτός σύνδεσης και τις συσκευές που διατηρούν ή έχουν καρφιτσωμένο άλλο αρχείο αντιπροσώπου.",
-      "es": "Los recuentos son los dispositivos registrados de cada tipo de agente, incluidos los que están fuera de línea y los que mantienen o fijan otro archivo de agente.",
-      "fi": "Laitemäärät sisältävät kunkin agenttityypin rekisteröidyt laitteet, myös offline-tilassa olevat laitteet ja laitteet, joilla on pidossa tai kiinnitettynä toinen agenttitiedosto.",
-      "fr": "Le nombre d'appareils correspond aux appareils enregistrés de chaque type d'agent, y compris les appareils déconnectés et ceux qui conservent ou épinglent un autre fichier d'agent.",
-      "he": "מספרי המכשירים מציגים את המכשירים הרשומים מכל סוג סוכן, כולל מכשירים לא מקוונים ומכשירים ששומרים על קובץ סוכן אחר או מוצמדים אליו.",
-      "hi": "डिवाइस संख्या हर एजेंट प्रकार के पंजीकृत डिवाइस दिखाती है, जिनमें ऑफ़लाइन डिवाइस और किसी अन्य एजेंट फ़ाइल को होल्ड या पिन करने वाले डिवाइस भी शामिल हैं।",
-      "hr": "Broj uređaja obuhvaća registrirane uređaje svake vrste agenta, uključujući uređaje izvan mreže i uređaje koji zadržavaju ili imaju fiksiranu drugu datoteku agenta.",
-      "hu": "Az eszközszámok az egyes Agent típusok regisztrált eszközeit jelentik, beleértve az offline eszközöket és azokat is, amelyek másik Agent fájlt tartanak meg vagy rögzítenek.",
-      "it": "I conteggi indicano i dispositivi registrati di ogni tipo di agente, inclusi quelli disconnessi e quelli che mantengono o fissano un altro file dell'agente.",
-      "ja": "デバイス数は各エージェントタイプの登録済みデバイスの数で、オフラインのデバイスや、別のエージェントファイルを保持または固定しているデバイスも含みます。",
-      "ko": "장치 수는 각 에이전트 유형의 등록된 장치 수이며, 오프라인 장치와 다른 에이전트 파일을 유지하거나 고정한 장치도 포함합니다.",
-      "nl": "Apparaataantallen zijn de geregistreerde apparaten per agenttype, inclusief offline apparaten en apparaten die een ander agentbestand behouden of vastzetten.",
-      "pl": "Liczby urządzeń obejmują zarejestrowane urządzenia każdego typu agenta, w tym urządzenia offline oraz te, które zachowują lub mają przypięty inny plik agenta.",
-      "pt": "As contagens indicam os dispositivos registados de cada tipo de agente, incluindo os que estão offline e os que mantêm ou fixam outro ficheiro do agente.",
-      "pt-br": "As contagens indicam os dispositivos registrados de cada tipo de agente, incluindo os desconectados e os que mantêm ou fixam outro arquivo do agente.",
-      "ro": "Numerele de dispozitive reprezintă dispozitivele înregistrate pentru fiecare tip de agent, inclusiv cele offline și cele care păstrează sau fixează alt fișier de agent.",
-      "ru": "Число устройств включает все зарегистрированные устройства каждого типа агента, в том числе устройства не в сети и устройства, на которых заморожен или закреплен другой файл агента.",
-      "sr": "Broj uređaja obuhvata registrovane uređaje svakog tipa agenta, uključujući uređaje van mreže i uređaje koji zadržavaju ili imaju fiksiranu drugu datoteku agenta.",
-      "sv": "Antalet enheter avser registrerade enheter av varje agenttyp, inklusive enheter som är offline och enheter som håller kvar eller är fästa vid en annan agentfil.",
-      "tr": "Cihaz sayıları, çevrimdışı cihazlar ve başka bir agent dosyasını koruyan veya sabitleyen cihazlar dahil olmak üzere her agent türündeki kayıtlı cihazlardır.",
-      "uk": "Кількість пристроїв охоплює всі зареєстровані пристрої кожного типу агента, зокрема офлайн-пристрої та пристрої, на яких заморожено або закріплено інший файл агента.",
-      "zh-chs": "设备数量为每种代理类型的已注册设备数，包括离线设备以及保留或固定其他代理文件的设备。",
-      "zh-cht": "裝置數量為每種代理類型的已註冊裝置數，包括離線裝置，以及保留或固定其他代理檔案的裝置。",
-      "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->3"
-      ]
-    },
-    {
       "en": "Device counts unavailable",
       "ar": "أعداد الأجهزة غير متاحة",
       "bs": "Broj uređaja nije dostupan",
@@ -27323,7 +27398,7 @@
       "zh-chs": "设备数量不可用",
       "zh-cht": "裝置數量無法取得",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->2"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->4"
       ]
     },
     {
@@ -28523,7 +28598,7 @@
       "zh-chs": "未由代理管理、代理更新不可用或您没有完全权限的设备将被排除。",
       "zh-cht": "未由代理管理、代理更新無法使用，或您沒有完整權限的裝置將被排除。",
       "xloc": [
-        "agentbuildmanager.js->0->200"
+        "agentbuildmanager.js->0->207"
       ]
     },
     {
@@ -28869,8 +28944,8 @@
       "zh-chs": "放弃此部署",
       "zh-cht": "捨棄此部署",
       "xloc": [
-        "agentbuildmanager.js->0->249",
-        "agentbuildmanager.js->0->251"
+        "agentbuildmanager.js->0->256",
+        "agentbuildmanager.js->0->258"
       ]
     },
     {
@@ -29652,6 +29727,41 @@
       ]
     },
     {
+      "en": "Domain override",
+      "ar": "تجاوز على مستوى المجال",
+      "bs": "Zamjena na nivou domene",
+      "ca": "Substitució del domini",
+      "cs": "Přepsání doménou",
+      "da": "Domænetilsidesættelse",
+      "de": "Domain-Überschreibung",
+      "el": "Παράκαμψη τομέα",
+      "es": "Reemplazo del dominio",
+      "fi": "Verkkotunnuksen ohitus",
+      "fr": "Remplacement du domaine",
+      "he": "עקיפה ברמת הדומיין",
+      "hi": "डोमेन ओवरराइड",
+      "hr": "Zamjena na razini domene",
+      "hu": "Tartományi felülbírálás",
+      "it": "Override del dominio",
+      "ja": "ドメインの上書き",
+      "ko": "도메인 재정의",
+      "nl": "Domeinoverschrijving",
+      "pl": "Zastąpienie w domenie",
+      "pt": "Substituição do domínio",
+      "pt-br": "Substituição do domínio",
+      "ro": "Suprascriere de domeniu",
+      "ru": "Переопределение домена",
+      "sr": "Zamena na nivou domena",
+      "sv": "Domänåsidosättning",
+      "tr": "Etki alanı geçersiz kılması",
+      "uk": "Перевизначення домену",
+      "zh-chs": "域覆盖",
+      "zh-cht": "網域覆寫",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->14"
+      ]
+    },
+    {
       "bs": "Ne mijenjajte, zadržite CCM ako je postavljen",
       "ca": "No canvieu, manteniu CCM si està configurat",
       "cs": "Neměňte, ponechte CCM, pokud je nastaveno",
@@ -29800,7 +29910,7 @@
       "zh-chs": "下载",
       "zh-cht": "下載",
       "xloc": [
-        "agentbuildmanager.js->0->154",
+        "agentbuildmanager.js->0->160",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->1->2->0",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1->6->0",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -30096,7 +30206,7 @@
       "zh-chs": "下载的 SHA256 已验证",
       "zh-cht": "下載的 SHA256 已驗證",
       "xloc": [
-        "agentbuildmanager.js->0->334"
+        "agentbuildmanager.js->0->341"
       ]
     },
     {
@@ -30131,7 +30241,7 @@
       "zh-chs": "下载 URL",
       "zh-cht": "下載 URL",
       "xloc": [
-        "agentbuildmanager.js->0->268"
+        "agentbuildmanager.js->0->275"
       ]
     },
     {
@@ -30196,7 +30306,7 @@
       "zh-chs": "从 GitHub 或公开的 HTTPS 地址下载代理文件，并在其加入目录前进行审核。",
       "zh-cht": "從 GitHub 或公開的 HTTPS 位址下載代理檔案，並在加入目錄前進行檢閱。",
       "xloc": [
-        "agentbuildmanager.js->0->266"
+        "agentbuildmanager.js->0->273"
       ]
     },
     {
@@ -30231,7 +30341,7 @@
       "zh-chs": "从公开的 HTTPS 地址下载代理文件或 ZIP。下载和解压最多 128 MiB，最多 16 个代理文件，每个文件最多 64 MiB。",
       "zh-cht": "從公開的 HTTPS 位址下載代理檔案或 ZIP。下載及解壓縮最多 128 MiB，最多 16 個代理檔案，每個檔案最多 64 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->272"
+        "agentbuildmanager.js->0->279"
       ]
     },
     {
@@ -30266,8 +30376,8 @@
       "zh-chs": "下载并审核",
       "zh-cht": "下載並檢閱",
       "xloc": [
-        "agentbuildmanager.js->0->289",
-        "agentbuildmanager.js->0->320"
+        "agentbuildmanager.js->0->296",
+        "agentbuildmanager.js->0->327"
       ]
     },
     {
@@ -30816,7 +30926,7 @@
       "zh-chs": "正在下载",
       "zh-cht": "正在下載",
       "xloc": [
-        "agentbuildmanager.js->0->32"
+        "agentbuildmanager.js->0->37"
       ]
     },
     {
@@ -30851,7 +30961,7 @@
       "zh-chs": "正在下载 {0}（第 {1} 个，共 {2} 个）",
       "zh-cht": "正在下載 {0}（第 {1} 個，共 {2} 個）",
       "xloc": [
-        "agentbuildmanager.js->0->329"
+        "agentbuildmanager.js->0->336"
       ]
     },
     {
@@ -30886,7 +30996,7 @@
       "zh-chs": "正在下载...",
       "zh-cht": "正在下載...",
       "xloc": [
-        "agentbuildmanager.js->0->323"
+        "agentbuildmanager.js->0->330"
       ]
     },
     {
@@ -31510,7 +31620,7 @@
       "zh-chs": "每个批次必须完成验证后，才会开始下一个批次。",
       "zh-cht": "每個批次都必須完成驗證，才會開始下一個批次。",
       "xloc": [
-        "agentbuildmanager.js->0->207"
+        "agentbuildmanager.js->0->214"
       ]
     },
     {
@@ -31545,7 +31655,7 @@
       "zh-chs": "每次上传都会添加一个单独的构建，并保留相同文件的早期版本。这不会更改服务器默认值。",
       "zh-cht": "每次上傳都會新增一個獨立的組建，並保留相同檔案的較早版本。這不會變更伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->85"
+        "agentbuildmanager.js->0->90"
       ]
     },
     {
@@ -34309,7 +34419,7 @@
       "zh-chs": "请按“所有者/仓库”格式输入 GitHub 仓库。",
       "zh-cht": "請以“擁有者/存放庫”格式輸入 GitHub 存放庫。",
       "xloc": [
-        "agentbuildmanager.js->0->295"
+        "agentbuildmanager.js->0->302"
       ]
     },
     {
@@ -34344,7 +34454,7 @@
       "zh-chs": "请输入构建名称。",
       "zh-cht": "請輸入組建名稱。",
       "xloc": [
-        "agentbuildmanager.js->0->126"
+        "agentbuildmanager.js->0->131"
       ]
     },
     {
@@ -34528,7 +34638,7 @@
       "zh-chs": "请输入要下载的代理文件或 ZIP 的 HTTPS 地址。",
       "zh-cht": "請輸入要下載的代理檔案或 ZIP 的 HTTPS 位址。",
       "xloc": [
-        "agentbuildmanager.js->0->290"
+        "agentbuildmanager.js->0->297"
       ]
     },
     {
@@ -35289,7 +35399,7 @@
       "zh-chs": "预期 SHA256（可选）",
       "zh-cht": "預期 SHA256（選填）",
       "xloc": [
-        "agentbuildmanager.js->0->271"
+        "agentbuildmanager.js->0->278"
       ]
     },
     {
@@ -36487,7 +36597,7 @@
       "zh-chs": "文件名（可选）",
       "zh-cht": "檔名（選填）",
       "xloc": [
-        "agentbuildmanager.js->0->270"
+        "agentbuildmanager.js->0->277"
       ]
     },
     {
@@ -36650,7 +36760,7 @@
       "zh-chs": "文件会先经过检查，然后您才能添加此构建。关闭此对话框将取消导入。",
       "zh-cht": "檔案會先經過檢查，之後您才能新增此組建。關閉此對話方塊將取消匯入。",
       "xloc": [
-        "agentbuildmanager.js->0->322"
+        "agentbuildmanager.js->0->329"
       ]
     },
     {
@@ -36685,7 +36795,7 @@
       "zh-chs": "已选择文件：{0}",
       "zh-cht": "已選取檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->92"
+        "agentbuildmanager.js->0->97"
       ]
     },
     {
@@ -36720,7 +36830,7 @@
       "zh-chs": "压缩包中跳过的文件：{0}",
       "zh-cht": "壓縮檔中略過的檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->108"
+        "agentbuildmanager.js->0->113"
       ]
     },
     {
@@ -36755,7 +36865,7 @@
       "zh-chs": "无法添加的文件：{0}",
       "zh-cht": "無法新增的檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->106"
+        "agentbuildmanager.js->0->111"
       ]
     },
     {
@@ -36874,8 +36984,8 @@
       "zh-chs": "过滤设备",
       "zh-cht": "篩選裝置",
       "xloc": [
-        "agentbuildmanager.js->0->181",
-        "agentbuildmanager.js->0->182"
+        "agentbuildmanager.js->0->187",
+        "agentbuildmanager.js->0->188"
       ]
     },
     {
@@ -37008,9 +37118,9 @@
       "zh-chs": "查找构建",
       "zh-cht": "尋找組建",
       "xloc": [
-        "agentbuildmanager.js->0->288",
-        "agentbuildmanager.js->0->294",
-        "agentbuildmanager.js->0->309"
+        "agentbuildmanager.js->0->295",
+        "agentbuildmanager.js->0->301",
+        "agentbuildmanager.js->0->316"
       ]
     },
     {
@@ -39561,7 +39671,7 @@
       "zh-chs": "GitHub 设置",
       "zh-cht": "GitHub 設定",
       "xloc": [
-        "agentbuildmanager.js->0->285"
+        "agentbuildmanager.js->0->292"
       ]
     },
     {
@@ -39596,7 +39706,7 @@
       "zh-chs": "服务器上已配置 GitHub 令牌。",
       "zh-cht": "伺服器上已設定 GitHub 權杖。",
       "xloc": [
-        "agentbuildmanager.js->0->283"
+        "agentbuildmanager.js->0->290"
       ]
     },
     {
@@ -40924,7 +41034,7 @@
       "zh-chs": "HTTPS URL",
       "zh-cht": "HTTPS URL",
       "xloc": [
-        "agentbuildmanager.js->0->269"
+        "agentbuildmanager.js->0->276"
       ]
     },
     {
@@ -41290,7 +41400,7 @@
       "zh-chs": "哈希值",
       "zh-cht": "雜湊值",
       "xloc": [
-        "agentbuildmanager.js->0->119"
+        "agentbuildmanager.js->0->124"
       ]
     },
     {
@@ -41325,7 +41435,7 @@
       "zh-chs": "文件头可识别平台。代理类型和桌面支持必须与这些文件的构建方式一致。发布者可信度和运行时行为尚未经过验证。",
       "zh-cht": "檔案標頭可識別平台。代理類型和桌面支援必須與這些檔案的建置方式相符。發行者信任度與執行階段行為尚未經過驗證。",
       "xloc": [
-        "agentbuildmanager.js->0->121"
+        "agentbuildmanager.js->0->126"
       ]
     },
     {
@@ -41484,7 +41594,7 @@
       "zh-cht": "已暫緩",
       "xloc": [
         "agentbuildmanager.js->0->23",
-        "agentbuildmanager.js->0->29"
+        "agentbuildmanager.js->0->34"
       ]
     },
     {
@@ -42305,7 +42415,7 @@
       "zh-chs": "我可以在本地恢复这些设备，并接受活动会话被中断。",
       "zh-cht": "我可以在本機復原這些裝置，並接受作用中的工作階段遭到中斷。",
       "xloc": [
-        "agentbuildmanager.js->0->239"
+        "agentbuildmanager.js->0->246"
       ]
     },
     {
@@ -42377,7 +42487,7 @@
       "zh-chs": "我信任这些 MeshAgent 文件，并已检查所选的代理类型。",
       "zh-cht": "我信任這些 MeshAgent 檔案，並已檢查所選的代理類型。",
       "xloc": [
-        "agentbuildmanager.js->0->122"
+        "agentbuildmanager.js->0->127"
       ]
     },
     {
@@ -42412,7 +42522,7 @@
       "zh-chs": "我了解删除此构建也会清除其服务器默认值。",
       "zh-cht": "我了解移除此組建也會清除其伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->160"
+        "agentbuildmanager.js->0->166"
       ]
     },
     {
@@ -43545,9 +43655,9 @@
       "zh-chs": "导入代理构建",
       "zh-cht": "匯入代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->265",
-        "agentbuildmanager.js->0->298",
-        "agentbuildmanager.js->0->36"
+        "agentbuildmanager.js->0->272",
+        "agentbuildmanager.js->0->305",
+        "agentbuildmanager.js->0->41"
       ]
     },
     {
@@ -43649,7 +43759,7 @@
       "zh-chs": "导入已停止。",
       "zh-cht": "匯入已停止。",
       "xloc": [
-        "agentbuildmanager.js->0->324"
+        "agentbuildmanager.js->0->331"
       ]
     },
     {
@@ -43684,7 +43794,7 @@
       "zh-chs": "导入此发行版以审核其文件，并在所选设备上进行测试。",
       "zh-cht": "匯入此發行版本以檢閱其檔案，並在選取的裝置上進行測試。",
       "xloc": [
-        "agentbuildmanager.js->0->62"
+        "agentbuildmanager.js->0->67"
       ]
     },
     {
@@ -43795,8 +43905,8 @@
       "zh-chs": "进行中",
       "zh-cht": "進行中",
       "xloc": [
-        "agentbuildmanager.js->0->234",
-        "agentbuildmanager.js->0->242"
+        "agentbuildmanager.js->0->241",
+        "agentbuildmanager.js->0->249"
       ]
     },
     {
@@ -43891,7 +44001,7 @@
       "zh-chs": "请至少包含一个代理文件。",
       "zh-cht": "請至少包含一個代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->125"
+        "agentbuildmanager.js->0->130"
       ]
     },
     {
@@ -43956,7 +44066,7 @@
       "zh-chs": "包括无法完全检查要求的设备。",
       "zh-cht": "包括無法完整檢查需求的裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->205"
+        "agentbuildmanager.js->0->212"
       ]
     },
     {
@@ -43991,7 +44101,7 @@
       "zh-chs": "已包含",
       "zh-cht": "已包含",
       "xloc": [
-        "agentbuildmanager.js->0->113"
+        "agentbuildmanager.js->0->118"
       ]
     },
     {
@@ -44356,8 +44466,8 @@
       "zh-chs": "正在检查文件...",
       "zh-cht": "正在檢查檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->328",
-        "agentbuildmanager.js->0->96"
+        "agentbuildmanager.js->0->101",
+        "agentbuildmanager.js->0->335"
       ]
     },
     {
@@ -44656,41 +44766,6 @@
       "xloc": [
         "default.handlebars->121->1488",
         "default3.handlebars->123->1487"
-      ]
-    },
-    {
-      "en": "Installed counts use the last agent file hash reported by each device, including offline devices. A device that has not reported a hash is not counted as installed.",
-      "ar": "تستخدم أعداد التثبيت آخر تجزئة لملف الوكيل أبلغ عنها كل جهاز، بما في ذلك الأجهزة غير المتصلة. لا يُحتسب الجهاز الذي لم يُبلغ عن تجزئة على أنه مثبّت.",
-      "bs": "Broj instaliranih zasniva se na posljednjem hešu fajla agenta koji je prijavio svaki uređaj, uključujući uređaje van mreže. Uređaj koji nije prijavio heš ne računa se kao instaliran.",
-      "ca": "Els recomptes d'instal·lacions fan servir l'últim hash de fitxer d'agent que ha informat cada dispositiu, inclosos els que estan fora de línia. Un dispositiu que no ha informat cap hash no es compta com a instal·lat.",
-      "cs": "Počty instalací vycházejí z posledního hashe souboru agenta hlášeného každým zařízením, včetně zařízení offline. Zařízení, které hash nenahlásilo, se jako nainstalované nepočítá.",
-      "da": "Antal installationer bygger på den seneste agentfil-hash, som hver enhed har rapporteret, inklusive offline enheder. En enhed, der ikke har rapporteret en hash, tælles ikke som installeret.",
-      "de": "Die Installationszahlen beruhen auf dem letzten Agent-Datei-Hash, den jedes Gerät gemeldet hat, einschließlich Offline-Geräten. Ein Gerät, das keinen Hash gemeldet hat, wird nicht als installiert gezählt.",
-      "el": "Οι αριθμοί εγκαταστάσεων βασίζονται στον τελευταίο κατακερματισμό αρχείου αντιπροσώπου που ανέφερε κάθε συσκευή, μαζί με τις συσκευές εκτός σύνδεσης. Μια συσκευή που δεν έχει αναφέρει κατακερματισμό δεν υπολογίζεται ως εγκατάσταση.",
-      "es": "Los recuentos de instalaciones usan el último hash de archivo de agente notificado por cada dispositivo, incluidos los que están fuera de línea. Un dispositivo que no ha notificado ningún hash no se cuenta como instalado.",
-      "fi": "Asennusmäärät perustuvat kunkin laitteen viimeksi ilmoittamaan agenttitiedoston tiivisteeseen, mukaan lukien offline-tilassa olevat laitteet. Laitetta, joka ei ole ilmoittanut tiivistettä, ei lasketa asennetuksi.",
-      "fr": "Le nombre d'installations repose sur le dernier hachage de fichier d'agent signalé par chaque appareil, y compris les appareils déconnectés. Un appareil qui n'a signalé aucun hachage n'est pas compté comme installé.",
-      "he": "ספירות ההתקנה מבוססות על גיבוב קובץ הסוכן האחרון שדיווח כל מכשיר, כולל מכשירים לא מקוונים. מכשיר שלא דיווח על גיבוב אינו נספר כמותקן.",
-      "hi": "इंस्टॉल की गिनती हर डिवाइस द्वारा रिपोर्ट किए गए अंतिम एजेंट फ़ाइल हैश पर आधारित है, जिसमें ऑफ़लाइन डिवाइस भी शामिल हैं। जिस डिवाइस ने हैश रिपोर्ट नहीं किया है, उसे इंस्टॉल के रूप में नहीं गिना जाता।",
-      "hr": "Broj instaliranih temelji se na posljednjem sažetku datoteke agenta koji je prijavio svaki uređaj, uključujući uređaje izvan mreže. Uređaj koji nije prijavio sažetak ne računa se kao instaliran.",
-      "hu": "A telepítési számok az egyes eszközök által utoljára jelentett Agent fájl hash-értékén alapulnak, az offline eszközöket is beleértve. A hash-értéket nem jelentett eszköz nem számít telepítettnek.",
-      "it": "I conteggi delle installazioni usano l'ultimo hash del file dell'agente segnalato da ciascun dispositivo, inclusi quelli disconnessi. Un dispositivo che non ha segnalato un hash non viene conteggiato come installato.",
-      "ja": "インストール数は、オフラインのデバイスを含め、各デバイスが最後に報告したエージェントファイルのハッシュに基づきます。ハッシュを報告していないデバイスは、インストール済みとして数えられません。",
-      "ko": "설치 수는 오프라인 장치를 포함하여 각 장치가 마지막으로 보고한 에이전트 파일 해시를 기준으로 합니다. 해시를 보고하지 않은 장치는 설치된 것으로 집계되지 않습니다.",
-      "nl": "Installatie-aantallen gebruiken de laatste agentbestandshash die elk apparaat heeft gemeld, inclusief offline apparaten. Een apparaat dat geen hash heeft gemeld, telt niet als geïnstalleerd.",
-      "pl": "Liczby instalacji opierają się na ostatnim skrócie pliku agenta zgłoszonym przez każde urządzenie, w tym urządzenia offline. Urządzenie, które nie zgłosiło skrótu, nie jest liczone jako zainstalowane.",
-      "pt": "As contagens de instalações utilizam o último hash do ficheiro do agente comunicado por cada dispositivo, incluindo os que estão offline. Um dispositivo que não tenha comunicado um hash não é contado como instalado.",
-      "pt-br": "As contagens de instalações usam o último hash do arquivo do agente informado por cada dispositivo, incluindo os desconectados. Um dispositivo que não informou um hash não é contado como instalado.",
-      "ro": "Numărul de instalări folosește ultimul hash de fișier de agent raportat de fiecare dispozitiv, inclusiv de cele offline. Un dispozitiv care nu a raportat un hash nu este numărat ca instalat.",
-      "ru": "Число установок определяется по последнему хэшу файла агента, сообщенному каждым устройством, включая устройства не в сети. Устройство, не сообщившее хэш, не учитывается как установленное.",
-      "sr": "Broj instaliranih zasniva se na poslednjem hešu datoteke agenta koji je prijavio svaki uređaj, uključujući uređaje van mreže. Uređaj koji nije prijavio heš ne računa se kao instaliran.",
-      "sv": "Antalet installationer baseras på det senaste hashvärdet för agentfilen som varje enhet har rapporterat, inklusive enheter som är offline. En enhet som inte har rapporterat något hashvärde räknas inte som installerad.",
-      "tr": "Kurulu sayıları, çevrimdışı cihazlar dahil her cihazın bildirdiği son agent dosyası karmasını kullanır. Karma bildirmemiş bir cihaz kurulu olarak sayılmaz.",
-      "uk": "Кількість інсталяцій визначається за останнім хешем файлу агента, який повідомив кожен пристрій, зокрема офлайн-пристрої. Пристрій, що не повідомив хеш, не зараховується до інстальованих.",
-      "zh-chs": "安装数量依据每台设备最后报告的代理文件哈希计算，包括离线设备。未报告哈希的设备不计为已安装。",
-      "zh-cht": "安裝數量依據每台裝置最後回報的代理檔案雜湊計算，包括離線裝置。尚未回報雜湊的裝置不會計為已安裝。",
-      "xloc": [
-        "agentbuildmanager.js->0->184"
       ]
     },
     {
@@ -50003,7 +50078,7 @@
       "zh-chs": "上次成功检查",
       "zh-cht": "上次成功檢查",
       "xloc": [
-        "agentbuildmanager.js->0->65"
+        "agentbuildmanager.js->0->70"
       ]
     },
     {
@@ -50128,7 +50203,7 @@
       "zh-chs": "最新稳定发行版",
       "zh-cht": "最新穩定發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->61"
+        "agentbuildmanager.js->0->66"
       ]
     },
     {
@@ -50601,7 +50676,7 @@
       "zh-chs": "已排除",
       "zh-cht": "已排除",
       "xloc": [
-        "agentbuildmanager.js->0->198"
+        "agentbuildmanager.js->0->205"
       ]
     },
     {
@@ -51949,7 +52024,7 @@
       "zh-chs": "正在加载 GitHub 构建...",
       "zh-cht": "正在載入 GitHub 組建...",
       "xloc": [
-        "agentbuildmanager.js->0->297"
+        "agentbuildmanager.js->0->304"
       ]
     },
     {
@@ -52014,7 +52089,7 @@
       "zh-chs": "正在加载文件...",
       "zh-cht": "正在載入檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->77"
+        "agentbuildmanager.js->0->82"
       ]
     },
     {
@@ -52248,7 +52323,7 @@
       "zh-chs": "正在加载新文件。完成后，代理下载将切换到新文件。",
       "zh-cht": "正在載入新檔案。完成後，代理下載將切換至新檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->50"
+        "agentbuildmanager.js->0->55"
       ]
     },
     {
@@ -52277,10 +52352,10 @@
       "zh-chs": "载入中...",
       "zh-cht": "載入中...",
       "xloc": [
-        "agentbuildmanager.js->0->263",
-        "agentbuildmanager.js->0->296",
-        "agentbuildmanager.js->0->46",
-        "agentbuildmanager.js->0->67",
+        "agentbuildmanager.js->0->270",
+        "agentbuildmanager.js->0->303",
+        "agentbuildmanager.js->0->51",
+        "agentbuildmanager.js->0->72",
         "default-mobile.handlebars->55->106",
         "default-mobile.handlebars->55->1163",
         "default-mobile.handlebars->55->1269",
@@ -52432,6 +52507,41 @@
         "default.handlebars->121->2360",
         "default3.handlebars->123->2302",
         "default3.handlebars->123->2374"
+      ]
+    },
+    {
+      "en": "Local file",
+      "ar": "ملف محلي",
+      "bs": "Lokalni fajl",
+      "ca": "Fitxer local",
+      "cs": "Místní soubor",
+      "da": "Lokal fil",
+      "de": "Lokale Datei",
+      "el": "Τοπικό αρχείο",
+      "es": "Archivo local",
+      "fi": "Paikallinen tiedosto",
+      "fr": "Fichier local",
+      "he": "קובץ מקומי",
+      "hi": "स्थानीय फ़ाइल",
+      "hr": "Lokalna datoteka",
+      "hu": "Helyi fájl",
+      "it": "File locale",
+      "ja": "ローカルファイル",
+      "ko": "로컬 파일",
+      "nl": "Lokaal bestand",
+      "pl": "Plik lokalny",
+      "pt": "Ficheiro local",
+      "pt-br": "Arquivo local",
+      "ro": "Fișier local",
+      "ru": "Локальный файл",
+      "sr": "Lokalna datoteka",
+      "sv": "Lokal fil",
+      "tr": "Yerel dosya",
+      "uk": "Локальний файл",
+      "zh-chs": "本地文件",
+      "zh-cht": "本機檔案",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->12"
       ]
     },
     {
@@ -54653,7 +54763,7 @@
       "zh-chs": "管理代理构建",
       "zh-cht": "管理代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->39",
+        "agentbuildmanager.js->0->44",
         "default-mobile.handlebars->55->496"
       ]
     },
@@ -54928,7 +55038,7 @@
       "zh-chs": "请在默认服务器域中管理共享默认值。",
       "zh-cht": "請在預設伺服器域中管理共用預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->71"
+        "agentbuildmanager.js->0->76"
       ]
     },
     {
@@ -55744,41 +55854,6 @@
       "xloc": [
         "default.handlebars->121->3593",
         "default3.handlebars->123->3589"
-      ]
-    },
-    {
-      "en": "MeshAgent type",
-      "ar": "نوع MeshAgent",
-      "bs": "Tip agenta MeshAgent",
-      "ca": "Tipus de MeshAgent",
-      "cs": "Typ MeshAgent",
-      "da": "MeshAgent-type",
-      "de": "MeshAgent-Typ",
-      "el": "Τύπος MeshAgent",
-      "es": "Tipo de MeshAgent",
-      "fi": "MeshAgent-tyyppi",
-      "fr": "Type de MeshAgent",
-      "he": "סוג MeshAgent",
-      "hi": "MeshAgent प्रकार",
-      "hr": "Vrsta agenta MeshAgent",
-      "hu": "MeshAgent típus",
-      "it": "Tipo di MeshAgent",
-      "ja": "MeshAgent タイプ",
-      "ko": "MeshAgent 유형",
-      "nl": "MeshAgent-type",
-      "pl": "Typ MeshAgent",
-      "pt": "Tipo de MeshAgent",
-      "pt-br": "Tipo do MeshAgent",
-      "ro": "Tip MeshAgent",
-      "ru": "Тип MeshAgent",
-      "sr": "Tip agenta MeshAgent",
-      "sv": "MeshAgent-typ",
-      "tr": "MeshAgent türü",
-      "uk": "Тип MeshAgent",
-      "zh-chs": "MeshAgent 类型",
-      "zh-cht": "MeshAgent 類型",
-      "xloc": [
-        "agentbuildmanager.js->0->110"
       ]
     },
     {
@@ -58633,8 +58708,8 @@
       "zh-cht": "需要處理",
       "xloc": [
         "agentbuildmanager.js->0->18",
-        "agentbuildmanager.js->0->233",
-        "agentbuildmanager.js->0->244"
+        "agentbuildmanager.js->0->240",
+        "agentbuildmanager.js->0->251"
       ]
     },
     {
@@ -58669,7 +58744,7 @@
       "zh-chs": "需要处理：{0}",
       "zh-cht": "需要處理：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->228"
+        "agentbuildmanager.js->0->235"
       ]
     },
     {
@@ -59515,7 +59590,7 @@
       "zh-chs": "下一页",
       "zh-cht": "下一頁",
       "xloc": [
-        "agentbuildmanager.js->0->308",
+        "agentbuildmanager.js->0->315",
         "agentbuildmanager.js->0->6"
       ]
     },
@@ -59548,6 +59623,42 @@
         "default-mobile.handlebars->55->111",
         "default.handlebars->121->74",
         "default3.handlebars->123->72"
+      ]
+    },
+    {
+      "en": "Nightly",
+      "ar": "ليلي",
+      "bs": "Noćna",
+      "ca": "Nocturna",
+      "cs": "Noční",
+      "da": "Natlig",
+      "de": "Nightly",
+      "el": "Νυχτερινή",
+      "es": "Nocturna",
+      "fi": "Yöversio",
+      "fr": "Nightly",
+      "he": "לילית",
+      "hi": "नाइटली",
+      "hr": "Noćna",
+      "hu": "Éjszakai",
+      "it": "Nightly",
+      "ja": "ナイトリー",
+      "ko": "나이틀리",
+      "nl": "Nightly",
+      "pl": "Nocna",
+      "pt": "Noturna",
+      "pt-br": "Noturno",
+      "ro": "Nightly",
+      "ru": "Ночная",
+      "sr": "Noćna",
+      "sv": "Nattlig",
+      "tr": "Gecelik",
+      "uk": "Нічна",
+      "zh-chs": "每夜版",
+      "zh-cht": "每夜版",
+      "xloc": [
+        "agentbuildmanager.js->0->30",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->6"
       ]
     },
     {
@@ -59946,7 +60057,7 @@
       "zh-chs": "未配置 GitHub 令牌。可以浏览公开构建，但 Actions 下载需要服务器令牌。",
       "zh-cht": "未設定 GitHub 權杖。可以瀏覽公開組建，但 Actions 下載需要伺服器權杖。",
       "xloc": [
-        "agentbuildmanager.js->0->284"
+        "agentbuildmanager.js->0->291"
       ]
     },
     {
@@ -60787,7 +60898,7 @@
       "zh-chs": "未报告代理文件哈希",
       "zh-cht": "未回報代理檔案雜湊",
       "xloc": [
-        "agentbuildmanager.js->0->192"
+        "agentbuildmanager.js->0->199"
       ]
     },
     {
@@ -60822,7 +60933,7 @@
       "zh-chs": "此构建没有可用的代理文件。",
       "zh-cht": "此組建沒有可用的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->300"
+        "agentbuildmanager.js->0->307"
       ]
     },
     {
@@ -60993,7 +61104,7 @@
       "zh-chs": "没有可固定的构建。请先上传或导入构建。",
       "zh-cht": "沒有可固定的組建。請先上傳或匯入組建。",
       "xloc": [
-        "agentbuildmanager.js->0->216"
+        "agentbuildmanager.js->0->223"
       ]
     },
     {
@@ -61176,7 +61287,7 @@
       "zh-chs": "未配置默认发行版本。请配置发行版清单或提供本地文件。",
       "zh-cht": "未設定預設發行版本。請設定發行版本清單或提供本機檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->51"
+        "agentbuildmanager.js->0->56"
       ]
     },
     {
@@ -61211,7 +61322,7 @@
       "zh-chs": "尚未创建任何部署。",
       "zh-cht": "尚未建立任何部署。",
       "xloc": [
-        "agentbuildmanager.js->0->230"
+        "agentbuildmanager.js->0->237"
       ]
     },
     {
@@ -61341,7 +61452,7 @@
       "zh-chs": "尚未检查任何设备。",
       "zh-cht": "尚未檢查任何裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->255"
+        "agentbuildmanager.js->0->262"
       ]
     },
     {
@@ -61376,7 +61487,7 @@
       "zh-chs": "没有设备处于此状态。",
       "zh-cht": "沒有裝置處於此狀態。",
       "xloc": [
-        "agentbuildmanager.js->0->254"
+        "agentbuildmanager.js->0->261"
       ]
     },
     {
@@ -61411,7 +61522,7 @@
       "zh-chs": "没有设备匹配此过滤条件。",
       "zh-cht": "沒有裝置符合此篩選條件。",
       "xloc": [
-        "agentbuildmanager.js->0->193"
+        "agentbuildmanager.js->0->200"
       ]
     },
     {
@@ -61446,7 +61557,7 @@
       "zh-chs": "没有设备引用此代理文件。",
       "zh-cht": "沒有裝置參照此代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->194"
+        "agentbuildmanager.js->0->201"
       ]
     },
     {
@@ -61756,7 +61867,7 @@
       "zh-chs": "未提供预期摘要",
       "zh-cht": "未提供預期摘要",
       "xloc": [
-        "agentbuildmanager.js->0->335"
+        "agentbuildmanager.js->0->342"
       ]
     },
     {
@@ -62353,7 +62464,7 @@
       "zh-chs": "不支持远程桌面",
       "zh-cht": "不支援遠端桌面",
       "xloc": [
-        "agentbuildmanager.js->0->148"
+        "agentbuildmanager.js->0->154"
       ]
     },
     {
@@ -62418,7 +62529,7 @@
       "zh-chs": "未找到包含默认代理文件的稳定发行版。",
       "zh-cht": "找不到包含預設代理檔案的穩定發行版本。",
       "xloc": [
-        "agentbuildmanager.js->0->63"
+        "agentbuildmanager.js->0->68"
       ]
     },
     {
@@ -62513,7 +62624,7 @@
       "zh-chs": "此页上没有包含匹配且未过期代理工件的成功运行。",
       "zh-cht": "此頁上沒有包含相符且未過期代理成品的成功執行。",
       "xloc": [
-        "agentbuildmanager.js->0->302"
+        "agentbuildmanager.js->0->309"
       ]
     },
     {
@@ -62734,7 +62845,7 @@
       "zh-chs": "此构建中没有已验证的文件匹配这些代理类型，因此这些设备将被排除",
       "zh-cht": "此組建中沒有已驗證的檔案符合這些代理類型，因此這些裝置將被排除",
       "xloc": [
-        "agentbuildmanager.js->0->214"
+        "agentbuildmanager.js->0->221"
       ]
     },
     {
@@ -63012,7 +63123,7 @@
       "zh-chs": "所选设备均无法进行部署。",
       "zh-cht": "選取的裝置皆無法進行部署。",
       "xloc": [
-        "agentbuildmanager.js->0->215"
+        "agentbuildmanager.js->0->222"
       ]
     },
     {
@@ -63364,7 +63475,7 @@
       "zh-chs": "未添加",
       "zh-cht": "未新增",
       "xloc": [
-        "agentbuildmanager.js->0->107"
+        "agentbuildmanager.js->0->112"
       ]
     },
     {
@@ -63429,8 +63540,8 @@
       "zh-chs": "未检查",
       "zh-cht": "未檢查",
       "xloc": [
-        "agentbuildmanager.js->0->34",
-        "agentbuildmanager.js->0->64",
+        "agentbuildmanager.js->0->39",
+        "agentbuildmanager.js->0->69",
         "default-mobile.handlebars->55->1230",
         "default.handlebars->121->3700",
         "default3.handlebars->123->3696"
@@ -63505,7 +63616,7 @@
       "zh-chs": "未确认",
       "zh-cht": "未確認",
       "xloc": [
-        "agentbuildmanager.js->0->189"
+        "agentbuildmanager.js->0->196"
       ]
     },
     {
@@ -63540,7 +63651,7 @@
       "zh-chs": "未包含",
       "zh-cht": "未包含",
       "xloc": [
-        "agentbuildmanager.js->0->114"
+        "agentbuildmanager.js->0->119"
       ]
     },
     {
@@ -63575,7 +63686,7 @@
       "zh-chs": "未在此会话中加载",
       "zh-cht": "未在此工作階段中載入",
       "xloc": [
-        "agentbuildmanager.js->0->199"
+        "agentbuildmanager.js->0->206"
       ]
     },
     {
@@ -63606,6 +63717,41 @@
       "xloc": [
         "default.handlebars->121->3351",
         "default3.handlebars->123->3347"
+      ]
+    },
+    {
+      "en": "Not reported yet",
+      "ar": "لم يُبلغ بعد",
+      "bs": "Još nije prijavljeno",
+      "ca": "Encara no informat",
+      "cs": "Zatím nenahlášeno",
+      "da": "Ikke rapporteret endnu",
+      "de": "Noch nicht gemeldet",
+      "el": "Χωρίς αναφορά ακόμη",
+      "es": "Aún sin notificar",
+      "fi": "Ei vielä ilmoitettu",
+      "fr": "Pas encore signalé",
+      "he": "טרם דווח",
+      "hi": "अभी तक रिपोर्ट नहीं किया",
+      "hr": "Još nije prijavljeno",
+      "hu": "Még nem jelentett",
+      "it": "Non ancora segnalato",
+      "ja": "未報告",
+      "ko": "아직 보고되지 않음",
+      "nl": "Nog niet gemeld",
+      "pl": "Jeszcze nie zgłoszono",
+      "pt": "Ainda não comunicado",
+      "pt-br": "Ainda não informado",
+      "ro": "Neraportat încă",
+      "ru": "Еще не сообщили",
+      "sr": "Još nije prijavljeno",
+      "sv": "Inte rapporterat ännu",
+      "tr": "Henüz bildirilmedi",
+      "uk": "Ще не повідомили",
+      "zh-chs": "尚未报告",
+      "zh-cht": "尚未回報",
+      "xloc": [
+        "agentbuildmanager.js->0->193"
       ]
     },
     {
@@ -63672,8 +63818,8 @@
       "zh-chs": "未开始",
       "zh-cht": "未開始",
       "xloc": [
-        "agentbuildmanager.js->0->236",
-        "agentbuildmanager.js->0->243"
+        "agentbuildmanager.js->0->243",
+        "agentbuildmanager.js->0->250"
       ]
     },
     {
@@ -63784,7 +63930,7 @@
       "zh-chs": "尚未更改任何设备。在您开始或放弃此部署之前，它会一直保留在列表中。",
       "zh-cht": "尚未變更任何裝置。在您開始或捨棄此部署之前，它會一直保留在清單中。",
       "xloc": [
-        "agentbuildmanager.js->0->256"
+        "agentbuildmanager.js->0->263"
       ]
     },
     {
@@ -63819,7 +63965,7 @@
       "zh-chs": "未向目录添加任何内容。请重试或关闭此对话框。",
       "zh-cht": "未在目錄中新增任何內容。請再試一次或關閉此對話方塊。",
       "xloc": [
-        "agentbuildmanager.js->0->325"
+        "agentbuildmanager.js->0->332"
       ]
     },
     {
@@ -64399,7 +64545,7 @@
       "zh-chs": "离线",
       "zh-cht": "離線",
       "xloc": [
-        "agentbuildmanager.js->0->191",
+        "agentbuildmanager.js->0->198",
         "default.handlebars->121->1903",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5",
         "default3.handlebars->123->1900",
@@ -64670,7 +64816,7 @@
       "zh-chs": "在线",
       "zh-cht": "線上",
       "xloc": [
-        "agentbuildmanager.js->0->190",
+        "agentbuildmanager.js->0->197",
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->19->1",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->3",
@@ -64867,7 +65013,7 @@
       "zh-chs": "仅列出包含与以下名称匹配的可用工件的成功运行：",
       "zh-cht": "僅列出包含符合以下名稱之可用成品的成功執行：",
       "xloc": [
-        "agentbuildmanager.js->0->287"
+        "agentbuildmanager.js->0->294"
       ]
     },
     {
@@ -64902,7 +65048,7 @@
       "zh-chs": "只有创建此部署的管理员才能开始或继续它。",
       "zh-cht": "只有建立此部署的管理員才能開始或繼續它。",
       "xloc": [
-        "agentbuildmanager.js->0->258"
+        "agentbuildmanager.js->0->265"
       ]
     },
     {
@@ -65545,7 +65691,7 @@
       "zh-chs": "已被代理文件夹覆盖",
       "zh-cht": "已被代理資料夾覆寫",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->8",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->26",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1->4"
       ]
     },
@@ -65710,7 +65856,7 @@
       "zh-chs": "PR 编号",
       "zh-cht": "PR 編號",
       "xloc": [
-        "agentbuildmanager.js->0->291"
+        "agentbuildmanager.js->0->298"
       ]
     },
     {
@@ -65870,7 +66016,7 @@
       "zh-chs": "第 {0} 页",
       "zh-cht": "第 {0} 頁",
       "xloc": [
-        "agentbuildmanager.js->0->307"
+        "agentbuildmanager.js->0->314"
       ]
     },
     {
@@ -65936,7 +66082,7 @@
       "zh-cht": "分頁",
       "xloc": [
         "agentbuildmanager.js->0->3",
-        "agentbuildmanager.js->0->305"
+        "agentbuildmanager.js->0->312"
       ]
     },
     {
@@ -66708,7 +66854,7 @@
       "zh-chs": "暂停",
       "zh-cht": "暫停",
       "xloc": [
-        "agentbuildmanager.js->0->237",
+        "agentbuildmanager.js->0->244",
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
@@ -67665,9 +67811,9 @@
       "zh-chs": "已固定",
       "zh-cht": "已固定",
       "xloc": [
-        "agentbuildmanager.js->0->180",
-        "agentbuildmanager.js->0->187",
-        "agentbuildmanager.js->0->28"
+        "agentbuildmanager.js->0->186",
+        "agentbuildmanager.js->0->194",
+        "agentbuildmanager.js->0->33"
       ]
     },
     {
@@ -69020,7 +69166,7 @@
       "zh-chs": "预览部署",
       "zh-cht": "預覽部署",
       "xloc": [
-        "agentbuildmanager.js->0->219"
+        "agentbuildmanager.js->0->226"
       ]
     },
     {
@@ -69055,7 +69201,7 @@
       "zh-chs": "上一页",
       "zh-cht": "上一頁",
       "xloc": [
-        "agentbuildmanager.js->0->306",
+        "agentbuildmanager.js->0->313",
         "agentbuildmanager.js->0->4"
       ]
     },
@@ -69800,8 +69946,10 @@
       "zh-chs": "拉取请求",
       "zh-cht": "提取要求",
       "xloc": [
-        "agentbuildmanager.js->0->280",
-        "agentbuildmanager.js->0->312"
+        "agentbuildmanager.js->0->287",
+        "agentbuildmanager.js->0->31",
+        "agentbuildmanager.js->0->319",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->8"
       ]
     },
     {
@@ -70813,7 +70961,7 @@
       "zh-chs": "就绪",
       "zh-cht": "就緒",
       "xloc": [
-        "agentbuildmanager.js->0->31",
+        "agentbuildmanager.js->0->36",
         "agentbuildmanager.js->0->8"
       ]
     },
@@ -70961,7 +71109,7 @@
       "zh-chs": "已接收 {0} MiB，共 {1} MiB",
       "zh-cht": "已接收 {0} MiB，共 {1} MiB",
       "xloc": [
-        "agentbuildmanager.js->0->72"
+        "agentbuildmanager.js->0->77"
       ]
     },
     {
@@ -71378,7 +71526,7 @@
       "zh-chs": "刷新",
       "zh-cht": "刷新",
       "xloc": [
-        "agentbuildmanager.js->0->238",
+        "agentbuildmanager.js->0->245",
         "default-mobile.handlebars->55->1143",
         "default-mobile.handlebars->55->1186",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
@@ -72337,6 +72485,41 @@
       ]
     },
     {
+      "en": "Release",
+      "ar": "إصدار",
+      "bs": "Izdanje",
+      "ca": "Versió",
+      "cs": "Vydání",
+      "da": "Udgivelse",
+      "de": "Release",
+      "el": "Κυκλοφορία",
+      "es": "Lanzamiento",
+      "fi": "Julkaisu",
+      "fr": "Version",
+      "he": "מהדורה",
+      "hi": "रिलीज़",
+      "hr": "Izdanje",
+      "hu": "Kiadás",
+      "it": "Release",
+      "ja": "リリース",
+      "ko": "릴리스",
+      "nl": "Release",
+      "pl": "Wydanie",
+      "pt": "Versão",
+      "pt-br": "Versão",
+      "ro": "Versiune",
+      "ru": "Выпуск",
+      "sr": "Izdanje",
+      "sv": "Version",
+      "tr": "Sürüm",
+      "uk": "Випуск",
+      "zh-chs": "发行版",
+      "zh-cht": "發行版本",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->2"
+      ]
+    },
+    {
       "en": "Release available",
       "ar": "يتوفر إصدار جديد",
       "bs": "Dostupno novo izdanje",
@@ -72368,7 +72551,7 @@
       "zh-chs": "有新发行版可用",
       "zh-cht": "有新的發行版本可用",
       "xloc": [
-        "agentbuildmanager.js->0->60"
+        "agentbuildmanager.js->0->65"
       ]
     },
     {
@@ -72438,7 +72621,7 @@
       "zh-chs": "发行版文件",
       "zh-cht": "發行版本檔案",
       "xloc": [
-        "agentbuildmanager.js->0->316"
+        "agentbuildmanager.js->0->323"
       ]
     },
     {
@@ -72473,7 +72656,7 @@
       "zh-chs": "发行版更新",
       "zh-cht": "發行版本更新",
       "xloc": [
-        "agentbuildmanager.js->0->55"
+        "agentbuildmanager.js->0->60"
       ]
     },
     {
@@ -72508,8 +72691,8 @@
       "zh-chs": "发行版",
       "zh-cht": "發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->278",
-        "agentbuildmanager.js->0->313"
+        "agentbuildmanager.js->0->285",
+        "agentbuildmanager.js->0->320"
       ]
     },
     {
@@ -73562,7 +73745,7 @@
       "zh-chs": "支持远程桌面",
       "zh-cht": "支援遠端桌面",
       "xloc": [
-        "agentbuildmanager.js->0->147"
+        "agentbuildmanager.js->0->153"
       ]
     },
     {
@@ -74124,7 +74307,7 @@
       "zh-chs": "删除构建",
       "zh-cht": "移除組建",
       "xloc": [
-        "agentbuildmanager.js->0->170"
+        "agentbuildmanager.js->0->176"
       ]
     },
     {
@@ -74251,7 +74434,7 @@
       "zh-chs": "从列表中移除",
       "zh-cht": "從清單中移除",
       "xloc": [
-        "agentbuildmanager.js->0->252"
+        "agentbuildmanager.js->0->259"
       ]
     },
     {
@@ -74482,7 +74665,7 @@
       "zh-chs": "从服务器删除此构建",
       "zh-cht": "從伺服器移除此組建",
       "xloc": [
-        "agentbuildmanager.js->0->146"
+        "agentbuildmanager.js->0->152"
       ]
     },
     {
@@ -75118,7 +75301,7 @@
       "zh-chs": "这将移除对此构建的选择。这些代理类型将回退到其余的服务器、域、发行版或内置默认值。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "這會移除對此組建的選擇。這些代理類型將改用其餘的伺服器、域、發行版本或內建預設值。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->166"
+        "agentbuildmanager.js->0->172"
       ]
     },
     {
@@ -75153,7 +75336,7 @@
       "zh-chs": "这将移除对此构建的选择。此代理类型将回退到其余的服务器、域、发行版或内置默认值。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "這會移除對此組建的選擇。此代理類型將改用其餘的伺服器、域、發行版本或內建預設值。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->131"
+        "agentbuildmanager.js->0->136"
       ]
     },
     {
@@ -75188,7 +75371,7 @@
       "zh-chs": "删除操作会移除此服务器上已上传的文件。只要仍有设备或部署引用此构建，删除就会被拒绝。",
       "zh-cht": "移除會從此伺服器刪除已上傳的檔案。只要仍有裝置或部署參照此組建，移除就會遭到拒絕。",
       "xloc": [
-        "agentbuildmanager.js->0->164"
+        "agentbuildmanager.js->0->170"
       ]
     },
     {
@@ -75458,42 +75641,6 @@
       ]
     },
     {
-      "en": "Reported installed",
-      "ar": "المثبّتة وفق التقارير",
-      "bs": "Prijavljeno kao instalirano",
-      "ca": "Informat com a instal·lat",
-      "cs": "Hlášeno jako nainstalované",
-      "da": "Rapporterede installationer",
-      "de": "Als installiert gemeldet",
-      "el": "Αναφερόμενες εγκαταστάσεις",
-      "es": "Notificado como instalado",
-      "fi": "Ilmoitetut asennukset",
-      "fr": "Signalé comme installé",
-      "he": "דווח כמותקן",
-      "hi": "इंस्टॉल रिपोर्ट किया गया",
-      "hr": "Prijavljeno kao instalirano",
-      "hu": "Jelentés szerint telepítve",
-      "it": "Segnalato come installato",
-      "ja": "インストール報告済み",
-      "ko": "설치 보고됨",
-      "nl": "Gemeld als geïnstalleerd",
-      "pl": "Zgłoszone jako zainstalowane",
-      "pt": "Comunicado como instalado",
-      "pt-br": "Informado como instalado",
-      "ro": "Raportat ca instalat",
-      "ru": "Установлено по отчету",
-      "sr": "Prijavljeno kao instalirano",
-      "sv": "Rapporterade installationer",
-      "tr": "Kurulu olarak bildirilen",
-      "uk": "Інстальовано за звітом",
-      "zh-chs": "报告为已安装",
-      "zh-cht": "回報為已安裝",
-      "xloc": [
-        "agentbuildmanager.js->0->179",
-        "agentbuildmanager.js->0->186"
-      ]
-    },
-    {
       "en": "Reported revision",
       "ar": "المراجعة المُبلغ عنها",
       "bs": "Prijavljena revizija",
@@ -75592,7 +75739,7 @@
       "zh-chs": "仓库",
       "zh-cht": "存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->273"
+        "agentbuildmanager.js->0->280"
       ]
     },
     {
@@ -76255,8 +76402,8 @@
       "zh-chs": "正在解析下载...",
       "zh-cht": "正在解析下載...",
       "xloc": [
-        "agentbuildmanager.js->0->321",
-        "agentbuildmanager.js->0->327"
+        "agentbuildmanager.js->0->328",
+        "agentbuildmanager.js->0->334"
       ]
     },
     {
@@ -76388,7 +76535,7 @@
       "zh-chs": "恢复构建",
       "zh-cht": "還原組建",
       "xloc": [
-        "agentbuildmanager.js->0->171"
+        "agentbuildmanager.js->0->177"
       ]
     },
     {
@@ -76423,7 +76570,7 @@
       "zh-chs": "恢复缺失的文件",
       "zh-cht": "還原遺失的檔案",
       "xloc": [
-        "agentbuildmanager.js->0->78"
+        "agentbuildmanager.js->0->83"
       ]
     },
     {
@@ -76518,7 +76665,7 @@
       "zh-chs": "恢复到目录",
       "zh-cht": "還原至目錄",
       "xloc": [
-        "agentbuildmanager.js->0->142"
+        "agentbuildmanager.js->0->148"
       ]
     },
     {
@@ -76553,7 +76700,7 @@
       "zh-chs": "恢复文件不会更改设备政策，只会获取此服务器配置要提供的发行版文件。",
       "zh-cht": "還原檔案不會變更裝置政策，只會擷取此伺服器設定要提供的發行版本檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->74"
+        "agentbuildmanager.js->0->79"
       ]
     },
     {
@@ -76588,7 +76735,7 @@
       "zh-chs": "正在恢复文件。下载继续进行时，您可以关闭此对话框。",
       "zh-cht": "正在還原檔案。下載繼續進行時，您可以關閉此對話方塊。",
       "xloc": [
-        "agentbuildmanager.js->0->49"
+        "agentbuildmanager.js->0->54"
       ]
     },
     {
@@ -76623,8 +76770,8 @@
       "zh-chs": "正在恢复文件...",
       "zh-cht": "正在還原檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->66",
-        "agentbuildmanager.js->0->76"
+        "agentbuildmanager.js->0->71",
+        "agentbuildmanager.js->0->81"
       ]
     },
     {
@@ -76659,7 +76806,7 @@
       "zh-chs": "恢复会将此构建放回可固定的构建列表中。",
       "zh-cht": "還原會將此組建放回可固定的組建清單中。",
       "xloc": [
-        "agentbuildmanager.js->0->163"
+        "agentbuildmanager.js->0->169"
       ]
     },
     {
@@ -76757,7 +76904,7 @@
       "zh-chs": "继续剩余部分",
       "zh-cht": "繼續其餘部分",
       "xloc": [
-        "agentbuildmanager.js->0->261"
+        "agentbuildmanager.js->0->268"
       ]
     },
     {
@@ -76792,9 +76939,9 @@
       "zh-chs": "重试",
       "zh-cht": "重試",
       "xloc": [
-        "agentbuildmanager.js->0->264",
-        "agentbuildmanager.js->0->310",
-        "agentbuildmanager.js->0->80"
+        "agentbuildmanager.js->0->271",
+        "agentbuildmanager.js->0->317",
+        "agentbuildmanager.js->0->85"
       ]
     },
     {
@@ -76829,7 +76976,7 @@
       "zh-chs": "改回服务器默认值可能会用较旧的文件替换已安装的代理文件。",
       "zh-cht": "改回伺服器預設值可能會以較舊的檔案取代已安裝的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->203"
+        "agentbuildmanager.js->0->210"
       ]
     },
     {
@@ -76897,7 +77044,7 @@
       "zh-chs": "审核代理文件",
       "zh-cht": "檢閱代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->101"
+        "agentbuildmanager.js->0->106"
       ]
     },
     {
@@ -76932,8 +77079,8 @@
       "zh-chs": "审核文件",
       "zh-cht": "檢閱檔案",
       "xloc": [
-        "agentbuildmanager.js->0->86",
-        "agentbuildmanager.js->0->93"
+        "agentbuildmanager.js->0->91",
+        "agentbuildmanager.js->0->98"
       ]
     },
     {
@@ -76968,7 +77115,7 @@
       "zh-chs": "请在文件成为构建之前，审核检测到的平台、要求和哈希值。",
       "zh-cht": "請在檔案成為組建之前，檢閱偵測到的平台、需求和雜湊值。",
       "xloc": [
-        "agentbuildmanager.js->0->82"
+        "agentbuildmanager.js->0->87"
       ]
     },
     {
@@ -77363,9 +77510,9 @@
       "zh-chs": "运行 ID",
       "zh-cht": "執行 ID",
       "xloc": [
-        "agentbuildmanager.js->0->281",
-        "agentbuildmanager.js->0->292",
-        "agentbuildmanager.js->0->314"
+        "agentbuildmanager.js->0->288",
+        "agentbuildmanager.js->0->299",
+        "agentbuildmanager.js->0->321"
       ]
     },
     {
@@ -77634,7 +77781,7 @@
       "zh-chs": "运行 {0}",
       "zh-cht": "執行 {0}",
       "xloc": [
-        "agentbuildmanager.js->0->331"
+        "agentbuildmanager.js->0->338"
       ]
     },
     {
@@ -77761,6 +77908,42 @@
       ]
     },
     {
+      "en": "Running this file",
+      "ar": "تشغّل هذا الملف",
+      "bs": "Koristi ovaj fajl",
+      "ca": "Executen aquest fitxer",
+      "cs": "Používá tento soubor",
+      "da": "Kører denne fil",
+      "de": "Verwenden diese Datei",
+      "el": "Εκτελούν αυτό το αρχείο",
+      "es": "Ejecutan este archivo",
+      "fi": "Käyttää tätä tiedostoa",
+      "fr": "Exécutent ce fichier",
+      "he": "מריצים קובץ זה",
+      "hi": "यह फ़ाइल चला रहे हैं",
+      "hr": "Koristi ovu datoteku",
+      "hu": "Ezt a fájlt futtatja",
+      "it": "Eseguono questo file",
+      "ja": "このファイルを実行中",
+      "ko": "이 파일 실행 중",
+      "nl": "Draaien dit bestand",
+      "pl": "Korzysta z tego pliku",
+      "pt": "A executar este ficheiro",
+      "pt-br": "Executando este arquivo",
+      "ro": "Rulează acest fișier",
+      "ru": "Используют этот файл",
+      "sr": "Koristi ovu datoteku",
+      "sv": "Kör den här filen",
+      "tr": "Bu dosyayı çalıştıran",
+      "uk": "Використовують цей файл",
+      "zh-chs": "正在运行此文件",
+      "zh-cht": "正在執行此檔案",
+      "xloc": [
+        "agentbuildmanager.js->0->185",
+        "agentbuildmanager.js->0->192"
+      ]
+    },
+    {
       "en": "Runtime requirements are not fully known.",
       "ar": "متطلبات وقت التشغيل غير معروفة بالكامل.",
       "bs": "Zahtjevi za izvršavanje nisu u potpunosti poznati.",
@@ -77792,7 +77975,7 @@
       "zh-chs": "运行时要求尚不完全明确。",
       "zh-cht": "執行階段需求尚未完全確定。",
       "xloc": [
-        "agentbuildmanager.js->0->100"
+        "agentbuildmanager.js->0->105"
       ]
     },
     {
@@ -79424,7 +79607,7 @@
       "zh-chs": "定期发行版检查已禁用。",
       "zh-cht": "排程的發行版本檢查已停用。",
       "xloc": [
-        "agentbuildmanager.js->0->59"
+        "agentbuildmanager.js->0->64"
       ]
     },
     {
@@ -79617,7 +79800,7 @@
       "zh-chs": "搜寻",
       "zh-cht": "搜尋",
       "xloc": [
-        "agentbuildmanager.js->0->183",
+        "agentbuildmanager.js->0->189",
         "default.handlebars->121->1631",
         "default.handlebars->121->3765",
         "default.handlebars->121->869",
@@ -80025,7 +80208,7 @@
       "zh-chs": "请选择",
       "zh-cht": "請選擇",
       "xloc": [
-        "agentbuildmanager.js->0->112"
+        "agentbuildmanager.js->0->117"
       ]
     },
     {
@@ -80567,7 +80750,7 @@
       "zh-chs": "请至少选择一个要部署的代理文件。",
       "zh-cht": "請至少選擇一個要部署的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->217"
+        "agentbuildmanager.js->0->224"
       ]
     },
     {
@@ -80602,8 +80785,8 @@
       "zh-chs": "最多选择 16 个代理文件。",
       "zh-cht": "最多選擇 16 個代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->318",
-        "agentbuildmanager.js->0->90"
+        "agentbuildmanager.js->0->325",
+        "agentbuildmanager.js->0->95"
       ]
     },
     {
@@ -80668,7 +80851,7 @@
       "zh-chs": "请选择要下载的代理文件。",
       "zh-cht": "請選擇要下載的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->317"
+        "agentbuildmanager.js->0->324"
       ]
     },
     {
@@ -80703,8 +80886,8 @@
       "zh-chs": "请选择要上传的代理文件。",
       "zh-cht": "請選擇要上傳的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->87",
-        "agentbuildmanager.js->0->89"
+        "agentbuildmanager.js->0->92",
+        "agentbuildmanager.js->0->94"
       ]
     },
     {
@@ -80739,7 +80922,7 @@
       "zh-chs": "选择所编译的代理类型",
       "zh-cht": "選擇所編譯的代理類型",
       "xloc": [
-        "agentbuildmanager.js->0->109"
+        "agentbuildmanager.js->0->114"
       ]
     },
     {
@@ -80774,7 +80957,7 @@
       "zh-chs": "请选择所编译的代理类型。",
       "zh-cht": "請選擇所編譯的代理類型。",
       "xloc": [
-        "agentbuildmanager.js->0->123"
+        "agentbuildmanager.js->0->128"
       ]
     },
     {
@@ -80914,7 +81097,7 @@
       "zh-chs": "所选构建不可用",
       "zh-cht": "所選組建無法使用",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->6"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->24"
       ]
     },
     {
@@ -80949,7 +81132,7 @@
       "zh-chs": "所选设备：{0}",
       "zh-cht": "選取的裝置：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->213"
+        "agentbuildmanager.js->0->220"
       ]
     },
     {
@@ -82529,7 +82712,7 @@
       "zh-chs": "已应用服务器品牌，已重新签名",
       "zh-cht": "已套用伺服器品牌，已重新簽署",
       "xloc": [
-        "agentbuildmanager.js->0->150",
+        "agentbuildmanager.js->0->156",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->6"
       ]
     },
@@ -82565,10 +82748,10 @@
       "zh-chs": "服务器默认值",
       "zh-cht": "伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->149",
+        "agentbuildmanager.js->0->155",
         "agentbuildmanager.js->0->24",
-        "agentbuildmanager.js->0->30",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->4",
+        "agentbuildmanager.js->0->35",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->12",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1->2"
       ]
     },
@@ -82746,6 +82929,76 @@
       "xloc": [
         "default.handlebars->121->3320",
         "default3.handlebars->123->3316"
+      ]
+    },
+    {
+      "en": "Server override",
+      "ar": "تجاوز على مستوى الخادم",
+      "bs": "Zamjena na serveru",
+      "ca": "Substitució del servidor",
+      "cs": "Přepsání serverem",
+      "da": "Servertilsidesættelse",
+      "de": "Server-Überschreibung",
+      "el": "Παράκαμψη διακομιστή",
+      "es": "Reemplazo del servidor",
+      "fi": "Palvelimen ohitus",
+      "fr": "Remplacement du serveur",
+      "he": "עקיפה ברמת השרת",
+      "hi": "सर्वर ओवरराइड",
+      "hr": "Zamjena na poslužitelju",
+      "hu": "Kiszolgálói felülbírálás",
+      "it": "Override del server",
+      "ja": "サーバーの上書き",
+      "ko": "서버 재정의",
+      "nl": "Serveroverschrijving",
+      "pl": "Zastąpienie na serwerze",
+      "pt": "Substituição do servidor",
+      "pt-br": "Substituição do servidor",
+      "ro": "Suprascriere de server",
+      "ru": "Переопределение сервера",
+      "sr": "Zamena na serveru",
+      "sv": "Serveråsidosättning",
+      "tr": "Sunucu geçersiz kılması",
+      "uk": "Перевизначення сервера",
+      "zh-chs": "服务器覆盖",
+      "zh-cht": "伺服器覆寫",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->16"
+      ]
+    },
+    {
+      "en": "Server signed",
+      "ar": "موقّع من الخادم",
+      "bs": "Potpisano na serveru",
+      "ca": "Signat pel servidor",
+      "cs": "Podepsáno serverem",
+      "da": "Signeret af serveren",
+      "de": "Vom Server signiert",
+      "el": "Υπογραφή από τον διακομιστή",
+      "es": "Firmado por el servidor",
+      "fi": "Palvelimen allekirjoittama",
+      "fr": "Signé par le serveur",
+      "he": "נחתם על ידי השרת",
+      "hi": "सर्वर द्वारा हस्ताक्षरित",
+      "hr": "Potpisano na poslužitelju",
+      "hu": "A kiszolgáló által aláírva",
+      "it": "Firmato dal server",
+      "ja": "サーバーで署名済み",
+      "ko": "서버에서 서명됨",
+      "nl": "Ondertekend door de server",
+      "pl": "Podpisany przez serwer",
+      "pt": "Assinado pelo servidor",
+      "pt-br": "Assinado pelo servidor",
+      "ro": "Semnat de server",
+      "ru": "Подписан сервером",
+      "sr": "Potpisano na serveru",
+      "sv": "Signerad av servern",
+      "tr": "Sunucu tarafından imzalanmış",
+      "uk": "Підписано сервером",
+      "zh-chs": "已由服务器签名",
+      "zh-cht": "已由伺服器簽署",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->4"
       ]
     },
     {
@@ -83258,7 +83511,7 @@
       "zh-chs": "在 config.json 中为此域设置 agentBuilds.github.token，然后重启 MeshCentral。Actions 下载需要 Actions 读取权限，私有发行版需要 Contents 读取权限，查找私有拉取请求需要 Pull requests 读取权限。",
       "zh-cht": "在 config.json 中為此域設定 agentBuilds.github.token，然後重新啟動 MeshCentral。Actions 下載需要 Actions 讀取權限，私人發行版本需要 Contents 讀取權限，查詢私人提取要求需要 Pull requests 讀取權限。",
       "xloc": [
-        "agentbuildmanager.js->0->286"
+        "agentbuildmanager.js->0->293"
       ]
     },
     {
@@ -83293,7 +83546,7 @@
       "zh-chs": "设为默认值",
       "zh-cht": "設為預設值",
       "xloc": [
-        "agentbuildmanager.js->0->172"
+        "agentbuildmanager.js->0->178"
       ]
     },
     {
@@ -83981,8 +84234,8 @@
       "zh-chs": "显示",
       "zh-cht": "顯示",
       "xloc": [
-        "agentbuildmanager.js->0->177",
-        "agentbuildmanager.js->0->231",
+        "agentbuildmanager.js->0->183",
+        "agentbuildmanager.js->0->238",
         "default-mobile.handlebars->container->page_content->column_l->p44->p44info->p44head->1->0->1->0",
         "default.handlebars->container->column_l->p16->3->1->0->5",
         "default.handlebars->container->column_l->p3->3->1->0->5",
@@ -85145,7 +85398,7 @@
       "zh-chs": "上传前已签名",
       "zh-cht": "上傳前已簽署",
       "xloc": [
-        "agentbuildmanager.js->0->152"
+        "agentbuildmanager.js->0->158"
       ]
     },
     {
@@ -85575,7 +85828,7 @@
       "zh-chs": "跳过此代理类型",
       "zh-cht": "略過此代理類型",
       "xloc": [
-        "agentbuildmanager.js->0->212"
+        "agentbuildmanager.js->0->219"
       ]
     },
     {
@@ -85611,7 +85864,7 @@
       "zh-cht": "已略過",
       "xloc": [
         "agentbuildmanager.js->0->14",
-        "agentbuildmanager.js->0->245"
+        "agentbuildmanager.js->0->252"
       ]
     },
     {
@@ -85646,7 +85899,7 @@
       "zh-chs": "已跳过：{0}",
       "zh-cht": "已略過：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->229"
+        "agentbuildmanager.js->0->236"
       ]
     },
     {
@@ -86133,7 +86386,7 @@
       "zh-chs": "部分所选设备未在此会话中加载。预览会在服务器上检查这些设备。",
       "zh-cht": "部分選取的裝置未在此工作階段中載入。預覽會在伺服器上檢查這些裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->201"
+        "agentbuildmanager.js->0->208"
       ]
     },
     {
@@ -86403,7 +86656,7 @@
       "zh-chs": "来源",
       "zh-cht": "來源",
       "xloc": [
-        "agentbuildmanager.js->0->267",
+        "agentbuildmanager.js->0->274",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->3",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->0",
         "default-mobile.handlebars->55->1204",
@@ -86443,7 +86696,7 @@
       "zh-chs": "来源与验证",
       "zh-cht": "來源與驗證",
       "xloc": [
-        "agentbuildmanager.js->0->105",
+        "agentbuildmanager.js->0->110",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->0"
       ]
     },
@@ -86479,7 +86732,7 @@
       "zh-chs": "来源提交",
       "zh-cht": "來源提交",
       "xloc": [
-        "agentbuildmanager.js->0->330"
+        "agentbuildmanager.js->0->337"
       ]
     },
     {
@@ -86584,7 +86837,7 @@
       "zh-chs": "来源详情说明文件是从哪里获取的。它们无法证明该代理文件包含哪些源代码，也无法证明其可以安全运行。",
       "zh-cht": "來源詳細資料說明檔案是從哪裡取得的。它們無法證明該代理檔案包含哪些原始程式碼，也無法證明其可安全執行。",
       "xloc": [
-        "agentbuildmanager.js->0->336"
+        "agentbuildmanager.js->0->343"
       ]
     },
     {
@@ -87415,6 +87668,42 @@
       ]
     },
     {
+      "en": "Stable",
+      "ar": "مستقر",
+      "bs": "Stabilna",
+      "ca": "Estable",
+      "cs": "Stabilní",
+      "da": "Stabil",
+      "de": "Stabil",
+      "el": "Σταθερή",
+      "es": "Estable",
+      "fi": "Vakaa",
+      "fr": "Stable",
+      "he": "יציבה",
+      "hi": "स्थिर",
+      "hr": "Stabilna",
+      "hu": "Stabil",
+      "it": "Stabile",
+      "ja": "安定版",
+      "ko": "안정",
+      "nl": "Stabiel",
+      "pl": "Stabilna",
+      "pt": "Estável",
+      "pt-br": "Estável",
+      "ro": "Stabil",
+      "ru": "Стабильная",
+      "sr": "Stabilna",
+      "sv": "Stabil",
+      "tr": "Kararlı",
+      "uk": "Стабільна",
+      "zh-chs": "稳定版",
+      "zh-cht": "穩定版",
+      "xloc": [
+        "agentbuildmanager.js->0->28",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->2"
+      ]
+    },
+    {
       "bs": "Stable Version",
       "ca": "Versió estable",
       "cs": "Stabilní verze",
@@ -87592,7 +87881,7 @@
       "zh-chs": "可在所选设备上使用“集体指令”，或在移动版设备页面上使用“操作”来开始部署。",
       "zh-cht": "可在選取的裝置上使用“集體指令”，或在行動版裝置頁面上使用“動作”來開始部署。",
       "xloc": [
-        "agentbuildmanager.js->0->225"
+        "agentbuildmanager.js->0->232"
       ]
     },
     {
@@ -87686,7 +87975,7 @@
       "zh-chs": "开始部署",
       "zh-cht": "開始部署",
       "xloc": [
-        "agentbuildmanager.js->0->260"
+        "agentbuildmanager.js->0->267"
       ]
     },
     {
@@ -88428,7 +88717,7 @@
       "zh-chs": "请说明此文件是否包含远程桌面支持。",
       "zh-cht": "請說明此檔案是否包含遠端桌面支援。",
       "xloc": [
-        "agentbuildmanager.js->0->124"
+        "agentbuildmanager.js->0->129"
       ]
     },
     {
@@ -88698,7 +88987,7 @@
       "zh-chs": "停止使用文件",
       "zh-cht": "停止使用檔案",
       "xloc": [
-        "agentbuildmanager.js->0->135"
+        "agentbuildmanager.js->0->140"
       ]
     },
     {
@@ -88733,8 +89022,8 @@
       "zh-chs": "停止使用代理文件夹中的文件",
       "zh-cht": "停止使用代理資料夾中的檔案",
       "xloc": [
-        "agentbuildmanager.js->0->133",
-        "agentbuildmanager.js->0->41"
+        "agentbuildmanager.js->0->138",
+        "agentbuildmanager.js->0->46"
       ]
     },
     {
@@ -88769,7 +89058,7 @@
       "zh-chs": "停止使用此文件",
       "zh-cht": "停止使用此檔案",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->12"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->30"
       ]
     },
     {
@@ -90237,7 +90526,7 @@
       "zh-chs": "标签",
       "zh-cht": "標籤",
       "xloc": [
-        "agentbuildmanager.js->0->333"
+        "agentbuildmanager.js->0->340"
       ]
     },
     {
@@ -90828,6 +91117,42 @@
       "xloc": [
         "terms-mobile.handlebars->container->page_content->column_l->1",
         "terms.handlebars->container->column_l->1"
+      ]
+    },
+    {
+      "en": "Testing",
+      "ar": "تجريبي",
+      "bs": "Testna",
+      "ca": "De prova",
+      "cs": "Testovací",
+      "da": "Test",
+      "de": "Test",
+      "el": "Δοκιμαστική",
+      "es": "De prueba",
+      "fi": "Testi",
+      "fr": "Test",
+      "he": "בדיקה",
+      "hi": "परीक्षण",
+      "hr": "Testna",
+      "hu": "Teszt",
+      "it": "Test",
+      "ja": "テスト版",
+      "ko": "테스트",
+      "nl": "Test",
+      "pl": "Testowa",
+      "pt": "Teste",
+      "pt-br": "Teste",
+      "ro": "Testare",
+      "ru": "Тестовая",
+      "sr": "Testna",
+      "sv": "Test",
+      "tr": "Test",
+      "uk": "Тестова",
+      "zh-chs": "测试版",
+      "zh-cht": "測試版",
+      "xloc": [
+        "agentbuildmanager.js->0->29",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->4"
       ]
     },
     {
@@ -91600,7 +91925,7 @@
       "zh-chs": "所选文件总大小超过 128 MiB。",
       "zh-cht": "選取的檔案總大小超過 128 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->91"
+        "agentbuildmanager.js->0->96"
       ]
     },
     {
@@ -91947,7 +92272,7 @@
       "zh-chs": "这些发行版文件为新的代理安装提供服务器默认值。",
       "zh-cht": "這些發行版本檔案為新的代理安裝提供伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->69"
+        "agentbuildmanager.js->0->74"
       ]
     },
     {
@@ -92176,6 +92501,42 @@
       ]
     },
     {
+      "en": "This agent type does not report its file.",
+      "ar": "هذا النوع من الوكلاء لا يُبلغ عن ملفه.",
+      "bs": "Ovaj tip agenta ne prijavljuje svoj fajl.",
+      "ca": "Aquest tipus d'agent no informa del seu fitxer.",
+      "cs": "Tento typ agenta svůj soubor nehlásí.",
+      "da": "Denne agenttype rapporterer ikke sin fil.",
+      "de": "Dieser Agent-Typ meldet seine Datei nicht.",
+      "el": "Αυτός ο τύπος αντιπροσώπου δεν αναφέρει το αρχείο του.",
+      "es": "Este tipo de agente no notifica su archivo.",
+      "fi": "Tämä agenttityyppi ei ilmoita tiedostoaan.",
+      "fr": "Ce type d'agent ne signale pas son fichier.",
+      "he": "סוג סוכן זה אינו מדווח על הקובץ שלו.",
+      "hi": "यह एजेंट प्रकार अपनी फ़ाइल रिपोर्ट नहीं करता।",
+      "hr": "Ova vrsta agenta ne prijavljuje svoju datoteku.",
+      "hu": "Ez az Agent típus nem jelenti a fájlját.",
+      "it": "Questo tipo di agente non segnala il proprio file.",
+      "ja": "このエージェントタイプはファイルを報告しません。",
+      "ko": "이 에이전트 유형은 파일을 보고하지 않습니다.",
+      "nl": "Dit agenttype meldt zijn bestand niet.",
+      "pl": "Ten typ agenta nie zgłasza swojego pliku.",
+      "pt": "Este tipo de agente não comunica o seu ficheiro.",
+      "pt-br": "Este tipo de agente não informa seu arquivo.",
+      "ro": "Acest tip de agent nu își raportează fișierul.",
+      "ru": "Этот тип агента не сообщает о своем файле.",
+      "sr": "Ovaj tip agenta ne prijavljuje svoju datoteku.",
+      "sv": "Den här agenttypen rapporterar inte sin fil.",
+      "tr": "Bu Agent türü dosyasını bildirmez.",
+      "uk": "Цей тип агента не повідомляє про свій файл.",
+      "zh-chs": "此代理类型不报告其文件。",
+      "zh-cht": "此代理類型不會回報其檔案。",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->10",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->4"
+      ]
+    },
+    {
       "en": "This build is archived.",
       "ar": "هذه البنية مؤرشفة.",
       "bs": "Ova verzija je arhivirana.",
@@ -92207,7 +92568,7 @@
       "zh-chs": "此构建已归档。",
       "zh-cht": "此組建已封存。",
       "xloc": [
-        "agentbuildmanager.js->0->140"
+        "agentbuildmanager.js->0->146"
       ]
     },
     {
@@ -92242,7 +92603,7 @@
       "zh-chs": "此构建已不在目录中。",
       "zh-cht": "此組建已不在目錄中。",
       "xloc": [
-        "agentbuildmanager.js->0->136",
+        "agentbuildmanager.js->0->141",
         "default-mobile.handlebars->55->1236",
         "default.handlebars->121->3706",
         "default3.handlebars->123->3702"
@@ -92354,7 +92715,7 @@
       "zh-chs": "此构建提供了服务器默认值。删除它将清除这些选择。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "此組建提供了伺服器預設值。移除它會清除這些選擇。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->159"
+        "agentbuildmanager.js->0->165"
       ]
     },
     {
@@ -92389,7 +92750,7 @@
       "zh-chs": "此构建提供服务器默认代理。",
       "zh-cht": "此組建提供伺服器預設代理。",
       "xloc": [
-        "agentbuildmanager.js->0->141"
+        "agentbuildmanager.js->0->147"
       ]
     },
     {
@@ -92424,7 +92785,7 @@
       "zh-chs": "此构建不是上传到此服务器的，因此无法在此处删除。",
       "zh-cht": "此組建不是上傳至此伺服器的，因此無法在此移除。",
       "xloc": [
-        "agentbuildmanager.js->0->161"
+        "agentbuildmanager.js->0->167"
       ]
     },
     {
@@ -92867,7 +93228,7 @@
       "zh-chs": "这将替换以下项目当前的服务器默认值：{0}",
       "zh-cht": "這將取代以下項目目前的伺服器預設值：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->167"
+        "agentbuildmanager.js->0->173"
       ]
     },
     {
@@ -92902,7 +93263,7 @@
       "zh-chs": "此仓库在此页上没有发行版。请尝试“工作流运行”。",
       "zh-cht": "此存放庫在此頁上沒有發行版本。請嘗試“工作流程執行”。",
       "xloc": [
-        "agentbuildmanager.js->0->301"
+        "agentbuildmanager.js->0->308"
       ]
     },
     {
@@ -94814,7 +95175,7 @@
       "zh-chs": "重试",
       "zh-cht": "再試一次",
       "xloc": [
-        "agentbuildmanager.js->0->326"
+        "agentbuildmanager.js->0->333"
       ]
     },
     {
@@ -94934,7 +95295,7 @@
       "zh-chs": "请尝试下一页。",
       "zh-cht": "請嘗試下一頁。",
       "xloc": [
-        "agentbuildmanager.js->0->303"
+        "agentbuildmanager.js->0->310"
       ]
     },
     {
@@ -96138,7 +96499,7 @@
       "zh-chs": "无法读取上传结果。",
       "zh-cht": "無法讀取上傳結果。",
       "xloc": [
-        "agentbuildmanager.js->0->97"
+        "agentbuildmanager.js->0->102"
       ]
     },
     {
@@ -96295,7 +96656,8 @@
       "zh-chs": "不可用",
       "zh-cht": "無法使用",
       "xloc": [
-        "agentbuildmanager.js->0->33"
+        "agentbuildmanager.js->0->38",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->18"
       ]
     },
     {
@@ -96330,7 +96692,7 @@
       "zh-chs": "未完成的部署",
       "zh-cht": "未完成的部署",
       "xloc": [
-        "agentbuildmanager.js->0->211"
+        "agentbuildmanager.js->0->218"
       ]
     },
     {
@@ -97320,7 +97682,7 @@
       "zh-chs": "最多 16 个文件，每个最多 64 MiB，总计最多 128 MiB。",
       "zh-cht": "最多 16 個檔案，每個最多 64 MiB，總計最多 128 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->84"
+        "agentbuildmanager.js->0->89"
       ]
     },
     {
@@ -97420,7 +97782,7 @@
       "zh-chs": "更新 SHA384",
       "zh-cht": "更新 SHA384",
       "xloc": [
-        "agentbuildmanager.js->0->120"
+        "agentbuildmanager.js->0->125"
       ]
     },
     {
@@ -97492,7 +97854,7 @@
       "zh-chs": "更新哈希",
       "zh-cht": "更新雜湊",
       "xloc": [
-        "agentbuildmanager.js->0->153",
+        "agentbuildmanager.js->0->159",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->5",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11->0",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->13"
@@ -97530,7 +97892,7 @@
       "zh-chs": "更新政策",
       "zh-cht": "更新政策",
       "xloc": [
-        "agentbuildmanager.js->0->202",
+        "agentbuildmanager.js->0->209",
         "default-mobile.handlebars->55->1152",
         "default.handlebars->121->3622",
         "default3.handlebars->123->3618"
@@ -97852,7 +98214,7 @@
       "zh-chs": "上传代理构建",
       "zh-cht": "上傳代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->37"
+        "agentbuildmanager.js->0->42"
       ]
     },
     {
@@ -97887,7 +98249,7 @@
       "zh-chs": "上传代理文件",
       "zh-cht": "上傳代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->81"
+        "agentbuildmanager.js->0->86"
       ]
     },
     {
@@ -98024,7 +98386,7 @@
       "zh-chs": "上传失败。",
       "zh-cht": "上傳失敗。",
       "xloc": [
-        "agentbuildmanager.js->0->98"
+        "agentbuildmanager.js->0->103"
       ]
     },
     {
@@ -98089,7 +98451,7 @@
       "zh-chs": "上传中断。请重试。",
       "zh-cht": "上傳中斷。請再試一次。",
       "xloc": [
-        "agentbuildmanager.js->0->99"
+        "agentbuildmanager.js->0->104"
       ]
     },
     {
@@ -98405,7 +98767,7 @@
       "zh-chs": "正在上传文件...",
       "zh-cht": "正在上傳檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->95"
+        "agentbuildmanager.js->0->100"
       ]
     },
     {
@@ -98440,7 +98802,7 @@
       "zh-chs": "正在上传...",
       "zh-cht": "正在上傳...",
       "xloc": [
-        "agentbuildmanager.js->0->94"
+        "agentbuildmanager.js->0->99"
       ]
     },
     {
@@ -98694,7 +99056,7 @@
       "zh-chs": "请使用 1 到 20 之间的批次大小。",
       "zh-cht": "請使用介於 1 到 20 之間的批次大小。",
       "xloc": [
-        "agentbuildmanager.js->0->218"
+        "agentbuildmanager.js->0->225"
       ]
     },
     {
@@ -98744,7 +99106,7 @@
       "zh-chs": "用作服务器默认代理",
       "zh-cht": "用作伺服器預設代理",
       "xloc": [
-        "agentbuildmanager.js->0->144"
+        "agentbuildmanager.js->0->150"
       ]
     },
     {
@@ -100902,9 +101264,9 @@
       "zh-cht": "已驗證",
       "xloc": [
         "agentbuildmanager.js->0->17",
-        "agentbuildmanager.js->0->235",
-        "agentbuildmanager.js->0->241",
-        "agentbuildmanager.js->0->253",
+        "agentbuildmanager.js->0->242",
+        "agentbuildmanager.js->0->248",
+        "agentbuildmanager.js->0->260",
         "default.handlebars->121->3267",
         "default3.handlebars->123->3265"
       ]
@@ -101079,7 +101441,7 @@
       "zh-chs": "已验证：{0}",
       "zh-cht": "已驗證：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->227"
+        "agentbuildmanager.js->0->234"
       ]
     },
     {
@@ -101480,7 +101842,7 @@
       "zh-chs": "查看部署",
       "zh-cht": "檢視部署",
       "xloc": [
-        "agentbuildmanager.js->0->209"
+        "agentbuildmanager.js->0->216"
       ]
     },
     {
@@ -103083,7 +103445,7 @@
       "zh-chs": "将发送到预览",
       "zh-cht": "將傳送至預覽",
       "xloc": [
-        "agentbuildmanager.js->0->197"
+        "agentbuildmanager.js->0->204"
       ]
     },
     {
@@ -104126,7 +104488,7 @@
       "zh-chs": "如果无法访问互联网，请通过“上传构建”上传所需的发行版文件，然后在此处恢复缺失的文件。这些文件必须与发行版清单中的哈希值一致。",
       "zh-cht": "若無法存取網際網路，請透過“上傳組建”上傳所需的發行版本檔案，然後在此還原遺失的檔案。這些檔案必須與發行版本清單中的雜湊值相符。",
       "xloc": [
-        "agentbuildmanager.js->0->75"
+        "agentbuildmanager.js->0->80"
       ]
     },
     {
@@ -104161,7 +104523,7 @@
       "zh-chs": "工作流运行文件",
       "zh-cht": "工作流程執行檔案",
       "xloc": [
-        "agentbuildmanager.js->0->315"
+        "agentbuildmanager.js->0->322"
       ]
     },
     {
@@ -104196,8 +104558,8 @@
       "zh-chs": "工作流运行",
       "zh-cht": "工作流程執行",
       "xloc": [
-        "agentbuildmanager.js->0->279",
-        "agentbuildmanager.js->0->311"
+        "agentbuildmanager.js->0->286",
+        "agentbuildmanager.js->0->318"
       ]
     },
     {
@@ -104876,7 +105238,7 @@
       "zh-chs": "您未完成的部署：{0}。服务器最多允许十个，因此在其中一个完成或取消之前，预览可能会被拒绝。",
       "zh-cht": "您未完成的部署：{0}。伺服器最多允許十個，因此在其中一個完成或取消之前，預覽可能會遭到拒絕。",
       "xloc": [
-        "agentbuildmanager.js->0->210"
+        "agentbuildmanager.js->0->217"
       ]
     },
     {
@@ -105850,7 +106212,8 @@
       "zh-chs": "个代理文件",
       "zh-cht": "個代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->102"
+        "agentbuildmanager.js->0->107",
+        "agentbuildmanager.js->0->143"
       ]
     },
     {
@@ -105885,8 +106248,8 @@
       "zh-chs": "个代理文件",
       "zh-cht": "個代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->103",
-        "agentbuildmanager.js->0->138"
+        "agentbuildmanager.js->0->108",
+        "agentbuildmanager.js->0->144"
       ]
     },
     {
@@ -106193,7 +106556,7 @@
       "zh-chs": "个部署",
       "zh-cht": "個部署",
       "xloc": [
-        "agentbuildmanager.js->0->223"
+        "agentbuildmanager.js->0->230"
       ]
     },
     {
@@ -106228,7 +106591,7 @@
       "zh-chs": "个部署",
       "zh-cht": "個部署",
       "xloc": [
-        "agentbuildmanager.js->0->224"
+        "agentbuildmanager.js->0->231"
       ]
     },
     {
@@ -106293,7 +106656,7 @@
       "zh-chs": "台设备已选择",
       "zh-cht": "台裝置已選取",
       "xloc": [
-        "agentbuildmanager.js->0->196"
+        "agentbuildmanager.js->0->203"
       ]
     },
     {
@@ -106356,41 +106719,6 @@
         "default.handlebars->121->3556",
         "default3.handlebars->123->3549",
         "default3.handlebars->123->3552"
-      ]
-    },
-    {
-      "en": "from {{defaultBuild.name}}",
-      "ar": "من البنية {{defaultBuild.name}}",
-      "bs": "iz verzije {{defaultBuild.name}}",
-      "ca": "de {{defaultBuild.name}}",
-      "cs": "ze sestavení {{defaultBuild.name}}",
-      "da": "fra {{defaultBuild.name}}",
-      "de": "aus {{defaultBuild.name}}",
-      "el": "από την έκδοση {{defaultBuild.name}}",
-      "es": "procedente de {{defaultBuild.name}}",
-      "fi": "koontiversiosta {{defaultBuild.name}}",
-      "fr": "provenant de {{defaultBuild.name}}",
-      "he": "מגרסת הבנייה {{defaultBuild.name}}",
-      "hi": "{{defaultBuild.name}} से",
-      "hr": "iz verzije {{defaultBuild.name}}",
-      "hu": "a(z) {{defaultBuild.name}} buildből",
-      "it": "da {{defaultBuild.name}}",
-      "ja": "{{defaultBuild.name}} から",
-      "ko": "{{defaultBuild.name}}에서",
-      "nl": "uit {{defaultBuild.name}}",
-      "pl": "z kompilacji {{defaultBuild.name}}",
-      "pt": "de {{defaultBuild.name}}",
-      "pt-br": "de {{defaultBuild.name}}",
-      "ro": "din {{defaultBuild.name}}",
-      "ru": "из сборки {{defaultBuild.name}}",
-      "sr": "iz verzije {{defaultBuild.name}}",
-      "sv": "från {{defaultBuild.name}}",
-      "tr": "{{defaultBuild.name}} derlemesinden",
-      "uk": "зі збірки {{defaultBuild.name}}",
-      "zh-chs": "来自 {{defaultBuild.name}}",
-      "zh-cht": "來自 {{defaultBuild.name}}",
-      "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->4"
       ]
     },
     {
@@ -107059,7 +107387,7 @@
       "zh-chs": "/",
       "zh-cht": "/",
       "xloc": [
-        "agentbuildmanager.js->0->52"
+        "agentbuildmanager.js->0->57"
       ]
     },
     {
@@ -107212,7 +107540,7 @@
       "zh-chs": "所有者/仓库",
       "zh-cht": "擁有者/存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->276"
+        "agentbuildmanager.js->0->283"
       ]
     },
     {
@@ -107277,7 +107605,7 @@
       "zh-chs": "个发行版文件缺失。",
       "zh-cht": "個發行版本檔案遺失。",
       "xloc": [
-        "agentbuildmanager.js->0->53"
+        "agentbuildmanager.js->0->58"
       ]
     },
     {
@@ -107354,7 +107682,7 @@
       "zh-chs": "此文件大于 64 MiB。",
       "zh-cht": "此檔案大於 64 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->88"
+        "agentbuildmanager.js->0->93"
       ]
     },
     {
@@ -107850,7 +108178,7 @@
       "zh-chs": "{0} 台设备",
       "zh-cht": "{0} 台裝置",
       "xloc": [
-        "agentbuildmanager.js->0->226"
+        "agentbuildmanager.js->0->233"
       ]
     },
     {
@@ -107885,7 +108213,7 @@
       "zh-chs": "{0} 台设备，每批 {1} 台",
       "zh-cht": "{0} 台裝置，每批 {1} 台",
       "xloc": [
-        "agentbuildmanager.js->0->240"
+        "agentbuildmanager.js->0->247"
       ]
     },
     {
@@ -108151,7 +108479,7 @@
       "zh-chs": "{1} 中的 {0} 将重命名为 {2}。之后服务器将提供为此代理类型设为默认值的构建，或其发布文件。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "{1} 中的 {0} 將重新命名為 {2}。之後伺服器將提供為此代理類型設為預設值的組建，或其發行檔案。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->134"
+        "agentbuildmanager.js->0->139"
       ]
     },
     {
@@ -108554,7 +108882,7 @@
       "zh-chs": "{1} 台设备中已有 {0} 台完成，每批 {2} 台",
       "zh-cht": "{1} 台裝置中已有 {0} 台完成，每批 {2} 台",
       "xloc": [
-        "agentbuildmanager.js->0->248"
+        "agentbuildmanager.js->0->255"
       ]
     },
     {
@@ -109537,36 +109865,7 @@
       ]
     },
     {
-      "en": "{{#if ../catalog.countsAvailable}}{{devices}} registered{{else}}",
-      "ar": "{{#if ../catalog.countsAvailable}}المسجّلة: {{devices}}{{else}}",
-      "bs": "{{#if ../catalog.countsAvailable}}Registrovano: {{devices}}{{else}}",
-      "ca": "{{#if ../catalog.countsAvailable}}Registrats: {{devices}}{{else}}",
-      "cs": "{{#if ../catalog.countsAvailable}}Registrováno: {{devices}}{{else}}",
-      "da": "{{#if ../catalog.countsAvailable}}{{devices}} registreret{{else}}",
-      "de": "{{#if ../catalog.countsAvailable}}{{devices}} registriert{{else}}",
-      "el": "{{#if ../catalog.countsAvailable}}Καταχωρισμένες: {{devices}}{{else}}",
-      "es": "{{#if ../catalog.countsAvailable}}Registrados: {{devices}}{{else}}",
-      "fi": "{{#if ../catalog.countsAvailable}}Rekisteröityjä: {{devices}}{{else}}",
-      "fr": "{{#if ../catalog.countsAvailable}}Enregistrés : {{devices}}{{else}}",
-      "he": "{{#if ../catalog.countsAvailable}}{{devices}} רשומים{{else}}",
-      "hi": "{{#if ../catalog.countsAvailable}}{{devices}} पंजीकृत{{else}}",
-      "hr": "{{#if ../catalog.countsAvailable}}Registrirano: {{devices}}{{else}}",
-      "hu": "{{#if ../catalog.countsAvailable}}{{devices}} regisztrált{{else}}",
-      "it": "{{#if ../catalog.countsAvailable}}{{devices}} registrati{{else}}",
-      "ja": "{{#if ../catalog.countsAvailable}}登録済み {{devices}} 台{{else}}",
-      "ko": "{{#if ../catalog.countsAvailable}}{{devices}}대 등록됨{{else}}",
-      "nl": "{{#if ../catalog.countsAvailable}}{{devices}} geregistreerd{{else}}",
-      "pl": "{{#if ../catalog.countsAvailable}}Zarejestrowane: {{devices}}{{else}}",
-      "pt": "{{#if ../catalog.countsAvailable}}{{devices}} registados{{else}}",
-      "pt-br": "{{#if ../catalog.countsAvailable}}{{devices}} registrados{{else}}",
-      "ro": "{{#if ../catalog.countsAvailable}}Înregistrate: {{devices}}{{else}}",
-      "ru": "{{#if ../catalog.countsAvailable}}Зарегистрировано: {{devices}}{{else}}",
-      "sr": "{{#if ../catalog.countsAvailable}}Registrovano: {{devices}}{{else}}",
-      "sv": "{{#if ../catalog.countsAvailable}}Registrerade: {{devices}}{{else}}",
-      "tr": "{{#if ../catalog.countsAvailable}}{{devices}} kayıtlı{{else}}",
-      "uk": "{{#if ../catalog.countsAvailable}}Зареєстровано: {{devices}}{{else}}",
-      "zh-chs": "{{#if ../catalog.countsAvailable}}已注册 {{devices}} 台{{else}}",
-      "zh-cht": "{{#if ../catalog.countsAvailable}}已註冊 {{devices}} 台{{else}}",
+      "en": "{{#if ../catalog.countsAvailable}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5"
       ]
@@ -109628,6 +109927,12 @@
       "en": "{{#if catalog.overrideFolder}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->7"
+      ]
+    },
+    {
+      "en": "{{#if channelIs.stable}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
       ]
     },
     {
@@ -109719,6 +110024,12 @@
       ]
     },
     {
+      "en": "{{#if reports}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9"
+      ]
+    },
+    {
       "en": "{{#if requirements}}{{requirements}}{{else}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->5"
@@ -109728,12 +110039,6 @@
       "en": "{{#if serverDefault.overridden}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1"
-      ]
-    },
-    {
-      "en": "{{#if serverDefault}}",
-      "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
       ]
     },
     {
@@ -109749,15 +110054,21 @@
       ]
     },
     {
-      "en": "{{#if usage.pending}}",
+      "en": "{{#if sourceIs.release}}",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
       ]
     },
     {
-      "en": "{{#if usage.pinned}}",
+      "en": "{{#if type}}",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9"
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3"
+      ]
+    },
+    {
+      "en": "{{#if usage.unreported}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5"
       ]
     },
     {
@@ -109780,7 +110091,6 @@
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->1",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5",
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->1",
@@ -109788,6 +110098,7 @@
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->4",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->5",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9",
         "agentcatalog.handlebars->agentCatalogContent->9->1->3"
@@ -109836,6 +110147,30 @@
       ]
     },
     {
+      "en": "{{/if}}{{#if channelIs.custom}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if channelIs.nightly}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if channelIs.pullrequest}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if channelIs.testing}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
+      ]
+    },
+    {
       "en": "{{/if}}{{#if defaultBuild.overridden}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
@@ -109854,7 +110189,80 @@
       ]
     },
     {
+      "en": "{{/if}}{{#if release}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if reports}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if serverDefault}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.build}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.bundled}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.domain}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.folder}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.local}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.other}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.signed}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if sourceIs.unavailable}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
+      ]
+    },
+    {
       "en": "{{/if}}{{#if usage.pending}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9"
+      ]
+    },
+    {
+      "en": "{{/if}}{{#if usage.pinned}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9"
       ]
@@ -109892,16 +110300,16 @@
       ]
     },
     {
+      "en": "{{/if}}{{else}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5"
+      ]
+    },
+    {
       "en": "{{agentHash}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11->2->1->0",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->13->1"
-      ]
-    },
-    {
-      "en": "{{channel}}",
-      "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->2"
       ]
     },
     {
@@ -109917,9 +110325,53 @@
       ]
     },
     {
+      "en": "{{defaultBuild.name}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->22"
+      ]
+    },
+    {
+      "en": "{{devices}} of this type",
+      "ar": "من هذا النوع: {{devices}}",
+      "bs": "Ovog tipa: {{devices}}",
+      "ca": "D'aquest tipus: {{devices}}",
+      "cs": "Tohoto typu: {{devices}}",
+      "da": "{{devices}} af denne type",
+      "de": "{{devices}} von diesem Typ",
+      "el": "Αυτού του τύπου: {{devices}}",
+      "es": "De este tipo: {{devices}}",
+      "fi": "Tätä tyyppiä: {{devices}}",
+      "fr": "De ce type : {{devices}}",
+      "he": "{{devices}} מסוג זה",
+      "hi": "इस प्रकार के {{devices}}",
+      "hr": "Ove vrste: {{devices}}",
+      "hu": "{{devices}} ilyen típusú",
+      "it": "{{devices}} di questo tipo",
+      "ja": "このタイプ {{devices}} 台",
+      "ko": "이 유형 {{devices}}대",
+      "nl": "{{devices}} van dit type",
+      "pl": "Tego typu: {{devices}}",
+      "pt": "{{devices}} deste tipo",
+      "pt-br": "{{devices}} deste tipo",
+      "ro": "De acest tip: {{devices}}",
+      "ru": "Этого типа: {{devices}}",
+      "sr": "Ovog tipa: {{devices}}",
+      "sv": "Av den här typen: {{devices}}",
+      "tr": "Bu türde {{devices}}",
+      "uk": "Цього типу: {{devices}}",
+      "zh-chs": "此类型 {{devices}} 台",
+      "zh-cht": "此類型 {{devices}} 台",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->2"
+      ]
+    },
+    {
       "en": "{{else}}",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9"
       ]
     },
     {
@@ -109963,7 +110415,7 @@
       "en": "{{name}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->11->5->3->1->3",
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->3",
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->3->1",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->agentBuildName-{{id}}",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->6->1"
       ]
@@ -110006,7 +110458,7 @@
     {
       "en": "{{platform}} / {{cpu}}",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3"
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3->4"
       ]
     },
     {
@@ -110059,7 +110511,7 @@
     {
       "en": "{{release.tag}}",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->2"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->20"
       ]
     },
     {
@@ -110092,15 +110544,15 @@
       ]
     },
     {
-      "en": "{{source}}{{#if release}}",
-      "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7"
-      ]
-    },
-    {
       "en": "{{this}}",
       "xloc": [
         "agentcatalog.handlebars->agentCatalogContent->1"
+      ]
+    },
+    {
+      "en": "{{type}}",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->3->2"
       ]
     },
     {
@@ -110116,39 +110568,39 @@
       ]
     },
     {
-      "en": "{{usage.installed}} installed",
-      "ar": "المثبّتة: {{usage.installed}}",
-      "bs": "Instalirano: {{usage.installed}}",
-      "ca": "Instal·lats: {{usage.installed}}",
-      "cs": "Nainstalováno: {{usage.installed}}",
-      "da": "{{usage.installed}} installeret",
-      "de": "{{usage.installed}} installiert",
-      "el": "Εγκατεστημένο σε {{usage.installed}}",
-      "es": "Instalados: {{usage.installed}}",
-      "fi": "Asennettuja: {{usage.installed}}",
-      "fr": "Installés : {{usage.installed}}",
-      "he": "{{usage.installed}} מותקנים",
-      "hi": "{{usage.installed}} इंस्टॉल किए गए",
-      "hr": "Instalirano: {{usage.installed}}",
-      "hu": "{{usage.installed}} telepítve",
-      "it": "{{usage.installed}} installati",
-      "ja": "インストール済み {{usage.installed}} 台",
-      "ko": "{{usage.installed}}대 설치됨",
-      "nl": "{{usage.installed}} geïnstalleerd",
-      "pl": "Zainstalowane: {{usage.installed}}",
-      "pt": "{{usage.installed}} instalados",
-      "pt-br": "{{usage.installed}} instalados",
-      "ro": "Instalate: {{usage.installed}}",
-      "ru": "Установлено: {{usage.installed}}",
-      "sr": "Instalirano: {{usage.installed}}",
-      "sv": "Installerade: {{usage.installed}}",
-      "tr": "{{usage.installed}} kurulu",
-      "uk": "Інстальовано: {{usage.installed}}",
-      "zh-chs": "已安装 {{usage.installed}} 台",
-      "zh-cht": "已安裝 {{usage.installed}} 台",
+      "en": "{{usage.installed}} running this file",
+      "ar": "تشغّل هذا الملف: {{usage.installed}}",
+      "bs": "Koristi ovaj fajl: {{usage.installed}}",
+      "ca": "Executen aquest fitxer: {{usage.installed}}",
+      "cs": "Používá tento soubor: {{usage.installed}}",
+      "da": "{{usage.installed}} kører denne fil",
+      "de": "{{usage.installed}} verwenden diese Datei",
+      "el": "Εκτελούν αυτό το αρχείο: {{usage.installed}}",
+      "es": "Ejecutan este archivo: {{usage.installed}}",
+      "fi": "Käyttää tätä tiedostoa: {{usage.installed}}",
+      "fr": "Exécutent ce fichier : {{usage.installed}}",
+      "he": "{{usage.installed}} מריצים קובץ זה",
+      "hi": "{{usage.installed}} यह फ़ाइल चला रहे हैं",
+      "hr": "Koristi ovu datoteku: {{usage.installed}}",
+      "hu": "{{usage.installed}} futtatja ezt a fájlt",
+      "it": "{{usage.installed}} eseguono questo file",
+      "ja": "このファイルを実行中 {{usage.installed}} 台",
+      "ko": "{{usage.installed}}대가 이 파일 실행 중",
+      "nl": "{{usage.installed}} draaien dit bestand",
+      "pl": "Korzysta z tego pliku: {{usage.installed}}",
+      "pt": "{{usage.installed}} a executar este ficheiro",
+      "pt-br": "{{usage.installed}} executando este arquivo",
+      "ro": "Rulează acest fișier: {{usage.installed}}",
+      "ru": "Используют этот файл: {{usage.installed}}",
+      "sr": "Koristi ovu datoteku: {{usage.installed}}",
+      "sv": "Kör den här filen: {{usage.installed}}",
+      "tr": "{{usage.installed}} bu dosyayı çalıştırıyor",
+      "uk": "Використовують цей файл: {{usage.installed}}",
+      "zh-chs": "正在运行此文件 {{usage.installed}} 台",
+      "zh-cht": "正在執行此檔案 {{usage.installed}} 台",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->4->0",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->1"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->6->0",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->2"
       ]
     },
     {
@@ -110183,8 +110635,8 @@
       "zh-chs": "等待更新 {{usage.pending}} 台",
       "zh-cht": "等待更新 {{usage.pending}} 台",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->6",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->5"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->12",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->8"
       ]
     },
     {
@@ -110219,7 +110671,7 @@
       "zh-chs": "已固定 {{usage.pinned}} 台",
       "zh-cht": "已固定 {{usage.pinned}} 台",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->3"
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->6"
       ]
     },
     {
@@ -110254,8 +110706,43 @@
       "zh-chs": "未确认 {{usage.unconfirmed}} 台",
       "zh-cht": "未確認 {{usage.unconfirmed}} 台",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->10",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->9"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->16",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->12"
+      ]
+    },
+    {
+      "en": "{{usage.unreported}} not reported yet",
+      "ar": "لم تُبلغ بعد: {{usage.unreported}}",
+      "bs": "Još nije prijavljeno: {{usage.unreported}}",
+      "ca": "Encara no informats: {{usage.unreported}}",
+      "cs": "Zatím nenahlášeno: {{usage.unreported}}",
+      "da": "{{usage.unreported}} ikke rapporteret endnu",
+      "de": "{{usage.unreported}} noch nicht gemeldet",
+      "el": "Χωρίς αναφορά ακόμη: {{usage.unreported}}",
+      "es": "Aún sin notificar: {{usage.unreported}}",
+      "fi": "Ei vielä ilmoitettu: {{usage.unreported}}",
+      "fr": "Pas encore signalés : {{usage.unreported}}",
+      "he": "{{usage.unreported}} טרם דיווחו",
+      "hi": "{{usage.unreported}} ने अभी तक रिपोर्ट नहीं किया",
+      "hr": "Još nije prijavljeno: {{usage.unreported}}",
+      "hu": "{{usage.unreported}} még nem jelentett",
+      "it": "{{usage.unreported}} non ancora segnalati",
+      "ja": "未報告 {{usage.unreported}} 台",
+      "ko": "{{usage.unreported}}대 아직 보고되지 않음",
+      "nl": "{{usage.unreported}} nog niet gemeld",
+      "pl": "Jeszcze nie zgłoszono: {{usage.unreported}}",
+      "pt": "{{usage.unreported}} ainda não comunicados",
+      "pt-br": "{{usage.unreported}} ainda não informados",
+      "ro": "Neraportate încă: {{usage.unreported}}",
+      "ru": "Еще не сообщили: {{usage.unreported}}",
+      "sr": "Još nije prijavljeno: {{usage.unreported}}",
+      "sv": "Inte rapporterat ännu: {{usage.unreported}}",
+      "tr": "{{usage.unreported}} henüz bildirmedi",
+      "uk": "Ще не повідомили: {{usage.unreported}}",
+      "zh-chs": "尚未报告 {{usage.unreported}} 台",
+      "zh-cht": "尚未回報 {{usage.unreported}} 台",
+      "xloc": [
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->8"
       ]
     },
     {
@@ -110290,8 +110777,8 @@
       "zh-chs": "正在更新 {{usage.updating}} 台",
       "zh-cht": "正在更新 {{usage.updating}} 台",
       "xloc": [
-        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->8",
-        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->7"
+        "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->5->14",
+        "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->9->10"
       ]
     },
     {

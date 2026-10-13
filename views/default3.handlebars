@@ -1986,7 +1986,7 @@
                 <div id="p44info">
                     <div id="p44head">
                         <div id="p44title"><div class="fs-4 fw-bold">Agents</div></div>
-                        <div class="areaHead"><div class="agent-catalog-toolbar"><div class="agent-catalog-actions"><input value="Upload build" type="button" class="btn btn-primary btn-sm" onclick="agentManagerOpen('upload')" /><input value="Import build" type="button" class="btn btn-secondary btn-sm" onclick="agentManagerOpen('import')" /><input value="Deployments" type="button" class="btn btn-secondary btn-sm" onclick="agentManagerOpen('jobs')" /><input id="p44defaults" value="Default downloads" type="button" class="btn btn-secondary btn-sm" style="display:none" onclick="agentManagerOpen('defaults')" /></div><div class="agent-catalog-filters"><label for="p44group">Show</label><select id="p44group" onchange="filterAgentCatalog()"><option notransval=1 value="all">All agent files</option><option notransval=1 value="defaults">Current defaults</option><option notransval=1 value="builds">Additional builds</option><option notransval=1 value="bundled">Bundled agents</option><option notransval=1 value="archived">Archived builds</option></select><label for="p44search" class="visually-hidden">Filter agent files</label><input id="p44search" type="search" placeholder="Filter agent files" oninput="filterAgentCatalog()" /><input id="p44refresh" value="Refresh" type="button" class="btn btn-secondary btn-sm" onclick="refreshAgentCatalog()" /></div></div></div>
+                        <div class="areaHead"><div class="agent-catalog-toolbar"><div class="agent-catalog-actions"><input value="Upload build" type="button" class="btn btn-primary btn-sm" onclick="agentManagerOpen('upload')" /><input value="Import build" type="button" class="btn btn-secondary btn-sm" onclick="agentManagerOpen('import')" /><input value="Deployments" type="button" class="btn btn-secondary btn-sm" onclick="agentManagerOpen('jobs')" /><input id="p44defaults" value="Default downloads" type="button" class="btn btn-secondary btn-sm" style="display:none" onclick="agentManagerOpen('defaults')" /></div><div class="agent-catalog-filters"><label for="p44group">Show</label><select id="p44group" onchange="filterAgentCatalog()"><option notransval=1 value="all">All agent files</option><option notransval=1 value="defaults">Current defaults</option><option notransval=1 value="builds">Builds</option><option notransval=1 value="bundled">Bundled agents</option><option notransval=1 value="archived">Archived builds</option></select><label for="p44search" class="visually-hidden">Filter agent files</label><input id="p44search" type="search" placeholder="Filter agent files" oninput="filterAgentCatalog()" /><input id="p44refresh" value="Refresh" type="button" class="btn btn-secondary btn-sm" onclick="refreshAgentCatalog()" /></div></div></div>
                         <p id="p44count" role="status" aria-live="polite"></p>
                         <p id="p44focus"></p>
                         <p id="p44status" role="status" aria-live="polite"></p>
@@ -23567,7 +23567,7 @@
                 var option = message.options[i];
                 if (builds.indexOf(option.id) >= 0) continue;
                 builds.push(option.id);
-                html += '<option value="' + EscapeHtml(option.id) + '">' + EscapeHtml(option.name) + (option.channel ? (' (' + EscapeHtml(option.channel) + ')') : '') + '</option>';
+                html += '<option value="' + EscapeHtml(option.id) + '">' + EscapeHtml(option.name) + (option.channel ? (' (' + EscapeHtml(agentManagerChannel(option.channel)) + ')') : '') + '</option>';
             }
             QH('p10buildRelease', html);
             agentBuildSetMode(selection ? selection.mode : policy.mode);
@@ -23809,7 +23809,8 @@
                 complete(content);
             };
             request.onerror = request.ontimeout = function () { complete(null); };
-            request.open('GET', 'meshagents?catalog=1&fragment=1' + (urlargs.key ? ('&key=' + encodeURIComponent(urlargs.key)) : ''));
+            // A lang in the page URL does not reach this request, so ask for the language the page was rendered in.
+            request.open('GET', 'meshagents?catalog=1&fragment=1' + ('{{{lang}}}' ? '&lang={{{lang}}}' : '') + (urlargs.key ? ('&key=' + encodeURIComponent(urlargs.key)) : ''));
             request.timeout = 15000;
             request.send();
         }

@@ -106,11 +106,23 @@ function agentManagerStage(stage) {
     return ({ preparing: "Checking devices", ready: "Ready", running: "Running", paused: "Paused", cancelling: "Cancelling remaining devices", cancelled: "Cancelled", complete: "Completed", skipped: "Skipped", starting: "Saving policy", waiting: "Waiting for verification", confirmed: "Verified", failed: "Needs attention", pending: "Pending", updating: "Updating", reconnecting: "Waiting for reconnect", unconfirmed: "Not verified", held: "Held", 'default': "Server default" })[stage] || stage;
 }
 function agentManagerModeLabel(mode) { return ({ pin: "Pin a build", hold: "Keep the installed agent file", 'default': "Follow server default" })[mode] || mode; }
+function agentManagerChannel(channel) { return ({ stable: "Stable", testing: "Testing", nightly: "Nightly", 'pull-request': "Pull request", custom: "Custom" })[channel] || channel; }
 function agentManagerRelation(mode) { return ({ pin: "Pinned", hold: "Held", 'default': "Server default" })[mode] || mode; }
 function agentManagerUsageState(row) {
     return (['held', 'default'].indexOf(row.state) >= 0) ? agentManagerRelation(row.mode) : (agentManagerRelation(row.mode) + ' / ' + agentManagerStage(row.state));
 }
-function agentManagerAgentType(id) { return agentsStr[id] || ('' + id); }
+// The server's own type names, taken from catalog data and the loaded catalog page, so a dialog names
+// an agent type the way the catalog does. agentsStr is the fallback and words several of them differently.
+var agentManagerTypes = {};
+function agentManagerLearnTypes(data) {
+    var i, j;
+    for (i = 0; i < (data.defaults || []).length; i++) if (data.defaults[i].name) agentManagerTypes[data.defaults[i].id] = data.defaults[i].name;
+    for (i = 0; i < (data.builds || []).length; i++) for (j = 0; j < data.builds[i].artifacts.length; j++) if (data.builds[i].artifacts[j].type) agentManagerTypes[data.builds[i].artifacts[j].id] = data.builds[i].artifacts[j].type;
+}
+function agentManagerAgentType(id) {
+    var cell = Q('p44content') && Q('p44content').querySelector('[data-agent-type="' + Number(id) + '"]');
+    return agentManagerTypes[id] || (cell && cell.textContent) || agentsStr[id] || ('' + id);
+}
 function agentManagerTargetLevel(state) {
     return (state === 'failed') ? 'agent-error' : ((state === 'skipped') ? 'agent-warn' : ((state === 'confirmed') ? 'agent-match' : ''));
 }
@@ -347,7 +359,7 @@ function agentManagerRequirements(file) {
 }
 function agentManagerUploadReview() {
     var draft = agentManager.draft, files = draft.artifacts, html = '', file, types, i, j;
-    agentManagerSubject("Review agent files", files.length + ' ' + ((files.length === 1) ? "agent file" : "agent files") + (draft.channel ? (' / ' + draft.channel) : ''));
+    agentManagerSubject("Review agent files", files.length + ' ' + ((files.length === 1) ? "agent file" : "agent files") + (draft.channel ? (' / ' + agentManagerChannel(draft.channel)) : ''));
     agentManagerStateLine('', '');
     agentManagerNotice('');
     html += agentManagerControl('agentUploadName', "Build name", '<input id="agentUploadName" type="text" maxlength="128" oninput="agentManagerReviewChanged()" value="' + EscapeHtml(draft.name || files[0].filename) + '" />');
@@ -365,7 +377,7 @@ function agentManagerUploadReview() {
         types = '<select id="agentUploadType' + i + '" onchange="agentManagerReviewChanged()">';
         if (file.candidates.length > 1) types += '<option value="">' + "Select the compiled agent type" + '</option>';
         for (j = 0; j < file.candidates.length; j++) types += '<option value="' + file.candidates[j].id + '">' + EscapeHtml(file.candidates[j].name) + ' (' + file.candidates[j].id + ')</option>';
-        html += agentManagerControl('agentUploadType' + i, "MeshAgent type", types + '</select>');
+        html += agentManagerControl('agentUploadType' + i, "Agent type", types + '</select>');
         html += agentManagerControl('agentUploadKvm' + i, "Desktop support", '<select id="agentUploadKvm' + i + '" onchange="agentManagerReviewChanged()"><option value="">' + "Select" + '</option><option value="yes">' + "Included" + '</option><option value="no">' + "Not included" + '</option></select>');
         if (file.platform === 'windows') {
             html += agentManagerControl('agentUploadSign' + i, "Code signing", '<label><input id="agentUploadSign' + i + '" type="checkbox" onchange="agentManagerReviewChanged()" /> ' + "Code-sign this file with the server certificate" + '</label>');
@@ -438,6 +450,7 @@ function agentManagerDisableOverrideForm() {
 function agentManagerManageForm() {
     agentManagerRun('catalog', { op: 'list' }, function (data) {
         var build = data.builds.filter(function (x) { return x.id === agentManager.build; })[0], options, html;
+        agentManagerLearnTypes(data);
         if (!build) { agentManagerError("This build is no longer in the catalog."); agentManager.submit = null; agentManagerButton("Close", true); return; }
         agentManager.buildInfo = build;
         agentManager.overrideFolder = data.overrideFolder;
@@ -445,7 +458,7 @@ function agentManagerManageForm() {
         agentManager.replaces = (data.defaults || []).filter(function (x) { return x.defaultBuild && (x.defaultBuild.id !== build.id) && build.artifacts.some(function (a) { return a.matches && a.id === x.id; }); }).map(function (x) { return agentManagerAgentType(x.id) + ' (' + x.defaultBuild.name + ')'; });
         var isDefault = (data.defaults || []).some(function (x) { return x.defaultBuild && x.defaultBuild.id === build.id; });
         var canDefault = !build.archived && build.artifacts.some(function (x) { return x.matches; });
-        agentManagerSubject(build.name, build.channel + ' / ' + build.artifacts.length + ' ' + "agent files" + (build.archived ? (' / ' + "Archived") : ''));
+        agentManagerSubject(build.name, agentManagerChannel(build.channel) + ' / ' + build.artifacts.length + ' ' + ((build.artifacts.length === 1) ? "agent file" : "agent files") + (build.archived ? (' / ' + "Archived") : ''));
         agentManagerStateLine(build.archived ? 'agent-warn' : '', build.archived ? "This build is archived." : (isDefault ? "This build supplies the server default agent." : ''));
         options = '<select id="agentManageAction" onchange="agentManagerManageChanged()"><option value="' + (build.archived ? 'restore' : 'archive') + '">' + (build.archived ? "Restore to the catalog" : "Archive this build") + '</option>';
         if (canDefault) options += '<option value="setdefault">' + "Use as the server default agent" + '</option>';
@@ -510,8 +523,8 @@ function agentManagerUsageForm() {
     agentManagerSubject(current.filename || current.label || "Build usage", (current.agentId != null ? agentManagerAgentType(current.agentId) : '') + (current.build ? (' / ' + (current.name || current.build)) : (' / ' + "Current server default")));
     agentManagerStateLine('', '');
     agentManagerNotice('');
-    html = '<div class="agent-manager-toolbar"><label for="agentUsageRelation">' + "Show" + '</label><select id="agentUsageRelation" onchange="agentManagerUsage(0)"><option value="all">' + "All references" + '</option><option value="installed">' + "Reported installed" + '</option><option value="pinned">' + "Pinned" + '</option></select><input id="agentUsageSearch" type="search" placeholder="' + "Filter devices" + '" aria-label="' + "Filter devices" + '" onkeydown="return agentManagerKey(event, agentManagerUsageSearch)" /><button type="button" onclick="agentManagerUsageSearch()">' + "Search" + '</button></div>';
-    html += '<p class="agent-muted">' + "Installed counts use the last agent file hash reported by each device, including offline devices. A device that has not reported a hash is not counted as installed." + '</p><div id="agentUsageRows"></div>';
+    html = '<div class="agent-manager-toolbar"><label for="agentUsageRelation">' + "Show" + '</label><select id="agentUsageRelation" onchange="agentManagerUsage(0)"><option value="all">' + "All references" + '</option><option value="installed">' + "Running this file" + '</option><option value="pinned">' + "Pinned" + '</option></select><input id="agentUsageSearch" type="search" placeholder="' + "Filter devices" + '" aria-label="' + "Filter devices" + '" onkeydown="return agentManagerKey(event, agentManagerUsageSearch)" /><button type="button" onclick="agentManagerUsageSearch()">' + "Search" + '</button></div>';
+    html += '<p class="agent-muted">' + "Counts use the last agent file hash each device reported, so offline devices are included. A device that has not reported a hash yet is not counted as running this file." + '</p><div id="agentUsageRows"></div>';
     agentManagerHtml(html);
     current.submit = null; agentManagerButton("Close", true); agentManagerUsage(0);
 }
@@ -521,7 +534,7 @@ function agentManagerUsage(offset) {
         if ((agentManager !== current) || (current.serial !== seq)) return;
         agentManagerClearError();
         var counts = result.counts, deploying = (counts.pending || 0) + (counts.updating || 0), html = '', row, i;
-        agentBuildHtml('agentManagerCounts', agentManagerCount("Reported installed", counts.installed, counts.installed ? 'agent-match' : '', true) + agentManagerCount("Pinned", counts.pinned, '') + agentManagerCount("Being deployed", deploying, 'agent-warn') + agentManagerCount("Not confirmed", counts.unconfirmed, 'agent-error'));
+        agentBuildHtml('agentManagerCounts', agentManagerCount("Running this file", counts.installed, counts.installed ? 'agent-match' : '', true) + agentManagerCount("Not reported yet", counts.unreported, '') + agentManagerCount("Pinned", counts.pinned, '') + agentManagerCount("Being deployed", deploying, 'agent-warn') + agentManagerCount("Not confirmed", counts.unconfirmed, 'agent-error'));
         for (i = 0; i < result.rows.length; i++) {
             row = result.rows[i];
             html += '<div class="agent-manager-row"><div>' + agentManagerDeviceHtml(row.nodeid, row.name) + '</div><div class="' + agentManagerTargetLevel(row.state) + '">' + EscapeHtml(agentManagerUsageState(row)) + '</div><div class="agent-manager-detail agent-muted">' + (row.online ? "Online" : "Offline") + ' / ' + (row.reportedAt ? printDateTime(new Date(row.reportedAt)) : "No agent file hash reported") + '</div></div>';
@@ -535,6 +548,7 @@ function agentManagerUsage(offset) {
 function agentManagerBulkForm() {
     agentManagerRun('catalog', { op: 'list' }, function (data) {
         var current = agentManager, eligible = [], blocked = 0, unknown = 0, options = '', html, node, i;
+        agentManagerLearnTypes(data);
         current.catalog = data.builds.filter(function (x) { return !x.archived; });
         // Group Action offers this to any full site admin, so the selection can hold devices the server
         // will refuse. An unresolved device stays in: only the preview can judge it.
