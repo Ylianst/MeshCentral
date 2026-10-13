@@ -2940,6 +2940,7 @@
                                         if (isNaN(userSessionId)) continue;
                                         x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick=connectDesktop(event,1,' + userSessionId + ',' + userSessionTag + ')>' + EscapeHtml(userSessions[i].State) + (userSessions[i].StationName ? (', ' + EscapeHtml(userSessions[i].StationName)) : '');
                                         if (userSessions[i].Username) { if (userSessions[i].Domain) { x += ' - ' + EscapeHtml(userSessions[i].Domain) + '/' + EscapeHtml(userSessions[i].Username); } else { x += ' - ' + EscapeHtml(userSessions[i].Username); } }
+                                        if (userSessions[i].Type == 'x11') { x += ' (X11' + (userSessions[i].Display ? (' ' + EscapeHtml(userSessions[i].Display)) : '') + ')'; } else if (userSessions[i].Type == 'wayland') { x += ' (Wayland)'; }
                                         x += '</div>';
                                     }
                                     QH('p11DeskSessionSelector', x);
@@ -9737,7 +9738,7 @@
                         desktop.Start(desktopNode._id, 16994, '*', '*', 0);
                     }
                     desktop.contype = 2;
-                } else if ((contype == null) || (contype == 1) || ((contype == 3) && ((currentNode.agent.id > 4) && ((debugmode == null))))) {
+                } else if ((contype == null) || (contype == 1) || ((contype == 3) && (currentNode.agent.id > 4) && ((currentNode.agent.caps & 512) == 0) && (debugmode == null))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(meshserver, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                     desktop.m.UseExtendedKeyFlag = isWindowsNode(desktopNode);
