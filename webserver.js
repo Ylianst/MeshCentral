@@ -4131,22 +4131,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleManifestRequest(req, res){
         const domain = checkUserIpAddress(req);
         if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
+        if (domain.pwa.disabled == true) { parent.debug('web', 'handleManifestRequest: PWA disabled'); res.sendStatus(404); return; }
         parent.debug('web', 'handleManifestRequest()');
         var manifest = {
-            "name": (domain.title != null) ? domain.title : 'MeshCentral',
-            "short_name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "name": (domain.pwa.name != null) ? domain.pwa.name : 'MeshCentral',
+            "short_name": (domain.pwa.short_name != null) ? domain.pwa.short_name : 'MeshCentral',
             "description": "Open source web based, remote computer management.",
             "scope": ".",
             "start_url": "/",
-            "display": "fullscreen",
-            "orientation": "any",
-            "theme_color": "#ffffff",
-            "background_color": "#ffffff",
-            "icons": [{
+            "display": (domain.pwa.display != null) ? domain.pwa.display : "fullscreen",
+            "orientation": (domain.pwa.orientation != null) ? domain.pwa.orientation : "any",
+            "theme_color": (domain.pwa.themecolor != null) ? domain.pwa.themecolor : "#ffffff",
+            "background_color": (domain.pwa.backgroundcolor != null) ? domain.pwa.backgroundcolor : "#ffffff",
+            "icons": (domain.pwa.icons != null) ? domain.pwa.icons : [{
                 "src": "pwalogo.png",
                 "sizes": "512x512",
                 "type": "image/png"
-            }]
+            }],
+            "shortcuts": domain.pwa.shortcuts
         };
         res.json(manifest);
     }
