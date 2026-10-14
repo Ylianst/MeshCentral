@@ -1180,7 +1180,8 @@ function CreateAgentDeployment(parent, db, catalog, builds) {
         try {
         if (!info.canChange) throw new Error('The device already has an update in progress.');
         if (job.mode !== 'hold' && info.status === 'offline') throw new Error('Device offline. It has not been scheduled.');
-        if (job.mode !== 'hold' && (!info.serverUpdates || info.status === 'disabled')) throw new Error('Agent updates are disabled for this device.');
+        if (job.mode !== 'hold' && !info.serverUpdates) throw new Error('Agent updates are disabled on this server.');
+        if (job.mode !== 'hold' && info.status === 'disabled') throw new Error('This device has disabled agent updates. Check its disableUpdate setting and that the agent service runs with administrator rights.');
         if (job.mode === 'default' && info.defaultAvailable === false) throw new Error('The server default agent file is unavailable.');
         const file = job.files.find(x => x.agentId === info.agentId);
         if (job.mode === 'pin') {

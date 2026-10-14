@@ -126,8 +126,12 @@ function agentManagerAgentType(id) {
 function agentManagerTargetLevel(state) {
     return (state === 'failed') ? 'agent-error' : ((state === 'skipped') ? 'agent-warn' : ((state === 'confirmed') ? 'agent-match' : ''));
 }
+// A preview that skipped every device leaves the job ready with nothing to start.
+function agentManagerJobEmpty(job) { return (job.stage === 'ready') && !(job.counts || {}).ready; }
+function agentManagerJobStage(job) { return agentManagerJobEmpty(job) ? "Nothing to deploy" : agentManagerStage(job.stage); }
 function agentManagerJobLevel(job) {
     if ((job.counts || {}).failed) return 'agent-error';
+    if (agentManagerJobEmpty(job)) return 'agent-warn';
     if (['paused', 'cancelled', 'cancelling'].indexOf(job.stage) >= 0) return 'agent-warn';
     return (job.stage === 'complete') ? 'agent-match' : '';
 }
@@ -593,7 +597,7 @@ function agentManagerBulkCapacity() {
             if ((job.owner === true) && (['complete', 'cancelled'].indexOf(job.stage) < 0)) open.push(job);
         }
         if (open.length < 8) return;
-        for (i = 0; i < open.length; i++) html += '<div class="agent-manager-row"><div><button type="button" class="agent-linkbutton" data-job="' + EscapeHtml(open[i].id) + '" onclick="agentManagerJobOpen(this.getAttribute(\'data-job\'))">' + EscapeHtml(agentManagerJobName(open[i])) + '</button></div><div class="' + agentManagerJobLevel(open[i]) + '">' + EscapeHtml(agentManagerStage(open[i].stage)) + '</div><div class="agent-manager-detail agent-muted">' + printDateTime(new Date(open[i].created)) + '</div></div>';
+        for (i = 0; i < open.length; i++) html += '<div class="agent-manager-row"><div><button type="button" class="agent-linkbutton" data-job="' + EscapeHtml(open[i].id) + '" onclick="agentManagerJobOpen(this.getAttribute(\'data-job\'))">' + EscapeHtml(agentManagerJobName(open[i])) + '</button></div><div class="' + agentManagerJobLevel(open[i]) + '">' + EscapeHtml(agentManagerJobStage(open[i])) + '</div><div class="agent-manager-detail agent-muted">' + printDateTime(new Date(open[i].created)) + '</div></div>';
         agentManagerNotice('<div class="agent-warn">' + format("Your unfinished deployments: {0}. The server allows ten, so a preview can be refused until one is finished or cancelled.", open.length) + '</div><details data-agent-detail="capacity"><summary>' + "Unfinished deployments" + '</summary>' + html + '</details>');
     }).catch(function () {});
 }
@@ -662,7 +666,7 @@ function agentManagerJobs(offset) {
             if (counts.confirmed) detail += '<div class="agent-match">' + format("Verified: {0}", counts.confirmed) + '</div>';
             if (counts.failed) detail += '<div class="agent-error">' + format("Needs attention: {0}", counts.failed) + '</div>';
             if (counts.skipped) detail += '<div class="agent-warn">' + format("Skipped: {0}", counts.skipped) + '</div>';
-            html += '<div class="agent-manager-row"><div><button type="button" class="agent-linkbutton" data-job="' + EscapeHtml(job.id) + '" onclick="agentManagerJobOpen(this.getAttribute(\'data-job\'))">' + EscapeHtml(agentManagerJobName(job)) + '</button></div><div class="' + agentManagerJobLevel(job) + '">' + EscapeHtml(agentManagerStage(job.stage)) + '</div><div class="agent-manager-detail">' + detail + '</div></div>';
+            html += '<div class="agent-manager-row"><div><button type="button" class="agent-linkbutton" data-job="' + EscapeHtml(job.id) + '" onclick="agentManagerJobOpen(this.getAttribute(\'data-job\'))">' + EscapeHtml(agentManagerJobName(job)) + '</button></div><div class="' + agentManagerJobLevel(job) + '">' + EscapeHtml(agentManagerJobStage(job)) + '</div><div class="agent-manager-detail">' + detail + '</div></div>';
         }
         if (!result.jobs.length) html += '<p>' + "No deployment has been created." + '</p>';
         html += agentManagerPager(offset, result.total, 20, 'agentManagerJobs');
@@ -711,7 +715,7 @@ function agentManagerJob(id, offset) {
         var counts = job.counts, done = (counts.confirmed || 0) + (counts.failed || 0) + (counts.skipped || 0) + (counts.cancelled || 0);
         var total = (job.filtered == null) ? job.total : job.filtered, report, html = '', target, state, i;
         agentManagerSubject(agentManagerJobName(job), format("{0} devices, batches of {1}", job.total, job.batchSize) + ' / ' + printDateTime(new Date(job.created)));
-        agentManagerStateLine(agentManagerJobLevel(job), agentManagerStage(job.stage));
+        agentManagerStateLine(agentManagerJobLevel(job), agentManagerJobStage(job));
         agentBuildHtml('agentManagerCounts', agentManagerCount("Verified", counts.confirmed, 'agent-match') + agentManagerCount("In progress", (counts.starting || 0) + (counts.waiting || 0), '') + agentManagerCount("Not started", counts.ready, '') + agentManagerCount("Needs attention", counts.failed, 'agent-error') + agentManagerCount("Skipped", counts.skipped, 'agent-warn') + agentManagerCount("Cancelled", counts.cancelled, ''));
         var notice = '';
         // A cancelled or finished job keeps the text of whatever stopped it, so it reads as history.
@@ -719,7 +723,7 @@ function agentManagerJob(id, offset) {
         if (job.owner === false) notice += '<div class="agent-warn">' + "Another administrator created this deployment. You can pause or cancel it, but only its owner can start or resume it." + '</div>';
         agentManagerNotice(notice);
         report = '<label class="agent-manager-progress">' + format("{0} of {1} devices finished, in batches of {2}", done, job.total, job.batchSize) + '<progress max="' + job.total + '" value="' + done + '"></progress></label>';
-        agentBuildHtml('agentJobReport', report);
+        agentBuildHtml('agentJobReport', agentManagerJobEmpty(job) ? '' : report);
         QV('agentJobPause', ['running', 'preparing'].indexOf(job.stage) >= 0);
         // Nothing has run yet, so there is nothing "remaining" to cancel: the record is only holding one
         // of the ten deployment slots, and discarding it is what frees it.
@@ -750,6 +754,7 @@ function agentManagerJob(id, offset) {
 }
 function agentManagerJobNoticeText(job) {
     if (!job) return '';
+    if (agentManagerJobEmpty(job)) return "Every selected device was skipped, so there is nothing to start. Each device shows why. Discard this deployment and preview again once the cause is fixed.";
     if (['preparing', 'ready'].indexOf(job.stage) >= 0) return "Nothing has changed on any device yet. This deployment stays in the list until you start or discard it.";
     if (['running', 'cancelling', 'paused'].indexOf(job.stage) >= 0) return "Closing this dialog does not stop this deployment. Pause or cancel stops new work. Policies already applied stay in place.";
     return '';

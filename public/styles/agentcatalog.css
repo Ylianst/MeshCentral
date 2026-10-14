@@ -130,7 +130,7 @@
 #p10buildProgress.attention { border-inline-start-color: var(--bs-warning-text-emphasis, #4d3300); }
 #p10buildProgress .agent-progress-title { font-weight: bold; margin-bottom: 4px; }
 #p10buildTransfer { margin-bottom: 10px; }
-#p10buildTransfer progress { display: block; width: 100%; height: 8px; }
+#p10buildTransfer progress { display: block; box-sizing: border-box; width: 100%; height: 8px; }
 #p10agentBuild .agent-build-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #8885; border-top-color: currentColor; border-radius: 50%; margin-inline-end: 8px; vertical-align: -2px; animation: agent-build-spin 1s linear infinite; }
 @keyframes agent-build-spin { to { transform: rotate(360deg); } }
 /* A frozen partial ring reads as a rendering fault, and the panel title already names the state. */
@@ -202,7 +202,9 @@
 #agentManagerBody p { margin: 8px 0; }
 #agentManagerBody summary { cursor: pointer; }
 #agentManagerBody code { overflow-wrap: anywhere; }
-#agentManagerBody progress { display: block; width: 100%; height: 8px; }
+/* Firefox draws a border around progress, so at 100% content width the scroller gains a horizontal
+   scrollbar that also hides the last line. */
+#agentManagerBody progress { display: block; box-sizing: border-box; width: 100%; height: 8px; }
 #agentManagerBody select, #agentManagerBody input[type="text"], #agentManagerBody input[type="url"],
 #agentManagerBody input[type="number"], #agentManagerBody input[type="search"] { width: 100%; min-width: 0; box-sizing: border-box; padding: 3px; }
 #agentManagerBody .agent-muted, #agentManagerBody .agent-build-note { font-size: .9em; opacity: .75; }

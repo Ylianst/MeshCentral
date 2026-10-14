@@ -4691,7 +4691,7 @@
       "zh-chs": "出现失败时会暂停部署。需要安装代理文件时，将跳过离线设备。",
       "zh-cht": "發生失敗時會暫停部署。需要安裝代理檔案時，會略過離線裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->215"
+        "agentbuildmanager.js->0->216"
       ]
     },
     {
@@ -5190,7 +5190,7 @@
       "zh-chs": "关于默认下载",
       "zh-cht": "關於預設下載",
       "xloc": [
-        "agentbuildmanager.js->0->78"
+        "agentbuildmanager.js->0->79"
       ]
     },
     {
@@ -6033,7 +6033,7 @@
       "zh-chs": "操作",
       "zh-cht": "指令",
       "xloc": [
-        "agentbuildmanager.js->0->164",
+        "agentbuildmanager.js->0->165",
         "default-mobile.handlebars->55->1014",
         "default.handlebars->121->1965",
         "default.handlebars->container->column_l->p42->p42tbl->1->0->8",
@@ -7311,7 +7311,7 @@
       "zh-chs": "添加构建",
       "zh-cht": "新增組建",
       "xloc": [
-        "agentbuildmanager.js->0->133"
+        "agentbuildmanager.js->0->134"
       ]
     },
     {
@@ -7468,7 +7468,7 @@
       "zh-chs": "添加于",
       "zh-cht": "新增於",
       "xloc": [
-        "agentbuildmanager.js->0->163",
+        "agentbuildmanager.js->0->164",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->16"
       ]
     },
@@ -7838,7 +7838,7 @@
       "zh-chs": "正在添加构建...",
       "zh-cht": "正在新增組建...",
       "xloc": [
-        "agentbuildmanager.js->0->134"
+        "agentbuildmanager.js->0->135"
       ]
     },
     {
@@ -8814,7 +8814,7 @@
       "zh-chs": "代理部署",
       "zh-cht": "代理部署",
       "xloc": [
-        "agentbuildmanager.js->0->48"
+        "agentbuildmanager.js->0->49"
       ]
     },
     {
@@ -8849,8 +8849,8 @@
       "zh-chs": "代理部署",
       "zh-cht": "代理部署",
       "xloc": [
-        "agentbuildmanager.js->0->229",
-        "agentbuildmanager.js->0->49"
+        "agentbuildmanager.js->0->230",
+        "agentbuildmanager.js->0->50"
       ]
     },
     {
@@ -8915,7 +8915,7 @@
       "zh-chs": "代理下载将立即提供此构建的文件。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "代理下載將立即提供此組建的檔案。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->171"
+        "agentbuildmanager.js->0->172"
       ]
     },
     {
@@ -8993,7 +8993,7 @@
       "zh-chs": "代理文件",
       "zh-cht": "代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->88"
+        "agentbuildmanager.js->0->89"
       ]
     },
     {
@@ -9028,7 +9028,7 @@
       "zh-chs": "{0} 中的代理文件在以下项目上优先于此构建：{1}",
       "zh-cht": "{0} 中的代理檔案在以下項目上優先於此組建：{1}",
       "xloc": [
-        "agentbuildmanager.js->0->174"
+        "agentbuildmanager.js->0->175"
       ]
     },
     {
@@ -9257,7 +9257,7 @@
       "zh-chs": "代理类型",
       "zh-cht": "代理類型",
       "xloc": [
-        "agentbuildmanager.js->0->115",
+        "agentbuildmanager.js->0->116",
         "agentcatalog.handlebars->agentCatalogContent->11->5->1->0->1",
         "agentcatalog.handlebars->agentCatalogContent->11->5->3->1->3->0",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->1",
@@ -9811,7 +9811,7 @@
       "zh-chs": "所有设备",
       "zh-cht": "所有裝置",
       "xloc": [
-        "agentbuildmanager.js->0->239"
+        "agentbuildmanager.js->0->240"
       ]
     },
     {
@@ -9846,7 +9846,7 @@
       "zh-chs": "所有引用",
       "zh-cht": "所有參照",
       "xloc": [
-        "agentbuildmanager.js->0->184"
+        "agentbuildmanager.js->0->185"
       ]
     },
     {
@@ -9881,7 +9881,7 @@
       "zh-chs": "所有发行版文件均已存在。",
       "zh-cht": "所有發行版本檔案皆已存在。",
       "xloc": [
-        "agentbuildmanager.js->0->59"
+        "agentbuildmanager.js->0->60"
       ]
     },
     {
@@ -10633,7 +10633,7 @@
       "zh-chs": "此部署由另一位管理员创建。您可以暂停或取消它，但只有其所有者才能开始或继续它。",
       "zh-cht": "此部署由另一位管理員建立。您可以暫停或取消它，但只有其擁有者才能開始或繼續它。",
       "xloc": [
-        "agentbuildmanager.js->0->254"
+        "agentbuildmanager.js->0->255"
       ]
     },
     {
@@ -11021,7 +11021,7 @@
       "zh-chs": "应用服务器的代理品牌并重新签名",
       "zh-cht": "套用伺服器的代理品牌並重新簽署",
       "xloc": [
-        "agentbuildmanager.js->0->123"
+        "agentbuildmanager.js->0->124"
       ]
     },
     {
@@ -11709,7 +11709,7 @@
       "zh-chs": "归档构建",
       "zh-cht": "封存組建",
       "xloc": [
-        "agentbuildmanager.js->0->180"
+        "agentbuildmanager.js->0->181"
       ]
     },
     {
@@ -11744,7 +11744,7 @@
       "zh-chs": "归档此构建",
       "zh-cht": "封存此組建",
       "xloc": [
-        "agentbuildmanager.js->0->149"
+        "agentbuildmanager.js->0->150"
       ]
     },
     {
@@ -11779,7 +11779,7 @@
       "zh-chs": "已归档",
       "zh-cht": "已封存",
       "xloc": [
-        "agentbuildmanager.js->0->145",
+        "agentbuildmanager.js->0->146",
         "agentcatalog.handlebars->agentCatalogContent->9->1->3->1"
       ]
     },
@@ -11852,7 +11852,7 @@
       "zh-chs": "归档会将此构建从新的选择中隐藏。已固定到此构建的设备会继续运行它，服务器也会保留其存储的副本。",
       "zh-cht": "封存會將此組建從新的選擇中隱藏。已固定到此組建的裝置會繼續執行它，伺服器也會保留其已儲存的副本。",
       "xloc": [
-        "agentbuildmanager.js->0->168"
+        "agentbuildmanager.js->0->169"
       ]
     },
     {
@@ -12541,7 +12541,7 @@
       "zh-chs": "第 {0} 次尝试",
       "zh-cht": "第 {0} 次嘗試",
       "xloc": [
-        "agentbuildmanager.js->0->339"
+        "agentbuildmanager.js->0->341"
       ]
     },
     {
@@ -13075,7 +13075,7 @@
       "zh-chs": "自动下载已禁用。仍可使用本地文件和匹配的已上传构建。",
       "zh-cht": "自動下載已停用。仍可使用本機檔案和相符的已上傳組建。",
       "xloc": [
-        "agentbuildmanager.js->0->75"
+        "agentbuildmanager.js->0->76"
       ]
     },
     {
@@ -13357,7 +13357,7 @@
       "zh-chs": "返回构建列表",
       "zh-cht": "返回組建清單",
       "xloc": [
-        "agentbuildmanager.js->0->306"
+        "agentbuildmanager.js->0->308"
       ]
     },
     {
@@ -13928,7 +13928,7 @@
       "zh-chs": "批次大小",
       "zh-cht": "批次大小",
       "xloc": [
-        "agentbuildmanager.js->0->213"
+        "agentbuildmanager.js->0->214"
       ]
     },
     {
@@ -14051,7 +14051,7 @@
       "zh-chs": "部署中",
       "zh-cht": "部署中",
       "xloc": [
-        "agentbuildmanager.js->0->195"
+        "agentbuildmanager.js->0->196"
       ]
     },
     {
@@ -14271,8 +14271,8 @@
       "zh-chs": "分支或提交",
       "zh-cht": "分支或提交",
       "xloc": [
-        "agentbuildmanager.js->0->289",
-        "agentbuildmanager.js->0->300"
+        "agentbuildmanager.js->0->291",
+        "agentbuildmanager.js->0->302"
       ]
     },
     {
@@ -14307,7 +14307,7 @@
       "zh-chs": "品牌",
       "zh-cht": "品牌",
       "xloc": [
-        "agentbuildmanager.js->0->122"
+        "agentbuildmanager.js->0->123"
       ]
     },
     {
@@ -14565,7 +14565,7 @@
       "zh-chs": "构建",
       "zh-cht": "組建",
       "xloc": [
-        "agentbuildmanager.js->0->211",
+        "agentbuildmanager.js->0->212",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->6",
         "default-mobile.handlebars->55->1145",
         "default.handlebars->121->3615",
@@ -14604,7 +14604,7 @@
       "zh-chs": "构建 ID",
       "zh-cht": "組建 ID",
       "xloc": [
-        "agentbuildmanager.js->0->161",
+        "agentbuildmanager.js->0->162",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->2"
       ]
     },
@@ -14745,7 +14745,7 @@
       "zh-chs": "构建名称",
       "zh-cht": "組建名稱",
       "xloc": [
-        "agentbuildmanager.js->0->109"
+        "agentbuildmanager.js->0->110"
       ]
     },
     {
@@ -14780,8 +14780,8 @@
       "zh-chs": "构建使用情况",
       "zh-cht": "組建使用情況",
       "xloc": [
-        "agentbuildmanager.js->0->181",
-        "agentbuildmanager.js->0->43"
+        "agentbuildmanager.js->0->182",
+        "agentbuildmanager.js->0->44"
       ]
     },
     {
@@ -14816,7 +14816,7 @@
       "zh-chs": "构建",
       "zh-cht": "組建",
       "xloc": [
-        "agentbuildmanager.js->0->284",
+        "agentbuildmanager.js->0->286",
         "default-mobile.handlebars->container->page_content->column_l->p44->p44info->p44head->1->0->1->p44group->2",
         "default.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2",
         "default3.handlebars->container->column_l->p44->p44info->p44head->3->0->1->p44group->2"
@@ -15804,7 +15804,7 @@
       "zh-chs": "取消剩余部分",
       "zh-cht": "取消其餘部分",
       "xloc": [
-        "agentbuildmanager.js->0->257"
+        "agentbuildmanager.js->0->258"
       ]
     },
     {
@@ -15840,7 +15840,7 @@
       "zh-cht": "已取消",
       "xloc": [
         "agentbuildmanager.js->0->12",
-        "agentbuildmanager.js->0->253"
+        "agentbuildmanager.js->0->254"
       ]
     },
     {
@@ -17112,7 +17112,7 @@
       "zh-chs": "检查新发行版",
       "zh-cht": "檢查新發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->62"
+        "agentbuildmanager.js->0->63"
       ]
     },
     {
@@ -17294,7 +17294,7 @@
       "zh-chs": "正在检查设备...",
       "zh-cht": "正在檢查裝置...",
       "xloc": [
-        "agentbuildmanager.js->0->227"
+        "agentbuildmanager.js->0->228"
       ]
     },
     {
@@ -17329,7 +17329,7 @@
       "zh-chs": "检查新发行版不会更改服务器默认值，也不会安装代理。",
       "zh-cht": "檢查新發行版本不會變更伺服器預設值，也不會安裝代理。",
       "xloc": [
-        "agentbuildmanager.js->0->63"
+        "agentbuildmanager.js->0->64"
       ]
     },
     {
@@ -17364,7 +17364,7 @@
       "zh-chs": "正在检查新发行版...",
       "zh-cht": "正在檢查新發行版本...",
       "xloc": [
-        "agentbuildmanager.js->0->61"
+        "agentbuildmanager.js->0->62"
       ]
     },
     {
@@ -18072,8 +18072,8 @@
       "zh-chs": "清除默认值",
       "zh-cht": "清除預設值",
       "xloc": [
-        "agentbuildmanager.js->0->137",
-        "agentbuildmanager.js->0->179",
+        "agentbuildmanager.js->0->138",
+        "agentbuildmanager.js->0->180",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->28"
       ]
     },
@@ -18140,8 +18140,8 @@
       "zh-chs": "清除服务器默认值",
       "zh-cht": "清除伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->135",
-        "agentbuildmanager.js->0->45"
+        "agentbuildmanager.js->0->136",
+        "agentbuildmanager.js->0->46"
       ]
     },
     {
@@ -18275,7 +18275,7 @@
       "zh-chs": "清除此构建提供的服务器默认值",
       "zh-cht": "清除此組建提供的伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->151"
+        "agentbuildmanager.js->0->152"
       ]
     },
     {
@@ -18911,14 +18911,14 @@
       "zh-cht": "關",
       "xloc": [
         "agent-translations.json",
-        "agentbuildmanager.js->0->142",
-        "agentbuildmanager.js->0->191",
-        "agentbuildmanager.js->0->228",
-        "agentbuildmanager.js->0->269",
-        "agentbuildmanager.js->0->50",
-        "agentbuildmanager.js->0->52",
+        "agentbuildmanager.js->0->143",
+        "agentbuildmanager.js->0->192",
+        "agentbuildmanager.js->0->229",
+        "agentbuildmanager.js->0->271",
+        "agentbuildmanager.js->0->51",
         "agentbuildmanager.js->0->53",
-        "agentbuildmanager.js->0->84",
+        "agentbuildmanager.js->0->54",
+        "agentbuildmanager.js->0->85",
         "default-mobile.handlebars->55->1159",
         "default-mobile.handlebars->55->1160",
         "default-mobile.handlebars->55->1240",
@@ -19069,7 +19069,7 @@
       "zh-chs": "关闭此对话框不会停止此部署。暂停或取消会停止新的工作。已应用的政策会保持不变。",
       "zh-cht": "關閉此對話方塊不會停止此部署。暫停或取消會停止新的工作。已套用的政策會維持不變。",
       "xloc": [
-        "agentbuildmanager.js->0->264"
+        "agentbuildmanager.js->0->266"
       ]
     },
     {
@@ -19134,7 +19134,7 @@
       "zh-chs": "代码签名",
       "zh-cht": "程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->120"
+        "agentbuildmanager.js->0->121"
       ]
     },
     {
@@ -19169,7 +19169,7 @@
       "zh-chs": "使用服务器证书对此文件进行代码签名",
       "zh-cht": "使用伺服器憑證對此檔案進行程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->121"
+        "agentbuildmanager.js->0->122"
       ]
     },
     {
@@ -19204,7 +19204,7 @@
       "zh-chs": "已由服务器进行代码签名",
       "zh-cht": "已由伺服器進行程式碼簽署",
       "xloc": [
-        "agentbuildmanager.js->0->157",
+        "agentbuildmanager.js->0->158",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->8"
       ]
     },
@@ -19704,7 +19704,7 @@
       "zh-chs": "请在服务器上配置 GitHub 令牌以下载这些文件。",
       "zh-cht": "請在伺服器上設定 GitHub 權杖以下載這些檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->311"
+        "agentbuildmanager.js->0->313"
       ]
     },
     {
@@ -19739,7 +19739,7 @@
       "zh-chs": "请在服务器上配置 GitHub 令牌以下载工作流工件。",
       "zh-cht": "請在伺服器上設定 GitHub 權杖以下載工作流程成品。",
       "xloc": [
-        "agentbuildmanager.js->0->326"
+        "agentbuildmanager.js->0->328"
       ]
     },
     {
@@ -20068,7 +20068,7 @@
       "zh-chs": "开始此部署前，请确认本地恢复。",
       "zh-cht": "開始此部署前，請確認本機復原。",
       "xloc": [
-        "agentbuildmanager.js->0->266"
+        "agentbuildmanager.js->0->268"
       ]
     },
     {
@@ -20713,7 +20713,7 @@
       "zh-chs": "请确认删除此构建也会清除其服务器默认值。",
       "zh-cht": "請確認移除此組建也會清除其伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->175"
+        "agentbuildmanager.js->0->176"
       ]
     },
     {
@@ -20748,7 +20748,7 @@
       "zh-chs": "请确认您信任这些代理文件。",
       "zh-cht": "請確認您信任這些代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->132"
+        "agentbuildmanager.js->0->133"
       ]
     },
     {
@@ -22127,7 +22127,7 @@
       "zh-chs": "复制构建 ID",
       "zh-cht": "複製組建 ID",
       "xloc": [
-        "agentbuildmanager.js->0->162",
+        "agentbuildmanager.js->0->163",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->2->2"
       ]
     },
@@ -22647,7 +22647,7 @@
       "zh-chs": "数量依据每台设备最后报告的代理文件哈希计算，因此包括离线设备。尚未报告哈希的设备不计为正在运行此文件。",
       "zh-cht": "數量依據每台裝置最後回報的代理檔案雜湊計算，因此包括離線裝置。尚未回報雜湊的裝置不會計為正在執行此檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->190"
+        "agentbuildmanager.js->0->191"
       ]
     },
     {
@@ -23743,7 +23743,7 @@
       "zh-chs": "当前服务器默认值",
       "zh-cht": "目前伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->182"
+        "agentbuildmanager.js->0->183"
       ]
     },
     {
@@ -23778,7 +23778,7 @@
       "zh-chs": "自定义",
       "zh-cht": "自訂",
       "xloc": [
-        "agentbuildmanager.js->0->281",
+        "agentbuildmanager.js->0->283",
         "agentbuildmanager.js->0->32",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->10"
       ]
@@ -23815,7 +23815,7 @@
       "zh-chs": "自定义仓库",
       "zh-cht": "自訂存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->282"
+        "agentbuildmanager.js->0->284"
       ]
     },
     {
@@ -24544,8 +24544,8 @@
       "zh-chs": "默认代理下载",
       "zh-cht": "預設代理下載",
       "xloc": [
-        "agentbuildmanager.js->0->40",
-        "agentbuildmanager.js->0->73"
+        "agentbuildmanager.js->0->41",
+        "agentbuildmanager.js->0->74"
       ]
     },
     {
@@ -25588,8 +25588,8 @@
       "zh-chs": "部署代理构建",
       "zh-cht": "部署代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->202",
-        "agentbuildmanager.js->0->47",
+        "agentbuildmanager.js->0->203",
+        "agentbuildmanager.js->0->48",
         "default-mobile.handlebars->55->572",
         "default.handlebars->121->775",
         "default3.handlebars->123->773"
@@ -26381,7 +26381,7 @@
       "zh-chs": "桌面支持",
       "zh-cht": "桌面支援",
       "xloc": [
-        "agentbuildmanager.js->0->116"
+        "agentbuildmanager.js->0->117"
       ]
     },
     {
@@ -28598,7 +28598,7 @@
       "zh-chs": "未由代理管理、代理更新不可用或您没有完全权限的设备将被排除。",
       "zh-cht": "未由代理管理、代理更新無法使用，或您沒有完整權限的裝置將被排除。",
       "xloc": [
-        "agentbuildmanager.js->0->207"
+        "agentbuildmanager.js->0->208"
       ]
     },
     {
@@ -28944,8 +28944,8 @@
       "zh-chs": "放弃此部署",
       "zh-cht": "捨棄此部署",
       "xloc": [
-        "agentbuildmanager.js->0->256",
-        "agentbuildmanager.js->0->258"
+        "agentbuildmanager.js->0->257",
+        "agentbuildmanager.js->0->259"
       ]
     },
     {
@@ -29910,7 +29910,7 @@
       "zh-chs": "下载",
       "zh-cht": "下載",
       "xloc": [
-        "agentbuildmanager.js->0->160",
+        "agentbuildmanager.js->0->161",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->1->2->0",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->1->6->0",
         "default.handlebars->container->column_l->p13->p13toolbar->1->2->1->3",
@@ -30206,7 +30206,7 @@
       "zh-chs": "下载的 SHA256 已验证",
       "zh-cht": "下載的 SHA256 已驗證",
       "xloc": [
-        "agentbuildmanager.js->0->341"
+        "agentbuildmanager.js->0->343"
       ]
     },
     {
@@ -30241,7 +30241,7 @@
       "zh-chs": "下载 URL",
       "zh-cht": "下載 URL",
       "xloc": [
-        "agentbuildmanager.js->0->275"
+        "agentbuildmanager.js->0->277"
       ]
     },
     {
@@ -30306,7 +30306,7 @@
       "zh-chs": "从 GitHub 或公开的 HTTPS 地址下载代理文件，并在其加入目录前进行审核。",
       "zh-cht": "從 GitHub 或公開的 HTTPS 位址下載代理檔案，並在加入目錄前進行檢閱。",
       "xloc": [
-        "agentbuildmanager.js->0->273"
+        "agentbuildmanager.js->0->275"
       ]
     },
     {
@@ -30341,7 +30341,7 @@
       "zh-chs": "从公开的 HTTPS 地址下载代理文件或 ZIP。下载和解压最多 128 MiB，最多 16 个代理文件，每个文件最多 64 MiB。",
       "zh-cht": "從公開的 HTTPS 位址下載代理檔案或 ZIP。下載及解壓縮最多 128 MiB，最多 16 個代理檔案，每個檔案最多 64 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->279"
+        "agentbuildmanager.js->0->281"
       ]
     },
     {
@@ -30376,8 +30376,8 @@
       "zh-chs": "下载并审核",
       "zh-cht": "下載並檢閱",
       "xloc": [
-        "agentbuildmanager.js->0->296",
-        "agentbuildmanager.js->0->327"
+        "agentbuildmanager.js->0->298",
+        "agentbuildmanager.js->0->329"
       ]
     },
     {
@@ -30926,7 +30926,7 @@
       "zh-chs": "正在下载",
       "zh-cht": "正在下載",
       "xloc": [
-        "agentbuildmanager.js->0->37"
+        "agentbuildmanager.js->0->38"
       ]
     },
     {
@@ -30961,7 +30961,7 @@
       "zh-chs": "正在下载 {0}（第 {1} 个，共 {2} 个）",
       "zh-cht": "正在下載 {0}（第 {1} 個，共 {2} 個）",
       "xloc": [
-        "agentbuildmanager.js->0->336"
+        "agentbuildmanager.js->0->338"
       ]
     },
     {
@@ -30996,7 +30996,7 @@
       "zh-chs": "正在下载...",
       "zh-cht": "正在下載...",
       "xloc": [
-        "agentbuildmanager.js->0->330"
+        "agentbuildmanager.js->0->332"
       ]
     },
     {
@@ -31620,7 +31620,7 @@
       "zh-chs": "每个批次必须完成验证后，才会开始下一个批次。",
       "zh-cht": "每個批次都必須完成驗證，才會開始下一個批次。",
       "xloc": [
-        "agentbuildmanager.js->0->214"
+        "agentbuildmanager.js->0->215"
       ]
     },
     {
@@ -31655,7 +31655,7 @@
       "zh-chs": "每次上传都会添加一个单独的构建，并保留相同文件的早期版本。这不会更改服务器默认值。",
       "zh-cht": "每次上傳都會新增一個獨立的組建，並保留相同檔案的較早版本。這不會變更伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->90"
+        "agentbuildmanager.js->0->91"
       ]
     },
     {
@@ -34419,7 +34419,7 @@
       "zh-chs": "请按“所有者/仓库”格式输入 GitHub 仓库。",
       "zh-cht": "請以“擁有者/存放庫”格式輸入 GitHub 存放庫。",
       "xloc": [
-        "agentbuildmanager.js->0->302"
+        "agentbuildmanager.js->0->304"
       ]
     },
     {
@@ -34454,7 +34454,7 @@
       "zh-chs": "请输入构建名称。",
       "zh-cht": "請輸入組建名稱。",
       "xloc": [
-        "agentbuildmanager.js->0->131"
+        "agentbuildmanager.js->0->132"
       ]
     },
     {
@@ -34638,7 +34638,7 @@
       "zh-chs": "请输入要下载的代理文件或 ZIP 的 HTTPS 地址。",
       "zh-cht": "請輸入要下載的代理檔案或 ZIP 的 HTTPS 位址。",
       "xloc": [
-        "agentbuildmanager.js->0->297"
+        "agentbuildmanager.js->0->299"
       ]
     },
     {
@@ -35274,6 +35274,41 @@
       ]
     },
     {
+      "en": "Every selected device was skipped, so there is nothing to start. Each device shows why. Discard this deployment and preview again once the cause is fixed.",
+      "ar": "تم تخطي كل الأجهزة المحددة، لذا لا يوجد ما يمكن بدؤه. يعرض كل جهاز سبب تخطيه. تجاهل عملية النشر هذه وعاين النشر مرة أخرى بعد إصلاح السبب.",
+      "bs": "Svi odabrani uređaji su preskočeni, pa nema šta da se pokrene. Kod svakog uređaja piše zašto. Odbacite ovu implementaciju i ponovo je pregledajte kada otklonite uzrok.",
+      "ca": "S'han omès tots els dispositius seleccionats, de manera que no hi ha res per iniciar. Cada dispositiu mostra el motiu. Descarteu aquest desplegament i torneu-lo a previsualitzar quan hàgiu resolt la causa.",
+      "cs": "Všechna vybraná zařízení byla přeskočena, takže není co spustit. U každého zařízení je uveden důvod. Zahoďte toto nasazení a po odstranění příčiny zobrazte náhled znovu.",
+      "da": "Alle valgte enheder blev sprunget over, så der er intet at starte. Hver enhed viser hvorfor. Kassér denne udrulning, og forhåndsvis igen, når årsagen er rettet.",
+      "de": "Alle ausgewählten Geräte wurden übersprungen, daher gibt es nichts zu starten. Bei jedem Gerät steht der Grund. Verwerfen Sie diese Bereitstellung und erstellen Sie die Vorschau erneut, sobald die Ursache behoben ist.",
+      "el": "Όλες οι επιλεγμένες συσκευές παραλείφθηκαν, επομένως δεν υπάρχει τίποτα για έναρξη. Κάθε συσκευή δείχνει τον λόγο. Απορρίψτε αυτή την ανάπτυξη και κάντε ξανά προεπισκόπηση μόλις διορθωθεί η αιτία.",
+      "es": "Se omitieron todos los dispositivos seleccionados, así que no hay nada que iniciar. Cada dispositivo muestra el motivo. Descarte este despliegue y vuelva a previsualizarlo cuando haya resuelto la causa.",
+      "fi": "Kaikki valitut laitteet ohitettiin, joten aloitettavaa ei ole. Jokaisen laitteen kohdalla näkyy syy. Hylkää tämä käyttöönotto ja esikatsele uudelleen, kun syy on korjattu.",
+      "fr": "Tous les appareils sélectionnés ont été ignorés, il n'y a donc rien à démarrer. Chaque appareil indique pourquoi. Abandonnez ce déploiement et prévisualisez-le de nouveau une fois la cause corrigée.",
+      "he": "כל המכשירים שנבחרו דולגו, ולכן אין מה להפעיל. ליד כל מכשיר מוצגת הסיבה. השלך פריסה זו והצג שוב תצוגה מקדימה לאחר תיקון הסיבה.",
+      "hi": "चुने गए सभी डिवाइस छोड़ दिए गए, इसलिए शुरू करने के लिए कुछ नहीं है। हर डिवाइस पर कारण दिखाया गया है। यह डिप्लॉयमेंट त्यागें और कारण ठीक होने के बाद फिर से पूर्वावलोकन करें।",
+      "hr": "Svi odabrani uređaji su preskočeni, pa nema što pokrenuti. Kod svakog uređaja piše zašto. Odbacite ovu implementaciju i ponovno je pregledajte kada otklonite uzrok.",
+      "hu": "Az összes kiválasztott eszköz ki lett hagyva, így nincs mit elindítani. Minden eszköznél látható az ok. Vesse el ezt a terítést, és az ok elhárítása után kérjen újra előnézetet.",
+      "it": "Tutti i dispositivi selezionati sono stati saltati, quindi non c'è nulla da avviare. Ogni dispositivo indica il motivo. Scarta questa distribuzione e rifai l'anteprima dopo aver risolto la causa.",
+      "ja": "選択したデバイスはすべてスキップされたため、開始できるものがありません。理由は各デバイスに表示されています。このデプロイを破棄し、原因を解決してから再度プレビューしてください。",
+      "ko": "선택한 장치가 모두 건너뛰어져 시작할 항목이 없습니다. 각 장치에 이유가 표시됩니다. 이 배포를 폐기하고 원인을 해결한 후 다시 미리 보십시오.",
+      "nl": "Alle geselecteerde apparaten zijn overgeslagen, dus er valt niets te starten. Bij elk apparaat staat waarom. Verwerp deze uitrol en bekijk opnieuw een voorbeeld zodra de oorzaak is opgelost.",
+      "pl": "Wszystkie wybrane urządzenia zostały pominięte, więc nie ma czego uruchomić. Przy każdym urządzeniu podano przyczynę. Odrzuć to wdrożenie i ponownie wyświetl podgląd po usunięciu przyczyny.",
+      "pt": "Todos os dispositivos selecionados foram ignorados, pelo que não há nada para iniciar. Cada dispositivo indica o motivo. Descarte esta implementação e pré-visualize-a de novo depois de corrigir a causa.",
+      "pt-br": "Todos os dispositivos selecionados foram ignorados, então não há nada para iniciar. Cada dispositivo mostra o motivo. Descarte esta implantação e pré-visualize novamente depois de corrigir a causa.",
+      "ro": "Toate dispozitivele selectate au fost omise, deci nu există nimic de pornit. Fiecare dispozitiv arată motivul. Renunțați la această implementare și previzualizați din nou după ce remediați cauza.",
+      "ru": "Все выбранные устройства пропущены, поэтому запускать нечего. Причина указана у каждого устройства. Удалите это развертывание и снова выполните предпросмотр после устранения причины.",
+      "sr": "Svi izabrani uređaji su preskočeni, pa nema šta da se pokrene. Kod svakog uređaja piše zašto. Odbacite ovu implementaciju i ponovo je pregledajte kada otklonite uzrok.",
+      "sv": "Alla valda enheter hoppades över, så det finns inget att starta. Varje enhet visar varför. Kassera den här distributionen och förhandsgranska igen när orsaken är åtgärdad.",
+      "tr": "Seçilen tüm cihazlar atlandı, bu yüzden başlatılacak bir şey yok. Her cihazda nedeni gösterilir. Bu dağıtımı atın ve neden giderildikten sonra yeniden önizleyin.",
+      "uk": "Усі вибрані пристрої пропущено, тож запускати нічого. Причину показано біля кожного пристрою. Відкиньте це розгортання й знову виконайте попередній перегляд, коли причину буде усунуто.",
+      "zh-chs": "所有选定的设备都已跳过，因此没有可开始的内容。每台设备都显示了原因。请放弃此部署，并在解决问题后重新预览。",
+      "zh-cht": "所有選定的裝置都已略過，因此沒有可開始的內容。每台裝置都會顯示原因。請捨棄此部署，並在解決問題後重新預覽。",
+      "xloc": [
+        "agentbuildmanager.js->0->264"
+      ]
+    },
+    {
       "bs": "Postojeći račun s ovom adresom e-pošte.",
       "ca": "Compte existent amb aquesta adreça electrònica.",
       "cs": "Tato e-mailová adresa už je používána u jiného účtu.",
@@ -35399,7 +35434,7 @@
       "zh-chs": "预期 SHA256（可选）",
       "zh-cht": "預期 SHA256（選填）",
       "xloc": [
-        "agentbuildmanager.js->0->278"
+        "agentbuildmanager.js->0->280"
       ]
     },
     {
@@ -36597,7 +36632,7 @@
       "zh-chs": "文件名（可选）",
       "zh-cht": "檔名（選填）",
       "xloc": [
-        "agentbuildmanager.js->0->277"
+        "agentbuildmanager.js->0->279"
       ]
     },
     {
@@ -36760,7 +36795,7 @@
       "zh-chs": "文件会先经过检查，然后您才能添加此构建。关闭此对话框将取消导入。",
       "zh-cht": "檔案會先經過檢查，之後您才能新增此組建。關閉此對話方塊將取消匯入。",
       "xloc": [
-        "agentbuildmanager.js->0->329"
+        "agentbuildmanager.js->0->331"
       ]
     },
     {
@@ -36795,7 +36830,7 @@
       "zh-chs": "已选择文件：{0}",
       "zh-cht": "已選取檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->97"
+        "agentbuildmanager.js->0->98"
       ]
     },
     {
@@ -36830,7 +36865,7 @@
       "zh-chs": "压缩包中跳过的文件：{0}",
       "zh-cht": "壓縮檔中略過的檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->113"
+        "agentbuildmanager.js->0->114"
       ]
     },
     {
@@ -36865,7 +36900,7 @@
       "zh-chs": "无法添加的文件：{0}",
       "zh-cht": "無法新增的檔案：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->111"
+        "agentbuildmanager.js->0->112"
       ]
     },
     {
@@ -36984,8 +37019,8 @@
       "zh-chs": "过滤设备",
       "zh-cht": "篩選裝置",
       "xloc": [
-        "agentbuildmanager.js->0->187",
-        "agentbuildmanager.js->0->188"
+        "agentbuildmanager.js->0->188",
+        "agentbuildmanager.js->0->189"
       ]
     },
     {
@@ -37118,9 +37153,9 @@
       "zh-chs": "查找构建",
       "zh-cht": "尋找組建",
       "xloc": [
-        "agentbuildmanager.js->0->295",
-        "agentbuildmanager.js->0->301",
-        "agentbuildmanager.js->0->316"
+        "agentbuildmanager.js->0->297",
+        "agentbuildmanager.js->0->303",
+        "agentbuildmanager.js->0->318"
       ]
     },
     {
@@ -39671,7 +39706,7 @@
       "zh-chs": "GitHub 设置",
       "zh-cht": "GitHub 設定",
       "xloc": [
-        "agentbuildmanager.js->0->292"
+        "agentbuildmanager.js->0->294"
       ]
     },
     {
@@ -39706,7 +39741,7 @@
       "zh-chs": "服务器上已配置 GitHub 令牌。",
       "zh-cht": "伺服器上已設定 GitHub 權杖。",
       "xloc": [
-        "agentbuildmanager.js->0->290"
+        "agentbuildmanager.js->0->292"
       ]
     },
     {
@@ -41034,7 +41069,7 @@
       "zh-chs": "HTTPS URL",
       "zh-cht": "HTTPS URL",
       "xloc": [
-        "agentbuildmanager.js->0->276"
+        "agentbuildmanager.js->0->278"
       ]
     },
     {
@@ -41400,7 +41435,7 @@
       "zh-chs": "哈希值",
       "zh-cht": "雜湊值",
       "xloc": [
-        "agentbuildmanager.js->0->124"
+        "agentbuildmanager.js->0->125"
       ]
     },
     {
@@ -41435,7 +41470,7 @@
       "zh-chs": "文件头可识别平台。代理类型和桌面支持必须与这些文件的构建方式一致。发布者可信度和运行时行为尚未经过验证。",
       "zh-cht": "檔案標頭可識別平台。代理類型和桌面支援必須與這些檔案的建置方式相符。發行者信任度與執行階段行為尚未經過驗證。",
       "xloc": [
-        "agentbuildmanager.js->0->126"
+        "agentbuildmanager.js->0->127"
       ]
     },
     {
@@ -42415,7 +42450,7 @@
       "zh-chs": "我可以在本地恢复这些设备，并接受活动会话被中断。",
       "zh-cht": "我可以在本機復原這些裝置，並接受作用中的工作階段遭到中斷。",
       "xloc": [
-        "agentbuildmanager.js->0->246"
+        "agentbuildmanager.js->0->247"
       ]
     },
     {
@@ -42487,7 +42522,7 @@
       "zh-chs": "我信任这些 MeshAgent 文件，并已检查所选的代理类型。",
       "zh-cht": "我信任這些 MeshAgent 檔案，並已檢查所選的代理類型。",
       "xloc": [
-        "agentbuildmanager.js->0->127"
+        "agentbuildmanager.js->0->128"
       ]
     },
     {
@@ -42522,7 +42557,7 @@
       "zh-chs": "我了解删除此构建也会清除其服务器默认值。",
       "zh-cht": "我了解移除此組建也會清除其伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->166"
+        "agentbuildmanager.js->0->167"
       ]
     },
     {
@@ -43655,9 +43690,9 @@
       "zh-chs": "导入代理构建",
       "zh-cht": "匯入代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->272",
-        "agentbuildmanager.js->0->305",
-        "agentbuildmanager.js->0->41"
+        "agentbuildmanager.js->0->274",
+        "agentbuildmanager.js->0->307",
+        "agentbuildmanager.js->0->42"
       ]
     },
     {
@@ -43759,7 +43794,7 @@
       "zh-chs": "导入已停止。",
       "zh-cht": "匯入已停止。",
       "xloc": [
-        "agentbuildmanager.js->0->331"
+        "agentbuildmanager.js->0->333"
       ]
     },
     {
@@ -43794,7 +43829,7 @@
       "zh-chs": "导入此发行版以审核其文件，并在所选设备上进行测试。",
       "zh-cht": "匯入此發行版本以檢閱其檔案，並在選取的裝置上進行測試。",
       "xloc": [
-        "agentbuildmanager.js->0->67"
+        "agentbuildmanager.js->0->68"
       ]
     },
     {
@@ -43905,8 +43940,8 @@
       "zh-chs": "进行中",
       "zh-cht": "進行中",
       "xloc": [
-        "agentbuildmanager.js->0->241",
-        "agentbuildmanager.js->0->249"
+        "agentbuildmanager.js->0->242",
+        "agentbuildmanager.js->0->250"
       ]
     },
     {
@@ -44001,7 +44036,7 @@
       "zh-chs": "请至少包含一个代理文件。",
       "zh-cht": "請至少包含一個代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->130"
+        "agentbuildmanager.js->0->131"
       ]
     },
     {
@@ -44066,7 +44101,7 @@
       "zh-chs": "包括无法完全检查要求的设备。",
       "zh-cht": "包括無法完整檢查需求的裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->212"
+        "agentbuildmanager.js->0->213"
       ]
     },
     {
@@ -44101,7 +44136,7 @@
       "zh-chs": "已包含",
       "zh-cht": "已包含",
       "xloc": [
-        "agentbuildmanager.js->0->118"
+        "agentbuildmanager.js->0->119"
       ]
     },
     {
@@ -44466,8 +44501,8 @@
       "zh-chs": "正在检查文件...",
       "zh-cht": "正在檢查檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->101",
-        "agentbuildmanager.js->0->335"
+        "agentbuildmanager.js->0->102",
+        "agentbuildmanager.js->0->337"
       ]
     },
     {
@@ -50078,7 +50113,7 @@
       "zh-chs": "上次成功检查",
       "zh-cht": "上次成功檢查",
       "xloc": [
-        "agentbuildmanager.js->0->70"
+        "agentbuildmanager.js->0->71"
       ]
     },
     {
@@ -50203,7 +50238,7 @@
       "zh-chs": "最新稳定发行版",
       "zh-cht": "最新穩定發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->66"
+        "agentbuildmanager.js->0->67"
       ]
     },
     {
@@ -50676,7 +50711,7 @@
       "zh-chs": "已排除",
       "zh-cht": "已排除",
       "xloc": [
-        "agentbuildmanager.js->0->205"
+        "agentbuildmanager.js->0->206"
       ]
     },
     {
@@ -52024,7 +52059,7 @@
       "zh-chs": "正在加载 GitHub 构建...",
       "zh-cht": "正在載入 GitHub 組建...",
       "xloc": [
-        "agentbuildmanager.js->0->304"
+        "agentbuildmanager.js->0->306"
       ]
     },
     {
@@ -52089,7 +52124,7 @@
       "zh-chs": "正在加载文件...",
       "zh-cht": "正在載入檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->82"
+        "agentbuildmanager.js->0->83"
       ]
     },
     {
@@ -52323,7 +52358,7 @@
       "zh-chs": "正在加载新文件。完成后，代理下载将切换到新文件。",
       "zh-cht": "正在載入新檔案。完成後，代理下載將切換至新檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->55"
+        "agentbuildmanager.js->0->56"
       ]
     },
     {
@@ -52352,10 +52387,10 @@
       "zh-chs": "载入中...",
       "zh-cht": "載入中...",
       "xloc": [
-        "agentbuildmanager.js->0->270",
-        "agentbuildmanager.js->0->303",
-        "agentbuildmanager.js->0->51",
-        "agentbuildmanager.js->0->72",
+        "agentbuildmanager.js->0->272",
+        "agentbuildmanager.js->0->305",
+        "agentbuildmanager.js->0->52",
+        "agentbuildmanager.js->0->73",
         "default-mobile.handlebars->55->106",
         "default-mobile.handlebars->55->1163",
         "default-mobile.handlebars->55->1269",
@@ -54763,7 +54798,7 @@
       "zh-chs": "管理代理构建",
       "zh-cht": "管理代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->44",
+        "agentbuildmanager.js->0->45",
         "default-mobile.handlebars->55->496"
       ]
     },
@@ -55038,7 +55073,7 @@
       "zh-chs": "请在默认服务器域中管理共享默认值。",
       "zh-cht": "請在預設伺服器域中管理共用預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->76"
+        "agentbuildmanager.js->0->77"
       ]
     },
     {
@@ -58708,8 +58743,8 @@
       "zh-cht": "需要處理",
       "xloc": [
         "agentbuildmanager.js->0->18",
-        "agentbuildmanager.js->0->240",
-        "agentbuildmanager.js->0->251"
+        "agentbuildmanager.js->0->241",
+        "agentbuildmanager.js->0->252"
       ]
     },
     {
@@ -58744,7 +58779,7 @@
       "zh-chs": "需要处理：{0}",
       "zh-cht": "需要處理：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->235"
+        "agentbuildmanager.js->0->236"
       ]
     },
     {
@@ -59590,7 +59625,7 @@
       "zh-chs": "下一页",
       "zh-cht": "下一頁",
       "xloc": [
-        "agentbuildmanager.js->0->315",
+        "agentbuildmanager.js->0->317",
         "agentbuildmanager.js->0->6"
       ]
     },
@@ -60057,7 +60092,7 @@
       "zh-chs": "未配置 GitHub 令牌。可以浏览公开构建，但 Actions 下载需要服务器令牌。",
       "zh-cht": "未設定 GitHub 權杖。可以瀏覽公開組建，但 Actions 下載需要伺服器權杖。",
       "xloc": [
-        "agentbuildmanager.js->0->291"
+        "agentbuildmanager.js->0->293"
       ]
     },
     {
@@ -60898,7 +60933,7 @@
       "zh-chs": "未报告代理文件哈希",
       "zh-cht": "未回報代理檔案雜湊",
       "xloc": [
-        "agentbuildmanager.js->0->199"
+        "agentbuildmanager.js->0->200"
       ]
     },
     {
@@ -60933,7 +60968,7 @@
       "zh-chs": "此构建没有可用的代理文件。",
       "zh-cht": "此組建沒有可用的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->307"
+        "agentbuildmanager.js->0->309"
       ]
     },
     {
@@ -61104,7 +61139,7 @@
       "zh-chs": "没有可固定的构建。请先上传或导入构建。",
       "zh-cht": "沒有可固定的組建。請先上傳或匯入組建。",
       "xloc": [
-        "agentbuildmanager.js->0->223"
+        "agentbuildmanager.js->0->224"
       ]
     },
     {
@@ -61287,7 +61322,7 @@
       "zh-chs": "未配置默认发行版本。请配置发行版清单或提供本地文件。",
       "zh-cht": "未設定預設發行版本。請設定發行版本清單或提供本機檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->56"
+        "agentbuildmanager.js->0->57"
       ]
     },
     {
@@ -61322,7 +61357,7 @@
       "zh-chs": "尚未创建任何部署。",
       "zh-cht": "尚未建立任何部署。",
       "xloc": [
-        "agentbuildmanager.js->0->237"
+        "agentbuildmanager.js->0->238"
       ]
     },
     {
@@ -61452,7 +61487,7 @@
       "zh-chs": "尚未检查任何设备。",
       "zh-cht": "尚未檢查任何裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->262"
+        "agentbuildmanager.js->0->263"
       ]
     },
     {
@@ -61487,7 +61522,7 @@
       "zh-chs": "没有设备处于此状态。",
       "zh-cht": "沒有裝置處於此狀態。",
       "xloc": [
-        "agentbuildmanager.js->0->261"
+        "agentbuildmanager.js->0->262"
       ]
     },
     {
@@ -61522,7 +61557,7 @@
       "zh-chs": "没有设备匹配此过滤条件。",
       "zh-cht": "沒有裝置符合此篩選條件。",
       "xloc": [
-        "agentbuildmanager.js->0->200"
+        "agentbuildmanager.js->0->201"
       ]
     },
     {
@@ -61557,7 +61592,7 @@
       "zh-chs": "没有设备引用此代理文件。",
       "zh-cht": "沒有裝置參照此代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->201"
+        "agentbuildmanager.js->0->202"
       ]
     },
     {
@@ -61867,7 +61902,7 @@
       "zh-chs": "未提供预期摘要",
       "zh-cht": "未提供預期摘要",
       "xloc": [
-        "agentbuildmanager.js->0->342"
+        "agentbuildmanager.js->0->344"
       ]
     },
     {
@@ -62464,7 +62499,7 @@
       "zh-chs": "不支持远程桌面",
       "zh-cht": "不支援遠端桌面",
       "xloc": [
-        "agentbuildmanager.js->0->154"
+        "agentbuildmanager.js->0->155"
       ]
     },
     {
@@ -62529,7 +62564,7 @@
       "zh-chs": "未找到包含默认代理文件的稳定发行版。",
       "zh-cht": "找不到包含預設代理檔案的穩定發行版本。",
       "xloc": [
-        "agentbuildmanager.js->0->68"
+        "agentbuildmanager.js->0->69"
       ]
     },
     {
@@ -62624,7 +62659,7 @@
       "zh-chs": "此页上没有包含匹配且未过期代理工件的成功运行。",
       "zh-cht": "此頁上沒有包含相符且未過期代理成品的成功執行。",
       "xloc": [
-        "agentbuildmanager.js->0->309"
+        "agentbuildmanager.js->0->311"
       ]
     },
     {
@@ -62845,7 +62880,7 @@
       "zh-chs": "此构建中没有已验证的文件匹配这些代理类型，因此这些设备将被排除",
       "zh-cht": "此組建中沒有已驗證的檔案符合這些代理類型，因此這些裝置將被排除",
       "xloc": [
-        "agentbuildmanager.js->0->221"
+        "agentbuildmanager.js->0->222"
       ]
     },
     {
@@ -63123,7 +63158,7 @@
       "zh-chs": "所选设备均无法进行部署。",
       "zh-cht": "選取的裝置皆無法進行部署。",
       "xloc": [
-        "agentbuildmanager.js->0->222"
+        "agentbuildmanager.js->0->223"
       ]
     },
     {
@@ -63475,7 +63510,7 @@
       "zh-chs": "未添加",
       "zh-cht": "未新增",
       "xloc": [
-        "agentbuildmanager.js->0->112"
+        "agentbuildmanager.js->0->113"
       ]
     },
     {
@@ -63540,8 +63575,8 @@
       "zh-chs": "未检查",
       "zh-cht": "未檢查",
       "xloc": [
-        "agentbuildmanager.js->0->39",
-        "agentbuildmanager.js->0->69",
+        "agentbuildmanager.js->0->40",
+        "agentbuildmanager.js->0->70",
         "default-mobile.handlebars->55->1230",
         "default.handlebars->121->3700",
         "default3.handlebars->123->3696"
@@ -63616,7 +63651,7 @@
       "zh-chs": "未确认",
       "zh-cht": "未確認",
       "xloc": [
-        "agentbuildmanager.js->0->196"
+        "agentbuildmanager.js->0->197"
       ]
     },
     {
@@ -63651,7 +63686,7 @@
       "zh-chs": "未包含",
       "zh-cht": "未包含",
       "xloc": [
-        "agentbuildmanager.js->0->119"
+        "agentbuildmanager.js->0->120"
       ]
     },
     {
@@ -63686,7 +63721,7 @@
       "zh-chs": "未在此会话中加载",
       "zh-cht": "未在此工作階段中載入",
       "xloc": [
-        "agentbuildmanager.js->0->206"
+        "agentbuildmanager.js->0->207"
       ]
     },
     {
@@ -63751,7 +63786,7 @@
       "zh-chs": "尚未报告",
       "zh-cht": "尚未回報",
       "xloc": [
-        "agentbuildmanager.js->0->193"
+        "agentbuildmanager.js->0->194"
       ]
     },
     {
@@ -63818,8 +63853,8 @@
       "zh-chs": "未开始",
       "zh-cht": "未開始",
       "xloc": [
-        "agentbuildmanager.js->0->243",
-        "agentbuildmanager.js->0->250"
+        "agentbuildmanager.js->0->244",
+        "agentbuildmanager.js->0->251"
       ]
     },
     {
@@ -63930,7 +63965,42 @@
       "zh-chs": "尚未更改任何设备。在您开始或放弃此部署之前，它会一直保留在列表中。",
       "zh-cht": "尚未變更任何裝置。在您開始或捨棄此部署之前，它會一直保留在清單中。",
       "xloc": [
-        "agentbuildmanager.js->0->263"
+        "agentbuildmanager.js->0->265"
+      ]
+    },
+    {
+      "en": "Nothing to deploy",
+      "ar": "لا شيء للنشر",
+      "bs": "Nema ništa za implementaciju",
+      "ca": "No hi ha res per desplegar",
+      "cs": "Není co nasadit",
+      "da": "Intet at udrulle",
+      "de": "Nichts bereitzustellen",
+      "el": "Τίποτα για ανάπτυξη",
+      "es": "Nada que desplegar",
+      "fi": "Ei mitään otettavaa käyttöön",
+      "fr": "Rien à déployer",
+      "he": "אין מה לפרוס",
+      "hi": "डिप्लॉय करने के लिए कुछ नहीं",
+      "hr": "Nema ništa za implementaciju",
+      "hu": "Nincs mit teríteni",
+      "it": "Niente da distribuire",
+      "ja": "デプロイ対象がありません",
+      "ko": "배포할 대상 없음",
+      "nl": "Niets uit te rollen",
+      "pl": "Brak elementów do wdrożenia",
+      "pt": "Nada para implementar",
+      "pt-br": "Nada para implantar",
+      "ro": "Nimic de implementat",
+      "ru": "Нечего развертывать",
+      "sr": "Nema ničega za implementaciju",
+      "sv": "Inget att distribuera",
+      "tr": "Dağıtılacak bir şey yok",
+      "uk": "Немає що розгортати",
+      "zh-chs": "没有可部署的内容",
+      "zh-cht": "沒有可部署的內容",
+      "xloc": [
+        "agentbuildmanager.js->0->36"
       ]
     },
     {
@@ -63965,7 +64035,7 @@
       "zh-chs": "未向目录添加任何内容。请重试或关闭此对话框。",
       "zh-cht": "未在目錄中新增任何內容。請再試一次或關閉此對話方塊。",
       "xloc": [
-        "agentbuildmanager.js->0->332"
+        "agentbuildmanager.js->0->334"
       ]
     },
     {
@@ -64545,7 +64615,7 @@
       "zh-chs": "离线",
       "zh-cht": "離線",
       "xloc": [
-        "agentbuildmanager.js->0->198",
+        "agentbuildmanager.js->0->199",
         "default.handlebars->121->1903",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->5",
         "default3.handlebars->123->1900",
@@ -64816,7 +64886,7 @@
       "zh-chs": "在线",
       "zh-cht": "線上",
       "xloc": [
-        "agentbuildmanager.js->0->197",
+        "agentbuildmanager.js->0->198",
         "default-mobile.handlebars->container->page_content->column_l->p2->xdevicesBar->1->7",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->19->1",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->devListToolbar->DevFilterSelect->3",
@@ -65013,7 +65083,7 @@
       "zh-chs": "仅列出包含与以下名称匹配的可用工件的成功运行：",
       "zh-cht": "僅列出包含符合以下名稱之可用成品的成功執行：",
       "xloc": [
-        "agentbuildmanager.js->0->294"
+        "agentbuildmanager.js->0->296"
       ]
     },
     {
@@ -65048,7 +65118,7 @@
       "zh-chs": "只有创建此部署的管理员才能开始或继续它。",
       "zh-cht": "只有建立此部署的管理員才能開始或繼續它。",
       "xloc": [
-        "agentbuildmanager.js->0->265"
+        "agentbuildmanager.js->0->267"
       ]
     },
     {
@@ -65856,7 +65926,7 @@
       "zh-chs": "PR 编号",
       "zh-cht": "PR 編號",
       "xloc": [
-        "agentbuildmanager.js->0->298"
+        "agentbuildmanager.js->0->300"
       ]
     },
     {
@@ -66016,7 +66086,7 @@
       "zh-chs": "第 {0} 页",
       "zh-cht": "第 {0} 頁",
       "xloc": [
-        "agentbuildmanager.js->0->314"
+        "agentbuildmanager.js->0->316"
       ]
     },
     {
@@ -66082,7 +66152,7 @@
       "zh-cht": "分頁",
       "xloc": [
         "agentbuildmanager.js->0->3",
-        "agentbuildmanager.js->0->312"
+        "agentbuildmanager.js->0->314"
       ]
     },
     {
@@ -66854,7 +66924,7 @@
       "zh-chs": "暂停",
       "zh-cht": "暫停",
       "xloc": [
-        "agentbuildmanager.js->0->244",
+        "agentbuildmanager.js->0->245",
         "player.handlebars->p11->deskarea0->deskarea4->3"
       ]
     },
@@ -67811,8 +67881,8 @@
       "zh-chs": "已固定",
       "zh-cht": "已固定",
       "xloc": [
-        "agentbuildmanager.js->0->186",
-        "agentbuildmanager.js->0->194",
+        "agentbuildmanager.js->0->187",
+        "agentbuildmanager.js->0->195",
         "agentbuildmanager.js->0->33"
       ]
     },
@@ -69166,7 +69236,7 @@
       "zh-chs": "预览部署",
       "zh-cht": "預覽部署",
       "xloc": [
-        "agentbuildmanager.js->0->226"
+        "agentbuildmanager.js->0->227"
       ]
     },
     {
@@ -69201,7 +69271,7 @@
       "zh-chs": "上一页",
       "zh-cht": "上一頁",
       "xloc": [
-        "agentbuildmanager.js->0->313",
+        "agentbuildmanager.js->0->315",
         "agentbuildmanager.js->0->4"
       ]
     },
@@ -69946,9 +70016,9 @@
       "zh-chs": "拉取请求",
       "zh-cht": "提取要求",
       "xloc": [
-        "agentbuildmanager.js->0->287",
+        "agentbuildmanager.js->0->289",
         "agentbuildmanager.js->0->31",
-        "agentbuildmanager.js->0->319",
+        "agentbuildmanager.js->0->321",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->8"
       ]
     },
@@ -70961,7 +71031,7 @@
       "zh-chs": "就绪",
       "zh-cht": "就緒",
       "xloc": [
-        "agentbuildmanager.js->0->36",
+        "agentbuildmanager.js->0->37",
         "agentbuildmanager.js->0->8"
       ]
     },
@@ -71109,7 +71179,7 @@
       "zh-chs": "已接收 {0} MiB，共 {1} MiB",
       "zh-cht": "已接收 {0} MiB，共 {1} MiB",
       "xloc": [
-        "agentbuildmanager.js->0->77"
+        "agentbuildmanager.js->0->78"
       ]
     },
     {
@@ -71526,7 +71596,7 @@
       "zh-chs": "刷新",
       "zh-cht": "刷新",
       "xloc": [
-        "agentbuildmanager.js->0->245",
+        "agentbuildmanager.js->0->246",
         "default-mobile.handlebars->55->1143",
         "default-mobile.handlebars->55->1186",
         "default-mobile.handlebars->container->page_content->column_l->p10->p10files->p13toolbar->1->2->1->3",
@@ -72551,7 +72621,7 @@
       "zh-chs": "有新发行版可用",
       "zh-cht": "有新的發行版本可用",
       "xloc": [
-        "agentbuildmanager.js->0->65"
+        "agentbuildmanager.js->0->66"
       ]
     },
     {
@@ -72621,7 +72691,7 @@
       "zh-chs": "发行版文件",
       "zh-cht": "發行版本檔案",
       "xloc": [
-        "agentbuildmanager.js->0->323"
+        "agentbuildmanager.js->0->325"
       ]
     },
     {
@@ -72656,7 +72726,7 @@
       "zh-chs": "发行版更新",
       "zh-cht": "發行版本更新",
       "xloc": [
-        "agentbuildmanager.js->0->60"
+        "agentbuildmanager.js->0->61"
       ]
     },
     {
@@ -72691,8 +72761,8 @@
       "zh-chs": "发行版",
       "zh-cht": "發行版本",
       "xloc": [
-        "agentbuildmanager.js->0->285",
-        "agentbuildmanager.js->0->320"
+        "agentbuildmanager.js->0->287",
+        "agentbuildmanager.js->0->322"
       ]
     },
     {
@@ -73745,7 +73815,7 @@
       "zh-chs": "支持远程桌面",
       "zh-cht": "支援遠端桌面",
       "xloc": [
-        "agentbuildmanager.js->0->153"
+        "agentbuildmanager.js->0->154"
       ]
     },
     {
@@ -74307,7 +74377,7 @@
       "zh-chs": "删除构建",
       "zh-cht": "移除組建",
       "xloc": [
-        "agentbuildmanager.js->0->176"
+        "agentbuildmanager.js->0->177"
       ]
     },
     {
@@ -74434,7 +74504,7 @@
       "zh-chs": "从列表中移除",
       "zh-cht": "從清單中移除",
       "xloc": [
-        "agentbuildmanager.js->0->259"
+        "agentbuildmanager.js->0->260"
       ]
     },
     {
@@ -74665,7 +74735,7 @@
       "zh-chs": "从服务器删除此构建",
       "zh-cht": "從伺服器移除此組建",
       "xloc": [
-        "agentbuildmanager.js->0->152"
+        "agentbuildmanager.js->0->153"
       ]
     },
     {
@@ -75301,7 +75371,7 @@
       "zh-chs": "这将移除对此构建的选择。这些代理类型将回退到其余的服务器、域、发行版或内置默认值。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "這會移除對此組建的選擇。這些代理類型將改用其餘的伺服器、域、發行版本或內建預設值。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->172"
+        "agentbuildmanager.js->0->173"
       ]
     },
     {
@@ -75336,7 +75406,7 @@
       "zh-chs": "这将移除对此构建的选择。此代理类型将回退到其余的服务器、域、发行版或内置默认值。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "這會移除對此組建的選擇。此代理類型將改用其餘的伺服器、域、發行版本或內建預設值。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->136"
+        "agentbuildmanager.js->0->137"
       ]
     },
     {
@@ -75371,7 +75441,7 @@
       "zh-chs": "删除操作会移除此服务器上已上传的文件。只要仍有设备或部署引用此构建，删除就会被拒绝。",
       "zh-cht": "移除會從此伺服器刪除已上傳的檔案。只要仍有裝置或部署參照此組建，移除就會遭到拒絕。",
       "xloc": [
-        "agentbuildmanager.js->0->170"
+        "agentbuildmanager.js->0->171"
       ]
     },
     {
@@ -75739,7 +75809,7 @@
       "zh-chs": "仓库",
       "zh-cht": "存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->280"
+        "agentbuildmanager.js->0->282"
       ]
     },
     {
@@ -76402,8 +76472,8 @@
       "zh-chs": "正在解析下载...",
       "zh-cht": "正在解析下載...",
       "xloc": [
-        "agentbuildmanager.js->0->328",
-        "agentbuildmanager.js->0->334"
+        "agentbuildmanager.js->0->330",
+        "agentbuildmanager.js->0->336"
       ]
     },
     {
@@ -76535,7 +76605,7 @@
       "zh-chs": "恢复构建",
       "zh-cht": "還原組建",
       "xloc": [
-        "agentbuildmanager.js->0->177"
+        "agentbuildmanager.js->0->178"
       ]
     },
     {
@@ -76570,7 +76640,7 @@
       "zh-chs": "恢复缺失的文件",
       "zh-cht": "還原遺失的檔案",
       "xloc": [
-        "agentbuildmanager.js->0->83"
+        "agentbuildmanager.js->0->84"
       ]
     },
     {
@@ -76665,7 +76735,7 @@
       "zh-chs": "恢复到目录",
       "zh-cht": "還原至目錄",
       "xloc": [
-        "agentbuildmanager.js->0->148"
+        "agentbuildmanager.js->0->149"
       ]
     },
     {
@@ -76700,7 +76770,7 @@
       "zh-chs": "恢复文件不会更改设备政策，只会获取此服务器配置要提供的发行版文件。",
       "zh-cht": "還原檔案不會變更裝置政策，只會擷取此伺服器設定要提供的發行版本檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->79"
+        "agentbuildmanager.js->0->80"
       ]
     },
     {
@@ -76735,7 +76805,7 @@
       "zh-chs": "正在恢复文件。下载继续进行时，您可以关闭此对话框。",
       "zh-cht": "正在還原檔案。下載繼續進行時，您可以關閉此對話方塊。",
       "xloc": [
-        "agentbuildmanager.js->0->54"
+        "agentbuildmanager.js->0->55"
       ]
     },
     {
@@ -76770,8 +76840,8 @@
       "zh-chs": "正在恢复文件...",
       "zh-cht": "正在還原檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->71",
-        "agentbuildmanager.js->0->81"
+        "agentbuildmanager.js->0->72",
+        "agentbuildmanager.js->0->82"
       ]
     },
     {
@@ -76806,7 +76876,7 @@
       "zh-chs": "恢复会将此构建放回可固定的构建列表中。",
       "zh-cht": "還原會將此組建放回可固定的組建清單中。",
       "xloc": [
-        "agentbuildmanager.js->0->169"
+        "agentbuildmanager.js->0->170"
       ]
     },
     {
@@ -76904,7 +76974,7 @@
       "zh-chs": "继续剩余部分",
       "zh-cht": "繼續其餘部分",
       "xloc": [
-        "agentbuildmanager.js->0->268"
+        "agentbuildmanager.js->0->270"
       ]
     },
     {
@@ -76939,9 +77009,9 @@
       "zh-chs": "重试",
       "zh-cht": "重試",
       "xloc": [
-        "agentbuildmanager.js->0->271",
-        "agentbuildmanager.js->0->317",
-        "agentbuildmanager.js->0->85"
+        "agentbuildmanager.js->0->273",
+        "agentbuildmanager.js->0->319",
+        "agentbuildmanager.js->0->86"
       ]
     },
     {
@@ -76976,7 +77046,7 @@
       "zh-chs": "改回服务器默认值可能会用较旧的文件替换已安装的代理文件。",
       "zh-cht": "改回伺服器預設值可能會以較舊的檔案取代已安裝的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->210"
+        "agentbuildmanager.js->0->211"
       ]
     },
     {
@@ -77044,7 +77114,7 @@
       "zh-chs": "审核代理文件",
       "zh-cht": "檢閱代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->106"
+        "agentbuildmanager.js->0->107"
       ]
     },
     {
@@ -77079,8 +77149,8 @@
       "zh-chs": "审核文件",
       "zh-cht": "檢閱檔案",
       "xloc": [
-        "agentbuildmanager.js->0->91",
-        "agentbuildmanager.js->0->98"
+        "agentbuildmanager.js->0->92",
+        "agentbuildmanager.js->0->99"
       ]
     },
     {
@@ -77115,7 +77185,7 @@
       "zh-chs": "请在文件成为构建之前，审核检测到的平台、要求和哈希值。",
       "zh-cht": "請在檔案成為組建之前，檢閱偵測到的平台、需求和雜湊值。",
       "xloc": [
-        "agentbuildmanager.js->0->87"
+        "agentbuildmanager.js->0->88"
       ]
     },
     {
@@ -77510,9 +77580,9 @@
       "zh-chs": "运行 ID",
       "zh-cht": "執行 ID",
       "xloc": [
-        "agentbuildmanager.js->0->288",
-        "agentbuildmanager.js->0->299",
-        "agentbuildmanager.js->0->321"
+        "agentbuildmanager.js->0->290",
+        "agentbuildmanager.js->0->301",
+        "agentbuildmanager.js->0->323"
       ]
     },
     {
@@ -77781,7 +77851,7 @@
       "zh-chs": "运行 {0}",
       "zh-cht": "執行 {0}",
       "xloc": [
-        "agentbuildmanager.js->0->338"
+        "agentbuildmanager.js->0->340"
       ]
     },
     {
@@ -77939,8 +78009,8 @@
       "zh-chs": "正在运行此文件",
       "zh-cht": "正在執行此檔案",
       "xloc": [
-        "agentbuildmanager.js->0->185",
-        "agentbuildmanager.js->0->192"
+        "agentbuildmanager.js->0->186",
+        "agentbuildmanager.js->0->193"
       ]
     },
     {
@@ -77975,7 +78045,7 @@
       "zh-chs": "运行时要求尚不完全明确。",
       "zh-cht": "執行階段需求尚未完全確定。",
       "xloc": [
-        "agentbuildmanager.js->0->105"
+        "agentbuildmanager.js->0->106"
       ]
     },
     {
@@ -79607,7 +79677,7 @@
       "zh-chs": "定期发行版检查已禁用。",
       "zh-cht": "排程的發行版本檢查已停用。",
       "xloc": [
-        "agentbuildmanager.js->0->64"
+        "agentbuildmanager.js->0->65"
       ]
     },
     {
@@ -79800,7 +79870,7 @@
       "zh-chs": "搜寻",
       "zh-cht": "搜尋",
       "xloc": [
-        "agentbuildmanager.js->0->189",
+        "agentbuildmanager.js->0->190",
         "default.handlebars->121->1631",
         "default.handlebars->121->3765",
         "default.handlebars->121->869",
@@ -80208,7 +80278,7 @@
       "zh-chs": "请选择",
       "zh-cht": "請選擇",
       "xloc": [
-        "agentbuildmanager.js->0->117"
+        "agentbuildmanager.js->0->118"
       ]
     },
     {
@@ -80750,7 +80820,7 @@
       "zh-chs": "请至少选择一个要部署的代理文件。",
       "zh-cht": "請至少選擇一個要部署的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->224"
+        "agentbuildmanager.js->0->225"
       ]
     },
     {
@@ -80785,8 +80855,8 @@
       "zh-chs": "最多选择 16 个代理文件。",
       "zh-cht": "最多選擇 16 個代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->325",
-        "agentbuildmanager.js->0->95"
+        "agentbuildmanager.js->0->327",
+        "agentbuildmanager.js->0->96"
       ]
     },
     {
@@ -80851,7 +80921,7 @@
       "zh-chs": "请选择要下载的代理文件。",
       "zh-cht": "請選擇要下載的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->324"
+        "agentbuildmanager.js->0->326"
       ]
     },
     {
@@ -80886,8 +80956,8 @@
       "zh-chs": "请选择要上传的代理文件。",
       "zh-cht": "請選擇要上傳的代理檔案。",
       "xloc": [
-        "agentbuildmanager.js->0->92",
-        "agentbuildmanager.js->0->94"
+        "agentbuildmanager.js->0->93",
+        "agentbuildmanager.js->0->95"
       ]
     },
     {
@@ -80922,7 +80992,7 @@
       "zh-chs": "选择所编译的代理类型",
       "zh-cht": "選擇所編譯的代理類型",
       "xloc": [
-        "agentbuildmanager.js->0->114"
+        "agentbuildmanager.js->0->115"
       ]
     },
     {
@@ -80957,7 +81027,7 @@
       "zh-chs": "请选择所编译的代理类型。",
       "zh-cht": "請選擇所編譯的代理類型。",
       "xloc": [
-        "agentbuildmanager.js->0->128"
+        "agentbuildmanager.js->0->129"
       ]
     },
     {
@@ -81132,7 +81202,7 @@
       "zh-chs": "所选设备：{0}",
       "zh-cht": "選取的裝置：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->220"
+        "agentbuildmanager.js->0->221"
       ]
     },
     {
@@ -82712,7 +82782,7 @@
       "zh-chs": "已应用服务器品牌，已重新签名",
       "zh-cht": "已套用伺服器品牌，已重新簽署",
       "xloc": [
-        "agentbuildmanager.js->0->156",
+        "agentbuildmanager.js->0->157",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->6"
       ]
     },
@@ -82748,7 +82818,7 @@
       "zh-chs": "服务器默认值",
       "zh-cht": "伺服器預設值",
       "xloc": [
-        "agentbuildmanager.js->0->155",
+        "agentbuildmanager.js->0->156",
         "agentbuildmanager.js->0->24",
         "agentbuildmanager.js->0->35",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->1->12",
@@ -83511,7 +83581,7 @@
       "zh-chs": "在 config.json 中为此域设置 agentBuilds.github.token，然后重启 MeshCentral。Actions 下载需要 Actions 读取权限，私有发行版需要 Contents 读取权限，查找私有拉取请求需要 Pull requests 读取权限。",
       "zh-cht": "在 config.json 中為此域設定 agentBuilds.github.token，然後重新啟動 MeshCentral。Actions 下載需要 Actions 讀取權限，私人發行版本需要 Contents 讀取權限，查詢私人提取要求需要 Pull requests 讀取權限。",
       "xloc": [
-        "agentbuildmanager.js->0->293"
+        "agentbuildmanager.js->0->295"
       ]
     },
     {
@@ -83546,7 +83616,7 @@
       "zh-chs": "设为默认值",
       "zh-cht": "設為預設值",
       "xloc": [
-        "agentbuildmanager.js->0->178"
+        "agentbuildmanager.js->0->179"
       ]
     },
     {
@@ -84234,8 +84304,8 @@
       "zh-chs": "显示",
       "zh-cht": "顯示",
       "xloc": [
-        "agentbuildmanager.js->0->183",
-        "agentbuildmanager.js->0->238",
+        "agentbuildmanager.js->0->184",
+        "agentbuildmanager.js->0->239",
         "default-mobile.handlebars->container->page_content->column_l->p44->p44info->p44head->1->0->1->0",
         "default.handlebars->container->column_l->p16->3->1->0->5",
         "default.handlebars->container->column_l->p3->3->1->0->5",
@@ -85398,7 +85468,7 @@
       "zh-chs": "上传前已签名",
       "zh-cht": "上傳前已簽署",
       "xloc": [
-        "agentbuildmanager.js->0->158"
+        "agentbuildmanager.js->0->159"
       ]
     },
     {
@@ -85828,7 +85898,7 @@
       "zh-chs": "跳过此代理类型",
       "zh-cht": "略過此代理類型",
       "xloc": [
-        "agentbuildmanager.js->0->219"
+        "agentbuildmanager.js->0->220"
       ]
     },
     {
@@ -85864,7 +85934,7 @@
       "zh-cht": "已略過",
       "xloc": [
         "agentbuildmanager.js->0->14",
-        "agentbuildmanager.js->0->252"
+        "agentbuildmanager.js->0->253"
       ]
     },
     {
@@ -85899,7 +85969,7 @@
       "zh-chs": "已跳过：{0}",
       "zh-cht": "已略過：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->236"
+        "agentbuildmanager.js->0->237"
       ]
     },
     {
@@ -86386,7 +86456,7 @@
       "zh-chs": "部分所选设备未在此会话中加载。预览会在服务器上检查这些设备。",
       "zh-cht": "部分選取的裝置未在此工作階段中載入。預覽會在伺服器上檢查這些裝置。",
       "xloc": [
-        "agentbuildmanager.js->0->208"
+        "agentbuildmanager.js->0->209"
       ]
     },
     {
@@ -86656,7 +86726,7 @@
       "zh-chs": "来源",
       "zh-cht": "來源",
       "xloc": [
-        "agentbuildmanager.js->0->274",
+        "agentbuildmanager.js->0->276",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->3",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->0",
         "default-mobile.handlebars->55->1204",
@@ -86696,7 +86766,7 @@
       "zh-chs": "来源与验证",
       "zh-cht": "來源與驗證",
       "xloc": [
-        "agentbuildmanager.js->0->110",
+        "agentbuildmanager.js->0->111",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->3->0"
       ]
     },
@@ -86732,7 +86802,7 @@
       "zh-chs": "来源提交",
       "zh-cht": "來源提交",
       "xloc": [
-        "agentbuildmanager.js->0->337"
+        "agentbuildmanager.js->0->339"
       ]
     },
     {
@@ -86837,7 +86907,7 @@
       "zh-chs": "来源详情说明文件是从哪里获取的。它们无法证明该代理文件包含哪些源代码，也无法证明其可以安全运行。",
       "zh-cht": "來源詳細資料說明檔案是從哪裡取得的。它們無法證明該代理檔案包含哪些原始程式碼，也無法證明其可安全執行。",
       "xloc": [
-        "agentbuildmanager.js->0->343"
+        "agentbuildmanager.js->0->345"
       ]
     },
     {
@@ -87881,7 +87951,7 @@
       "zh-chs": "可在所选设备上使用“集体指令”，或在移动版设备页面上使用“操作”来开始部署。",
       "zh-cht": "可在選取的裝置上使用“集體指令”，或在行動版裝置頁面上使用“動作”來開始部署。",
       "xloc": [
-        "agentbuildmanager.js->0->232"
+        "agentbuildmanager.js->0->233"
       ]
     },
     {
@@ -87975,7 +88045,7 @@
       "zh-chs": "开始部署",
       "zh-cht": "開始部署",
       "xloc": [
-        "agentbuildmanager.js->0->267"
+        "agentbuildmanager.js->0->269"
       ]
     },
     {
@@ -88717,7 +88787,7 @@
       "zh-chs": "请说明此文件是否包含远程桌面支持。",
       "zh-cht": "請說明此檔案是否包含遠端桌面支援。",
       "xloc": [
-        "agentbuildmanager.js->0->129"
+        "agentbuildmanager.js->0->130"
       ]
     },
     {
@@ -88987,7 +89057,7 @@
       "zh-chs": "停止使用文件",
       "zh-cht": "停止使用檔案",
       "xloc": [
-        "agentbuildmanager.js->0->140"
+        "agentbuildmanager.js->0->141"
       ]
     },
     {
@@ -89022,8 +89092,8 @@
       "zh-chs": "停止使用代理文件夹中的文件",
       "zh-cht": "停止使用代理資料夾中的檔案",
       "xloc": [
-        "agentbuildmanager.js->0->138",
-        "agentbuildmanager.js->0->46"
+        "agentbuildmanager.js->0->139",
+        "agentbuildmanager.js->0->47"
       ]
     },
     {
@@ -90526,7 +90596,7 @@
       "zh-chs": "标签",
       "zh-cht": "標籤",
       "xloc": [
-        "agentbuildmanager.js->0->340"
+        "agentbuildmanager.js->0->342"
       ]
     },
     {
@@ -91925,7 +91995,7 @@
       "zh-chs": "所选文件总大小超过 128 MiB。",
       "zh-cht": "選取的檔案總大小超過 128 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->96"
+        "agentbuildmanager.js->0->97"
       ]
     },
     {
@@ -92272,7 +92342,7 @@
       "zh-chs": "这些发行版文件为新的代理安装提供服务器默认值。",
       "zh-cht": "這些發行版本檔案為新的代理安裝提供伺服器預設值。",
       "xloc": [
-        "agentbuildmanager.js->0->74"
+        "agentbuildmanager.js->0->75"
       ]
     },
     {
@@ -92568,7 +92638,7 @@
       "zh-chs": "此构建已归档。",
       "zh-cht": "此組建已封存。",
       "xloc": [
-        "agentbuildmanager.js->0->146"
+        "agentbuildmanager.js->0->147"
       ]
     },
     {
@@ -92603,7 +92673,7 @@
       "zh-chs": "此构建已不在目录中。",
       "zh-cht": "此組建已不在目錄中。",
       "xloc": [
-        "agentbuildmanager.js->0->141",
+        "agentbuildmanager.js->0->142",
         "default-mobile.handlebars->55->1236",
         "default.handlebars->121->3706",
         "default3.handlebars->123->3702"
@@ -92715,7 +92785,7 @@
       "zh-chs": "此构建提供了服务器默认值。删除它将清除这些选择。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "此組建提供了伺服器預設值。移除它會清除這些選擇。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->165"
+        "agentbuildmanager.js->0->166"
       ]
     },
     {
@@ -92750,7 +92820,7 @@
       "zh-chs": "此构建提供服务器默认代理。",
       "zh-cht": "此組建提供伺服器預設代理。",
       "xloc": [
-        "agentbuildmanager.js->0->147"
+        "agentbuildmanager.js->0->148"
       ]
     },
     {
@@ -92785,7 +92855,7 @@
       "zh-chs": "此构建不是上传到此服务器的，因此无法在此处删除。",
       "zh-cht": "此組建不是上傳至此伺服器的，因此無法在此移除。",
       "xloc": [
-        "agentbuildmanager.js->0->167"
+        "agentbuildmanager.js->0->168"
       ]
     },
     {
@@ -93228,7 +93298,7 @@
       "zh-chs": "这将替换以下项目当前的服务器默认值：{0}",
       "zh-cht": "這將取代以下項目目前的伺服器預設值：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->173"
+        "agentbuildmanager.js->0->174"
       ]
     },
     {
@@ -93263,7 +93333,7 @@
       "zh-chs": "此仓库在此页上没有发行版。请尝试“工作流运行”。",
       "zh-cht": "此存放庫在此頁上沒有發行版本。請嘗試“工作流程執行”。",
       "xloc": [
-        "agentbuildmanager.js->0->308"
+        "agentbuildmanager.js->0->310"
       ]
     },
     {
@@ -95175,7 +95245,7 @@
       "zh-chs": "重试",
       "zh-cht": "再試一次",
       "xloc": [
-        "agentbuildmanager.js->0->333"
+        "agentbuildmanager.js->0->335"
       ]
     },
     {
@@ -95295,7 +95365,7 @@
       "zh-chs": "请尝试下一页。",
       "zh-cht": "請嘗試下一頁。",
       "xloc": [
-        "agentbuildmanager.js->0->310"
+        "agentbuildmanager.js->0->312"
       ]
     },
     {
@@ -96499,7 +96569,7 @@
       "zh-chs": "无法读取上传结果。",
       "zh-cht": "無法讀取上傳結果。",
       "xloc": [
-        "agentbuildmanager.js->0->102"
+        "agentbuildmanager.js->0->103"
       ]
     },
     {
@@ -96656,7 +96726,7 @@
       "zh-chs": "不可用",
       "zh-cht": "無法使用",
       "xloc": [
-        "agentbuildmanager.js->0->38",
+        "agentbuildmanager.js->0->39",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->7->18"
       ]
     },
@@ -96692,7 +96762,7 @@
       "zh-chs": "未完成的部署",
       "zh-cht": "未完成的部署",
       "xloc": [
-        "agentbuildmanager.js->0->218"
+        "agentbuildmanager.js->0->219"
       ]
     },
     {
@@ -97682,7 +97752,7 @@
       "zh-chs": "最多 16 个文件，每个最多 64 MiB，总计最多 128 MiB。",
       "zh-cht": "最多 16 個檔案，每個最多 64 MiB，總計最多 128 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->89"
+        "agentbuildmanager.js->0->90"
       ]
     },
     {
@@ -97782,7 +97852,7 @@
       "zh-chs": "更新 SHA384",
       "zh-cht": "更新 SHA384",
       "xloc": [
-        "agentbuildmanager.js->0->125"
+        "agentbuildmanager.js->0->126"
       ]
     },
     {
@@ -97854,7 +97924,7 @@
       "zh-chs": "更新哈希",
       "zh-cht": "更新雜湊",
       "xloc": [
-        "agentbuildmanager.js->0->159",
+        "agentbuildmanager.js->0->160",
         "agentcatalog.handlebars->agentCatalogContent->7->7->1->0->5",
         "agentcatalog.handlebars->agentCatalogContent->7->7->3->1->11->0",
         "agentcatalog.handlebars->agentCatalogContent->9->1->1->5->3->1->11->3->13"
@@ -97892,7 +97962,7 @@
       "zh-chs": "更新政策",
       "zh-cht": "更新政策",
       "xloc": [
-        "agentbuildmanager.js->0->209",
+        "agentbuildmanager.js->0->210",
         "default-mobile.handlebars->55->1152",
         "default.handlebars->121->3622",
         "default3.handlebars->123->3618"
@@ -98214,7 +98284,7 @@
       "zh-chs": "上传代理构建",
       "zh-cht": "上傳代理組建",
       "xloc": [
-        "agentbuildmanager.js->0->42"
+        "agentbuildmanager.js->0->43"
       ]
     },
     {
@@ -98249,7 +98319,7 @@
       "zh-chs": "上传代理文件",
       "zh-cht": "上傳代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->86"
+        "agentbuildmanager.js->0->87"
       ]
     },
     {
@@ -98386,7 +98456,7 @@
       "zh-chs": "上传失败。",
       "zh-cht": "上傳失敗。",
       "xloc": [
-        "agentbuildmanager.js->0->103"
+        "agentbuildmanager.js->0->104"
       ]
     },
     {
@@ -98451,7 +98521,7 @@
       "zh-chs": "上传中断。请重试。",
       "zh-cht": "上傳中斷。請再試一次。",
       "xloc": [
-        "agentbuildmanager.js->0->104"
+        "agentbuildmanager.js->0->105"
       ]
     },
     {
@@ -98767,7 +98837,7 @@
       "zh-chs": "正在上传文件...",
       "zh-cht": "正在上傳檔案...",
       "xloc": [
-        "agentbuildmanager.js->0->100"
+        "agentbuildmanager.js->0->101"
       ]
     },
     {
@@ -98802,7 +98872,7 @@
       "zh-chs": "正在上传...",
       "zh-cht": "正在上傳...",
       "xloc": [
-        "agentbuildmanager.js->0->99"
+        "agentbuildmanager.js->0->100"
       ]
     },
     {
@@ -99056,7 +99126,7 @@
       "zh-chs": "请使用 1 到 20 之间的批次大小。",
       "zh-cht": "請使用介於 1 到 20 之間的批次大小。",
       "xloc": [
-        "agentbuildmanager.js->0->225"
+        "agentbuildmanager.js->0->226"
       ]
     },
     {
@@ -99106,7 +99176,7 @@
       "zh-chs": "用作服务器默认代理",
       "zh-cht": "用作伺服器預設代理",
       "xloc": [
-        "agentbuildmanager.js->0->150"
+        "agentbuildmanager.js->0->151"
       ]
     },
     {
@@ -101264,9 +101334,9 @@
       "zh-cht": "已驗證",
       "xloc": [
         "agentbuildmanager.js->0->17",
-        "agentbuildmanager.js->0->242",
-        "agentbuildmanager.js->0->248",
-        "agentbuildmanager.js->0->260",
+        "agentbuildmanager.js->0->243",
+        "agentbuildmanager.js->0->249",
+        "agentbuildmanager.js->0->261",
         "default.handlebars->121->3267",
         "default3.handlebars->123->3265"
       ]
@@ -101441,7 +101511,7 @@
       "zh-chs": "已验证：{0}",
       "zh-cht": "已驗證：{0}",
       "xloc": [
-        "agentbuildmanager.js->0->234"
+        "agentbuildmanager.js->0->235"
       ]
     },
     {
@@ -101842,7 +101912,7 @@
       "zh-chs": "查看部署",
       "zh-cht": "檢視部署",
       "xloc": [
-        "agentbuildmanager.js->0->216"
+        "agentbuildmanager.js->0->217"
       ]
     },
     {
@@ -103445,7 +103515,7 @@
       "zh-chs": "将发送到预览",
       "zh-cht": "將傳送至預覽",
       "xloc": [
-        "agentbuildmanager.js->0->204"
+        "agentbuildmanager.js->0->205"
       ]
     },
     {
@@ -104488,7 +104558,7 @@
       "zh-chs": "如果无法访问互联网，请通过“上传构建”上传所需的发行版文件，然后在此处恢复缺失的文件。这些文件必须与发行版清单中的哈希值一致。",
       "zh-cht": "若無法存取網際網路，請透過“上傳組建”上傳所需的發行版本檔案，然後在此還原遺失的檔案。這些檔案必須與發行版本清單中的雜湊值相符。",
       "xloc": [
-        "agentbuildmanager.js->0->80"
+        "agentbuildmanager.js->0->81"
       ]
     },
     {
@@ -104523,7 +104593,7 @@
       "zh-chs": "工作流运行文件",
       "zh-cht": "工作流程執行檔案",
       "xloc": [
-        "agentbuildmanager.js->0->322"
+        "agentbuildmanager.js->0->324"
       ]
     },
     {
@@ -104558,8 +104628,8 @@
       "zh-chs": "工作流运行",
       "zh-cht": "工作流程執行",
       "xloc": [
-        "agentbuildmanager.js->0->286",
-        "agentbuildmanager.js->0->318"
+        "agentbuildmanager.js->0->288",
+        "agentbuildmanager.js->0->320"
       ]
     },
     {
@@ -105238,7 +105308,7 @@
       "zh-chs": "您未完成的部署：{0}。服务器最多允许十个，因此在其中一个完成或取消之前，预览可能会被拒绝。",
       "zh-cht": "您未完成的部署：{0}。伺服器最多允許十個，因此在其中一個完成或取消之前，預覽可能會遭到拒絕。",
       "xloc": [
-        "agentbuildmanager.js->0->217"
+        "agentbuildmanager.js->0->218"
       ]
     },
     {
@@ -106212,8 +106282,8 @@
       "zh-chs": "个代理文件",
       "zh-cht": "個代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->107",
-        "agentbuildmanager.js->0->143"
+        "agentbuildmanager.js->0->108",
+        "agentbuildmanager.js->0->144"
       ]
     },
     {
@@ -106248,8 +106318,8 @@
       "zh-chs": "个代理文件",
       "zh-cht": "個代理檔案",
       "xloc": [
-        "agentbuildmanager.js->0->108",
-        "agentbuildmanager.js->0->144"
+        "agentbuildmanager.js->0->109",
+        "agentbuildmanager.js->0->145"
       ]
     },
     {
@@ -106556,7 +106626,7 @@
       "zh-chs": "个部署",
       "zh-cht": "個部署",
       "xloc": [
-        "agentbuildmanager.js->0->230"
+        "agentbuildmanager.js->0->231"
       ]
     },
     {
@@ -106591,7 +106661,7 @@
       "zh-chs": "个部署",
       "zh-cht": "個部署",
       "xloc": [
-        "agentbuildmanager.js->0->231"
+        "agentbuildmanager.js->0->232"
       ]
     },
     {
@@ -106656,7 +106726,7 @@
       "zh-chs": "台设备已选择",
       "zh-cht": "台裝置已選取",
       "xloc": [
-        "agentbuildmanager.js->0->203"
+        "agentbuildmanager.js->0->204"
       ]
     },
     {
@@ -107387,7 +107457,7 @@
       "zh-chs": "/",
       "zh-cht": "/",
       "xloc": [
-        "agentbuildmanager.js->0->57"
+        "agentbuildmanager.js->0->58"
       ]
     },
     {
@@ -107540,7 +107610,7 @@
       "zh-chs": "所有者/仓库",
       "zh-cht": "擁有者/存放庫",
       "xloc": [
-        "agentbuildmanager.js->0->283"
+        "agentbuildmanager.js->0->285"
       ]
     },
     {
@@ -107605,7 +107675,7 @@
       "zh-chs": "个发行版文件缺失。",
       "zh-cht": "個發行版本檔案遺失。",
       "xloc": [
-        "agentbuildmanager.js->0->58"
+        "agentbuildmanager.js->0->59"
       ]
     },
     {
@@ -107682,7 +107752,7 @@
       "zh-chs": "此文件大于 64 MiB。",
       "zh-cht": "此檔案大於 64 MiB。",
       "xloc": [
-        "agentbuildmanager.js->0->93"
+        "agentbuildmanager.js->0->94"
       ]
     },
     {
@@ -108178,7 +108248,7 @@
       "zh-chs": "{0} 台设备",
       "zh-cht": "{0} 台裝置",
       "xloc": [
-        "agentbuildmanager.js->0->233"
+        "agentbuildmanager.js->0->234"
       ]
     },
     {
@@ -108213,7 +108283,7 @@
       "zh-chs": "{0} 台设备，每批 {1} 台",
       "zh-cht": "{0} 台裝置，每批 {1} 台",
       "xloc": [
-        "agentbuildmanager.js->0->247"
+        "agentbuildmanager.js->0->248"
       ]
     },
     {
@@ -108479,7 +108549,7 @@
       "zh-chs": "{1} 中的 {0} 将重命名为 {2}。之后服务器将提供为此代理类型设为默认值的构建，或其发布文件。跟随默认值的设备可能会在重新连接时更新。",
       "zh-cht": "{1} 中的 {0} 將重新命名為 {2}。之後伺服器將提供為此代理類型設為預設值的組建，或其發行檔案。遵循預設值的裝置可能會在重新連線時更新。",
       "xloc": [
-        "agentbuildmanager.js->0->139"
+        "agentbuildmanager.js->0->140"
       ]
     },
     {
@@ -108882,7 +108952,7 @@
       "zh-chs": "{1} 台设备中已有 {0} 台完成，每批 {2} 台",
       "zh-cht": "{1} 台裝置中已有 {0} 台完成，每批 {2} 台",
       "xloc": [
-        "agentbuildmanager.js->0->255"
+        "agentbuildmanager.js->0->256"
       ]
     },
     {
