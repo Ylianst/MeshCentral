@@ -1024,7 +1024,13 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
                     if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
-                    if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
+                    if (obj.args.recordencryptionrecode) {
+                        obj.db.performRecordEncryptionRecode(function (count, err) {
+                            if (err) { console.error('Record encryption recode failed after ' + count + ' record(s): ' + err); process.exit(1); return; }
+                            console.log('Re-encoded ' + count + ' record(s).'); process.exit();
+                        });
+                        return;
+                    }
                     if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
                     if (obj.args.migratevolumeinfo) { require('./migrate-volume-info.js').migrateVolumeInfo(obj.db, function (err, r) { if (err != null) { console.log('Volume info migration error: ' + err); } else { console.log('Volume info migration complete. Scanned ' + r.scanned + ' sysinfo document(s), migrated ' + r.migrated + ', moved ' + r.keysMoved + ' key(s).'); } process.exit(); }); return; }
                     if (obj.args.createaccount) { // Create a new user account
