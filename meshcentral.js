@@ -1961,7 +1961,12 @@ function CreateMeshCentralServer(config, args) {
             }
         } catch (ex) { }
 
-        if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
+        if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) {
+            for (i in obj.meshAgentsArchitectureNumbers) {
+                obj.meshAgentsArchitectureNumbers[i].manualUpdate = obj.meshAgentsArchitectureNumbers[i].update;
+                obj.meshAgentsArchitectureNumbers[i].update = false;
+            }
+        }
 
         // Load any domain specific agents
         for (var i in obj.config.domains) { if ((i != '') && (obj.config.domains[i].share == null)) { await new Promise(function (resolve) { obj.updateMeshAgentsTable(obj.config.domains[i], resolve); }); } }
