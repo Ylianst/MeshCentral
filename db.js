@@ -3624,10 +3624,10 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function fileBulkWriteCompleted() {
+    function fileBulkWriteCompleted(err) {
         // Callbacks
         if (obj.filePendingCbs != null) {
-            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](); } }
+            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](err); } }
             obj.filePendingCbs = null;
         }
         if (obj.filePendingSets != null) {
