@@ -6329,14 +6329,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 return;
             }
             if (req.query.fragment != '1') { res.redirect(domain.url + '?viewmode=44' + key); return; }
-            Promise.all([agentCatalog.getCatalog(domain), new Promise(function (resolve) {
-                db.GetAgentTypeCounts(domain.id, function (err, counts) { resolve(err ? null : counts); });
-            })]).then(async function (results) {
-                const catalog = results[0], counts = results[1];
+            agentCatalog.getCatalog(domain).then(async function (catalog) {
                 if (obj.agentBuildUsage) await obj.agentBuildUsage.catalogUsage(domain, catalog);
-                for (const agent of catalog.defaults) agent.devices = counts == null ? null : (counts[agent.id] || 0);
-                catalog.defaults.sort(function (a, b) { return b.devices - a.devices || a.id - b.id; });
-                catalog.countsAvailable = counts != null;
                 render(req, res, getRenderPage('agentcatalog', req, domain), getRenderArgs({
                     catalog: catalog, serverVersion: parent.currentVer, lang: 'en', catalogUrl: domain.url + 'meshagents?catalog=1' + key
                 }, req, domain), user);

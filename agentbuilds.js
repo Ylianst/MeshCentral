@@ -662,9 +662,10 @@ function CreateAgentBuildUsage(parent, db) {
         return true;
     }
     function counts(rows, query) {
-        const result = { installed: 0, pinned: 0, pending: 0, updating: 0, unconfirmed: 0, unreported: 0 };
+        const result = { devices: 0, installed: 0, pinned: 0, pending: 0, updating: 0, unconfirmed: 0, unreported: 0 };
         for (const row of rows) {
             if (query.agentId != null && row.agentId !== query.agentId) continue;
+            result.devices++;
             if (!row.hash) result.unreported++;
             if (query.hash && row.hash === query.hash) result.installed++;
             if (row.mode === 'pin' && row.build === query.build && (!query.filename || row.filename === query.filename)) result.pinned++;
@@ -701,7 +702,10 @@ function CreateAgentBuildUsage(parent, db) {
             const artifact = build && build.artifacts.find(x => x.id === record.agentId && x.filename === record.filename);
             if (artifact) { artifact.serverDefault = file.defaultBuild; build.serverDefault = true; }
         }
-        for (const file of catalog.defaults) file.usage = counts(rows, { hash: file.agentHash, agentId: file.id });
+        // The snapshot already holds every agent-managed device in the domain, so it supplies the per-type counts too.
+        for (const file of catalog.defaults) { file.usage = counts(rows, { hash: file.agentHash, agentId: file.id }); file.devices = file.usage.devices; }
+        catalog.defaults.sort((a, b) => (b.devices - a.devices) || (a.id - b.id));
+        catalog.countsAvailable = true;
         for (const build of catalog.builds) for (const file of build.artifacts) file.usage = counts(rows, { hash: file.agentHash, agentId: file.id, build: build.id, filename: file.filename });
         catalog.builds.sort((a, b) => (!!b.serverDefault - !!a.serverDefault) || newestFirst(a, b));
         return catalog;
