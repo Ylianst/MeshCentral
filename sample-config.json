@@ -24,7 +24,7 @@
     }
   },
   "_letsencrypt": {
-    "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt. email: the account email address used to register with Let's Encrypt. names: comma-separated list of DNS names to request a certificate for. skipChallengeVerification: skip MeshCentral's own local pre-check of the HTTP challenge before asking Let's Encrypt to verify it - useful when you are confident DNS/port-forwarding is correct but a local firewall rule blocks the server from verifying its own challenge. production: set to true to use Let's Encrypt's production API; keep as false while testing to avoid hitting Let's Encrypt's production rate limits.",
+    "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt. email: the account email address used to register with Let's Encrypt. names: comma-separated list of DNS names to request a certificate for. skipChallengeVerification: when true, passed to the Let's Encrypt client as skipChallengeVerification (default false).  production: set to true to use Let's Encrypt's production API; keep as false while testing to avoid hitting Let's Encrypt's production rate limits.",
     "email": "myemail@mydomain.com",
     "names": "myserver.mydomain.com",
     "skipChallengeVerification": true,
