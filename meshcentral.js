@@ -1024,7 +1024,13 @@ function CreateMeshCentralServer(config, args) {
                     if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
                     if (obj.args.logintokenkey) { obj.showLoginTokenKey(function (r) { console.log(r); process.exit(); }); return; }
-                    if (obj.args.recordencryptionrecode) { obj.db.performRecordEncryptionRecode(function (count) { console.log('Re-encoded ' + count + ' record(s).'); process.exit(); }); return; }
+                    if (obj.args.recordencryptionrecode) {
+                        obj.db.performRecordEncryptionRecode(function (count, err) {
+                            if (err) { console.error('Record encryption recode failed after ' + count + ' record(s): ' + err); process.exit(1); return; }
+                            console.log('Re-encoded ' + count + ' record(s).'); process.exit();
+                        });
+                        return;
+                    }
                     if (obj.args.dbstats) { obj.db.getDbStats(function (stats) { console.log(stats); process.exit(); }); return; }
                     if (obj.args.migratevolumeinfo) { require('./migrate-volume-info.js').migrateVolumeInfo(obj.db, function (err, r) { if (err != null) { console.log('Volume info migration error: ' + err); } else { console.log('Volume info migration complete. Scanned ' + r.scanned + ' sysinfo document(s), migrated ' + r.migrated + ', moved ' + r.keysMoved + ' key(s).'); } process.exit(); }); return; }
                     if (obj.args.createaccount) { // Create a new user account
@@ -1130,6 +1136,7 @@ function CreateMeshCentralServer(config, args) {
                                         // Delete this node including network interface information, events and timeline
                                         removeCount++;
                                         db.Remove(node._id);                                 // Remove node with that id
+                                        db.Remove('ab' + node._id);
                                         db.Remove('if' + node._id);                          // Remove interface information
                                         db.Remove('nt' + node._id);                          // Remove notes
                                         db.Remove('lc' + node._id);                          // Remove last connect time
@@ -1891,7 +1898,7 @@ function CreateMeshCentralServer(config, args) {
     }
 
     // Start the server with the given certificates
-    obj.StartEx4 = function () {
+    obj.StartEx4 = async function () {
         var i;
 
         // If the certificate is un-configured, force LAN-only mode
@@ -1909,6 +1916,22 @@ function CreateMeshCentralServer(config, args) {
             }
         }
 
+        obj.agentCatalog = require('./agentbuilds').CreateAgentCatalog(obj);
+        obj.agentBuildDefaultStore = require('./agentbuilds').CreateAgentBuildDefaultStore(obj, obj.db, obj.agentCatalog);
+        try {
+            for (var id in obj.config.domains) { if (obj.config.domains[id].share == null) await obj.agentBuildDefaultStore.refresh(obj.config.domains[id]); }
+        } catch (ex) { console.error('Unable to load server default agents: ' + ex.message); process.exit(1); return; }
+        // Release files that land after the wait below are switched in by activateAgentDefaults, which
+        // holds until this first signing pass and table load have finished.
+        obj.agentTablesReady = new Promise(function (resolve) { obj.agentTablesLoaded = resolve; });
+        obj.agentDefaults = require('./agentbuilds').CreateAgentDefaults(obj);
+        // Never block server startup on default agent downloads. An offline or slow-network server must come up
+        // promptly and run from cached, bundled or manually uploaded builds; downloads finish in the background.
+        const agentDefaultsReady = obj.agentDefaults.prepare();
+        agentDefaultsReady.then(function () { for (const error of obj.agentDefaults.status().errors) { addServerWarning(error); } }, function () { });
+        try { await Promise.race([agentDefaultsReady, new Promise(function (r) { setTimeout(r, 6000); })]); } catch (ex) { }
+        obj.agentDefaults.start();
+
         // Load the list of MeshCentral tools
         obj.updateMeshTools();
 
@@ -1925,11 +1948,12 @@ function CreateMeshCentralServer(config, args) {
                 translations['zh-hk'] = translations['zh-cht'];
                 delete translations['zh-cht'];
             }
+            obj.agentTranslations = JSON.stringify(translations);
             // If there is domain customizations to the agent strings, do this here.
             for (var i in obj.config.domains) {
                 var domainTranslations = translations;
                 if ((typeof obj.config.domains[i].agentcustomization == 'object') && (typeof obj.config.domains[i].agentcustomization.installtext == 'string')) {
-                    domainTranslations = Object.assign({}, domainTranslations); // Shallow clone
+                    domainTranslations = JSON.parse(obj.agentTranslations);
                     for (var j in domainTranslations) { delete domainTranslations[j].description; }
                     domainTranslations.en.description = obj.config.domains[i].agentcustomization.installtext;
                 }
@@ -1937,14 +1961,21 @@ function CreateMeshCentralServer(config, args) {
             }
         } catch (ex) { }
 
+        if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) {
+            for (i in obj.meshAgentsArchitectureNumbers) {
+                obj.meshAgentsArchitectureNumbers[i].manualUpdate = obj.meshAgentsArchitectureNumbers[i].update;
+                obj.meshAgentsArchitectureNumbers[i].update = false;
+            }
+        }
+
         // Load any domain specific agents
-        for (var i in obj.config.domains) { if ((i != '') && (obj.config.domains[i].share == null)) { obj.updateMeshAgentsTable(obj.config.domains[i], function () { }); } }
+        for (var i in obj.config.domains) { if ((i != '') && (obj.config.domains[i].share == null)) { await new Promise(function (resolve) { obj.updateMeshAgentsTable(obj.config.domains[i], resolve); }); } }
 
         // Load the list of mesh agents and install scripts
-        if ((obj.args.noagentupdate == 1) || (obj.args.noagentupdate == true)) { for (i in obj.meshAgentsArchitectureNumbers) { obj.meshAgentsArchitectureNumbers[i].update = false; } }
         obj.signMeshAgents(obj.config.domains[''], function () {
             obj.updateMeshAgentsTable(obj.config.domains[''], function () {
                 obj.updateMeshAgentInstallScripts();
+                obj.agentTablesLoaded();
 
                 // Setup and start the web server
                 obj.crypto.randomBytes(48, function (err, buf) {
@@ -3131,6 +3162,10 @@ function CreateMeshCentralServer(config, args) {
         }
     };
 
+    obj.getAgentBinaryPath = function (name) {
+        return obj.agentDefaults ? obj.agentDefaults.sourcePath(name) : obj.path.join(__dirname, 'agents', name);
+    };
+
     // List of possible mesh agent install scripts
     const meshToolsList = {
         'MeshCentralRouter': { localname: 'MeshCentralRouter.exe', dlname: 'winrouter' },
@@ -3142,9 +3177,10 @@ function CreateMeshCentralServer(config, args) {
     obj.updateMeshTools = function () {
         for (var toolname in meshToolsList) {
             if (meshToolsList[toolname].winhash === true) {
-                var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath = obj.getAgentBinaryPath(meshToolsList[toolname].localname);
                 const toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
                 if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+                if (!toolpath || !obj.fs.existsSync(toolpath)) { delete obj.meshToolsBinaries[toolname]; continue; }
 
                 var hashStream = obj.crypto.createHash('sha384');
                 hashStream.toolname = toolname;
@@ -3161,9 +3197,10 @@ function CreateMeshCentralServer(config, args) {
                 const options = { sourcePath: toolpath, targetStream: hashStream };
                 obj.exeHandler.hashExecutableFile(options);
             } else {
-                var toolpath = obj.path.join(__dirname, 'agents', meshToolsList[toolname].localname);
+                var toolpath = obj.getAgentBinaryPath(meshToolsList[toolname].localname);
                 const toolpath2 = obj.path.join(obj.datapath, 'agents', meshToolsList[toolname].localname);
                 if (obj.fs.existsSync(toolpath2)) { toolpath = toolpath2; } // If the tool is present in "meshcentral-data/agents", use that one instead.
+                if (!toolpath || !obj.fs.existsSync(toolpath)) { delete obj.meshToolsBinaries[toolname]; continue; }
 
                 var stream = null;
                 try {
@@ -3237,65 +3274,16 @@ function CreateMeshCentralServer(config, args) {
         }
     };
 
-    // List of possible mesh agents
-    obj.meshAgentsArchitectureNumbers = {
-        0: { id: 0, localname: 'Unknown', rname: 'meshconsole.exe', desc: 'Unknown agent', update: false, amt: true, platform: 'unknown', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        1: { id: 1, localname: 'MeshConsole.exe', rname: 'meshconsole32.exe', desc: 'Windows x86-32 console', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        2: { id: 2, localname: 'MeshConsole64.exe', rname: 'meshconsole64.exe', desc: 'Windows x86-64 console', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        3: { id: 3, localname: 'MeshService.exe', rname: 'meshagent32.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', codesign: true },
-        4: { id: 4, localname: 'MeshService64.exe', rname: 'meshagent64.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', codesign: true },
-        5: { id: 5, localname: 'meshagent_x86', rname: 'meshagent', desc: 'Linux x86-32', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        6: { id: 6, localname: 'meshagent_x86-64', rname: 'meshagent', desc: 'Linux x86-64', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        7: { id: 7, localname: 'meshagent_mips', rname: 'meshagent', desc: 'Linux MIPS', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        8: { id: 8, localname: 'MeshAgent-Linux-XEN-x86-32', rname: 'meshagent', desc: 'XEN x86-64', update: true, amt: false, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        9: { id: 9, localname: 'meshagent_arm', rname: 'meshagent', desc: 'Linux ARM5', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        10: { id: 10, localname: 'MeshAgent-Linux-ARM-PlugPC', rname: 'meshagent', desc: 'Linux ARM PlugPC', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        11: { id: 11, localname: 'meshagent_osx-x86-32', rname: 'meshosx', desc: 'Apple macOS x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple x86-32 binary, no longer supported.
-        12: { id: 12, localname: 'MeshAgent-Android-x86', rname: 'meshandroid', desc: 'Android x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        13: { id: 13, localname: 'meshagent_pogo', rname: 'meshagent', desc: 'Linux ARM PogoPlug', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        14: { id: 14, localname: 'meshagent_android.apk', rname: 'meshandroid.apk', desc: 'Android', update: false, amt: false, platform: 'android', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Get this one from Google Play
-        15: { id: 15, localname: 'meshagent_poky', rname: 'meshagent', desc: 'Linux Poky x86-32', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        16: { id: 16, localname: 'meshagent_osx-x86-64', rname: 'meshagent', desc: 'Apple macOS x86-64', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple x86-64 binary
-        17: { id: 17, localname: 'MeshAgent-ChromeOS', rname: 'meshagent', desc: 'Google ChromeOS', update: false, amt: false, platform: 'chromeos', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Get this one from Chrome store
-        18: { id: 18, localname: 'meshagent_poky64', rname: 'meshagent', desc: 'Linux Poky x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        19: { id: 19, localname: 'meshagent_x86_nokvm', rname: 'meshagent', desc: 'Linux x86-32 NoKVM', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        20: { id: 20, localname: 'meshagent_x86-64_nokvm', rname: 'meshagent', desc: 'Linux x86-64 NoKVM', update: true, amt: true, platform: 'linux', core: 'linux-amt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        21: { id: 21, localname: 'MeshAgent-WinMinCore-Console-x86-32.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Console x86-32', update: true, amt: false, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        22: { id: 22, localname: 'MeshAgent-WinMinCore-Service-x86-64.exe', rname: 'meshagent.exe', desc: 'Windows MinCore Service x86-32', update: true, amt: false, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        23: { id: 23, localname: 'MeshAgent-NodeJS', rname: 'meshagent', desc: 'NodeJS', update: false, amt: false, platform: 'node', core: 'nodejs', rcore: 'nodejs', arcore: 'nodejs', tcore: 'nodejs' }, // NodeJS based agent
-        24: { id: 24, localname: 'meshagent_arm-linaro', rname: 'meshagent', desc: 'Linux ARM Linaro', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        25: { id: 25, localname: 'meshagent_armhf', rname: 'meshagent', desc: 'Linux ARM - HardFloat', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // "armv6l" and "armv7l"
-        26: { id: 26, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // This is replaced by ARCHID 32
-        27: { id: 27, localname: 'meshagent_armhf2', rname: 'meshagent', desc: 'Linux ARM - HardFloat', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Raspbian 7 2015-02-02 for old Raspberry Pi.
-        28: { id: 28, localname: 'meshagent_mips24kc', rname: 'meshagent', desc: 'Linux MIPS24KC/MUSL (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MIPS Router with OpenWRT
-        29: { id: 29, localname: 'meshagent_osx-arm-64', rname: 'meshagent', desc: 'Apple macOS ARM-64', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon ARM 64bit
-        30: { id: 30, localname: 'meshagent_freebsd_x86-64', rname: 'meshagent', desc: 'FreeBSD x86-64', update: true, amt: false, platform: 'freebsd', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // FreeBSD x64
-        32: { id: 32, localname: 'meshagent_aarch64', rname: 'meshagent', desc: 'Linux ARM 64 bit', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' },
-        33: { id: 33, localname: 'meshagent_openwrt_x86_64', rname: 'meshagent', desc: 'OpenWRT x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // This is replaced with ARCHID 36.
-        34: { id: 34, localname: 'assistant_windows', rname: 'meshassistant', desc: 'MeshCentral Assistant (Windows)', update: false, amt: false, platform: 'assistant', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MeshCentral Assistant for Windows
-        35: { id: 35, localname: 'meshagent_linux-armada370-hf', rname: 'meshagent', desc: 'Armada370 - ARM32/HF (libc/2.26)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Armada370
-        36: { id: 36, localname: 'meshagent_openwrt_x86_64', rname: 'meshagent', desc: 'OpenWRT x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenWRT x86-64
-        37: { id: 37, localname: 'meshagent_openbsd_x86-64', rname: 'meshagent', desc: 'OpenBSD x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenBSD x86-64
-        40: { id: 40, localname: 'meshagent_mipsel24kc', rname: 'meshagent', desc: 'Linux MIPSEL24KC (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // MIPS Router with OpenWRT
-        41: { id: 41, localname: 'meshagent_aarch64-cortex-a53', rname: 'meshagent', desc: 'ARMADA/CORTEX-A53/MUSL (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenWRT Routers
-        42: { id: 42, localname: 'MeshConsoleARM64.exe', rname: 'meshconsolearm64.exe', desc: 'Windows ARM-64 console', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny' },
-        43: { id: 43, localname: 'MeshServiceARM64.exe', rname: 'meshagentarm64.exe', desc: 'Windows ARM-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', codesign: true },
-        // 44: { id: 44, localname: 'meshagent_armvirt32', rname: 'meshagent', desc: 'ARMVIRT32 (OpenWRT)', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // OpenWRT Routers (agent to be built)
-        45: { id: 45, localname: 'meshagent_riscv64', rname: 'meshagent', desc: 'RISC-V x86-64', update: true, amt: false, platform: 'linux', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // RISC-V 64bit
-        10003: { id: 10003, localname: 'MeshService.exe', rname: 'meshagent32.exe', desc: 'Windows x86-32 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', unsigned: true },
-        10004: { id: 10004, localname: 'MeshService64.exe', rname: 'meshagent64.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', unsigned: true },
-        10005: { id: 10005, localname: 'meshagent_osx-universal-64', rname: 'meshagent', desc: 'Apple macOS Universal Binary', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon + x86 universal binary
-        10006: { id: 10006, localname: 'MeshCentralAssistant.exe', rname: 'MeshCentralAssistant.exe', desc: 'MeshCentral Assistant for Windows', update: false, amt: false, platform: 'win32' }, // MeshCentral Assistant
-        11000: { id: 11000, localname: 'MeshCmd.exe', rname: 'MeshCmd.exe', desc: 'Windows x86-32 meshcmd', update: false, amt: true, platform: 'win32', codesign: true }, // MeshCMD for Windows x86 32-bit
-        11001: { id: 11001, localname: 'MeshCmd64.exe', rname: 'MeshCmd64.exe', desc: 'Windows x86-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true }, // MeshCMD for Windows x86 64-bit
-        11002: { id: 11002, localname: 'MeshCmdARM64.exe', rname: 'MeshCmdARM64.exe', desc: 'Windows ARM-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true } // MeshCMD for Windows ARM 64-bit
-    };
+    obj.meshAgentsArchitectureNumbers = require('./agenttypes')();
 
     // Sign windows agents
     obj.signMeshAgents = function (domain, func) {
         // Setup the domain is specified
         var objx = domain, suffix = '';
         if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
+        // Published when the pass ends: a table built during a later pass must not see a half-filled map.
+        const signedSources = {};
+        const done = function () { objx.signedAgentSources = signedSources; func(); };
 
         // Check if a custom agent signing certificate is available
         var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
@@ -3308,7 +3296,7 @@ function CreateMeshCentralServer(config, args) {
                 extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
             }
         }
-        if (agentSignCertInfo == null) { func(); return; } // No code signing certificate, nothing to do.
+        if (agentSignCertInfo == null) { done(); return; } // No code signing certificate, nothing to do.
 
         // Setup the domain is specified
         var objx = domain, suffix = '';
@@ -3346,12 +3334,12 @@ function CreateMeshCentralServer(config, args) {
             archIds.push(archid);
         }
 
-        if (archIds.length === 0) { func(); return; }
+        if (archIds.length === 0) { done(); return; }
 
         var currentArchIndex = 0;
 
         function signNextAgent() {
-            if (currentArchIndex >= archIds.length) { func(); return; }
+            if (currentArchIndex >= archIds.length) { done(); return; }
 
             var archid = archIds[currentArchIndex];
             currentArchIndex++;
@@ -3359,7 +3347,7 @@ function CreateMeshCentralServer(config, args) {
             var agentpath;
             if (domain.id == '') {
                 // Load all agents when processing the default domain
-                agentpath = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].localname);
                 var agentpath2 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
                 if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; delete obj.meshAgentsArchitectureNumbers[archid].codesign; } // If the agent is present in "meshcentral-data/agents", use that one instead.
             } else {
@@ -3367,6 +3355,8 @@ function CreateMeshCentralServer(config, args) {
                 agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
                 if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { signNextAgent(); return; } // If the agent is not present in "meshcentral-data/agents" skip.
             }
+
+            if (!agentpath) { signNextAgent(); return; }
 
             // Open the original agent with authenticode
             const signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
@@ -3490,14 +3480,16 @@ function CreateMeshCentralServer(config, args) {
                     // If not signed correctly, sign it. First, create the server signed agent folder if needed
                     try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
                     const xagentSignedFunc = function agentSignedFunc(err, size) {
+                        if (err == null) { err = obj.callExternalSignJob(agentSignedFunc.signingArguments); }
                         if (err == null) {
+                            signedSources[archid] = agentpath;
                             // Agent was signed succesfuly
                             console.log(obj.common.format('Code signed {0}.', agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname));
                         } else {
                             // Failed to sign agent
+                            try { obj.fs.unlinkSync(agentSignedFunc.signeedagentpath); } catch (ex) { }
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
-                        obj.callExternalSignJob(agentSignedFunc.signingArguments); // Call external signing job regardless of success or failure
                         // Wait 2 seconds between each codesign to avoid rate limiting from Sectigo's timestamp server
                         // https://www.sectigo.com/resource-library/time-stamping-server
                         setTimeout(signNextAgent, 2000);
@@ -3569,6 +3561,7 @@ function CreateMeshCentralServer(config, args) {
 
                 } else {
                     // Signed agent is already ok, use it.
+                    signedSources[archid] = agentpath;
                     originalAgent.close();
                     signNextAgent();
                 }
@@ -3582,24 +3575,190 @@ function CreateMeshCentralServer(config, args) {
     }
 
     obj.callExternalSignJob = function (signingArguments) {
-        if (obj.config.settings && !obj.config.settings.externalsignjob) {
-            return;
+        if (!obj.config.settings || !obj.config.settings.externalsignjob) {
+            return null;
         }
         obj.debug('main', "External signing job called for file: " + signingArguments.out);
         
         const { spawnSync } = require('child_process');
 
-        const signResult = spawnSync('"' + obj.config.settings.externalsignjob + '"', ['"' + signingArguments.out + '"'], {
-            encoding: 'utf-8',
-            shell: true,
-            stdio: 'inherit'
-        }); 
+        var signResult;
+        try {
+            signResult = spawnSync('"' + obj.config.settings.externalsignjob + '"', ['"' + signingArguments.out + '"'], {
+                encoding: 'utf-8',
+                shell: true,
+                stdio: 'inherit'
+            });
+        } catch (ex) { signResult = { error: ex }; }
 
         if (signResult.error || signResult.status !== 0) {
             obj.debug('main', "External signing failed for file: " + signingArguments.out);
             console.error("External signing failed for file: " + signingArguments.out);
+            return signResult.error || new Error('External signing failed (' + (signResult.signal ? ('signal ' + signResult.signal) : ('exit code ' + signResult.status)) + ').');
+        }
+        return null;
+    }
+
+    // Return the agent code-signing certificate (custom agentsigningcert.pem, else the server codesign cert), or null.
+    obj.getAgentSigningCertificate = function () {
+        var agentSignCertInfo = require('./authenticode.js').loadCertificates([obj.path.join(obj.datapath, 'agentsigningcert.pem')]);
+        if ((agentSignCertInfo == null) && (obj.certificates.codesign != null)) {
+            agentSignCertInfo = {
+                cert: obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.codesign.cert),
+                key: obj.certificateOperations.forge.pki.privateKeyFromPem(obj.certificates.codesign.key),
+                extraCerts: [obj.certificateOperations.forge.pki.certificateFromPem(obj.certificates.root.cert)]
+            }
+        }
+        return agentSignCertInfo || null;
+    }
+
+    // Process one uploaded agent executable: optionally apply agentFileInfo and code-sign it, writing the result to
+    // destPath. Windows PE only. options = { sign, customize, domain, cert? }. This runs once at upload so the same
+    // work is not repeated for a custom binary on every startup like signMeshAgents does for the bundled agents.
+    obj.processAgentExecutable = function (sourcePath, destPath, options, func) {
+        options = options || {};
+        const domain = options.domain || {};
+        if ((options.sign !== true) && (options.customize !== true)) {
+            // As-is: store the uploaded bytes unchanged.
+            try { obj.fs.copyFileSync(sourcePath, destPath); } catch (ex) { func('Unable to store the agent file.'); return; }
+            func(null, { signed: false, customized: false });
             return;
         }
+        const cert = options.cert || obj.getAgentSigningCertificate();
+        if (cert == null) { func('This server has no agent code-signing certificate. Upload the binary as-is or configure agentsigningcert.pem.'); return; }
+        const handler = require('./authenticode.js').createAuthenticodeHandler(sourcePath);
+        if (handler == null) { func('This file is not a Windows executable and cannot be signed or customized.'); return; }
+
+        // Signature description, url, timestamp server and proxy (mirrors signMeshAgents).
+        const httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport);
+        var httpsHost = ((domain.dns != null) ? domain.dns : obj.certificates.CommonName);
+        if (obj.args.agentaliasdns != null) { httpsHost = obj.args.agentaliasdns; }
+        var signUrl = 'https://' + httpsHost;
+        if (httpsPort != 443) { signUrl += ':' + httpsPort; }
+        var xdomain = (domain.dns == null) ? (domain.id || '') : '';
+        if (xdomain != '') xdomain += '/';
+        signUrl += '/' + xdomain;
+        if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
+        const signDesc = (domain.title ? domain.title : cert.cert.subject.hash);
+        var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
+        if (obj.args.agenttimestampserver === false) { timeStampUrl = null; }
+        else if (typeof obj.args.agenttimestampserver == 'string') { timeStampUrl = obj.args.agenttimestampserver; }
+        var timeStampProxy = null;
+        if (typeof obj.args.agenttimestampproxy == 'string') { timeStampProxy = obj.args.agenttimestampproxy; }
+        else if ((obj.args.agenttimestampproxy !== false) && (typeof obj.args.npmproxy == 'string')) { timeStampProxy = obj.args.npmproxy; }
+
+        // Apply agentFileInfo to the PE resources when customizing.
+        var resChanges = false;
+        if ((options.customize === true) && (domain.agentfileinfo != null) && (typeof domain.agentfileinfo == 'object')) {
+            var versionStrings = handler.getVersionInfo();
+            if (versionStrings != null) {
+                var versionProperties = ['FileDescription', 'FileVersion', 'InternalName', 'LegalCopyright', 'OriginalFilename', 'ProductName', 'ProductVersion'];
+                for (var i in versionProperties) {
+                    const prop = versionProperties[i], propl = prop.toLowerCase();
+                    if (domain.agentfileinfo[propl] && (domain.agentfileinfo[propl] != versionStrings[prop])) { versionStrings[prop] = domain.agentfileinfo[propl]; resChanges = true; }
+                }
+                if (domain.agentfileinfo['fileversionnumber'] && (domain.agentfileinfo['fileversionnumber'] != versionStrings['~FileVersion'])) { versionStrings['~FileVersion'] = domain.agentfileinfo['fileversionnumber']; resChanges = true; }
+                if (domain.agentfileinfo['productversionnumber'] && (domain.agentfileinfo['productversionnumber'] != versionStrings['~ProductVersion'])) { versionStrings['~ProductVersion'] = domain.agentfileinfo['productversionnumber']; resChanges = true; }
+                if (resChanges == true) { handler.setVersionInfo(versionStrings); }
+            }
+            if (domain.agentfileinfo.icon != null) {
+                const agentIconGroups = handler.getIconInfo();
+                if (agentIconGroups != null) {
+                    const agentIconGroupNames = Object.keys(agentIconGroups);
+                    // Unlike signMeshAgents, flag a resource change so writeExecutable rebuilds the section and the icon actually applies.
+                    if (agentIconGroupNames.length > 0) { agentIconGroups[agentIconGroupNames[0]] = domain.agentfileinfo.icon; handler.setIconInfo(agentIconGroups); resChanges = true; }
+                }
+            }
+            if (domain.agentfileinfo.logo != null) {
+                const agentBitmaps = handler.getBitmapInfo();
+                if (agentBitmaps != null) {
+                    const agentBitmapNames = Object.keys(agentBitmaps);
+                    if (agentBitmapNames.length > 0) { agentBitmaps[agentBitmapNames[0]] = domain.agentfileinfo.logo; handler.setBitmapInfo(agentBitmaps); resChanges = true; }
+                }
+            }
+        }
+
+        const signingArguments = { out: destPath, desc: signDesc, url: signUrl, time: timeStampUrl, proxy: timeStampProxy, resChanges: resChanges };
+        const done = function (err) {
+            try { handler.close(); } catch (ex) { }
+            if (err == null) { err = obj.callExternalSignJob(signingArguments); }
+            func(err || null, { signed: (err == null), customized: (err == null) && resChanges });
+        };
+        if (resChanges == false) { handler.sign(cert, signingArguments, done); } else { handler.writeExecutable(signingArguments, cert, done); }
+    }
+
+    // Late default agent downloads: swap the new paths in, run the signing pass and rebuild the default
+    // domain's table, as startup does, so no restart is needed. One pass runs at a time; a request made
+    // during a pass queues one more. reloadMeshAgents waits out the signing so it never builds a table
+    // from a half-rewritten signedagents folder.
+    obj.activateAgentDefaults = function (func) {
+        if (typeof func != 'function') func = function () { };
+        var state = obj.agentActivationState;
+        if (state != null) { state.waiting.push(func); state.rerun = true; return; }
+        state = obj.agentActivationState = { waiting: [func], rerun: false };
+        function done(err) {
+            const callbacks = state.waiting;
+            delete obj.agentActivationState;
+            for (var i in callbacks) { try { callbacks[i](err); } catch (ex) { } }
+        }
+        function pass() {
+            state.rerun = false;
+            if ((obj.agentDefaults == null) || !obj.agentDefaults.activate()) { done(); return; }
+            console.log('Default agent files downloaded, loading them.');
+            obj.agentActivation = new Promise(function (resolve) { obj.signMeshAgents(obj.config.domains[''], resolve); });
+            obj.agentActivation.then(function () {
+                obj.agentActivation = null;
+                obj.updateMeshTools();
+                obj.reloadMeshAgents(obj.config.domains[''], function (err) {
+                    if (err) { addServerWarning('Unable to load the downloaded default agent files: ' + (err.message || err)); }
+                    if (state.rerun) { pass(); return; }
+                    done(err);
+                });
+            });
+        }
+        Promise.resolve(obj.agentTablesReady).then(pass, pass);
+    }
+
+    // Signs and reloads the default domain again, for example after an agents folder file stops being used.
+    obj.resignMeshAgents = function (func) {
+        const types = require('./agenttypes')();
+        // The signing pass drops a type's codesign flag while its agents folder file exists.
+        for (const id in types) { if ((types[id].codesign === true) && (obj.meshAgentsArchitectureNumbers[id] != null)) { obj.meshAgentsArchitectureNumbers[id].codesign = true; } }
+        Promise.resolve(obj.agentActivation).then(function () {
+            obj.agentActivation = new Promise(function (resolve) { obj.signMeshAgents(obj.config.domains[''], resolve); });
+            obj.agentActivation.then(function () {
+                obj.agentActivation = null;
+                obj.updateMeshTools();
+                obj.reloadMeshAgents(obj.config.domains[''], func);
+            });
+        });
+    }
+
+    // Coalesce reloads so an older hash read cannot overwrite a newer selection.
+    obj.reloadMeshAgents = function (domain, func) {
+        const key = domain.id || '';
+        if (obj.agentReloadState == null) obj.agentReloadState = {};
+        var state = obj.agentReloadState[key];
+        if (state != null) { state.waiting.push(typeof func == 'function' ? func : function () { }); state.rerun = true; return; }
+        state = obj.agentReloadState[key] = { waiting: [typeof func == 'function' ? func : function () { }], rerun: false };
+        function done(err) {
+            const callbacks = state.waiting;
+            delete obj.agentReloadState[key];
+            for (var i in callbacks) { try { callbacks[i](err); } catch (ex) { } }
+        }
+        function pass() {
+            state.rerun = false;
+            Promise.resolve(obj.agentActivation).then(function () {
+                if (obj.agentBuildDefaultStore) return obj.agentBuildDefaultStore.refresh(domain);
+            }).then(function () {
+                obj.updateMeshAgentsTable(domain, function () {
+                    if (domain.id == '') { try { obj.updateMeshAgentInstallScripts(); } catch (ex) { } }
+                    if (state.rerun) { pass(); return; }
+                    done();
+                });
+            }).catch(done);
+        }
+        pass();
     }
 
     // Update the list of available mesh agents
@@ -3618,46 +3777,60 @@ function CreateMeshCentralServer(config, args) {
 
         // Setup the domain is specified
         var objx = domain, suffix = '';
-        if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; objx.meshAgentBinaries = {}; }
+        if (domain.id == '') { objx = obj; } else { suffix = '-' + domain.id; }
+        const agentTable = {};
+        function done() { objx.meshAgentBinaries = agentTable; if (func != null) func(); }
 
         // Load agent information file. This includes the data & time of the agent.
-        const agentInfo = [];
+        var agentInfo = [];
         try { agentInfo = JSON.parse(obj.fs.readFileSync(obj.path.join(__dirname, 'agents', 'hashagents.json'), 'utf8')); } catch (ex) { }
 
         var archcount = 0;
         for (var archid in obj.meshAgentsArchitectureNumbers) {
             var agentpath;
-            if (domain.id == '') {
+            const buildDefault = obj.agentBuildDefaults && obj.agentBuildDefaults[domain.id] && obj.agentBuildDefaults[domain.id][archid];
+            const override = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+            // Files placed in "meshcentral-data/agents" keep precedence over builds selected in the catalog, so existing setups keep serving them.
+            if (((domain.id != '') || (obj.meshAgentsArchitectureNumbers[archid].unsigned !== true)) && obj.fs.existsSync(override)) {
+                agentpath = override;
+            } else if (buildDefault) {
+                agentpath = buildDefault.path;
+            } else if (domain.id == '') {
                 // Load all agents when processing the default domain
-                agentpath = obj.path.join(__dirname, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
+                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].localname);
                 if (obj.meshAgentsArchitectureNumbers[archid].unsigned !== true) {
                     const agentpath2 = obj.path.join(obj.datapath, 'signedagents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                    if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; } // If the agent is present in "meshcentral-data/signedagents", use that one instead.
-                    const agentpath3 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                    if (obj.fs.existsSync(agentpath3)) { agentpath = agentpath3; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+                    // A failed signing attempt must not reuse a copy from another release.
+                    if (agentpath && obj.fs.existsSync(agentpath2) && ((obj.signedAgentSources || {})[archid] === agentpath)) { agentpath = agentpath2; }
                 }
             } else {
                 // When processing an extra domain, only load agents that are specific to that domain
-                agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
-                if (obj.fs.existsSync(agentpath)) { delete obj.meshAgentsArchitectureNumbers[archid].codesign; } else { continue; } // If the agent is not present in "meshcentral-data/agents" skip.
+                continue;
             }
+
+            if (!agentpath) continue;
 
             // Fetch agent binary information
             var stats = null;
             try { stats = obj.fs.statSync(agentpath); } catch (ex) { }
-            if ((stats == null)) continue; // If this agent does not exist, skip it.
+            if ((stats == null) || !stats.isFile()) continue;
 
             // Setup agent information
             archcount++;
-            objx.meshAgentBinaries[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
-            objx.meshAgentBinaries[archid].path = agentpath;
-            objx.meshAgentBinaries[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
-            objx.meshAgentBinaries[archid].size = stats.size;
-            if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { objx.meshAgentBinaries[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
+            agentTable[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
+            if (domain.id != '') delete agentTable[archid].codesign;
+            agentTable[archid].path = agentpath;
+            const fromBuild = !!buildDefault && (agentpath === buildDefault.path);
+            if (fromBuild && (typeof buildDefault.customized == 'boolean')) { agentTable[archid].customized = buildDefault.customized; }
+            const release = obj.agentDefaults && obj.agentDefaults.info(obj.meshAgentsArchitectureNumbers[archid].localname);
+            if (release && !fromBuild && domain.id === '' && agentpath !== override) agentTable[archid].release = release;
+            agentTable[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
+            agentTable[archid].size = stats.size;
+            if ((agentInfo[archid] != null) && (agentInfo[archid].mtime != null)) { agentTable[archid].mtime = new Date(agentInfo[archid].mtime); } // Set agent time if available
 
             // If this is a windows binary, pull binary information
             if (obj.meshAgentsArchitectureNumbers[archid].platform == 'win32') {
-                try { objx.meshAgentBinaries[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
+                try { agentTable[archid].pe = obj.exeHandler.parseWindowsExecutable(agentpath); } catch (ex) { }
             }
 
             // If agents must be stored in RAM or if this is a Windows 32/64/ARM64 agent, load the agent in RAM.
@@ -3665,7 +3838,7 @@ function CreateMeshCentralServer(config, args) {
                 if ((archid == 3) || (archid == 4) || (archid == 43)) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
-                    outStream.meshAgentBinary = objx.meshAgentBinaries[archid];
+                    outStream.meshAgentBinary = agentTable[archid];
                     if (agentSignCertInfo) { outStream.meshAgentBinary.randomMsh = agentSignCertInfo.cert.subject.hash; } else { outStream.meshAgentBinary.randomMsh = obj.crypto.randomBytes(16).toString('hex'); }
                     outStream.bufferList = [];
                     outStream._write = function (chunk, encoding, callback) { this.bufferList.push(chunk); if (callback) callback(); }; // Append the chuck.
@@ -3724,11 +3897,11 @@ function CreateMeshCentralServer(config, args) {
                             destinationStream: outStream,
                             randomPolicy: true, // Indicates that the msh policy is random data.
                             msh: outStream.meshAgentBinary.randomMsh,
-                            peinfo: objx.meshAgentBinaries[archid].pe
+                            peinfo: agentTable[archid].pe
                         });
                 } else {
                     // Load the agent as-is
-                    objx.meshAgentBinaries[archid].data = obj.fs.readFileSync(agentpath);
+                    agentTable[archid].data = obj.fs.readFileSync(agentpath);
 
                     // Compress the agent using ZIP
                     const archive = require('archiver')('zip', { level: 9 }); // Sets the compression method.
@@ -3751,14 +3924,14 @@ function CreateMeshCentralServer(config, args) {
                         //console.log('Packed', onZipData.x.size, onZipData.x.zsize);
                     }
                     const onZipError = function onZipError() { delete onZipData.x.zacc; }
-                    objx.meshAgentBinaries[archid].zacc = [];
-                    onZipData.x = objx.meshAgentBinaries[archid];
-                    onZipEnd.x = objx.meshAgentBinaries[archid];
-                    onZipError.x = objx.meshAgentBinaries[archid];
+                    agentTable[archid].zacc = [];
+                    onZipData.x = agentTable[archid];
+                    onZipEnd.x = agentTable[archid];
+                    onZipError.x = agentTable[archid];
                     archive.on('data', onZipData);
                     archive.on('end', onZipEnd);
                     archive.on('error', onZipError);
-                    archive.append(objx.meshAgentBinaries[archid].data, { name: 'meshagent' });
+                    archive.append(agentTable[archid].data, { name: 'meshagent' });
                     archive.finalize();
                 }
             }
@@ -3767,21 +3940,22 @@ function CreateMeshCentralServer(config, args) {
             const hashStream = obj.crypto.createHash('sha384');
             hashStream.archid = archid;
             hashStream.on('data', function (data) {
-                objx.meshAgentBinaries[this.archid].hash = data.toString('binary');
-                objx.meshAgentBinaries[this.archid].hashhex = data.toString('hex');
-                if ((--archcount == 0) && (func != null)) { func(); }
+                agentTable[this.archid].hash = data.toString('binary');
+                agentTable[this.archid].hashhex = data.toString('hex');
+                if (--archcount == 0) done();
             });
             const options = { sourcePath: agentpath, targetStream: hashStream, platform: obj.meshAgentsArchitectureNumbers[archid].platform };
-            if (objx.meshAgentBinaries[archid].pe != null) { options.peinfo = objx.meshAgentBinaries[archid].pe; }
+            if (agentTable[archid].pe != null) { options.peinfo = agentTable[archid].pe; }
             obj.exeHandler.hashExecutableFile(options);
 
             // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
             if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4) || (archid == 43))) {
                 const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
-                objx.meshAgentBinaries[archid].fileHash = hash.digest('binary');
-                objx.meshAgentBinaries[archid].fileHashHex = Buffer.from(objx.meshAgentBinaries[archid].fileHash, 'binary').toString('hex');
+                agentTable[archid].fileHash = hash.digest('binary');
+                agentTable[archid].fileHashHex = Buffer.from(agentTable[archid].fileHash, 'binary').toString('hex');
             }
         }
+        if (archcount === 0) done();
     };
 
     // Generate a time limited user login token

@@ -2061,6 +2061,12 @@ function handleServerCommand(data) {
                 });
                 break;
             }
+            case 'agentbuildinfo': {
+                try {
+                    require('agent-build-info')(data, function (result) { mesh.SendCommand({ action: 'agentbuildinfo', requestid: data.requestid, data: result }); });
+                } catch (ex) { mesh.SendCommand({ action: 'agentbuildinfo', requestid: data.requestid }); }
+                break;
+            }
             case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
             case 'pong': { break; }
             case 'plugin': {

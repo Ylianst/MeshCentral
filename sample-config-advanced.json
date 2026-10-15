@@ -68,6 +68,11 @@
     "_compression": true,
     "_wsCompression": true,
     "_agentWsCompression": true,
+    "_agentDownloads": {
+      "enabled": true,
+      "checkIntervalHours": 24,
+      "_manifest": "agentbuilds/defaults.json"
+    },
     "_noAgentUpdate": 1,
     "_agentUpdateSystem": 1,
     "_temporaryAgentUpdate": false,
@@ -491,6 +496,12 @@
       "_httpHeaders": {
         "Strict-Transport-Security": "max-age=360000",
         "x-frame-options": "SAMEORIGIN"
+      },
+      "_agentBuilds": {
+        "github": {
+          "token": "YOUR_GITHUB_TOKEN",
+          "artifactNames": [ "meshagent*", "meshservice*" ]
+        }
       },
       "_agentConfig": [ "coreDumpEnabled=1" ],
       "_assistantConfig": [ "disableUpdate=1" ],

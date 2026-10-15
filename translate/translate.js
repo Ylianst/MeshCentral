@@ -19,6 +19,8 @@ var minifyLib = 2; // 0 = None, 1 = minify-js, 2 = HTMLMinifier
 var minify = null;
 
 var meshCentralSourceFiles = [
+    "../views/agentcatalog.handlebars",
+    "../public/scripts/agentbuildmanager.js",
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
     "../views/default.handlebars",
@@ -62,6 +64,7 @@ var meshCentralSourceFiles = [
 ];
 
 var minifyMeshCentralSourceFiles = [
+    "../views/agentcatalog.handlebars",
     "../views/agentinvite.handlebars",
     "../views/invite.handlebars",
     "../views/default.handlebars",
@@ -86,6 +89,7 @@ var minifyMeshCentralSourceFiles = [
     "../views/sharing-mobile.handlebars",
     "../views/mstsc.handlebars",
     "../views/ssh.handlebars",
+    "../public/scripts/agentbuildmanager.js",
     "../public/scripts/agent-desktop-0.0.2.js",
     "../public/scripts/agent-rdp-0.0.1.js",
     "../public/scripts/agent-redir-rtc-0.1.0.js",
@@ -714,7 +718,7 @@ function translateEx(lang, langFileData, sources, createSubDir) {
     }
     // Translate the files
     for (var i = 0; i < sources.length; i++) {
-        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars')) { translateFromHtml(lang, sources[i], createSubDir); }
+        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars') || sources[i].endsWith('.js')) { translateFromHtml(lang, sources[i], createSubDir); }
         else if (sources[i].endsWith('.txt')) { translateFromTxt(lang, sources[i], createSubDir); }
     }
 }
@@ -731,7 +735,7 @@ function extract(langFile, sources) {
         }
     }
     for (var i = 0; i < sources.length; i++) {
-        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars')) { extractFromHtml(sources[i]); } 
+        if (sources[i].endsWith('.html') || sources[i].endsWith('.htm') || sources[i].endsWith('.handlebars') || sources[i].endsWith('.js')) { extractFromHtml(sources[i]); } 
         else if (sources[i].endsWith('.txt')) { extractFromTxt(sources[i]); }
         else if (sources[i].endsWith('.json')) { extractFromJson(sources[i]); }
     }
@@ -786,6 +790,7 @@ function extractFromJson(file) {
 
 function extractFromHtml(file) {
     var data = fs.readFileSync(file);
+    if (file.endsWith('.js')) { data = '<html><head></head><body><script>' + data + '</script></body></html>'; }
     var { JSDOM } = jsdom;
     const dom = new JSDOM(data, { includeNodeLocations: true });
     log("Processing HTML: " + path.basename(file));
@@ -988,6 +993,8 @@ async function translateFromHtml(lang, file, createSubDir) {
     // Minify the file
     if (minifyLib == 2) {
         if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+        // The minifier takes html, so a bare script goes in wrapped the way minifyall does it.
+        if (outnamemin.endsWith('.js')) { out = '<script>' + out + '</script>'; }
         var minifiedOut = await minify(out, {
             collapseBooleanAttributes: true,
             collapseInlineTagWhitespace: false, // This is not good.
@@ -1004,6 +1011,7 @@ async function translateFromHtml(lang, file, createSubDir) {
             preserveLineBreaks: false,
             useShortDoctype: true
         });
+        if (outnamemin.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
         if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
         fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' }); 
     }

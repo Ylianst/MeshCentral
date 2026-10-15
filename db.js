@@ -235,6 +235,10 @@ module.exports.CreateDB = function (parent, func) {
 
                                     // Delete this node including network interface information, events and timeline
                                     obj.Remove(node._id);                                 // Remove node with that id
+                                    obj.Remove('ab' + node._id);
+                                    obj.Remove('abi' + node._id);
+                                    obj.Remove('abd' + node._id);
+                                    obj.Remove('abu' + node._id);
                                     obj.Remove('if' + node._id);                          // Remove interface information
                                     obj.Remove('nt' + node._id);                          // Remove notes
                                     obj.Remove('lc' + node._id);                          // Remove last connect time
@@ -560,6 +564,27 @@ module.exports.CreateDB = function (parent, func) {
         } catch (ex) { return null; }
     }
 
+    obj.GetAgentBuildRecords = function (type, domain, after, limit, func, prefix) {
+        if (!['node', 'agentbuildpolicy', 'agentbuilddeployment', 'agentbuildusage', 'agentbuildjob', 'agentbuildtarget', 'agentbuilddefault'].includes(type) || typeof domain !== 'string' || typeof after !== 'string' || !Number.isInteger(limit) || limit < 1 || limit > 500) { func(new Error('Invalid agent build query')); return; }
+        function done(err, rows) {
+            if (err) { func(err); return; }
+            try { rows = performTypedRecordDecrypt(rows); } catch (ex) { func(ex); return; }
+            func(null, rows);
+        }
+        const query = { type: type, domain: domain, _id: { $gt: after } };
+        const end = (typeof prefix === 'string' && prefix) ? prefix + '\uffff' : '\uffff';
+        query._id.$lt = end;
+        if (obj.databaseType == DB_MONGODB) obj.file.find(query).sort({ _id: 1 }).limit(limit).toArray(done);
+        else if (obj.databaseType == DB_MONGOJS) obj.file.find(query).sort({ _id: 1 }).limit(limit, done);
+        else if (obj.databaseType == DB_NEDB) obj.file.find(query).sort({ _id: 1 }).limit(limit).exec(done);
+        else if ([DB_SQLITE, DB_POSTGRESQL, DB_MYSQL, DB_MARIADB].includes(obj.databaseType)) {
+            const numbered = [DB_SQLITE, DB_POSTGRESQL].includes(obj.databaseType);
+            sqlDbQuery(numbered ? 'SELECT doc FROM main WHERE type = $1 AND domain = $2 AND id > $3 AND id < $4 ORDER BY id LIMIT $5' : 'SELECT doc FROM main WHERE type = ? AND domain = ? AND id > ? AND id < ? ORDER BY id LIMIT ?', [type, domain, after, end, limit], done);
+        } else if (obj.databaseType == DB_ACEBASE) {
+            obj.file.query('meshcentral').filter('type', '==', type).filter('domain', '==', domain).filter('_id', '>', after).filter('_id', '<', end).sort('_id', true).take(limit).get().then(function (snapshots) { done(null, common.aceUnEscapeAllFieldNames(snapshots.map(x => x.val()))); }).catch(func);
+        } else { func(new Error('Unsupported database')); }
+    };
+
     // Get the number of records in the database for various types, this is the slow NeDB way.
     // WARNING: This is a terrible query for database performance. Only do this when needed. This query will look at almost every document in the database.
     obj.getStats = function (func) {
@@ -622,22 +647,19 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an database object
     obj.performRecordEncryptionRecode = function (func) {
         var count = 0;
-        obj.GetAllType('user', function (err, docs) {
-            if (err != null) { parent.debug('db', 'ERROR (performRecordEncryptionRecode): ' + err); }
-            if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-            obj.GetAllType('node', function (err, docs) {
-                if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                obj.GetAllType('mesh', function (err, docs) {
-                    if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                    if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
-                        obj.file.compactDatafile();
-                        obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
-                    } else {
-                        func(count); // For all other databases, normal exit.
-                    }
-                });
-            });
-        });
+        (async function () {
+            for (const type of ['user', 'node', 'mesh', 'agentbuilddefault']) {
+                const docs = await new Promise(function (resolve, reject) { obj.GetAllType(type, function (err, docs) { if (err) { reject(err); } else { resolve(docs); } }); });
+                for (const doc of docs) {
+                    await new Promise(function (resolve, reject) { obj.Set(doc, function (err) { if (err) { reject(err); } else { resolve(); } }); });
+                    count++;
+                }
+            }
+            // The CLI exits on completion, so the final writes and compaction must finish first.
+            if (obj.databaseType == DB_NEDB) {
+                await new Promise(function (resolve, reject) { obj.file.compactDatafile(function (err) { if (err) { reject(err); } else { resolve(); } }); });
+            }
+        })().then(function () { func(count); }, function (err) { func(count, err); });
     }
 
     // Encrypt an database object
@@ -657,6 +679,7 @@ module.exports.CreateDB = function (parent, func) {
     function performTypedRecordEncrypt(data) {
         if (obj.dbRecordsEncryptKey == null) return data;
         if (data.type == 'user') { return performPartialRecordEncrypt(Clone(data), ['otpkeys', 'otphkeys', 'otpsecret', 'salt', 'hash', 'oldpasswords']); }
+        else if (data.type == 'agentbuilddefault') { return performPartialRecordEncrypt(Clone(data), ['build', 'name', 'filename', 'localname', 'appliedAt', 'appliedBy']); }
         else if ((data.type == 'node') && (data.ssh || data.rdp || data.intelamt)) {
             var xdata = Clone(data);
             if (data.ssh || data.rdp) { xdata = performPartialRecordEncrypt(xdata, ['ssh', 'rdp']); }
@@ -1981,7 +2004,7 @@ module.exports.CreateDB = function (parent, func) {
                 data = common.escapeLinksFieldNameEx(data);
                 var xdata = performTypedRecordEncrypt(data);
                 obj.dbCounters.fileSet++;
-                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } })
+                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } }, function (err) { if (func) { func(err); } else { parent.debug('db', 'Set: ' + err); } });
             };
             obj.Get = function (id, func) {
                 obj.file.ref('meshcentral').child(encodeURIComponent(id)).get(function (snapshot) {
@@ -2029,10 +2052,10 @@ module.exports.CreateDB = function (parent, func) {
                 query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) {
-                obj.file.query('meshcentral').filter('type', '==', type).get(function (snapshots) {
+                obj.file.query('meshcentral').filter('type', '==', type).get().then(function (snapshots) {
                     const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); }
-                    func(null, common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs)));
-                });
+                    return common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs));
+                }).then(function (docs) { func(null, docs); }, func);
             };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
@@ -3624,10 +3647,10 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function fileBulkWriteCompleted() {
+    function fileBulkWriteCompleted(err) {
         // Callbacks
         if (obj.filePendingCbs != null) {
-            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](); } }
+            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](err); } }
             obj.filePendingCbs = null;
         }
         if (obj.filePendingSets != null) {

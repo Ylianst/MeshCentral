@@ -10,6 +10,7 @@
 [Aa]gents/meshcore.min.js
 [Pp]ublic/scripts/*-min.js
 [Pp]ublic/translations/
+[Pp]ublic/scripts/translations/
 [Vv]iews/translations/
 [Ee]mails/translations/
 [Pp]ublic/*-min.htm
