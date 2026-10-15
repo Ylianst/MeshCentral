@@ -3,6 +3,7 @@
   "__comment1__": "This is a simple configuration file, all values and sections that start with underscore (_) are ignored. Edit a section and remove the _ in front of the name. Refer to the user's guide for details.",
   "__comment2__": "See node_modules/meshcentral/sample-config-advanced.json for a more advanced example.",
   "settings": {
+    "__comment__": "cert: public DNS name used to generate the server's TLS certificate and the URLs agents/users connect to. WANonly: server only accepts agent connections from the Internet; disables local-network-only features such as local (non-relayed) agent sessions. LANonly: server is for local-network use only, agents discover it via multicast; suppresses Internet-oriented features like email/SMS notifications and WebRTC. sessionKey: secret key used to sign user session cookies; must be identical on every server when running multiple MeshCentral servers behind a load balancer so sessions remain valid across instances - if left unset, a random key is generated automatically and sessions will not survive a server restart. port: the port number the main HTTPS server listens on. aliasPort: the port number advertised in generated URLs when it differs from the actual listening port, e.g. when this server sits behind NAT or a reverse proxy that exposes it on a different public port. redirPort: the port number the plain HTTP to HTTPS redirect server listens on. redirAliasPort: same alias concept as aliasPort, but for the redirect server.",
     "_cert": "myserver.mydomain.com",
     "_WANonly": true,
     "_LANonly": true,
@@ -14,6 +15,7 @@
   },
   "domains": {
     "": {
+      "__comment__": "title/title2: branding text shown on the login page, browser tab and push notifications (defaults to 'MeshCentral' if unset). minify: serve minified JS/CSS for this domain's pages. newAccounts: allow users to self-register a new account (the very first account ever created on the server always becomes site administrator regardless of this setting). userNameIsEmail: require that the username be the user's email address.",
       "_title": "MyServer",
       "_title2": "Servername",
       "_minify": true,
@@ -22,7 +24,7 @@
     }
   },
   "_letsencrypt": {
-    "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt.",
+    "__comment__": "Requires NodeJS 8.x or better, Go to https://letsdebug.net/ first before trying Let's Encrypt. email: the account email address used to register with Let's Encrypt. names: comma-separated list of DNS names to request a certificate for. skipChallengeVerification: skip MeshCentral's own local pre-check of the HTTP challenge before asking Let's Encrypt to verify it - useful when you are confident DNS/port-forwarding is correct but a local firewall rule blocks the server from verifying its own challenge. production: set to true to use Let's Encrypt's production API; keep as false while testing to avoid hitting Let's Encrypt's production rate limits.",
     "email": "myemail@mydomain.com",
     "names": "myserver.mydomain.com",
     "skipChallengeVerification": true,
