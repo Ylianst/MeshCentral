@@ -131,6 +131,47 @@ const fetch = (function () {
     return { publicAddress, parseUrl, sourceUrl, createClient };
 })();
 
+// Release folders: one per tag under meshcentral-data/agentbuilds, with a SHA256SUMS listing every verified file
+const releaseFolder = (function () {
+    const writes = new Map();
+    function hashes(filename) {
+        return new Promise((resolve, reject) => {
+            const sha256 = crypto.createHash('sha256'), sha384 = crypto.createHash('sha384');
+            let size = 0;
+            fs.createReadStream(filename).on('data', chunk => { size += chunk.length; sha256.update(chunk); sha384.update(chunk); })
+                .on('error', reject).on('end', () => resolve({ size, sha256: sha256.digest('hex'), sha384: sha384.digest('hex') }));
+        });
+    }
+    async function directory(filename) {
+        await fs.promises.mkdir(filename, { recursive: true, mode: 0o700 });
+        if (!(await fs.promises.lstat(filename)).isDirectory()) throw new Error('Invalid agent release folder.');
+    }
+    async function sums(folder) {
+        const result = new Map();
+        let text;
+        try { text = await fs.promises.readFile(path.join(folder, 'SHA256SUMS'), 'utf8'); } catch (ex) { if (ex.code === 'ENOENT') return result; throw ex; }
+        for (const line of text.split('\n')) {
+            const match = /^([a-f0-9]{64}) [ *](\S+)$/.exec(line.trim());
+            if (match) result.set(match[2], match[1]);
+        }
+        return result;
+    }
+    // Downloads run a few at a time, so updates to one folder's listing are queued behind each other.
+    function record(folder, filename, sha256) {
+        const previous = writes.get(folder) || Promise.resolve();
+        const task = previous.catch(() => {}).then(async function () {
+            const entries = await sums(folder);
+            entries.set(filename, sha256);
+            const temp = path.join(folder, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
+            await fs.promises.writeFile(temp, Array.from(entries, ([name, hash]) => hash + '  ' + name + '\n').join(''), { flag: 'wx', mode: 0o600 });
+            await fs.promises.rename(temp, path.join(folder, 'SHA256SUMS'));
+        });
+        writes.set(folder, task);
+        return task.finally(() => { if (writes.get(folder) === task) writes.delete(folder); });
+    }
+    return { hashes, directory, sums, record };
+})();
+
 // Scheduled GitHub release checks, and a local copy of each new release for administrators to try
 function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
     const hours = Number.isInteger(settings.checkintervalhours) && settings.checkintervalhours >= 0 && settings.checkintervalhours <= 168 ? settings.checkintervalhours : 24;
@@ -177,52 +218,31 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
             Array.isArray(release.assets) && release.assets.some(asset => asset && asset.size > 0 && names.has(asset.name)))
             .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0)).slice(0, 3);
     }
-    function releaseDirectory(repository, tag) {
-        const [owner, name] = repository.repository.split('/');
-        return path.join(options.root, 'releases', owner, name, tag);
-    }
-    async function directory(filename) {
-        await fs.promises.mkdir(filename, { recursive: true, mode: 0o700 });
-        if (!(await fs.promises.lstat(filename)).isDirectory()) throw new Error('Invalid release directory.');
-    }
-    function hashes(filename) {
-        return new Promise((resolve, reject) => {
-            const sha256 = crypto.createHash('sha256'), sha384 = crypto.createHash('sha384');
-            let size = 0;
-            fs.createReadStream(filename).on('data', chunk => { size += chunk.length; sha256.update(chunk); sha384.update(chunk); })
-                .on('error', reject).on('end', () => resolve({ size, sha256: sha256.digest('hex'), sha384: sha384.digest('hex') }));
-        });
-    }
-    // release.json is written last, so its presence means every file arrived and verified. A copy that was
-    // interrupted keeps the files that already match their GitHub digest and fetches the rest.
+    // A file counts as present once it matches its SHA256SUMS line, so an interrupted copy keeps what it has
+    // and fetches the rest. Returns the folder when anything was downloaded.
     async function pickup(repository, release, signal) {
-        const target = releaseDirectory(repository, release.tag_name);
-        if (await fs.promises.lstat(path.join(target, 'release.json')).then(stat => stat.isFile(), () => false)) return false;
-        await directory(target);
-        const files = [];
-        for (const asset of release.assets) {
-            if (!asset || !names.has(asset.name) || !(asset.size > 0) || (asset.size > 128 * 1024 * 1024)) continue;
+        const target = path.join(options.root, release.tag_name);
+        const assets = release.assets.filter(asset => asset && names.has(asset.name) && (asset.size > 0) && (asset.size <= 128 * 1024 * 1024));
+        const listed = await releaseFolder.sums(target);
+        let downloaded = false;
+        for (const asset of assets) {
             const filename = path.join(target, asset.name);
             const digest = (typeof asset.digest === 'string' && /^sha256:[a-f0-9]{64}$/.test(asset.digest)) ? asset.digest.slice(7) : undefined;
-            let info = await hashes(filename).catch(() => null);
-            if (!info || (info.size !== asset.size) || (digest && info.sha256 !== digest)) {
-                const temp = path.join(target, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
-                try {
-                    await client.download('https://github.com/' + repository.repository + '/releases/download/' + encodeURIComponent(release.tag_name) + '/' + encodeURIComponent(asset.name), temp, { limit: asset.size, signal, sha256: digest });
-                    await fs.promises.chmod(temp, 0o600);
-                    await fs.promises.rename(temp, filename);
-                } finally { await fs.promises.unlink(temp).catch(() => {}); }
-                info = await hashes(filename);
-                if (info.size !== asset.size) throw new Error(asset.name + ': the downloaded size does not match the release.');
-            }
-            files.push({ filename: asset.name, size: info.size, sha256: info.sha256, sha384: info.sha384, digestVerified: !!digest });
+            const info = listed.has(asset.name) ? await releaseFolder.hashes(filename).catch(() => null) : null;
+            if (info && (info.size === asset.size) && (info.sha256 === listed.get(asset.name)) && (!digest || info.sha256 === digest)) continue;
+            await releaseFolder.directory(target);
+            const temp = path.join(target, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
+            try {
+                await client.download('https://github.com/' + repository.repository + '/releases/download/' + encodeURIComponent(release.tag_name) + '/' + encodeURIComponent(asset.name), temp, { limit: asset.size, signal, sha256: digest });
+                const fetched = await releaseFolder.hashes(temp);
+                if (fetched.size !== asset.size) throw new Error(asset.name + ': the downloaded size does not match the release.');
+                await fs.promises.chmod(temp, 0o600);
+                await fs.promises.rename(temp, filename);
+                await releaseFolder.record(target, asset.name, fetched.sha256);
+            } finally { await fs.promises.unlink(temp).catch(() => {}); }
+            downloaded = true;
         }
-        const summary = { schemaVersion: 1, repository: repository.repository, tag: release.tag_name, prerelease: !!release.prerelease, publishedAt: release.published_at,
-            url: 'https://github.com/' + repository.repository + '/releases/tag/' + encodeURIComponent(release.tag_name), fetchedAt: new Date().toISOString(), files };
-        const temp = path.join(target, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
-        await fs.promises.writeFile(temp, JSON.stringify(summary, null, 2), { flag: 'wx', mode: 0o600 });
-        await fs.promises.rename(temp, path.join(target, 'release.json'));
-        return target;
+        return downloaded ? target : false;
     }
     function status() {
         return { enabled, intervalHours: hours, fetching, prereleases, checking: !!pending, repositories: Array.from(repositories.values(), item => ({
@@ -268,6 +288,7 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
                     // A copy that failed last time is retried from the cached release list, so its error clears on success.
                     repository.copyError = null;
                     for (const release of candidates(repository.releases, repository)) {
+                        if (repository.fetched.has(release.tag_name)) continue;
                         try {
                             const target = await pickup(repository, release, copies.signal);
                             repository.fetched.add(release.tag_name);
@@ -336,7 +357,7 @@ function CreateAgentDefaults(parent, options = {}) {
         const files = new Map();
         for (const release of manifest.releases) {
             if (!release || typeof release.repository !== 'string' || !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(release.repository) ||
-                typeof release.tag !== 'string' || !release.tag || release.tag.length > 128 || /[\x00-\x20\x7f]/.test(release.tag) ||
+                typeof release.tag !== 'string' || !/^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/.test(release.tag) ||
                 !Array.isArray(release.files) || !release.files.length) throw new Error('Specify a repository, release tag and files for each default release.');
             const base = 'https://github.com/' + release.repository + '/releases/';
             for (const file of release.files) {
@@ -384,16 +405,18 @@ function CreateAgentDefaults(parent, options = {}) {
         if (!(await fs.promises.lstat(filename)).isDirectory()) throw new Error('Invalid default agent cache directory.');
     }
     async function resolve(file, signal, localFiles) {
-        const cache = path.join(root, 'defaults', file.sha384), target = path.join(cache, file.filename);
-        if (await verified(target, file)) { file.status = 'Ready'; return target; }
-        let local;
-        for (const filename of [path.join(root, file.filename), path.join(bundled, file.filename)]) {
-            if (await verified(filename, file)) { local = filename; break; }
+        const cache = path.join(root, file.tag), target = path.join(cache, file.filename);
+        if (await verified(target, file)) {
+            // A file supplied by hand is listed on first use, so SHA256SUMS covers the whole folder.
+            if (!(await releaseFolder.sums(cache)).has(file.filename)) await releaseFolder.record(cache, file.filename, (await releaseFolder.hashes(target)).sha256);
+            file.status = 'Ready'; return target;
         }
+        let local;
+        if (await verified(path.join(bundled, file.filename), file)) local = path.join(bundled, file.filename);
         const imported = localFiles && localFiles.find(x => x.sha384 === file.sha384 && x.size === file.size);
         if (!local && imported && await verified(imported.path, file)) local = imported.path;
         if (!local && settings.enabled === false) throw new Error('Automatic downloads are disabled. Supply this release file locally.');
-        await directory(root); await directory(path.join(root, 'defaults')); await directory(cache);
+        await directory(root); await directory(cache);
         const temp = path.join(cache, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
         try {
             if (local) {
@@ -411,6 +434,7 @@ function CreateAgentDefaults(parent, options = {}) {
             if (!await verified(temp, file)) throw new Error('The release file does not match its expected size and SHA384.');
             await fs.promises.chmod(temp, 0o600);
             await fs.promises.rename(temp, target);
+            await releaseFolder.record(cache, file.filename, (await releaseFolder.hashes(target)).sha256);
             file.status = 'Ready';
             return target;
         } finally { await fs.promises.unlink(temp).catch(() => {}); }

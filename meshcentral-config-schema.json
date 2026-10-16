@@ -598,7 +598,7 @@
             "fetchReleases": {
               "type": "boolean",
               "default": true,
-              "description": "Keep a local copy of each new release found by the scheduled check, under meshcentral-data/agentbuilds/releases/<owner>/<repository>/<tag>/. Copies are never served until an administrator uses them. Set to false to only report new releases."
+              "description": "Keep a local copy of each new release found by the scheduled check, under meshcentral-data/agentbuilds/<tag>/. Copies are never served until an administrator uses them. Set to false to only report new releases."
             },
             "includePrereleases": {
               "type": "boolean",
