@@ -749,13 +749,8 @@ module.exports.pluginHandler = function (parent) {
     obj.loadPluginPermissions = function(pluginName, callback) {
         parent.db.getPluginPermissions(pluginName, function(err, docs) {
             if (err || docs.length === 0) {
-                // No permissions saved yet, create default structure
-                obj.pluginPermissionsCache[pluginName] = {
-                    _id: 'pluginpermission//' + pluginName,
-                    pluginName: pluginName,
-                    permissions: {},
-                    defaults: obj.pluginPermissions[pluginName] ? obj.pluginPermissions[pluginName].defaults : {}
-                };
+                // Use the registered defaults, which may be registered after this lookup.
+                delete obj.pluginPermissionsCache[pluginName];
             } else {
                 obj.pluginPermissionsCache[pluginName] = docs[0];
             }
@@ -919,6 +914,12 @@ module.exports.pluginHandler = function (parent) {
     };
     
     obj.initPluginPermissions = function() {
+        if (Array.isArray(obj.loadList)) {
+            new Set(obj.loadList).forEach(function(pluginName) {
+                obj.loadPluginPermissions(pluginName);
+            });
+            return;
+        }
         parent.db.getPlugins(function(err, plugins) {
             if (err || !plugins) return;
             plugins.forEach(function(plugin) {
