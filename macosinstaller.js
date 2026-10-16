@@ -78,7 +78,7 @@ chown -R root:wheel "/usr/local/mesh_services/\${COMPANYNAME}" || true
 chown root:wheel "\${INSTALLDIR}/\${EXECUTABLENAME}" "\${INSTALLDIR}/\${EXECUTABLENAME}.msh"
 chown root:wheel "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist"
 
-chmod 755 "\${INSTALLDIR}" "\${INSTALLDIR}/\${EXECUTABLENAME}"
+chmod 755 "/usr/local/mesh_services" "/usr/local/mesh_services/\${COMPANYNAME}" "\${INSTALLDIR}" "\${INSTALLDIR}/\${EXECUTABLENAME}"
 chmod 644 "\${INSTALLDIR}/\${EXECUTABLENAME}.msh" "/Library/LaunchDaemons/\${SERVICENAME}.plist" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist"
 
 /bin/launchctl bootout system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || true
@@ -345,6 +345,21 @@ async function createMacOSInstaller(opts) {
         await chmodIfExists(path.join(installDir, opts.executableName + '.msh'), 0o644);
         await chmodIfExists(path.join(launchDaemons, opts.serviceName + '.plist'), 0o644);
         await chmodIfExists(path.join(launchAgents, opts.serviceName + '-launchagent.plist'), 0o644);
+
+        // Payload directories must not inherit a restrictive server umask.
+        for (const directory of new Set([
+            payloadRoot,
+            path.join(payloadRoot, 'usr'),
+            path.join(payloadRoot, 'usr', 'local'),
+            path.join(payloadRoot, 'usr', 'local', 'mesh_services'),
+            path.join(payloadRoot, 'usr', 'local', 'mesh_services', opts.companyName),
+            installDir,
+            path.join(payloadRoot, 'Library'),
+            launchDaemons,
+            launchAgents
+        ])) {
+            await fsp.chmod(directory, 0o755);
+        }
 
         const payloadStats = await walk(payloadRoot);
         const installKBytes = Math.ceil(payloadStats.bytes / 1000);
