@@ -14,7 +14,7 @@ const { Transform } = require('stream');
 const { pipeline } = require('stream/promises');
 
 // HTTPS downloads and GitHub API access with private-address guards
-const fetch = (function () {
+const httpsDownloads = (function () {
     const blocked = new net.BlockList();
     for (const [address, prefix] of [['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.88.99.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3]]) blocked.addSubnet(address, prefix, 'ipv4');
     const global6 = new net.BlockList();
@@ -107,7 +107,7 @@ const fetch = (function () {
             if (options.sha256 && sha256 !== options.sha256) throw new Error('The downloaded SHA256 does not match the expected digest.');
             return { url: sourceUrl(url), finalUrl, size, sha256, digestVerified: !!options.sha256 };
         }
-        async function readJson(res) {
+        async function readJsonBody(res) {
             const chunks = []; let length = 0;
             try {
                 for await (const chunk of res) {
@@ -118,15 +118,15 @@ const fetch = (function () {
                 return JSON.parse(Buffer.concat(chunks).toString('utf8'));
             } catch (ex) { res.destroy(); throw new Error('Unable to read the GitHub response.'); }
         }
-        async function json(url, token, signal) {
+        async function getJson(url, token, signal) {
             const { res } = await response(url, { json: true, token, signal, limit: 4 * 1024 * 1024 });
-            return readJson(res);
+            return readJsonBody(res);
         }
-        async function conditionalJson(url, etag, signal) {
+        async function getJsonIfChanged(url, etag, signal) {
             const { res } = await response(url, { json: true, conditional: true, etag, signal, limit: 4 * 1024 * 1024 });
-            return { unchanged: res.statusCode === 304, etag: res.headers.etag, data: res.statusCode === 304 ? null : await readJson(res) };
+            return { unchanged: res.statusCode === 304, etag: res.headers.etag, data: res.statusCode === 304 ? null : await readJsonBody(res) };
         }
-        return { download, json, conditionalJson };
+        return { download, getJson, getJsonIfChanged };
     }
     return { publicAddress, parseUrl, sourceUrl, createClient };
 })();
@@ -169,7 +169,22 @@ const releaseFolder = (function () {
         writes.set(folder, task);
         return task.finally(() => { if (writes.get(folder) === task) writes.delete(folder); });
     }
-    return { hashes, directory, sums, record };
+    // Free space on the volume holding the folder, or null when the runtime cannot say.
+    async function freeSpace(folder) {
+        if (typeof fs.promises.statfs !== 'function') return null;
+        const stat = await fs.promises.statfs(folder);
+        return Number(stat.bavail) * Number(stat.bsize);
+    }
+    function reserve(settings) {
+        const mib = Number.isInteger(settings.minfreespacemib) && settings.minfreespacemib >= 0 && settings.minfreespacemib <= 1048576 ? settings.minfreespacemib : 256;
+        return mib * 1048576;
+    }
+    async function ensureSpace(folder, bytes, reserved, probe) {
+        const free = await (probe || freeSpace)(folder);
+        const mib = value => Math.ceil(value / 1048576);
+        if (free != null && free < bytes + reserved) throw new Error('Not enough free disk space: ' + mib(bytes) + ' MiB to download, ' + mib(free) + ' MiB free, ' + mib(reserved) + ' MiB kept in reserve.');
+    }
+    return { hashes, directory, sums, record, freeSpace, reserve, ensureSpace };
 })();
 
 // Scheduled GitHub release checks, and a local copy of each new release for administrators to try
@@ -178,7 +193,8 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
     const enabled = settings.enabled !== false;
     const fetching = (settings.fetchreleases !== false) && (typeof options.root === 'string');
     const prereleases = settings.includeprereleases === true;
-    const names = options.names || new Set(), log = options.log || function () { };
+    const keep = Number.isInteger(settings.keepreleases) && settings.keepreleases >= 0 && settings.keepreleases <= 100 ? settings.keepreleases : 3;
+    const names = options.names || new Set(), pinned = options.pinned || new Set(), log = options.log || function () { }, reserved = releaseFolder.reserve(settings);
     const repositories = new Map();
     for (const file of entries) {
         if (!repositories.has(file.repository)) repositories.set(file.repository, { repository: file.repository, tags: new Set(), files: new Set(), fetched: new Set(), failures: 0, nextCheck: 0 });
@@ -211,26 +227,50 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
             updateAvailable: !current.length || current.some(value => compare(version(tag), value) > 0) };
     }
     // Releases worth a local copy: published, carrying at least one agent file under its served name, and not
-    // already pinned as a default. Only the newest three, so a fresh server does not fetch years of history.
+    // already pinned as a default. Only the newest few, so a fresh server does not fetch years of history.
     function candidates(releases, repository) {
         if (!Array.isArray(releases)) return [];
         return releases.filter(release => release && !release.draft && (prereleases || !release.prerelease) && safeName(release.tag_name) && !repository.tags.has(release.tag_name) &&
             Array.isArray(release.assets) && release.assets.some(asset => asset && asset.size > 0 && names.has(asset.name)))
-            .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0)).slice(0, 3);
+            .sort((a, b) => (Date.parse(b.published_at) || 0) - (Date.parse(a.published_at) || 0)).slice(0, keep || undefined);
+    }
+    // Copies that are no longer among the newest for any repository are removed. Pinned defaults are never
+    // touched, nor is a folder without a listing, which is not ours. Nothing is removed until every
+    // repository has answered, or a repository that is down would lose its copies.
+    async function prune() {
+        if (!keep) return;
+        const wanted = new Set();
+        for (const repository of repositories.values()) {
+            if (!repository.releases) return;
+            for (const release of candidates(repository.releases, repository)) wanted.add(release.tag_name);
+        }
+        let entries;
+        try { entries = await fs.promises.readdir(options.root, { withFileTypes: true }); } catch (ex) { return; }
+        for (const entry of entries) {
+            if (!entry.isDirectory() || !safeName(entry.name) || pinned.has(entry.name) || wanted.has(entry.name)) continue;
+            const listing = await fs.promises.lstat(path.join(options.root, entry.name, 'SHA256SUMS')).catch(() => null);
+            if (!listing || !listing.isFile()) continue;
+            await fs.promises.rm(path.join(options.root, entry.name), { recursive: true, force: true });
+            log('Agent release ' + entry.name + ' removed, keeping the newest ' + keep + ' releases');
+        }
     }
     // A file counts as present once it matches its SHA256SUMS line, so an interrupted copy keeps what it has
     // and fetches the rest. Returns the folder when anything was downloaded.
     async function pickup(repository, release, signal) {
         const target = path.join(options.root, release.tag_name);
-        const assets = release.assets.filter(asset => asset && names.has(asset.name) && (asset.size > 0) && (asset.size <= 128 * 1024 * 1024));
-        const listed = await releaseFolder.sums(target);
-        let downloaded = false;
-        for (const asset of assets) {
-            const filename = path.join(target, asset.name);
+        const listed = await releaseFolder.sums(target), missing = [];
+        for (const asset of release.assets) {
+            if (!asset || !names.has(asset.name) || !(asset.size > 0) || (asset.size > 128 * 1024 * 1024)) continue;
             const digest = (typeof asset.digest === 'string' && /^sha256:[a-f0-9]{64}$/.test(asset.digest)) ? asset.digest.slice(7) : undefined;
-            const info = listed.has(asset.name) ? await releaseFolder.hashes(filename).catch(() => null) : null;
+            const info = listed.has(asset.name) ? await releaseFolder.hashes(path.join(target, asset.name)).catch(() => null) : null;
             if (info && (info.size === asset.size) && (info.sha256 === listed.get(asset.name)) && (!digest || info.sha256 === digest)) continue;
-            await releaseFolder.directory(target);
+            missing.push({ asset, digest });
+        }
+        if (!missing.length) return false;
+        await releaseFolder.directory(target);
+        await releaseFolder.ensureSpace(target, missing.reduce((total, item) => total + item.asset.size, 0), reserved, options.freeSpace);
+        for (const { asset, digest } of missing) {
+            const filename = path.join(target, asset.name);
             const temp = path.join(target, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
             try {
                 await client.download('https://github.com/' + repository.repository + '/releases/download/' + encodeURIComponent(release.tag_name) + '/' + encodeURIComponent(asset.name), temp, { limit: asset.size, signal, sha256: digest });
@@ -240,9 +280,8 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
                 await fs.promises.rename(temp, filename);
                 await releaseFolder.record(target, asset.name, fetched.sha256);
             } finally { await fs.promises.unlink(temp).catch(() => {}); }
-            downloaded = true;
         }
-        return downloaded ? target : false;
+        return target;
     }
     function status() {
         return { enabled, intervalHours: hours, fetching, prereleases, checking: !!pending, repositories: Array.from(repositories.values(), item => ({
@@ -268,7 +307,7 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
                     if (repository.retryAt > Date.now() || (repository.lastCheck && Date.now() - repository.lastCheck < 60000) || (!manual && repository.nextCheck > Date.now())) continue;
                     repository.lastCheck = Date.now();
                     try {
-                        const response = await client.conditionalJson('https://api.github.com/repos/' + repository.repository + '/releases?per_page=100', repository.etag, controller.signal);
+                        const response = await client.getJsonIfChanged('https://api.github.com/repos/' + repository.repository + '/releases?per_page=100', repository.etag, controller.signal);
                         if (!response.unchanged) { repository.latest = latest(response.data, repository); repository.releases = response.data; }
                         repository.etag = response.etag || repository.etag;
                         repository.lastSuccess = Date.now(); repository.error = null; repository.failures = 0;
@@ -296,6 +335,7 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
                         } catch (ex) { repository.copyError = release.tag_name + ': ' + ex.message; }
                     }
                 }
+                await prune().catch(ex => log('Unable to remove old agent release copies: ' + ex.message));
             } finally { clearTimeout(limit); }
         })().finally(() => { pending = null; schedule(); });
         return pending;
@@ -313,7 +353,7 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
 function CreateAgentDefaults(parent, options = {}) {
     const root = path.join(parent.datapath, 'agentbuilds');
     const bundled = options.directory || path.join(__dirname, 'agents');
-    const client = options.client || fetch.createClient();
+    const client = options.client || httpsDownloads.createClient();
     const settings = (parent.config.settings || {}).agentdownloads || {};
     const names = new Set(Object.values(parent.meshAgentsArchitectureNumbers).map(x => x.localname));
     for (const name of ['MeshCentralRouter.exe', 'MeshCentralRouter.dmg', 'MeshCentralAssistant.exe']) names.add(name);
@@ -382,7 +422,7 @@ function CreateAgentDefaults(parent, options = {}) {
         entries.clear();
         for (const [name, file] of files) entries.set(name, file);
         loaded = true;
-        updates = CreateAgentReleaseUpdates(settings, client, entries.values(), { root: root, names: names, log: message => console.log(message) });
+        updates = CreateAgentReleaseUpdates(settings, client, entries.values(), { root: root, names: names, pinned: new Set(Array.from(entries.values(), file => file.tag)), freeSpace: options.freeSpace, log: message => console.log(message) });
         if (activePaths) updates.start();
     }
     async function verified(filename, file) {
@@ -417,6 +457,7 @@ function CreateAgentDefaults(parent, options = {}) {
         if (!local && imported && await verified(imported.path, file)) local = imported.path;
         if (!local && settings.enabled === false) throw new Error('Automatic downloads are disabled. Supply this release file locally.');
         await directory(root); await directory(cache);
+        await releaseFolder.ensureSpace(cache, file.size, releaseFolder.reserve(settings), options.freeSpace);
         const temp = path.join(cache, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
         try {
             if (local) {
@@ -485,4 +526,4 @@ function CreateAgentDefaults(parent, options = {}) {
     return { prepare, status, sourcePath, info, start, activate, checkUpdates: () => updates ? updates.check(true) : Promise.resolve() };
 }
 
-module.exports = { CreateAgentDefaults, CreateAgentReleaseUpdates, fetch };
+module.exports = { CreateAgentDefaults, CreateAgentReleaseUpdates, httpsDownloads };

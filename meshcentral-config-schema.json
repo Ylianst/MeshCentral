@@ -604,6 +604,20 @@
               "type": "boolean",
               "default": false,
               "description": "Also copy releases marked as prereleases, such as testing builds."
+            },
+            "keepReleases": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100,
+              "default": 3,
+              "description": "How many of the newest releases per repository to keep a copy of. Older copies are removed; the pinned defaults are never removed. Zero keeps every copy."
+            },
+            "minFreeSpaceMiB": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576,
+              "default": 256,
+              "description": "Free disk space, in MiB, that must remain after a download. A default file or release copy that would leave less is not downloaded and is reported."
             }
           }
         },

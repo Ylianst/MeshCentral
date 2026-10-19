@@ -73,6 +73,8 @@
       "checkIntervalHours": 24,
       "fetchReleases": true,
       "includePrereleases": false,
+      "keepReleases": 3,
+      "minFreeSpaceMiB": 256,
       "_manifest": "agentbuilds/defaults.json"
     },
     "_noAgentUpdate": 1,
