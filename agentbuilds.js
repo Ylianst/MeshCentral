@@ -353,12 +353,12 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
 function CreateAgentDefaults(parent, options = {}) {
     const root = path.join(parent.datapath, 'agentbuilds');
     const bundled = options.directory || path.join(__dirname, 'agents');
-    const client = options.client || httpsDownloads.createClient();
+    const client = options.client || httpsDownloads.createClient(), log = options.log || (message => console.log(message));
     const settings = (parent.config.settings || {}).agentdownloads || {};
     const names = new Set(Object.values(parent.meshAgentsArchitectureNumbers).map(x => x.localname));
     for (const name of ['MeshCentralRouter.exe', 'MeshCentralRouter.dmg', 'MeshCentralAssistant.exe']) names.add(name);
     const ready = new Map(), entries = new Map();
-    let busy = null, errors = [], loaded = false, activating = null, updates = null, activePaths = null;
+    let busy = null, errors = [], loaded = false, activating = null, updates = null, activePaths = null, announced = false;
 
     function regular(filename) {
         try { return fs.lstatSync(filename).isFile(); } catch (ex) { return false; }
@@ -463,6 +463,7 @@ function CreateAgentDefaults(parent, options = {}) {
             if (local) {
                 await fs.promises.copyFile(local, temp, fs.constants.COPYFILE_EXCL);
             } else {
+                announce();
                 file.status = 'Downloading'; file.received = 0;
                 try {
                     await client.download(file.url, temp, { limit: file.size, signal, progress: received => { file.received = received; } });
@@ -487,6 +488,13 @@ function CreateAgentDefaults(parent, options = {}) {
             files: Array.from(entries.values(), ({ url, ...file }) => ({ ...file }))
         };
     }
+    // One line when the first download starts, so a slow link explains a quiet startup.
+    function announce() {
+        if (announced) return;
+        announced = true;
+        const waiting = Array.from(entries.values()).filter(file => file.status !== 'Ready');
+        log('Downloading ' + waiting.length + ' default agent files (' + Math.ceil(waiting.reduce((total, file) => total + file.size, 0) / 1048576) + ' MiB) from GitHub releases...');
+    }
     function prepare(localFiles) {
         if (busy) return busy;
         busy = (async function () {
@@ -494,6 +502,7 @@ function CreateAgentDefaults(parent, options = {}) {
             try { if (!loaded) await load(); }
             catch (ex) { errors.push('Unable to read default agent releases: ' + ex.message); return; }
             const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 120000);
+            announced = false;
             try {
                 const pending = Array.from(entries.values());
                 await Promise.all(Array.from({ length: Math.min(3, pending.length) }, async function () {

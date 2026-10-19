@@ -1918,6 +1918,7 @@ function CreateMeshCentralServer(config, args) {
         const agentDefaultsReady = obj.agentDefaults.prepare();
         agentDefaultsReady.then(function () { for (const error of obj.agentDefaults.status().errors) { addServerWarning(error); } }, function () { });
         try { await Promise.race([agentDefaultsReady, new Promise(function (r) { setTimeout(r, 6000); })]); } catch (ex) { }
+        if (obj.agentDefaults.status().busy) { console.log('Default agent downloads are still running. Starting without them; they load when they finish.'); }
         obj.agentDefaults.start();
 
         // Load the list of MeshCentral tools
@@ -3604,6 +3605,7 @@ function CreateMeshCentralServer(config, args) {
                 obj.updateMeshTools();
                 obj.reloadMeshAgents(obj.config.domains[''], function (err) {
                     if (err) { addServerWarning('Unable to load the downloaded default agent files: ' + (err.message || err)); }
+                    else { console.log('Default agent files loaded.'); }
                     if (state.rerun) { pass(); return; }
                     done(err);
                 });
