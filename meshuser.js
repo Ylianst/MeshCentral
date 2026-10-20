@@ -4658,8 +4658,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 for (i in command.nodeids) {
                     // Get the node and the rights for this node
                     parent.GetNodeWithRights(domain, user, command.nodeids[i], function (node, rights, visible) {
-                        // If this device is connected on MQTT, send a wake action.
-                        if (rights != 0) {
+                        // Power control over MQTT requires the same right as a normal power action.
+                        if ((node != null) && (rights != 0) && ((command.topic != 'powerAction') || ((rights & MESHRIGHT_RESETOFF) != 0))) {
                             parent.parent.mqttbroker.publish(node._id, command.topic, command.msg);
                         }
                     });
