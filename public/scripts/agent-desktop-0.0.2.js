@@ -408,7 +408,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         return convertKeyCodeTable[e.code];
     }
 
-    var extendedKeyTable = ['ShiftRight', 'AltRight', 'ControlRight', 'Home', 'End', 'Insert', 'Delete', 'PageUp', 'PageDown', 'NumpadDivide', 'NumpadEnter', 'NumLock', 'Pause'];
+    var extendedKeyTable = ['AltRight', 'ControlRight', 'Home', 'End', 'Insert', 'Delete', 'PageUp', 'PageDown', 'NumpadDivide', 'NumpadEnter', 'NumLock', 'Pause'];
     obj.SendKeyMsg = function (action, event) {
         if (action == null) return;
         if (!event) { event = window.event; }
@@ -425,7 +425,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             }; 
         }
 
-        if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
+        if ((obj.UseExtendedKeyFlag || (urlargs.extkeys == 1)) && ((event.code == 'ShiftRight') || ((event.keyCode == 16) && (event.location == 2)))) {
+            // Right Shift has its own scan code, not an extended Left Shift scan code.
+            obj.SendKeyMsgKC(action, 161, false);
+        } else if ((extendedKey == false) && event.code && (event.code.startsWith('NumPad') == false) && (obj.localKeyMap == false)) {
             // Convert "event.code" into a scancode. This works the same regardless of the keyboard language.
             // Older browsers will not support this.
             var kc = convertKeyCode(event);
@@ -590,6 +593,9 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (event.addy) { Y += event.addy; }
 
             if (X >= 0 && X <= obj.Canvas.canvas.width && Y >= 0 && Y <= obj.Canvas.canvas.height) {
+                // Map the displayed (view-rotated) canvas position back to desktop coordinates,
+                // like amt-desktop does; without this every rotated view sends wrong mouse positions.
+                if (obj.rotation != 0) { var rotatedX = obj.crotX(X, Y); Y = obj.crotY(X, Y); X = rotatedX; }
                 var Button = 0;
                 var Delta = 0;
                 if (Action == obj.KeyAction.UP || Action == obj.KeyAction.DOWN) {
@@ -838,6 +844,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.GrabKeyInput = function () {
         if (obj.xxKeyInputGrab == true) return;
+        // Save the current handlers so UnGrabKeyInput can restore them instead of
+        // leaving the document without any keyboard handler. Only take ownership
+        // of slots this instance does not already own.
+        if (document.onkeydown !== obj.xxKeyDown) { obj._savedOnKeyDown = document.onkeydown; }
+        if (document.onkeyup !== obj.xxKeyUp) { obj._savedOnKeyUp = document.onkeyup; }
+        if (document.onkeypress !== obj.xxKeyPress) { obj._savedOnKeyPress = document.onkeypress; }
         document.onkeyup = obj.xxKeyUp;
         document.onkeydown = obj.xxKeyDown;
         document.onkeypress = obj.xxKeyPress;
@@ -846,9 +858,14 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     obj.UnGrabKeyInput = function () {
         if (obj.xxKeyInputGrab == false) return;
-        document.onkeyup = null;
-        document.onkeydown = null;
-        document.onkeypress = null;
+        // Restore the handlers that were in place before GrabKeyInput, but only
+        // for slots this instance still owns. A newer session may have taken over
+        // the slots meanwhile (disconnect + reconnect of a grabbed session), in
+        // which case leave the current handlers alone.
+        if (document.onkeydown === obj.xxKeyDown) { document.onkeydown = obj._savedOnKeyDown || null; }
+        if (document.onkeyup === obj.xxKeyUp) { document.onkeyup = obj._savedOnKeyUp || null; }
+        if (document.onkeypress === obj.xxKeyPress) { document.onkeypress = obj._savedOnKeyPress || null; }
+        obj._savedOnKeyDown = obj._savedOnKeyUp = obj._savedOnKeyPress = null;
         obj.xxKeyInputGrab = false;
     }
 

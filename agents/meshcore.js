@@ -731,7 +731,7 @@ function diagnosticAgent_installCheck(install) {
     require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'register', value: nodeid } });
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent Registered [" + nodeid.length + "/" + nodeid + "]" });
 
-    delete ddb;
+    ddb = undefined;
 
     // Set a recurrent task, to run the Diagnostic Agent every 2 days
     require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' });
@@ -1335,6 +1335,7 @@ function handleServerCommand(data) {
                                 tunnel.consent = data.consent;
                                 if (global._MSH && _MSH().LocalConsent != null) { tunnel.consent |= parseInt(_MSH().LocalConsent); }
                                 tunnel.privacybartext = data.privacybartext ? data.privacybartext : currentTranslation['privacyBar'];
+                                tunnel.privacybarmaxwidth = ((typeof data.privacybarmaxwidth == 'number') && (data.privacybarmaxwidth > 0)) ? data.privacybarmaxwidth : 0;
                                 tunnel.username = data.username + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.realname = (data.realname ? data.realname : data.username) + (data.guestname ? (' - ' + data.guestname) : '');
                                 tunnel.guestuserid = data.guestuserid;
@@ -1516,7 +1517,7 @@ function handleServerCommand(data) {
                                     pws.on('exit', function () { 
                                         if (replydata != "") reply.installedBy = replydata;
                                         mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
-                                        delete pws;
+                                        pws = undefined;
                                     });
                                 } else {
                                     mesh.SendCommand({ action: 'msg', type: 'service', value: JSON.stringify(reply), sessionid: data.sessionid });
@@ -2909,13 +2910,18 @@ function terminal_promise_consent_resolved()
     {
         try
         {
-            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : false;
+            var bash = fs.existsSync('/bin/bash') ? '/bin/bash' : (fs.existsSync('/usr/local/bin/bash') ? '/usr/local/bin/bash' : false); // BSD pkg bash
             var sh = fs.existsSync('/bin/sh') ? '/bin/sh' : false;
             var login = process.platform == 'linux' ? '/bin/login' : '/usr/bin/login';
 
             var env = { HISTCONTROL: 'ignoreboth' };
             if (process.env['LANG']) { env['LANG'] = process.env['LANG']; }
-            if (process.env['PATH']) { env['PATH'] = process.env['PATH']; }
+            var termPath = process.env['PATH'] || '/usr/bin:/bin';
+            if (process.platform == 'freebsd') {
+                if ((':' + termPath + ':').indexOf(':/usr/local/bin:') == -1)  { termPath = '/usr/local/bin:'  + termPath; }
+                if ((':' + termPath + ':').indexOf(':/usr/local/sbin:') == -1) { termPath = '/usr/local/sbin:' + termPath; }
+            }
+            env['PATH'] = termPath;
             if (typeof this.httprequest.terminalUserVariable == 'string' && this.httprequest.terminalUserVariable != '') {
                 if (this.httprequest.terminalUserVariable == 'realname') {
                     env['MESHCENTRAL_USER'] = (this.httprequest.realname ? this.httprequest.realname : 'unknown');
@@ -3042,6 +3048,7 @@ function tunnel_kvm_end()
                 this.httprequest.desktop.kvm.users.splice(i, 1);
                 this.httprequest.desktop.kvm.connectionBar.removeAllListeners('close');
                 this.httprequest.desktop.kvm.connectionBar.close();
+                if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = this.httprequest.privacybarmaxwidth; }
                 this.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.httprequest.privacybartext.replace(/\{0\}/g, this.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, this.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
                 this.httprequest.desktop.kvm.connectionBar.httprequest = this.httprequest;
                 this.httprequest.desktop.kvm.connectionBar.on('close', function ()
@@ -3095,6 +3102,7 @@ function kvm_consent_ok(ws) {
             ws.httprequest.desktop.kvm.connectionBar.close();
         }
         try {
+            if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = ws.httprequest.privacybarmaxwidth; }
             ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(ws.httprequest.privacybartext.replace(/\{0\}/g, ws.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + ws.httprequest.remoteaddr + ")", ws.httprequest);
         } catch (ex) {
@@ -3213,6 +3221,7 @@ function kvm_consentpromise_resolved(always)
         }
         try
         {
+            if (require('notifybar-desktop').MaxWidth != null) { require('notifybar-desktop').MaxWidth = this.ws.httprequest.privacybarmaxwidth; }
             this.ws.httprequest.desktop.kvm.connectionBar = require('notifybar-desktop')(this.ws.httprequest.privacybartext.replace(/\{0\}/g, this.ws.httprequest.desktop.kvm.rusers.join(', ')).replace(/\{1\}/g, this.ws.httprequest.desktop.kvm.users.join(', ')).replace(/'/g, "\\'\\"), require('MeshAgent')._tsid, color_options);
             MeshServerLogEx(31, null, "Remote Desktop Connection Bar Activated/Updated (" + this.ws.httprequest.remoteaddr + ")", this.ws.httprequest);
         } catch (ex)
@@ -3622,12 +3631,11 @@ function onTunnelData(data)
                         var options = {};
                         try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
                         options.type = require('child_process').SpawnTypes.TERM;
-                        var replydata = "";
                         var cmdchild = require('child_process').execFile('/usr/bin/caffeinate', ['caffeinate', '-u', '-t', '10'], options);
                         cmdchild.descriptorMetadata = 'UserCommandsShell';
-                        cmdchild.stdout.on('data', function (c) { replydata += c.toString(); });
-                        cmdchild.stderr.on('data', function (c) { replydata + c.toString(); });
-                        cmdchild.on('exit', function () { delete cmdchild; });
+                        cmdchild.stdout.on('data', function (c) { });
+                        cmdchild.stderr.on('data', function (c) { });
+                        cmdchild.on('exit', function () { cmdchild = undefined; });
                     } catch(err) { }
                 }
                 // Remote desktop using native pipes
@@ -4588,7 +4596,18 @@ function openFileOnDesktop(file) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: require('user-sessions').consoleUid() });
+                // Same as openUserDesktopUrl: run as the interactive user with their graphical-session
+                // env, and prefer gio (xdg-open's KDE path breaks on Plasma with no KDE_SESSION_VERSION).
+                var luid = require('user-sessions').consoleUid();
+                var lenv = {};
+                for (var le in process.env) { lenv[le] = process.env[le]; }
+                var lvars = ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS', 'WAYLAND_DISPLAY', 'DISPLAY', 'HOME'];
+                for (var lv in lvars) { var lval = require('user-sessions').findEnv(luid, lvars[lv]); if (lval != null) { lenv[lvars[lv]] = lval; } }
+                if (require('fs').existsSync('/usr/bin/gio')) {
+                    child = require('child_process').execFile('/usr/bin/gio', ['gio', 'open', file], { uid: luid, env: lenv });
+                } else {
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', file], { uid: luid, env: lenv });
+                }
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', file]);
@@ -4647,7 +4666,20 @@ function openUserDesktopUrl(url) {
                 }
                 break;
             case 'linux':
-                child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: require('user-sessions').consoleUid() });
+                // The opener needs the interactive user's graphical-session env or it can't reach the
+                // session bus (Wayland/GNOME/KDE) and nothing opens. Prefer 'gio open': xdg-open's
+                // desktop detection is fragile (e.g. Plasma with no KDE_SESSION_VERSION falls back to
+                // a missing kfmclient), while gio hands off to the session's default handler directly.
+                var luid = require('user-sessions').consoleUid();
+                var lenv = {};
+                for (var le in process.env) { lenv[le] = process.env[le]; }
+                var lvars = ['XDG_RUNTIME_DIR', 'DBUS_SESSION_BUS_ADDRESS', 'WAYLAND_DISPLAY', 'DISPLAY', 'HOME'];
+                for (var lv in lvars) { var lval = require('user-sessions').findEnv(luid, lvars[lv]); if (lval != null) { lenv[lvars[lv]] = lval; } }
+                if (require('fs').existsSync('/usr/bin/gio')) {
+                    child = require('child_process').execFile('/usr/bin/gio', ['gio', 'open', url], { uid: luid, env: lenv });
+                } else {
+                    child = require('child_process').execFile('/usr/bin/xdg-open', ['xdg-open', url], { uid: luid, env: lenv });
+                }
                 break;
             case 'darwin':
                 child = require('child_process').execFile('/usr/bin/open', ['open', url], { uid: require('user-sessions').consoleUid() });
@@ -5245,30 +5277,28 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'service':
-                if (args['_'].length != 1) {
-                    response = "Proper usage: service status|restart"; // Display usage
-                } else {
+                var op = String(args['_'][0]).toLowerCase();
+                if ((op != 'status') && (op != 'restart')) { response = "Proper usage: service status|restart"; }
+                else {
                     var svcname = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+                    try { if (global._MSH && _MSH().meshServiceName) { svcname = _MSH().meshServiceName; } } catch (ex) { }
                     try {
-                        svcname = require('MeshAgent').serviceName;
+                        var n = require('MeshAgent').serviceName;
+                        if ((typeof n == 'string') && (n != '')) { svcname = n; }
                     } catch (ex) { }
-                    var s = require('service-manager').manager.getService(svcname);
-                    switch (args['_'][0].toLowerCase()) {
-                        case 'status':
-                            response = 'Service ' + (s.isRunning() ? (s.isMe() ? '[SELF]' : '[RUNNING]') : ('[NOT RUNNING]'));
-                            break;
-                        case 'restart':
-                            if (s.isMe()) {
-                                s.restart();
-                            } else {
-                                response = 'Restarting another agent instance is not allowed';
-                            }
-                            break;
-                        default:
-                            response = "Proper usage: service status|restart"; // Display usage
-                            break;
-                    }
-                    if (process.platform == 'win32') { s.close(); }
+                    var s = null;
+                    try { s = require('service-manager').manager.getService(svcname); } catch (ex) { }
+                    if (s == null) { response = "Service '" + svcname + "' [NOT INSTALLED]"; }
+                    else if (!s.isRunning()) { response = "Service '" + svcname + "' [STOPPED]"; }
+                    else if (op == 'status') { response = "Service '" + svcname + "' [" + (s.isMe() ? 'RUNNING, this agent' : 'RUNNING, another agent instance') + ']'; }
+                    else if (s.isMe()) {
+                        try {
+                            sendConsoleText("Service '" + svcname + "' restarting", sessionid);
+                            response = null;
+                            s.restart();
+                        } catch (rex) { if (String(rex).indexOf('thread is exiting') < 0) { response = 'Restart failed: ' + rex; } }
+                    } else { response = 'Restarting another agent instance is not allowed'; }
+                    if ((process.platform == 'win32') && (s != null)) { s.close(); }
                 }
                 break;
             case 'zip':

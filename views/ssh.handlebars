@@ -89,7 +89,7 @@
 
         function start() {
             // Set the computer name
-            QH('computerName', name);
+            QH('computerName', EscapeHtml(name));
 
             // When the user resizes the window, re-fit
             window.onresize = function () { if (termfit != null) { termfit.fit(); } }
