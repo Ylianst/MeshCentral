@@ -703,6 +703,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
+            // Recovery agents must belong to an existing device group, otherwise hold the connection.
+            if (parent.meshes[obj.dbMeshKey] == null) {
+                parent.agentStats.recoveryAgentInvalidMeshCount = (parent.agentStats.recoveryAgentInvalidMeshCount || 0) + 1;
+                parent.parent.debug('agent', 'Recovery agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
+                return;
+            }
             // Inform mesh agent that it's authenticated.
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
@@ -1246,6 +1252,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 return;
             }
             if (typeof command != 'object') { return; }
+            // Recovery and diagnostic agents are not a device in the database, only allow the commands they need.
+            if ((obj.agentInfo.capabilities & 0x40) && (['msg', 'coreinfo', 'diagnostic', 'ping', 'pong'].indexOf(command.action) == -1)) {
+                parent.agentStats.recoveryAgentBlockedCommandCount = (parent.agentStats.recoveryAgentBlockedCommandCount || 0) + 1;
+                parent.parent.debug('agent', 'Recovery agent sent blocked command "' + String(command.action).substring(0, 32) + '" (' + obj.remoteaddrport + ').');
+                return;
+            }
             switch (command.action) {
                 case 'msg':
                     {
@@ -1374,12 +1386,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'log':
                     {
                         // Log a value in the event log
-                        if ((typeof command.msg == 'string') && (command.msg.length < 4096)) {
+                        if ((typeof command.msg == 'string') && (command.msg.length < 4096) && (parent.meshes[obj.dbMeshKey] != null)) {
                             var event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msg: command.msg };
                             if (typeof command.msgid == 'number') { event.msgid = command.msgid; }
-                            if (typeof command.guestname == 'string') { event.guestname = command.guestname; }
-                            if (Array.isArray(command.msgArgs)) { event.msgArgs = command.msgArgs; }
-                            if (typeof command.remoteaddr == 'string') { event.remoteaddr = command.remoteaddr; }
+                            if ((typeof command.guestname == 'string') && (command.guestname.length <= 256)) { event.guestname = command.guestname; }
+                            if (Array.isArray(command.msgArgs) && (command.msgArgs.length <= 32)) { event.msgArgs = command.msgArgs.map(function (a) { return (typeof a == 'string') ? a.substring(0, 1024) : (((typeof a == 'number') || (typeof a == 'boolean')) ? a : null); }); }
+                            if ((typeof command.remoteaddr == 'string') && (command.remoteaddr.length <= 64) && /^[0-9a-fA-F:.%\[\]]*$/.test(command.remoteaddr)) { event.remoteaddr = command.remoteaddr; } // IPv4 / IPv6 address only
                             var targets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
                             if (typeof command.userid == 'string') {
                                 var loguser = parent.users[command.userid];
@@ -1442,7 +1454,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     break;
                                 }
                                 case 'log': {
-                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256)) {
+                                    if (((obj.agentInfo.capabilities & 0x40) != 0) && (typeof command.value.value == 'string') && (command.value.value.length < 256) && (parent.meshes[obj.dbMeshKey] != null)) {
                                         // If this is a diagnostic agent, log the event in the log of the main agent
                                         var event = { etype: 'node', action: 'diagnostic', nodeid: obj.realNodeKey, snodeid: obj.dbNodeKey, domain: domain.id, msg: command.value.value };
                                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
