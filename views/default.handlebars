@@ -18803,7 +18803,7 @@
 
         function p30removeDeviceSharing(event, nodeid, publicid, guestname) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Remove Device Share", 3, function(b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)), [ decodeURIComponent(nodeid), decodeURIComponent(publicid) ]);
+            setDialogMode(2, "Remove Device Share", 3, function(b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", EscapeHtml(decodeURIComponent(guestname))), [ decodeURIComponent(nodeid), decodeURIComponent(publicid) ]);
         }
 
         function p30removeNodeFromUser(event, nodeid) {
