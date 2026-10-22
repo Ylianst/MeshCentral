@@ -703,12 +703,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
         // If this is a recovery agent
         if (obj.agentInfo.capabilities & 0x40) {
-            // Recovery agents must belong to an existing device group, otherwise hold the connection.
+            if (args.disablerecoveryagent === true) { obj.close(1); return; }
+
+          // Recovery agents must belong to an existing device group, otherwise hold the connection.
             if (parent.meshes[obj.dbMeshKey] == null) {
                 parent.agentStats.recoveryAgentInvalidMeshCount = (parent.agentStats.recoveryAgentInvalidMeshCount || 0) + 1;
                 parent.parent.debug('agent', 'Recovery agent connected with invalid domain/mesh, holding connection (' + obj.remoteaddrport + ', ' + obj.dbMeshKey + ').');
                 return;
             }
+
             // Inform mesh agent that it's authenticated.
             delete obj.pendingCompleteAgentConnection;
             obj.authenticated = 2;
