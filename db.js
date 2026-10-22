@@ -3690,16 +3690,11 @@ module.exports.CreateDB = function (parent, func) {
                                  ' --db=\"' + dbname + '\" --archive=\"' + obj.newDBDumpFile + '\"';
                 parent.debug('backup','Mongodump cmd: ' + cmd);
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n');} obj.createBackupfile(func);}
                 );
-                
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                  });
 
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
@@ -3711,15 +3706,11 @@ module.exports.CreateDB = function (parent, func) {
                 parent.debug('backup','Maria/MySQLdump cmd: ' + cmd);
 
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MySQL backup: ' + error + '\r\n');} obj.createBackupfile(func);}
                 );
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.error(`MySQLdump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                  });
 
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
@@ -3741,15 +3732,11 @@ module.exports.CreateDB = function (parent, func) {
                     + " --file=" + obj.newDBDumpFile;
                 parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: dataPath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n');} obj.createBackupfile(func);}
                 );
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`PostgreSQLdump child process exited with code: ` + code); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                });
             } else {
                 // NeDB/Acebase backup, no db dump needed, just make a file backup
                 obj.createBackupfile(func);
@@ -3787,10 +3774,12 @@ module.exports.CreateDB = function (parent, func) {
         if (obj.backupStatus == 0) {
             // Zip the data directory with the dbdump|NeDB files
             let output = fs.createWriteStream(obj.newAutoBackupFile);
+            // Kept per run, archiver can still raise errors after output closes and those must not fail the next backup
+            let zipStatus = 0x0;
 
             // Archive finalized and closed
             output.on('close', function () { 
-                if (obj.backupStatus == 0) {
+                if (zipStatus == 0) {
                     let mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + ((archive.pointer() / 1048576).toFixed(2)) + "Mb";
                     console.log(mesg);
                     if (func) { func(mesg); };
@@ -3798,7 +3787,7 @@ module.exports.CreateDB = function (parent, func) {
                     obj.removeExpiredBackupfiles(func);
 
                 } else {
-                    let mesg = 'Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
+                    let mesg = 'Zipbackup failed (' + zipStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile;
                     if (func) { func(mesg) }
                     else { parent.addServerWarning(mesg, true ) };
                     if (fs.existsSync(obj.newAutoBackupFile)) { fs.unlink(obj.newAutoBackupFile, function (err) { if (err) {console.error('Failed to clean up backupfile: ' + err.message)} }) };
@@ -3813,10 +3802,10 @@ module.exports.CreateDB = function (parent, func) {
             );
             output.on('end', function () { });
             output.on('error', function (err) {
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((zipStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.error('Output error: ' + err.message);
                     if (func) { func('Output error: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    zipStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
             });
@@ -3824,18 +3813,18 @@ module.exports.CreateDB = function (parent, func) {
                 //if files added to the archiver object aren't reachable anymore (e.g. sqlite-journal files)
                 //an ENOENT warning is given, but the archiver module has no option to/does not skip/resume
                 //so the backup needs te be aborted as it otherwise leaves an incomplete zip and never 'ends'
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((zipStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.log('Zip warning: ' + err.message); 
                     if (func) { func('Zip warning: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    zipStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 };
             });
             archive.on('error', function (err) {
-                if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
+                if ((zipStatus & BACKUPFAIL_ZIPCREATE) == 0) {
                     console.error('Zip error: ' + err.message);
                     if (func) { func('Zip error: ' + err.message); };
-                    obj.backupStatus |= BACKUPFAIL_ZIPCREATE;
+                    zipStatus |= BACKUPFAIL_ZIPCREATE;
                     archive.abort();
                 }
                 });

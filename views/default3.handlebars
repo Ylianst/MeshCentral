@@ -2329,7 +2329,7 @@
 
 
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
-        <iframe style=display:none name="fileDownloadFrame"></iframe>
+        <iframe id=fileDownloadFrame style=display:none name="fileDownloadFrame"></iframe>
     </div>
     <script type="text/javascript">
         'use strict';
@@ -17302,7 +17302,17 @@
         function backup_enterPassword() {
             xxModal.hide();
             meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
-            window.location.href = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+            // Navigating the page makes Firefox drop the control web socket and the reconnect reload cancels the download, and
+            // downloadFile() removes its frame after 10s, before a big backup is ready. Downloads never fire onload, errors do.
+            var f = Q('fileDownloadFrame');
+            f.onload = function () {
+                f.onload = null;
+                var x = ''; try { x = EscapeHtml(f.contentDocument.body.innerText); } catch (ex) { }
+                var show = function () { setModalContent('xxAddAgent', "Download server backup", x); showModal('xxAddAgentModal', 'idx_dlgOkButton'); };
+                // A quick error lands while this dialog is still fading out, and Bootstrap ignores show() mid-transition
+                if (xxModal) { Q('xxAddAgentModal').addEventListener('hidden.bs.modal', show, { once: true }); } else { show(); }
+            };
+            f.src = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
         }
 
         function server_showRestoreDlg() {
