@@ -2965,6 +2965,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'removedevices':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+
+                    // Users and user groups that lose device links are saved once, after all the devices in this
+                    // request are processed. Saving them per device rewrites each user record once per removed
+                    // device, which is very expensive when users have many device links.
+                    var removeDevicesChangedUsers = {}, removeDevicesChangedUserGroups = {}, removeDevicesPending = 1;
+                    function removeDevicesDone() {
+                        if (--removeDevicesPending > 0) return;
+                        for (var uid in removeDevicesChangedUsers) {
+                            var cuser = removeDevicesChangedUsers[uid];
+                            db.SetUser(cuser);
+
+                            // Notify user change
+                            var targets = ['*', 'server-users', cuser._id];
+                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+                        }
+                        for (var gid in removeDevicesChangedUserGroups) { db.Set(removeDevicesChangedUserGroups[gid]); }
+                    }
+
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i], err = null;
 
@@ -2979,10 +2999,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             continue;
                         }
                         // Get the node and the rights for this node
+                        removeDevicesPending++;
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_UNINSTALL) == 0) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                                removeDevicesDone();
                                 return;
                             }
 
@@ -3008,24 +3030,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (i.startsWith('user/')) {
                                         var cuser = parent.users[i];
                                         if ((cuser != null) && (cuser.links != null) && (cuser.links[node._id] != null)) {
-                                            // Remove the user link & save the user
+                                            // Remove the user link, the user is saved once all devices are processed
                                             delete cuser.links[node._id];
                                             if (Object.keys(cuser.links).length == 0) { delete cuser.links; }
-                                            db.SetUser(cuser);
-
-                                            // Notify user change
-                                            var targets = ['*', 'server-users', cuser._id];
-                                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
-                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                            parent.parent.DispatchEvent(targets, obj, event);
+                                            removeDevicesChangedUsers[cuser._id] = cuser;
                                         }
                                     } else if (i.startsWith('ugrp/')) {
                                         var cusergroup = parent.userGroups[i];
                                         if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
-                                            // Remove the user link & save the user
+                                            // Remove the user group link, the user group is saved once all devices are processed
                                             delete cusergroup.links[node._id];
                                             if (Object.keys(cusergroup.links).length == 0) { delete cusergroup.links; }
-                                            db.Set(cusergroup);
+                                            removeDevicesChangedUserGroups[cusergroup._id] = cusergroup;
 
                                             // Notify user change
                                             var targets = ['*', 'server-users', cusergroup._id];
@@ -3055,8 +3071,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Send response if required
                             if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                            removeDevicesDone();
                         });
                     }
+                    removeDevicesDone();
 
                     break;
                 }
