@@ -91,7 +91,10 @@ module.exports.CreateMultiServer = function (parent, args) {
 
             // If a message is received
             obj.ws.on('message', function (msg) {
-                if (typeof msg != 'string') { msg = msg.toString('binary'); }
+                if (typeof msg != 'string') {
+                    if (msg[0] == 123) { msg = msg.toString('utf8'); }
+                    else { msg = msg.toString('binary'); }
+                }
                 if (msg.length < 2) return;
 
                 if (msg.charCodeAt(0) == 123) {
@@ -260,7 +263,10 @@ module.exports.CreateMultiServer = function (parent, args) {
 
         // When data is received from the peer server web socket
         ws.on('message', function (msg) {
-            if (typeof msg != 'string') { msg = msg.toString('binary'); }
+            if (typeof msg != 'string') {
+                if (msg[0] == 123) { msg = msg.toString('utf8'); }
+                else { msg = msg.toString('binary'); }
+            }
             if (msg.length < 2) return;
 
             if (msg.charCodeAt(0) == 123) {
