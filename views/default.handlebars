@@ -18818,10 +18818,10 @@
             userid = decodeURIComponent(userid);
             if (userid.startsWith('user/')) {
                 if (users) { user = users[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user \"{0}\"?", name):"Confirm removal of access rights?", user);
+                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user \"{0}\"?", EscapeHtml(name)):"Confirm removal of access rights?", user);
             } else if (userid.startsWith('ugrp/')) {
                 if (usergroups) { user = usergroups[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user group \"{0}\"?", name):"Confirm removal of access rights?", user);
+                setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user group \"{0}\"?", EscapeHtml(name)):"Confirm removal of access rights?", user);
             }
         }
 
