@@ -5273,6 +5273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 const extraids = getUserExtraIds();
                 db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
                     if (docs == null) return;
+                    if (obj.user == null) return; // The session closed while the query was running
                     const ids = [];
                     if (command.nodeids != null) {
                         // Create a list of node ids and query them for last device connection time
@@ -5282,6 +5283,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var i in docs) { ids.push('lc' + docs[i]._id); }
                     }
                     db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                        if (obj.user == null) return; // The session closed while the query was running
                         const lastConnects = {};
                         if (docs != null) { for (var i in docs) { lastConnects[docs[i]._id] = docs[i]; } }
 
