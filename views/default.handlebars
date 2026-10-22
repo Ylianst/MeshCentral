@@ -2356,7 +2356,8 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                deviceServerFilter = getDeviceServerFilter();
+                meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip, filter: deviceServerFilter });
                 meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
@@ -6694,8 +6695,30 @@
             return r;
         }
 
+        // When the server pages the device list (maxDeviceView), plain name filters are sent to the server so they
+        // search all devices and not only the current page. Prefixed (u:, ip:, tag:...) and composite filters stay local.
+        var deviceServerFilter = '', deviceServerFilterTimer = null;
+        function getDeviceServerFilter() {
+            var x = Q('SearchInput').value.toLowerCase().trim();
+            if ((x == '') || (/[:,!]/.test(x)) || (/\s(or|and)\s/.test(x))) return '';
+            return x;
+        }
+        function updateDeviceServerFilter() {
+            if ((serverinfo == null) || (serverinfo.maxdeviceview == null) || (meshserver == null)) return;
+            if (deviceServerFilterTimer != null) { clearTimeout(deviceServerFilterTimer); deviceServerFilterTimer = null; }
+            if (getDeviceServerFilter() == deviceServerFilter) return;
+            deviceServerFilterTimer = setTimeout(function () {
+                deviceServerFilterTimer = null;
+                var f = getDeviceServerFilter();
+                if (f == deviceServerFilter) return;
+                deviceServerFilter = f;
+                meshserver.send({ action: 'nodes', skip: 0, filter: f });
+            }, 400);
+        }
+
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
+            updateDeviceServerFilter();
             QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '')?null:'#FDFFBE';
             QV('SearchInputClearButton', (x != ''));
             QV('KvmSearchInputClearButton', (x != ''));
