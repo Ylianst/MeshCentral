@@ -144,7 +144,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.PendingOperations.push([r, 0]);
             }
         }
-        tile.error = function () { console.log('DecodeTileError'); }
+        tile.onerror = function () { console.log('DecodeTileError'); obj.PendingOperations.push([r, 0]); if (obj.State != 0) { while (obj.DoPendingOperations()) { } } }
     }
 
     obj.DoPendingOperations = function () {
@@ -221,12 +221,12 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
         if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
 
-        // Fix for view being too large for String.fromCharCode.apply()
-        var chunkSize = 10000;
-        let result = '';
-        for (let i = 0; i < view.length; i += chunkSize) { result += String.fromCharCode.apply(null, view.slice(i, i + chunkSize)); }
         // Record the command if needed
         if (obj.recordedData != null) {
+            // Fix for view being too large for String.fromCharCode.apply()
+            var chunkSize = 10000;
+            let result = '';
+            for (let i = 0; i < view.length; i += chunkSize) { result += String.fromCharCode.apply(null, view.slice(i, i + chunkSize)); }
             if (cmdsize > 65000) {
                 obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + result));
             } else {
