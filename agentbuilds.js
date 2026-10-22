@@ -433,17 +433,21 @@ function CreateAgentDefaults(parent, options = {}) {
     }
     function validate(manifest) {
         if (!manifest || manifest.schemaVersion !== 1 || !Array.isArray(manifest.releases) || manifest.releases.length > 32) throw new Error('Invalid default agent release manifest.');
-        const files = new Map();
+        const files = new Map(), skipped = new Set();
         for (const release of manifest.releases) {
             if (!release || typeof release.repository !== 'string' || !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(release.repository) ||
                 typeof release.tag !== 'string' || !/^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/.test(release.tag) ||
                 !Array.isArray(release.files) || !release.files.length) throw new Error('Specify a repository, release tag and files for each default release.');
             const base = 'https://github.com/' + release.repository + '/releases/';
             for (const file of release.files) {
-                if (!file || !names.has(file.filename) || files.has(file.filename) ||
-                    typeof file.asset !== 'string' || !/^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/.test(file.asset) ||
+                if (!file || typeof file.filename !== 'string' || !/^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/.test(file.filename)) throw new Error('Invalid default release file name in ' + release.tag + '.');
+                // Newer releases can carry agent types this server does not know. Nothing would serve them, so they
+                // are left out instead of failing the whole manifest.
+                if (!names.has(file.filename)) { skipped.add(file.filename); continue; }
+                if (files.has(file.filename)) throw new Error(file.filename + ' is listed more than once in the default releases.');
+                if (typeof file.asset !== 'string' || !/^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/.test(file.asset) ||
                     !Number.isSafeInteger(file.size) || file.size <= 0 || file.size > 128 * 1024 * 1024 ||
-                    typeof file.sha384 !== 'string' || !/^[a-f0-9]{96}$/.test(file.sha384)) throw new Error('Invalid or duplicate default release file.');
+                    typeof file.sha384 !== 'string' || !/^[a-f0-9]{96}$/.test(file.sha384)) throw new Error('Invalid asset, size or SHA384 for default release file ' + file.filename + '.');
                 files.set(file.filename, {
                     filename: file.filename, asset: file.asset, size: file.size, sha384: file.sha384,
                     repository: release.repository, tag: release.tag, sourceUrl: base + 'tag/' + encodeURIComponent(release.tag),
@@ -451,13 +455,26 @@ function CreateAgentDefaults(parent, options = {}) {
                 });
             }
         }
+        if (!files.size) throw new Error('The default releases list no agent files this server uses.');
+        if (skipped.size) log('Ignoring ' + Array.from(skipped).join(', ') + ' in the default agent releases: no agent type on this server uses ' + (skipped.size === 1 ? 'that file name.' : 'those file names.'));
         return files;
     }
+    async function read(filename) {
+        try {
+            const stat = await fs.promises.lstat(filename);
+            if (!stat.isFile() || stat.size > 1024 * 1024) throw new Error('Invalid default agent release manifest.');
+            return validate(JSON.parse(await fs.promises.readFile(filename, 'utf8')));
+        } catch (ex) { if (ex.code === 'ENOENT') throw ex; throw new Error(filename + ': ' + ex.message); }
+    }
     async function load() {
-        const filename = settings.manifest ? path.resolve(parent.datapath, settings.manifest) : path.join(bundled, 'agent-defaults.json');
-        const stat = await fs.promises.lstat(filename);
-        if (!stat.isFile() || stat.size > 1024 * 1024) throw new Error('Invalid default agent release manifest.');
-        const files = validate(JSON.parse(await fs.promises.readFile(filename, 'utf8')));
+        const shipped = path.resolve(bundled, 'agent-defaults.json');
+        let custom = settings.manifest ? path.resolve(parent.datapath, settings.manifest) : null, files;
+        if (custom === shipped) custom = null;
+        // check-releases.js passes the shipped manifest as the custom one, from a folder that holds no copy of it.
+        try { files = await read(shipped); } catch (ex) { if (!custom || ex.code !== 'ENOENT') throw ex; files = new Map(); }
+        // Laid over the shipped pins file by file, so a release that carries only some agents, like a testing
+        // build, does not leave the others with nothing to serve.
+        if (custom) for (const [name, file] of await read(custom)) files.set(name, file);
         entries.clear();
         for (const [name, file] of files) entries.set(name, file);
         loaded = true;

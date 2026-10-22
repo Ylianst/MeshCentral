@@ -586,7 +586,7 @@
             },
             "manifest": {
               "type": "string",
-              "description": "Optional default release manifest path, relative to meshcentral-data or absolute. Otherwise use agents/agent-defaults.json shipped with MeshCentral. Changing this file requires a restart."
+              "description": "Optional release manifest path, relative to meshcentral-data or absolute, laid over agents/agent-defaults.json shipped with MeshCentral. Each file it lists replaces the shipped pin for that file, and files it does not list keep the shipped pin. Files with no agent type on this server are ignored. Changing this file requires a restart."
             },
             "checkIntervalHours": {
               "type": "integer",
