@@ -1357,6 +1357,55 @@
             "default": null,
             "description": "Web site .png logo file that is 512x512 in size placed in meshcentral-data that is used for PWA installs on iOS and Android."
           },
+          "pwa": {
+            "type": "object",
+            "description": "Configuration and customization of the manifest for Progressive Web App mode. See https://w3c.github.io/manifest/#typical-structure for reference.",
+            "properties": {
+              "disabled": {
+                "type": "boolean",
+                "default": "false",
+                "description": "Disables the PWA manifest. Returns a 404 if present and 'true'."
+              },
+              "name": {
+                "type": "string",
+                "default": "MeshCentral",
+                "description": "Preferred PWA app name. See https://w3c.github.io/manifest/#name-member."
+              },
+              "short_name": {
+                "type": "string",
+                "default": "MeshCentral",
+                "description": "Preferred PWA short name when there is insufficient space for the name. See https://w3c.github.io/manifest/#short_name-member."
+              },
+              "orientation": {
+                "type": "string",
+                "default": "any",
+                "description": "Preferred PWA screen orientation. See https://w3c.github.io/manifest/#orientation-member."
+              },
+              "display": {
+                "type": "string",
+                "default": "fullscreen",
+                "description": "Preferred PWA display mode. See https://w3c.github.io/manifest/#display-member."
+              },
+              "themeColor": {
+                "type": "string",
+                "default": "#ffffff",
+                "description": "Preferred PWA theme color (HTML). See https://w3c.github.io/manifest/#theme_color-member."
+              },
+              "backgroundColor": {
+                "type": "string",
+                "default": "#ffffff",
+                "description": "Preferred PWA background color (HTML). See https://w3c.github.io/manifest/#background_color-member."
+              },
+              "icons": {
+                "type": "object",
+                "description": "If present, redefines the default icon object. See https://w3c.github.io/manifest/#declaring-multiple-icons for reference."
+              },
+              "shortcuts": {
+                "type": "object",
+                "description": "If present, a shortcuts object with sub urls of the web ui can be defined and accessed via taskbar right-click or long-press action on the app icon on mobile. See https://w3c.github.io/manifest/#creating-shortcuts for reference."
+              }
+            }
+          },          
           "rootRedirect": {
             "type": "string",
             "default": null,
