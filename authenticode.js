@@ -1572,96 +1572,70 @@ function createAuthenticodeHandler(path) {
         }
         options.port = ((timeServerUrl.port == '') ? (options.protocol === "https:" ? 443 : 80) : parseInt(timeServerUrl.port));
 
-        if (options.proxy == null) {
-            // No proxy needed
+        // Call back once, a second call would continue signing twice. A time server that cannot be reached
+        // must not hold up startup until the operating system gives up on the connection.
+        var done = false, active = null;
+        const timer = setTimeout(function () { if (active != null) { active.destroy(new Error('Time stamp request timed out.')); } }, 20000);
+        function respond(err, data) { if (done == false) { done = true; clearTimeout(timer); func(err, data); } }
 
-            // Setup the options
-            delete options.url;
-            options.method = 'POST';
-            options.headers = {
-                'accept': 'application/octet-stream',
-                'cache-control': 'no-cache',
-                'user-agent': 'Transport',
-                'content-type': 'application/octet-stream',
-                'content-length': Buffer.byteLength(requestBody)
+        // Post the request, on the proxy tunnel if there is one
+        function post(socket) {
+            const postOptions = {
+                protocol: options.protocol,
+                hostname: options.hostname,
+                port: options.port,
+                path: options.path,
+                method: 'POST',
+                headers: {
+                    'accept': 'application/octet-stream',
+                    'cache-control': 'no-cache',
+                    'user-agent': 'Transport',
+                    'content-type': 'application/octet-stream',
+                    'content-length': Buffer.byteLength(requestBody)
+                }
             };
+            if (socket != null) {
+                postOptions.createConnection = function () { return socket; };
+                postOptions.defaultPort = ((options.protocol === "https:") ? 443 : 80);
+            }
 
             // Set up the request
             var responseAccumulator = '';
-            var req = http.request(options, function (res) {
+            var req = active = http.request(postOptions, function (res) {
+                if (res.statusCode != 200) { res.resume(); respond('Time stamp server error (HTTP ' + res.statusCode + ').'); return; }
                 res.setEncoding('utf8');
                 res.on('data', function (chunk) { responseAccumulator += chunk; });
-                res.on('end', function () { func(null, responseAccumulator); });
+                res.on('end', function () { respond(null, responseAccumulator); });
+                res.on('error', function (err) { respond('' + err); });
             });
 
             // Post the data
-            req.on('error', function (err) { func('' + err); });
+            req.on('error', function (err) { respond('' + err); });
             req.write(requestBody);
             req.end();
-        } else {
-            // We are using a proxy
-            // This is a fairly basic proxy implementation, should work most of the time.
-
-            // Setup the options and decode the proxy URL
-            var proxyOptions = { method: 'CONNECT' };
-            if (options.proxy) {
-                const proxyUrl = new URL(options.proxy);
-                proxyOptions.protocol = proxyUrl.protocol;
-                proxyOptions.hostname = proxyUrl.hostname;
-                proxyOptions.path = options.hostname + ':' + options.port;
-                proxyOptions.port = ((proxyUrl.port == '') ? (options.protocol === "https:" ? 443 : 80) : parseInt(proxyUrl.port));
-            }
-
-            // Set up the proxy request
-            var responseAccumulator = '';
-            var req = http.request(proxyOptions);
-            req.on('error', function (err) { func('' + err); });
-            req.on('connect', function (res, socket, head) {
-                // Make a request over the HTTP tunnel
-                socket.write('POST ' + options.path + ' HTTP/1.1\r\n' +
-                    'host: ' + options.hostname + ':' + options.port + '\r\n' +
-                    'accept: application/octet-stream\r\n' +
-                    'cache-control: no-cache\r\n' +
-                    'user-agent: Transport\r\n' +
-                    'content-type: application/octet-stream\r\n' +
-                    'content-length: ' + Buffer.byteLength(requestBody) + '\r\n' +
-                    '\r\n' + requestBody);
-                socket.on('data', function (chunk) {
-                    responseAccumulator += chunk.toString();
-                    var responseData = parseHttpResponse(responseAccumulator);
-                    if (responseData != null) { try { socket.end(); } catch (ex) { console.log('ex', ex); } socket.xdone = true; func(null, responseData); }
-                });
-                socket.on('end', function () {
-                    if (socket.xdone == true) return;
-                    var responseData = parseHttpResponse(responseAccumulator);
-                    if (responseData != null) { func(null, responseData); } else { func("Unable to parse response."); }
-                });
-            });
-            req.end();
         }
-    }
+        if (options.proxy == null) { post(null); return; }
 
-    // Parse the HTTP response and return data if available
-    function parseHttpResponse(data) {
-        var dataSplit = data.split('\r\n\r\n');
-        if (dataSplit.length < 2) return null;
-
-        // Parse the HTTP header
-        var headerSplit = dataSplit[0].split('\r\n'), headers = {};
-        for (var i in headerSplit) {
-            if (i != 0) {
-                var x = headerSplit[i].indexOf(':');
-                headers[headerSplit[i].substring(0, x).toLowerCase()] = headerSplit[i].substring(x + 2);
-            }
-        }
-
-        // If there is a content-length in the header, keep accumulating data until we have the right length
-        if (headers['content-length'] != null) {
-            const contentLength = parseInt(headers['content-length']);
-            if (dataSplit[1].length < contentLength) return null; // Wait for more data
-            return dataSplit[1];
-        }
-        return dataSplit[1];
+        // We are using a proxy, open a tunnel to the time server. The response is read on it by the HTTP module,
+        // chunked replies included.
+        var proxyUrl = null;
+        try { proxyUrl = new URL(options.proxy); } catch (ex) { respond('Invalid time stamp proxy URL.'); return; }
+        const proxyOptions = {
+            method: 'CONNECT',
+            hostname: proxyUrl.hostname.replace(/^\[|\]$/g, ''),
+            port: ((proxyUrl.port == '') ? ((proxyUrl.protocol === 'https:') ? 443 : 80) : parseInt(proxyUrl.port)),
+            path: options.hostname + ':' + options.port,
+            headers: { 'host': options.hostname + ':' + options.port }
+        };
+        if (proxyUrl.username) { proxyOptions.headers['proxy-authorization'] = 'Basic ' + Buffer.from(decodeURIComponent(proxyUrl.username) + ':' + decodeURIComponent(proxyUrl.password)).toString('base64'); }
+        var req = active = require((proxyUrl.protocol === 'https:') ? 'https' : 'http').request(proxyOptions);
+        req.on('error', function (err) { respond('' + err); });
+        req.on('connect', function (res, socket, head) {
+            if (res.statusCode != 200) { socket.destroy(); respond('Time stamp proxy refused the connection (HTTP ' + res.statusCode + ').'); return; }
+            if (head.length > 0) { socket.unshift(head); }
+            post((options.protocol === "https:") ? require('tls').connect({ socket: socket, servername: options.hostname }) : socket);
+        });
+        req.end();
     }
 
     // Complete the signature of an executable
