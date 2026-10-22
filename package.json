@@ -39,7 +39,6 @@
   "dependencies": {
     "@seald-io/nedb": "4.1.2",
     "@zip.js/zip.js": "2.8.26",
-    "archiver": "7.0.1",
     "cbor": "5.2.0",
     "compression": "1.8.1",
     "cookie-session": "2.1.1",

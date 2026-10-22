@@ -40,8 +40,38 @@ module.exports.zipDirectory = async function (dirPath, outputZip, password = '',
     }
 }
 
+// Move the folders zipExtract kept at the root of destPath to where they belong
+// Try rename (move) first, else copy/remove
+module.exports.moveExtractedFolders = async function (destPath, destinations) {
+    const path = require('path');
+    const fsp = require('fs/promises');
+    const { existsSync } = require('fs');
+    const moved = [], failed = [];
+
+    for (const folderName in destinations) {
+        const srcPath = path.join(destPath, folderName);
+        const folderDest = destinations[folderName];
+        if (!existsSync(srcPath)) continue;
+        if (typeof folderDest != 'string') { failed.push(folderName + ': no destination, left in ' + srcPath); continue; }
+        try {
+            await fsp.mkdir(path.dirname(folderDest), { recursive: true });
+            try {
+                await fsp.rename(srcPath, folderDest);
+            } catch (e) {
+                if (['EXDEV', 'ENOTEMPTY', 'EEXIST', 'EPERM', 'EACCES'].indexOf(e.code) == -1) throw e;
+                await fsp.cp(srcPath, folderDest, { recursive: true, force: true });
+                await fsp.rm(srcPath, { recursive: true, force: true });
+            }
+            moved.push(folderName + ' -> ' + folderDest);
+        } catch (e) {
+            failed.push(folderName + ' -> ' + folderDest + ': ' + e.message);
+        }
+    }
+
+    return { res: (failed.length == 0), moved: moved, mes: failed.length ? ('Unable to move: ' + failed.join('; ')) : ('Moved ' + moved.length + ' folder(s)') };
+}
+
 // restore zipfile
-// removePath: optional path to remove from destination path
 // First check archive on illegal paths (updirs and absolute paths), then extract
 module.exports.zipExtract = async function (zipPath, destPath, removePath = '', password = "") {
     try {
@@ -64,7 +94,10 @@ module.exports.zipExtract = async function (zipPath, destPath, removePath = '', 
 
             // anchored prefix strip — must match what the extraction pass writes
             let name = entry.filename;
-            if (removePath && name.startsWith(removePath)) name = name.slice(removePath.length);
+            if (Array.isArray(removePath)) {
+                const parts = name.split(/[/\\]/);
+                if ((parts.length > 1) && (removePath.indexOf(parts[0]) == -1)) { name = parts.slice(1).join('/'); }
+            } else if (removePath && name.startsWith(removePath)) { name = name.slice(removePath.length); }
 
             // reject any parent-dir token outright (split on both separators; segment match, not substring)
             if (name.split(/[/\\]/).includes('..')) {
