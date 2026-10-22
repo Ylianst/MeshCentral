@@ -144,7 +144,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
                 obj.PendingOperations.push([r, 0]);
             }
         }
-        tile.onerror = function () { console.log('DecodeTileError'); obj.PendingOperations.push([r, 0]); while (obj.DoPendingOperations()) { } }
+        tile.onerror = function () { console.log('DecodeTileError'); obj.PendingOperations.push([r, 0]); if (obj.State != 0) { while (obj.DoPendingOperations()) { } } }
     }
 
     obj.DoPendingOperations = function () {
