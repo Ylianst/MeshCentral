@@ -4132,26 +4132,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Return a customised mainifest.json for PWA
     function handleManifestRequest(req, res){
-        const domain = checkUserIpAddress(req);
+        const domain = checkUserIpAddress(req, res);
         if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
-        if (domain.pwa.disabled == true) { parent.debug('web', 'handleManifestRequest: PWA disabled'); res.sendStatus(404); return; }
+        if ((domain.pwa != null) && (domain.pwa.disabled == true)) { parent.debug('web', 'handleManifestRequest: PWA disabled'); res.sendStatus(404); return; }
+        const pwa = (domain.pwa != null) ? domain.pwa : {};
         parent.debug('web', 'handleManifestRequest()');
         var manifest = {
-            "name": (domain.pwa.name != null) ? domain.pwa.name : 'MeshCentral',
-            "short_name": (domain.pwa.short_name != null) ? domain.pwa.short_name : 'MeshCentral',
+            "name": (pwa.name != null) ? pwa.name : ((domain.title != null) ? domain.title : 'MeshCentral'),
+            "short_name": (pwa.short_name != null) ? pwa.short_name : ((domain.title != null) ? domain.title : 'MeshCentral'),
             "description": "Open source web based, remote computer management.",
             "scope": ".",
             "start_url": "/",
-            "display": (domain.pwa.display != null) ? domain.pwa.display : "fullscreen",
-            "orientation": (domain.pwa.orientation != null) ? domain.pwa.orientation : "any",
-            "theme_color": (domain.pwa.themecolor != null) ? domain.pwa.themecolor : "#ffffff",
-            "background_color": (domain.pwa.backgroundcolor != null) ? domain.pwa.backgroundcolor : "#ffffff",
-            "icons": (domain.pwa.icons != null) ? domain.pwa.icons : [{
+            "display": (pwa.display != null) ? pwa.display : "fullscreen",
+            "orientation": (pwa.orientation != null) ? pwa.orientation : "any",
+            "theme_color": (pwa.themecolor != null) ? pwa.themecolor : "#ffffff",
+            "background_color": (pwa.backgroundcolor != null) ? pwa.backgroundcolor : "#ffffff",
+            "icons": (pwa.icons != null) ? pwa.icons : [{
                 "src": "pwalogo.png",
                 "sizes": "512x512",
                 "type": "image/png"
             }],
-            "shortcuts": domain.pwa.shortcuts
+            "shortcuts": pwa.shortcuts
         };
         res.json(manifest);
     }
