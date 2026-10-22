@@ -3209,7 +3209,7 @@ function kvm_consentpromise_resolved(always)
             if (this.ws.httprequest.soptions.notifyTitle != null) { notifyTitle = this.ws.httprequest.soptions.notifyTitle; }
             if (this.ws.httprequest.soptions.notifyMsgDesktop != null) { notifyMessage = this.ws.httprequest.soptions.notifyMsgDesktop.replace(/\{0\}/g, this.ws.httprequest.realname).replace(/\{1\}/g, this.ws.httprequest.username); }
         }
-        try { require('toaster').Toast(notifyTitle, notifyMessage, tsid); } catch (ex) { }
+        try { require('toaster').Toast(notifyTitle, notifyMessage, this.ws.tsid); } catch (ex) { }
     }
     if (this.ws.httprequest.consent && (this.ws.httprequest.consent & 0x40))
     {
