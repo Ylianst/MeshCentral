@@ -1981,7 +1981,7 @@ module.exports.CreateDB = function (parent, func) {
                 data = common.escapeLinksFieldNameEx(data);
                 var xdata = performTypedRecordEncrypt(data);
                 obj.dbCounters.fileSet++;
-                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } })
+                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } }, function (err) { if (func) { func(err); } else { parent.debug('db', 'Set: ' + err); } });
             };
             obj.Get = function (id, func) {
                 obj.file.ref('meshcentral').child(encodeURIComponent(id)).get(function (snapshot) {
@@ -2029,10 +2029,10 @@ module.exports.CreateDB = function (parent, func) {
                 query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) {
-                obj.file.query('meshcentral').filter('type', '==', type).get(function (snapshots) {
+                obj.file.query('meshcentral').filter('type', '==', type).get().then(function (snapshots) {
                     const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); }
-                    func(null, common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs)));
-                });
+                    return common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs));
+                }).then(function (docs) { func(null, docs); }, func);
             };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
