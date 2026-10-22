@@ -31916,11 +31916,11 @@
       "zh-chs": "快速",
       "zh-cht": "快速",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
-        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->1",
-        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
-        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
+        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->3",
+        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
+        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3"
       ]
     },
     {
@@ -49451,13 +49451,13 @@
       "zh-chs": "中",
       "zh-cht": "中",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
         "default.handlebars->container->column_l->p1->devListToolbarSpan->1->0->9->devListToolbarSize->sizeselect->3",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
         "default3.handlebars->container->column_l->p1->devListToolbarSpan->7->devListToolbarSize->sizeselect->3",
-        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->3",
-        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->3",
-        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->3"
+        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->5",
+        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
+        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
       ]
     },
     {
@@ -75489,11 +75489,11 @@
       "zh-chs": "慢",
       "zh-cht": "慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5",
-        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->5",
-        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->5",
-        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->5"
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
+        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->7",
+        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
+        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
       ]
     },
     {
@@ -87978,6 +87978,39 @@
       ]
     },
     {
+      "bs": "Vrlo brzo",
+      "ca": "Molt ràpid",
+      "cs": "Velmi rychle",
+      "da": "Meget hurtig",
+      "de": "Sehr schnell",
+      "en": "Very fast",
+      "es": "Muy rápido",
+      "fi": "Hyvin nopea",
+      "fr": "Très rapide",
+      "hi": "बहुत तेज़ गति से",
+      "hu": "Nagyon gyors",
+      "it": "Molto veloce",
+      "ja": "非常に速い",
+      "ko": "아주 빠른",
+      "nl": "Erg snel",
+      "pl": "Bardzo szybko",
+      "pt": "Muito rápido",
+      "pt-br": "Muito rápido",
+      "ru": "Очень быстро",
+      "sv": "Väldigt snabb",
+      "tr": "Çok hızlı",
+      "uk": "Дуже швидко",
+      "zh-chs": "非常快",
+      "zh-cht": "非常快",
+      "xloc": [
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1",
+        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->1",
+        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->1",
+        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->1"
+      ]
+    },
+    {
       "bs": "Vrlo sporo",
       "ca": "Molt lent",
       "cs": "Velmi pomalu",
@@ -88003,11 +88036,11 @@
       "zh-chs": "非常慢",
       "zh-cht": "非常慢",
       "xloc": [
-        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
-        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7",
-        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->7",
-        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->7",
-        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->7"
+        "default-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->9",
+        "default.handlebars->container->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->9",
+        "default3.handlebars->container->xxAddAgentModal->xxAddAgentModalConf->1->xxAddAgentBody->dialog7->d7meshkvm->7->d7framelimiter->9",
+        "sharing-mobile.handlebars->dialog->3->dialog7->d7meshkvm->3->1->4->3->d7framelimiter->9",
+        "sharing.handlebars->dialog->dialogBody->dialog7->d7meshkvm->7->d7framelimiter->9"
       ]
     },
     {
