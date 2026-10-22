@@ -4791,7 +4791,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var now = Date.now();
                         for (var i = 0; i < docs.length; i++) {
                             const doc = docs[i];
-                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); delete docs[i]; } else {
+                            if (doc.expireTime < now) { parent.db.Remove(doc._id, function () { }); docs.splice(i--, 1); } else {
                                 // This share is ok, remove extra data we don't need to send.
                                 delete doc._id; delete doc.domain; delete doc.nodeid; delete doc.type; delete doc.xmeshid;
                             }
