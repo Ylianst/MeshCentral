@@ -55,6 +55,7 @@ OleAut32.CreateMethod('SafeArrayUnaccessData');
 OleAut32.CreateMethod('SafeArrayDestroy');
 OleAut32.CreateMethod('VariantClear');
 var wmi_handlers = {};
+var winmgmt = null;
 
 const LocatorFunctions = ['QueryInterface', 'AddRef', 'Release', 'ConnectToServer'];
 
@@ -307,8 +308,7 @@ function extractFields(queryString) {
 function prepareQuery (queryString, fields) {
     if (typeof(queryString) !=='string' || queryString.trim().length === 0) { throw new Error('No querystring'); }
     // Always check if wmi service is running
-    var s = sm.manager.getService('winmgmt');
-    if (!s.isRunning()) { throw new Error('WMI service not running'); }
+    if (!isWMIRunning()) { throw new Error('WMI service not running'); }
     if (!Array.isArray(fields) || fields.length === 0) {
         fields = extractFields(queryString); }
     else {
@@ -782,8 +782,7 @@ function writeInParamVariant(vbuf, val) {
 //   try { sess.execMethod(className, keys, method, inParams, timeout); ... } finally { sess.release(); }
 function wmiConnect(resourceString)
 {
-    var s = sm.manager.getService('winmgmt');
-    if (!s.isRunning()) { throw new Error('WMI service not running'); }
+    if (!isWMIRunning()) { throw new Error('WMI service not running'); }
 
     var locator = COM.createInstance(COM.CLSIDFromString(CLSID_WbemAdministrativeLocator), COM.IID_IUnknown);
     locator.funcs = COM.marshalFunctions(locator, LocatorFunctions);
@@ -940,6 +939,20 @@ function execMethodOn(services, ns, className, keys, methodName, inParams, timeo
         inInst = releaseCOM(inInst, true);
         if (!inSigCached) { inSig = releaseCOM(inSig, true); }
         classObj = releaseCOM(classObj, true);
+    }
+}
+
+function isWMIRunning() {
+    try{
+        if (winmgmt == null) { winmgmt = sm.manager.getService('winmgmt'); }
+        var state = winmgmt.status.state;
+        if (state == 'UNKNOWN') { throw (state); }
+        return (state == 'RUNNING');
+    }
+    catch (e) {
+        try { winmgmt.close(); } catch (e) { }
+        winmgmt = null;
+        return false;
     }
 }
 

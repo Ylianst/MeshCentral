@@ -622,22 +622,19 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an database object
     obj.performRecordEncryptionRecode = function (func) {
         var count = 0;
-        obj.GetAllType('user', function (err, docs) {
-            if (err != null) { parent.debug('db', 'ERROR (performRecordEncryptionRecode): ' + err); }
-            if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-            obj.GetAllType('node', function (err, docs) {
-                if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                obj.GetAllType('mesh', function (err, docs) {
-                    if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                    if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
-                        obj.file.compactDatafile();
-                        obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
-                    } else {
-                        func(count); // For all other databases, normal exit.
-                    }
-                });
-            });
-        });
+        (async function () {
+            for (const type of ['user', 'node', 'mesh']) {
+                const docs = await new Promise(function (resolve, reject) { obj.GetAllType(type, function (err, docs) { if (err) { reject(err); } else { resolve(docs); } }); });
+                for (const doc of docs) {
+                    await new Promise(function (resolve, reject) { obj.Set(doc, function (err) { if (err) { reject(err); } else { resolve(); } }); });
+                    count++;
+                }
+            }
+            // The CLI exits on completion, so the final writes and compaction must finish first.
+            if (obj.databaseType == DB_NEDB) {
+                await new Promise(function (resolve, reject) { obj.file.compactDatafile(function (err) { if (err) { reject(err); } else { resolve(); } }); });
+            }
+        })().then(function () { func(count); }, function (err) { func(count, err); });
     }
 
     // Encrypt an database object
@@ -826,6 +823,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxeventsusername ON events(domain, userid, time);
                         CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time);
                         CREATE INDEX ndxeventids ON eventids(target);
+                        CREATE INDEX ndxeventidsfkid ON eventids(fkid);
                         CREATE INDEX ndxserverstattime ON serverstats (time);
                         CREATE INDEX ndxserverstatexpire ON serverstats (expire);
                         CREATE INDEX ndxpowernodeidtime ON power (nodeid, time);
@@ -843,9 +841,10 @@ module.exports.CreateDB = function (parent, func) {
             //for existing db's
             // Create any missing tables (e.g., pluginpermissions added in updates)
             obj.file.exec(`
-                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
+                CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid);
             `, function (err) {
-                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                if (err) { console.log("SQLite Error creating pluginpermissions table or eventids index: " + err); }
                 sqliteSetOptions(function () { setupFunctions(func); });
             });
         });
@@ -1030,17 +1029,37 @@ module.exports.CreateDB = function (parent, func) {
             // Setup MongoDB main collection and indexes
             obj.file = db.collection(dbcollectionname);
             obj.file.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
-                    console.log('Resetting main indexes...');
-                    obj.file.dropIndexes(function (err) {
-                        obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                        obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                        obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                        obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
-                    });
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+                // Ensure standard indexes exist
+                if (indexesByName['TypeDomainMesh1'] == null) {
+                    obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+                }
+                if (indexesByName['Email1'] == null) {
+                    obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+                }
+                if (indexesByName['Mesh1'] == null) {
+                    obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
+                }
+                if (indexesByName['AmtUuid1'] == null) {
+                    obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
+                }
+
+                // Indexes to prevent COLLSCAN and in-memory sort in device list with collation
+                if (indexesByName['TypeDomainMeshNameCollation1'] == null && indexesByName['type_1_domain_1_meshid_1_name_1'] == null) {
+                    obj.file.createIndex({ type: 1, domain: 1, meshid: 1, name: 1 }, { collation: { locale: 'en', strength: 2 }, name: 'TypeDomainMeshNameCollation1' });
+                }
+                if (indexesByName['TypeDomainIdNameCollation1'] == null && indexesByName['type_1_domain_1__id_1_name_1'] == null) {
+                    obj.file.createIndex({ type: 1, domain: 1, _id: 1, name: 1 }, { collation: { locale: 'en', strength: 2 }, name: 'TypeDomainIdNameCollation1' });
+                }
+
+                // Additional indexes to prevent COLLSCAN in Domain and Node/Token operations
+                if (indexesByName['Domain1'] == null && indexesByName['domain_1'] == null) {
+                    obj.file.createIndex({ domain: 1 }, { sparse: 1, name: 'Domain1' });                                   // Speeds up DeleteDomain() and removeDomain()
+                }
+                if (indexesByName['TypeDomainNode1'] == null && indexesByName['type_1_domain_1_nodeid_1'] == null) {
+                    obj.file.createIndex({ type: 1, domain: 1, nodeid: 1 }, { sparse: 1, name: 'TypeDomainNode1' });       // Speeds up GetAllTypeNodeFiltered()
                 }
             });
 
@@ -1102,44 +1121,56 @@ module.exports.CreateDB = function (parent, func) {
             // Setup MongoDB events collection and indexes
             obj.eventsfile = db.collection('events'); // Collection containing all events
             obj.eventsfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 5) || (indexesByName['UseridAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting events indexes...");
-                    obj.eventsfile.dropIndexes(function (err) {
-                        obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
-                        obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
-                        obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                        obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                    });
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+                // Ensure standard event indexes exist
+                if (indexesByName['UseridAction1'] == null) {
+                    obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
+                }
+                if (indexesByName['DomainNodeTime1'] == null) {
+                    obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
+                }
+                if (indexesByName['IdsAndTime1'] == null) {
+                    obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
+                }
+                if (indexesByName['ExpireTime1'] == null) {
+                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
-                    // Reset the timeout index
-                    console.log("Resetting events expire index...");
+                    // Reset the timeout index if expiration setting changed
                     obj.eventsfile.dropIndex('ExpireTime1', function (err) {
                         obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                     });
+                }
+
+                // Indexes to prevent COLLSCAN and in-memory sort in event log queries
+                if (indexesByName['DomainIdsTime1'] == null && indexesByName['domain_1_ids_1_time_-1'] == null) {
+                    obj.eventsfile.createIndex({ domain: 1, ids: 1, time: -1 }, { name: 'DomainIdsTime1' });               // Speeds up GetEvents() and GetEventsWithLimit()
+                }
+                if (indexesByName['DomainUserTime1'] == null && indexesByName['domain_1_userid_1_time_-1'] == null) {
+                    obj.eventsfile.createIndex({ domain: 1, userid: 1, time: -1 }, { sparse: 1, name: 'DomainUserTime1' }); // Speeds up GetUserEvents()
+                }
+                if (indexesByName['DomainUserActionTime1'] == null && indexesByName['domain_1_userid_1_action_1_time_-1'] == null) {
+                    obj.eventsfile.createIndex({ domain: 1, userid: 1, action: 1, time: -1 }, { name: 'DomainUserActionTime1' }); // Speeds up GetUserLoginEvents() and GetFailedLoginCount()
                 }
             });
 
             // Setup MongoDB power events collection and indexes
             obj.powerfile = db.collection('power');                                 // Collection containing all power events
             obj.powerfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting power events indexes...");
-                    obj.powerfile.dropIndexes(function (err) {
-                        // Create all indexes
-                        obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
-                        obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                    });
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+                if (indexesByName['NodeIdAndTime1'] == null) {
+                    obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
+                }
+                if (indexesByName['Domain1'] == null && indexesByName['domain_1'] == null) {
+                    obj.powerfile.createIndex({ domain: 1 }, { sparse: 1, name: 'Domain1' });                               // Avoids COLLSCAN on removeDomain()
+                }
+                if (indexesByName['ExpireTime1'] == null) {
+                    obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
                     // Reset the timeout index
-                    console.log("Resetting power events expire index...");
                     obj.powerfile.dropIndex('ExpireTime1', function (err) {
                         // Reset the expire power events index
                         obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
@@ -1153,29 +1184,35 @@ module.exports.CreateDB = function (parent, func) {
             // Setup MongoDB server stats collection
             obj.serverstatsfile = db.collection('serverstats');                     // Collection of server stats
             obj.serverstatsfile.indexes(function (err, indexes) {
-                // Check if we need to reset indexes
-                var indexesByName = {}, indexCount = 0;
-                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-                if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
-                    // Reset all indexes
-                    console.log("Resetting server stats indexes...");
-                    obj.serverstatsfile.dropIndexes(function (err) {
-                        // Create all indexes
-                        obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                        obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
-                    });
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+                if (indexesByName['ExpireTime1'] == null) {
+                    obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
                 } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
                     // Reset the timeout index
-                    console.log("Resetting server stats expire index...");
                     obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
                         // Reset the expire server stats index
                         obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
                     });
                 }
+                if (indexesByName['ExpireTime2'] == null) {
+                    obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
+                }
             });
 
-        // Setup plugin info collection
-        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); obj.pluginpermissionsfile = db.collection('pluginpermissions'); }
+            // Setup plugin info collection
+            if (obj.pluginsActive) {
+                obj.pluginsfile = db.collection('plugins');
+                obj.pluginpermissionsfile = db.collection('pluginpermissions');
+                obj.pluginsfile.indexes(function (err, indexes) {
+                    var indexesByName = {};
+                    for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                    if (indexesByName['TypeAndName1'] == null && indexesByName['type_1_name_1'] == null) {
+                        obj.pluginsfile.createIndex({ type: 1, name: 1 }, { name: 'TypeAndName1' });
+                    }
+                });
+            }
 
             setupFunctions(func); // Completed setup of MongoDB
         });
@@ -1190,61 +1227,93 @@ module.exports.CreateDB = function (parent, func) {
         // Setup MongoDB main collection and indexes
         obj.file = db.collection(dbcollection);
         obj.file.getIndexes(function (err, indexes) {
-            // Check if we need to reset indexes
-            var indexesByName = {}, indexCount = 0;
-            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 5) || (indexesByName['TypeDomainMesh1'] == null) || (indexesByName['Email1'] == null) || (indexesByName['Mesh1'] == null) || (indexesByName['AmtUuid1'] == null)) {
-                console.log("Resetting main indexes...");
-                obj.file.dropIndexes(function (err) {
-                    obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
-                    obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
-                    obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
-                    obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
-                });
+            var indexesByName = {};
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+            // Ensure standard indexes exist
+            if (indexesByName['TypeDomainMesh1'] == null) {
+                obj.file.createIndex({ type: 1, domain: 1, meshid: 1 }, { sparse: 1, name: 'TypeDomainMesh1' });       // Speeds up GetAllTypeNoTypeField() and GetAllTypeNoTypeFieldMeshFiltered()
+            }
+            if (indexesByName['Email1'] == null) {
+                obj.file.createIndex({ email: 1 }, { sparse: 1, name: 'Email1' });                                     // Speeds up GetUserWithEmail() and GetUserWithVerifiedEmail()
+            }
+            if (indexesByName['Mesh1'] == null) {
+                obj.file.createIndex({ meshid: 1 }, { sparse: 1, name: 'Mesh1' });                                     // Speeds up RemoveMesh()
+            }
+            if (indexesByName['AmtUuid1'] == null) {
+                obj.file.createIndex({ 'intelamt.uuid': 1 }, { sparse: 1, name: 'AmtUuid1' });                         // Speeds up getAmtUuidMeshNode()
+            }
+
+            // Indexes to prevent COLLSCAN and in-memory sort in device list with collation
+            if (indexesByName['TypeDomainMeshNameCollation1'] == null && indexesByName['type_1_domain_1_meshid_1_name_1'] == null) {
+                obj.file.createIndex({ type: 1, domain: 1, meshid: 1, name: 1 }, { collation: { locale: 'en', strength: 2 }, name: 'TypeDomainMeshNameCollation1' });
+            }
+            if (indexesByName['TypeDomainIdNameCollation1'] == null && indexesByName['type_1_domain_1__id_1_name_1'] == null) {
+                obj.file.createIndex({ type: 1, domain: 1, _id: 1, name: 1 }, { collation: { locale: 'en', strength: 2 }, name: 'TypeDomainIdNameCollation1' });
+            }
+
+            // Additional indexes to prevent COLLSCAN in Domain and Node/Token operations
+            if (indexesByName['Domain1'] == null && indexesByName['domain_1'] == null) {
+                obj.file.createIndex({ domain: 1 }, { sparse: 1, name: 'Domain1' });                                   // Speeds up DeleteDomain() and removeDomain()
+            }
+            if (indexesByName['TypeDomainNode1'] == null && indexesByName['type_1_domain_1_nodeid_1'] == null) {
+                obj.file.createIndex({ type: 1, domain: 1, nodeid: 1 }, { sparse: 1, name: 'TypeDomainNode1' });       // Speeds up GetAllTypeNodeFiltered()
             }
         });
 
         // Setup MongoDB events collection and indexes
         obj.eventsfile = db.collection('events');                               // Collection containing all events
         obj.eventsfile.getIndexes(function (err, indexes) {
-            // Check if we need to reset indexes
-            var indexesByName = {}, indexCount = 0;
-            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 5) || (indexesByName['UseridAction1'] == null) || (indexesByName['DomainNodeTime1'] == null) || (indexesByName['IdsAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                // Reset all indexes
-                console.log("Resetting events indexes...");
-                obj.eventsfile.dropIndexes(function (err) {
-                    obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
-                    obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
-                    obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
-                    obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
-                });
+            var indexesByName = {};
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+            // Ensure standard event indexes exist
+            if (indexesByName['UseridAction1'] == null) {
+                obj.eventsfile.createIndex({ userid: 1, action: 1 }, { sparse: 1, name: 'UseridAction1' });
+            }
+            if (indexesByName['DomainNodeTime1'] == null) {
+                obj.eventsfile.createIndex({ domain: 1, nodeid: 1, time: -1 }, { sparse: 1, name: 'DomainNodeTime1' });
+            }
+            if (indexesByName['IdsAndTime1'] == null) {
+                obj.eventsfile.createIndex({ ids: 1, time: -1 }, { sparse: 1, name: 'IdsAndTime1' });
+            }
+            if (indexesByName['ExpireTime1'] == null) {
+                obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireEventsSeconds) {
-                // Reset the timeout index
-                console.log("Resetting events expire index...");
+                // Reset the timeout index if expiration setting changed
                 obj.eventsfile.dropIndex('ExpireTime1', function (err) {
                     obj.eventsfile.createIndex({ time: 1 }, { expireAfterSeconds: expireEventsSeconds, name: 'ExpireTime1' });
                 });
+            }
+
+            // Indexes to prevent COLLSCAN and in-memory sort in event log queries
+            if (indexesByName['DomainIdsTime1'] == null && indexesByName['domain_1_ids_1_time_-1'] == null) {
+                obj.eventsfile.createIndex({ domain: 1, ids: 1, time: -1 }, { name: 'DomainIdsTime1' });               // Speeds up GetEvents() and GetEventsWithLimit()
+            }
+            if (indexesByName['DomainUserTime1'] == null && indexesByName['domain_1_userid_1_time_-1'] == null) {
+                obj.eventsfile.createIndex({ domain: 1, userid: 1, time: -1 }, { sparse: 1, name: 'DomainUserTime1' }); // Speeds up GetUserEvents()
+            }
+            if (indexesByName['DomainUserActionTime1'] == null && indexesByName['domain_1_userid_1_action_1_time_-1'] == null) {
+                obj.eventsfile.createIndex({ domain: 1, userid: 1, action: 1, time: -1 }, { name: 'DomainUserActionTime1' }); // Speeds up GetUserLoginEvents() and GetFailedLoginCount()
             }
         });
 
         // Setup MongoDB power events collection and indexes
         obj.powerfile = db.collection('power');                                 // Collection containing all power events
         obj.powerfile.getIndexes(function (err, indexes) {
-            // Check if we need to reset indexes
-            var indexesByName = {}, indexCount = 0;
-            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 3) || (indexesByName['NodeIdAndTime1'] == null) || (indexesByName['ExpireTime1'] == null)) {
-                // Reset all indexes
-                console.log("Resetting power events indexes...");
-                obj.powerfile.dropIndexes(function (err) {
-                    // Create all indexes
-                    obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
-                    obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
-                });
+            var indexesByName = {};
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+            if (indexesByName['NodeIdAndTime1'] == null) {
+                obj.powerfile.createIndex({ nodeid: 1, time: 1 }, { sparse: 1, name: 'NodeIdAndTime1' });
+            }
+            if (indexesByName['Domain1'] == null && indexesByName['domain_1'] == null) {
+                obj.powerfile.createIndex({ domain: 1 }, { sparse: 1, name: 'Domain1' });                               // Avoids COLLSCAN on removeDomain()
+            }
+            if (indexesByName['ExpireTime1'] == null) {
+                obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expirePowerEventsSeconds) {
                 // Reset the timeout index
-                console.log("Resetting power events expire index...");
                 obj.powerfile.dropIndex('ExpireTime1', function (err) {
                     // Reset the expire power events index
                     obj.powerfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expirePowerEventsSeconds, name: 'ExpireTime1' });
@@ -1258,29 +1327,34 @@ module.exports.CreateDB = function (parent, func) {
         // Setup MongoDB server stats collection
         obj.serverstatsfile = db.collection('serverstats');                     // Collection of server stats
         obj.serverstatsfile.getIndexes(function (err, indexes) {
-            // Check if we need to reset indexes
-            var indexesByName = {}, indexCount = 0;
-            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; indexCount++; }
-            if ((indexCount != 3) || (indexesByName['ExpireTime1'] == null)) {
-                // Reset all indexes
-                console.log("Resetting server stats indexes...");
-                obj.serverstatsfile.dropIndexes(function (err) {
-                    // Create all indexes
-                    obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
-                    obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
-                });
+            var indexesByName = {};
+            for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+
+            if (indexesByName['ExpireTime1'] == null) {
+                obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
             } else if (indexesByName['ExpireTime1'].expireAfterSeconds != expireServerStatsSeconds) {
                 // Reset the timeout index
-                console.log("Resetting server stats expire index...");
                 obj.serverstatsfile.dropIndex('ExpireTime1', function (err) {
                     // Reset the expire server stats index
                     obj.serverstatsfile.createIndex({ 'time': 1 }, { expireAfterSeconds: expireServerStatsSeconds, name: 'ExpireTime1' });
                 });
             }
+            if (indexesByName['ExpireTime2'] == null) {
+                obj.serverstatsfile.createIndex({ 'expire': 1 }, { expireAfterSeconds: 0, name: 'ExpireTime2' });  // Auto-expire events
+            }
         });
 
         // Setup plugin info collection
-        if (obj.pluginsActive) { obj.pluginsfile = db.collection('plugins'); }
+        if (obj.pluginsActive) {
+            obj.pluginsfile = db.collection('plugins');
+            obj.pluginsfile.getIndexes(function (err, indexes) {
+                var indexesByName = {};
+                for (var i in indexes) { indexesByName[indexes[i].name] = indexes[i]; }
+                if (indexesByName['TypeAndName1'] == null && indexesByName['type_1_name_1'] == null) {
+                    obj.pluginsfile.createIndex({ type: 1, name: 1 }, { name: 'TypeAndName1' });
+                }
+            });
+        }
 
         setupFunctions(func); // Completed setup of MongoJS
     } else {
@@ -1421,6 +1495,7 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+            sqlDbExec('CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
@@ -1619,7 +1694,8 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = -1; } // In SQLite, no limit is -1
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
+                    const sqliteIdFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdFilter + ' ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
                         if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
                         func(err, performTypedRecordDecrypt(docs));
                     });
@@ -1639,7 +1715,8 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [id, type, domain], function (err, docs) {
+                    const sqliteIdCountFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdCountFilter, [id, type, domain], function (err, docs) {
                         func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
                     });
                 } else {
@@ -1904,7 +1981,7 @@ module.exports.CreateDB = function (parent, func) {
                 data = common.escapeLinksFieldNameEx(data);
                 var xdata = performTypedRecordEncrypt(data);
                 obj.dbCounters.fileSet++;
-                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } })
+                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } }, function (err) { if (func) { func(err); } else { parent.debug('db', 'Set: ' + err); } });
             };
             obj.Get = function (id, func) {
                 obj.file.ref('meshcentral').child(encodeURIComponent(id)).get(function (snapshot) {
@@ -1952,10 +2029,10 @@ module.exports.CreateDB = function (parent, func) {
                 query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) {
-                obj.file.query('meshcentral').filter('type', '==', type).get(function (snapshots) {
+                obj.file.query('meshcentral').filter('type', '==', type).get().then(function (snapshots) {
                     const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); }
-                    func(null, common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs)));
-                });
+                    return common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs));
+                }).then(function (docs) { func(null, docs); }, func);
             };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
@@ -2211,7 +2288,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
                 if (limit == 0) { limit = 0xFFFFFFFF; }
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4)) ORDER BY LOWER(doc->>\'name\') LIMIT $5 OFFSET $6', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5))) ORDER BY LOWER(doc->>\'name\') LIMIT $6 OFFSET $7', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     if (extrasids == null) {
                         sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3)) ORDER BY LOWER(doc->>\'name\') LIMIT $4 OFFSET $5', [type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }, true);
@@ -2222,7 +2299,7 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND (extra = ANY ($4))', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5)))', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids], function (err, docs) { func(err, docs); });
                 } else {
                     if (extrasids == null) {
                         sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3))', [type, domain, meshes], function (err, docs) { func(err, docs); }, true);
@@ -2472,7 +2549,7 @@ module.exports.CreateDB = function (parent, func) {
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
+                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 } else {
                     sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
                 }
@@ -2481,7 +2558,7 @@ module.exports.CreateDB = function (parent, func) {
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND extra IN (?)', [id, type, domain, meshes], function (err, docs) { func(err, docs); });
+                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [id, type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
                 } else {
                     sqlDbQuery('SELECT COUNT(doc) FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
                 }
@@ -3547,10 +3624,10 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function fileBulkWriteCompleted() {
+    function fileBulkWriteCompleted(err) {
         // Callbacks
         if (obj.filePendingCbs != null) {
-            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](); } }
+            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](err); } }
             obj.filePendingCbs = null;
         }
         if (obj.filePendingSets != null) {

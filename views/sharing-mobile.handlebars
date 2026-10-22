@@ -1096,6 +1096,7 @@
                 } else if ((contype == null) || (contype == 1) || ((contype == 3))) {
                     // Setup the Mesh Agent remote desktop
                     desktop = CreateAgentRedirect(null, CreateAgentRemoteDesktop('Desk'), serverPublicNamePort, authCookie, null, domainUrl);
+                    desktop.m.UseExtendedKeyFlag = ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(parseInt('{{{agentId}}}')) >= 0);
                     desktop.m.stopInput = (viewOnly == 1);
                     desktop.m.mouseCursorActive(true);
                     desktop.debugmode = debugmode;

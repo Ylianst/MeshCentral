@@ -316,6 +316,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         command.userid = user._id;          // Add user id
                         command.remoteaddr = req.clientIp;  // User's IP address
                         if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                        if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
                     } else { if (func) { func(false); } }
@@ -356,6 +357,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             command.userid = user._id;              // Add user id
                             command.remoteaddr = req.clientIp;      // User's IP address
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
+                            if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
                         } else { if (func) { func(false); } }
                     });
@@ -5271,6 +5273,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 const extraids = getUserExtraIds();
                 db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
                     if (docs == null) return;
+                    if (obj.user == null) return; // The session closed while the query was running
                     const ids = [];
                     if (command.nodeids != null) {
                         // Create a list of node ids and query them for last device connection time
@@ -5280,6 +5283,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var i in docs) { ids.push('lc' + docs[i]._id); }
                     }
                     db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                        if (obj.user == null) return; // The session closed while the query was running
                         const lastConnects = {};
                         if (docs != null) { for (var i in docs) { lastConnects[docs[i]._id] = docs[i]; } }
 
