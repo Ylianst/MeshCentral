@@ -2290,7 +2290,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
                 if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
             } else {
-                if (parent.parent.meshAgentBinaries[10005].hash == agentHash) return 0;
+                if ((parent.parent.meshAgentBinaries[10005] != null) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return 0; // No universal binary until its release file is downloaded or copied in
             }
         }
 
