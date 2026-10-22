@@ -2507,7 +2507,7 @@ function onTunnelUpgrade(response, s, head)
         // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
         s.data = onUdpRelayServerTunnelData;
         s.udprelay = require('dgram').createSocket({ type: 'udp4' });
-        s.udprelay.bind({ port: 0 });
+        s.udprelay.bind({ port: 0, address: '0.0.0.0' }); // Bind all interfaces, the agent's dgram defaults to 127.0.0.1 which can't reach udpaddr on the LAN
         s.udprelay.peerindex = this.index;
         s.udprelay.on('message', onUdpRelayTargetTunnelConnect);
         s.udprelay.udpport = this.udpport;
