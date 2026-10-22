@@ -29,11 +29,25 @@ function sendServerLog(msg)
 {
     require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'log', value: msg } });
 }
+function getSavedMeshAgentServiceName()
+{
+    // The main agent stores its service name in our database when it installs us, use it so customized agents work
+    var name = null;
+    try { name = require('SimpleDataStore').Shared().Get('mainAgentServiceName'); } catch (e) { }
+    if ((typeof name != 'string') || (name == '')) { return (null); }
+    return (name);
+}
+function getMeshAgentServiceName()
+{
+    var name = getSavedMeshAgentServiceName();
+    if (name == null) { name = (process.platform == 'win32' ? 'Mesh Agent' : 'meshagent'); }
+    return (name);
+}
 function getMeshAgentService()
 {
     try
     {
-        var ret = require('service-manager').manager.getService(process.platform == 'win32' ? 'mesh agent' : 'meshagent');
+        var ret = require('service-manager').manager.getService(getMeshAgentServiceName());
         return(ret);
     }
     catch(e)
@@ -43,6 +57,13 @@ function getMeshAgentService()
 }
 
 function getARCHID() {
+    // The Diagnostic Agent is a copy of the main agent binary, so its own ARCHID is the right one (for example 43 for Windows ARM-64)
+    try {
+        var archid = require('MeshAgent').ARCHID;
+        if ((typeof archid == 'number') && (archid > 0)) { return (archid); }
+    } catch (e) { }
+
+    // Older agents don't expose ARCHID, so guess it
     var ret = 0;
     switch (process.platform) {
         case 'linux':
@@ -129,6 +150,7 @@ function ConfigureAgent(agent)
 function start()
 {
     sendServerLog('Diagnostic: Start');
+    sendServerLog('Diagnostic: Checking service: ' + getMeshAgentServiceName() + (getSavedMeshAgentServiceName() == null ? ' (default, no saved name)' : ''));
 
     var id = getARCHID();
     var s = getMeshAgentService();
@@ -141,7 +163,7 @@ function start()
             {
                 var agent = require('service-manager').manager.installService(
                     {
-                        name: process.platform == 'win32' ? 'Mesh Agent' : 'meshagent',
+                        name: getMeshAgentServiceName(),
                         target: 'meshagent',
                         description: 'Mesh Central Agent v2 Background Service',
                         displayName: 'Mesh Agent v2 Background Service',

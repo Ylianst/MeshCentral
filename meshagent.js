@@ -1434,8 +1434,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (((obj.agentInfo.capabilities & 0x40) == 0) && (typeof command.value.value == 'string') && (command.value.value.length == 64)) {
                                         // Store links to diagnostic agent id
                                         var daNodeKey = 'node/' + domain.id + '/' + db.escapeBase64(command.value.value);
-                                        db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
-                                        db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
+                                        db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                            // Remove the link of a previous diagnostic agent, if any
+                                            if ((nodes != null) && (nodes.length == 1) && (nodes[0].daid != daNodeKey)) { db.Remove('da' + nodes[0].daid); }
+                                            db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
+                                            db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
+                                        });
+                                    }
+                                    break;
+                                }
+                                case 'unregister': {
+                                    // Only main agent can do this, remove the links to its diagnostic agent
+                                    if ((obj.agentInfo.capabilities & 0x40) == 0) {
+                                        db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                            if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); }
+                                            db.Remove('ra' + obj.dbNodeKey);
+                                        });
                                     }
                                     break;
                                 }

@@ -556,7 +556,7 @@ function trimResults(val) {
 obj.DAIPC = require('net').createServer();
 if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (ex) { } }
 obj.DAIPC.IPCPATH = process.platform == 'win32' ? ('\\\\.\\pipe\\' + require('_agentNodeId')() + '-DAIPC') : (process.cwd() + '/DAIPC');
-try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnections: 5 }); } catch (ex) { }
+try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnections: 5 }); obj.DAIPC._listenOk = true; } catch (ex) { obj.DAIPC._listenError = ex; }
 obj.DAIPC._daipc = [];
 obj.DAIPC.on('connection', function (c) {
     c._send = function (j) {
@@ -688,8 +688,45 @@ function removeRegisteredApp(pipe) {
 }
 
 function diagnosticAgent_uninstall() {
+    // Stop the Diagnostic Agent first and remember its folder, uninstallService() only removes the service and the executable
+    var workingPath = null;
+    try {
+        var diag = require('service-manager').manager.getService('meshagentDiagnostic');
+        workingPath = diag.appWorkingDirectory();
+        try { if (diag.isRunning()) { diag.stop(); } } catch (ex) { }
+        diag.close();
+    } catch (ex) { }
+
     require('service-manager').manager.uninstallService('meshagentDiagnostic');
     require('task-scheduler').delete('meshagentDiagnostic/periodicStart'); // TODO: Using "delete" here breaks the minifier since this is a reserved keyword
+
+    // Ask the server to remove the link between this agent and the Diagnostic Agent
+    try { require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'unregister' } }); } catch (ex) { }
+
+    if (process.platform == 'win32') {
+        // Remove the Diagnostic Agent certificates and private keys from the certificate store, using the current name and the name older versions used.
+        // Then remove its folder (database, log), only if it really is a "meshagentDiagnostic" folder. Wait 10 seconds so the service has stopped,
+        // and skip all of it if the Diagnostic Agent was installed again in the meantime, so we don't remove the new install.
+        var cleanup = [];
+        var subjects = ['meshagentDiagnostic_NodeDiagnosticCertificate', 'MeshNodeDiagnosticCertificate'];
+        for (var i in subjects) {
+            cleanup.push('certutil -user -delstore My "' + subjects[i] + '"');
+            cleanup.push('certutil -user -csp "Microsoft Platform Crypto Provider" -delkey "CN=' + subjects[i] + '_privatekey"');
+            cleanup.push('certutil -user -csp "Microsoft Software Key Storage Provider" -delkey "CN=' + subjects[i] + '_privatekey"');
+        }
+        if (typeof workingPath == 'string') {
+            var folder = workingPath.split('/').join('\\').replace(/\\+$/, '');
+            if (folder.split('\\').pop().toLowerCase() == 'meshagentdiagnostic') { cleanup.push('rmdir /S /Q "' + folder + '"'); }
+        }
+        var cmd = '/C CHOICE /C Y /N /D Y /T 10 & sc query meshagentDiagnostic >nul 2>&1 || (' + cleanup.join(' & ') + ')';
+        try { require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', [cmd], { type: 4, detached: true }); } catch (ex) { }
+    }
+}
+// On Windows, install the diagnostic agent next to the main agent folder, for example "C:\Program Files\<company>\meshagentDiagnostic\"
+function diagnosticAgent_installPath() {
+    if (process.platform != 'win32') return null;
+    var p = process.execPath.split('\\'); p.pop(); p.pop();
+    return p.join('\\') + '\\meshagentDiagnostic\\';
 }
 function diagnosticAgent_installCheck(install) {
     try {
@@ -706,20 +743,36 @@ function diagnosticAgent_installCheck(install) {
                 displayName: "Mesh Agent Diagnostic Service",
                 description: "Mesh Agent Diagnostic Service",
                 servicePath: process.execPath,
-                parameters: ['-recovery']
+                parameters: ['-recovery'],
+                installPath: diagnosticAgent_installPath()
                 //files: [{ newName: 'diagnostic.js', _buffer: Buffer.from('LyoNCkNvcHlyaWdodCAyMDE5IEludGVsIENvcnBvcmF0aW9uDQoNCkxpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSAiTGljZW5zZSIpOw0KeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLg0KWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0DQoNCiAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjANCg0KVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZQ0KZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywNCldJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLg0KU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZA0KbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuDQoqLw0KDQp2YXIgaG9zdCA9IHJlcXVpcmUoJ3NlcnZpY2UtaG9zdCcpLmNyZWF0ZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpOw0KdmFyIFJlY292ZXJ5QWdlbnQgPSByZXF1aXJlKCdNZXNoQWdlbnQnKTsNCg0KaG9zdC5vbignc2VydmljZVN0YXJ0JywgZnVuY3Rpb24gKCkNCnsNCiAgICBjb25zb2xlLnNldERlc3RpbmF0aW9uKGNvbnNvbGUuRGVzdGluYXRpb25zLkxPR0ZJTEUpOw0KICAgIGhvc3Quc3RvcCA9IGZ1bmN0aW9uKCkNCiAgICB7DQogICAgICAgIHJlcXVpcmUoJ3NlcnZpY2UtbWFuYWdlcicpLm1hbmFnZXIuZ2V0U2VydmljZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpLnN0b3AoKTsNCiAgICB9DQogICAgUmVjb3ZlcnlBZ2VudC5vbignQ29ubmVjdGVkJywgZnVuY3Rpb24gKHN0YXR1cykNCiAgICB7DQogICAgICAgIGlmIChzdGF0dXMgPT0gMCkNCiAgICAgICAgew0KICAgICAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IFNlcnZlciBjb25uZWN0aW9uIGxvc3QuLi4nKTsNCiAgICAgICAgICAgIHJldHVybjsNCiAgICAgICAgfQ0KICAgICAgICBjb25zb2xlLmxvZygnRGlhZ25vc3RpYyBBZ2VudDogQ29ubmVjdGlvbiBFc3RhYmxpc2hlZCB3aXRoIFNlcnZlcicpOw0KICAgICAgICBzdGFydCgpOw0KICAgIH0pOw0KfSk7DQpob3N0Lm9uKCdub3JtYWxTdGFydCcsIGZ1bmN0aW9uICgpDQp7DQogICAgaG9zdC5zdG9wID0gZnVuY3Rpb24gKCkNCiAgICB7DQogICAgICAgIHByb2Nlc3MuZXhpdCgpOw0KICAgIH0NCiAgICBjb25zb2xlLmxvZygnTm9uIFNlcnZpY2UgTW9kZScpOw0KICAgIFJlY292ZXJ5QWdlbnQub24oJ0Nvbm5lY3RlZCcsIGZ1bmN0aW9uIChzdGF0dXMpDQogICAgew0KICAgICAgICBpZiAoc3RhdHVzID09IDApDQogICAgICAgIHsNCiAgICAgICAgICAgIGNvbnNvbGUubG9nKCdEaWFnbm9zdGljIEFnZW50OiBTZXJ2ZXIgY29ubmVjdGlvbiBsb3N0Li4uJyk7DQogICAgICAgICAgICByZXR1cm47DQogICAgICAgIH0NCiAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IENvbm5lY3Rpb24gRXN0YWJsaXNoZWQgd2l0aCBTZXJ2ZXInKTsNCiAgICAgICAgc3RhcnQoKTsNCiAgICB9KTsNCn0pOw0KaG9zdC5vbignc2VydmljZVN0b3AnLCBmdW5jdGlvbiAoKSB7IHByb2Nlc3MuZXhpdCgpOyB9KTsNCmhvc3QucnVuKCk7DQoNCg0KZnVuY3Rpb24gc3RhcnQoKQ0Kew0KDQp9Ow0K', 'base64') }]
             });
         svc = require('service-manager').manager.getService('meshagentDiagnostic');
     }
     catch (ex) { return null; }
     var proxyConfig = require('global-tunnel').proxyConfig;
-    var cert = require('MeshAgent').GenerateAgentCertificate('CN=MeshNodeDiagnosticCertificate');
+    // On Windows the certificate is kept in the certificate store, and the Diagnostic Agent looks it up by subject name.
+    // The agent uses "CN=<meshServiceName>_NodeDiagnosticCertificate", or "CN=MeshNodeDiagnosticCertificate" when meshServiceName is "Mesh Agent",
+    // so we set the Diagnostic Agent's meshServiceName below and generate the certificate with the matching subject, otherwise its node id would not match the registered one.
+    var diagServiceName = 'meshagentDiagnostic';
+    var cert = require('MeshAgent').GenerateAgentCertificate('CN=' + diagServiceName + '_NodeDiagnosticCertificate');
     var nodeid = require('tls').loadCertificate(cert.root).getKeyHash().toString('base64');
     ddb = require('SimpleDataStore').Create(svc.appWorkingDirectory().replace('\\', '/') + '/meshagentDiagnostic.db');
+    ddb.Put('meshServiceName', diagServiceName);
     ddb.Put('disableUpdate', '1');
     ddb.Put('MeshID', Buffer.from(require('MeshAgent').ServerInfo.MeshID, 'hex'));
     ddb.Put('ServerID', require('MeshAgent').ServerInfo.ServerID);
     ddb.Put('MeshServer', require('MeshAgent').ServerInfo.ServerUri);
+
+    // Tell the Diagnostic Agent the service name of this agent, so it works with customized agents
+    var mainServiceName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+    try { if (global._MSH && _MSH().meshServiceName) { mainServiceName = _MSH().meshServiceName; } } catch (ex) { }
+    try {
+        var n = require('MeshAgent').serviceName;
+        if ((typeof n == 'string') && (n != '')) { mainServiceName = n; }
+    } catch (ex) { }
+    ddb.Put('0/mainAgentServiceName', mainServiceName); // the Diagnostic Agent reads its own data store with Shared(), which prefixes keys with "0/"
+    ddb.Put('mainAgentServiceName', mainServiceName); // in case a future agent no longer prefixes keys
     if (cert.root.pfx) { ddb.Put('SelfNodeCert', cert.root.pfx); }
     if (cert.tls) { ddb.Put('SelfNodeTlsCert', cert.tls.pfx); }
     if (proxyConfig) {
@@ -730,11 +783,14 @@ function diagnosticAgent_installCheck(install) {
 
     require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'register', value: nodeid } });
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent Registered [" + nodeid.length + "/" + nodeid + "]" });
+    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent will monitor service: " + mainServiceName });
 
     ddb = undefined;
 
-    // Set a recurrent task, to run the Diagnostic Agent every 2 days
-    require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' });
+    // Set a recurrent task, to run the Diagnostic Agent every 2 days. The hour must be zero padded, schtasks requires HH:mm.
+    require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23').padStart(2, '0') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' }).then(
+        function () { },
+        function (code) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent: unable to create scheduled task (" + code + ")" }); });
     //require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: '1', time: '17:16', service: 'meshagentDiagnostic' });
 
     return (svc);
@@ -6268,8 +6324,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'diagnostic':
                 {
-                    if (!mesh.DAIPC.listening) {
-                        response = 'Unable to bind to Diagnostic IPC, most likely because the path (' + process.cwd() + ') is not on a local file system';
+                    if (mesh.DAIPC._listenOk !== true) {
+                        response = 'Unable to bind to Diagnostic IPC (' + mesh.DAIPC.IPCPATH + ')' + (mesh.DAIPC._listenError ? (': ' + mesh.DAIPC._listenError) : '') + ((process.platform == 'win32') ? '' : ', most likely because the path (' + process.cwd() + ') is not on a local file system');
                         break;
                     }
                     var diag = diagnosticAgent_installCheck();
@@ -6278,8 +6334,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             diagnosticAgent_uninstall();
                             response = 'Diagnostic Agent uninstalled';
                         }
+                        else if (args['_'].length == 1 && args['_'][0] == 'start') {
+                            // Run the Diagnostic Agent now, instead of waiting for the scheduled task. It stops by itself when done.
+                            if (diag.isRunning()) {
+                                response = 'Diagnostic Agent is already running';
+                            } else {
+                                try { diag.start(); response = 'Diagnostic Agent started, results will show in the device events'; } catch (ex) { response = 'Unable to start Diagnostic Agent: ' + ex; }
+                            }
+                        }
                         else {
-                            response = 'Diagnostic Agent installed at: ' + diag.appLocation();
+                            response = 'Diagnostic Agent installed at: ' + diag.appLocation() + (diag.isRunning() ? ' [RUNNING]' : ' [STOPPED]') + '. Usage: diagnostic start|uninstall';
                         }
                     }
                     else {
