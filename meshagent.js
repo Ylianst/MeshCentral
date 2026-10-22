@@ -389,7 +389,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             }
                         }, null, 1);
 
-                    } else {
+                    } else if (obj.agentExeMissing !== true) { // An agent that connected before its binary loaded had its core checked then
                         // Check the mesh core, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
@@ -1009,12 +1009,32 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Ask the agent for it's executable binary hash
             obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0));
         } else {
+            // Default agent binaries can still be downloading, obj.updateAgentExeInfo() checks this agent once its binary loads.
+            if (obj.agentExeInfo == null) { obj.agentExeMissing = true; }
+
             // Check the mesh core, if the agent is capable of running one
             if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
                 obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else {
                 agentCoreIsStable(); // No updates needed, agent is ready to go.
             }
+        }
+    }
+
+    // Called after the server reloads its agent binaries, so agents that connected before use the new entries.
+    obj.updateAgentExeInfo = function () {
+        if ((obj.authenticated != 2) || (obj.agentUpdate != null)) return; // A native update keeps sending the binary it started with
+        if ((obj.agentExeInfo == null) && (obj.agentExeMissing !== true)) return; // Recovery agents and agents reconnecting too often never got an update check
+        const missing = (obj.agentExeInfo == null);
+        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+        if (domain.meshAgentBinaries && domain.meshAgentBinaries[obj.agentInfo.agentId]) { obj.agentExeInfo = domain.meshAgentBinaries[obj.agentInfo.agentId]; }
+        if (missing && (obj.agentExeInfo != null)) {
+            // Do the checks this agent skipped when it connected without a binary
+            if (obj.agentExeInfo.update == true) {
+                parent.parent.debug('agent', 'Agent binary loaded after connect, checking agent ' + obj.nodeid);
+                obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0)); // Command 12, ask for the agent binary hash.
+            }
+            obj.sendUpdatedIntelAmtPolicy();
         }
     }
 
