@@ -622,22 +622,19 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an database object
     obj.performRecordEncryptionRecode = function (func) {
         var count = 0;
-        obj.GetAllType('user', function (err, docs) {
-            if (err != null) { parent.debug('db', 'ERROR (performRecordEncryptionRecode): ' + err); }
-            if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-            obj.GetAllType('node', function (err, docs) {
-                if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                obj.GetAllType('mesh', function (err, docs) {
-                    if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                    if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
-                        obj.file.compactDatafile();
-                        obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
-                    } else {
-                        func(count); // For all other databases, normal exit.
-                    }
-                });
-            });
-        });
+        (async function () {
+            for (const type of ['user', 'node', 'mesh']) {
+                const docs = await new Promise(function (resolve, reject) { obj.GetAllType(type, function (err, docs) { if (err) { reject(err); } else { resolve(docs); } }); });
+                for (const doc of docs) {
+                    await new Promise(function (resolve, reject) { obj.Set(doc, function (err) { if (err) { reject(err); } else { resolve(); } }); });
+                    count++;
+                }
+            }
+            // The CLI exits on completion, so the final writes and compaction must finish first.
+            if (obj.databaseType == DB_NEDB) {
+                await new Promise(function (resolve, reject) { obj.file.compactDatafile(function (err) { if (err) { reject(err); } else { resolve(); } }); });
+            }
+        })().then(function () { func(count); }, function (err) { func(count, err); });
     }
 
     // Encrypt an database object
