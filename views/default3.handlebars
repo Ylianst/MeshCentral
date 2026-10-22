@@ -3964,6 +3964,10 @@
                     }
                     break;
                 }
+                case 'serverbackupready': {
+                    server_backupReady(message);
+                    break;
+                }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate')) {
                         var x = '<div class=dialogText>';
@@ -17312,19 +17316,29 @@
             return false;
         }
         function backup_enterPassword() {
-            xxModal.hide();
-            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            meshserver.send({ action: 'serverbackuppassword', check: false, prepare: true, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            // Keep the dialog open as a status box, with only the Cancel button to close it
+            setModalContent('xxAddAgent', "Download server backup", "Preparing server backup, this can take a few minutes. The download will start when it is ready.");
+            QV('idx_dlgOkButton', false);
+            return false;
+        }
+        function server_backupReady(message) {
+            hideModal();
+            if (!message.ok) { backup_showMessage(EscapeHtml(message.msg ? message.msg : "Backup error.")); return; }
             // Navigating the page makes Firefox drop the control web socket and the reconnect reload cancels the download, and
             // downloadFile() removes its frame after 10s, before a big backup is ready. Downloads never fire onload, errors do.
             var f = Q('fileDownloadFrame');
             f.onload = function () {
                 f.onload = null;
                 var x = ''; try { x = EscapeHtml(f.contentDocument.body.innerText); } catch (ex) { }
-                var show = function () { setModalContent('xxAddAgent', "Download server backup", x); showModal('xxAddAgentModal', 'idx_dlgOkButton'); };
-                // A quick error lands while this dialog is still fading out, and Bootstrap ignores show() mid-transition
-                if (xxModal) { Q('xxAddAgentModal').addEventListener('hidden.bs.modal', show, { once: true }); } else { show(); }
+                backup_showMessage(x);
             };
             f.src = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+        }
+        function backup_showMessage(x) {
+            var show = function () { setModalContent('xxAddAgent', "Download server backup", x); showModal('xxAddAgentModal', 'idx_dlgOkButton'); };
+            // The status dialog may still be fading out, and Bootstrap ignores show() mid-transition
+            if (xxModal) { Q('xxAddAgentModal').addEventListener('hidden.bs.modal', show, { once: true }); } else { show(); }
         }
 
         function server_showRestoreDlg() {

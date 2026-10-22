@@ -3082,6 +3082,10 @@
                     }
                     break;
                 }
+                case 'serverbackupready': {
+                    server_backupReady(message);
+                    break;
+                }
                 case 'serverversion': {
                     if ((xxdialogMode == 2) && (xxdialogTag == 'MeshCentralServerUpdate'))  {
                         var x = '<div class=dialogText>';
@@ -14943,7 +14947,15 @@
             return false;
         }
         function backup_enterPassword() {
-            meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            meshserver.send({ action: 'serverbackuppassword', check: false, prepare: true, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
+            setDialogMode(1, "Download server backup", 2, null, "Preparing server backup, this can take a few minutes. The download will start when it is ready.", 'ServerBackup');
+        }
+        function server_backupReady(message) {
+            if ((xxdialogMode == 1) && (xxdialogTag == 'ServerBackup')) { setDialogMode(0); }
+            if (!message.ok) {
+                if (!xxdialogMode) { messagebox("Download server backup", EscapeHtml(message.msg ? message.msg : "Backup error.")); }
+                return;
+            }
             // Navigating the page makes Firefox drop the control web socket and the reconnect reload cancels the download, and
             // downloadFile() removes its frame after 10s, before a big backup is ready. Downloads never fire onload, errors do.
             var f = Q('fileDownloadFrame');

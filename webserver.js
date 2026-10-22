@@ -6215,6 +6215,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     };
 
+    // Backup files prepared through the web UI, by userid. backup.zip serves each one once.
+    obj.preparedBackups = {};
+
     // Handle a server backup request
     async function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -6225,6 +6228,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
+
+        // If the web UI already prepared a backup for this user, send it right away
+        const preparedBackup = obj.preparedBackups[user._id];
+        if (preparedBackup != null) {
+            delete obj.preparedBackups[user._id];
+            if (obj.fs.existsSync(preparedBackup)) {
+                res.setHeader('Content-Type', 'application/x-zip-compressed');
+                res.download(preparedBackup);
+                return;
+            }
+        }
 
         // start a new backup and async wait for it to finish with a timeout
         if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
