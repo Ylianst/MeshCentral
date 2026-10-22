@@ -8409,10 +8409,10 @@
                         map_cm_popup.setPosition(coord);
                         var featid = feature.getId();
                         if (featid) {
-                            QH('xmap-info-window', feature.get('name'));
+                            Q('xmap-info-window').textContent = feature.get('name');
                         } else {
                             var nodeFeat = getCorrespondingFeature(feature); // Return the node feature associated to pointer.
-                            QH('xmap-info-window', nodeFeat.get('name'));
+                            Q('xmap-info-window').textContent = nodeFeat.get('name');
                         }
                     } else {
                         xxmap.map.getTargetElement().style.cursor = '';
