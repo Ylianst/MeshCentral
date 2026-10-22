@@ -16,9 +16,15 @@ const { pipeline } = require('stream/promises');
 // HTTPS downloads and GitHub API access with private-address guards
 const httpsDownloads = (function () {
     const blocked = new net.BlockList();
-    for (const [address, prefix] of [['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.88.99.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3]]) blocked.addSubnet(address, prefix, 'ipv4');
+    for (const [address, prefix] of [['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16], ['172.16.0.0', 12], ['192.0.0.0', 24], ['192.0.2.0', 24], ['192.88.99.0', 24], ['192.168.0.0', 16], ['198.18.0.0', 15], ['198.51.100.0', 24], ['203.0.113.0', 24], ['224.0.0.0', 3]]) {
+        blocked.addSubnet(address, prefix, 'ipv4');
+        blocked.addSubnet('64:ff9b::' + address, 96 + prefix, 'ipv6');
+    }
     const global6 = new net.BlockList();
     global6.addSubnet('2000::', 3, 'ipv6');
+    // DNS64 on IPv6-only networks answers with the IPv4 address inside the NAT64 well-known prefix. Those count
+    // as public when the IPv4 address does, which the blocked list above checks.
+    global6.addSubnet('64:ff9b::', 96, 'ipv6');
     for (const [address, prefix] of [['2001::', 23], ['2001:db8::', 32], ['2002::', 16], ['3fff::', 20]]) blocked.addSubnet(address, prefix, 'ipv6');
     function publicAddress(address) {
         const family = net.isIP(address);
@@ -38,7 +44,15 @@ const httpsDownloads = (function () {
         url.search = '';
         return url.href;
     }
-    function createClient(transport = https, lookup = dns.lookup) {
+    function createClient(transport = https, lookup = dns.lookup, proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.https_proxy || process.env.http_proxy) {
+        // A proxy from the environment is used as by MeshCentral's other outbound requests. It resolves the host
+        // itself, so the address checks on DNS answers do not apply behind it.
+        let proxyAgent = null;
+        function agent() {
+            if (!proxy) return false;
+            try { return proxyAgent || (proxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(proxy)); }
+            catch (ex) { throw Object.assign(new Error('Unable to use the proxy set in HTTPS_PROXY or HTTP_PROXY.'), { unreachable: true }); }
+        }
         async function response(value, options, redirects = 0, authenticated = true) {
             const url = parseUrl(value), hostname = url.hostname.replace(/^\[|\]$/g, '');
             const headers = { 'User-Agent': 'MeshCentral-AgentBuilds', Accept: options.json ? 'application/vnd.github+json' : 'application/octet-stream', 'Accept-Encoding': 'identity' };
@@ -50,12 +64,13 @@ const httpsDownloads = (function () {
             }
             const res = await new Promise((resolve, reject) => {
                 let timer, connecting;
-                const request = transport.get(url, { headers, agent: false, signal: options.signal, lookup: function (host, settings, callback) {
+                const request = transport.get(url, { headers, agent: agent(), signal: options.signal, lookup: function (host, settings, callback) {
                     lookup(host, { all: true, verbatim: true }, (err, addresses) => {
                         if (err || !addresses || !addresses.length) return callback(new Error('Unable to resolve the download host.'));
                         if (addresses.some(x => !publicAddress(x.address))) return callback(new Error('Downloads from private or reserved addresses are not allowed.'));
-                        // Return the checked address to the socket so a second lookup cannot change the destination.
-                        callback(null, settings.all ? [addresses[0]] : addresses[0].address, addresses[0].family);
+                        // Return the checked addresses to the socket so a second lookup cannot change the destination. All
+                        // of them, so a host without IPv4 still reaches a DNS64 address after the IPv4 one fails.
+                        callback(null, settings.all ? addresses : addresses[0].address, addresses[0].family);
                     });
                 } }, res => { clearTimeout(timer); clearTimeout(connecting); resolve(res); });
                 timer = setTimeout(() => request.destroy(new Error('Download timed out.')), 20000);
