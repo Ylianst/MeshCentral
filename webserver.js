@@ -1262,15 +1262,18 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         // Check Google Authenticator
         if (user.otpsecret && (typeof (token) == 'string') && (token.length == 6)){
             const otplib = require('otplib');
-            const verified = otplib.verifySync({ 
-                epochTolerance: 60, 
-                token: token, 
-                secret: user.otpsecret,
-                guardrails: otplib.createGuardrails({
-                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
-                })
-            });
-            if (verified.valid === true) {
+            var verified = null;
+            try {
+                verified = otplib.verifySync({ 
+                    epochTolerance: 60, 
+                    token: token, 
+                    secret: user.otpsecret,
+                    guardrails: otplib.createGuardrails({
+                        MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                    })
+                });
+            } catch (ex) { parent.debug('web', 'checkUserOneTimePassword: exception ' + ex); }
+            if ((verified != null) && (verified.valid === true)) {
                 parent.debug('web', 'checkUserOneTimePassword: success (authenticator).');
                 func(true, { twoFactorType: 'otp' });
                 return;
@@ -4131,22 +4134,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleManifestRequest(req, res){
         const domain = checkUserIpAddress(req);
         if (domain == null) { parent.debug('web', 'handleManifestRequest: no domain'); res.sendStatus(404); return; }
+        if (domain.pwa.disabled == true) { parent.debug('web', 'handleManifestRequest: PWA disabled'); res.sendStatus(404); return; }
         parent.debug('web', 'handleManifestRequest()');
         var manifest = {
-            "name": (domain.title != null) ? domain.title : 'MeshCentral',
-            "short_name": (domain.title != null) ? domain.title : 'MeshCentral',
+            "name": (domain.pwa.name != null) ? domain.pwa.name : 'MeshCentral',
+            "short_name": (domain.pwa.short_name != null) ? domain.pwa.short_name : 'MeshCentral',
             "description": "Open source web based, remote computer management.",
             "scope": ".",
             "start_url": "/",
-            "display": "fullscreen",
-            "orientation": "any",
-            "theme_color": "#ffffff",
-            "background_color": "#ffffff",
-            "icons": [{
+            "display": (domain.pwa.display != null) ? domain.pwa.display : "fullscreen",
+            "orientation": (domain.pwa.orientation != null) ? domain.pwa.orientation : "any",
+            "theme_color": (domain.pwa.themecolor != null) ? domain.pwa.themecolor : "#ffffff",
+            "background_color": (domain.pwa.backgroundcolor != null) ? domain.pwa.backgroundcolor : "#ffffff",
+            "icons": (domain.pwa.icons != null) ? domain.pwa.icons : [{
                 "src": "pwalogo.png",
                 "sizes": "512x512",
                 "type": "image/png"
-            }]
+            }],
+            "shortcuts": domain.pwa.shortcuts
         };
         res.json(manifest);
     }
@@ -4486,10 +4491,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             if ((command == null) || (typeof command.action != 'string')) return;
                             switch (command.action) {
                                 case 'get': {
-                                    const buffer = Buffer.alloc(8 + command.size);
-                                    //buffer.writeUInt32BE((command.ptr >> 32), 0);
-                                    buffer.writeUInt32BE((command.ptr & 0xFFFFFFFF), 4);
-                                    obj.fs.read(fd, buffer, 8, command.size, command.ptr, function (err, bytesRead, buffer) { if (bytesRead > (buffer.length - 8)) { buffer = buffer.slice(0, bytesRead + 8); } ws.send(buffer); });
+                                    if (!Number.isInteger(command.size) || !Number.isInteger(command.ptr) || (command.size < 0) || (command.size > 1048576) || (command.ptr < 0)) break;
+                                    try {
+                                        const buffer = Buffer.alloc(8 + command.size);
+                                        //buffer.writeUInt32BE((command.ptr >> 32), 0);
+                                        buffer.writeUInt32BE((command.ptr & 0xFFFFFFFF), 4);
+                                        obj.fs.read(fd, buffer, 8, command.size, command.ptr, function (err, bytesRead, buffer) { if (err != null) return; if (bytesRead > (buffer.length - 8)) { buffer = buffer.slice(0, bytesRead + 8); } ws.send(buffer); });
+                                    } catch (ex) { }
                                     break;
                                 }
                             }
@@ -5303,6 +5311,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             for (var i in cmd.nodeids) {
                 obj.GetNodeWithRights(cmd.domain, cmd.user, cmd.nodeids[i], function (node, rights, visible) {
                     if ((node == null) || ((rights & 8) == 0) || (visible == false)) return; // We don't have remote control rights to this device
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0)) return; // This user is not allowed to use files on this device
                     var agentPath = (((node.agent.id > 0) && (node.agent.id < 5)) || (node.agent.id == 34)) ? cmd.windowsPath : cmd.linuxPath;
                     if (agentPath == null) return;
 
@@ -9460,6 +9469,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             } else {
                                 req.session.userid = user._id;
                                 req.session.ip = req.clientIp;
+                                if ((loginOptions != null) && (loginOptions.tokenName != null) && (loginOptions.tokenUser != null)) {
+                                    req.session.tokenUser = loginOptions.tokenUser;
+                                    req.session.tokenName = loginOptions.tokenName;
+                                }
                                 setSessionRandom(req);
                                 func(ws, req, domain, user);
                             }

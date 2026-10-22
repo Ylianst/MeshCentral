@@ -49,7 +49,7 @@ const httpsDownloads = (function () {
                 if (options.etag) headers['If-None-Match'] = options.etag;
             }
             const res = await new Promise((resolve, reject) => {
-                let timer;
+                let timer, connecting;
                 const request = transport.get(url, { headers, agent: false, signal: options.signal, lookup: function (host, settings, callback) {
                     lookup(host, { all: true, verbatim: true }, (err, addresses) => {
                         if (err || !addresses || !addresses.length) return callback(new Error('Unable to resolve the download host.'));
@@ -57,10 +57,20 @@ const httpsDownloads = (function () {
                         // Return the checked address to the socket so a second lookup cannot change the destination.
                         callback(null, settings.all ? [addresses[0]] : addresses[0].address, addresses[0].family);
                     });
-                } }, res => { clearTimeout(timer); resolve(res); });
+                } }, res => { clearTimeout(timer); clearTimeout(connecting); resolve(res); });
                 timer = setTimeout(() => request.destroy(new Error('Download timed out.')), 20000);
+                // A firewall that drops packets leaves the connection pending rather than refusing it, so connecting
+                // gets less time than a slow response.
+                connecting = setTimeout(() => request.destroy(new Error('Connection timed out.')), 10000);
+                request.once('socket', socket => socket.once('secureConnect', () => clearTimeout(connecting)));
                 request.setTimeout(20000, () => request.destroy(new Error('Download timed out.')));
-                request.on('error', err => { clearTimeout(timer); reject(err.name === 'AbortError' ? new Error('Import cancelled or timed out.') : new Error(/private or reserved|resolve the download|timed out/.test(err.message) ? err.message : 'Unable to download from this host.')); });
+                request.on('error', err => {
+                    clearTimeout(timer); clearTimeout(connecting);
+                    if (err.name === 'AbortError') return reject(Object.assign(new Error('Download cancelled or timed out.'), { name: 'AbortError' }));
+                    // Nothing came back, so other downloads from this host will fail the same way.
+                    const code = /^[A-Z0-9_]+$/.test(err.code) ? ' (' + err.code + ')' : '';
+                    reject(Object.assign(new Error(/private or reserved|resolve the download|timed out/.test(err.message) ? err.message : 'Unable to download from this host' + code + '.'), { unreachable: true }));
+                });
             });
             if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
                 res.destroy();
@@ -357,8 +367,9 @@ function CreateAgentDefaults(parent, options = {}) {
     const settings = (parent.config.settings || {}).agentdownloads || {};
     const names = new Set(Object.values(parent.meshAgentsArchitectureNumbers).map(x => x.localname));
     for (const name of ['MeshCentralRouter.exe', 'MeshCentralRouter.dmg', 'MeshCentralAssistant.exe']) names.add(name);
-    const ready = new Map(), entries = new Map();
-    let busy = null, errors = [], loaded = false, activating = null, updates = null, activePaths = null, announced = false;
+    const ready = new Map(), entries = new Map(), rejected = new Set();
+    const mismatch = 'The release file does not match its expected size and SHA384.';
+    let busy = null, errors = [], loaded = false, activating = null, updates = null, activePaths = null, announced = false, retryTimer = null, retries = 0;
 
     function regular(filename) {
         try { return fs.lstatSync(filename).isFile(); } catch (ex) { return false; }
@@ -455,7 +466,11 @@ function CreateAgentDefaults(parent, options = {}) {
         if (await verified(path.join(bundled, file.filename), file)) local = path.join(bundled, file.filename);
         const imported = localFiles && localFiles.find(x => x.sha384 === file.sha384 && x.size === file.size);
         if (!local && imported && await verified(imported.path, file)) local = imported.path;
-        if (!local && settings.enabled === false) throw new Error('Automatic downloads are disabled. Supply this release file locally.');
+        if (!local && settings.enabled === false) return null;
+        // Checked only now so files already on disk still load after the pass has given up on GitHub.
+        if (!local) signal.throwIfAborted();
+        // A published asset that failed verification would fail again, so it is fetched once per start.
+        if (!local && rejected.has(file.filename)) throw new Error(mismatch);
         await directory(root); await directory(cache);
         await releaseFolder.ensureSpace(cache, file.size, releaseFolder.reserve(settings), options.freeSpace);
         const temp = path.join(cache, '.' + crypto.randomBytes(16).toString('hex') + '.tmp');
@@ -473,7 +488,7 @@ function CreateAgentDefaults(parent, options = {}) {
                     throw ex;
                 }
             }
-            if (!await verified(temp, file)) throw new Error('The release file does not match its expected size and SHA384.');
+            if (!await verified(temp, file)) { if (!local) rejected.add(file.filename); throw new Error(mismatch); }
             await fs.promises.chmod(temp, 0o600);
             await fs.promises.rename(temp, target);
             await releaseFolder.record(cache, file.filename, (await releaseFolder.hashes(target)).sha256);
@@ -488,12 +503,34 @@ function CreateAgentDefaults(parent, options = {}) {
             files: Array.from(entries.values(), ({ url, ...file }) => ({ ...file }))
         };
     }
-    // One line when the first download starts, so a slow link explains a quiet startup.
+    // One line when the first download starts, so a slow link explains a quiet startup. Background retries
+    // stay quiet until their files load.
     function announce() {
         if (announced) return;
         announced = true;
         const waiting = Array.from(entries.values()).filter(file => file.status !== 'Ready');
         log('Downloading ' + waiting.length + ' default agent files (' + Math.ceil(waiting.reduce((total, file) => total + file.size, 0) / 1048576) + ' MiB) from GitHub releases...');
+    }
+    // One warning for all the files that could not be fetched, with the release pages to get them from and
+    // the folders they go in.
+    function missingWarning(files, cause) {
+        const folders = new Map();
+        for (const file of files) {
+            if (!folders.has(file.tag)) folders.set(file.tag, new Set());
+            folders.get(file.tag).add(file.sourceUrl);
+        }
+        const one = files.length === 1, what = (!one && files.length === entries.size) ? 'the ' + files.length + ' default agent files' : files.map(file => file.filename).join(', ');
+        const where = (one ? 'it' : 'them') + ' from ' + Array.from(folders, ([tag, pages]) => Array.from(pages).join(' and ') + ' into "' + path.join(root, tag) + '"').join(', and from ') + '.';
+        if (!cause) return 'Agent downloads are disabled and ' + what + (one ? ' is' : ' are') + ' missing. Download ' + where;
+        return 'Unable to download ' + what + ' from GitHub: ' + cause.message + ' Retrying in the background. On a server without internet access, download ' + where;
+    }
+    // Missing files are looked for again in the background, so a network that was down at startup or files
+    // copied in by hand need no restart. The wait doubles from a minute up to an hour.
+    function retry() {
+        clearTimeout(retryTimer); retryTimer = null;
+        if (!activePaths || Array.from(entries.keys()).every(name => ready.has(name) || rejected.has(name))) { retries = 0; return; }
+        retryTimer = setTimeout(() => { retryTimer = null; prepare(); }, Math.min(3600000, 60000 * Math.pow(2, retries++)));
+        retryTimer.unref();
     }
     function prepare(localFiles) {
         if (busy) return busy;
@@ -501,24 +538,37 @@ function CreateAgentDefaults(parent, options = {}) {
             errors = [];
             try { if (!loaded) await load(); }
             catch (ex) { errors.push('Unable to read default agent releases: ' + ex.message); return; }
-            const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 120000);
-            announced = false;
+            const controller = new AbortController(), timer = setTimeout(() => controller.abort(new Error('Downloads did not finish within 10 minutes.')), 600000);
+            const missing = new Set();
+            let cause = null;
             try {
-                const pending = Array.from(entries.values());
+                const pending = Array.from(entries.values()).filter(file => !ready.has(file.filename));
                 await Promise.all(Array.from({ length: Math.min(3, pending.length) }, async function () {
                     while (pending.length) {
                         const file = pending.shift();
                         delete file.error; delete file.received;
-                        try { ready.set(file.filename, await resolve(file, controller.signal, localFiles)); }
-                        catch (ex) {
-                            file.status = 'Unavailable'; file.error = ex.message;
-                            errors.push(file.filename + ': ' + ex.message);
+                        try {
+                            const target = await resolve(file, controller.signal, localFiles);
+                            if (target) { ready.set(file.filename, target); continue; }
+                            file.status = 'Unavailable'; file.error = 'Automatic downloads are disabled. Supply this release file locally.';
+                            missing.add(file);
+                        } catch (ex) {
+                            // Without GitHub every other download would wait out the same timeout, so the rest are stopped
+                            // and report why rather than their cancellation.
+                            if (ex.unreachable && !controller.signal.aborted) controller.abort(ex);
+                            const stopped = controller.signal.aborted && (ex === controller.signal.reason || ex.name === 'AbortError');
+                            const reason = ex.unreachable ? ex : stopped ? controller.signal.reason : null;
+                            file.status = 'Unavailable'; file.error = (reason || ex).message;
+                            if (reason) { cause = cause || reason; missing.add(file); } else errors.push(file.filename + ': ' + ex.message);
                         }
                     }
                 }));
             } finally { clearTimeout(timer); }
+            // Listed in manifest order, not the order the downloads happened to fail in.
+            if (missing.size) errors.unshift(missingWarning(Array.from(entries.values()).filter(file => missing.has(file)), cause));
             // Files that landed after start() froze the paths are switched in by the server, not by a restart.
             if (activePaths && changed()) notify();
+            retry();
         })().finally(() => { busy = null; });
         return busy;
     }
@@ -531,6 +581,7 @@ function CreateAgentDefaults(parent, options = {}) {
         // Signing and table loading must see the same files after the startup download wait ends.
         if (!activePaths) activePaths = new Map(Array.from(names, name => [name, current(name)]));
         if (updates) updates.start();
+        if (!busy) retry();
     }
     return { prepare, status, sourcePath, info, start, activate, checkUpdates: () => updates ? updates.check(true) : Promise.resolve() };
 }

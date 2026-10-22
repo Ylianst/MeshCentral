@@ -17,6 +17,36 @@ const crypto = require('crypto');
 const RUNCOMMAND_RESPONSE_ID = crypto.randomUUID(); // unique per process, see PR description: avoids concurrent 'runcommand' invocations under the same login cross-talking on each other's --reply output
 const args = require('minimist')(process.argv.slice(2));
 const path = require('path');
+
+// Login arguments resolve as: command line > environment > config file. Only the
+// command line is visible to other local users, since /proc/<pid>/cmdline is world
+// readable while /proc/<pid>/environ is not, so the other two are the safer places
+// to keep a password or a login token.
+const envArgNames = { url: 'MESHCTRL_URL', loginuser: 'MESHCTRL_LOGINUSER', loginpass: 'MESHCTRL_LOGINPASS', token: 'MESHCTRL_TOKEN' };
+const configArgs = loadConfigArgs();
+for (var argName in envArgNames) {
+    // an explicit argument always wins, including a bare --loginpass asking to prompt
+    if (args[argName] != null) continue;
+    if (process.env[envArgNames[argName]] != null) { args[argName] = process.env[envArgNames[argName]]; }
+    else if (configArgs[argName] != null) { args[argName] = configArgs[argName]; }
+}
+
+// JSON rather than another format so this needs no parser dependency and matches
+// the server's own config.json.
+function loadConfigArgs() {
+    const fs = require('fs');
+    const configDir = process.env.XDG_CONFIG_HOME || path.join(require('os').homedir(), '.config');
+    const configFile = path.join(configDir, 'meshctrl', 'config.json');
+    try {
+        if ((process.platform != 'win32') && ((fs.statSync(configFile).mode & 0o077) != 0)) {
+            console.log('Warning: "' + configFile + '" is readable by other users, run: chmod 600 "' + configFile + '"');
+        }
+        return JSON.parse(fs.readFileSync(configFile, 'utf8'));
+    } catch (ex) {
+        if (ex.code != 'ENOENT') { console.log('Ignoring "' + configFile + '": ' + ex.message); }
+        return {};
+    }
+}
 const possibleCommands = ['edituser', 'listusers', 'listusersessions', 'listdevicegroups', 'listdevices', 'listusersofdevicegroup', 'listevents', 'logintokens', 'serverinfo', 'serverversion', 'userinfo', 'adduser', 'removeuser', 'adddevicegroup', 'removedevicegroup', 'editdevicegroup', 'broadcast', 'showevents', 'addusertodevicegroup', 'removeuserfromdevicegroup', 'addusertodevice', 'removeuserfromdevice', 'sendinviteemail', 'generateinvitelink', 'config', 'movetodevicegroup', 'deviceinfo', 'removedevice', 'editdevice', 'addlocaldevice', 'addamtdevice', 'addusergroup', 'listusergroups', 'removeusergroup', 'runcommand', 'shell', 'upload', 'download', 'deviceopenurl', 'devicemessage', 'devicetoast', 'addtousergroup', 'removefromusergroup', 'removeallusersfromusergroup', 'devicesharing', 'devicepower', 'indexagenterrorlog', 'agentdownload', 'report', 'grouptoast', 'groupmessage', 'webrelay'];
 if (args.proxy != null) { try { require('https-proxy-agent'); } catch (ex) { console.log('Missing module "https-proxy-agent", type "npm install https-proxy-agent" to install it.'); return; } }
 
@@ -87,6 +117,11 @@ if (args['_'].length == 0) {
     console.log("  --loginkeyfile [file]       - File containing server login key in hex.");
     console.log("  --logindomain [domainid]    - Domain id, default is empty, only used with loginkey.");
     console.log("  --proxy [http://proxy:123]  - Specify an HTTP proxy.");
+    console.log("\r\nUrl, loginuser, loginpass and token may also be given as MESHCTRL_URL,");
+    console.log("MESHCTRL_LOGINUSER, MESHCTRL_LOGINPASS, MESHCTRL_TOKEN, or in a config file");
+    console.log("at ~/.config/meshctrl/config.json, for example:");
+    console.log("  { \"url\": \"wss://server:443\", \"loginuser\": \"admin\", \"loginpass\": \"...\" }");
+    console.log("Arguments win over the environment, which wins over the config file.");
     return;
 } else {
     settings.cmd = args['_'][0].toLowerCase();

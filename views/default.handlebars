@@ -1506,6 +1506,7 @@
                         <div>
                             <div>Frame rate</div>
                             <select id="d7framelimiter" dir="rtl">
+                                <option value=20>Very fast</option>
                                 <option selected=selected value=50>Fast</option>
                                 <option value=100>Medium</option>
                                 <option value=400>Slow</option>
@@ -1603,7 +1604,7 @@
         <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie name="auth" /><input id=p5fileDragSize name="size" /><input id=p5fileDragType name="type" /><input id=p5fileDragData name="data" /><input id=p5fileDragLink name="link" /><input type=submit id=p5loginSubmit2 style="display:none" /></form>
         <form style="display:none" method=post action=uploadnodefile.ashx enctype=multipart/form-data target=fileUploadFrame><input id=p13fileDragName name="name" /><input id=p13fileDragSize name="size" /><input id=p13fileDragType name="type" /><input id=p13fileDragData name="data" /><input id=p13fileDragLink name="link" /><input type=submit id=p13loginSubmit2 style="display:none" /></form>
         <audio id="chimes"><source src="sounds/chimes.mp3" type="audio/mp3" /></audio>
-        <iframe style=display:none name="fileDownloadFrame"></iframe>
+        <iframe id=fileDownloadFrame style=display:none name="fileDownloadFrame"></iframe>
     </div>
     <script type="text/javascript">
         'use strict';
@@ -2355,7 +2356,8 @@
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
                 meshserver.send({ action: 'meshes' });
-                meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                deviceServerFilter = getDeviceServerFilter();
+                meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip, filter: deviceServerFilter });
                 meshserver.send({ action: 'loginTokens' });
                 if (pluginHandler != null) { meshserver.send({ action: 'plugins' }); }
                 if ('{{currentNode}}'.toLowerCase() == '') { meshserver.send({ action: 'files' }); }
@@ -6693,8 +6695,30 @@
             return r;
         }
 
+        // When the server pages the device list (maxDeviceView), plain name filters are sent to the server so they
+        // search all devices and not only the current page. Prefixed (u:, ip:, tag:...) and composite filters stay local.
+        var deviceServerFilter = '', deviceServerFilterTimer = null;
+        function getDeviceServerFilter() {
+            var x = Q('SearchInput').value.toLowerCase().trim();
+            if ((x == '') || (/[:,!]/.test(x)) || (/\s(or|and)\s/.test(x))) return '';
+            return x;
+        }
+        function updateDeviceServerFilter() {
+            if ((serverinfo == null) || (serverinfo.maxdeviceview == null) || (meshserver == null)) return;
+            if (deviceServerFilterTimer != null) { clearTimeout(deviceServerFilterTimer); deviceServerFilterTimer = null; }
+            if (getDeviceServerFilter() == deviceServerFilter) return;
+            deviceServerFilterTimer = setTimeout(function () {
+                deviceServerFilterTimer = null;
+                var f = getDeviceServerFilter();
+                if (f == deviceServerFilter) return;
+                deviceServerFilter = f;
+                meshserver.send({ action: 'nodes', skip: 0, filter: f });
+            }, 400);
+        }
+
         function onSearchInputChanged() {
             var x = Q('SearchInput').value.toLowerCase().trim(); putstore('_search', Q('SearchInput').value);
+            updateDeviceServerFilter();
             QS('SearchInput')['background-color'] = QS('KvmSearchInput')['background-color'] = (x == '')?null:'#FDFFBE';
             QV('SearchInputClearButton', (x != ''));
             QV('KvmSearchInputClearButton', (x != ''));
@@ -14908,7 +14932,11 @@
         }
         function backup_enterPassword() {
             meshserver.send({ action: 'serverbackuppassword', check: false, password: Q('dbackup_password').value, override: Q('doverrulepw').checked });
-            window.location.href = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
+            // Navigating the page makes Firefox drop the control web socket and the reconnect reload cancels the download, and
+            // downloadFile() removes its frame after 10s, before a big backup is ready. Downloads never fire onload, errors do.
+            var f = Q('fileDownloadFrame');
+            f.onload = function () { f.onload = null; var x = ''; try { x = EscapeHtml(f.contentDocument.body.innerText); } catch (ex) { } messagebox("Download server backup", x); };
+            f.src = '{{{domainurl}}}backup.zip' + ((urlargs.key)?('?key=' + urlargs.key):'');
         }
 
         function server_showRestoreDlg(){

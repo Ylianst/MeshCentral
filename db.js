@@ -622,22 +622,19 @@ module.exports.CreateDB = function (parent, func) {
     // Encrypt an database object
     obj.performRecordEncryptionRecode = function (func) {
         var count = 0;
-        obj.GetAllType('user', function (err, docs) {
-            if (err != null) { parent.debug('db', 'ERROR (performRecordEncryptionRecode): ' + err); }
-            if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-            obj.GetAllType('node', function (err, docs) {
-                if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                obj.GetAllType('mesh', function (err, docs) {
-                    if (err == null) { for (var i in docs) { count++; obj.Set(docs[i]); } }
-                    if (obj.databaseType == DB_NEDB) { // If we are using NeDB, compact the database.
-                        obj.file.compactDatafile();
-                        obj.file.on('compaction.done', function () { func(count); }); // It's important to wait for compaction to finish before exit, otherwise NeDB may corrupt.
-                    } else {
-                        func(count); // For all other databases, normal exit.
-                    }
-                });
-            });
-        });
+        (async function () {
+            for (const type of ['user', 'node', 'mesh']) {
+                const docs = await new Promise(function (resolve, reject) { obj.GetAllType(type, function (err, docs) { if (err) { reject(err); } else { resolve(docs); } }); });
+                for (const doc of docs) {
+                    await new Promise(function (resolve, reject) { obj.Set(doc, function (err) { if (err) { reject(err); } else { resolve(); } }); });
+                    count++;
+                }
+            }
+            // The CLI exits on completion, so the final writes and compaction must finish first.
+            if (obj.databaseType == DB_NEDB) {
+                await new Promise(function (resolve, reject) { obj.file.compactDatafile(function (err) { if (err) { reject(err); } else { resolve(); } }); });
+            }
+        })().then(function () { func(count); }, function (err) { func(count, err); });
     }
 
     // Encrypt an database object
@@ -826,6 +823,7 @@ module.exports.CreateDB = function (parent, func) {
                         CREATE INDEX ndxeventsusername ON events(domain, userid, time);
                         CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time);
                         CREATE INDEX ndxeventids ON eventids(target);
+                        CREATE INDEX ndxeventidsfkid ON eventids(fkid);
                         CREATE INDEX ndxserverstattime ON serverstats (time);
                         CREATE INDEX ndxserverstatexpire ON serverstats (expire);
                         CREATE INDEX ndxpowernodeidtime ON power (nodeid, time);
@@ -843,9 +841,10 @@ module.exports.CreateDB = function (parent, func) {
             //for existing db's
             // Create any missing tables (e.g., pluginpermissions added in updates)
             obj.file.exec(`
-                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON)
+                CREATE TABLE IF NOT EXISTS pluginpermissions (id VARCHAR(255) PRIMARY KEY, doc JSON);
+                CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid);
             `, function (err) {
-                if (err) { console.log("SQLite Error creating pluginpermissions table: " + err); }
+                if (err) { console.log("SQLite Error creating pluginpermissions table or eventids index: " + err); }
                 sqliteSetOptions(function () { setupFunctions(func); });
             });
         });
@@ -1496,6 +1495,7 @@ module.exports.CreateDB = function (parent, func) {
             sqlDbExec('CREATE INDEX ndxeventsusername ON events(domain, userid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventsdomainnodeidtime ON events(domain, nodeid, time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxeventids ON eventids(target)', null, function (err, response) { });
+            sqlDbExec('CREATE INDEX IF NOT EXISTS ndxeventidsfkid ON eventids(fkid)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstattime ON serverstats (time)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxserverstatexpire ON serverstats (expire)', null, function (err, response) { });
             sqlDbExec('CREATE INDEX ndxpowernodeidtime ON power (nodeid, time)', null, function (err, response) { });
@@ -1691,45 +1691,33 @@ module.exports.CreateDB = function (parent, func) {
                     func(err, performTypedRecordDecrypt(docs));
                 });
             };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
                 if (limit == 0) { limit = -1; } // In SQLite, no limit is -1
-                if (id && (id != '')) {
-                    const sqliteIdFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdFilter + ' ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $4 OFFSET $5', [id, type, domain, limit, skip], function (err, docs) {
-                        if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
-                        func(err, performTypedRecordDecrypt(docs));
-                    });
-                } else {
-                    if (extrasids == null) {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + ')) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
-                            if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
-                            func(err, performTypedRecordDecrypt(docs));
-                        });
-                    } else {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + '))) ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $3 OFFSET $4', [type, domain, limit, skip], function (err, docs) {
-                            if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
-                            func(err, performTypedRecordDecrypt(docs));
-                        });
-                    }
-                }
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT doc FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += '(id = $' + args.length + ') AND '; }
+                args.push(type); q += '(type = $' + args.length + ') AND ';
+                args.push(domain); q += '(domain = $' + args.length + ') AND ';
+                q += (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; }
+                args.push(limit); q += ' ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $' + args.length;
+                args.push(skip); q += ' OFFSET $' + args.length;
+                sqlDbQuery(q, args, function (err, docs) {
+                    if (docs != null) { for (var i in docs) { delete docs[i].type; if (docs[i].links != null) { docs[i] = common.unEscapeLinksFieldName(docs[i]); } } }
+                    func(err, performTypedRecordDecrypt(docs));
+                });
             };
-            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
-                if (id && (id != '')) {
-                    const sqliteIdCountFilter = (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ' + sqliteIdCountFilter, [id, type, domain], function (err, docs) {
-                        func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
-                    });
-                } else {
-                    if (extrasids == null) {
-                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra IN (' + dbMergeSqlArray(meshes) + '))', [type, domain], function (err, docs) {
-                            func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
-                        });
-                    } else {
-                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND ((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))', [type, domain], function (err, docs) {
-                            func(err, (err == null) ? docs[0]['COUNT(doc)'] : null);
-                        });
-                    }
-                }
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT COUNT(doc) FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += '(id = $' + args.length + ') AND '; }
+                args.push(type); q += '(type = $' + args.length + ') AND ';
+                args.push(domain); q += '(domain = $' + args.length + ') AND ';
+                q += (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; }
+                sqlDbQuery(q, args, function (err, docs) { func(err, (err == null) ? docs[0]['COUNT(doc)'] : null); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if (id && (id != '')) {
@@ -1981,7 +1969,7 @@ module.exports.CreateDB = function (parent, func) {
                 data = common.escapeLinksFieldNameEx(data);
                 var xdata = performTypedRecordEncrypt(data);
                 obj.dbCounters.fileSet++;
-                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } })
+                obj.file.ref('meshcentral').child(encodeURIComponent(xdata._id)).set(common.aceEscapeFieldNames(xdata)).then(function (ref) { if (func) { func(); } }, function (err) { if (func) { func(err); } else { parent.debug('db', 'Set: ' + err); } });
             };
             obj.Get = function (id, func) {
                 obj.file.ref('meshcentral').child(encodeURIComponent(id)).get(function (snapshot) {
@@ -2007,10 +1995,13 @@ module.exports.CreateDB = function (parent, func) {
                     func(null, common.aceUnEscapeAllFieldNames(docs));
                 });
             }
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
                 if (meshes.length == 0) { func(null, []); return; }
+                const nameFilter = dbNameFilter(filter);
                 var query = obj.file.query('meshcentral').sort('name', true).skip(skip).take(limit).filter('type', '==', type).filter('domain', '==', domain);
                 if (id) { query = query.filter('_id', '==', id); }
+                if (nameFilter != null) { query = query.filter('name', 'like', '*' + nameFilter + '*'); }
                 if (extrasids == null) {
                     query = query.filter('meshid', 'in', meshes);
                     query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
@@ -2029,10 +2020,10 @@ module.exports.CreateDB = function (parent, func) {
                 query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllType = function (type, func) {
-                obj.file.query('meshcentral').filter('type', '==', type).get(function (snapshots) {
+                obj.file.query('meshcentral').filter('type', '==', type).get().then(function (snapshots) {
                     const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); }
-                    func(null, common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs)));
-                });
+                    return common.aceUnEscapeAllFieldNames(performTypedRecordDecrypt(docs));
+                }).then(function (docs) { func(null, docs); }, func);
             };
             obj.GetAllIdsOfType = function (ids, domain, type, func) { obj.file.query('meshcentral').filter('_id', 'in', ids).filter('domain', '==', domain).filter('type', '==', type).get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
             obj.GetUserWithEmail = function (domain, email, func) { obj.file.query('meshcentral').filter('type', '==', 'user').filter('domain', '==', domain).filter('email', '==', email).get({ exclude: ['type'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); }); };
@@ -2285,28 +2276,32 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM main', null, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetHash = function (id, func) { sqlDbQuery('SELECT doc FROM main WHERE id = $1', [id], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM main WHERE type = $1 AND domain = $2', [type, domain], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
                 if (limit == 0) { limit = 0xFFFFFFFF; }
-                if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5))) ORDER BY LOWER(doc->>\'name\') LIMIT $6 OFFSET $7', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
-                } else {
-                    if (extrasids == null) {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3)) ORDER BY LOWER(doc->>\'name\') LIMIT $4 OFFSET $5', [type, domain, meshes, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }, true);
-                    } else {
-                        sqlDbQuery('SELECT doc FROM main WHERE (type = $1) AND (domain = $2) AND ((extra = ANY ($3)) OR (id = ANY ($4))) ORDER BY LOWER(doc->>\'name\') LIMIT $5 OFFSET $6', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
-                    }
-                }
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT doc FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += '(id = $' + args.length + ') AND '; }
+                args.push(type); q += '(type = $' + args.length + ') AND ';
+                args.push(domain); q += '(domain = $' + args.length + ') AND ';
+                args.push(meshes); q += '((extra = ANY ($' + args.length + '))';
+                if ((extrasids != null) || (id && (id != ''))) { args.push((extrasids == null) ? [] : extrasids); q += ' OR (id = ANY ($' + args.length + ')))'; } else { q += ')'; }
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; }
+                args.push(limit); q += ' ORDER BY LOWER(doc->>\'name\') LIMIT $' + args.length;
+                args.push(skip); q += ' OFFSET $' + args.length;
+                sqlDbQuery(q, args, function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
-                if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (id = $1) AND (type = $2) AND (domain = $3) AND ((extra = ANY ($4)) OR (id = ANY ($5)))', [id, type, domain, meshes, (extrasids == null) ? [] : extrasids], function (err, docs) { func(err, docs); });
-                } else {
-                    if (extrasids == null) {
-                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND (extra = ANY ($3))', [type, domain, meshes], function (err, docs) { func(err, docs); }, true);
-                    } else {
-                        sqlDbQuery('SELECT COUNT(doc) FROM main WHERE (type = $1) AND (domain = $2) AND ((extra = ANY ($3)) OR (id = ANY ($4)))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
-                    }
-                }
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT COUNT(doc) FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += '(id = $' + args.length + ') AND '; }
+                args.push(type); q += '(type = $' + args.length + ') AND ';
+                args.push(domain); q += '(domain = $' + args.length + ') AND ';
+                args.push(meshes); q += '((extra = ANY ($' + args.length + '))';
+                if ((extrasids != null) || (id && (id != ''))) { args.push((extrasids == null) ? [] : extrasids); q += ' OR (id = ANY ($' + args.length + ')))'; } else { q += ')'; }
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; }
+                sqlDbQuery(q, args, function (err, docs) { func(err, docs); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if (id && (id != '')) {
@@ -2544,24 +2539,29 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAll = function (func) { sqlDbQuery('SELECT domain, doc FROM main', null, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetHash = function (id, func) { sqlDbQuery('SELECT doc FROM main WHERE id = ?', [id], function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); }
             obj.GetAllTypeNoTypeField = function (type, domain, func) { sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ?', [type, domain], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
                 if (limit == 0) { limit = 0xFFFFFFFF; }
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                if (id && (id != '')) {
-                    sqlDbQuery('SELECT doc FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [id, type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
-                } else {
-                    sqlDbQuery('SELECT doc FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?)) ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?', [type, domain, meshes, extrasids, limit, skip], function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
-                }
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT doc FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += 'id = ? AND '; }
+                args.push(type, domain, meshes, extrasids); q += 'type = ? AND domain = ? AND (extra IN (?) OR id IN (?))';
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; }
+                args.push(limit, skip); q += ' ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?';
+                sqlDbQuery(q, args, function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
                 if ((meshes == null) || (meshes.length == 0)) { meshes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
                 if ((extrasids == null) || (extrasids.length == 0)) { extrasids = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
-                if (id && (id != '')) {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE id = ? AND type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [id, type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
-                } else {
-                    sqlDbQuery('SELECT COUNT(doc) FROM main WHERE type = ? AND domain = ? AND (extra IN (?) OR id IN (?))', [type, domain, meshes, extrasids], function (err, docs) { func(err, docs); });
-                }
+                const nameFilter = dbNameFilter(filter), args = [];
+                var q = 'SELECT COUNT(doc) FROM main WHERE ';
+                if (id && (id != '')) { args.push(id); q += 'id = ? AND '; }
+                args.push(type, domain, meshes, extrasids); q += 'type = ? AND domain = ? AND (extra IN (?) OR id IN (?))';
+                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; }
+                sqlDbQuery(q, args, function (err, docs) { func(err, docs); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 if ((nodes == null) || (nodes.length == 0)) { nodes = ''; } // MySQL can't handle a query with IN() on an empty array, we have to use an empty string instead.
@@ -2847,42 +2847,28 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetAll = function (func) { obj.file.find({}).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetHash = function (id, func) { obj.file.find({ _id: id }).project({ _id: 0, hash: 1 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
             obj.GetAllTypeNoTypeField = function (type, domain, func) { obj.file.find({ type: type, domain: domain }).project({ type: 0 }).toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); }); };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
-                if (extrasids == null) {
-                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
-                    if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 }).collation({ locale: 'en', strength: 2 }).sort({ name: 1 });
-                    if (skip > 0) f = f.skip(skip); // Skip records
-                    if (limit > 0) f = f.limit(limit); // Limit records
-                    f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
-                } else {
-                    const x = { type: type, domain: domain, $or: [ { meshid: { $in: meshes } }, { _id: { $in: extrasids } } ] };
-                    if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 }).collation({ locale: 'en', strength: 2 }).sort({ name: 1 });
-                    if (skip > 0) f = f.skip(skip); // Skip records
-                    if (limit > 0) f = f.limit(limit); // Limit records
-                    f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
-                }
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter);
+                const x = (extrasids == null) ? { type: type, domain: domain, meshid: { $in: meshes } } : { type: type, domain: domain, $or: [ { meshid: { $in: meshes } }, { _id: { $in: extrasids } } ] };
+                if (id) { x._id = id; }
+                if (nameFilter != null) { x.name = { $regex: dbNameFilterRegExp(nameFilter) }; }
+                var f = obj.file.find(x, { type: 0 }).collation({ locale: 'en', strength: 2 }).sort({ name: 1 });
+                if (skip > 0) f = f.skip(skip); // Skip records
+                if (limit > 0) f = f.limit(limit); // Limit records
+                f.toArray(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
-            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
-                if (extrasids == null) {
-                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
-                    if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 });
-                    if (f.countDocuments){
-                        f.countDocuments(function (err, count) { func(err, count); });
-                    } else {
-                        f.count(function (err, count) { func(err, count); });
-                    }
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter);
+                const x = (extrasids == null) ? { type: type, domain: domain, meshid: { $in: meshes } } : { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                if (id) { x._id = id; }
+                if (nameFilter != null) { x.name = { $regex: dbNameFilterRegExp(nameFilter) }; }
+                var f = obj.file.find(x, { type: 0 });
+                if (f.countDocuments) {
+                    f.countDocuments(function (err, count) { func(err, count); });
                 } else {
-                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
-                    if (id) { x._id = id; }
-                    var f = obj.file.find(x, { type: 0 });
-                    if (f.countDocuments){
-                        f.countDocuments(function (err, count) { func(err, count); });
-                    } else {
-                        f.count(function (err, count) { func(err, count); });
-                    }
+                    f.count(function (err, count) { func(err, count); });
                 }
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -3120,27 +3106,21 @@ module.exports.CreateDB = function (parent, func) {
                 //if (id) { x._id = id; }
                 //obj.file.find(x, { type: 0 }, function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             //};
-            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, func) {
-                if (extrasids == null) {
-                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
-                    if (id) { x._id = id; }
-                    obj.file.count(x, function (err, count) { func(err, count); });
-                } else {
-                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
-                    if (id) { x._id = id; }
-                    obj.file.count(x, function (err, count) { func(err, count); });
-                }
+            obj.CountAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter);
+                const x = (extrasids == null) ? { type: type, domain: domain, meshid: { $in: meshes } } : { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                if (id) { x._id = id; }
+                if (nameFilter != null) { x.name = { $regex: dbNameFilterRegExp(nameFilter) }; }
+                obj.file.count(x, function (err, count) { func(err, count); });
             };
-            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, func) {
-                if (extrasids == null) {
-                    const x = { type: type, domain: domain, meshid: { $in: meshes } };
-                    if (id) { x._id = id; }
-                    obj.file.find(x).sort({ name: 1 }).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
-                } else {
-                    const x = { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
-                    if (id) { x._id = id; }
-                    obj.file.find(x).sort({ name: 1 }).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
-                }
+            obj.GetAllTypeNoTypeFieldMeshFiltered = function (meshes, extrasids, domain, type, id, skip, limit, filter, func) {
+                if (typeof filter == 'function') { func = filter; filter = null; } // Backwards compatible: filter is optional
+                const nameFilter = dbNameFilter(filter);
+                const x = (extrasids == null) ? { type: type, domain: domain, meshid: { $in: meshes } } : { type: type, domain: domain, $or: [{ meshid: { $in: meshes } }, { _id: { $in: extrasids } }] };
+                if (id) { x._id = id; }
+                if (nameFilter != null) { x.name = { $regex: dbNameFilterRegExp(nameFilter) }; }
+                obj.file.find(x).sort({ name: 1 }).skip(skip).limit(limit).exec(function (err, docs) { func(err, performTypedRecordDecrypt(docs)); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
                 var x = { type: type, domain: domain, nodeid: { $in: nodes } };
@@ -3624,10 +3604,10 @@ module.exports.CreateDB = function (parent, func) {
     }
 
     // MongoDB pending bulk write operation, perform fast bulk document replacement.
-    function fileBulkWriteCompleted() {
+    function fileBulkWriteCompleted(err) {
         // Callbacks
         if (obj.filePendingCbs != null) {
-            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](); } }
+            for (var i in obj.filePendingCbs) { if (typeof obj.filePendingCbs[i] == 'function') { obj.filePendingCbs[i](err); } }
             obj.filePendingCbs = null;
         }
         if (obj.filePendingSets != null) {
@@ -3710,16 +3690,11 @@ module.exports.CreateDB = function (parent, func) {
                                  ' --db=\"' + dbname + '\" --archive=\"' + obj.newDBDumpFile + '\"';
                 parent.debug('backup','Mongodump cmd: ' + cmd);
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MongoDB backup: ' + error + '\r\n');} obj.createBackupfile(func);}
                 );
-                
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`Mongodump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                  });
 
             } else if ((obj.databaseType == DB_MARIADB) || (obj.databaseType == DB_MYSQL)) {
                 // Perform a MySqlDump backup
@@ -3731,15 +3706,11 @@ module.exports.CreateDB = function (parent, func) {
                 parent.debug('backup','Maria/MySQLdump cmd: ' + cmd);
 
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: parent.parentpath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MySQL backup: ' + error + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.error('ERROR: Unable to perform MySQL backup: ' + error + '\r\n');} obj.createBackupfile(func);}
                 );
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.error(`MySQLdump child process exited with code ${code}`); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                  });
 
             } else if (obj.databaseType == DB_SQLITE) {
                 //.db3 suffix to escape escape backupfile glob to exclude the sqlite db files
@@ -3761,15 +3732,11 @@ module.exports.CreateDB = function (parent, func) {
                     + " --file=" + obj.newDBDumpFile;
                 parent.debug('backup','Postgresqldump cmd: ' + cmd);
                 const child_process = require('child_process');
-                const dumpProcess = child_process.exec(
+                child_process.exec(
                     cmd,
                     { cwd: dataPath },
-                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n'); obj.createBackupfile(func);}}
+                    (error)=> {if (error) {obj.backupStatus |= BACKUPFAIL_DBDUMP; console.log('ERROR: Unable to perform PostgreSQL dump: ' + error.message + '\r\n');} obj.createBackupfile(func);}
                 );
-                dumpProcess.on('exit', (code) => {
-                    if (code != 0) {console.log(`PostgreSQLdump child process exited with code: ` + code); obj.backupStatus |= BACKUPFAIL_DBDUMP;}
-                    obj.createBackupfile(func);
-                });
             } else {
                 // NeDB/Acebase backup, no db dump needed, just make a file backup
                 obj.createBackupfile(func);
@@ -4482,6 +4449,11 @@ module.exports.CreateDB = function (parent, func) {
         for (var i in arr) { if (x != '') { x += ','; } x += '\'' + arr[i] + '\''; }
         return x;
     }
+
+    // Device name filter used by the device list when paging is enabled (maxDeviceView). Case-insensitive "contains" match.
+    function dbNameFilter(filter) { return ((typeof filter == 'string') && (filter.trim() != '')) ? filter.trim().toLowerCase() : null; }
+    function dbNameFilterLike(filter) { return '%' + filter.replace(/[\\%_]/g, function (c) { return '\\' + c; }) + '%'; }
+    function dbNameFilterRegExp(filter) { return new RegExp(filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'); }
 
     return obj;
 };

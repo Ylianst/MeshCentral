@@ -118,6 +118,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.deviceSkip = 0; // How many devices to skip
     obj.deviceLimit = 0; // How many devices to view
     obj.visibleDevices = null; // An object of visible nodeid's if the user is in paging mode
+    obj.deviceFilter = null; // Device name filter applied by the server before paging, only used in paging mode
     if (domain.maxdeviceview != null) { obj.deviceLimit = domain.maxdeviceview; }
 
     // Check if we are a cross-domain administrator
@@ -726,6 +727,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((typeof command.skip == 'number') && (command.skip >= 0)) { obj.deviceSkip = command.skip; }
                         if ((typeof command.limit == 'number') && (command.limit > 0)) { obj.deviceLimit = command.limit; }
                         if (obj.deviceLimit > domain.maxdeviceview) { obj.deviceLimit = domain.maxdeviceview; }
+
+                        // Device name filter, applied by the database before paging so it searches all devices, not only the current page.
+                        // The filter stays set for the following requests (page changes, refreshes) until the client changes it.
+                        if (typeof command.filter == 'string') {
+                            var newFilter = command.filter.trim().toLowerCase().substring(0, 128);
+                            if (newFilter == '') { newFilter = null; }
+                            if (newFilter != obj.deviceFilter) { obj.deviceFilter = newFilter; if (typeof command.skip != 'number') { obj.deviceSkip = 0; } }
+                        }
                     }
 
                     var links = [], extraids = null, err = null;
@@ -773,7 +782,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     }
 
                     // Request a list of all nodes
-                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                    db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
 
                         //console.log(err, docs, links, extraids, domain.id, 'node', command.id);
 
@@ -872,6 +881,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // If in paging mode, report back the skip and limit values
                             response.skip = obj.deviceSkip;
                             response.limit = obj.deviceLimit;
+                            if (obj.deviceFilter != null) { response.filter = obj.deviceFilter; }
 
                             // Add total device count
                             // Only set response.totalcount if we need to be in paging mode
@@ -881,7 +891,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 // Ask the database for the total device count
                                 if (db.CountAllTypeNoTypeFieldMeshFiltered) {
-                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, function (err, count) {
+                                    db.CountAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', command.id, obj.deviceFilter, function (err, count) {
                                         if ((err != null) || (typeof count != 'number') || ((obj.deviceSkip == 0) && (count < obj.deviceLimit))) {
                                             obj.visibleDevices = null;
                                         } else {
@@ -1038,7 +1048,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Check rights
                         if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if (url.searchParams.get('p') == '4') { requiredNonRights = MESHRIGHT_NOREGISTRY; }
-                        else if (url.searchParams.get('p') == '5') { requiredNonRights = MESHRIGHT_NOFILES; }
+                        else if ((url.searchParams.get('p') == '5') || (url.searchParams.get('p') == '10')) { requiredNonRights = MESHRIGHT_NOFILES; }
                         else if (url.searchParams.get('p') == '6') { requiredNonRights = MESHRIGHT_NOSOFTWARE; }
 
                         // If we are using the desktop multiplexor, remove the VIEWONLY limitation. The multiplexor will take care of enforcing that limitation when needed.
@@ -1305,6 +1315,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Notify mesh change
                                     change = 'Removed user ' + deluser.name + ' from device group ' + mesh.name;
                                     var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 72, msgArgs: [deluser.name, mesh.name], msg: change, domain: deluserdomain.id, invite: mesh.invite };
+                                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                    }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [deluser._id, user._id]), obj, event);
                                 }
@@ -1325,6 +1338,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     } else {
                                         event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: deluserdomain.id, msgid: 61, msgArgs: [node.name], msg: 'Changed user device rights for ' + node.name, node: parent.CloneSafeNode(node) }
                                     }
+                                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                    }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                     parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id), obj, event);
                                 });
@@ -1338,6 +1354,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Notify user group change
                                     change = 'Removed user ' + deluser.name + ' from user group ' + ugroup.name;
                                     var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 62, msgArgs: [deluser.name, ugroup.name], msg: 'Removed user ' + deluser.name + ' from user group ' + ugroup.name, addUserDomain: deluserdomain.id };
+                                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                    }
                                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                                     parent.parent.DispatchEvent(['*', ugroup._id, user._id, deluser._id], obj, event);
                                 }
@@ -1556,6 +1575,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var targets = ['*', 'server-users', user._id, chguser._id];
                             if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: edituserdomain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         }
@@ -1662,6 +1684,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             // Notify user change
                                             var targets = ['*', 'server-users', user._id, xuser._id];
                                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 67, msgArgs: [xuser.name], msg: 'User group membership changed: ' + xuser.name, domain: ugrpdomain.id };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             //parent.parent.DispatchEvent(targets, obj, event);
                                             pendingDispatchEvents.push([targets, obj, event]);
@@ -1675,6 +1700,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                             // Notify mesh change
                                             var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msgid: 68, msgArgs: [ugrp.name, xmesh.name], msg: 'Added user group ' + ugrp.name + ' to device group ' + xmesh.name, domain: ugrpdomain.id, invite: xmesh.invite };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                             //parent.parent.DispatchEvent(['*', xmesh._id, user._id], obj, event);
                                             pendingDispatchEvents.push([parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event]);
@@ -1690,6 +1718,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Event the user group creation
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugrpid, name: ugrp.name, desc: ugrp.desc, action: 'createusergroup', links: ugrp.links, msgid: 69, msgArgv: [ugrp.name], msg: 'User group created: ' + ugrp.name, ugrpdomain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         parent.parent.DispatchEvent(['*', ugrpid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Event any pending events, these must be sent out after the group creation event is dispatched.
@@ -1755,6 +1786,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         // Notify user change
                                         var targets = ['*', 'server-users', user._id, xuser._id];
                                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 67, msgArgs: [xuser.name], msg: 'User group membership changed: ' + xuser.name, delGroupDomain: domain.id };
+                                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                        }
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                         parent.parent.DispatchEvent(targets, obj, event);
                                     }
@@ -1766,6 +1800,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                                         // Notify mesh change
                                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: xmesh._id, name: xmesh.name, mtype: xmesh.mtype, desc: xmesh.desc, action: 'meshchange', links: xmesh.links, msgid: 70, msgArgs: [group.name, xmesh.name], msg: 'Removed user group ' + group.name + ' from device group ' + xmesh.name, domain: delGroupDomain.id };
+                                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                        }
                                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(xmesh, [user._id]), obj, event);
                                     }
@@ -1779,6 +1816,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Event the user group being removed
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, action: 'deleteusergroup', msg: change, domain: delGroupDomain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
 
@@ -1816,6 +1856,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (change != '') {
                             db.Set(group);
                             var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, consent: ((group.consent == null) ? 0 : group.consent), action: 'usergroupchange', links: group.links, flags: group.flags, msg: change, domain: domain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                             parent.parent.DispatchEvent(['*', group._id, user._id], obj, event);
                         }
@@ -1870,6 +1913,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 73, msg: 'Device group notification changed', domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -1917,6 +1963,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 130, msg: 'User notifications changed', domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -1980,6 +2029,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             var targets = ['*', 'server-users'];
                                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 74, msgArgs: [user.name], msg: 'Account password changed: ' + user.name, domain: domain.id };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2042,6 +2094,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 var targets = ['*', 'server-users', user._id, chguser._id];
                                 if (chguser.groups) { for (var i in chguser.groups) { targets.push('server-users:' + i); } }
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 75, msg: 'Changed account credentials', domain: domain.id };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
 
@@ -2231,11 +2286,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', domain: domain.id, nolog: 1 };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
 
                         // Event the device group creation
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: meshid, mtype: command.meshtype, mesh: parent.CloneSafeMesh(mesh), action: 'createmesh', msgid: 76, msgArgs: [command.meshname], msg: 'Device group created: ' + command.meshname, domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         parent.parent.DispatchEvent(['*', 'server-createmesh', meshid, user._id], obj, event); // Even if DB change stream is active, this event must be acted upon.
 
                         // Log in the auth log
@@ -2249,6 +2310,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
                                 if (node == null) return;
                                 var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Is a relay for ' + mesh.name + '.', msgid: 153, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                                 parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                             });
@@ -2294,6 +2358,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Fire the removal event first, because after this, the event will not route
                     var event = { etype: 'mesh', userid: user._id, username: user.name, mtype: mesh.mtype, meshid: command.meshid, name: command.meshname, action: 'deletemesh', msgid: 77, msgArgs: [command.meshname], msg: 'Device group deleted: ' + command.meshname, domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, ['server-deletemesh']), obj, event); // Even if DB change stream is active, this event need to be acted on.
 
                     // Remove all user links to this mesh
@@ -2308,6 +2375,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, xuser._id];
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(xuser), action: 'accountchange', msgid: 78, msgArgs: [xuser.name], msg: 'Device group membership changed: ' + xuser.name, domain: domain.id };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2320,6 +2390,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, xgroup._id];
                                 var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: xgroup._id, name: xgroup.name, desc: xgroup.desc, action: 'usergroupchange', links: xgroup.links, msgid: 79, msgArgs: [xgroup.name], msg: 'User group changed: ' + xgroup.name, domain: domain.id };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2343,6 +2416,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
                             if (node == null) return;
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'No longer a relay for ' + mesh.name + '.', msgid: 152, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         });
@@ -2447,6 +2523,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (change != '') {
                         db.Set(mesh);
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msgid: 142, msgArgs: [mesh.name, changesids], msg: change, domain: domain.id, invite: mesh.invite, expireDevs: command.expireDevs, relayid: mesh.relayid };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, 'server-editmesh']), obj, event);
                     }
@@ -2457,6 +2536,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.GetNodeWithRights(domain, user, oldRelayNodeId, function (node, rights, visible) {
                             if (node == null) return;
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'No longer a relay for ' + mesh.name + '.', msgid: 152, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         });
@@ -2466,6 +2548,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.GetNodeWithRights(domain, user, newRelayNodeId, function (node, rights, visible) {
                             if (node == null) return;
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msg: 'Is a relay for ' + mesh.name + '.', msgid: 153, msgArgs: [mesh.name], node: parent.CloneSafeNode(node) };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         });
@@ -2474,6 +2559,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.GetNodeWithRights(domain, user, mesh.relayid, function (node, rights, visible) {
                             if (node == null) return;
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, node: parent.CloneSafeNode(node), nolog: 1 };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the node. Another event will come.
                             parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
                         });
@@ -2549,12 +2637,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 // Notify user change
                                 var targets = ['*', 'server-users', user._id, deluser._id];
                                 var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(deluser), action: 'accountchange', msgid: 78, msgArgs: [deluser.name], msg: 'Device group membership changed: ' + deluser.name, domain: xdomain.id };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             } else if (deluserid.startsWith('ugrp/')) {
                                 // Notify user group change
                                 var targets = ['*', 'server-ugroups', user._id, deluser._id];
                                 var event = { etype: 'ugrp', username: user.name, ugrpid: deluser._id, name: deluser.name, desc: deluser.desc, action: 'usergroupchange', links: deluser.links, msgid: 79, msgArgs: [deluser.name], msg: 'User group changed: ' + deluser.name, domain: xdomain.id };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                 parent.parent.DispatchEvent(targets, obj, event);
                             }
@@ -2572,6 +2666,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event = { etype: 'mesh', username: user.name, userid: deluser.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 83, msgArgs: [deluser.name, mesh.name], msg: 'Removed user ' + deluser.name + ' from device group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
                         } else {
                             event = { etype: 'mesh', username: user.name, userid: (deluserid.split('/')[2]), meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msgid: 83, msgArgs: [(deluserid.split('/')[2]), mesh.name], msg: 'Removed user ' + (deluserid.split('/')[2]) + ' from device group ' + mesh.name, domain: xdomain.id, invite: mesh.invite };
+                        }
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
                         }
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id, command.userid]), obj, event);
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removemeshuser', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
@@ -2618,6 +2715,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var amtpolicy2 = Object.assign({}, amtpolicy); // Shallow clone
                         if (amtpolicy2.password != null) { amtpolicy2.password = 1; }
                         var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, amt: amtpolicy2, action: 'meshchange', links: mesh.links, msgid: 141, msg: "Intel(r) AMT policy change", domain: domain.id, invite: mesh.invite };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
 
@@ -2850,6 +2950,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Event the node change
                             var newMesh = parent.meshes[command.meshid];
                             var event = { etype: 'node', userid: user._id, username: user.name, action: 'nodemeshchange', nodeid: node._id, node: node, oldMeshId: oldMeshId, newMeshId: command.meshid, msgid: 85, msgArgs: [node.name, newMesh.name], msg: 'Moved device ' + node.name + ' to group ' + newMesh.name, domain: domain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             // Even if change stream is enabled on this server, we still make the nodemeshchange actionable. This is because the DB can't send out a change event that will match this.
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(command.meshid, [oldMeshId, node._id]), obj, event);
 
@@ -2862,6 +2965,26 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'removedevices':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
+
+                    // Users and user groups that lose device links are saved once, after all the devices in this
+                    // request are processed. Saving them per device rewrites each user record once per removed
+                    // device, which is very expensive when users have many device links.
+                    var removeDevicesChangedUsers = {}, removeDevicesChangedUserGroups = {}, removeDevicesPending = 1;
+                    function removeDevicesDone() {
+                        if (--removeDevicesPending > 0) return;
+                        for (var uid in removeDevicesChangedUsers) {
+                            var cuser = removeDevicesChangedUsers[uid];
+                            db.SetUser(cuser);
+
+                            // Notify user change
+                            var targets = ['*', 'server-users', cuser._id];
+                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
+                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
+                            parent.parent.DispatchEvent(targets, obj, event);
+                        }
+                        for (var gid in removeDevicesChangedUserGroups) { db.Set(removeDevicesChangedUserGroups[gid]); }
+                    }
+
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i], err = null;
 
@@ -2876,10 +2999,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             continue;
                         }
                         // Get the node and the rights for this node
+                        removeDevicesPending++;
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
                             // Check we have the rights to delete this device
                             if ((rights & MESHRIGHT_UNINSTALL) == 0) {
                                 if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                                removeDevicesDone();
                                 return;
                             }
 
@@ -2905,28 +3030,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     if (i.startsWith('user/')) {
                                         var cuser = parent.users[i];
                                         if ((cuser != null) && (cuser.links != null) && (cuser.links[node._id] != null)) {
-                                            // Remove the user link & save the user
+                                            // Remove the user link, the user is saved once all devices are processed
                                             delete cuser.links[node._id];
                                             if (Object.keys(cuser.links).length == 0) { delete cuser.links; }
-                                            db.SetUser(cuser);
-
-                                            // Notify user change
-                                            var targets = ['*', 'server-users', cuser._id];
-                                            var event = { etype: 'user', userid: cuser._id, username: cuser.name, action: 'accountchange', msgid: 86, msgArgs: [cuser.name], msg: 'Removed user device rights for ' + cuser.name, domain: domain.id, account: parent.CloneSafeUser(cuser) };
-                                            if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
-                                            parent.parent.DispatchEvent(targets, obj, event);
+                                            removeDevicesChangedUsers[cuser._id] = cuser;
                                         }
                                     } else if (i.startsWith('ugrp/')) {
                                         var cusergroup = parent.userGroups[i];
                                         if ((cusergroup != null) && (cusergroup.links != null) && (cusergroup.links[node._id] != null)) {
-                                            // Remove the user link & save the user
+                                            // Remove the user group link, the user group is saved once all devices are processed
                                             delete cusergroup.links[node._id];
                                             if (Object.keys(cusergroup.links).length == 0) { delete cusergroup.links; }
-                                            db.Set(cusergroup);
+                                            removeDevicesChangedUserGroups[cusergroup._id] = cusergroup;
 
                                             // Notify user change
                                             var targets = ['*', 'server-users', cusergroup._id];
                                             var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: cusergroup._id, name: cusergroup.name, desc: cusergroup.desc, action: 'usergroupchange', links: cusergroup.links, msgid: 163, msgArgs: [node.name, cusergroup.name], msg: 'Removed device ' + node.name + ' from user group ' + cusergroup.name };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         }
@@ -2949,8 +3071,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Send response if required
                             if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'removedevices', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                            removeDevicesDone();
                         });
                     }
+                    removeDevicesDone();
 
                     break;
                 }
@@ -2994,7 +3118,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (node.mtype == 4) {
                                 // Send out an event to perform turn off command on the port
                                 const targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
-                                const event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnon', domain: domain.id, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype, msgid: 132, msg: "Turn on." };
+                                var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnon', domain: domain.id, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype, msgid: 132, msg: "Turn on." };
+                                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                }
                                 parent.parent.DispatchEvent(targets, obj, event);
                                 return;
                             }
@@ -3167,7 +3294,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         else if (command.type === 0) { command.type = 3; commandsOk = true; } // Set the default type of this agent
                                     }
                                     if (commandsOk == true) {
-                                        var theCommand = { action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid };
+                                        var theCommand = { action: 'runcommands', type: command.type, cmds: command.cmds, runAsUser: command.runAsUser, reply: command.reply, responseid: command.responseid, sessionid: ws.sessionId };
                                         var agent = parent.wsagents[node._id];
                                         if ((agent != null) && (agent.authenticated == 2) && (agent.agentInfo != null)) {
                                             // Send the commands to the agent
@@ -3176,6 +3303,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             parent.parent.DispatchEvent(targets, obj, event);
                                         } else if (parent.parent.multiServer != null) { // peering setup
                                             // Send the commands to the agent
@@ -3184,6 +3314,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                             // Send out an event that these commands where run on this device
                                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: msgid, cmds: command.cmds, cmdType: command.type, runAsUser: command.runAsUser, domain: domain.id };
+                                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                            }
                                             parent.parent.multiServer.DispatchEvent(targets, obj, event);
                                         } else {
                                             if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'runcommands', responseid: command.responseid, result: 'Agent not connected' })); } catch (ex) { } }
@@ -3297,6 +3430,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                     // Send out an event to perform turn off command on the port
                                     const targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['devport-operation', 'server-users', user._id]);
                                     const event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'turnoff', domain: domain.id, portid: node.portid, porttype: node.porttype, portnum: node.portnum, meshid: node.meshid, mtype: node.mtype, msgid: 133, msg: "Turn off." };
+                                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                                    }
                                     parent.parent.DispatchEvent(targets, obj, event);
                                     return;
                                 }
@@ -3633,6 +3769,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Add an event for this device
                         var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
                         var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'manual', msg: decodedMsg, domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         parent.parent.DispatchEvent(targets, obj, event);
                     });
                     break;
@@ -3720,6 +3859,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 88 : 89, msg: command.enabled ? "Enabled email two-factor authentication." : "Disabled email two-factor authentication.", domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -3755,6 +3897,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: command.enabled ? 160 : 161, msg: command.enabled ? "Enabled duo two-factor authentication." : "Disabled duo two-factor authentication.", domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -3829,6 +3974,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 90, msg: 'Added authentication application', domain: domain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -3860,6 +4008,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 91, msg: 'Removed authentication application', domain: domain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -3917,6 +4068,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: actionId, msg: actionText, domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
@@ -3967,6 +4121,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 94, msg: 'Removed security key', domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                     break;
@@ -4025,6 +4182,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             var targets = ['*', 'server-users', user._id];
                             if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                             var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 95, msg: 'Added security key', domain: domain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
                         } else {
@@ -4052,6 +4212,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 114, msg: "Removed push notification authentication device", domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
@@ -4154,6 +4317,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 95, msg: 'Added security key', domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     } else {
@@ -4457,6 +4623,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Send out an event that we removed a device share
                             var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', 'server-shareremove', user._id]);
                             var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'removedDeviceShare', msg: 'Removed Device Share', msgid: 102, msgArgs: [removedExact.guestName], domain: domain.id, publicid: command.publicid };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             parent.parent.DispatchEvent(targets, obj, event);
 
                             // If this is an agent self-sharing link, notify the agent
@@ -4608,6 +4777,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share: ' + command.guestname + '.', msgid: 101, msgArgs: [command.guestname, 'DATETIME:' + startTime, 'DATETIME:' + expireTime], domain: domain.id };
                     } else {
                         event = { etype: 'node', userid: user._id, username: user.name, meshid: node.meshid, nodeid: node._id, action: 'addedDeviceShare', msg: 'Added device share ' + command.guestname + ' with unlimited time.', msgid: 131, msgArgs: [command.guestname], domain: domain.id };
+                    }
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
                     }
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -5215,6 +5387,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var targets = ['*', 'server-users', user._id];
                         if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                         var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenChanged', domain: domain.id, loginTokens: okDocs, removed: removed, nolog: 1 };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
                 });
@@ -5225,7 +5400,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 if (req.session.loginToken != null) { err = "Access denied"; } // Do not allow this command when logged in using a login token
                 else if ((typeof domain.passwordrequirements == 'object') && (domain.passwordrequirements.logintokens === false)) { err = "Not supported"; } // Login tokens are not supported on this server
-                else if ((typeof domain.passwordrequirements == 'object') && Array.isArray(domain.passwordrequirements.logintokens) && ((domain.passwordrequirements.logintokens.indexOf(user._id) < 0) && (user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) < 0)))) { err = "Not supported"; } // Login tokens are not supported by this user
+                else if ((typeof domain.passwordrequirements == 'object') && Array.isArray(domain.passwordrequirements.logintokens) && ((domain.passwordrequirements.logintokens.indexOf(user._id) < 0) && !(user.links && Object.keys(user.links).some(key => domain.passwordrequirements.logintokens.indexOf(key) >= 0)))) { err = "Not supported"; } // Login tokens are not supported by this user
                 else if (common.validateString(command.name, 1, 100) == false) { err = "Invalid name"; } // Check name
                 else if ((typeof command.expire != 'number') || (command.expire < 0)) { err = "Invalid expire value"; } // Check expire
 
@@ -5261,6 +5436,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var targets = ['*', 'server-users', user._id];
                     if (user.groups) { for (var i in user.groups) { targets.push('server-users:' + i); } }
                     var event = { etype: 'user', userid: user._id, username: user.name, action: 'loginTokenAdded', msgid: 115, msg: "Added login token", domain: domain.id, newToken: { name: command.name, tokenUser: tokenUser, created: created, expire: expire } };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     parent.parent.DispatchEvent(targets, obj, event);
                 });
                 break;
@@ -5271,8 +5449,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 
                 const links = parent.GetAllMeshIdWithRights(user);
                 const extraids = getUserExtraIds();
-                db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+                db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                     if (docs == null) return;
+                    if (obj.user == null) return; // The session closed while the query was running
                     const ids = [];
                     if (command.nodeids != null) {
                         // Create a list of node ids and query them for last device connection time
@@ -5282,6 +5461,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         for (var i in docs) { ids.push('lc' + docs[i]._id); }
                     }
                     db.GetAllIdsOfType(ids, domain.id, 'lastconnect', function (err, docs) {
+                        if (obj.user == null) return; // The session closed while the query was running
                         const lastConnects = {};
                         if (docs != null) { for (var i in docs) { lastConnects[docs[i]._id] = docs[i]; } }
 
@@ -5648,7 +5828,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     const splitxuser = command.xuserid.split('/');
                     var xusername = splitxuser[2];
                     if (command.guestname != null) { xusername += '/' + command.guestname; }
-                    const event = { etype: 'user', userid: user._id, username: user.name, nodeid: command.nodeid, xuserid: command.xuserid, action: 'endsession', msgid: 134, msgArgs: [xusername], msg: 'Forcibly disconnected desktop session of user ' + xusername, domain: domain.id };
+                    var event = { etype: 'user', userid: user._id, username: user.name, nodeid: command.nodeid, xuserid: command.xuserid, action: 'endsession', msgid: 134, msgArgs: [xusername], msg: 'Forcibly disconnected desktop session of user ' + xusername, domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (command.guestname != null) { event.guestname = command.guestname; }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
@@ -5999,6 +6182,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         } else {
                             event = { etype: 'user', userid: user._id, username: user.name, action: 'accountchange', msgid: 82, msgArgs: [newuser.name], msg: 'Changed user device rights for ' + newuser.name, domain: domain.id, account: parent.CloneSafeUser(newuser), nodeListChange: newuserid };
                         }
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     } else if (newuserid.startsWith('ugrp/')) {
@@ -6007,6 +6193,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Notify user group change
                         var targets = ['*', 'server-ugroups', newuser._id];
                         var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                        }
                         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
@@ -6025,6 +6214,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msgid: 81, msgArgs: [node.name], msg: 'Removed user device rights for ' + node.name, node: parent.CloneSafeNode(node) };
                 } else {
                     event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, msgid: 82, msgArgs: [node.name], msg: 'Changed user device rights for ' + node.name, node: parent.CloneSafeNode(node) };
+                }
+                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
                 }
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the mesh. Another event will come.
                 parent.parent.DispatchEvent(dispatchTargets, obj, event);
@@ -6121,12 +6313,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify user change
                     var targets = ['*', 'server-users', user._id, newuser._id];
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(newuser), action: 'accountchange', msgid: 78, msgArgs: [newuser.name], msg: 'Device group membership changed: ' + newuser.name, domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                 } else if (newuserid.startsWith('ugrp/')) {
                     // Notify user group change
                     var targets = ['*', 'server-ugroups', user._id, newuser._id];
                     var event = { etype: 'ugrp', username: user.name, ugrpid: newuser._id, name: newuser.name, desc: newuser.desc, action: 'usergroupchange', links: newuser.links, msgid: 79, msgArgs: [newuser.name], msg: 'User group changed: ' + newuser.name, domain: domain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
                 }
@@ -6142,6 +6340,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
                     db.Set(mesh);
                     event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
+                }
+                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
                 }
     
                 // Notify mesh change
@@ -6258,6 +6459,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             // Notify user group change
                             var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: ugroup._id, name: ugroup.name, desc: ugroup.desc, action: 'usergroupchange', links: ugroup.links, msgid: 80, msgArgs: [newuser.name, ugroup.name], msg: 'Added user ' + newuser.name + ' to user group ' + ugroup.name, addUserDomain: newuserdomain.id };
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                             parent.parent.DispatchEvent(['*', ugroup._id, user._id, newuser._id], obj, event);
                         }
@@ -6279,6 +6483,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 64, msgArgs: [command.username], msg: 'Account created, username is ' + command.username, domain: newuserdomain.id };
                         } else {
                             event = { etype: 'user', userid: newuser._id, username: newusername, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [command.email.toLowerCase()], msg: 'Account created, email is ' + command.email.toLowerCase(), domain: newuserdomain.id };
+                        }
+                        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
                         }
                         if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                         parent.parent.DispatchEvent(targets, obj, event);
@@ -6367,6 +6574,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             } else {
                                 event = { etype: 'user', userid: newuser._id, username: newuser.name, account: parent.CloneSafeUser(newuser), action: 'accountcreate', msgid: 65, msgArgs: [newuser.email], msg: 'Account created, email is ' + newuser.email, domain: domain.id };
                             }
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (parent.db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to create the user. Another event will come.
                             parent.parent.DispatchEvent(targets, obj, event);
 
@@ -6427,6 +6637,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Notify user change
                     var targets = ['*', 'server-users', user._id, chguser._id];
                     var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: addUserDomain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                     parent.parent.DispatchEvent(targets, obj, event);
 
@@ -6445,6 +6658,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Notify user group change
                 var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 71, msgArgs: [knownUsers.map((u)=>u.name), group.name], msg: 'Added user(s) ' + knownUsers.map((u)=>u.name) + ' to user group ' + group.name, addUserDomain: domain.id };
+                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                }
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                 parent.parent.DispatchEvent(['*', group._id, user._id, chguserid], obj, event);
             }
@@ -6591,6 +6807,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 96, msgArgs: [user.name], msg: 'Verified phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+        }
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -6620,6 +6839,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 156, msgArgs: [user.name], msg: 'Verified messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
+        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+        }
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -6859,7 +7081,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // If we are not paging, get all devices visible to this user
             const links = parent.GetAllMeshIdWithRights(user);
             const extraids = getUserExtraIds();
-            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                 if (docs == null) return;
 
                 // Create a list of node ids for this user and query them for last device connection time
@@ -6955,6 +7177,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 97, msgArgs: [user.name], msg: 'Removed phone number of user ' + EscapeHtml(user.name), domain: domain.id };
+        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+        }
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -6972,6 +7197,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         // Event the change
         var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(user), action: 'accountchange', msgid: 157, msgArgs: [user.name], msg: 'Removed messaging account of user ' + EscapeHtml(user.name), domain: domain.id };
+        if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+            event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+        }
         if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
         parent.parent.DispatchEvent(['*', 'server-users', user._id], obj, event);
     }
@@ -7019,6 +7247,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 // Notify user change
                 var targets = ['*', 'server-users', user._id, chguser._id];
                 var event = { etype: 'user', userid: user._id, username: user.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 67, msgArgs: [chguser.name], msg: 'User group membership changed: ' + chguser.name, domain: removeUserDomain.id };
+                if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                    event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                }
                 if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
                 parent.parent.DispatchEvent(targets, obj, event);
 
@@ -7034,6 +7265,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Notify user group change
                     var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, name: group.name, desc: group.desc, action: 'usergroupchange', links: group.links, msgid: 72, msgArgs: [chguser.name, group.name], msg: 'Removed user ' + chguser.name + ' from user group ' + group.name, domain: removeUserDomain.id };
+                    if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                        event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                    }
                     if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user group. Another event will come.
                     parent.parent.DispatchEvent(['*', group._id, user._id, chguser._id], obj, event);
                 }
@@ -7267,6 +7501,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var allTargetGroups = chguser.groups;
             if (allTargetGroups) { for (var i in allTargetGroups) { targets.push('server-users:' + i); } }
             var event = { etype: 'user', userid: uid, username: chguser.name, account: parent.CloneSafeUser(chguser), action: 'accountchange', msgid: 66, msgArgs: [chguser.name], msg: 'Account changed: ' + chguser.name, domain: domain.id, accountImageChange: 1 };
+            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+            }
             if (db.changeStream) { event.noact = 1; } // If DB change stream is active, don't use this event to change the user. Another event will come.
             parent.parent.DispatchEvent(targets, obj, event);
         }
@@ -8461,7 +8698,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             var extraids = getUserExtraIds();
 
             // Request a list of all nodes
-            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, function (err, docs) {
+            db.GetAllTypeNoTypeFieldMeshFiltered(links, extraids, domain.id, 'node', null, obj.deviceSkip, obj.deviceLimit, obj.deviceFilter, function (err, docs) {
                 if (docs == null) { docs = []; }
                 parent.common.unEscapeAllLinksFieldName(docs);
 
