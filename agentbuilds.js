@@ -9,7 +9,9 @@ const path = require('path');
 const crypto = require('crypto');
 const dns = require('dns');
 const net = require('net');
+const http = require('http');
 const https = require('https');
+const tls = require('tls');
 const { Transform } = require('stream');
 const { pipeline } = require('stream/promises');
 
@@ -45,13 +47,22 @@ const httpsDownloads = (function () {
         return url.href;
     }
     function createClient(transport = https, lookup = dns.lookup, proxy = process.env.HTTPS_PROXY || process.env.HTTP_PROXY || process.env.https_proxy || process.env.http_proxy) {
-        // A proxy from the environment is used as by MeshCentral's other outbound requests. It resolves the host
-        // itself, so the address checks on DNS answers do not apply behind it.
-        let proxyAgent = null;
-        function agent() {
-            if (!proxy) return false;
-            try { return proxyAgent || (proxyAgent = new (require('https-proxy-agent').HttpsProxyAgent)(proxy)); }
-            catch (ex) { throw Object.assign(new Error('Unable to use the proxy set in HTTPS_PROXY or HTTP_PROXY.'), { unreachable: true }); }
+        // A forward proxy, from npmProxy in config.json or from the environment, carries each request through a
+        // CONNECT tunnel. The proxy resolves the host itself, so the address checks on DNS answers do not apply behind it.
+        function tunnel(options, callback) {
+            let target;
+            try { target = new URL(proxy); } catch (ex) { return callback(new Error('The proxy URL is not valid.')); }
+            const host = options.hostname || options.host, authority = (net.isIPv6(host) ? '[' + host + ']' : host) + ':' + options.port, headers = { Host: authority };
+            if (target.username) headers['Proxy-Authorization'] = 'Basic ' + Buffer.from(decodeURIComponent(target.username) + ':' + decodeURIComponent(target.password)).toString('base64');
+            const secure = target.protocol === 'https:';
+            const request = (secure ? https : http).request({ host: target.hostname.replace(/^\[|\]$/g, ''), port: target.port || (secure ? 443 : 80), method: 'CONNECT', path: authority, headers, agent: false, timeout: 10000 });
+            request.on('connect', (res, socket) => {
+                if (res.statusCode !== 200) { socket.destroy(); return callback(new Error('The proxy refused the connection (HTTP ' + res.statusCode + ').')); }
+                callback(null, tls.connect({ socket, host, servername: net.isIP(host) ? undefined : host }));
+            });
+            request.on('timeout', () => request.destroy(new Error('The proxy timed out.')));
+            request.on('error', err => callback(new Error(/proxy/.test(err.message) ? err.message : 'Unable to reach the proxy' + (/^[A-Z0-9_]+$/.test(err.code) ? ' (' + err.code + ')' : '') + '.')));
+            request.end();
         }
         async function response(value, options, redirects = 0, authenticated = true) {
             const url = parseUrl(value), hostname = url.hostname.replace(/^\[|\]$/g, '');
@@ -64,7 +75,7 @@ const httpsDownloads = (function () {
             }
             const res = await new Promise((resolve, reject) => {
                 let timer, connecting;
-                const request = transport.get(url, { headers, agent: agent(), signal: options.signal, lookup: function (host, settings, callback) {
+                const request = transport.get(url, { headers, agent: proxy ? undefined : false, createConnection: proxy ? tunnel : undefined, defaultPort: 443, signal: options.signal, lookup: function (host, settings, callback) {
                     lookup(host, { all: true, verbatim: true }, (err, addresses) => {
                         if (err || !addresses || !addresses.length) return callback(new Error('Unable to resolve the download host.'));
                         if (addresses.some(x => !publicAddress(x.address))) return callback(new Error('Downloads from private or reserved addresses are not allowed.'));
@@ -84,7 +95,7 @@ const httpsDownloads = (function () {
                     if (err.name === 'AbortError') return reject(Object.assign(new Error('Download cancelled or timed out.'), { name: 'AbortError' }));
                     // Nothing came back, so other downloads from this host will fail the same way.
                     const code = /^[A-Z0-9_]+$/.test(err.code) ? ' (' + err.code + ')' : '';
-                    reject(Object.assign(new Error(/private or reserved|resolve the download|timed out/.test(err.message) ? err.message : 'Unable to download from this host' + code + '.'), { unreachable: true }));
+                    reject(Object.assign(new Error(/private or reserved|resolve the download|timed out|proxy/.test(err.message) ? err.message : 'Unable to download from this host' + code + '.'), { unreachable: true }));
                 });
             });
             if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
@@ -378,7 +389,9 @@ function CreateAgentReleaseUpdates(settings, client, entries, options = {}) {
 function CreateAgentDefaults(parent, options = {}) {
     const root = path.join(parent.datapath, 'agentbuilds');
     const bundled = options.directory || path.join(__dirname, 'agents');
-    const client = options.client || httpsDownloads.createClient(), log = options.log || (message => console.log(message));
+    // npmProxy comes ahead of the environment, as it does for npm and the time stamp server.
+    const npmProxy = (parent.args && (typeof parent.args.npmproxy == 'string') && parent.args.npmproxy) ? parent.args.npmproxy : undefined;
+    const client = options.client || httpsDownloads.createClient(undefined, undefined, npmProxy), log = options.log || (message => console.log(message));
     const settings = (parent.config.settings || {}).agentdownloads || {};
     const names = new Set(Object.values(parent.meshAgentsArchitectureNumbers).map(x => x.localname));
     for (const name of ['MeshCentralRouter.exe', 'MeshCentralRouter.dmg', 'MeshCentralAssistant.exe']) names.add(name);

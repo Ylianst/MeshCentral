@@ -662,7 +662,7 @@
         "npmProxy": {
           "type": "string",
           "format": "uri",
-          "description": "HTTP proxy to use when downloading npm packages."
+          "description": "HTTP proxy to use when downloading npm packages and the default agent files."
         },
         "allowHighQualityDesktop": {
           "type": "boolean",
