@@ -5188,7 +5188,7 @@
                     var linkip = null;
                     if (typeof ip == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(ip)) { linkip = ip.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(ip) && (ip.indexOf(':') != ip.lastIndexOf(':'))) { linkip = ip; } }
                     if ((linkip != null) && !isPrivateIP(linkip)) { ipHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkip) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(ip) + '</a>'; }
-                    var lanip = (typeof node.probableMainLanIP == 'string') ? node.probableMainLanIP : '';
+                    var lanip = node.defaultRouteIp || node.defaultRouteIp6 || '';
                     if ((lanip != '') && (lanip != ip)) {
                         r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lanip + ' / ' + ip) + '">' + "LAN" + ' ' + EscapeHtml(lanip) + '<br />' + "WAN" + ' ' + ipHtml;
                     } else {
