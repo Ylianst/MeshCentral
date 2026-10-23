@@ -15,6 +15,11 @@
           "type": "string",
           "description": "Set this to the primary DNS name of this MeshCentral server."
         },
+        "hardwareIdentityRebind": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically reconnect a newly installed MeshAgent to an existing offline device when exactly one matching SMBIOS product UUID is found. This preserves the existing device record when an agent reinstall generates a new certificate identity."
+        },
         "keepCerts": {
           "type": "boolean",
           "default": false,
