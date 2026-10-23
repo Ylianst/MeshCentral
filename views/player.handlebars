@@ -504,7 +504,7 @@
             }
             QV('metadatadiv', true);
             QH('metadatadiv', x);
-            QH('deskstatus', recFile.name);
+            QH('deskstatus', EscapeHtml(recFile.name));
             QS('progressbar').width = '0px';
         }
 
