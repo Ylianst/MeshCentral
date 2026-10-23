@@ -953,6 +953,7 @@
                         <div id="p10deviceBattery" class="deviceBatteryLarge deviceBatteryLarge1"></div>
                         <div id=p10html style="margin-left:8px;margin-right:8px"></div>
                         <div id=p10html2></div>
+                        <div id=p10sessiontimeline></div>
                         <div id=p10html3 style="margin-left:8px"></div>
                     </div>
                     <div id=p10registry style="overflow-y:scroll;position:absolute;top:55px;bottom:0px;width:100%;display:none">
@@ -1731,6 +1732,13 @@
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
                     for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
                     if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
+                    break;
+                }
+                case 'sessiontimeline': {
+                    if (message.nodeid != sessionTimelineReq) break;
+                    sessionTimelineNode = message.nodeid;
+                    sessionTimeline = message.timeline;
+                    if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceTimeline(); }
                     break;
                 }
                 case 'getsysinfo': {
@@ -3855,6 +3863,9 @@
         var powerTimelineReq = null;
         var powerTimelineUpdate = null;
         var powerTimeline = null;
+        var sessionTimelineNode = null;
+        var sessionTimelineReq = null;
+        var sessionTimeline = null;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
 
@@ -4154,8 +4165,11 @@
                 // Request the power timeline
                 if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
                     QH('p10html2', '');
+                    QH('p10sessiontimeline', '');
                     powerTimelineReq = currentNode._id;
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
+                    sessionTimelineReq = currentNode._id;
+                    meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
@@ -4479,12 +4493,14 @@
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
             if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
-            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id }); }
+            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
+            sessionTimelineReq = currentNode._id;
+            meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id }); }
         }
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3 || hidePowerTimeline === 'true') { QH('p10html2', '<br />'); return; }
+            if (currentNode.mtype == 3 || hidePowerTimeline === 'true') { QH('p10html2', '<br />'); QH('p10sessiontimeline', ''); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
@@ -4527,6 +4543,77 @@
                 date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
             QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>');
+            drawDeviceSessionTimeline(totalWidth, timeline2, now);
+        }
+
+        // Draw user session state bars, clipped to periods where the device is powered.
+        function drawDeviceSessionTimeline(totalWidth, powerBlocks, now) {
+            if ((currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
+                QH('p10sessiontimeline', '');
+                return;
+            }
+
+            var blocks = [];
+            for (var i = 0; i < sessionTimeline.length; i++) {
+                var blockStart = sessionTimeline[i][0];
+                var blockEnd = ((i + 1) < sessionTimeline.length) ? sessionTimeline[i + 1][0] : now;
+                var blockState = sessionTimeline[i][1];
+                if ((typeof blockStart == 'number') && (typeof blockEnd == 'number') && (blockEnd > blockStart)) {
+                    blocks.push([blockStart, blockEnd, blockState]);
+                }
+            }
+
+            var x = '', count = 1, date = new Date();
+            date.setHours(0, 0, 0, 0);
+            for (var d = 0; d < 7; d++) {
+                var dayStart = date.getTime(), dayEnd = dayStart + 86400000;
+                var datavalue = '<div style="position:relative;height:16px;width:' + totalWidth + 'px">';
+                for (var j = 0; j < blocks.length; j++) {
+                    var block = blocks[j];
+                    for (var k = 0; k < powerBlocks.length; k++) {
+                        var powerBlock = powerBlocks[k];
+                        if (powerBlock[2] != 1) continue;
+                        var ts = Math.max(dayStart, block[0], powerBlock[0]);
+                        var te = Math.min(dayEnd, block[1], powerBlock[1], now);
+                        if (te <= ts) continue;
+                        var left = Math.round(((ts - dayStart) * totalWidth) / 86400000);
+                        var width = Math.max(1, Math.round(((te - ts) * totalWidth) / 86400000));
+                        var label = sessionStateText(block[2]);
+                        var title = format("{0} from {1} to {2}.", label, printTime(new Date(ts)), printTime(new Date(te)));
+                        datavalue += '<div class="pwState" title="' + title + '" style="position:absolute;left:' + left + 'px;width:' + width + 'px;height:16px;background-color:' + sessionStateColor(block[2]) + '"></div>';
+                    }
+                }
+                datavalue += '</div>';
+                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td>' + datavalue + '</td></tr>';
+                count++;
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+            }
+
+            QH('p10sessiontimeline', '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.35)"><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><thead><tr><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "7 Day User Session State" + '</th></tr></thead><tbody>' + x + '</tbody><tfoot><tr><td aria-hidden="true" style="border:0"></td><td style="border:0;text-align:center;padding:4px 2px">' + sessionTimelineLegend() + '</td></tr></tfoot></table></div>');
+        }
+
+        function sessionTimelineLegend() {
+            var states = ['unlocked', 'locked', 'nouser'];
+            var x = '<div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 12px;margin-top:4px;font-size:11px;font-weight:normal;line-height:1.35">';
+            for (var i = 0; i < states.length; i++) {
+                x += '<span style="display:inline-flex;align-items:center;gap:4px"><span aria-hidden="true" style="display:inline-block;width:9px;height:9px;background-color:' + sessionStateColor(states[i]) + '"></span>' + sessionStateText(states[i]) + '</span>';
+            }
+            return x + '<span>' + "Blank: Offline or unknown" + '</span></div>';
+        }
+
+        function sessionStateText(state) {
+            if (state == 'locked') return "Locked";
+            if (state == 'unlocked') return "Unlocked";
+            if (state == 'nouser') return "No active user";
+            if (state == 'unknown') return "Unknown";
+            return state;
+        }
+
+        function sessionStateColor(state) {
+            if (state == 'locked') return '#f0ad4e';
+            if (state == 'unlocked') return '#5cb85c';
+            if (state == 'nouser') return '#8a8a8a';
+            return 'transparent';
         }
 
         // Return a color for the given power state

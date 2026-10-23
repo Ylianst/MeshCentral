@@ -1952,6 +1952,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
     }
 
+    function isUserSessionTimelineState(state) {
+        return ((state == 'locked') || (state == 'unlocked') || (state == 'nouser') || (state == 'unknown'));
+    }
+
     // Change the current core information string and event it
     function ChangeAgentCoreInfo(command) {
         if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
@@ -1970,7 +1974,37 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
             if (device.agent) {
+                // Restore the last recorded state once per connection so reconnects
+                // and server restarts do not create duplicate session-state events.
+                if ((obj.lastSessionTimelineState === undefined) && isUserSessionTimelineState(command.sessionstate)) {
+                    db.GetNodeEventsWithLimit(obj.dbNodeKey, domain.id, 1, 'sessionstate', function (err, docs) {
+                        obj.lastSessionTimelineState = ((err == null) && (docs != null) && (docs.length > 0) && isUserSessionTimelineState(docs[0].state)) ? docs[0].state : null;
+                        delete obj.deviceChanging;
+                        ChangeAgentCoreInfo(command);
+                    });
+                    return;
+                }
+
                 var changes = [], change = 0, log = 0;
+
+                // Store the aggregate user-session state reported by MeshCore. Do not
+                // infer "unlocked" from an empty locked-user list: after a core restart
+                // Windows may already be locked, but no lock event has been observed yet.
+                const newSessionState = command.sessionstate;
+                if (isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
+                    const sessionStateMessages = { locked: 'Locked', unlocked: 'Unlocked', nouser: 'No active user', unknown: 'Unknown' };
+                    const sessionEvent = {
+                        etype: 'node',
+                        action: 'sessionstate',
+                        meshid: device.meshid,
+                        nodeid: obj.dbNodeKey,
+                        domain: domain.id,
+                        state: newSessionState,
+                        msg: 'User session state: ' + sessionStateMessages[newSessionState]
+                    };
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, sessionEvent);
+                    obj.lastSessionTimelineState = newSessionState;
+                }
 
                 // Check if anything changes
                 if (command.name && (typeof command.name == 'string') && (command.name != device.name)) { change = 1; log = 1; device.name = command.name; changes.push('name'); }

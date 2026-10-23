@@ -853,6 +853,60 @@ var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? 
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
+var userSessionLockState = {};
+var userSessionLockFlagsReversed = null;
+
+function getWindowsUserSessionLockState(session) {
+    if ((process.platform != 'win32') || (session.SessionId == null) || (typeof userSession.getRawSessionAttribute != 'function')) return null;
+    try {
+        // WTSINFOEXW has an aligned Data union at offset 8 on both Windows
+        // architectures. Its level-1 SessionFlags field is at offset 16.
+        var info = userSession.getRawSessionAttribute(session.SessionId, 25); // WTSSessionInfoEx
+        if ((info.length < 20) || (info.readUInt32LE(0) != 1) || (info.readUInt32LE(8) != session.SessionId)) return null;
+        var flags = info.readUInt32LE(16);
+        if ((flags != 0) && (flags != 1)) return null;
+
+        if (userSessionLockFlagsReversed == null) {
+            // Windows 7 and Server 2008 R2 reverse the documented lock flags.
+            // RtlGetVersion avoids the version reported by compatibility mode.
+            var marshal = require('_GenericMarshal');
+            var ntdll = marshal.CreateNativeProxy('ntdll.dll');
+            ntdll.CreateMethod('RtlGetVersion');
+            var version = marshal.CreateVariable(276); // RTL_OSVERSIONINFOW
+            version.toBuffer().writeUInt32LE(276, 0);
+            if (ntdll.RtlGetVersion(version).Val != 0) return null;
+            userSessionLockFlagsReversed = ((version.toBuffer().readUInt32LE(4) == 6) && (version.toBuffer().readUInt32LE(8) == 1));
+        }
+        return userSessionLockFlagsReversed ? (flags == 1) : (flags == 0);
+    } catch (ex) {
+        // Failed or unsupported native queries must not invent an unlock.
+        return null;
+    }
+}
+
+function getUserSessionLockKey(session) {
+    if (session == null) return null;
+    if (session.SessionId != null) return 's:' + session.SessionId;
+    if (session.Username == null) return null;
+    return 'u:' + (session.Domain ? (session.Domain + '\\') : '') + session.Username;
+}
+
+function getUserSessionAggregateState(activeSessions) {
+    if ((!Array.isArray(activeSessions)) || (activeSessions.length == 0)) return 'nouser';
+
+    var hasUnknown = false;
+    for (var i = 0; i < activeSessions.length; i++) {
+        var key = getUserSessionLockKey(activeSessions[i]);
+        if ((key == null) || (userSessionLockState[key] == null)) {
+            hasUnknown = true;
+        } else if (userSessionLockState[key] === false) {
+            return 'unlocked';
+        }
+    }
+
+    return hasUnknown ? 'unknown' : 'locked';
+}
+
 function onUserSessionChanged(user, locked) {
     userSession.enumerateUsers().then(function (users) {
         if (process.platform == 'linux') {
@@ -870,10 +924,32 @@ function onUserSessionChanged(user, locked) {
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
         var ret = getDomainInfo();
+        var activeSessionKeys = {};
         for (var i = 0; i < a.length; i++) {
             var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
-            if (user && locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); } }
-            else if (user && !locked && (JSON.stringify(a[i]) === JSON.stringify(user))) { meshCoreObj.lusers.splice(meshCoreObj.lusers.indexOf(un), 1); }
+            var sessionMatch = false;
+            if (user) {
+                if ((a[i].SessionId != null) && (user.SessionId != null)) {
+                    sessionMatch = (a[i].SessionId == user.SessionId);
+                } else {
+                    sessionMatch = ((a[i].Username == user.Username) && (a[i].Domain == user.Domain));
+                }
+            }
+            var sessionStateKey = getUserSessionLockKey(a[i]);
+            if (sessionStateKey != null) {
+                activeSessionKeys[sessionStateKey] = true;
+                if (user && sessionMatch) { userSessionLockState[sessionStateKey] = locked; }
+                else if (userSessionLockState[sessionStateKey] == null) {
+                    var initialLockState = getWindowsUserSessionLockState(a[i]);
+                    if (initialLockState != null) { userSessionLockState[sessionStateKey] = initialLockState; }
+                }
+            }
+            if (user && locked && sessionMatch) {
+                if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); }
+            } else if (user && !locked && sessionMatch) {
+                var lockedUserIndex = meshCoreObj.lusers.indexOf(un);
+                if (lockedUserIndex >= 0) { meshCoreObj.lusers.splice(lockedUserIndex, 1); }
+            }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
             if ((a[i].Domain != null && a[i].Domain == 'AzureAD') || getJoinState() == 1 ){
 				var userobj = getLogonCacheKeys();
@@ -905,6 +981,10 @@ function onUserSessionChanged(user, locked) {
                 }
             }
         }
+        for (var sessionStateKey in userSessionLockState) {
+            if (activeSessionKeys[sessionStateKey] !== true) { delete userSessionLockState[sessionStateKey]; }
+        }
+        meshCoreObj.sessionstate = getUserSessionAggregateState(a);
         meshCoreObj.lusers = meshCoreObj.lusers;
         meshCoreObj.users = u;
         meshCoreObjChanged();
