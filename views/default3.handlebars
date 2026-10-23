@@ -23928,7 +23928,7 @@
             }
             
             // Add new tag
-            var tagHtml = '<span class="badge" style="background:#6c757d; padding:5px 8px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <i class="fa-solid fa-times" style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')"></i></span>';
+            var tagHtml = buildPermTag({ _id: entityId, name: entityName }, permKey, level, accessType, entityType, parentId);
             container.insertAdjacentHTML('beforeend', tagHtml);
             
             // Initialize overrides storage
