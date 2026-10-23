@@ -8997,8 +8997,8 @@
 
                 // IP-KVM / PDU information
                 if (node.mtype == 4) {
-                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", node.portnum); }
-                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", node.porttype); }
+                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", EscapeHtml(node.portnum)); }
+                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", EscapeHtml(node.porttype)); }
                 }
 
                 // Attribute: Mesh Agent
