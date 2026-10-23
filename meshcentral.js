@@ -3656,6 +3656,8 @@ function CreateMeshCentralServer(config, args) {
                 obj.updateMeshAgentsTable(domain, function () {
                     if (domain.id == '') { try { obj.updateMeshAgentInstallScripts(); } catch (ex) { } }
                     if (state.rerun) { pass(); return; }
+                    // Connected agents still hold the entries they looked up in the old table.
+                    if (obj.webserver != null) { for (var i in obj.webserver.wsagents) { try { obj.webserver.wsagents[i].updateAgentExeInfo(); } catch (ex) { } } }
                     done();
                 });
             }).catch(done);
