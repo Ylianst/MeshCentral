@@ -1069,8 +1069,8 @@ module.exports.CreateDB = function (parent, func) {
                 if (typeof obj.file.watch != 'function') {
                     console.log('WARNING: watch() is not a function, MongoDB ChangeStream not supported.');
                 } else {
-                    obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user', 'ugrp'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
-                    obj.fileChangeStream.on('change', function (change) {
+                    // Named so the stream can be re-opened after an error without duplicating the handler.
+                    var fileChangeStreamHandler = function (change) {
                         obj.dbCounters.changeStream.change++;
                         if ((change.operationType == 'update') || (change.operationType == 'replace')) {
                             obj.dbCounters.changeStream.update++;
@@ -1113,8 +1113,24 @@ module.exports.CreateDB = function (parent, func) {
                                 }
                             }
                         }
-                    });
-                    obj.changeStream = true;
+                    };
+                    var setupFileChangeStream = function () {
+                        obj.fileChangeStream = obj.file.watch([{ $match: { $or: [{ 'fullDocument.type': { $in: ['node', 'mesh', 'user', 'ugrp'] } }, { 'operationType': 'delete' }] } }], { fullDocument: 'updateLookup' });
+                        obj.fileChangeStream.on('change', fileChangeStreamHandler);
+                        // A ChangeStream is an EventEmitter: with no 'error' listener Node throws and the server
+                        // process exits. A normal replica set event is enough to trigger it, for example the
+                        // primary shutting down, which gives "MongoServerError: interrupted at shutdown".
+                        obj.fileChangeStream.on('error', function (err) {
+                            // Clear the flag first: while the stream is down, database events must not be
+                            // marked noact, otherwise changes stop being dispatched without any warning.
+                            obj.changeStream = false;
+                            console.log('WARNING: MongoDB ChangeStream error: ' + ((err != null) ? err.message : 'Unknown error') + ', re-opening in 10 seconds.');
+                            try { obj.fileChangeStream.close(); } catch (ex) { }
+                            setTimeout(setupFileChangeStream, 10000);
+                        });
+                        obj.changeStream = true;
+                    };
+                    setupFileChangeStream();
                 }
             }
 
