@@ -1377,9 +1377,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         command.type = 'ifinfo';
                         db.Set(command);
 
-						if (typeof command.probableMainLanIP == 'string') {
-							ChangeAgentProbableMainLanIp(command.probableMainLanIP);
-						}
+                        ChangeAgentDefaultRouteIp(command.defaultRouteIp, command.defaultRouteIp6);
 
                         // Event the node interface information change
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), obj, { action: 'ifchange', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
@@ -2085,69 +2083,34 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
     }
 
-	function ChangeAgentProbableMainLanIp(ip) {
-		if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
-		if ((typeof ip != 'string') || (ip.length > 64)) return;
+    // Store the address of the interface holding the agent's default route, one per address family.
+    // A missing or invalid value leaves the stored one alone, so the node keeps its last known address while the agent has no route or is offline.
+    function ChangeAgentDefaultRouteIp(ip4, ip6) {
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
+        if ((typeof ip4 != 'string') || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip4)) { ip4 = null; }
+        if ((typeof ip6 != 'string') || (ip6.length > 39) || !/^[0-9a-f:]+$/i.test(ip6)) { ip6 = null; }
+        if ((ip4 == null) && (ip6 == null)) return;
+        const mesh = parent.meshes[obj.dbMeshKey];
+        if (mesh == null) return;
 
-		// Very light sanity check. Keep this IPv4-only because the agent field is IPv4-only.
-		if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) == false) return;
+        if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentDefaultRouteIp(ip4, ip6); }, 100); return; }
+        obj.deviceChanging = true;
 
-		// Check that the mesh exists.
-		const mesh = parent.meshes[obj.dbMeshKey];
-		if (mesh == null) return;
-
-		// If the device is pending a change, hold.
-		if (obj.deviceChanging === true) {
-			setTimeout(function () { ChangeAgentProbableMainLanIp(ip); }, 100);
-			return;
-		}
-
-		obj.deviceChanging = true;
-
-		db.Get(obj.dbNodeKey, function (err, nodes) {
-			if ((nodes == null) || (nodes.length != 1)) {
-				delete obj.deviceChanging;
-				return;
-			}
-
-			const device = nodes[0];
-
-			if (device.agent) {
-				var change = 0;
-
-				if (device.probableMainLanIP != ip) {
-					device.probableMainLanIP = ip;
-					change = 1;
-				}
-
-				if (change == 1) {
-					// These should not be saved into the node document.
-					if (device.conn != null) { delete device.conn; }
-					if (device.pwr != null) { delete device.pwr; }
-					if (device.agct != null) { delete device.agct; }
-					if (device.cict != null) { delete device.cict; }
-
-					db.Set(device);
-
-					var event = {
-						etype: 'node',
-						action: 'changenode',
-						nodeid: obj.dbNodeKey,
-						domain: domain.id,
-						node: parent.CloneSafeNode(device),
-						msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': probable main LAN IP',
-						nolog: 1
-					};
-
-					if (db.changeStream) { event.noact = 1; }
-
-					parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
-				}
-			}
-
-			delete obj.deviceChanging;
-		});
-	}
+        db.Get(obj.dbNodeKey, function (err, nodes) {
+            try {
+                const device = ((nodes != null) && (nodes.length == 1)) ? nodes[0] : null;
+                if ((device != null) && (device.agent != null) && (((ip4 != null) && (device.defaultRouteIp != ip4)) || ((ip6 != null) && (device.defaultRouteIp6 != ip6)))) {
+                    if (ip4 != null) { device.defaultRouteIp = ip4; }
+                    if (ip6 != null) { device.defaultRouteIp6 = ip6; }
+                    delete device.conn; delete device.pwr; delete device.agct; delete device.cict; // runtime fields the server adds, not part of the stored node
+                    db.Set(device);
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': default route address', nolog: 1 };
+                    if (db.changeStream) { event.noact = 1; } // the change stream sends its own event to update the node
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
+                }
+            } finally { delete obj.deviceChanging; } // a throw above must not leave the lock set, or every later node change from this agent retries forever   //TODO: better locking mechanic
+        });
+    }
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {

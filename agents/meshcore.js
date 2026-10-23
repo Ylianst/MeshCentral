@@ -6239,38 +6239,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'netinfo': { // Show network interface information
                 var interfaces = require('os').networkInterfaces();
-                if (process.platform == 'win32') {
-                    try {
-                        var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
-                        if (ret[0]) {
-                            var speedMap = {};
-                            for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
-                            var adapterNames = Object.keys(interfaces);
-                            for (var j = 0; j < adapterNames.length; j++) {
-                                var theinterfaces = interfaces[adapterNames[j]];
-                                for (var k = 0; k < theinterfaces.length; k++) {
-                                    var iface = theinterfaces[k], speed = speedMap[iface.index] || 0;
-                                    iface.speed = parseInt(speed); // bits per seconds
-                                }
-                            }
-                        }
-                    } catch(ex) { }
-                } else if (process.platform == 'linux') {
-                    var adapterNames = Object.keys(interfaces);
-                    for (var i = 0; i < adapterNames.length; i++) {
-                        var ifaceName = adapterNames[i];
-                        try {
-                            var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
-                            if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
-                                var theinterfaces = interfaces[ifaceName];
-                                for (var k = 0; k < theinterfaces.length; k++) {
-                                    var iface = theinterfaces[k];
-                                    iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
-                                }
-                            }
-                        } catch(ex) { }
-                    }
-                }
+                addLinkSpeeds(interfaces);
                 response = objToString(interfaces, 0, ' ', true);
                 break;
             }
@@ -7360,214 +7329,113 @@ function handleServerConnection(state) {
     broadcastToRegisteredApps({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
 }
 
-function getProbableMainLanIp() {
-    if (process.platform != 'win32') return null;
+// Excludes "this network" (0/8), loopback and link-local, which are never a usable LAN address
+var lanIpv4 = /^(?!0\.|127\.|169\.254\.)(\d{1,3}\.){3}\d{1,3}$/;
+// Excludes loopback, link-local and v4-mapped addresses
+var lanIpv6 = /^(?!::1$|fe[89ab][0-9a-f]:|::ffff:)[0-9a-f:]+$/i;
 
-    function str(v) {
-        if (v == null) return '';
-        try { return String(v); } catch (ex) { return ''; }
+// Windows iphlpapi.dll proxy, created once and shared
+var winIphlpapi = null;
+function getWinIphlpapi() {
+    if (winIphlpapi == null) {
+        var proxy = require('_GenericMarshal').CreateNativeProxy('Iphlpapi.dll');
+        proxy.CreateMethod('GetBestInterfaceEx');
+        proxy.CreateMethod('GetIfEntry2');
+        winIphlpapi = proxy;
     }
+    return winIphlpapi;
+}
 
-    function intVal(v, d) {
-        var x;
-        try { x = parseInt(str(v)); } catch (ex) { x = NaN; }
-        if (isNaN(x)) return d;
-        return x;
+// Asks Windows which interface it routes a public address through, so its own route and interface metrics decide between several gateways.
+// Nothing is sent, the lookup only consults the routing table
+// Returns -1 when this family has no route at all.
+function getWinDefaultRouteIfIndex(family) {
+    var GM = require('_GenericMarshal');
+    var sa = GM.CreateVariable(28), idx = GM.CreateVariable(4), buf = sa.toBuffer();
+    buf.fill(0);
+    if (family == 'IPv4') {
+        buf.writeUInt16LE(2, 0);                                            // sin_family = AF_INET
+        buf.writeUInt32BE(0xCB007101, 4);                                   // sin_addr = 203.0.113.1 (TEST-NET-3)
+    } else {
+        buf.writeUInt16LE(23, 0);                                           // sin6_family = AF_INET6
+        buf.writeUInt32BE(0x20010DB8, 8);                                   // sin6_addr = 2001:db8::1, the other three words stay zero except the last
+        buf.writeUInt32BE(1, 20);
     }
+    if (getWinIphlpapi().GetBestInterfaceEx(sa, idx).Val != 0) return -1;
+    return idx.toBuffer().readUInt32LE(0);
+}
 
-    function isIPv4(ip) {
-        var p, i, n;
-
-        ip = str(ip);
-        if (ip == '') return false;
-        if (ip == '0.0.0.0') return false;
-        if (ip.indexOf(':') >= 0) return false;
-        if (ip.indexOf('169.254.') == 0) return false;
-        if (ip.indexOf('127.') == 0) return false;
-
-        p = ip.split('.');
-        if (p.length != 4) return false;
-
-        for (i = 0; i < 4; i++) {
-            if (p[i] == '') return false;
-            n = parseInt(p[i]);
-            if (isNaN(n)) return false;
-            if ((n < 0) || (n > 255)) return false;
-        }
-
-        return true;
+// First usable IPv4 and IPv6 address of one interface, whether it is up and holds a default route, and its rank for the tie-break
+function interfaceSummary(addrs) {
+    var s = { ip4: null, ip6: null, up: true, gw: false, rank: 2, index: -1 }, rank = { ethernet: 0, wireless: 1 };
+    for (var i = 0; addrs && (i < addrs.length); i++) {
+        var a = addrs[i], addr = String(a.address).split('%')[0];
+        if ((a.status != null) && (a.status != 'up')) s.up = false;
+        if (a.gateway) s.gw = true;
+        if (rank[a.type] != null) s.rank = rank[a.type];
+        if (typeof a.index == 'number') s.index = a.index;
+        if ((s.ip4 == null) && (a.family == 'IPv4') && lanIpv4.test(addr)) s.ip4 = addr;
+        if ((s.ip6 == null) && (a.family == 'IPv6') && lanIpv6.test(addr)) s.ip6 = addr;
     }
+    return s;
+}
 
-    function hasAnyValue(v) {
-        var i;
-
-        if (v == null) return false;
-
-        if (typeof v == 'string') {
-            return (v != '');
-        }
-
-        if (typeof v == 'number') {
-            return true;
-        }
-
-        // Duktape/WMI may expose arrays or array-like objects.
+// Picks the interface that holds the default route and returns its IPv4 and IPv6 address
+// On Windows GetBestInterfaceEx() answers per family. Elsewhere the gateway flag from networkInterfaces() marks the interface,
+// and wired beats wireless beats anything else because those platforms expose no route metric to break a tie between two gateways.
+function getDefaultRouteAddresses(netif2) {
+    var name, s, r = { ip4: null, ip6: null };
+    if (process.platform == 'win32') {
         try {
-            if (v.length != null) {
-                for (i = 0; i < v.length; i++) {
-                    if (str(v[i]) != '') return true;
+            var i4 = getWinDefaultRouteIfIndex('IPv4'), i6 = getWinDefaultRouteIfIndex('IPv6');
+            for (name in netif2) {
+                s = interfaceSummary(netif2[name]);
+                if (s.up && (s.index == i4)) r.ip4 = s.ip4;
+                if (s.up && (s.index == i6)) r.ip6 = s.ip6;
+            }
+        } catch (ex) { } // a marshal failure only loses the route address, the caller still sends the interface list
+    } else {
+        // linux, bsd, macos
+        var best = null;
+        for (name in netif2) {
+            s = interfaceSummary(netif2[name]);
+            if (s.up && s.gw && ((s.ip4 != null) || (s.ip6 != null)) && ((best == null) || (s.rank < best.rank))) best = s;
+        }
+        if (best != null) { r.ip4 = best.ip4; r.ip6 = best.ip6; }
+    }
+    return ((r.ip4 != null) || (r.ip6 != null)) ? r : null;
+}
+
+// Adds the link speed in bits per second to every interface entry, from iphlpapi on Windows and /sys/class/net on Linux
+// MIB_IF_ROW2 is 1352 bytes with InterfaceIndex at offset 8, OperStatus at 1156 and TransmitLinkSpeed at 1192
+// A down adapter keeps reporting its last speed and an unknown one reports NET_IF_LINK_SPEED_UNKNOWN (all ones), so both are left out.
+function addLinkSpeeds(netif2) {
+    var name, i;
+    if (process.platform == 'win32') {
+        try {
+            var row = require('_GenericMarshal').CreateVariable(1352), buf = row.toBuffer(), speeds = {};
+            for (name in netif2) {
+                for (i = 0; netif2[name] && (i < netif2[name].length); i++) {
+                    var iface = netif2[name][i], idx = iface.index;
+                    if (typeof idx != 'number') continue;
+                    if (speeds[idx] == null) {
+                        buf.fill(0); buf.writeUInt32LE(idx, 8);
+                        var ok = (getWinIphlpapi().GetIfEntry2(row).Val == 0) && (buf.readUInt32LE(1156) == 1) && (buf.readUInt32LE(1196) != 0xFFFFFFFF);
+                        speeds[idx] = ok ? (buf.readUInt32LE(1192) + buf.readUInt32LE(1196) * 4294967296) : 0;
+                    }
+                    if (speeds[idx]) iface.speed = speeds[idx];
                 }
-                return false;
             }
         } catch (ex) { }
-
-        return (str(v) != '');
-    }
-
-    function firstIPv4(v) {
-        var i, s;
-
-        if (v == null) return null;
-
-        if (typeof v == 'string') {
-            return isIPv4(v) ? v : null;
+    } else if (process.platform == 'linux') {
+        for (name in netif2) {
+            try {
+                // Mbit/s, "-1" when the driver doesn't know, and the read itself fails when the link is down
+                var mbit = parseInt(require('fs').readFileSync('/sys/class/net/' + name + '/speed').toString(), 10);
+                if (!(mbit > 0)) continue;
+                for (i = 0; i < netif2[name].length; i++) { netif2[name][i].speed = mbit * 1000000; }
+            } catch (ex) { }
         }
-
-        try {
-            if (v.length != null) {
-                for (i = 0; i < v.length; i++) {
-                    s = str(v[i]);
-                    if (isIPv4(s)) return s;
-                }
-            }
-        } catch (ex) { }
-
-        s = str(v);
-        if (isIPv4(s)) return s;
-
-        return null;
-    }
-
-    function isUpAdapter(a) {
-        var op, media;
-
-        if (a == null) return true;
-
-        // InterfaceOperationalStatus commonly has 1 = Up.
-        // But do not hard-fail unknown values; WMI support varies.
-        op = intVal(a.InterfaceOperationalStatus, -1);
-        if ((op != -1) && (op != 1)) return false;
-
-        // MediaConnectState commonly has 1 = Connected.
-        media = intVal(a.MediaConnectState, -1);
-        if ((media != -1) && (media != 1)) return false;
-
-        return true;
-    }
-
-    function adapterPriority(a) {
-        var pm, medium, link, hardware, connector;
-
-        if (a == null) return 20;
-
-        pm = intVal(a.NdisPhysicalMedium, -1);
-        medium = intVal(a.NdisMedium, -1);
-        link = intVal(a.LinkTechnology, -1);
-
-        hardware = (str(a.HardwareInterface).toLowerCase() == 'true');
-        connector = (str(a.ConnectorPresent).toLowerCase() == 'true');
-
-        /*
-            MSFT_NetAdapter is documented in ROOT\StandardCimv2.
-            Useful physical media values include:
-              14 = 802.3 / Ethernet
-               1 = Wireless LAN
-               9 = Native 802.11
-
-            These numeric values avoid matching adapter names such as
-            "Wi-Fi", "WLAN", or "Wireless".
-        */
-
-        if (pm == 14) return 0;                         // wired Ethernet
-        if ((medium == 0) && connector) return 1;       // 802.3-style fallback
-        if ((link == 2) && hardware) return 2;          // Ethernet-ish fallback
-
-        if ((pm == 1) || (pm == 9)) return 10;          // Wi-Fi / WLAN
-        if (link == 11) return 11;                      // wireless fallback
-
-        return 20;                                      // VPN, virtual, tunnel, unknown
-    }
-
-    try {
-        var wmi = require('win-wmi-fixed');
-        var configs;
-        var adapters;
-        var adapterByIndex = {};
-        var candidates = [];
-        var i, cfg, a, ip, gw, idx, metric;
-
-        configs = wmi.query(
-            'ROOT\\CIMV2',
-            'SELECT InterfaceIndex,IPAddress,DefaultIPGateway,IPConnectionMetric FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True',
-            ['InterfaceIndex', 'IPAddress', 'DefaultIPGateway', 'IPConnectionMetric']
-        );
-
-        if ((configs == null) || (configs.length == null) || (configs.length == 0)) {
-            return null;
-        }
-
-        try {
-            adapters = wmi.query(
-                'ROOT\\StandardCimv2',
-                'SELECT InterfaceIndex,NdisPhysicalMedium,NdisMedium,LinkTechnology,HardwareInterface,ConnectorPresent,InterfaceOperationalStatus,MediaConnectState FROM MSFT_NetAdapter',
-                ['InterfaceIndex', 'NdisPhysicalMedium', 'NdisMedium', 'LinkTechnology', 'HardwareInterface', 'ConnectorPresent', 'InterfaceOperationalStatus', 'MediaConnectState']
-            );
-
-            if ((adapters != null) && (adapters.length != null)) {
-                for (i = 0; i < adapters.length; i++) {
-                    idx = intVal(adapters[i].InterfaceIndex, -1);
-                    if (idx >= 0) adapterByIndex['i' + idx] = adapters[i];
-                }
-            }
-        } catch (ex2) {
-            adapters = null;
-        }
-
-        for (i = 0; i < configs.length; i++) {
-            cfg = configs[i];
-
-            gw = cfg.DefaultIPGateway;
-            if (!hasAnyValue(gw)) continue;
-
-            ip = firstIPv4(cfg.IPAddress);
-            if (ip == null) continue;
-
-            idx = intVal(cfg.InterfaceIndex, -1);
-            a = adapterByIndex['i' + idx];
-
-            if (!isUpAdapter(a)) continue;
-
-            metric = intVal(cfg.IPConnectionMetric, 999999);
-
-            candidates[candidates.length] = {
-                ip: ip,
-                idx: idx,
-                pri: adapterPriority(a),
-                metric: metric
-            };
-        }
-
-        if (candidates.length == 0) return null;
-
-        candidates.sort(function (x, y) {
-            if (x.pri != y.pri) return x.pri - y.pri;
-            if (x.metric != y.metric) return x.metric - y.metric;
-            return x.idx - y.idx;
-        });
-
-        return candidates[0].ip;
-    } catch (ex) {
-        return null;
     }
 }
 
@@ -7580,45 +7448,12 @@ function sendNetworkUpdate(force) {
     try {
         // Update the network interfaces information data
         var netInfo = { netif2: require('os').networkInterfaces() };
-        if (process.platform == 'win32') {
-            try {
-                var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
-                if (ret[0]) {
-                    var speedMap = {};
-                    for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
-                    var adapterNames = Object.keys(netInfo.netif2);
-                    for (var j = 0; j < adapterNames.length; j++) {
-                        var interfaces = netInfo.netif2[adapterNames[j]];
-                        for (var k = 0; k < interfaces.length; k++) {
-                            var iface = interfaces[k], speed = speedMap[iface.index] || 0;
-                            iface.speed = parseInt(speed); // bits per seconds
-                        }
-                    }
-                }
-            } catch(ex) { }
-            
-			try {
-                var probableMainLanIp = getProbableMainLanIp();
-                if (probableMainLanIp != null) {
-                    netInfo.probableMainLanIp = probableMainLanIp;
-                }
-            } catch (ex) { }
-        } else if (process.platform == 'linux') {
-            var adapterNames = Object.keys(netInfo.netif2);
-            for (var i = 0; i < adapterNames.length; i++) {
-                var ifaceName = adapterNames[i];
-                try {
-                    var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
-                    if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
-                        var theinterfaces = netInfo.netif2[ifaceName];
-                        for (var k = 0; k < theinterfaces.length; k++) {
-                            var iface = theinterfaces[k];
-                            iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
-                        }
-                    }
-                } catch(ex) { }
-            }
+        var lan = getDefaultRouteAddresses(netInfo.netif2);
+        if (lan != null) {
+            if (lan.ip4 != null) netInfo.defaultRouteIp = lan.ip4;
+            if (lan.ip6 != null) netInfo.defaultRouteIp6 = lan.ip6;
         }
+        addLinkSpeeds(netInfo.netif2);
         if (netInfo.netif2) {
             netInfo.action = 'netinfo';
             var netInfoStr = JSON.stringify(netInfo);
