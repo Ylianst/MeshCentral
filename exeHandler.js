@@ -276,9 +276,9 @@ module.exports.hashExecutableFile = function (options) {
         var bytesRead;
 
         bytesRead = fs.readSync(fd, guid, 0, guid.length, options.state.stats.size - 16);
-        if (guid.toString('hex') == exeMeshPolicyGuid) {
+        if (guid.toString('hex').toUpperCase() == exeMeshPolicyGuid) {
             bytesRead = fs.readSync(fd, guid, 0, 4, options.state.stats.size - 20);
-            options.state.endIndex = options.state.stats.size - 20 - guid.readUInt32LE(0);
+            options.state.endIndex = options.state.stats.size - 20 - guid.readUInt32BE(0);
         } else {
             options.state.endIndex = options.state.stats.size;
         }
