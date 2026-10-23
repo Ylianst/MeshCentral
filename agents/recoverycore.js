@@ -629,6 +629,29 @@ function agentUpdate_Start(updateurl, updateoptions) {
             });
             agentUpdate_Start._selfupdate.on('response', function (img)
             {
+                if (img.statusCode != 200)
+                {
+                    // Saving an error page fails the hash check, or replaces the agent when there is no hash to check
+                    // The agent discards the unread body, abort() here would pool a dead socket and hang the next download
+                    agentUpdate_Start._selfupdate = null;
+                    sendConsoleText('Self Update failed, because the server replied with HTTP ' + img.statusCode + ', URL: ' + (updateurl != null ? updateurl : options.path), sessionid);
+                    sendAgentMessage('Self Update failed, because the server replied with HTTP ' + img.statusCode + ', URL: ' + (updateurl != null ? updateurl : options.path), 3);
+
+                    // Only a server error or rate limiting can clear up by itself
+                    if ((img.statusCode < 500) && (img.statusCode != 429)) { return; }
+                    if (++agentUpdate_Start._retryCount < 4)
+                    {
+                        sendConsoleText('Self Update will try again in 20 seconds...', sessionid);
+                        agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 20000, updateurl, updateoptions);
+                    }
+                    else
+                    {
+                        agentUpdate_Start._retryCount = 0;
+                        sendConsoleText('Self Update giving up, too many failures...', sessionid);
+                        sendAgentMessage('Self Update giving up, too many failures...', 3);
+                    }
+                    return;
+                }
                 var self = this;
                 this._file = require('fs').createWriteStream(agentfilename + (process.platform=='win32'?'.update.exe':'.update'), { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
@@ -669,6 +692,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                             }
                             else
                             {
+                                agentUpdate_Start._retryCount = 0;
                                 sendConsoleText('Self Update giving up, too many failures...', sessionid);
                                 sendAgentMessage('Self Update giving up, too many failures...', 3);
                             }
