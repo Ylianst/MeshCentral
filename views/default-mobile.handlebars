@@ -7011,13 +7011,14 @@
                     var splitip = node.lastaddr.split(':');
                     if (splitip.length > 2) {
                         // IPv6
-                        x += addDetailItem("Last agent address", EscapeHtml(node.lastaddr));
+                        var v6addr = splitip.slice(0, -1).join(':');
+                        x += addDetailItem("Last agent address", isPrivateIP(v6addr) ? EscapeHtml(node.lastaddr) : ('<a href="https://iplocation.com/?ip=' + encodeURIComponent(v6addr) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(node.lastaddr) + '</a>'));
                     } else {
                         // IPv4
                         if (isPrivateIP(node.lastaddr)) {
                             x += addDetailItem("Last agent address", EscapeHtml(splitip[0]));
                         } else {
-                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + EscapeHtml(splitip[0]) + '" rel="noreferrer noopener" target="MeshIPLoopup">' + EscapeHtml(splitip[0]) + '</a>');
+                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + EscapeHtml(splitip[0]) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(splitip[0]) + '</a>');
                         }
                     }
                 }
@@ -8407,7 +8408,7 @@
             return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right' + (state === true ? ';word-break:break-all' : '') + '>' + value + '</table>'; }
-        function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
+        function isPrivateIP(a) { if (a.indexOf(':') != a.lastIndexOf(':')) { return /^(::1?$|f[cd]|fe[89ab])/i.test(a); } return /^(10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.)/.test(a); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
         function safeNewWindow(url, target) { var newWindow = window.open(url, target, 'noopener,noreferrer'); if (newWindow) { newWindow.opener = null; } }
         function isWindowsNode(node) { if ((node.mtype != 2) || (node.agent == null) || (node.agent.id == null)) return false; return ([1,2,3,4,21,22,34,42,43].indexOf(node.agent.id) >= 0); }

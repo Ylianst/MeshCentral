@@ -3899,13 +3899,14 @@
                             var splitip = currentNode.lastaddr.split(':');
                             if (splitip.length > 2) {
                                 // IPv6
-                                x += addHtmlValue2("Last agent address", currentNode.lastaddr + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '")></i>');
+                                var v6addr = splitip.slice(0, -1).join(':');
+                                x += addHtmlValue2("Last agent address", (isPrivateIP(v6addr) ? currentNode.lastaddr : '<a href="https://iplocation.com/?ip=' + encodeURIComponent(v6addr) + '" rel="noreferrer noopener" target="MeshIPLookup">' + currentNode.lastaddr + '</a>') + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(currentNode.lastaddr) + '")></i>');
                             } else {
                                 // IPv4
                                 if (isPrivateIP(currentNode.lastaddr)) {
                                     x += addHtmlValue2("Last agent address", splitip[0] + ' <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '")></i>');
                                 } else {
-                                    x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '")></i>');
+                                    x += addHtmlValue2("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLookup">' + splitip[0] + '</a> <i class="fa-fw fa-regular fa-clipboard fa-sm" role=button title="' + "Copy address to clipboard" + '" onclick=copyTextToClip2("' + encodeURIComponentEx(splitip[0]) + '")></i>');
                                 }
                             }
                         }
@@ -6086,19 +6087,20 @@
                 }
                 if (deviceViewSettings.devsCols.indexOf('links') >= 0) { r += '<td style=text-align:center;font-size:x-small>' + getShortRouterLinks(node); } // Links
                 if (deviceViewSettings.devsCols.indexOf('user') >= 0) { r += '<td style=text-align:center>' + getUserShortStr(node); } // User
-                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { 
-					var ip = ''; 
-					if (node.mtype == 3) { 
-						ip = node.host; 
-					} else if (node.ip) { 
-						ip = node.ip; 
-					}
-					if ((node.probableMainLanIP != null) && (node.probableMainLanIP != '') && (node.probableMainLanIP != ip)) {
-						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.probableMainLanIP) + '">' + "LAN" + ' ' + EscapeHtml(node.probableMainLanIP) + '<br />' + "WAN" +' <a href="https://iplocation.com/?ip=' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(ip) + '</a>';
-					} else {
-						r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(node.ip) + '"><a href="https://iplocation.com/?ip=' + EscapeHtml(node.ip) + '" target="_blank">' + EscapeHtml(node.ip) + '</a>';
-					}
-				} // IP address
+                if (deviceViewSettings.devsCols.indexOf('ip') >= 0) {
+                    var ip = '';
+                    if ((node.mtype == 1) || (node.mtype == 3)) { ip = node.host || ''; } else if (node.ip) { ip = node.ip; }
+                    var ipHtml = EscapeHtml(ip);
+                    var linkip = null;
+                    if (typeof ip == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(ip)) { linkip = ip.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(ip) && (ip.indexOf(':') != ip.lastIndexOf(':'))) { linkip = ip; } }
+                    if ((linkip != null) && !isPrivateIP(linkip)) { ipHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkip) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(ip) + '</a>'; }
+                    var lanip = (typeof node.probableMainLanIP == 'string') ? node.probableMainLanIP : '';
+                    if ((lanip != '') && (lanip != ip)) {
+                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lanip + ' / ' + ip) + '">' + "LAN" + ' ' + EscapeHtml(lanip) + '<br />' + "WAN" + ' ' + ipHtml;
+                    } else {
+                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + ipHtml;
+                    }
+                } // IP address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
@@ -15448,13 +15450,14 @@
                     var splitip = node.lastaddr.split(':');
                     if (splitip.length > 2) {
                         // IPv6
-                        x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip.slice(0, -1).join(':') + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip.slice(0, -1).join(':') + '</a>');
+                        var v6addr = splitip.slice(0, -1).join(':');
+                        x += addDetailItem("Last agent address", isPrivateIP(v6addr) ? EscapeHtml(v6addr) : ('<a href="https://iplocation.com/?ip=' + encodeURIComponent(v6addr) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(v6addr) + '</a>'));
                     } else {
                         // IPv4
                         if (isPrivateIP(node.lastaddr)) {
                             x += addDetailItem("Last agent address", splitip[0]);
                         } else {
-                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLoopup">' + splitip[0] + '</a>');
+                            x += addDetailItem("Last agent address", '<a href="https://iplocation.com/?ip=' + splitip[0] + '" rel="noreferrer noopener" target="MeshIPLookup">' + splitip[0] + '</a>');
                         }
                     }
                 }
@@ -24466,7 +24469,7 @@
         function addHtmlValue5(t, v) { return '<div style=padding:4px><div style=display:inline-block;float:right><b>' + v + '</b></div><div style=display:inline-block>' + t + '</div></div>'; }
         function focusTextBox(x) { setTimeout(function () { Q(x).selectionStart = Q(x).selectionEnd = 65535; Q(x).focus(); }, 0); }
         function validateEmail(v) { var emailReg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; return emailReg.test(v); } // New version
-        function isPrivateIP(a) { return (a.startsWith('10.') || a.startsWith('172.16.') || a.startsWith('192.168.')); }
+        function isPrivateIP(a) { if (a.indexOf(':') != a.lastIndexOf(':')) { return /^(::1?$|f[cd]|fe[89ab])/i.test(a); } return /^(10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.)/.test(a); }
         function u2fSupported() { return (window.u2f && ((navigator.userAgent.indexOf('Chrome/') > 0) || (navigator.userAgent.indexOf('Firefox/') > 0) || (navigator.userAgent.indexOf('Opera/') > 0) || (navigator.userAgent.indexOf('Safari/') > 0))); }
         function findOne(arr1, arr2) { if ((arr1 == null) || (arr2 == null)) return false; return arr2.some(function (v) { return arr1.indexOf(v) >= 0; }); };
         function copyTextToClip(txt) { function selectElementText(e) { if (document.selection) { var range = document.body.createTextRange(); range.moveToElementText(e); range.select(); } else if (window.getSelection) { var range = document.createRange(); range.selectNode(e); window.getSelection().removeAllRanges(); window.getSelection().addRange(range); } } var e = document.createElement('DIV'); e.textContent = txt; document.body.appendChild(e); selectElementText(e); document.execCommand('copy'); e.remove(); }
