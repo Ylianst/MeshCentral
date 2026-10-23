@@ -402,6 +402,7 @@ function destopLockHelper_pipe(httprequest) {
 var obj = { serverInfo: {} };
 var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
 var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
+var agentFileHttpAgent = null; // HTTP agent for these requests, see serverFetchFile().
 var debugConsole = (global._MSH && (_MSH().debugConsole == 1));
 
 var color_options =
@@ -2275,6 +2276,20 @@ function serverFetchFile() {
         if ((checkServerIdentity.servertlshash != null) && (checkServerIdentity.servertlshash.toLowerCase() != certs[0].digest.split(':').join('').toLowerCase())) { throw new Error('BadCert') }
     }
     agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
+
+    if (agentFileHttpAgent == null) {
+        // Older agents hand a kept-alive socket back twice when a reply arrives in one read, which writes two queued
+        // requests to that socket at once and the server rejects both. Only take the first hand back per event loop turn.
+        agentFileHttpAgent = http.Agent();
+        var keepSocketAlive = agentFileHttpAgent.keepSocketAlive;
+        agentFileHttpAgent.keepSocketAlive = function (socket) {
+            if (socket.xkeptAlive === true) return 0;
+            socket.xkeptAlive = true;
+            setImmediate(function () { delete socket.xkeptAlive; });
+            return keepSocketAlive.call(this, socket);
+        }
+    }
+    agentFileHttpOptions.agent = agentFileHttpAgent;
 
     if (agentFileHttpOptions == null) return;
     var agentFileHttpRequest = http.request(agentFileHttpOptions,
