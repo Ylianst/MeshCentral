@@ -19433,7 +19433,7 @@
                 if (user != null) {
                     var name = user.name;
                     if (user.realname != null) { name += ', ' + user.realname; }
-                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
+                    return '<div onclick=\'gotoUser("' + encodeURIComponentEx(user._id) + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
                 } else {
                     return '<i>' + "Unknown User" + '</i>';
                 }
