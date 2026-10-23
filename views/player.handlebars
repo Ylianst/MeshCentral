@@ -416,6 +416,7 @@
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
                 else if ((p == 102) || (p == 200 && recFileMetadata.bpp != null)) { p = "Intel&reg; AMT KVM"; }
                 else if (p == 200) { p = "MeshMessenger"; }
+                else { p = EscapeHtml(p); }
                 x += addInfoNoEsc("Protocol", p);
             }
             var encQualityStr = "2 byte-per-pixel";
