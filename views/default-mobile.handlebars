@@ -6451,7 +6451,8 @@
                 file.nx = i;
                 file.t = parseInt(file.t);
                 if (isNaN(file.t)) { file.t = 3; }
-                if (file.s == null) { file.s = 0; }
+                file.s = Number(file.s);
+                if (!Number.isFinite(file.s) || file.s < 0) { file.s = 0; }
                 if (file.n == null) { file.n = i; }
                 file.n = String(file.n);
                 file.ln = file.n.toLowerCase();
