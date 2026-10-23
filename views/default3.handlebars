@@ -23386,12 +23386,16 @@
                     p.upgradeAvail = "Checking...";
                     if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
                         var vin = installedPluginList['version_info'][p._id];
+                        var versionHtml = EscapeHtml(vin.version);
+                        if ((typeof vin.changelogUrl == 'string') && /^https?:\/\//i.test(vin.changelogUrl)) {
+                            versionHtml = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + EscapeHtml(vin.changelogUrl) + '">' + versionHtml + '</a>';
+                        }
                         if (vin.hasUpdate) {
-                            p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            p.upgradeAvail = versionHtml;
                         } else {
                             cant_action.push('upgrade');
                             if (p.status) p.upgradeAvail = "Up to date";
-                            else p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            else p.upgradeAvail = versionHtml;
                         }
                         if (!vin.meshCentralCompat) {
                             p.upgradeAvail += vers_not_compat;
