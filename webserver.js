@@ -6472,8 +6472,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 cmdoptions.curloptionshttps += '-k ';
             }
             if (domain.agentnoproxy === true) {
-                cmdoptions.wgetoptionshttp += '--no-proxy ';
-                cmdoptions.wgetoptionshttps += '--no-proxy ';
+                cmdoptions.wgetoptionshttp += '"${wgetnoproxy[@]}" ';
+                cmdoptions.wgetoptionshttps += '"${wgetnoproxy[@]}" ';
                 cmdoptions.curloptionshttp += '--noproxy \'*\' ';
                 cmdoptions.curloptionshttps += '--noproxy \'*\' ';
             }
