@@ -2230,6 +2230,7 @@ function downloadFile(downloadoptions) {
     trustedDownloads[downloadoptions.name].dl = require('https').get(options);
     trustedDownloads[downloadoptions.name].dl.on('error', function (e) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; });
     trustedDownloads[downloadoptions.name].dl.on('response', function (img) {
+        if (img.statusCode != 200) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; return; } // Leave the body unread, abort() would pool a dead socket
         this._file = require('fs').createWriteStream(trustedDownloads[downloadoptions.name].filename, { flags: 'wb' });
         this._filehash = require('SHA384Stream').create();
         this._filehash.on('hash', function (h) { if ((downloadoptions.hash != null) && (downloadoptions.hash.toLowerCase() != h.toString('hex').toLowerCase())) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; return; } downloadoptions.func(downloadoptions, true); });
@@ -2295,6 +2296,12 @@ function serverFetchFile() {
     var agentFileHttpRequest = http.request(agentFileHttpOptions,
         function (response) {
             response.xparent = this;
+            if (response.statusCode != 200) {
+                // The agent discards the unread body, abort() here would pool a dead socket and hang the next download
+                sendConsoleText('Batch upload failed, because the server replied with HTTP ' + response.statusCode + ', file: ' + this.xpath);
+                response.end = function () { delete agentFileHttpRequests[this.xparent.xurlpath]; delete this.xparent; serverFetchFile(); }
+                return;
+            }
             try {
                 response.xfile = fs.createWriteStream(this.xpath, { flags: 'wbN' })
                 response.pipe(response.xfile);
