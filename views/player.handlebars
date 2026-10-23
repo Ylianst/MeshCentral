@@ -425,7 +425,7 @@
 
             if (recFileMetadata.indexInterval) {
                 recFileIndexBasePtr = recFilePtr;
-                x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
+                x += addInfo("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
                 QV('SeekBackwardButton', true);
                 QV('SeekForwardButton', true);
                 QE('SeekBackwardButton', true);
