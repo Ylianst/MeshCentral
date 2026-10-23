@@ -19157,7 +19157,7 @@
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
-            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, lastFolderName); }
+            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, EscapeHtml(lastFolderName)); }
             QH(d3fileoptions.files, html1 + html2);
             QE(d3fileoptions.folderup, d3filetreelocation.length > 0);
             if (d3fileoptions.func) { d3fileoptions.func(); }
