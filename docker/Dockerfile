@@ -86,15 +86,17 @@ ENV ALLOW_PLUGINS="false" \
     PORT="443" \
     REDIR_PORT="80" \
     INSTALL_STYLISHUI="false" \
+    STYLISHUI_FORCE_LATEST="false" \
+    FORCE_CLASSIC_UI="true" \
     IFRAME="false" \
     LOCAL_SESSION_RECORDING="true" \
     MINIFY="true" \
     REVERSE_PROXY="" \
     REVERSE_PROXY_TLS_PORT="443" \
     REGEN_SESSIONKEY="false" \
-    STYLISHUI_FORCE_LATEST="false" \
     WEBRTC="false" \
     TRUSTED_PROXY="" \
+    TLS_OFFLOAD="false" \
     ARGS=""
 
 # Database
