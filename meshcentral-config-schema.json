@@ -792,7 +792,7 @@
         "authLog": {
           "type": "string",
           "default": null,
-          "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban."
+          "description": "File path and name of the authentication log to be created. This log can be parsed by Fail2ban. Carriage returns and line feeds in messages are escaped as literal \\r and \\n sequences so each event occupies one line."
         },
         "InterUserMessaging": {
           "type": "array",

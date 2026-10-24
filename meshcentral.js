@@ -4144,11 +4144,14 @@ function CreateMeshCentralServer(config, args) {
     // auth.log functions
     obj.authLog = function (server, msg, args) {
         if (typeof msg != 'string') return;
+        // User-controlled fields must not create additional authentication log records.
+        msg = msg.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
         var str = msg;
         if (args != null) {
             if (typeof args.sessionid == 'string') { str += ', SessionID: ' + args.sessionid; }
             if (typeof args.useragent == 'string') { const userAgentInfo = obj.webserver.getUserAgentInfo(args.useragent); str += ', Browser: ' + userAgentInfo.browserStr + ', OS: ' + userAgentInfo.osStr; }
         }
+        str = str.replace(/\r/g, '\\r').replace(/\n/g, '\\n');
         obj.debug('authlog', str);
         if (obj.syslogauth != null) { try { obj.syslogauth.log(obj.syslogauth.LOG_INFO, str); } catch (ex) { } }
         if (obj.authlogfile != null) { // Write authlog to file
