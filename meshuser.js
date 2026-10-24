@@ -2063,6 +2063,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     var chguser = parent.users[command.userid];
                     if (chguser) {
+                        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                         // If we are not full administrator, we can't change anything on a different full administrator
                         if ((user.siteadmin != SITERIGHT_ADMIN) & (chguser.siteadmin === SITERIGHT_ADMIN)) break;
 
@@ -2120,6 +2121,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Can only perform this operation on other users of our group.
                     var chguser = parent.users[command.userid];
                     if (chguser == null) break; // This user does not exists
+                    if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                     if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
@@ -2158,6 +2160,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Can only perform this operation on other users of our group.
                         var chguser = parent.users[command.userid];
                         if (chguser == null) break; // This user does not exists
+                        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                         if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                         // Create the notification message
@@ -3819,6 +3822,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Can only perform this operation on other users of our group.
                             var chguser = parent.users[command.id];
                             if (chguser == null) break; // This user does not exists
+                            if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                             if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
                             db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
                         }
@@ -7500,6 +7504,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         var chguser = parent.users[uid], flags = 0, change = 0;
         if (chguser == null) return;
+        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) return; // Operation only valid for current domain
         if (typeof chguser.flags == 'number') { flags = chguser.flags; }
 
         if (command.image == 0) {
