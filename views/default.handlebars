@@ -6345,8 +6345,13 @@
 
         function csvClean(v) {
             if (v == null) return '';
-            return v.split(',').join('');
+            v = String(v).replace(/[\r\n\t]/g, ' ');
+            // Keep formula-like values as text when the CSV is opened in a spreadsheet.
+            if (/^[\s\u200b-\u200d]*[=+\-@＝＋－＠]/.test(v)) { v = '\t' + v; }
+            return v.replace(/"/g, '""');
         }
+
+        function csvCell(v) { return '"' + csvClean(v) + '"'; }
 
         function p2downloadDeviceInfoCSV() {
             var chkNodeIds = getCheckedDevices();
@@ -6359,7 +6364,7 @@
                 var csv = 'id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime' + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
-                    csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname?(n.rname.split(',').join('')):'') + '","' + (n.host?(n.host.split(',').join('')):'') + '","' + n.icon + '","' + (n.ip?n.ip:'') + '","' + (n.osdesc?(n.osdesc.split(',').join('')):'') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn?n.conn:'') + '","' + (n.pwr?n.pwr:'') + '"';
+                    csv += [n._id, n.name, n.rname, n.host, n.icon, n.ip, n.osdesc, n.state, meshes[n.meshid].name, (n.conn ? n.conn : ''), (n.pwr ? n.pwr : '')].map(csvCell).join(',');
                     if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; }
                     else if (typeof n.lsc == 'object') { csv += ',"' + csvClean(n.lsc.antiVirus) + '",,"' + csvClean(n.lsc.firewall) + '"'; } else { csv += ',,,';  }
                     if (typeof n.av == 'object') {
@@ -7290,10 +7295,10 @@
                         map_cm_popup.setPosition(coord);
                         var featid = feature.getId();
                         if (featid) {
-                            QH('xmap-info-window', feature.get('name'));
+                            Q('xmap-info-window').textContent = feature.get('name');
                         } else {
                             var nodeFeat = getCorrespondingFeature(feature); // Return the node feature associated to pointer.
-                            QH('xmap-info-window', nodeFeat.get('name'));
+                            Q('xmap-info-window').textContent = nodeFeat.get('name');
                         }
                     } else {
                         xxmap.map.getTargetElement().style.cursor = '';
@@ -7869,8 +7874,8 @@
 
                 // IP-KVM / PDU information
                 if (node.mtype == 4) {
-                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", node.portnum); }
-                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", node.porttype); }
+                    if (node.portnum != null) { x += addDeviceAttribute("Port Number", EscapeHtml(node.portnum)); }
+                    if (node.porttype != null) { x += addDeviceAttribute("Port Type", EscapeHtml(node.porttype)); }
                 }
 
                 // Attribute: Mesh Agent
@@ -13984,7 +13989,7 @@
                     x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
                     var userRights = GetNodeRights(currentNode);						
 					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')" />';
+						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponentEx(app.uninstall) + '\')" />';
 					} else {
 						x += '<span style="color:#999">-</span>';
 					}
@@ -14039,7 +14044,7 @@
 						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">';
 						var userRights = GetNodeRights(currentNode);						
 						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-							x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')" />';
+						x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponentEx(app.name) + '\')" />';
 						} else {
 							x += '<span style="color:#999">-</span>';
 						}
@@ -17134,7 +17139,7 @@
             for (var i in eventList) {
                 var nodename = '';
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
-                csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
+                csv += [eventList[i].time, printDateTime(new Date(eventList[i].time)), eventList[i].etype, eventList[i].action, eventList[i].username, nodename, eventList[i].msg].map(csvCell).join(',') + '\r\n';
             }
             saveAs(stringToUtf8Blob(csv), 'eventslist.csv');
             return false;
@@ -17612,7 +17617,7 @@
                     if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
                     if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
                 }
-                csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + ((multiFactor ? factors.join(',') : '') + '"');
+                csv += [users[i]._id, users[i].name, users[i].email, (users[i].creation ? new Date(users[i].creation * 1000) : ''), (users[i].login ? new Date(users[i].login * 1000) : ''), (users[i].groups ? users[i].groups.join(',') : ''), (multiFactor ? factors.join(',') : '')].map(csvCell).join(',');
                 csv += ',' + ((users[i].siteadmin == 0xFFFFFFFF) ? '1' : '0'); // site admin
                 csv += ',' + (((users[i].siteadmin & 2) != 0) ? '1' : '0'); // user admin
                 csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
@@ -18419,7 +18424,7 @@
             }
 
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
-                x += addDeviceAttribute("Phone Number", '<span style=cursor:pointer onclick=p30editPhone()>' + (user.phone?user.phone:('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
+                x += addDeviceAttribute("Phone Number", '<span style=cursor:pointer onclick=p30editPhone()>' + (user.phone?EscapeHtml(user.phone):('<i>' + "None" + '</i>')) + ' <img class=hoverButton style=cursor:pointer src="images/link5.png" /></span>');
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
@@ -18567,7 +18572,7 @@
             if (xxdialogMode) return;
             var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
             x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
-            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone?currentUser.phone:'') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
+            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone?EscapeHtml(currentUser.phone):'') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
             setDialogMode(2, "Phone Notifications", 3, p30editPhoneEx, x, 'verifyPhone');
             Q('d2phoneinput').focus();
             p30editPhoneValidate();
@@ -18911,7 +18916,7 @@
 
         function p30removeDeviceSharing(event, nodeid, publicid, guestname) {
             if (xxdialogMode) return;
-            setDialogMode(2, "Remove Device Share", 3, function(b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)), [ decodeURIComponent(nodeid), decodeURIComponent(publicid) ]);
+            setDialogMode(2, "Remove Device Share", 3, function(b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, format("Confirm removal of device share \"{0}\"?", EscapeHtml(decodeURIComponent(guestname))), [ decodeURIComponent(nodeid), decodeURIComponent(publicid) ]);
         }
 
         function p30removeNodeFromUser(event, nodeid) {
@@ -18926,10 +18931,10 @@
             userid = decodeURIComponent(userid);
             if (userid.startsWith('user/')) {
                 if (users) { user = users[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user \"{0}\"?", name):"Confirm removal of access rights?", user);
+                setDialogMode(2, "Remove User Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user \"{0}\"?", EscapeHtml(name)):"Confirm removal of access rights?", user);
             } else if (userid.startsWith('ugrp/')) {
                 if (usergroups) { user = usergroups[userid]; if (user != null) { name = user.name; } }
-                setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user group \"{0}\"?", name):"Confirm removal of access rights?", user);
+                setDialogMode(2, "Remove User Group Permissions", 3, function(b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [ userid ], rights: 0, remove: true }); }, name?format("Confirm removal of access rights for user group \"{0}\"?", EscapeHtml(name)):"Confirm removal of access rights?", user);
             }
         }
 
@@ -19164,7 +19169,7 @@
             if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); } 
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true)  { x += addHtmlValue4("Multiplexor", "Enabled"); }
-            if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
+            if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", EscapeHtml(rec.userids[i].split('/')[2])); } }
             setDialogMode(2, "Recording Details", 9, null, x);
         }
 
@@ -19265,7 +19270,7 @@
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
-            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, lastFolderName); }
+            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, EscapeHtml(lastFolderName)); }
             QH(d3fileoptions.files, html1 + html2);
             QE(d3fileoptions.folderup, d3filetreelocation.length > 0);
             if (d3fileoptions.func) { d3fileoptions.func(); }
@@ -19541,7 +19546,7 @@
                 if (user != null) {
                     var name = user.name;
                     if (user.realname != null) { name += ', ' + user.realname; }
-                    return '<div onclick=\'gotoUser("' + user._id + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
+                    return '<div onclick=\'gotoUser("' + encodeURIComponentEx(user._id) + '",10);haltEvent(event);\' style=float:left;margin-right:4px;cursor:pointer class="m2"></div>' + EscapeHtml(name);
                 } else {
                     return '<i>' + "Unknown User" + '</i>';
                 }
@@ -20286,7 +20291,7 @@
 
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
-            for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
+            for (var i in serverTrace) { csv += [new Date(serverTrace[i].time).toLocaleTimeString(), serverTrace[i].source, serverTrace[i].args.join(', ')].map(csvCell).join(',') + '\r\n'; }
             saveAs(stringToUtf8Blob(csv), 'servertrace.csv');
             return false;
         }
@@ -20402,7 +20407,7 @@
             QV('uiMenu', false);
 
             // If "shift" is pressed, open a new tab.
-            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
+            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{currentNode}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 9) && (x <= 19)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
@@ -20636,12 +20641,16 @@
                     p.upgradeAvail = "Checking...";
                     if (installedPluginList['version_info'] != null && installedPluginList['version_info'][p._id] != null) {
                         var vin = installedPluginList['version_info'][p._id];
+                        var versionHtml = EscapeHtml(vin.version);
+                        if ((typeof vin.changelogUrl == 'string') && /^https?:\/\//i.test(vin.changelogUrl)) {
+                            versionHtml = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + EscapeHtml(vin.changelogUrl) + '">' + versionHtml + '</a>';
+                        }
                         if (vin.hasUpdate) {
-                            p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            p.upgradeAvail = versionHtml;
                         } else {
                             cant_action.push('upgrade');
                             if (p.status) p.upgradeAvail = "Up to date";
-                            else p.upgradeAvail = '<a title="' + "View Changelog" + '" rel="noreferrer noopener" target="_blank" href="' + vin.changelogUrl + '">' + vin.version + '</a>';
+                            else p.upgradeAvail = versionHtml;
                         }
                         if (!vin.meshCentralCompat) {
                             p.upgradeAvail += vers_not_compat;
@@ -21132,7 +21141,7 @@
                 }
             }
             
-            var tagHtml = '<span style="background:#6c757d; color:#fff; padding:3px 8px; border-radius:3px; font-size:12px;" id="' + tagId + '" data-actualid="' + EscapeHtml(entityId) + '">' + entityIcon + ' ' + EscapeHtml(entityName) + ' <span style="cursor:pointer; margin-left:5px;" onclick="removePermTag(\'' + entityId + '\', \'' + permKey + '\', \'' + level + '\', \'' + accessType + '\', \'' + entityType + '\', \'' + (parentId || '') + '\')">×</span></span>';
+            var tagHtml = buildPermTag({ _id: entityId, name: entityName }, permKey, level, accessType, entityType, parentId);
             container.insertAdjacentHTML('beforeend', tagHtml);
             
             // Initialize overrides storage
@@ -21663,11 +21672,11 @@
         function getUserName(userid) {
             var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
             if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + EscapeHtml(decode_utf8(atob(useridsplit[3].substring(6)))); }
-            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
-            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
-            if (userid == userinfo._id) { return (userinfo.name + guestname); }
-            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
-            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
+            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (EscapeHtml(users[userid2].realname) + guestname); else return (EscapeHtml(users[userid2].name) + guestname); }
+            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (EscapeHtml(currentNode.links[userid].name) + guestname); }
+            if (userid == userinfo._id) { return (EscapeHtml(userinfo.name) + guestname); }
+            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (EscapeHtml(nodes[a].links[b].name) + guestname); } } } }
+            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (EscapeHtml(meshes[a].links[b].name) + guestname); } } } }
             return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function round(value, precision) { var multiplier = Math.pow(10, precision || 0); return Math.round(value * multiplier) / multiplier; }

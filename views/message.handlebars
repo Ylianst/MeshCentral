@@ -49,8 +49,8 @@
         var titleid = parseInt('{{{titleid}}}');
         var msgid = parseInt('{{{msgid}}}');
         var domainurl = decodeURIComponent('{{{domainurl}}}');
-        var arg1 = decodeURIComponent('{{{arg1}}}');
-        var arg2 = decodeURIComponent('{{{arg2}}}');
+        var arg1 = EscapeHtml(decodeURIComponent('{{{arg1}}}'));
+        var arg2 = EscapeHtml(decodeURIComponent('{{{arg2}}}'));
         var urlargs = parseUriArgs();
 
         var title = '';
@@ -64,11 +64,11 @@
         var msg = '';
         switch (msgid) {
             case 1: { msg = "ERROR: Invalid domain."; break; }
-            case 2: { msg = format("ERROR: Invalid username \"{0}\".", arg1); break; }
-            case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", arg1, arg2); break; }
-            case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", arg1, arg2); break; }
-            case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", arg1); break; }
-            case 6: { msg = format("Verified email {0} for user account {1}.", '<b>' + arg1 + '</b>', '<b>' + arg2 + '</b>'); break; }
+            case 2: { msg = format("ERROR: Invalid username \"{0}\".", EscapeHtml(arg1)); break; }
+            case 3: { msg = format("ERROR: Invalid e-mail \"{0}\" for user \"{1}\".", EscapeHtml(arg1), EscapeHtml(arg2)); break; }
+            case 4: { msg = format("E-mail \"{0}\" for user \"{1}\" already verified.", EscapeHtml(arg1), EscapeHtml(arg2)); break; }
+            case 5: { msg = format("E-mail \"{0}\" already in use on a different account. Change the email address and try again.", EscapeHtml(arg1)); break; }
+            case 6: { msg = format("Verified email {0} for user account {1}.", '<b>' + EscapeHtml(arg1) + '</b>', '<b>' + EscapeHtml(arg2) + '</b>'); break; }
             case 7: { msg = format("E-mail \"{0}\" for user \"{1}\" not verified.", arg1, arg2); break; }
             case 8: {
                 msg = '<div>' + format("Password for account {0} has been reset to:", '<b>' + arg1 + '</b>') + '</div><div style=padding:14px;font-size:18px><b>' + arg2 + '</b></div>';

@@ -2514,7 +2514,7 @@
             var x;
             if (userinfo.phone != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
                 account_managePhoneRemoveValidate();
@@ -2883,7 +2883,7 @@
                 if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
-            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, lastFolderName); }
+            if (d3fileoptions.currentFolder) { QH(d3fileoptions.currentFolder, EscapeHtml(lastFolderName)); }
             QH(d3fileoptions.files, html1 + html2);
             QE(d3fileoptions.folderup, d3filetreelocation.length > 0);
             if (d3fileoptions.func) { d3fileoptions.func(); }
@@ -6451,7 +6451,8 @@
                 file.nx = i;
                 file.t = parseInt(file.t);
                 if (isNaN(file.t)) { file.t = 3; }
-                if (file.s == null) { file.s = 0; }
+                file.s = Number(file.s);
+                if (!Number.isFinite(file.s) || file.s < 0) { file.s = 0; }
                 if (file.n == null) { file.n = i; }
                 file.n = String(file.n);
                 file.ln = file.n.toLowerCase();
@@ -8400,11 +8401,11 @@
         function getUserName(userid) { 
             var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
             if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + EscapeHtml(decode_utf8(atob(useridsplit[3].substring(6)))); }
-            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
-            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
-            if (userid == userinfo._id) { return (userinfo.name + guestname); }
-            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
-            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
+            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (EscapeHtml(users[userid2].realname) + guestname); else return (EscapeHtml(users[userid2].name) + guestname); }
+            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (EscapeHtml(currentNode.links[userid].name) + guestname); }
+            if (userid == userinfo._id) { return (EscapeHtml(userinfo.name) + guestname); }
+            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (EscapeHtml(nodes[a].links[b].name) + guestname); } } } }
+            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (EscapeHtml(meshes[a].links[b].name) + guestname); } } } }
             return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right' + (state === true ? ';word-break:break-all' : '') + '>' + value + '</table>'; }

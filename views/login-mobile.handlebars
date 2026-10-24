@@ -359,12 +359,12 @@
         }
 
         // Display flash error Messages
-        var flashErrors = JSON.parse('{{{flashErrors}}}');
+        var flashErrors = JSON.parse(decodeURIComponent('{{{flashErrors}}}'));
         if (flashErrors && (flashErrors.length > 0)) {
             var msg = '';
             for (i = 0; i < flashErrors.length; i++) {
                 if (flashErrors[i]) {
-                    msg += '<span class="msg error"><b style=color:#8C001A>' + flashErrors[i] + '<b></span><br /><br />';
+                    msg += '<span class="msg error"><b style=color:#8C001A>' + EscapeHtml(flashErrors[i]) + '<b></span><br /><br />';
                 }
             }
             QH('message1', msg);

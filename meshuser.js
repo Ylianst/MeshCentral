@@ -5510,7 +5510,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                         // Node information
                                         if (nodeinfo.node != null) {
                                             const n = nodeinfo.node;
-                                            output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + (n.icon ? n.icon : 1) + ',' + (n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
+                                            output += csvClean(n._id) + ',' + csvClean(n.name) + ',' + csvClean(n.rname ? n.rname : '') + ',' + csvClean(n.host ? n.host : '') + ',' + (n.icon ? n.icon : 1) + ',' + csvClean(n.ip ? n.ip : '') + ',' + (n.osdesc ? csvClean(n.osdesc) : '') + ',' + csvClean(parent.meshes[n.meshid].name);
                                             if (typeof n.wsc == 'object') {
                                                 output += ',' + csvClean(n.wsc.antiVirus ? n.wsc.antiVirus : '') + ',' + csvClean(n.wsc.autoUpdate ? n.wsc.autoUpdate : '') + ',' + csvClean(n.wsc.firewall ? n.wsc.firewall : '')
                                             } else if (typeof n.lsc == 'object') {
@@ -8444,7 +8444,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function domainHasMyServerErrorLog() { return !((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.errorlog !== true))); }
     function domainHasMyServerUpgrade()  { return !((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver !== true) && (domain.myserver.upgrade !== true))); }
 
-    function csvClean(s) { return '\"' + s.split('\"').join('').split(',').join('').split('\r').join('').split('\n').join('') + '\"'; }
+    function csvClean(s) {
+        var value = (s == null ? '' : String(s)).replace(/[\r\n\t]/g, ' ');
+        // Keep formula-like values as text when the CSV is opened in a spreadsheet.
+        if (/^[\s\u200b-\u200d]*[=+\-@＝＋－＠]/.test(value)) { value = '\t' + value; }
+        return '"' + value.replace(/"/g, '""') + '"';
+    }
 
     function remoteSessionReport(command, manageAllDeviceGroups, msgIdFilter) {
         // If we are not user administrator on this site, only search for events with our own user id.
