@@ -21422,7 +21422,7 @@
 
         function p30removeDeviceSharing(event, nodeid, publicid, guestname) {
             if (xxdialogMode) return;
-            setModalContent('xxAddAgent', "Remove Device Share", format("Confirm removal of device share \"{0}\"?", decodeURIComponent(guestname)));
+            setModalContent('xxAddAgent', "Remove Device Share", format("Confirm removal of device share \"{0}\"?", EscapeHtml(decodeURIComponent(guestname))));
             showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, tag) { meshserver.send({ action: 'removeDeviceShare', nodeid: tag[0], publicid: tag[1] }); }, 3, [decodeURIComponent(nodeid), decodeURIComponent(publicid)]);
         }
 
