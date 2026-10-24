@@ -20294,7 +20294,7 @@
             QV('uiMenu', false);
 
             // If "shift" is pressed, open a new tab.
-            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{{currentNode}}}'.toLowerCase() == '')) {
+            if (event && ((event.shiftKey == true) || (event.which == 2) || (event.button == 1)) && (x != 15) && ('{{currentNode}}'.toLowerCase() == '')) {
                 // Open the device in a different tab
                 if ((x >= 9) && (x <= 19)) {
                     if (currentNode) { safeNewWindow(window.location.origin + '{{{domainurl}}}' + '?gotonode=' + currentNode._id.split('/')[2] + '&viewmode=' + x + '&hide=16' + ((urlargs.key)?('&key=' + urlargs.key):''), 'meshcentral:' + currentNode._id); }
