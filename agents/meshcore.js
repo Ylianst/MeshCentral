@@ -848,7 +848,7 @@ else {
 
 
 // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent, 512 = Desktop session picker
 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
@@ -980,6 +980,8 @@ if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
         } else if (process.platform == 'linux' || process.platform == 'freebsd') {
             require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
         }
+        // The web site only asks a non-Windows agent for its session list when the binary can say which sessions a capture can attach to
+        if (typeof require('user-sessions').desktopSessions == 'function') { meshCoreObj.caps |= 512; }
     } catch (ex) { }
 }
 mesh.DAIPC = obj.DAIPC;
