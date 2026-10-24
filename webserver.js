@@ -8429,7 +8429,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const TwitterStrategy = require('passport-twitter');
             let options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
             if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO.');
+            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('twitter-' + domain.id, new TwitterStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Twitter profile: ' + JSON.stringify(profile));
@@ -8446,7 +8446,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GoogleStrategy = require('passport-google-oauth20');
             let options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
             if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO.');
+            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('google-' + domain.id, new GoogleStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Google profile: ' + JSON.stringify(profile));
@@ -8468,7 +8468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.github.tokenurl == 'string') { options.tokenURL = domain.authstrategies.github.tokenurl; }
             if (typeof domain.authstrategies.github.userprofileurl == 'string') { options.userProfileURL = domain.authstrategies.github.userprofileurl; }
             if (typeof domain.authstrategies.github.useremailurl == 'string') { options.userEmailURL = domain.authstrategies.github.useremailurl; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO.');
+            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('github-' + domain.id, new GitHubStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Github profile: ' + JSON.stringify(profile));
@@ -8485,7 +8485,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const AzureOAuth2Strategy = require('passport-azure-oauth2');
             let options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
             if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO.');
+            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
                 function (accessToken, refreshtoken, params, profile, done) {
                     var userex = null;
@@ -8623,7 +8623,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!obj.common.validateString(strategy.issuer.issuer)) {
                 if (!preset) {
                     let error = new Error('OIDC: Missing issuer URI.');
-                    parent.authLog('error', `${error.message}`);
+                    parent.authLog('error', `${error.message} STRATEGY: ${obj.common.StringifyRedacted(strategy)}`);
                     throw error;
                 } else {
                     strategy.issuer.issuer = presetIssuer
@@ -8740,7 +8740,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
-            parent.debug('verbose', 'OIDC: Configuration saved.');
+            parent.debug('verbose', 'OIDC: Saved Configuration: ' + obj.common.StringifyRedacted(strategy));
             if (preset) { parent.authLog('setupDomainAuthStrategy', 'OIDC: ' + preset.toUpperCase() + ': Setup Complete'); }
             else { parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete'); }
 
