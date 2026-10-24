@@ -7464,8 +7464,13 @@
 
         function csvClean(v) {
             if (v == null) return '';
-            return v.split(',').join('');
+            v = String(v).replace(/[\r\n\t]/g, ' ');
+            // Keep formula-like values as text when the CSV is opened in a spreadsheet.
+            if (/^[\s\u200b-\u200d]*[=+\-@＝＋－＠]/.test(v)) { v = '\t' + v; }
+            return v.replace(/"/g, '""');
         }
+
+        function csvCell(v) { return '"' + csvClean(v) + '"'; }
 
         function p2downloadDeviceInfoCSV() {
             var chkNodeIds = getCheckedDevices();
@@ -7478,7 +7483,7 @@
                 var csv = 'id,name,rname,host,icon,ip,osdesc,state,groupname,conn,pwr,av,update,firewall,avdetails,tags,lastbootuptime' + '\r\n', r = [];
                 for (var i in chkNodeIds) {
                     var n = getNodeFromId(chkNodeIds[i]);
-                    csv += '"' + n._id.split(',').join('') + '","' + n.name.split(',').join('') + '","' + (n.rname ? (n.rname.split(',').join('')) : '') + '","' + (n.host ? (n.host.split(',').join('')) : '') + '","' + n.icon + '","' + (n.ip ? n.ip : '') + '","' + (n.osdesc ? (n.osdesc.split(',').join('')) : '') + '","' + n.state + '","' + meshes[n.meshid].name.split(',').join('') + '","' + (n.conn ? n.conn : '') + '","' + (n.pwr ? n.pwr : '') + '"';
+                    csv += [n._id, n.name, n.rname, n.host, n.icon, n.ip, n.osdesc, n.state, meshes[n.meshid].name, (n.conn ? n.conn : ''), (n.pwr ? n.pwr : '')].map(csvCell).join(',');
                     if (typeof n.wsc == 'object') { csv += ',"' + csvClean(n.wsc.antiVirus) + '","' + csvClean(n.wsc.autoUpdate) + '","' + csvClean(n.wsc.firewall) + '"'; }
                     else if (typeof n.lsc == 'object') { csv += ',"' + csvClean(n.lsc.antiVirus) + '",,"' + csvClean(n.lsc.firewall) + '"'; } else { csv += ',,,'; }
                     if (typeof n.av == 'object') {
@@ -19561,7 +19566,7 @@
             for (var i in eventList) {
                 var nodename = '';
                 if (eventList[i].nodeid) { var node = getNodeFromId(eventList[i].nodeid); if (node && node.name) { nodename = node.name; } }
-                csv += '"' + eventList[i].time + '","' + printDateTime(new Date(eventList[i].time)) + '","' + eventList[i].etype + '","' + ((eventList[i].action != null) ? eventList[i].action : '') + '","' + ((eventList[i].username != null) ? eventList[i].username : '') + '","' + EscapeHtml(nodename) + '","' + ((eventList[i].msg != null) ? eventList[i].msg : '').split(',').join(' -') + '"\r\n';
+                csv += [eventList[i].time, printDateTime(new Date(eventList[i].time)), eventList[i].etype, eventList[i].action, eventList[i].username, nodename, eventList[i].msg].map(csvCell).join(',') + '\r\n';
             }
             saveAs(stringToUtf8Blob(csv), 'eventslist.csv');
             return false;
@@ -20071,7 +20076,7 @@
                     if (users[i].otphkeys > 0) { factors.push('SecurityKey'); }
                     if (users[i].otpkeys > 0) { factors.push('BackupCodes'); }
                 }
-                csv += '"' + users[i]._id + '","' + users[i].name + '","' + (users[i].email ? users[i].email : '') + '","' + (users[i].creation ? new Date(users[i].creation * 1000) : '') + '","' + (users[i].login ? new Date(users[i].login * 1000) : '') + '","' + (users[i].groups ? users[i].groups.join(',') : '') + '","' + ((multiFactor ? factors.join(',') : '') + '"');
+                csv += [users[i]._id, users[i].name, users[i].email, (users[i].creation ? new Date(users[i].creation * 1000) : ''), (users[i].login ? new Date(users[i].login * 1000) : ''), (users[i].groups ? users[i].groups.join(',') : ''), (multiFactor ? factors.join(',') : '')].map(csvCell).join(',');
                 csv += ',' + ((users[i].siteadmin == 0xFFFFFFFF) ? '1' : '0'); // site admin
                 csv += ',' + (((users[i].siteadmin & 2) != 0) ? '1' : '0'); // user admin
                 csv += ',' + (((users[i].siteadmin & 32) != 0) ? '1' : '0'); // locked
@@ -23017,7 +23022,7 @@
 
         function p41downloadServerTrace() {
             var csv = "time, source, message" + '\r\n';
-            for (var i in serverTrace) { csv += '"' + new Date(serverTrace[i].time).toLocaleTimeString() + '","' + serverTrace[i].source + '","' + serverTrace[i].args.join(', ') + '"\r\n'; }
+            for (var i in serverTrace) { csv += [new Date(serverTrace[i].time).toLocaleTimeString(), serverTrace[i].source, serverTrace[i].args.join(', ')].map(csvCell).join(',') + '\r\n'; }
             saveAs(stringToUtf8Blob(csv), 'servertrace.csv');
             return false;
         }
