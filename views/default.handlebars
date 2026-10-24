@@ -13884,7 +13884,7 @@
                     x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
                     var userRights = GetNodeRights(currentNode);						
 					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')" />';
+						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponentEx(app.uninstall) + '\')" />';
 					} else {
 						x += '<span style="color:#999">-</span>';
 					}
@@ -13939,7 +13939,7 @@
 						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">';
 						var userRights = GetNodeRights(currentNode);						
 						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
-							x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')" />';
+						x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponentEx(app.name) + '\')" />';
 						} else {
 							x += '<span style="color:#999">-</span>';
 						}
