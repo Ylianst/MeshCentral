@@ -21860,7 +21860,7 @@
             if (rec.startTime && rec.lengthTime) { x += addHtmlValue4("End Time", printTime(new Date(rec.startTime + (rec.lengthTime * 1000)))); }
             if (rec.lengthTime) { x += addHtmlValue4("Duration", pad2(Math.floor(rec.lengthTime / 3600)) + ':' + pad2(Math.floor((rec.lengthTime % 3600) / 60)) + ':' + pad2(Math.floor(rec.lengthTime % 60))); }
             if (rec.multiplex == true) { x += addHtmlValue4("Multiplexor", "Enabled"); }
-            if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", rec.userids[i].split('/')[2]); } }
+            if (rec.userids) { for (var i in rec.userids) { x += addHtmlValue4("User", EscapeHtml(rec.userids[i].split('/')[2])); } }
 
             xxdialogButtons = 9;
             setModalContent('xxAddAgent', "Recording Details", x);
