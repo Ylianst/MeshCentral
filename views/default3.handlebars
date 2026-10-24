@@ -21440,11 +21440,11 @@
             xxdialogButtons = 3; xxdialogTag = user;
             if (userid.startsWith('user/')) {
                 if (users) { user = users[userid]; if (user != null) { name = user.name; } }
-                setModalContent('xxAddAgent', "Remove User Permissions", name ? format("Confirm removal of access rights for user \"{0}\"?", name) : "Confirm removal of access rights?");
+                setModalContent('xxAddAgent', "Remove User Permissions", name ? format("Confirm removal of access rights for user \"{0}\"?", EscapeHtml(name)) : "Confirm removal of access rights?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, user) { meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true }); });
             } else if (userid.startsWith('ugrp/')) {
                 if (usergroups) { user = usergroups[userid]; if (user != null) { name = user.name; } }
-                setModalContent('xxAddAgent', "Remove User Group Permissions", name ? format("Confirm removal of access rights for user group \"{0}\"?", name) : "Confirm removal of access rights?");
+                setModalContent('xxAddAgent', "Remove User Group Permissions", name ? format("Confirm removal of access rights for user group \"{0}\"?", EscapeHtml(name)) : "Confirm removal of access rights?");
                 showModal('xxAddAgentModal', 'idx_dlgOkButton', function (b, user) {
                     meshserver.send({ action: 'adddeviceuser', nodeid: currentNode._id, nodename: currentNode.name, userids: [userid], rights: 0, remove: true });
                 });
