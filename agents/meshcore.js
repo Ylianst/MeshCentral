@@ -402,6 +402,7 @@ function destopLockHelper_pipe(httprequest) {
 var obj = { serverInfo: {} };
 var agentFileHttpRequests = {}; // Currently active agent HTTPS GET requests from the server.
 var agentFileHttpPendingRequests = []; // Pending HTTPS GET requests from the server.
+var agentFileHttpAgent = null; // HTTP agent for these requests, see serverFetchFile().
 var debugConsole = (global._MSH && (_MSH().debugConsole == 1));
 
 var color_options =
@@ -556,7 +557,7 @@ function trimResults(val) {
 obj.DAIPC = require('net').createServer();
 if (process.platform != 'win32') { try { require('fs').unlinkSync(process.cwd() + '/DAIPC'); } catch (ex) { } }
 obj.DAIPC.IPCPATH = process.platform == 'win32' ? ('\\\\.\\pipe\\' + require('_agentNodeId')() + '-DAIPC') : (process.cwd() + '/DAIPC');
-try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnections: 5 }); } catch (ex) { }
+try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnections: 5 }); obj.DAIPC._listenOk = true; } catch (ex) { obj.DAIPC._listenError = ex; }
 obj.DAIPC._daipc = [];
 obj.DAIPC.on('connection', function (c) {
     c._send = function (j) {
@@ -688,8 +689,45 @@ function removeRegisteredApp(pipe) {
 }
 
 function diagnosticAgent_uninstall() {
+    // Stop the Diagnostic Agent first and remember its folder, uninstallService() only removes the service and the executable
+    var workingPath = null;
+    try {
+        var diag = require('service-manager').manager.getService('meshagentDiagnostic');
+        workingPath = diag.appWorkingDirectory();
+        try { if (diag.isRunning()) { diag.stop(); } } catch (ex) { }
+        diag.close();
+    } catch (ex) { }
+
     require('service-manager').manager.uninstallService('meshagentDiagnostic');
     require('task-scheduler').delete('meshagentDiagnostic/periodicStart'); // TODO: Using "delete" here breaks the minifier since this is a reserved keyword
+
+    // Ask the server to remove the link between this agent and the Diagnostic Agent
+    try { require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'unregister' } }); } catch (ex) { }
+
+    if (process.platform == 'win32') {
+        // Remove the Diagnostic Agent certificates and private keys from the certificate store, using the current name and the name older versions used.
+        // Then remove its folder (database, log), only if it really is a "meshagentDiagnostic" folder. Wait 10 seconds so the service has stopped,
+        // and skip all of it if the Diagnostic Agent was installed again in the meantime, so we don't remove the new install.
+        var cleanup = [];
+        var subjects = ['meshagentDiagnostic_NodeDiagnosticCertificate', 'MeshNodeDiagnosticCertificate'];
+        for (var i in subjects) {
+            cleanup.push('certutil -user -delstore My "' + subjects[i] + '"');
+            cleanup.push('certutil -user -csp "Microsoft Platform Crypto Provider" -delkey "CN=' + subjects[i] + '_privatekey"');
+            cleanup.push('certutil -user -csp "Microsoft Software Key Storage Provider" -delkey "CN=' + subjects[i] + '_privatekey"');
+        }
+        if (typeof workingPath == 'string') {
+            var folder = workingPath.split('/').join('\\').replace(/\\+$/, '');
+            if (folder.split('\\').pop().toLowerCase() == 'meshagentdiagnostic') { cleanup.push('rmdir /S /Q "' + folder + '"'); }
+        }
+        var cmd = '/C CHOICE /C Y /N /D Y /T 10 & sc query meshagentDiagnostic >nul 2>&1 || (' + cleanup.join(' & ') + ')';
+        try { require('child_process').execFile(process.env['windir'] + '\\system32\\cmd.exe', [cmd], { type: 4, detached: true }); } catch (ex) { }
+    }
+}
+// On Windows, install the diagnostic agent next to the main agent folder, for example "C:\Program Files\<company>\meshagentDiagnostic\"
+function diagnosticAgent_installPath() {
+    if (process.platform != 'win32') return null;
+    var p = process.execPath.split('\\'); p.pop(); p.pop();
+    return p.join('\\') + '\\meshagentDiagnostic\\';
 }
 function diagnosticAgent_installCheck(install) {
     try {
@@ -706,20 +744,36 @@ function diagnosticAgent_installCheck(install) {
                 displayName: "Mesh Agent Diagnostic Service",
                 description: "Mesh Agent Diagnostic Service",
                 servicePath: process.execPath,
-                parameters: ['-recovery']
+                parameters: ['-recovery'],
+                installPath: diagnosticAgent_installPath()
                 //files: [{ newName: 'diagnostic.js', _buffer: Buffer.from('LyoNCkNvcHlyaWdodCAyMDE5IEludGVsIENvcnBvcmF0aW9uDQoNCkxpY2Vuc2VkIHVuZGVyIHRoZSBBcGFjaGUgTGljZW5zZSwgVmVyc2lvbiAyLjAgKHRoZSAiTGljZW5zZSIpOw0KeW91IG1heSBub3QgdXNlIHRoaXMgZmlsZSBleGNlcHQgaW4gY29tcGxpYW5jZSB3aXRoIHRoZSBMaWNlbnNlLg0KWW91IG1heSBvYnRhaW4gYSBjb3B5IG9mIHRoZSBMaWNlbnNlIGF0DQoNCiAgICBodHRwOi8vd3d3LmFwYWNoZS5vcmcvbGljZW5zZXMvTElDRU5TRS0yLjANCg0KVW5sZXNzIHJlcXVpcmVkIGJ5IGFwcGxpY2FibGUgbGF3IG9yIGFncmVlZCB0byBpbiB3cml0aW5nLCBzb2Z0d2FyZQ0KZGlzdHJpYnV0ZWQgdW5kZXIgdGhlIExpY2Vuc2UgaXMgZGlzdHJpYnV0ZWQgb24gYW4gIkFTIElTIiBCQVNJUywNCldJVEhPVVQgV0FSUkFOVElFUyBPUiBDT05ESVRJT05TIE9GIEFOWSBLSU5ELCBlaXRoZXIgZXhwcmVzcyBvciBpbXBsaWVkLg0KU2VlIHRoZSBMaWNlbnNlIGZvciB0aGUgc3BlY2lmaWMgbGFuZ3VhZ2UgZ292ZXJuaW5nIHBlcm1pc3Npb25zIGFuZA0KbGltaXRhdGlvbnMgdW5kZXIgdGhlIExpY2Vuc2UuDQoqLw0KDQp2YXIgaG9zdCA9IHJlcXVpcmUoJ3NlcnZpY2UtaG9zdCcpLmNyZWF0ZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpOw0KdmFyIFJlY292ZXJ5QWdlbnQgPSByZXF1aXJlKCdNZXNoQWdlbnQnKTsNCg0KaG9zdC5vbignc2VydmljZVN0YXJ0JywgZnVuY3Rpb24gKCkNCnsNCiAgICBjb25zb2xlLnNldERlc3RpbmF0aW9uKGNvbnNvbGUuRGVzdGluYXRpb25zLkxPR0ZJTEUpOw0KICAgIGhvc3Quc3RvcCA9IGZ1bmN0aW9uKCkNCiAgICB7DQogICAgICAgIHJlcXVpcmUoJ3NlcnZpY2UtbWFuYWdlcicpLm1hbmFnZXIuZ2V0U2VydmljZSgnbWVzaGFnZW50RGlhZ25vc3RpYycpLnN0b3AoKTsNCiAgICB9DQogICAgUmVjb3ZlcnlBZ2VudC5vbignQ29ubmVjdGVkJywgZnVuY3Rpb24gKHN0YXR1cykNCiAgICB7DQogICAgICAgIGlmIChzdGF0dXMgPT0gMCkNCiAgICAgICAgew0KICAgICAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IFNlcnZlciBjb25uZWN0aW9uIGxvc3QuLi4nKTsNCiAgICAgICAgICAgIHJldHVybjsNCiAgICAgICAgfQ0KICAgICAgICBjb25zb2xlLmxvZygnRGlhZ25vc3RpYyBBZ2VudDogQ29ubmVjdGlvbiBFc3RhYmxpc2hlZCB3aXRoIFNlcnZlcicpOw0KICAgICAgICBzdGFydCgpOw0KICAgIH0pOw0KfSk7DQpob3N0Lm9uKCdub3JtYWxTdGFydCcsIGZ1bmN0aW9uICgpDQp7DQogICAgaG9zdC5zdG9wID0gZnVuY3Rpb24gKCkNCiAgICB7DQogICAgICAgIHByb2Nlc3MuZXhpdCgpOw0KICAgIH0NCiAgICBjb25zb2xlLmxvZygnTm9uIFNlcnZpY2UgTW9kZScpOw0KICAgIFJlY292ZXJ5QWdlbnQub24oJ0Nvbm5lY3RlZCcsIGZ1bmN0aW9uIChzdGF0dXMpDQogICAgew0KICAgICAgICBpZiAoc3RhdHVzID09IDApDQogICAgICAgIHsNCiAgICAgICAgICAgIGNvbnNvbGUubG9nKCdEaWFnbm9zdGljIEFnZW50OiBTZXJ2ZXIgY29ubmVjdGlvbiBsb3N0Li4uJyk7DQogICAgICAgICAgICByZXR1cm47DQogICAgICAgIH0NCiAgICAgICAgY29uc29sZS5sb2coJ0RpYWdub3N0aWMgQWdlbnQ6IENvbm5lY3Rpb24gRXN0YWJsaXNoZWQgd2l0aCBTZXJ2ZXInKTsNCiAgICAgICAgc3RhcnQoKTsNCiAgICB9KTsNCn0pOw0KaG9zdC5vbignc2VydmljZVN0b3AnLCBmdW5jdGlvbiAoKSB7IHByb2Nlc3MuZXhpdCgpOyB9KTsNCmhvc3QucnVuKCk7DQoNCg0KZnVuY3Rpb24gc3RhcnQoKQ0Kew0KDQp9Ow0K', 'base64') }]
             });
         svc = require('service-manager').manager.getService('meshagentDiagnostic');
     }
     catch (ex) { return null; }
     var proxyConfig = require('global-tunnel').proxyConfig;
-    var cert = require('MeshAgent').GenerateAgentCertificate('CN=MeshNodeDiagnosticCertificate');
+    // On Windows the certificate is kept in the certificate store, and the Diagnostic Agent looks it up by subject name.
+    // The agent uses "CN=<meshServiceName>_NodeDiagnosticCertificate", or "CN=MeshNodeDiagnosticCertificate" when meshServiceName is "Mesh Agent",
+    // so we set the Diagnostic Agent's meshServiceName below and generate the certificate with the matching subject, otherwise its node id would not match the registered one.
+    var diagServiceName = 'meshagentDiagnostic';
+    var cert = require('MeshAgent').GenerateAgentCertificate('CN=' + diagServiceName + '_NodeDiagnosticCertificate');
     var nodeid = require('tls').loadCertificate(cert.root).getKeyHash().toString('base64');
     ddb = require('SimpleDataStore').Create(svc.appWorkingDirectory().replace('\\', '/') + '/meshagentDiagnostic.db');
+    ddb.Put('meshServiceName', diagServiceName);
     ddb.Put('disableUpdate', '1');
     ddb.Put('MeshID', Buffer.from(require('MeshAgent').ServerInfo.MeshID, 'hex'));
     ddb.Put('ServerID', require('MeshAgent').ServerInfo.ServerID);
     ddb.Put('MeshServer', require('MeshAgent').ServerInfo.ServerUri);
+
+    // Tell the Diagnostic Agent the service name of this agent, so it works with customized agents
+    var mainServiceName = process.platform == 'win32' ? 'Mesh Agent' : 'meshagent';
+    try { if (global._MSH && _MSH().meshServiceName) { mainServiceName = _MSH().meshServiceName; } } catch (ex) { }
+    try {
+        var n = require('MeshAgent').serviceName;
+        if ((typeof n == 'string') && (n != '')) { mainServiceName = n; }
+    } catch (ex) { }
+    ddb.Put('0/mainAgentServiceName', mainServiceName); // the Diagnostic Agent reads its own data store with Shared(), which prefixes keys with "0/"
+    ddb.Put('mainAgentServiceName', mainServiceName); // in case a future agent no longer prefixes keys
     if (cert.root.pfx) { ddb.Put('SelfNodeCert', cert.root.pfx); }
     if (cert.tls) { ddb.Put('SelfNodeTlsCert', cert.tls.pfx); }
     if (proxyConfig) {
@@ -730,11 +784,14 @@ function diagnosticAgent_installCheck(install) {
 
     require('MeshAgent').SendCommand({ action: 'diagnostic', value: { command: 'register', value: nodeid } });
     require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent Registered [" + nodeid.length + "/" + nodeid + "]" });
+    require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent will monitor service: " + mainServiceName });
 
     ddb = undefined;
 
-    // Set a recurrent task, to run the Diagnostic Agent every 2 days
-    require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' });
+    // Set a recurrent task, to run the Diagnostic Agent every 2 days. The hour must be zero padded, schtasks requires HH:mm.
+    require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: 2, time: require('tls').generateRandomInteger('0', '23').padStart(2, '0') + ':' + require('tls').generateRandomInteger('0', '59').padStart(2, '0'), service: 'meshagentDiagnostic' }).then(
+        function () { },
+        function (code) { require('MeshAgent').SendCommand({ action: 'msg', type: 'console', value: "Diagnostic Agent: unable to create scheduled task (" + code + ")" }); });
     //require('task-scheduler').create({ name: 'meshagentDiagnostic/periodicStart', daily: '1', time: '17:16', service: 'meshagentDiagnostic' });
 
     return (svc);
@@ -2173,6 +2230,7 @@ function downloadFile(downloadoptions) {
     trustedDownloads[downloadoptions.name].dl = require('https').get(options);
     trustedDownloads[downloadoptions.name].dl.on('error', function (e) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; });
     trustedDownloads[downloadoptions.name].dl.on('response', function (img) {
+        if (img.statusCode != 200) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; return; } // Leave the body unread, abort() would pool a dead socket
         this._file = require('fs').createWriteStream(trustedDownloads[downloadoptions.name].filename, { flags: 'wb' });
         this._filehash = require('SHA384Stream').create();
         this._filehash.on('hash', function (h) { if ((downloadoptions.hash != null) && (downloadoptions.hash.toLowerCase() != h.toString('hex').toLowerCase())) { downloadoptions.func(downloadoptions, false); delete trustedDownloads[downloadoptions.name]; return; } downloadoptions.func(downloadoptions, true); });
@@ -2220,10 +2278,30 @@ function serverFetchFile() {
     }
     agentFileHttpOptions.checkServerIdentity.servertlshash = data.servertlshash;
 
+    if (agentFileHttpAgent == null) {
+        // Older agents hand a kept-alive socket back twice when a reply arrives in one read, which writes two queued
+        // requests to that socket at once and the server rejects both. Only take the first hand back per event loop turn.
+        agentFileHttpAgent = http.Agent();
+        var keepSocketAlive = agentFileHttpAgent.keepSocketAlive;
+        agentFileHttpAgent.keepSocketAlive = function (socket) {
+            if (socket.xkeptAlive === true) return 0;
+            socket.xkeptAlive = true;
+            setImmediate(function () { delete socket.xkeptAlive; });
+            return keepSocketAlive.call(this, socket);
+        }
+    }
+    agentFileHttpOptions.agent = agentFileHttpAgent;
+
     if (agentFileHttpOptions == null) return;
     var agentFileHttpRequest = http.request(agentFileHttpOptions,
         function (response) {
             response.xparent = this;
+            if (response.statusCode != 200) {
+                // The agent discards the unread body, abort() here would pool a dead socket and hang the next download
+                sendConsoleText('Batch upload failed, because the server replied with HTTP ' + response.statusCode + ', file: ' + this.xpath);
+                response.end = function () { delete agentFileHttpRequests[this.xparent.xurlpath]; delete this.xparent; serverFetchFile(); }
+                return;
+            }
             try {
                 response.xfile = fs.createWriteStream(this.xpath, { flags: 'wbN' })
                 response.pipe(response.xfile);
@@ -2451,7 +2529,7 @@ function onTunnelUpgrade(response, s, head)
         // This is a UDP relay connection, get the UDP socket setup. // TODO: ***************
         s.data = onUdpRelayServerTunnelData;
         s.udprelay = require('dgram').createSocket({ type: 'udp4' });
-        s.udprelay.bind({ port: 0 });
+        s.udprelay.bind({ port: 0, address: '0.0.0.0' }); // Bind all interfaces, the agent's dgram defaults to 127.0.0.1 which can't reach udpaddr on the LAN
         s.udprelay.peerindex = this.index;
         s.udprelay.on('message', onUdpRelayTargetTunnelConnect);
         s.udprelay.udpport = this.udpport;
@@ -6161,38 +6239,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'netinfo': { // Show network interface information
                 var interfaces = require('os').networkInterfaces();
-                if (process.platform == 'win32') {
-                    try {
-                        var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
-                        if (ret[0]) {
-                            var speedMap = {};
-                            for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
-                            var adapterNames = Object.keys(interfaces);
-                            for (var j = 0; j < adapterNames.length; j++) {
-                                var theinterfaces = interfaces[adapterNames[j]];
-                                for (var k = 0; k < theinterfaces.length; k++) {
-                                    var iface = theinterfaces[k], speed = speedMap[iface.index] || 0;
-                                    iface.speed = parseInt(speed); // bits per seconds
-                                }
-                            }
-                        }
-                    } catch(ex) { }
-                } else if (process.platform == 'linux') {
-                    var adapterNames = Object.keys(interfaces);
-                    for (var i = 0; i < adapterNames.length; i++) {
-                        var ifaceName = adapterNames[i];
-                        try {
-                            var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
-                            if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
-                                var theinterfaces = interfaces[ifaceName];
-                                for (var k = 0; k < theinterfaces.length; k++) {
-                                    var iface = theinterfaces[k];
-                                    iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
-                                }
-                            }
-                        } catch(ex) { }
-                    }
-                }
+                addLinkSpeeds(interfaces);
                 response = objToString(interfaces, 0, ' ', true);
                 break;
             }
@@ -6268,8 +6315,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
             }
             case 'diagnostic':
                 {
-                    if (!mesh.DAIPC.listening) {
-                        response = 'Unable to bind to Diagnostic IPC, most likely because the path (' + process.cwd() + ') is not on a local file system';
+                    if (mesh.DAIPC._listenOk !== true) {
+                        response = 'Unable to bind to Diagnostic IPC (' + mesh.DAIPC.IPCPATH + ')' + (mesh.DAIPC._listenError ? (': ' + mesh.DAIPC._listenError) : '') + ((process.platform == 'win32') ? '' : ', most likely because the path (' + process.cwd() + ') is not on a local file system');
                         break;
                     }
                     var diag = diagnosticAgent_installCheck();
@@ -6278,8 +6325,16 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                             diagnosticAgent_uninstall();
                             response = 'Diagnostic Agent uninstalled';
                         }
+                        else if (args['_'].length == 1 && args['_'][0] == 'start') {
+                            // Run the Diagnostic Agent now, instead of waiting for the scheduled task. It stops by itself when done.
+                            if (diag.isRunning()) {
+                                response = 'Diagnostic Agent is already running';
+                            } else {
+                                try { diag.start(); response = 'Diagnostic Agent started, results will show in the device events'; } catch (ex) { response = 'Unable to start Diagnostic Agent: ' + ex; }
+                            }
+                        }
                         else {
-                            response = 'Diagnostic Agent installed at: ' + diag.appLocation();
+                            response = 'Diagnostic Agent installed at: ' + diag.appLocation() + (diag.isRunning() ? ' [RUNNING]' : ' [STOPPED]') + '. Usage: diagnostic start|uninstall';
                         }
                     }
                     else {
@@ -7125,6 +7180,26 @@ function agentUpdate_Start(updateurl, updateoptions) {
                 agentUpdate_Start._selfupdate = null;
             });
             agentUpdate_Start._selfupdate.on('response', function (img) {
+                if (img.statusCode != 200) {
+                    // Saving an error page fails the hash check, or replaces the agent when there is no hash to check
+                    // The agent discards the unread body, abort() here would pool a dead socket and hang the next download
+                    agentUpdate_Start._selfupdate = null;
+                    sendConsoleText('Self Update failed, because the server replied with HTTP ' + img.statusCode + ', URL: ' + (updateurl != null ? updateurl : options.path), sessionid);
+                    sendAgentMessage('Self Update failed, because the server replied with HTTP ' + img.statusCode + ', URL: ' + (updateurl != null ? updateurl : options.path), 3);
+
+                    // Only a server error or rate limiting can clear up by itself
+                    if ((img.statusCode < 500) && (img.statusCode != 429)) { return; }
+                    if (++agentUpdate_Start._retryCount < 4) {
+                        sendConsoleText('Self Update will try again in 60 seconds...', sessionid);
+                        agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
+                    }
+                    else {
+                        agentUpdate_Start._retryCount = 0;
+                        sendConsoleText('Self Update giving up, too many failures...', sessionid);
+                        sendAgentMessage('Self Update giving up, too many failures...', 3);
+                    }
+                    return;
+                }
                 this._file = require('fs').createWriteStream(agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update'), { flags: 'wb' });
                 this._filehash = require('SHA384Stream').create();
                 this._filehash.on('hash', function (h) {
@@ -7144,6 +7219,7 @@ function agentUpdate_Start(updateurl, updateoptions) {
                                 agentUpdate_Start._timeout = setTimeout(agentUpdate_Start, 60000, updateurl, updateoptions);
                             }
                             else {
+                                agentUpdate_Start._retryCount = 0;
                                 sendConsoleText('Self Update giving up, too many failures...', sessionid);
                                 sendAgentMessage('Self Update giving up, too many failures...', 3);
                             }
@@ -7253,214 +7329,113 @@ function handleServerConnection(state) {
     broadcastToRegisteredApps({ cmd: 'serverstate', value: meshServerConnectionState, url: require('MeshAgent').ConnectedServer });
 }
 
-function getProbableMainLanIp() {
-    if (process.platform != 'win32') return null;
+// Excludes "this network" (0/8), loopback and link-local, which are never a usable LAN address
+var lanIpv4 = /^(?!0\.|127\.|169\.254\.)(\d{1,3}\.){3}\d{1,3}$/;
+// Excludes loopback, link-local and v4-mapped addresses
+var lanIpv6 = /^(?!::1$|fe[89ab][0-9a-f]:|::ffff:)[0-9a-f:]+$/i;
 
-    function str(v) {
-        if (v == null) return '';
-        try { return String(v); } catch (ex) { return ''; }
+// Windows iphlpapi.dll proxy, created once and shared
+var winIphlpapi = null;
+function getWinIphlpapi() {
+    if (winIphlpapi == null) {
+        var proxy = require('_GenericMarshal').CreateNativeProxy('Iphlpapi.dll');
+        proxy.CreateMethod('GetBestInterfaceEx');
+        proxy.CreateMethod('GetIfEntry2');
+        winIphlpapi = proxy;
     }
+    return winIphlpapi;
+}
 
-    function intVal(v, d) {
-        var x;
-        try { x = parseInt(str(v)); } catch (ex) { x = NaN; }
-        if (isNaN(x)) return d;
-        return x;
+// Asks Windows which interface it routes a public address through, so its own route and interface metrics decide between several gateways.
+// Nothing is sent, the lookup only consults the routing table
+// Returns -1 when this family has no route at all.
+function getWinDefaultRouteIfIndex(family) {
+    var GM = require('_GenericMarshal');
+    var sa = GM.CreateVariable(28), idx = GM.CreateVariable(4), buf = sa.toBuffer();
+    buf.fill(0);
+    if (family == 'IPv4') {
+        buf.writeUInt16LE(2, 0);                                            // sin_family = AF_INET
+        buf.writeUInt32BE(0xCB007101, 4);                                   // sin_addr = 203.0.113.1 (TEST-NET-3)
+    } else {
+        buf.writeUInt16LE(23, 0);                                           // sin6_family = AF_INET6
+        buf.writeUInt32BE(0x20010DB8, 8);                                   // sin6_addr = 2001:db8::1, the other three words stay zero except the last
+        buf.writeUInt32BE(1, 20);
     }
+    if (getWinIphlpapi().GetBestInterfaceEx(sa, idx).Val != 0) return -1;
+    return idx.toBuffer().readUInt32LE(0);
+}
 
-    function isIPv4(ip) {
-        var p, i, n;
-
-        ip = str(ip);
-        if (ip == '') return false;
-        if (ip == '0.0.0.0') return false;
-        if (ip.indexOf(':') >= 0) return false;
-        if (ip.indexOf('169.254.') == 0) return false;
-        if (ip.indexOf('127.') == 0) return false;
-
-        p = ip.split('.');
-        if (p.length != 4) return false;
-
-        for (i = 0; i < 4; i++) {
-            if (p[i] == '') return false;
-            n = parseInt(p[i]);
-            if (isNaN(n)) return false;
-            if ((n < 0) || (n > 255)) return false;
-        }
-
-        return true;
+// First usable IPv4 and IPv6 address of one interface, whether it is up and holds a default route, and its rank for the tie-break
+function interfaceSummary(addrs) {
+    var s = { ip4: null, ip6: null, up: true, gw: false, rank: 2, index: -1 }, rank = { ethernet: 0, wireless: 1 };
+    for (var i = 0; addrs && (i < addrs.length); i++) {
+        var a = addrs[i], addr = String(a.address).split('%')[0];
+        if ((a.status != null) && (a.status != 'up')) s.up = false;
+        if (a.gateway) s.gw = true;
+        if (rank[a.type] != null) s.rank = rank[a.type];
+        if (typeof a.index == 'number') s.index = a.index;
+        if ((s.ip4 == null) && (a.family == 'IPv4') && lanIpv4.test(addr)) s.ip4 = addr;
+        if ((s.ip6 == null) && (a.family == 'IPv6') && lanIpv6.test(addr)) s.ip6 = addr;
     }
+    return s;
+}
 
-    function hasAnyValue(v) {
-        var i;
-
-        if (v == null) return false;
-
-        if (typeof v == 'string') {
-            return (v != '');
-        }
-
-        if (typeof v == 'number') {
-            return true;
-        }
-
-        // Duktape/WMI may expose arrays or array-like objects.
+// Picks the interface that holds the default route and returns its IPv4 and IPv6 address
+// On Windows GetBestInterfaceEx() answers per family. Elsewhere the gateway flag from networkInterfaces() marks the interface,
+// and wired beats wireless beats anything else because those platforms expose no route metric to break a tie between two gateways.
+function getDefaultRouteAddresses(netif2) {
+    var name, s, r = { ip4: null, ip6: null };
+    if (process.platform == 'win32') {
         try {
-            if (v.length != null) {
-                for (i = 0; i < v.length; i++) {
-                    if (str(v[i]) != '') return true;
+            var i4 = getWinDefaultRouteIfIndex('IPv4'), i6 = getWinDefaultRouteIfIndex('IPv6');
+            for (name in netif2) {
+                s = interfaceSummary(netif2[name]);
+                if (s.up && (s.index == i4)) r.ip4 = s.ip4;
+                if (s.up && (s.index == i6)) r.ip6 = s.ip6;
+            }
+        } catch (ex) { } // a marshal failure only loses the route address, the caller still sends the interface list
+    } else {
+        // linux, bsd, macos
+        var best = null;
+        for (name in netif2) {
+            s = interfaceSummary(netif2[name]);
+            if (s.up && s.gw && ((s.ip4 != null) || (s.ip6 != null)) && ((best == null) || (s.rank < best.rank))) best = s;
+        }
+        if (best != null) { r.ip4 = best.ip4; r.ip6 = best.ip6; }
+    }
+    return ((r.ip4 != null) || (r.ip6 != null)) ? r : null;
+}
+
+// Adds the link speed in bits per second to every interface entry, from iphlpapi on Windows and /sys/class/net on Linux
+// MIB_IF_ROW2 is 1352 bytes with InterfaceIndex at offset 8, OperStatus at 1156 and TransmitLinkSpeed at 1192
+// A down adapter keeps reporting its last speed and an unknown one reports NET_IF_LINK_SPEED_UNKNOWN (all ones), so both are left out.
+function addLinkSpeeds(netif2) {
+    var name, i;
+    if (process.platform == 'win32') {
+        try {
+            var row = require('_GenericMarshal').CreateVariable(1352), buf = row.toBuffer(), speeds = {};
+            for (name in netif2) {
+                for (i = 0; netif2[name] && (i < netif2[name].length); i++) {
+                    var iface = netif2[name][i], idx = iface.index;
+                    if (typeof idx != 'number') continue;
+                    if (speeds[idx] == null) {
+                        buf.fill(0); buf.writeUInt32LE(idx, 8);
+                        var ok = (getWinIphlpapi().GetIfEntry2(row).Val == 0) && (buf.readUInt32LE(1156) == 1) && (buf.readUInt32LE(1196) != 0xFFFFFFFF);
+                        speeds[idx] = ok ? (buf.readUInt32LE(1192) + buf.readUInt32LE(1196) * 4294967296) : 0;
+                    }
+                    if (speeds[idx]) iface.speed = speeds[idx];
                 }
-                return false;
             }
         } catch (ex) { }
-
-        return (str(v) != '');
-    }
-
-    function firstIPv4(v) {
-        var i, s;
-
-        if (v == null) return null;
-
-        if (typeof v == 'string') {
-            return isIPv4(v) ? v : null;
+    } else if (process.platform == 'linux') {
+        for (name in netif2) {
+            try {
+                // Mbit/s, "-1" when the driver doesn't know, and the read itself fails when the link is down
+                var mbit = parseInt(require('fs').readFileSync('/sys/class/net/' + name + '/speed').toString(), 10);
+                if (!(mbit > 0)) continue;
+                for (i = 0; i < netif2[name].length; i++) { netif2[name][i].speed = mbit * 1000000; }
+            } catch (ex) { }
         }
-
-        try {
-            if (v.length != null) {
-                for (i = 0; i < v.length; i++) {
-                    s = str(v[i]);
-                    if (isIPv4(s)) return s;
-                }
-            }
-        } catch (ex) { }
-
-        s = str(v);
-        if (isIPv4(s)) return s;
-
-        return null;
-    }
-
-    function isUpAdapter(a) {
-        var op, media;
-
-        if (a == null) return true;
-
-        // InterfaceOperationalStatus commonly has 1 = Up.
-        // But do not hard-fail unknown values; WMI support varies.
-        op = intVal(a.InterfaceOperationalStatus, -1);
-        if ((op != -1) && (op != 1)) return false;
-
-        // MediaConnectState commonly has 1 = Connected.
-        media = intVal(a.MediaConnectState, -1);
-        if ((media != -1) && (media != 1)) return false;
-
-        return true;
-    }
-
-    function adapterPriority(a) {
-        var pm, medium, link, hardware, connector;
-
-        if (a == null) return 20;
-
-        pm = intVal(a.NdisPhysicalMedium, -1);
-        medium = intVal(a.NdisMedium, -1);
-        link = intVal(a.LinkTechnology, -1);
-
-        hardware = (str(a.HardwareInterface).toLowerCase() == 'true');
-        connector = (str(a.ConnectorPresent).toLowerCase() == 'true');
-
-        /*
-            MSFT_NetAdapter is documented in ROOT\StandardCimv2.
-            Useful physical media values include:
-              14 = 802.3 / Ethernet
-               1 = Wireless LAN
-               9 = Native 802.11
-
-            These numeric values avoid matching adapter names such as
-            "Wi-Fi", "WLAN", or "Wireless".
-        */
-
-        if (pm == 14) return 0;                         // wired Ethernet
-        if ((medium == 0) && connector) return 1;       // 802.3-style fallback
-        if ((link == 2) && hardware) return 2;          // Ethernet-ish fallback
-
-        if ((pm == 1) || (pm == 9)) return 10;          // Wi-Fi / WLAN
-        if (link == 11) return 11;                      // wireless fallback
-
-        return 20;                                      // VPN, virtual, tunnel, unknown
-    }
-
-    try {
-        var wmi = require('win-wmi-fixed');
-        var configs;
-        var adapters;
-        var adapterByIndex = {};
-        var candidates = [];
-        var i, cfg, a, ip, gw, idx, metric;
-
-        configs = wmi.query(
-            'ROOT\\CIMV2',
-            'SELECT InterfaceIndex,IPAddress,DefaultIPGateway,IPConnectionMetric FROM Win32_NetworkAdapterConfiguration WHERE IPEnabled = True',
-            ['InterfaceIndex', 'IPAddress', 'DefaultIPGateway', 'IPConnectionMetric']
-        );
-
-        if ((configs == null) || (configs.length == null) || (configs.length == 0)) {
-            return null;
-        }
-
-        try {
-            adapters = wmi.query(
-                'ROOT\\StandardCimv2',
-                'SELECT InterfaceIndex,NdisPhysicalMedium,NdisMedium,LinkTechnology,HardwareInterface,ConnectorPresent,InterfaceOperationalStatus,MediaConnectState FROM MSFT_NetAdapter',
-                ['InterfaceIndex', 'NdisPhysicalMedium', 'NdisMedium', 'LinkTechnology', 'HardwareInterface', 'ConnectorPresent', 'InterfaceOperationalStatus', 'MediaConnectState']
-            );
-
-            if ((adapters != null) && (adapters.length != null)) {
-                for (i = 0; i < adapters.length; i++) {
-                    idx = intVal(adapters[i].InterfaceIndex, -1);
-                    if (idx >= 0) adapterByIndex['i' + idx] = adapters[i];
-                }
-            }
-        } catch (ex2) {
-            adapters = null;
-        }
-
-        for (i = 0; i < configs.length; i++) {
-            cfg = configs[i];
-
-            gw = cfg.DefaultIPGateway;
-            if (!hasAnyValue(gw)) continue;
-
-            ip = firstIPv4(cfg.IPAddress);
-            if (ip == null) continue;
-
-            idx = intVal(cfg.InterfaceIndex, -1);
-            a = adapterByIndex['i' + idx];
-
-            if (!isUpAdapter(a)) continue;
-
-            metric = intVal(cfg.IPConnectionMetric, 999999);
-
-            candidates[candidates.length] = {
-                ip: ip,
-                idx: idx,
-                pri: adapterPriority(a),
-                metric: metric
-            };
-        }
-
-        if (candidates.length == 0) return null;
-
-        candidates.sort(function (x, y) {
-            if (x.pri != y.pri) return x.pri - y.pri;
-            if (x.metric != y.metric) return x.metric - y.metric;
-            return x.idx - y.idx;
-        });
-
-        return candidates[0].ip;
-    } catch (ex) {
-        return null;
     }
 }
 
@@ -7473,45 +7448,12 @@ function sendNetworkUpdate(force) {
     try {
         // Update the network interfaces information data
         var netInfo = { netif2: require('os').networkInterfaces() };
-        if (process.platform == 'win32') {
-            try {
-                var ret = require('win-wmi-fixed').query('ROOT\\CIMV2', 'SELECT InterfaceIndex,NetConnectionID,Speed FROM Win32_NetworkAdapter', ['InterfaceIndex','NetConnectionID','Speed']);
-                if (ret[0]) {
-                    var speedMap = {};
-                    for (var i = 0; i < ret.length; i++) speedMap[ret[i].InterfaceIndex] = ret[i].Speed;
-                    var adapterNames = Object.keys(netInfo.netif2);
-                    for (var j = 0; j < adapterNames.length; j++) {
-                        var interfaces = netInfo.netif2[adapterNames[j]];
-                        for (var k = 0; k < interfaces.length; k++) {
-                            var iface = interfaces[k], speed = speedMap[iface.index] || 0;
-                            iface.speed = parseInt(speed); // bits per seconds
-                        }
-                    }
-                }
-            } catch(ex) { }
-            
-			try {
-                var probableMainLanIp = getProbableMainLanIp();
-                if (probableMainLanIp != null) {
-                    netInfo.probableMainLanIp = probableMainLanIp;
-                }
-            } catch (ex) { }
-        } else if (process.platform == 'linux') {
-            var adapterNames = Object.keys(netInfo.netif2);
-            for (var i = 0; i < adapterNames.length; i++) {
-                var ifaceName = adapterNames[i];
-                try {
-                    var speedStr = require('fs').readFileSync('/sys/class/net/' + ifaceName + '/speed').toString();
-                    if ((speedStr.trim() != "") && (speedStr.trim() != "-1")) {
-                        var theinterfaces = netInfo.netif2[ifaceName];
-                        for (var k = 0; k < theinterfaces.length; k++) {
-                            var iface = theinterfaces[k];
-                            iface.speed = parseInt(speedStr) * 1000000; // bits per seconds
-                        }
-                    }
-                } catch(ex) { }
-            }
+        var lan = getDefaultRouteAddresses(netInfo.netif2);
+        if (lan != null) {
+            if (lan.ip4 != null) netInfo.defaultRouteIp = lan.ip4;
+            if (lan.ip6 != null) netInfo.defaultRouteIp6 = lan.ip6;
         }
+        addLinkSpeeds(netInfo.netif2);
         if (netInfo.netif2) {
             netInfo.action = 'netinfo';
             var netInfoStr = JSON.stringify(netInfo);

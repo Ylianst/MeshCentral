@@ -1,4 +1,13 @@
-FROM node:24.22.1-alpine3.24 AS node-base
+FROM node:24.22.1-alpine3.24 AS node-amd64
+FROM node:24.22.1-alpine3.24 AS node-arm64
+
+# The node:24 Alpine images are not published for 32-bit ARM, so arm/v6 and arm/v7 use Alpine's nodejs.
+FROM alpine:3.24 AS node-arm
+
+RUN apk add --no-cache --update \
+        nodejs npm
+
+FROM node-${TARGETARCH} AS node-base
 
 RUN apk add --no-cache --update \
         jq tzdata

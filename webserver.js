@@ -6215,6 +6215,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         });
     };
 
+    // Backup files prepared through the web UI, by userid. backup.zip serves each one once.
+    obj.preparedBackups = {};
+
     // Handle a server backup request
     async function handleBackupRequest(req, res) {
         const domain = checkUserIpAddress(req, res);
@@ -6225,6 +6228,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         var user = obj.users[req.session.userid];
         if ((user == null) || ((user.siteadmin & 1) == 0)) { res.sendStatus(401); return; } // Check if we have server backup rights
+
+        // If the web UI already prepared a backup for this user, send it right away
+        const preparedBackup = obj.preparedBackups[user._id];
+        if (preparedBackup != null) {
+            delete obj.preparedBackups[user._id];
+            if (obj.fs.existsSync(preparedBackup)) {
+                res.setHeader('Content-Type', 'application/x-zip-compressed');
+                res.download(preparedBackup);
+                return;
+            }
+        }
 
         // start a new backup and async wait for it to finish with a timeout
         if (parent.config.settings.autobackup.backupintervalhours == -1) { res.status(403).send("Backup disabled."); return; };
@@ -6280,7 +6294,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain == null) { parent.debug('web', 'handleRootRequest: invalid domain.'); try { res.sendStatus(404); } catch (ex) { } return; }
 
         // If required, check if this user has rights to do this
-        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) { res.sendStatus(401); return; }
+        if ((obj.parent.config.settings != null) && ((obj.parent.config.settings.lockagentdownload == true) || (domain.lockagentdownload == true)) && (req.session.userid == null)) {
+            // Agents fetching their own update have no session, the agentupdate command gives them a cookie instead
+            var updatecookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 10); // 10 minute timeout, covers the agent's download retries
+            if ((updatecookie == null) || (updatecookie.a != 'aupd') || (req.query.id == null) || (updatecookie.i != req.query.id)) { res.sendStatus(401); return; }
+        }
 
         if ((req.query.meshinstall != null) && (req.query.id != null)) {
             if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { try { res.sendStatus(404); } catch (ex) { } return; } // Check 3FA URL key
@@ -7821,12 +7839,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
                             if (req.session && req.session.userid) { next(); return; } // already logged in so dont authenticate just carry on
+                            if (typeof req.query.error == 'string') { // The identity provider refused the login, for example when the user has no application role assigned.
+                                parent.authLog('oidcCallback', `OIDC: LOGIN FAILED: Identity provider returned an error: ${req.query.error}${(typeof req.query.error_description == 'string') ? ' - ' + req.query.error_description : ''}`);
+                                req.session.loginmode = 1;
+                                req.session.messageid = 111; // Access denied.
+                                res.redirect(domain.url);
+                                return;
+                            }
                             if (req.session && req.session['oidc-' + domain.id]) { // we have a request to login so do authenticate
                                 domain.passport.authenticate(`oidc-${domain.id}`, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                             } else { // no idea so carry on
                                 next(); return;
                             }
-                        }, handleStrategyLogin);
+                        }, handleStrategyLogin, function (err, req, res, next) { // Show the login page instead of an internal error page when the login could not be completed.
+                            var domain = getDomain(req);
+                            parent.authLog('oidcCallback', `OIDC: LOGIN FAILED: ${(err != null) ? (err.message ? err.message : err) : 'Unknown error'}`);
+                            parent.debug('error', `OIDC: LOGIN FAILED: ${(err != null) ? (err.stack ? err.stack : err) : 'Unknown error'}`);
+                            if ((domain == null) || (res.headersSent === true)) { next(err); return; }
+                            req.session.loginmode = 1;
+                            req.session.messageid = 111; // Access denied.
+                            res.redirect(domain.url);
+                        });
                     }
 
                     // Generic SAML
@@ -8866,7 +8899,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             user = Object.assign(user, { 'groups': groups });
 							if(strategy.custom.authorities && strategy.custom.authorities.includes('roles')){
                                 // Check also for roles
-		                        user.groups = (user.groups || []).concat(user.roles);
+		                        user.groups = (user.groups || []).concat(user.roles || []);
 		                    }
 		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
 		                    done(null, user);
@@ -8874,18 +8907,23 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
                             parent.debug('error', `${JSON.stringify(error)}`);
                             parent.authLog('oidcCallback', error.message);
-                            user.groups = [];
+                            // Keep the roles from the token when they are requested, the group API is not the only source of authorities.
+                            user.groups = (strategy.custom.authorities && strategy.custom.authorities.includes('roles') && user.roles) ? user.roles : [];
                             done(null, user);
                         });
-                    
+
                     } else if (Array.isArray(strategy.custom.authorities) && strategy.custom.authorities.includes('roles')) {
                         // Only roles are requested
                         if (user.roles) {
                             user.groups = user.roles;
                         }
-                        parent.authLog('OIDC: USER ROLES:', user);
+                        parent.authLog('oidcCallback', `OIDC: USER ROLES: ${JSON.stringify(user)}`);
                         done(null, user);
-                    }  
+                    } else {
+                        // No group or role source is configured, continue with no authorities.
+                        parent.authLog('oidcCallback', `OIDC: No groups or roles requested for user: "${user.sid}"`);
+                        done(null, user);
+                    }
                 } else {
                     done(null, user);
                 }
@@ -8910,12 +8948,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
                                     console.error(error);
                                     reject(error);
+                                    return;
                                 }
                                 if (data.length == 0) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
                                     console.error(error);
                                     reject(error);
+                                    return;
                                 }
                                 try {
                                     if (Buffer.isBuffer(data[0])) {
@@ -8929,14 +8969,24 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
                                     console.error(error);
                                     reject(error);
+                                    return;
                                 }
                                 if (preset == 'azure') {
-                                    data = JSON.parse(data);
+                                    try {
+                                        data = JSON.parse(data);
+                                    } catch (err) {
+                                        let error = new Error('OIDC: GROUPS: Getting groups from API failed. Response is not valid JSON.', { cause: err });
+                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                        console.error(error);
+                                        reject(error);
+                                        return;
+                                    }
                                     if (data.error) {
                                         let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: data.error });
                                         parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
                                         console.error(error);
                                         reject(error);
+                                        return;
                                     }
                                     data = data.value;
                                 }

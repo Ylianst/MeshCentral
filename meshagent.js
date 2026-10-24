@@ -389,7 +389,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             }
                         }, null, 1);
 
-                    } else {
+                    } else if (obj.agentExeMissing !== true) { // An agent that connected before its binary loaded had its core checked then
                         // Check the mesh core, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
                             obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
@@ -1009,12 +1009,32 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             // Ask the agent for it's executable binary hash
             obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0));
         } else {
+            // Default agent binaries can still be downloading, obj.updateAgentExeInfo() checks this agent once its binary loads.
+            if (obj.agentExeInfo == null) { obj.agentExeMissing = true; }
+
             // Check the mesh core, if the agent is capable of running one
             if (((obj.agentInfo.capabilities & 16) != 0) && (corename != null)) {
                 obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); // Command 11, ask for mesh core hash.
             } else {
                 agentCoreIsStable(); // No updates needed, agent is ready to go.
             }
+        }
+    }
+
+    // Called after the server reloads its agent binaries, so agents that connected before use the new entries.
+    obj.updateAgentExeInfo = function () {
+        if ((obj.authenticated != 2) || (obj.agentUpdate != null)) return; // A native update keeps sending the binary it started with
+        if ((obj.agentExeInfo == null) && (obj.agentExeMissing !== true)) return; // Recovery agents and agents reconnecting too often never got an update check
+        const missing = (obj.agentExeInfo == null);
+        obj.agentExeInfo = parent.parent.meshAgentBinaries[obj.agentInfo.agentId];
+        if (domain.meshAgentBinaries && domain.meshAgentBinaries[obj.agentInfo.agentId]) { obj.agentExeInfo = domain.meshAgentBinaries[obj.agentInfo.agentId]; }
+        if (missing && (obj.agentExeInfo != null)) {
+            // Do the checks this agent skipped when it connected without a binary
+            if (obj.agentExeInfo.update == true) {
+                parent.parent.debug('agent', 'Agent binary loaded after connect, checking agent ' + obj.nodeid);
+                obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0)); // Command 12, ask for the agent binary hash.
+            }
+            obj.sendUpdatedIntelAmtPolicy();
         }
     }
 
@@ -1298,9 +1318,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
-                                const getme = new URL(obj.agentExeInfo.url);
-                                const url = '*' + getme.pathname + getme.search;
-                                var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex };
+                                var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: obj.agentExeInfo.hashhex };
                                 parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
 
                                 // Add the hash
@@ -1359,9 +1377,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         command.type = 'ifinfo';
                         db.Set(command);
 
-						if (typeof command.probableMainLanIP == 'string') {
-							ChangeAgentProbableMainLanIp(command.probableMainLanIP);
-						}
+                        ChangeAgentDefaultRouteIp(command.defaultRouteIp, command.defaultRouteIp6);
 
                         // Event the node interface information change
                         parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.meshid, [obj.dbNodeKey]), obj, { action: 'ifchange', nodeid: obj.dbNodeKey, domain: domain.id, nolog: 1 });
@@ -1434,8 +1450,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                     if (((obj.agentInfo.capabilities & 0x40) == 0) && (typeof command.value.value == 'string') && (command.value.value.length == 64)) {
                                         // Store links to diagnostic agent id
                                         var daNodeKey = 'node/' + domain.id + '/' + db.escapeBase64(command.value.value);
-                                        db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
-                                        db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
+                                        db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                            // Remove the link of a previous diagnostic agent, if any
+                                            if ((nodes != null) && (nodes.length == 1) && (nodes[0].daid != daNodeKey)) { db.Remove('da' + nodes[0].daid); }
+                                            db.Set({ _id: 'da' + daNodeKey, domain: domain.id, time: obj.connectTime, raid: obj.dbNodeKey });  // DiagnosticAgent --> Agent
+                                            db.Set({ _id: 'ra' + obj.dbNodeKey, domain: domain.id, time: obj.connectTime, daid: daNodeKey });  // Agent --> DiagnosticAgent
+                                        });
+                                    }
+                                    break;
+                                }
+                                case 'unregister': {
+                                    // Only main agent can do this, remove the links to its diagnostic agent
+                                    if ((obj.agentInfo.capabilities & 0x40) == 0) {
+                                        db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
+                                            if ((nodes != null) && (nodes.length == 1)) { db.Remove('da' + nodes[0].daid); }
+                                            db.Remove('ra' + obj.dbNodeKey);
+                                        });
                                     }
                                     break;
                                 }
@@ -1646,9 +1676,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                             // Agent is requesting an agent update
                             obj.agentCoreUpdateTaskId = taskid;
-                            const getme = new URL(obj.agentExeInfo.url);
-                            const url = '*' + getme.pathname + getme.search;
-                            var cmd = { action: 'agentupdate', url: url, hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+                            var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
                             parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
 
                             // Add the hash
@@ -2055,69 +2083,34 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
     }
 
-	function ChangeAgentProbableMainLanIp(ip) {
-		if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
-		if ((typeof ip != 'string') || (ip.length > 64)) return;
+    // Store the address of the interface holding the agent's default route, one per address family.
+    // A missing or invalid value leaves the stored one alone, so the node keeps its last known address while the agent has no route or is offline.
+    function ChangeAgentDefaultRouteIp(ip4, ip6) {
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
+        if ((typeof ip4 != 'string') || !/^(\d{1,3}\.){3}\d{1,3}$/.test(ip4)) { ip4 = null; }
+        if ((typeof ip6 != 'string') || (ip6.length > 39) || !/^[0-9a-f:]+$/i.test(ip6)) { ip6 = null; }
+        if ((ip4 == null) && (ip6 == null)) return;
+        const mesh = parent.meshes[obj.dbMeshKey];
+        if (mesh == null) return;
 
-		// Very light sanity check. Keep this IPv4-only because the agent field is IPv4-only.
-		if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) == false) return;
+        if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentDefaultRouteIp(ip4, ip6); }, 100); return; }
+        obj.deviceChanging = true;
 
-		// Check that the mesh exists.
-		const mesh = parent.meshes[obj.dbMeshKey];
-		if (mesh == null) return;
-
-		// If the device is pending a change, hold.
-		if (obj.deviceChanging === true) {
-			setTimeout(function () { ChangeAgentProbableMainLanIp(ip); }, 100);
-			return;
-		}
-
-		obj.deviceChanging = true;
-
-		db.Get(obj.dbNodeKey, function (err, nodes) {
-			if ((nodes == null) || (nodes.length != 1)) {
-				delete obj.deviceChanging;
-				return;
-			}
-
-			const device = nodes[0];
-
-			if (device.agent) {
-				var change = 0;
-
-				if (device.probableMainLanIP != ip) {
-					device.probableMainLanIP = ip;
-					change = 1;
-				}
-
-				if (change == 1) {
-					// These should not be saved into the node document.
-					if (device.conn != null) { delete device.conn; }
-					if (device.pwr != null) { delete device.pwr; }
-					if (device.agct != null) { delete device.agct; }
-					if (device.cict != null) { delete device.cict; }
-
-					db.Set(device);
-
-					var event = {
-						etype: 'node',
-						action: 'changenode',
-						nodeid: obj.dbNodeKey,
-						domain: domain.id,
-						node: parent.CloneSafeNode(device),
-						msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': probable main LAN IP',
-						nolog: 1
-					};
-
-					if (db.changeStream) { event.noact = 1; }
-
-					parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
-				}
-			}
-
-			delete obj.deviceChanging;
-		});
-	}
+        db.Get(obj.dbNodeKey, function (err, nodes) {
+            try {
+                const device = ((nodes != null) && (nodes.length == 1)) ? nodes[0] : null;
+                if ((device != null) && (device.agent != null) && (((ip4 != null) && (device.defaultRouteIp != ip4)) || ((ip6 != null) && (device.defaultRouteIp6 != ip6)))) {
+                    if (ip4 != null) { device.defaultRouteIp = ip4; }
+                    if (ip6 != null) { device.defaultRouteIp6 = ip6; }
+                    delete device.conn; delete device.pwr; delete device.agct; delete device.cict; // runtime fields the server adds, not part of the stored node
+                    db.Set(device);
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': default route address', nolog: 1 };
+                    if (db.changeStream) { event.noact = 1; } // the change stream sends its own event to update the node
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
+                }
+            } finally { delete obj.deviceChanging; } // a throw above must not leave the lock set, or every later node change from this agent retries forever   //TODO: better locking mechanic
+        });
+    }
 
     // Change the current core information string and event it
     function ChangeAgentLocationInfo(command) {
@@ -2261,6 +2254,13 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
     }
 
+    // The agent downloads its update without a web session, so the cookie is what gets it past lockAgentDownload.
+    // It is escaped because the agent's parseUri() takes whatever follows an "@" as the host.
+    function getAgentUpdateUrl() {
+        const getme = new URL(obj.agentExeInfo.url);
+        return '*' + getme.pathname + getme.search + '&auth=' + encodeURIComponent(parent.parent.encodeCookie({ a: 'aupd', i: obj.agentExeInfo.id }, parent.parent.loginCookieEncryptionKey));
+    }
+
     // Check if we need to update this agent, return true if agent binary update required.
     // Return 0 is no update needed, 1 update using native system, 2 update using meshcore system
     function compareAgentBinaryHash(agentExeInfo, agentHash) {
@@ -2276,7 +2276,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (domain.meshAgentBinaries && domain.meshAgentBinaries[10005]) {
                 if (domain.meshAgentBinaries[10005].hash == agentHash) return 0;
             } else {
-                if (parent.parent.meshAgentBinaries[10005].hash == agentHash) return 0;
+                if ((parent.parent.meshAgentBinaries[10005] != null) && (parent.parent.meshAgentBinaries[10005].hash == agentHash)) return 0; // No universal binary until its release file is downloaded or copied in
             }
         }
 

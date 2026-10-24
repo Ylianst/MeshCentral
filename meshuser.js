@@ -6852,6 +6852,28 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             obj.send({ action: 'backuprestore', data: (Object.hasOwn(parent.parent.config.settings.autobackup, 'zippassword')), dialog: command.dialog });
         } else {       
             parent.parent.config.settings.autobackup.zippasswordrequest = command.override ? parent.parent.config.settings.autobackup.zippassword : command.password;
+            if (command.prepare === true) { prepareServerBackup(); }
+        }
+    }
+
+    // Run a backup for the web UI, then tell the browser it can download it from backup.zip
+    async function prepareServerBackup() {
+        if ((user.siteadmin & SITERIGHT_SERVERBACKUP) == 0) return;
+        if ((domain.myserver === false) || ((domain.myserver != null) && (domain.myserver.backup !== true))) return;
+        if (parent.parent.config.settings.autobackup.backupintervalhours == -1) { obj.send({ action: 'serverbackupready', ok: false, msg: "Backup disabled." }); return; }
+        parent.db.performBackup();
+        const waitFor = ms => new Promise(res => setTimeout(res, ms));
+        const backupStart = Date.now();
+        while ((parent.db.performingBackup) && ((Date.now() - backupStart) < 30 * 60 * 1000)) {
+            await waitFor(2000);
+        }
+        const backupFile = parent.db.newAutoBackupFile;
+        if ((parent.db.performingBackup == false) && (backupFile != null) && fs.existsSync(backupFile)) {
+            parent.preparedBackups[user._id] = backupFile;
+            obj.send({ action: 'serverbackupready', ok: true });
+        } else {
+            parent.parent.addServerWarning('prepareServerBackup: Backup error', true);
+            obj.send({ action: 'serverbackupready', ok: false, msg: "Backup error." });
         }
     }
 

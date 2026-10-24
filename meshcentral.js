@@ -3656,6 +3656,8 @@ function CreateMeshCentralServer(config, args) {
                 obj.updateMeshAgentsTable(domain, function () {
                     if (domain.id == '') { try { obj.updateMeshAgentInstallScripts(); } catch (ex) { } }
                     if (state.rerun) { pass(); return; }
+                    // Connected agents still hold the entries they looked up in the old table.
+                    if (obj.webserver != null) { for (var i in obj.webserver.wsagents) { try { obj.webserver.wsagents[i].updateAgentExeInfo(); } catch (ex) { } } }
                     done();
                 });
             }).catch(done);
@@ -3732,7 +3734,9 @@ function CreateMeshCentralServer(config, args) {
 
             // If agents must be stored in RAM or if this is a Windows 32/64/ARM64 agent, load the agent in RAM.
             if ((obj.args.agentsinram === true) || (((archid == 3) || (archid == 4) || (archid == 43)) && (obj.args.agentsinram !== false))) {
-                if ((archid == 3) || (archid == 4) || (archid == 43)) {
+                // The agent hash skips the certificate table, so only signed agents can carry the random msh. Appended to an
+                // unsigned agent it ends up in the hash the agent reports after updating, and every connection updates it again.
+                if (((archid == 3) || (archid == 4) || (archid == 43)) && (agentTable[archid].pe != null) && (agentTable[archid].pe.CertificateTableAddress != 0)) {
                     // Load the agent with a random msh added to it.
                     const outStream = new require('stream').Duplex();
                     outStream.meshAgentBinary = agentTable[archid];
@@ -3834,8 +3838,8 @@ function CreateMeshCentralServer(config, args) {
             if (agentTable[archid].pe != null) { options.peinfo = agentTable[archid].pe; }
             obj.exeHandler.hashExecutableFile(options);
 
-            // If we are not loading Windows binaries to RAM, compute the RAW file hash of the signed binaries here.
-            if ((obj.args.agentsinram === false) && ((archid == 3) || (archid == 4) || (archid == 43))) {
+            // If Windows binaries are served without a random msh, compute the RAW file hash here.
+            if ((agentTable[archid].randomMsh == null) && ((archid == 3) || (archid == 4) || (archid == 43))) {
                 const hash = obj.crypto.createHash('sha384').update(obj.fs.readFileSync(agentpath));
                 agentTable[archid].fileHash = hash.digest('binary');
                 agentTable[archid].fileHashHex = Buffer.from(agentTable[archid].fileHash, 'binary').toString('hex');
