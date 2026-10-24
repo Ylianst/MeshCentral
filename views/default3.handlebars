@@ -20913,7 +20913,7 @@
             }
 
             if ((features & 0x02000000) || (user.phone != null)) { // If SMS is enabled on the server or user has a phone number
-                x += addDeviceAttribute("Phone Number", '<span role=button onclick=p30editPhone()>' + (user.phone ? user.phone : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
+                x += addDeviceAttribute("Phone Number", '<span role=button onclick=p30editPhone()>' + (user.phone ? EscapeHtml(user.phone) : ('<i>' + "None" + '</i>')) + ' <i class="fa-solid fa-pencil fa-xs"></i></span>');
             }
 
             if ((features2 & 0x02000000) || (user.msghandle != null)) { // If user messaging is enabled on the server or user has a messaging handle
@@ -21060,7 +21060,7 @@
             if (xxdialogMode) return;
             var x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
             x += '<td style=width:100%;text-align:center>' + "SMS capable phone number for this user." + '<br />' + "Leave blank for none.";
-            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone ? currentUser.phone : '') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
+            x += '<br /><br /><div style=width:100%;text-align:center>' + "Phone number:" + ' <input type=tel pattern="[0-9]" autocomplete="tel" value="' + (currentUser.phone ? EscapeHtml(currentUser.phone) : '') + '" inputmode="tel" maxlength=18 id=d2phoneinput onKeyUp=p30editPhoneValidate() onkeypress="if (event.key==\'Enter\') p30editPhoneValidate(1)"></div></table>';
             xxdialogButtons = 3; xxdialogTag = 'verifyPhone';
             setModalContent('xxAddAgent', "Phone Notifications", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p30editPhoneEx);

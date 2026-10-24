@@ -2514,7 +2514,7 @@
             var x;
             if (userinfo.phone != null) {
                 x = '<table style=width:100%><tr><td style=width:56px><img src="images/phone80.png" style=padding:8px>';
-                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + userinfo.phone + '</div>';
+                x += '<td style=text-align:center><div style=padding:6px>' + "Verified phone number" + '</div><div style=font-size:20px>' + EscapeHtml(userinfo.phone) + '</div>';
                 x += '<div style=margin:10px><label><input id=d2delPhone type=checkbox onclick=account_managePhoneRemoveValidate() />' + "Remove phone number" + '</label></div>';
                 setDialogMode(2, "Phone Notifications", 3, account_managePhoneRemove, x);
                 account_managePhoneRemoveValidate();
