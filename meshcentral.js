@@ -3100,6 +3100,8 @@ function CreateMeshCentralServer(config, args) {
                     obj.defaultMeshCores[i] = [obj.common.IntToStr(0), ...modulesAdd[i], meshCore].join('');
                 }
                 obj.defaultMeshCores[i] = Buffer.from(obj.defaultMeshCores[i], 'utf8');
+                // The previous compressed core no longer matches the new hash, agents would reject it and drop their core. Until compressed, this core is sent uncompressed.
+                delete obj.defaultMeshCoresDeflate[i];
                 obj.defaultMeshCoresHash[i] = obj.crypto.createHash('sha384').update(obj.defaultMeshCores[i]).digest('binary');
                 obj.debug('main', 'Core module ' + i + ' is ' + obj.defaultMeshCores[i].length + ' bytes.');
 
@@ -3109,9 +3111,10 @@ function CreateMeshCentralServer(config, args) {
                     obj.fs.writeFile('meshcores/' + i + '.js', obj.defaultMeshCores[i].slice(4), function () { }); // Write the core to file
                 }
 
-                // Compress the mesh cores with DEFLATE
-                const callback = function MeshCoreDeflateCb(err, buffer) { if (err == null) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
+                // Compress the mesh cores with DEFLATE, dropping the result if the core was rebuilt meanwhile
+                const callback = function MeshCoreDeflateCb(err, buffer) { if ((err == null) && (obj.defaultMeshCores[MeshCoreDeflateCb.i] === MeshCoreDeflateCb.core)) { obj.defaultMeshCoresDeflate[MeshCoreDeflateCb.i] = buffer; } }
                 callback.i = i;
+                callback.core = obj.defaultMeshCores[i];
                 // agents expect a zlib.deflateRaw instead of zlib.deflate, fixed in meshagent.js, maybe change to zlib.deflateRaw here? Compressed cores also served at <server>/meshagents?cores
                 require('zlib').deflate(obj.defaultMeshCores[i], { level: require('zlib').constants.Z_BEST_COMPRESSION }, callback);
             }
