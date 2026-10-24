@@ -31,6 +31,7 @@ module.exports.IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (
 module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == 'object') return v; return [v]; };
 module.exports.SplitArray = function (v) { return v.split(','); };
 module.exports.Clone = function (v) { return JSON.parse(JSON.stringify(v)); };
+module.exports.StringifyRedacted = function (v) { return JSON.stringify(v, function (k, x) { return ((x != null) && /secret|password|passwd|private|pvk|token$/i.test(k)) ? '****' : x; }); }; // For logs, keeps keys but masks credential values
 module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); }; })();
 module.exports.makeFilename = function (v) { return v.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); }
 module.exports.joinPath = function (base, path_) { return path.isAbsolute(path_) ? path_ : path.join(base, path_); }

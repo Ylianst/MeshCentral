@@ -170,6 +170,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.tcpServer = null;
     obj.certificates = certificates;
     obj.users = {};                             // UserID --> User
+    obj.oidcLogoutUrls = {};                    // UserID --> OIDC end session URL from the last login
     obj.meshes = {};                            // MeshID --> Mesh (also called device group)
     obj.userGroups = {};                        // UGrpID --> User Group
     obj.useNodeDefaultTLSCiphers = args.usenodedefaulttlsciphers; // Use TLS ciphers provided by node
@@ -1049,6 +1050,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         res.set({ 'Cache-Control': 'no-store' });
         // Destroy the user's session to log them out will be re-created next request
         var userid = req.session.userid;
+        var oidcLogoutUrl = null;
+        if (userid != null) { oidcLogoutUrl = obj.oidcLogoutUrls[userid]; delete obj.oidcLogoutUrls[userid]; }
         if (req.session.userid) {
             var user = obj.users[req.session.userid];
             if (user != null) {
@@ -1068,6 +1071,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (userStrategy == 'oidc' && domain.authstrategies.oidc != null) {
                 if (typeof domain.authstrategies.oidc.logouturl == 'string') {
                     logouturl = domain.authstrategies.oidc.logouturl;
+                } else if (typeof oidcLogoutUrl == 'string') {
+                    logouturl = oidcLogoutUrl;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string' && typeof domain.authstrategies.oidc.client.post_logout_redirect_uri == 'string') {
                     logouturl = domain.authstrategies.oidc.issuer.end_session_endpoint + (domain.authstrategies.oidc.issuer.end_session_endpoint.indexOf('?') == -1 ? '?' : '&') + 'post_logout_redirect_uri=' + domain.authstrategies.oidc.client.post_logout_redirect_uri;
                 } else if (typeof domain.authstrategies.oidc.issuer.end_session_endpoint == 'string') {
@@ -1077,7 +1082,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             } else if ((domain.authstrategies[userStrategy] != null) && (typeof domain.authstrategies[userStrategy].logouturl == 'string')) { logouturl = domain.authstrategies[userStrategy].logouturl; }
             // If custom logout was setup, use it
             if (logouturl != null) {
-                parent.authLog('handleLogoutRequest', userStrategy.toUpperCase() + ': LOGOUT: ' + logouturl);
+                parent.authLog('handleLogoutRequest', userStrategy.toUpperCase() + ': LOGOUT');
                 res.redirect(logouturl);
                 return;
             }
@@ -1104,7 +1109,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cookies = req.headers.cookie.split('; ');
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
-                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
+                    var twoFactorCookie = null;
+                    try { twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); } catch (ex) { }
                     if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { return { twoFactorType: 'cookie' }; }
                 }
             }
@@ -1128,7 +1134,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const cookies = req.headers.cookie.split('; ');
             for (var i in cookies) {
                 if (cookies[i].startsWith('twofactor=')) {
-                    var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
+                    var twoFactorCookie = null;
+                    try { twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(cookies[i].substring(10)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); } catch (ex) { }
                     if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { return false; }
                 }
             }
@@ -1149,6 +1156,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         parent.debug('web', 'checkUserOneTimePassword()');
         const twoStepLoginSupported = ((domain.auth != 'sspi') && (obj.parent.certificates.CommonName.indexOf('.') != -1) && (obj.args.nousers !== true) && (parent.config.settings.no2factorauth !== true));
         if (twoStepLoginSupported == false) { parent.debug('web', 'checkUserOneTimePassword: not supported.'); func(true); return; };
+        if (obj.checkAllow2Fa(req) == false) { func(false); return; }
+        if (typeof token != 'string') { token = null; } // A repeated form field arrives as an array
+        if (typeof hwtoken != 'string') { hwtoken = null; }
+
+        // Count bad tokens here so the websocket logins share the limit with the login page. Asking for a code to be sent is not an attempt.
+        const func2 = func, attempted = (((token != null) && (token != '') && (['**email**', '**sms**', '**msg**'].indexOf(token) == -1)) || ((hwtoken != null) && (hwtoken != '') && (['**sms**', '**msg**'].indexOf(hwtoken) == -1)));
+        func = function (result, authData) { if ((result !== true) && attempted) { obj.setbad2Fa(req); } func2(result, authData); }
 
         // Check if we can use OTP tokens with email
         var otpemail = (domain.mailserver != null);
@@ -1160,7 +1174,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Check 2FA login cookie
         if ((token != null) && (token.startsWith('cookie='))) {
-            var twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); // If the cookies does not have an expire field, assume 30 day timeout.
+            var twoFactorCookie = null;
+            try { twoFactorCookie = obj.parent.decodeCookie(decodeURIComponent(token.substring(7)), obj.parent.loginCookieEncryptionKey, (30 * 24 * 60)); } catch (ex) { }
             if ((twoFactorCookie != null) && ((twoFactorCookie.ip == null) || checkCookieIp(twoFactorCookie.ip, req.clientIp)) && (twoFactorCookie.userid == user._id)) { func(true, { twoFactorType: 'cookie' }); return; }
         }
 
@@ -1204,7 +1219,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user.otphkeys && (user.otphkeys.length > 0) && (typeof (hwtoken) == 'string') && (hwtoken.length > 0)) {
             var authResponse = null;
             try { authResponse = JSON.parse(hwtoken); } catch (ex) { }
-            if ((authResponse != null) && (authResponse.clientDataJSON)) {
+            if ((authResponse != null) && (typeof authResponse.id == 'string') && (typeof authResponse.authenticatorData == 'string') && (typeof authResponse.clientDataJSON == 'string') && (typeof authResponse.signature == 'string') && (typeof authResponse.userHandle == 'string')) {
                 // Get all WebAuthn keys
                 var webAuthnKeys = [];
                 for (var i = 0; i < user.otphkeys.length; i++) { if (user.otphkeys[i].type == 3) { webAuthnKeys.push(user.otphkeys[i]); } }
@@ -1286,7 +1301,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             for (var i = 0; i < user.otpkeys.keys.length; i++) {
                 if ((tokenNumber === user.otpkeys.keys[i].p) && (user.otpkeys.keys[i].u === true)) {
                     parent.debug('web', 'checkUserOneTimePassword: success (one-time).');
-                    user.otpkeys.keys[i].u = false; func(true, { twoFactorType: 'backup' }); return;
+                    user.otpkeys.keys[i].u = false; obj.db.SetUser(user); func(true, { twoFactorType: 'backup' }); return;
                 }
             }
         }
@@ -1529,7 +1544,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 parent.debug('web', 'handleLoginRequest: invalid 2FA token');
                                 const ua = obj.getUserAgentInfo(req);
                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                obj.setbad2Fa(req);
                             } else {
                                 parent.debug('web', 'handleLoginRequest: 2FA token required');
                             }
@@ -2057,7 +2071,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     // If many accounts have the same validated e-mail, we are going to use the first one for display, but sent a reset email for all accounts.
                     var responseSent = false;
                     for (var i in docs) {
-                        var user = docs[i];
+                        var user = obj.users[docs[i]._id] || docs[i]; // Use the cached user, the login path checks that copy for used codes
                         if (checkUserOneTimePasswordRequired(domain, user, req) == true) {
                             // Second factor setup, request it now.
                             checkUserOneTimePassword(req, domain, user, req.body.token, req.body.hwtoken, function (result, authData) {
@@ -2097,7 +2111,6 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                                 req.session.messageid = 108; // Invalid token, try again.
                                                 const ua = obj.getUserAgentInfo(req);
                                                 obj.parent.DispatchEvent(['*', 'server-users', user._id], obj, { action: 'authfail', username: user.name, userid: user._id, domain: domain.id, msg: 'User login attempt with incorrect 2nd factor from ' + req.clientIp, msgid: 108, msgArgs: [req.clientIp, ua.browserStr, ua.osStr] });
-                                                obj.setbad2Fa(req);
                                             }
                                         }
                                         req.session.loginmode = 5;
@@ -2867,7 +2880,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((req.user != null) && (req.user.sid != null) && (req.user.strategy != null)) {
             const strategy = domain.authstrategies[req.user.strategy];
             const groups = { 'enabled': typeof strategy.groups == 'object' }
-            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${JSON.stringify(req.user)}`);
+            parent.authLog(req.user.strategy.toUpperCase(), `User Authorized: ${req.user.sid}`);
             if (groups.enabled) { // Groups only available for OIDC strategy currently
                 groups.userMemberships = obj.common.convertStrArray(req.user.groups);
                 groups.syncEnabled = (strategy.groups.sync === true || strategy.groups.sync?.filter) ? true : false;
@@ -3078,6 +3091,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.parent.DispatchEvent(targets, obj, loginEvent);
                 parent.authLog('handleStrategyLogin', `${req.user.strategy.toUpperCase()}: LOGIN SUCCESS: USER: "${req.user.sid}"`);
             }
+            if (typeof req.user.oidcLogoutUrl == 'string') { obj.oidcLogoutUrls[userid] = req.user.oidcLogoutUrl; } // Carries the id_token hint, keep it out of the session cookie and user record
         } else if (req.session && req.session.userid && obj.users[req.session.userid]) {
             parent.authLog('handleStrategyLogin', `User Already Authorised "${(req.session.passport && req.session.passport.user) ? req.session.passport.user : req.session.userid }"`);
         } else {
@@ -3088,38 +3102,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         let url = domain.url;
         if (Object.keys(req.query).length > 0) { url += "?" + Object.keys(req.query).map(function(key) { return encodeURIComponent(key) + "=" + encodeURIComponent(req.query[key]); }).join("&"); }
 
-        // check for relaystate is set, test against configured server name and accepted query params
-        if(req.body && req.body.RelayState !== undefined){
-                var relayState = decodeURIComponent(req.body.RelayState);
-                var serverName = (obj.getWebServerName(domain, req)).replaceAll('.','\\.');
-
-                var regexstr = `(?<=https:\\/\\/(?:.+?\\.)?${serverName}\\/?)` +
-                `.*((?<=([\\?&])gotodevicename=(.{64})|` +
-                `gotonode=(.{64})|` +
-                `gotodeviceip=(((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4})|` +
-                `gotodeviceip=(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|::([0-9a-fA-F]{1,4}:){1,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:)` +
-                `lang=(.{5})|` +
-                `sitestyle=(\\d+)|` +
-                `user=(.{64})|` +
-                `pass=(.{256})|` +
-                `key=|` +
-                `locale=|` +
-                `gotomesh=(.{64})|` +
-                `gotouser=(.{0,64})|` +
-                `gotougrp=(.{64})|` +
-                `debug=|` +
-                `filter=|` +
-                `webrtc=|` +
-                `hide=|` +
-                `viewmode=(\\d+)(?=[\\&]|\\b)))`;
-
-                var regex = new RegExp(regexstr);
-                if(regex.test(relayState)){
-                        url = relayState;
-                }
+        // RelayState is echoed back by the IdP, only follow it to this server's own root
+        if ((req.body != null) && (typeof req.body.RelayState == 'string')) {
+            try {
+                const base = new URL(obj.generateBaseURL(domain, req)), target = new URL(decodeURIComponent(req.body.RelayState));
+                if ((target.origin == base.origin) && (target.pathname == base.pathname) && (target.username == '') && (target.password == '')) { url = target.pathname + target.search; }
+            } catch (ex) { }
         }
-
-        res.end('<html><head><meta http-equiv="refresh" content=0;url="' + url + '"></head><body></body></html>');
+        res.end('<html><head><meta http-equiv="refresh" content="0;url=' + EscapeHtml(url) + '"></head><body></body></html>');
     }
 
     // Indicates that any request to "/" should render "default" or "login" depending on login state
@@ -7867,9 +7857,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         obj.app.get(url + 'auth-saml', function (req, res, next) {
                             var domain = getDomain(req);
                             if (domain.passport == null) { next(); return; }
-                            //set RelayState when queries are passed
-                            if (Object.keys(req.query).length != 0){
-                                req.query.RelayState = encodeURIComponent(`${req.protocol}://${req.hostname}${req.originalUrl}`.replace('auth-saml/',''))
+                            // Carry the login page arguments through the IdP round trip, handleStrategyLogin only accepts our own root URL back
+                            if (Object.keys(req.query).length != 0) {
+                                const target = new URL(obj.generateBaseURL(domain, req));
+                                for (var i in req.query) { if ((i != 'RelayState') && (typeof req.query[i] == 'string')) { target.searchParams.set(i, req.query[i]); } }
+                                req.query.RelayState = encodeURIComponent(target.href);
                             }
                             domain.passport.authenticate('saml-' + domain.id, { failureRedirect: domain.url, failureFlash: true })(req, res, next);
                         });
@@ -8437,7 +8429,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const TwitterStrategy = require('passport-twitter');
             let options = { consumerKey: domain.authstrategies.twitter.clientid, consumerSecret: domain.authstrategies.twitter.clientsecret };
             if (typeof domain.authstrategies.twitter.callbackurl == 'string') { options.callbackURL = domain.authstrategies.twitter.callbackurl; } else { options.callbackURL = url + 'auth-twitter-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Twitter SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('twitter-' + domain.id, new TwitterStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Twitter profile: ' + JSON.stringify(profile));
@@ -8454,7 +8446,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const GoogleStrategy = require('passport-google-oauth20');
             let options = { clientID: domain.authstrategies.google.clientid, clientSecret: domain.authstrategies.google.clientsecret };
             if (typeof domain.authstrategies.google.callbackurl == 'string') { options.callbackURL = domain.authstrategies.google.callbackurl; } else { options.callbackURL = url + 'auth-google-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Google SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('google-' + domain.id, new GoogleStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Google profile: ' + JSON.stringify(profile));
@@ -8476,7 +8468,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (typeof domain.authstrategies.github.tokenurl == 'string') { options.tokenURL = domain.authstrategies.github.tokenurl; }
             if (typeof domain.authstrategies.github.userprofileurl == 'string') { options.userProfileURL = domain.authstrategies.github.userprofileurl; }
             if (typeof domain.authstrategies.github.useremailurl == 'string') { options.userEmailURL = domain.authstrategies.github.useremailurl; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Github SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('github-' + domain.id, new GitHubStrategy(options,
                 function (token, tokenSecret, profile, cb) {
                     parent.authLog('setupDomainAuthStrategy', 'Github profile: ' + JSON.stringify(profile));
@@ -8493,7 +8485,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             const AzureOAuth2Strategy = require('passport-azure-oauth2');
             let options = { clientID: domain.authstrategies.azure.clientid, clientSecret: domain.authstrategies.azure.clientsecret, tenant: domain.authstrategies.azure.tenantid };
             if (typeof domain.authstrategies.azure.callbackurl == 'string') { options.callbackURL = domain.authstrategies.azure.callbackurl; } else { options.callbackURL = url + 'auth-azure-callback'; }
-            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO with options: ' + JSON.stringify(options));
+            parent.authLog('setupDomainAuthStrategy', 'Adding Azure SSO with options: ' + obj.common.StringifyRedacted(options));
             passport.use('azure-' + domain.id, new AzureOAuth2Strategy(options,
                 function (accessToken, refreshtoken, params, profile, done) {
                     var userex = null;
@@ -8631,7 +8623,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if (!obj.common.validateString(strategy.issuer.issuer)) {
                 if (!preset) {
                     let error = new Error('OIDC: Missing issuer URI.');
-                    parent.authLog('error', `${error.message} STRATEGY: ${JSON.stringify(strategy)}`);
+                    parent.authLog('error', `${error.message} STRATEGY: ${obj.common.StringifyRedacted(strategy)}`);
                     throw error;
                 } else {
                     strategy.issuer.issuer = presetIssuer
@@ -8748,7 +8740,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Setup strategy and save configs for later
             passport.use('oidc-' + domain.id, new strategy.obj.openidClient.Strategy(strategy.options, oidcCallback));
             parent.config.domains[domain.id].authstrategies.oidc = strategy;
-            parent.debug('verbose', 'OIDC: Saved Configuration: ' + JSON.stringify(strategy));
+            parent.debug('verbose', 'OIDC: Saved Configuration: ' + obj.common.StringifyRedacted(strategy));
             if (preset) { parent.authLog('setupDomainAuthStrategy', 'OIDC: ' + preset.toUpperCase() + ': Setup Complete'); }
             else { parent.authLog('setupDomainAuthStrategy', 'OIDC: Setup Complete'); }
 
@@ -8776,7 +8768,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (Object.hasOwn(strategy, key)) {
                             if (strategy[type][value] && obj.common.validateString(strategy[type][value])) {
                                 let error = new Error('OIDC: OLD CONFIG: Config conflict, new config overrides old config');
-                                parent.authLog('migrateOldConfigs', `${JSON.stringify(error)} OLD CONFIG: ${key}: ${strategy[key]} NEW CONFIG: ${value}:${strategy[type][value]}`);
+                                parent.authLog('migrateOldConfigs', `${error.message} OLD CONFIG: ${key} NEW CONFIG: ${type}.${value}`);
                             } else {
                                 parent.authLog('migrateOldConfigs', `OIDC: OLD CONFIG: Moving old config to new location. strategy.${key} => strategy.${type}.${value}`);
                                 strategy[type][value] = strategy[key];
@@ -8883,12 +8875,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                 // Setup end session endpoint
                 try {
-                    strategy.issuer.end_session_endpoint = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset })
-                    parent.authLog('oidcCallback', `OIDC: Discovered end_session_endpoint: ${strategy.issuer.end_session_endpoint}`);
+                    // Kept per login, the id_token hint belongs to this user only
+                    user.oidcLogoutUrl = strategy.obj.client.endSessionUrl({ 'id_token_hint': tokenset, 'post_logout_redirect_uri': strategy.client.post_logout_redirect_uri || undefined });
+                    parent.authLog('oidcCallback', 'OIDC: Discovered end_session_endpoint.');
                 } catch (err) {
                     let error = new Error('OIDC: Discovering end_session_endpoint failed. Using Default.', { cause: err });
                     strategy.issuer.end_session_endpoint = strategy.issuer.issuer + '/logout';
-                    parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri} TOKENSET: ${JSON.stringify(tokenset)}`);
+                    parent.debug('error', `${error.message} end_session_endpoint: ${strategy.issuer.end_session_endpoint} post_logout_redirect_uri: ${strategy.client.post_logout_redirect_uri}`);
                     parent.authLog('oidcCallback', error.message);
                 }
 
@@ -8901,7 +8894,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 // Check also for roles
 		                        user.groups = (user.groups || []).concat(user.roles || []);
 		                    }
-		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify(user)}`);
+		                    parent.authLog('oidcCallback',`OIDC: USER GROUPS/ROLES: ${JSON.stringify({ groups: user.groups, roles: user.roles })}`);
 		                    done(null, user);
                         }).catch((err) => {
                             let error = new Error('OIDC: GROUPS: No groups found due to error:', { cause: err });
@@ -8917,7 +8910,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         if (user.roles) {
                             user.groups = user.roles;
                         }
-                        parent.authLog('oidcCallback', `OIDC: USER ROLES: ${JSON.stringify(user)}`);
+                        parent.authLog('oidcCallback', `OIDC: USER ROLES: ${JSON.stringify(user.roles)}`);
                         done(null, user);
                     } else {
                         // No group or role source is configured, continue with no authorities.
@@ -8945,14 +8938,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             res.on('end', () => {
                                 if (res.statusCode < 200 || res.statusCode >= 300) {
                                     let error = new Error('OIDC: GROUPS: Bad response code from API, statusCode: ' + res.statusCode);
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
                                     console.error(error);
                                     reject(error);
                                     return;
                                 }
                                 if (data.length == 0) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed, request returned no data in response.');
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
                                     console.error(error);
                                     reject(error);
                                     return;
@@ -8966,24 +8959,25 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     }
                                 } catch (err) {
                                     let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: err });
-                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
+                                    console.error(error);
+                                    reject(error);
+                                    return;
+                                }
+                                try {
+                                    data = JSON.parse(data);
+                                    if ((data == null) || (typeof data != 'object')) { throw new Error('Not a JSON object'); }
+                                } catch (err) {
+                                    let error = new Error('OIDC: GROUPS: Getting groups from API failed. Response is not valid JSON.', { cause: err });
+                                    parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
                                     console.error(error);
                                     reject(error);
                                     return;
                                 }
                                 if (preset == 'azure') {
-                                    try {
-                                        data = JSON.parse(data);
-                                    } catch (err) {
-                                        let error = new Error('OIDC: GROUPS: Getting groups from API failed. Response is not valid JSON.', { cause: err });
-                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
-                                        console.error(error);
-                                        reject(error);
-                                        return;
-                                    }
                                     if (data.error) {
                                         let error = new Error('OIDC: GROUPS: Getting groups from API failed. Error joining response data.', { cause: data.error });
-                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                                        parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
                                         console.error(error);
                                         reject(error);
                                         return;
@@ -8991,14 +8985,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     data = data.value;
                                 }
                                 if (preset == 'google') {
-                                    data = data.split('\n');
-                                    data = data.join('');
-                                    data = JSON.parse(data);
                                     data = data.groups;
                                 }
                                 let groups = []
                                 for (var i in data) {
-                                    if (typeof data[i].displayName == 'string') {
+                                    if ((data[i] != null) && (typeof data[i].displayName == 'string')) {
                                         groups.push(data[i].displayName);
                                     }
                                 }
@@ -9014,7 +9005,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         });
                         req.on('error', (err) => {
                             let error = new Error('OIDC: GROUPS: Request error.', { cause: err });
-                            parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url} OPTIONS: ${JSON.stringify(options)}`);
+                            parent.authLog('getGroups', `ERROR: ${error.message} URL: ${url}`);
                             console.error(error);
                             reject(error);
                         });
@@ -11071,7 +11062,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var cutoffTime = Date.now() - (parent.config.settings.maxinvalid2fa.time * 60000); // Time in minutes
         var ipTable = obj.bad2faTable[ip];
         if (ipTable == null) return true;
-        if (typeof ipTable == 'number') { if (obj.bad2faTable[ip] < Date.now()) { delete obj.bad2faTable[ip]; } else { return false; } } // Check cooloff period
+        if (typeof ipTable == 'number') { if (ipTable < Date.now()) { delete obj.bad2faTable[ip]; return true; } else { return false; } } // Check cooloff period
         while ((ipTable.length > 0) && (ipTable[0] < cutoffTime)) { ipTable.shift(); }
         if (ipTable.length == 0) { delete obj.bad2faTable[ip]; return true; }
         return (ipTable.length < parent.config.settings.maxinvalid2fa.count); // No more than x bad 2FAs in x minutes
