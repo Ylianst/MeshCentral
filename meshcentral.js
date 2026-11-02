@@ -2222,6 +2222,7 @@ function CreateMeshCentralServer(config, args) {
                         }
                         if (typeof obj.config.settings.autobackup.backupintervalhours != 'number') { obj.config.settings.autobackup.backupintervalhours = 24; };
                         if (typeof obj.config.settings.autobackup.keeplastdaysbackup != 'number') { obj.config.settings.autobackup.keeplastdaysbackup = 10; };
+                        if ((typeof obj.config.settings.autobackup.minfreespacemb != 'number') || (obj.config.settings.autobackup.minfreespacemb < 0)) { obj.config.settings.autobackup.minfreespacemb = 200; };
                         if (obj.config.settings.autobackup.backuphour != null ) { obj.config.settings.autobackup.backupintervalhours = 24; if ((typeof obj.config.settings.autobackup.backuphour != 'number') || (obj.config.settings.autobackup.backuphour > 23 || obj.config.settings.autobackup.backuphour < 0 )) { obj.config.settings.autobackup.backuphour = 0; }}
                         else {obj.config.settings.autobackup.backuphour = -1 };
                         //arrayfi in case of string and remove possible ', ' space. !! If a string instead of an array is passed, it will be split by ',' so *{.txt,.log} won't work in that case !!

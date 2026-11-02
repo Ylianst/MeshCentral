@@ -3685,6 +3685,17 @@ module.exports.CreateDB = function (parent, func) {
         try {
             if (obj.performingBackup) { return 'Backup already in progress.' };
             if (parent.config.settings.autobackup.backupintervalhours == -1) { return 'Backup disabled.' };
+
+            // At least <minFreeSpaceMb> free, otherwise warning and no backup
+            let freeMb = null;
+            try { const diskStat = fs.statfsSync(parent.backuppath); freeMb = diskStat.bavail * diskStat.bsize / 1048576; } catch (ex) { parent.debug('backup', 'Unable to check free disk space: ' + ex.message); }
+            if ((freeMb != null) && (freeMb < parent.config.settings.autobackup.minfreespacemb)) {
+                const mesg = 'Backup skipped, only ' + freeMb.toFixed(2) + 'Mb free on ' + parent.backuppath + ', at least ' + parent.config.settings.autobackup.minfreespacemb + 'Mb needed.';
+                console.error(mesg);
+                if (func) { func(mesg); } else { parent.addServerWarning(mesg, true); }
+                return mesg;
+            }
+
             obj.performingBackup = true;
             let backupPath = parent.backuppath;
             let dataPath = parent.datapath;
@@ -3767,9 +3778,9 @@ module.exports.CreateDB = function (parent, func) {
 		const { Readable, Writable } = require('node:stream');
 		const { finished } = require('node:stream/promises');
 
-		let ZipWriter = null;
+		let ZipWriter = null, ZipReader = null, BlobReader = null;
 		try {
-			ZipWriter = require('@zip.js/zip.js').ZipWriter;
+			({ ZipWriter, ZipReader, BlobReader } = require('@zip.js/zip.js'));
 		} catch (ex) {
 			obj.backupStatus |= BACKUPFAIL_ZIPMODULE;
 			if (func) { func('@zip.js/zip.js module failed, aborting'); }
@@ -3831,8 +3842,21 @@ module.exports.CreateDB = function (parent, func) {
 			return false;
 		}
 
+		// Filesystem errors go into options.failed so one unreadable entry does not abort the backup.
+		// An output stream error still throws, because every later entry would fail the same way.
 		async function addDirectoryTree(zipWriter, sourceDir, archiveRoot, options) {
 			options = options || {};
+			const failed = options.failed || [];
+			// Every failure is logged, the list for the warning is capped at 20 because a longer one means something is completely wrong
+			const fail = function (mesg) { console.error('Backup cannot read ' + mesg); if (failed.length < 20) { failed.push(mesg); } };
+
+			// fs.glob returns no entries for a missing cwd instead of throwing, so check the root first
+			let rootStat;
+			// A folder that does not exist yet, like meshcentral-recordings before the first recording, has nothing to back up
+			try { rootStat = await fs.promises.stat(sourceDir); }
+			catch (ex) { if (ex.code == 'ENOENT') { parent.debug('backup', 'Skipping missing folder ' + sourceDir); } else { fail(sourceDir + ': ' + ex.message); } return; }
+			if (!rootStat.isDirectory()) { fail(sourceDir + ': not a directory'); return; }
+
 			// Compiled once per tree, reused for every entry.
 			const ignoreFiles = (options.ignoreFiles || []).map(normalizeGlob);
 			const skipFolders = (options.skipFolders || []).map(normalizeGlob);
@@ -3841,7 +3865,6 @@ module.exports.CreateDB = function (parent, func) {
 			// path), so it only skips directories during traversal; the loop below filters individual entries.
 			const exclude = (name) => isUnderSkippedFolder(zipName(path.join(archiveRoot, String(name))), skipFolders);
 
-			const rootStat = await fs.promises.stat(sourceDir);
 			const rootZipName = zipName(archiveRoot);
 			if (!isUnderSkippedFolder(rootZipName, skipFolders) && !matchesGlob(rootZipName, ignoreFiles)) {
 				await zipWriter.add(rootZipName.endsWith('/') ? rootZipName : rootZipName + '/', undefined, {
@@ -3858,17 +3881,27 @@ module.exports.CreateDB = function (parent, func) {
 				if (isUnderSkippedFolder(currentZipName, skipFolders)) continue;
 
 				const fullFsPath = path.join(sourceDir, file);
-				const stat = await fs.promises.stat(fullFsPath);
+				let stat;
+				try { stat = await fs.promises.stat(fullFsPath); } catch (ex) { fail(fullFsPath + ': ' + ex.message); continue; }
 
 				if (stat.isDirectory()) {
+					// fs.glob silently skips the contents of a folder it cannot read, so open each one here
+					try { await (await fs.promises.opendir(fullFsPath)).close(); } catch (ex) { fail(fullFsPath + ': ' + ex.message); }
 					await zipWriter.add(currentZipName.endsWith('/') ? currentZipName : currentZipName + '/', undefined, {
 						directory: true,
 						lastModDate: stat.mtime
 					});
 				} else if (stat.isFile()) {
-					await zipWriter.add(currentZipName, Readable.toWeb(fs.createReadStream(fullFsPath)), {
-						lastModDate: stat.mtime
-					});
+					// zip.js drops an entry whose read stream fails, at open or part-way, and later entries still work
+					try {
+						await zipWriter.add(currentZipName, Readable.toWeb(fs.createReadStream(fullFsPath)), {
+							lastModDate: stat.mtime
+						});
+					} catch (ex) {
+						// The output 'error' handler has already set BACKUPFAIL_ZIPCREATE when the rejection comes from the zip file itself
+						if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) != 0) { throw ex; }
+						fail(fullFsPath + ': ' + ex.message);
+					}
 				}
 			}
 		}
@@ -3886,24 +3919,39 @@ module.exports.CreateDB = function (parent, func) {
 			obj.backupStatus = 0x0;
 		}
 
+		// Quick test: reads the central directory and fully reads only the database dump.
+		// This catches a truncated or half-written zip and a damaged dump, but not a damaged byte in another entry.
+		async function testBackupFile() {
+			try {
+				const zipReader = new ZipReader(new BlobReader(await fs.openAsBlob(obj.newAutoBackupFile)), { password: (zipPassword != null) ? zipPassword : undefined });
+				const entries = await zipReader.getEntries();
+				if (obj.newDBDumpFile != null) {
+					const dumpName = path.basename(obj.newDBDumpFile);
+					const dumpEntry = entries.find(function (entry) { return entry.filename == dumpName; });
+					if (dumpEntry == null) { throw new Error('database dump ' + dumpName + ' is missing'); }
+					await dumpEntry.getData(new WritableStream(), { checkSignature: true });
+				}
+				return true;
+			} catch (ex) {
+				const mesg = 'Backup file test failed: ' + obj.newAutoBackupFile + ', ' + ex.message;
+				console.error(mesg);
+				if (func) { func(mesg); } else { parent.addServerWarning(mesg, true); }
+				return false;
+			}
+		}
+
 		async function failZip(mesg) {
 			if (func) { func(mesg); }
 			else { parent.addServerWarning(mesg, true); }
-
-			if (fs.existsSync(obj.newAutoBackupFile)) {
-				fs.unlink(obj.newAutoBackupFile, function (err) {
-					if (err) { console.error('Failed to clean up backupfile: ' + err.message); }
-				});
-			}
 
 			await cleanupAfterZip();
 		}
 
 		(async function () {
 			if (obj.backupStatus != 0) {
-				console.error('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')');
-				if (func) { func('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')'); }
-				else { parent.addServerWarning('Backup failed (' + obj.backupStatus.toString(2).slice(-8) + ')', true); }
+				console.error('Backup failed (0x' + obj.backupStatus.toString(16).padStart(4, '0') + ')');
+				if (func) { func('Backup failed (0x' + obj.backupStatus.toString(16).padStart(4, '0') + ')'); }
+				else { parent.addServerWarning('Backup failed (0x' + obj.backupStatus.toString(16).padStart(4, '0') + ')', true); }
 
 				if (fs.existsSync(obj.newDBDumpFile)) {
 					fs.unlink(obj.newDBDumpFile, function (err) {
@@ -3917,7 +3965,7 @@ module.exports.CreateDB = function (parent, func) {
 			}
 
 			if (ZipWriter == null) {
-				await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+				await failZip('Zipbackup failed (0x' + obj.backupStatus.toString(16).padStart(4, '0') + '), no backup file created');
 				return;
 			}
 
@@ -3957,10 +4005,12 @@ module.exports.CreateDB = function (parent, func) {
 
 				const treeOptions = {
 					ignoreFiles: globIgnoreFiles,
-					skipFolders: parent.config.settings.autobackup.backupskipfoldersglob || []
+					skipFolders: parent.config.settings.autobackup.backupskipfoldersglob || [],
+					failed: []
 				};
 
 				await addDirectoryTree(zipWriter, path.join(datapathParentPath, datapathFoldername), datapathFoldername, treeOptions);
+				if (treeOptions.failed.length > 0) { throw new Error('Data folder not fully readable: ' + treeOptions.failed.join(', ')); }
 
 				if (parent.config.settings.autobackup.backupwebfolders) {
 					if (parent.webViewsOverridePath) {
@@ -3979,6 +4029,13 @@ module.exports.CreateDB = function (parent, func) {
 					await addDirectoryTree(zipWriter, parent.recordpath, 'meshcentral-recordings', treeOptions);
 				}
 
+				// Unreadable items outside the data folder are reported but the rest of the backup is kept
+				if (treeOptions.failed.length > 0) {
+					const mesg = 'Auto-backup could not read ' + ((treeOptions.failed.length < 20) ? treeOptions.failed.length : 'at least 20') + ' item(s), these are missing from ' + obj.newAutoBackupFile + ': ' + treeOptions.failed.join(', ');
+					console.error(mesg);
+					if (func) { func(mesg); } else { parent.addServerWarning(mesg, true); }
+				}
+
 				if (obj.newDBDumpFile != null) {
 					const dumpStat = await fs.promises.stat(obj.newDBDumpFile);
 					await zipWriter.add(path.basename(obj.newDBDumpFile), Readable.toWeb(fs.createReadStream(obj.newDBDumpFile)), {
@@ -3989,9 +4046,10 @@ module.exports.CreateDB = function (parent, func) {
 				await zipWriter.close();
 				await finished(output);
 
-				if (obj.backupStatus == 0) {
+				// Older backups are only removed after a backup that succeeded in every way
+				if ((await testBackupFile()) && (obj.backupStatus == 0)) {
 					const sizeMb = ((output.bytesWritten || fs.statSync(obj.newAutoBackupFile).size) / 1048576).toFixed(2);
-					const mesg = 'Auto-backup completed: ' + obj.newAutoBackupFile + ', backup-size: ' + sizeMb + 'Mb';
+					const mesg = 'Auto-backup completed and tested: ' + obj.newAutoBackupFile + ', backup-size: ' + sizeMb + 'Mb';
 					console.log(mesg);
 					if (func) { func(mesg); }
 
@@ -3999,7 +4057,7 @@ module.exports.CreateDB = function (parent, func) {
 					obj.removeExpiredBackupfiles(func);
 					await cleanupAfterZip();
 				} else {
-					await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+					await failZip('Zipbackup failed, backup kept: ' + obj.newAutoBackupFile);
 				}
 			} catch (err) {
 				if ((obj.backupStatus & BACKUPFAIL_ZIPCREATE) == 0) {
@@ -4010,7 +4068,7 @@ module.exports.CreateDB = function (parent, func) {
 
 				abortController.abort();
 				output.destroy();
-				await failZip('Zipbackup failed (' + obj.backupStatus.toString(2).slice(-8) + '), deleting incomplete backup: ' + obj.newAutoBackupFile);
+				await failZip('Zipbackup failed (0x' + obj.backupStatus.toString(16).padStart(4, '0') + '), incomplete backup kept: ' + obj.newAutoBackupFile);
 			}
 		})();
 	};
@@ -4027,6 +4085,8 @@ module.exports.CreateDB = function (parent, func) {
                     let checked = 0;
                     let removed = 0;
                     for await (const name of fs.promises.glob(fileName + '*.zip', { cwd: parent.backuppath })) {
+                        // With keepLastDaysBackup 0 the cutoff is now, which is later than the new backup's minute-precision name
+                        if (name == path.basename(obj.newAutoBackupFile)) { continue; }
                         parent.debug('backup', "checking file: ", path.join(parent.backuppath, name));
                         var timex = name.substring(fileName.length, name.length - 4).split('-');
                         if (timex.length == 5) {

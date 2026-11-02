@@ -1042,6 +1042,12 @@
               "default": 10,
               "description": "How many days of backups should the autobackup keep? Default is 10 Days worth"
             },
+            "minFreeSpaceMb": {
+              "type": "integer",
+              "default": 200,
+              "minimum": 0,
+              "description": "Minimum free disk space in megabytes on the backup path. The backup is skipped when less is free. Set to 0 to disable the check."
+            },
             "zipCompression": {
               "type": "integer",
               "default": "5",
