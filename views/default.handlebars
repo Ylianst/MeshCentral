@@ -4375,6 +4375,8 @@
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
+            x += '<label><input id=d2c18 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('wan') >= 0)?' checked':'') + '>' + "WAN IP address" + '</label><br />';
+            x += '<label><input id=d2c19 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lan') >= 0)?' checked':'') + '>' + "LAN IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
             x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0)?' checked':'') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
             x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0)?' checked':'') + '>' + "Intel&reg; AMT state" + '</label><br />';
@@ -4387,6 +4389,8 @@
             if (Q('d2c1').checked) { cols.push('links'); }
             if (Q('d2c2').checked) { cols.push('user'); }
             if (Q('d2c3').checked) { cols.push('ip'); }
+            if (Q('d2c18').checked) { cols.push('wan'); }
+            if (Q('d2c19').checked) { cols.push('lan'); }
             if (Q('d2c4').checked) { cols.push('conn'); }
             if (Q('d2c5').checked) { cols.push('os'); }
             if (Q('d2c6').checked) { cols.push('desc'); }
@@ -4862,6 +4866,8 @@
                             if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:150px>' + "Address"; }
+                        if (deviceViewSettings.devsCols.indexOf('wan') >= 0) { colums += '<th style=color:gray;width:150px>' + "WAN"; }
+                        if (deviceViewSettings.devsCols.indexOf('lan') >= 0) { colums += '<th style=color:gray;width:150px>' + "IP"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
                         if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
                         if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT State"; }
@@ -5188,13 +5194,25 @@
                     var linkip = null;
                     if (typeof ip == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(ip)) { linkip = ip.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(ip) && (ip.indexOf(':') != ip.lastIndexOf(':'))) { linkip = ip; } }
                     if ((linkip != null) && !isPrivateIP(linkip)) { ipHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkip) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(ip) + '</a>'; }
-                    var lanip = node.defaultRouteIp || node.defaultRouteIp6 || '';
-                    if ((lanip != '') && (lanip != ip)) {
-                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lanip + ' / ' + ip) + '">' + "LAN" + ' ' + EscapeHtml(lanip) + '<br />' + "WAN" + ' ' + ipHtml;
+                    r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + ipHtml;
+                } // IP address (host)
+                if (deviceViewSettings.devsCols.indexOf('wan') >= 0) {
+                    var wan = '';
+                    if ((node.mtype == 1) || (node.mtype == 3)) { wan = node.host || ''; } else if (node.ip) { wan = node.ip; }
+                    var wanHtml = EscapeHtml(wan);
+                    var linkwan = null;
+                    if (typeof wan == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(wan)) { linkwan = wan.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(wan) && (wan.indexOf(':') != wan.lastIndexOf(':'))) { linkwan = wan; } }
+                    if ((linkwan != null) && !isPrivateIP(linkwan)) { wanHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkwan) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(wan) + '</a>'; }
+                    r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(wan) + '">' + wanHtml;
+                } // WAN address
+                if (deviceViewSettings.devsCols.indexOf('lan') >= 0) {
+                    var lan = node.defaultRouteIp || node.defaultRouteIp6 || '';
+                    if (lan != '') {
+                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lan) + '">' + EscapeHtml(lan);
                     } else {
-                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + ipHtml;
+                        r += '<td style=text-align:center>&nbsp;</td>';
                     }
-                } // IP address
+                } // LAN address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
