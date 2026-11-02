@@ -224,8 +224,20 @@ function installPrinter(name, port, func) {
             "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue; Remove-Printer -Name $_.Name -ErrorAction SilentlyContinue }",
             "  $step = 'Adding the printer port'",
             "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " }",
+            // Windows can take a few seconds to delete a printer, it's listed as pending deletion meanwhile and can't be added again
+            "  $step = 'Waiting for Windows to remove the previous printer'",
+            "  for ($i = 0; $i -lt 40; $i++) {",
+            "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
+            "    if ((-not $p) -or ([string]$p.PrinterStatus -notmatch 'PendingDeletion')) { break }",
+            "    Start-Sleep -Milliseconds 500",
+            "  }",
             "  $step = 'Adding the printer'",
             "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) { Add-Printer -Name $name -DriverName $drv -PortName $port }",
+            "  $step = 'Checking the printer'",
+            "  $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
+            "  if (-not $p) { throw 'The printer is not listed after adding it' }",
+            "  if ([string]$p.PrinterStatus -match 'PendingDeletion') { throw 'Windows is still removing the previous printer, try again in a few seconds' }",
+            "  if ($p.PortName -ne $port) { Set-Printer -Name $name -PortName $port }",
             "  Write-Output 'OK'",
             "} catch {",
             // The printer cmdlets give a generic message, the Windows error code is in the CIM error data
@@ -315,8 +327,9 @@ function getJobExtension(head) {
     return 'prn';
 }
 
-function startListener(port, onJob, func) {
+function startListener(port, onJob, func, attempt) {
     if (server != null) { func(null); return; }
+    if (attempt == null) { attempt = 1; }
     try { fs.mkdirSync(jobsFolder); } catch (ex) { }
     var s = require('net').createServer();
     s.on('connection', function (socket) {
@@ -380,7 +393,8 @@ function startListener(port, onJob, func) {
     try {
         s.listen({ port: port, host: '127.0.0.1' });
     } catch (ex) {
-        log('Unable to listen on port ' + port + ': ' + ex);
+        log('Unable to listen on port ' + port + ' (attempt ' + attempt + '): ' + ex);
+        if (attempt < 5) { setTimeout(function () { startListener(port, onJob, func, attempt + 1); }, 1000); return; } // The port can take a moment to be released after the listener closes
         func('Unable to listen on port ' + port);
         return;
     }

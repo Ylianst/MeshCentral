@@ -940,6 +940,7 @@ var tunnelUserCount = { terminal: {}, files: {}, registry: {}, tcp: {}, udp: {},
 var remotePrintSessions = {}; // List of sessionid->{ time, ... } of users with remote printing active, browsers refresh this while the remote desktop is open
 var remotePrintTimer = null;
 var remotePrintActive = false;
+var remotePrintStopTimer = null; // Set while waiting to remove the printer after the last session stopped
 
 // Remove a remote printer left behind by a previous run of the agent
 setTimeout(function () { try { require('remote-printer').cleanup(); } catch (ex) { } }, 10000);
@@ -956,13 +957,22 @@ function onRemotePrintJob(job) {
     }
 }
 
-// Remove remote printing sessions that have not been refreshed, stop the remote printer when no sessions are left
+// Remove remote printing sessions that have not been refreshed, stop the remote printer when no sessions are left.
+// The printer is removed 30 seconds later, so a remote desktop that reconnects keeps it: Windows can take a few
+// seconds to delete a printer, and removing and adding it again quickly can leave no printer.
 function checkRemotePrintSessions() {
     var now = Date.now(), count = 0;
     for (var i in remotePrintSessions) { if ((now - remotePrintSessions[i].time) > 90000) { delete remotePrintSessions[i]; } else { count++; } }
     if (count > 0) return;
     if (remotePrintTimer != null) { clearInterval(remotePrintTimer); remotePrintTimer = null; }
-    if (remotePrintActive) { remotePrintActive = false; try { require('remote-printer').stop(); } catch (ex) { } }
+    if (remotePrintActive && (remotePrintStopTimer == null)) {
+        remotePrintStopTimer = setTimeout(function () {
+            remotePrintStopTimer = null;
+            for (var i in remotePrintSessions) { return; } // A session started again
+            remotePrintActive = false;
+            try { require('remote-printer').stop(); } catch (ex) { }
+        }, 30000);
+    }
 }
 
 
@@ -1713,6 +1723,7 @@ function handleServerCommand(data) {
                             var isNewPrintSession = (remotePrintSessions[data.sessionid] == null);
                             remotePrintSessions[data.sessionid] = { time: Date.now(), userid: data.userid, username: data.username, sessionid: data.sessionid, remoteaddr: data.remoteaddr };
                             if (remotePrintTimer == null) { remotePrintTimer = setInterval(checkRemotePrintSessions, 30000); }
+                            if (remotePrintStopTimer != null) { clearTimeout(remotePrintStopTimer); remotePrintStopTimer = null; } // Keep the printer
                             remotePrintActive = true;
                             try {
                                 require('remote-printer').start({ printerName: data.printerName, port: data.port }, onRemotePrintJob, function (err, printer) {
