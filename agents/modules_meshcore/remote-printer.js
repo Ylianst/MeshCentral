@@ -241,11 +241,27 @@ function installPrinter(name, port, func) {
             "    try {",
             "      Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop",
             "    } catch {",
-            // If Add-Printer fails, try the Windows printer setup tool, it adds the printer another way. Report the Add-Printer error if that fails too.
             "      $addError = $_",
-            "      Start-Process -FilePath ($env:SystemRoot + '\\System32\\rundll32.exe') -ArgumentList ('printui.dll,PrintUIEntry /if /q /Z /b \"' + $name + '\" /r \"' + $port + '\" /m \"' + $drv + '\"') -Wait -WindowStyle Hidden",
-            "      Start-Sleep -Seconds 2",
-            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) { throw $addError }",
+            // Windows 10 LTSC can list the driver while the files needed to add a printer with it are missing (error 0x80070002).
+            // Reinstall the driver from the driver store and try again, then try the Windows printer setup tool, it adds the printer another way.
+            "      $step = 'Adding the printer after reinstalling the driver'",
+            "      try { Add-PrinterDriver -Name $drv -ErrorAction Stop; Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop } catch { }",
+            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
+            "        Start-Process -FilePath ($env:SystemRoot + '\\System32\\rundll32.exe') -ArgumentList ('printui.dll,PrintUIEntry /if /q /Z /b \"' + $name + '\" /r \"' + $port + '\" /m \"' + $drv + '\"') -Wait -WindowStyle Hidden",
+            "        Start-Sleep -Seconds 2",
+            "      }",
+            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
+            // Find out whether the driver or the TCP/IP port is the problem: try a test printer with the driver on the port Windows uses for it
+            "        $notes = @()",
+            "        $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
+            "        if ($d) { $notes += ('driver INF ' + $d.InfPath + ', found: ' + ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (Test-Path $d.InfPath))) }",
+            "        $test = 'MeshCentral PDF test'",
+            "        try { Add-Printer -Name $test -DriverName $drv -PortName 'PORTPROMPT:' -ErrorAction Stop; $notes += 'a test printer with this driver on PORTPROMPT: works'; Remove-Printer -Name $test -ErrorAction SilentlyContinue }",
+            "        catch { $c = $null; try { $c = $_.Exception.ErrorData.CimInstanceProperties['error_Code'].Value } catch { }; $notes += ('a test printer with this driver on PORTPROMPT: fails too, Windows error ' + $c) }",
+            "        $global:installNotes = $notes -join '; '",
+            "        $step = 'Adding the printer'",
+            "        throw $addError",
+            "      }",
             "    }",
             "  }",
             // The printer can take a moment to be listed
@@ -277,6 +293,7 @@ function installPrinter(name, port, func) {
             "      $msg += ' (HRESULT 0x' + ('{0:X8}' -f $err.Exception.HResult) + ')'",
             "    }",
             "  } catch { }",
+            "  if ($global:installNotes) { $msg += ' (' + $global:installNotes + ')' }",
             "  Write-Output $msg",
             "}"
         ].join('\r\n');
