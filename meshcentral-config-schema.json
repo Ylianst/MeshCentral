@@ -272,6 +272,11 @@
             "none"
           ]
         },
+        "sessionSecure": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true and tlsOffload is set, the session cookie is marked Secure on requests the reverse proxy reports as HTTPS through X-Forwarded-Proto. Use this when the proxy in front of MeshCentral only accepts HTTPS."
+        },
         "dbEncryptKey": {
           "type": "string",
           "default": null,
@@ -1948,7 +1953,7 @@
               "force2factor": {
                 "type": "boolean",
                 "default": false,
-                "description": "Requires that all accounts setup 2FA."
+                "description": "Requires that all accounts setup 2FA. Until an account has a second factor, the server only accepts the account security commands and refuses device, relay and file access."
               },
               "skip2factor": {
                 "type": "string",

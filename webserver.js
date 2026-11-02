@@ -1134,14 +1134,33 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
+        // Check if a 2nd factor is present
+        return userHasSecondFactor(domain, user);
+    }
+
+    // Return true if this user has at least one second factor set up
+    function userHasSecondFactor(domain, user) {
+        if (parent.config.settings.no2factorauth === true) return false;
+
         // See if SMS 2FA is available
         var sms2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.sms2factor != false)) && (parent.smsserver != null) && (user.phone != null));
 
         // See if Messenger 2FA is available
         var msg2fa = (((typeof domain.passwordrequirements != 'object') || (domain.passwordrequirements.msg2factor != false)) && (parent.msgserver != null) && (parent.msgserver.providers != 0) && (user.msghandle != null));
 
-        // Check if a 2nd factor is present
-        return ((parent.config.settings.no2factorauth !== true) && (msg2fa || sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) || (user.otpduo != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0))));
+        return (msg2fa || sms2fa || (user.otpsecret != null) || ((user.email != null) && (user.emailVerified == true) && (domain.mailserver != null) && (user.otpekey != null)) || (user.otpduo != null) || ((user.otphkeys != null) && (user.otphkeys.length > 0)));
+    }
+
+    // Return true when force2factor applies to this user and no second factor is set up yet.
+    // Same conditions as the 0x00040000 feature flag, so the server enforces what the web pages show.
+    obj.force2factorPending = function (domain, user, req) {
+        if ((user == null) || (obj.args.nousers == true) || (parent.config.settings.no2factorauth === true) || (domain.auth == 'sspi')) return false;
+        if ((domain.passwordrequirements == null) || (domain.passwordrequirements.force2factor !== true) || (user._id.split('/')[2][0] == '~')) return false;
+        if (obj.parent.certificates.CommonName.indexOf('.') == -1) return false; // 2FA can't be set up without a server name
+        if ((req != null) && (req.clientIp != null) && (domain.passwordrequirements.skip2factor != null)) {
+            for (var i in domain.passwordrequirements.skip2factor) { if (require('ipcheck').match(req.clientIp, domain.passwordrequirements.skip2factor[i]) === true) return false; }
+        }
+        return (userHasSecondFactor(domain, user) == false);
     }
 
     // Check the 2-step auth token
@@ -2347,6 +2366,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((domain.loginkey != null) && (domain.loginkey.indexOf(req.query.key) == -1)) { res.sendStatus(404); return; } // Check 3FA URL key
         if ((req.body == null) || (req.body.inviteCode == null) || (req.body.inviteCode == '')) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 0 }, req, domain)); return; } // No invitation code
 
+        // Invite codes are short, so a wrong one counts like a failed login and a blocked address only gets the bad code page
+        if (obj.checkAllowLogin(req) === false) { render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); return; }
+
         // Each for a device group that has this invite code.
         for (var i in obj.meshes) {
             if ((obj.meshes[i].domain == domain.id) && (obj.meshes[i].deleted == null) && (obj.meshes[i].invite != null) && (obj.meshes[i].invite.codes.indexOf(req.body.inviteCode) >= 0)) {
@@ -2356,6 +2378,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
 
+        obj.setbadLogin(req);
         render(req, res, getRenderPage('invite', req, domain), getRenderArgs({ messageid: 100 }, req, domain)); // Bad invitation code
     }
 
@@ -2392,6 +2415,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // No user login, exit now
         if (user == null) { res.sendStatus(401); return; }
+        if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
         if (req.query.ws != null) {
             // This is a query with a websocket relay cookie, check that the cookie is valid and use it.
@@ -3375,7 +3399,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 const allFeatures = obj.getDomainUserFeatures(domain, dbGetFunc.user, dbGetFunc.req);
 
                 // Create a authentication cookie
-                const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
+                const authCookie = obj.parent.encodeCookie({ userid: dbGetFunc.user._id, domainid: domain.id, ip: req.clientIp, x: req.session.x }, obj.parent.loginCookieEncryptionKey);
                 const authRelayCookie = obj.parent.encodeCookie({ ruserid: dbGetFunc.user._id, x: req.session.x }, obj.parent.loginCookieEncryptionKey);
 
                 // Send the main web application
@@ -3917,7 +3941,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((domain.ldap == null) && (domain.sspi == null) && (obj.args.user == null) && (obj.args.nousers != true)) { logoutcontrols.logoutUrl = (domain.url + 'logout?' + Math.random() + extras); } // If a default user is in use or no user mode, don't display the logout button
 
                 // Create a authentication cookie
-                const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, obj.parent.loginCookieEncryptionKey);
+                const authCookie = obj.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp, x: req.session.x }, obj.parent.loginCookieEncryptionKey);
                 const authRelayCookie = obj.parent.encodeCookie({ ruserid: user._id, domainid: domain.id }, obj.parent.loginCookieEncryptionKey);
                 var httpsPort = ((obj.args.aliasport == null) ? obj.args.port : obj.args.aliasport); // Use HTTPS alias port is specified
                 render(req, res, getRenderPage('xterm', req, domain), getRenderArgs({ serverDnsName: obj.getWebServerName(domain, req), serverRedirPort: args.redirport, serverPublicPort: httpsPort, authCookie: authCookie, authRelayCookie: authRelayCookie, logoutControls: encodeURIComponent(JSON.stringify(logoutcontrols)).replace(/'/g, '%27'), name: EscapeHtml(node.name) }, req, domain));
@@ -4193,15 +4217,21 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     function handleDeviceFile(req, res) {
         const domain = getDomain(req, res);
         if (domain == null) { return; }
+        if ((req.method == 'POST') && (req.body != null)) { // The web pages post the download so the cookie stays out of the URL, browser history and proxy logs
+            const fields = ['c', 'm', 'n', 'f'];
+            for (var i in fields) { if (typeof req.body[fields[i]] == 'string') { req.query[fields[i]] = req.body[fields[i]]; } }
+        }
         if ((req.query.c == null) || (req.query.f == null)) { res.sendStatus(404); return; }
 
         // Check the inbound desktop sharing cookie
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
         if ((c == null) || (c.domainid !== domain.id)) { res.sendStatus(404); return; }
+        if (checkAuthCookie(c, req) == false) { res.sendStatus(404); return; } // Check the IP and session binding
 
         // Check userid
         const user = obj.users[c.userid];
-        if ((c == user)) { res.sendStatus(404); return; }
+        if (user == null) { res.sendStatus(404); return; }
+        if (obj.force2factorPending(domain, user, req)) { res.sendStatus(404); return; } // 2FA setup is still required for this account
 
         // If this cookie has restricted usages, check that it's allowed to perform downloads
         if (Array.isArray(c.usages) && (c.usages.indexOf(10) < 0)) { res.sendStatus(404); return; } // Check protocol #10
@@ -4450,6 +4480,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         const user = obj.users[authUserid];
         if (user == null) { res.sendStatus(401); return; }
         if ((user.siteadmin & 512) == 0) { res.sendStatus(401); return; } // Check if we have right to get recordings
+        if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
         // Send the recorded file
         setContentDispositionHeader(res, 'application/octet-stream', req.query.file, null, 'recording.mcrec');
@@ -4719,6 +4750,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((req.query.link == null) || (req.session == null) || (req.session.userid == null) || (domain == null) || (domain.userQuota == -1)) { res.sendStatus(404); return; }
         const user = obj.users[req.session.userid];
         if (user == null) { res.sendStatus(404); return; }
+        if (obj.force2factorPending(domain, user, req)) { res.sendStatus(404); return; } // 2FA setup is still required for this account
         const file = obj.getServerFilePath(user, domain, req.query.link);
         if (file == null) { res.sendStatus(404); return; }
         setContentDispositionHeader(res, 'application/octet-stream', file.name, null, 'file.bin');
@@ -4761,7 +4793,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -4770,6 +4802,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Get the user
             const user = obj.users[authUserid];
             if (user == null) { res.sendStatus(401); return; } // Check this user exists
+            if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
             // Get the node and check node rights
             const nodeid = fields.attrib[0];
@@ -4806,7 +4839,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -4815,6 +4848,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Get the user
             const user = obj.users[authUserid];
             if (user == null) { res.sendStatus(401); return; } // Check this user exists
+            if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
             // Get the node and check node rights
             const nodeid = fields.attrib[0];
@@ -5141,7 +5175,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -5149,6 +5183,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Get the user
             const user = obj.users[authUserid];
             if ((user == null) || (user.siteadmin & 8) == 0) { res.sendStatus(401); return; } // Check if we have file rights
+            if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
             if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ console.log('err4'); res.sendStatus(404); return; }
             var xfile = null;
@@ -5253,7 +5288,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -5261,6 +5296,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // Get the user
             const user = obj.users[authUserid];
             if (user == null) { parent.debug('web', 'Batch upload error, invalid user.'); res.sendStatus(401); return; } // Check if user exists
+            if (obj.force2factorPending(domain, user, req)) { res.sendStatus(401); return; } // 2FA setup is still required for this account
 
             // Get fields
             if ((fields == null) || (fields.nodeIds == null) || (fields.nodeIds.length != 1)) { res.sendStatus(404); return; }
@@ -6272,7 +6308,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -7246,6 +7282,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.sessiontime != null) { sessionOptions.maxAge = (obj.args.sessiontime * 60000); } // sessiontime is minutes
         obj.app.use(require('cookie-session')(sessionOptions));
         obj.app.use(function (request, response, next) { // Patch for passport 0.6.0 - https://github.com/jaredhanson/passport/issues/904
+            // Behind a TLS offloader, mark the cookie Secure only on requests the proxy reports as HTTPS. Setting it on a plain request would throw.
+            if ((obj.args.sessionsecure === true) && (request.sessionOptions != null) && (request.protocol == 'https')) { request.sessionOptions.secure = true; }
             if (request.session && !request.session.regenerate) {
                 request.session.regenerate = function (cb) {
                     cb()
@@ -7594,8 +7632,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.ws(url + 'apf.ashx', function (ws, req) { obj.parent.mpsserver.onWebSocketConnection(ws, req); })
                 obj.app.get(url + 'webrelay.ashx', function (req, res) { res.send('Websocket connection expected'); });
                 obj.app.get(url + 'health.ashx', function (req, res) { res.send('ok'); }); // TODO: Perform more server checking.
-                obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, handleRelayWebSocket); });
-                obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSSessionAuth(ws, req, false, function (ws1, req1, domain, user, cookie, authData) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
+                obj.app.ws(url + 'webrelay.ashx', function (ws, req) { PerformWSRelayAuth(ws, req, false, handleRelayWebSocket); });
+                obj.app.ws(url + 'webider.ashx', function (ws, req) { PerformWSRelayAuth(ws, req, false, function (ws1, req1, domain, user, cookie, authData) { obj.meshIderHandler.CreateAmtIderSession(obj, obj.db, ws1, req1, obj.args, domain, user); }); });
                 obj.app.ws(url + 'control.ashx', function (ws, req) {
                     getWebsocketArgs(ws, req, function (ws, req) {
                         const domain = getDomain(req);
@@ -7631,6 +7669,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 });
                 obj.app.ws(url + 'devicefile.ashx', function (ws, req) { obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, ws, null, req, domain); });
                 obj.app.get(url + 'devicefile.ashx', handleDeviceFile);
+                obj.app.post(url + 'devicefile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleDeviceFile);
                 obj.app.get(url + 'agentdownload.ashx', handleAgentDownloadFile);
                 obj.app.get(url + 'logo.png', handleLogoRequest);
                 obj.app.get(url + 'loginlogo.png', handleLoginLogoRequest);
@@ -7645,7 +7684,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'sharing', handleSharingRequest);
                 obj.app.ws(url + 'agenttransfer.ashx', handleAgentFileTransfer); // Setup agent to/from server file transfer handler
                 obj.app.ws(url + 'meshrelay.ashx', function (ws, req) {
-                    PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                    PerformWSRelayAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                         if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
                             obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
                         } else {
@@ -7655,7 +7694,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 });
                 if (obj.args.wanonly != true) { // If the server is not in WAN mode, allow server relayed connections.
                     obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                        PerformWSRelayAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             if ((user == null) || (cookie == null)) {
                                 try { ws1.close(); } catch (ex) { }
                             } else {
@@ -7721,12 +7760,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         try { require('./apprelays.js').CreateSshRelay(obj, obj.db, ws, req, obj.args, domain); } catch (ex) { console.log(ex); }
                     });
                     obj.app.ws(url + 'sshterminalrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                        PerformWSRelayAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             require('./apprelays.js').CreateSshTerminalRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
                         });
                     });
                     obj.app.ws(url + 'sshfilesrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                        PerformWSRelayAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             require('./apprelays.js').CreateSshFilesRelay(obj, obj.db, ws1, req1, domain, user, cookie, obj.args);
                         });
                     });
@@ -8120,7 +8159,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                     // Setup mesh relay on alternative agent-only port
                     obj.agentapp.ws(url + 'meshrelay.ashx', function (ws, req) {
-                        PerformWSSessionAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
+                        PerformWSRelayAuth(ws, req, true, function (ws1, req1, domain, user, cookie, authData) {
                             if (((parent.config.settings.desktopmultiplex === true) || (domain.desktopmultiplex === true)) && (req.query.p == 2)) {
                                 obj.meshDesktopMultiplexHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Desktop multiplexor 1-to-n
                             } else {
@@ -8186,6 +8225,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
                             // Check that all the required arguments are present
                             if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || (parent.webserver.destroyedSessions[webSessionId] != null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
+                            if ((domain == null) || obj.force2factorPending(domain, obj.users[userid], req)) { res.redirect('/'); return; } // 2FA setup is still required for this account
                         } else if (urlCookie.r == 8) {
                             // This is a guest user, figure out what our web relay will be.
                             userid = urlCookie.userid;
@@ -9239,6 +9279,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.gn == 'string'));
     }
 
+    // Authenticates a relay session, refused while force2factor still requires this user to set up 2FA. control.ashx stays open so the account page can do that.
+    function PerformWSRelayAuth(ws, req, noAuthOk, func) {
+        PerformWSSessionAuth(ws, req, noAuthOk, function (ws1, req1, domain, user, cookie, authData) {
+            if (obj.force2factorPending(domain, user, req1)) { parent.debug('web', 'WSERROR: 2FA setup required.'); try { ws1.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: '2farequired' })); ws1.close(); ws1._socket.resume(); } catch (e) { } return; } // Resume the paused socket so the close handshake completes
+            func(ws1, req1, domain, user, cookie, authData);
+        });
+    }
+
     // Authenticates a session and forwards
     function PerformWSSessionAuth(ws, req, noAuthOk, func) {
         // Check if the session expired
@@ -9413,12 +9461,10 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 // This is a encrypted cookie authentication
                 var cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.loginCookieEncryptionKey, 60); // Cookie with 1 hour timeout
                 if ((cookie == null) && (obj.parent.multiServer != null)) { cookie = obj.parent.decodeCookie(req.query.auth, obj.parent.serverKey, 60); } // Try the server key
-                if ((cookie != null) && (cookie.ip != null) && !checkCookieIp(cookie.ip, req.clientIp)) { // If the cookie if binded to an IP address, check here.
-                    parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".');
-                    cookie = null;
-                }
+                if ((cookie != null) && (checkAuthCookie(cookie, req) == false)) { cookie = null; } // Check the IP and session binding
                 if ((cookie != null) && (cookie.userid != null) && (obj.users[cookie.userid]) && (cookie.domainid == domain.id) && (cookie.userid.split('/')[1] == domain.id)) {
                     // Valid cookie, we are authenticated. Cookie of format { userid: 'user//name', domain: '' }
+                    if ((cookie.x != null) && (req.session != null) && (req.session.x == null)) { req.session.x = cookie.x; } // Cookies issued over this connection stay bound to the same web session
                     func(ws, req, domain, obj.users[cookie.userid], cookie);
                     return;
                 } else if ((cookie != null) && (cookie.a === 3) && (typeof cookie.u == 'string') && (obj.users[cookie.u]) && (cookie.u.split('/')[1] == domain.id)) {
@@ -10833,7 +10879,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var removeKeys = ['duo_code', 'state']; // Keys to remove
         var s = req.url.indexOf('?');
         if (s == -1) {
-            if (req.body && req.body.urlargs) {
+            // The login forms post the page's own query string back, anything else could send the browser to another site
+            if (req.body && (typeof req.body.urlargs == 'string') && req.body.urlargs.startsWith('?')) {
                 return req.body.urlargs;
             }
             return '';
@@ -11186,6 +11233,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (obj.args.cookieipcheck == 'strict') return (cookieip == ip); // 'strict' - Strict IP address checking, this can cause issues with HTTP proxies or load-balancers.
         if (require('ipcheck').match(cookieip, ip + '/24')) return true; // 'lax' - IP address need to be in the some range
         return (isPrivateAddress(cookieip) && isPrivateAddress(ip)); // 'lax' - If both IP addresses are private or loopback, accept it. This is needed because sometimes browsers will resolve IP addresses oddly on private networks.
+    }
+
+    // Check that a user authentication cookie can still be used from this request: the IP range it is bound to and the web session it was issued from
+    function checkAuthCookie(cookie, req) {
+        if ((cookie.ip != null) && !checkCookieIp(cookie.ip, req.clientIp)) { parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".'); return false; }
+        if ((cookie.x != null) && (obj.destroyedSessions[cookie.userid + '/' + cookie.x] != null)) { parent.debug('web', 'ERR: Cookie issued to a session that has logged out.'); return false; }
+        return true;
     }
 
     // Takes a formating string like "this {{{a}}} is an {{{b}}} example" and fills the a and b with input o.a and o.b

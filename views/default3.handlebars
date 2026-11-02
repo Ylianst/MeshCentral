@@ -3595,6 +3595,12 @@
                     updateSiteAdmin();
                     updateSelf();
                     updateUserDropdown();
+                    // The server only accepts account security commands until a second factor is set up, so start there
+                    if ((features & 0x00040000) && (count2factoraAuths() == 0) && (xxcurrentView != 2)) {
+                        go(2);
+                        setModalContent('xxAddAgent', "Account Security", "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section.");
+                        showModal('xxAddAgentModal', 'idx_dlgOkButton');
+                    }
                     break;
                 }
                 case 'users': {
@@ -14481,7 +14487,7 @@
                             // Server link
                             //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
                             // Server link
-                            link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                            link = '<a onclick=p13downloadDeviceFile("' + encodeURIComponentEx(newlinkpath + '/' + name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + parseInt(i) + ' class=filelist file=3>';
@@ -14993,11 +14999,7 @@
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i].checked) {
                     var thefile = p13filetree.dir[checkboxes[i].value];
-                    var link = 'devicefile.ashx?c=' + authCookie;
-                    link += '&m=' + currentNode.meshid.split('/')[2];
-                    link += '&n=' + currentNode._id.split('/')[2];
-                    link += '&f=' + encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n);
-                    downloadFile(link, encodeURIComponentEx(thefile.n));
+                    p13downloadDeviceFile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n));
                 }
             }
         }
@@ -24632,6 +24634,18 @@
             document.body.appendChild(element);
             setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
+        }
+
+        // Device file downloads are posted so the authentication cookie stays out of the URL, the browser history and proxy logs.
+        function p13downloadDeviceFile(path) {
+            var form = document.createElement('form'), iframe = document.createElement('iframe');
+            iframe.name = 'p13dl' + Math.random().toString(36).substring(2);
+            iframe.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            form.method = 'post'; form.action = 'devicefile.ashx'; form.target = iframe.name; form.style.display = 'none';
+            var fields = { c: authCookie, m: currentNode.meshid.split('/')[2], n: currentNode._id.split('/')[2], f: decodeURIComponent(path) };
+            for (var i in fields) { var input = document.createElement('input'); input.type = 'hidden'; input.name = i; input.value = fields[i]; form.appendChild(input); }
+            document.body.appendChild(iframe); document.body.appendChild(form); form.submit();
+            setTimeout(function () { try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) { } }, 10000);
         }
 
         // Make the dialog box movable

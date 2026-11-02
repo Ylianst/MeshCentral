@@ -286,8 +286,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 parent.GetNodeWithRights(domain, user, agent.dbNodeKey, function (node, rights, visible) {
                     var mesh = parent.meshes[agent.dbMeshKey];
                     if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission, 256 is desktop read only
-                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
-                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
+                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); } return; } // Check Required Rights
+                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); } return; } // Check Required None Rights
 
                         command.sessionid = ws.sessionId;   // Set the session id, required for responses
                         command.rights = rights;            // Add user rights flags to the message
@@ -320,6 +320,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                         delete command.nodeid;              // Remove the nodeid since it's implied
                         try { agent.send(JSON.stringify(command)); } catch (ex) { }
+                        if (func) { func(true); }
                     } else { if (func) { func(false); } }
                 });
             } else {
@@ -328,8 +329,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (routing != null) {
                     // Check if we have permission to send a message to that node
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); return; } } // Check Required Rights
-                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); return; } } // Check Required None Rights
+                        if ((requiredRights != null) && ((rights & requiredRights) == 0)) { if (func) { func(false); } return; } // Check Required Rights
+                        if ((requiredNonRights != null) && (rights != MESHRIGHT_ADMIN) && ((rights & requiredNonRights) != 0)) { if (func) { func(false); } return; } // Check Required None Rights
 
                         var mesh = parent.meshes[routing.meshid];
                         if ((node != null) && (mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) || (rights & MESHRIGHT_REMOTEVIEWONLY))) { // 8 is remote control permission
@@ -360,12 +361,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (typeof domain.desktopprivacybartext == 'string') { command.privacybartext = domain.desktopprivacybartext; } // Privacy bar text
                             if ((typeof domain.desktopprivacybarmaxwidth == 'number') && (domain.desktopprivacybarmaxwidth > 0)) { command.privacybarmaxwidth = domain.desktopprivacybarmaxwidth; } // Privacy bar maximum width
                             parent.parent.multiServer.DispatchMessageSingleServer(command, routing.serverid);
+                            if (func) { func(true); }
                         } else { if (func) { func(false); } }
                     });
                 } else { if (func) { func(false); } return false; }
             }
         } else { if (func) { func(false); } return false; }
-        if (func) { func(true); }
         return true;
     }
 
@@ -701,12 +702,21 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         });
     } catch (ex) { console.log(ex); }
 
+    // Commands still accepted while force2factor requires this account to set up a second factor: account security plus what the pages need to stay connected
+    const force2factorCommands = ['ping', 'pong', 'close', 'urlargs', 'userWebState', 'changelang', 'previousLogins', 'changepassword', 'changeemail', 'verifyemail', 'verifyPhone', 'confirmPhone', 'removePhone', 'verifyMessaging', 'confirmMessaging', 'removeMessaging', 'otpemail', 'otpduo', 'otpauth-request', 'otpauth-setup', 'otpauth-clear', 'otpauth-getpasswords', 'otp-hkey-get', 'otp-hkey-remove', 'otp-hkey-yubikey-add', 'otpdev-clear', 'otpdev-set', 'webauthn-startregister', 'webauthn-endregister'];
+
     // Process incoming web socket data from the browser
     function processWebSocketData(msg) {
         var command, i = 0, mesh = null, meshid = null, nodeid = null, meshlinks = null, change = 0;
         try { command = JSON.parse(msg.toString('utf8')); } catch (e) { return; }
         if (command == null) return;
         if (common.validateString(command.action, 3, 32) == false) return; // Action must be a string between 3 and 32 chars
+
+        // Until the account has a second factor under force2factor, only the account security commands get through
+        if ((force2factorCommands.indexOf(command.action) == -1) && parent.force2factorPending(domain, user, req)) {
+            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: command.action, responseid: command.responseid, result: 'Two-factor authentication required' })); } catch (ex) { } }
+            return;
+        }
 
         var commandHandler = serverCommands[command.action];
         if (commandHandler != null) { 
@@ -3737,7 +3747,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 mesh = parent.meshes[command.meshid];
                                 if (mesh == null) { err = 'Unknown device group'; } // Check if the group exists
                                 else if (mesh.mtype != 2) { err = 'Invalid group type'; } // Check if this is the correct group type
-                                else if (parent.IsMeshViewable(user, mesh) == false) { err = 'Not allowed'; } // Check if this user has rights to do this
+                                else if ((parent.IsMeshViewable(user, mesh) == false) || ((parent.GetMeshRights(user, mesh) & (MESHRIGHT_EDITMESH | MESHRIGHT_MANAGECOMPUTERS)) == 0)) { err = 'Not allowed'; } // Check if this user has rights to do this
                             }
                         }
                     } catch (ex) { err = 'Validation exception: ' + ex; }
@@ -4419,6 +4429,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((smesh.length != 3) || (smesh[0] != 'mesh') || (smesh[1] != domain.id)) { err = 'Invalid group id'; }
                     mesh = parent.meshes[command.meshid];
                     if ((mesh == null) || (parent.IsMeshViewable(user, mesh) == false)) { err = 'Invalid group id'; }
+                    else if ((parent.GetMeshRights(user, mesh) & (MESHRIGHT_EDITMESH | MESHRIGHT_MANAGECOMPUTERS)) == 0) { err = 'Not allowed'; } // A viewer can't enroll devices, same as the agent download
                 }
                 var serverName = parent.getWebServerName(domain, req);
 
@@ -6690,7 +6701,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         try {
             ws.send(JSON.stringify({
                 action: 'authcookie',
-                cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp }, parent.parent.loginCookieEncryptionKey),
+                cookie: parent.parent.encodeCookie({ userid: user._id, domainid: domain.id, ip: req.clientIp, x: req.session.x }, parent.parent.loginCookieEncryptionKey),
                 rcookie: parent.parent.encodeCookie({ ruserid: user._id, x: req.session.x }, parent.parent.loginCookieEncryptionKey)
             }));
         } catch (ex) { }
