@@ -1123,7 +1123,8 @@ function CreateMeshCentralServer(config, args) {
                                 process.exit(0);
                             } else {
                                 // Load all users
-                                const allusers = {}, removeCount = 0;
+                                const allusers = {};
+                                let removeCount = 0;
                                 obj.db.GetAllType('user', function (err, docs) {
                                     obj.common.unEscapeAllLinksFieldName(docs);
                                     for (i in docs) { allusers[docs[i]._id] = docs[i]; }
@@ -1374,13 +1375,15 @@ function CreateMeshCentralServer(config, args) {
 
                         // Get all users from current database
                         obj.db.GetAllType('user', function (err, docs) {
-                            const users = {}, usersCount = 0;
+                            const users = {};
+                            let usersCount = 0;
                             for (var i in docs) { users[docs[i]._id] = docs[i]; usersCount++; }
 
                             // Fetch all meshes from the database
                             obj.db.GetAllType('mesh', function (err, docs) {
                                 obj.common.unEscapeAllLinksFieldName(docs);
-                                const meshes = {}, meshesCount = 0;
+                                const meshes = {};
+                                let meshesCount = 0;
                                 for (var i in docs) { meshes[docs[i]._id] = docs[i]; meshesCount++; }
                                 console.log('Loaded ' + usersCount + ' users and ' + meshesCount + ' meshes.');
                                 // Look at each object in the import file
