@@ -3663,6 +3663,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             event.node = parent.CloneSafeNode(node);
                             event.msgid = 140;
                             event.msgArgs = [ node.name, mesh.name, changes.join(', ') ];
+                            if(user._id === req.session.userid && req.session.tokenUser != null && req.session.tokenName != null) {
+                                event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser;
+                            }
                             if (amtchange == 1) { event.amtchange = 1; } // This will give a hint to the AMT Manager to reconnect using new AMT credentials
                             if (command.rdpport == 3389) { event.node.rdpport = 3389; }
                             if (command.rfbport == 5900) { event.node.rfbport = 5900; }

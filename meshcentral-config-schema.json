@@ -4213,7 +4213,7 @@
                   },
                   "groups": {
                     "type": "object",
-                    "description": "Group settings for OIDC",
+                    "description": "Group settings for OIDC. Group names may be case sensitive!",
                     "properties": {
                       "recursive": {
                         "type": "boolean",
