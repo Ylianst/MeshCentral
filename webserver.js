@@ -6544,11 +6544,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
 
             // No signed agents, we are going to merge a new MeshCmd.
-            if (((agentid == 3) || (agentid == 4)) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
+            if (((agentid == 3) || (agentid == 4) || (agentid == 43)) && (obj.parent.meshAgentBinaries[agentid + 10000] != null)) { agentid += 10000; } // Avoid merging javascript to a signed mesh agent.
             var argentInfo = obj.parent.meshAgentBinaries[agentid];
             if (domain.meshAgentBinaries && domain.meshAgentBinaries[agentid]) { argentInfo = domain.meshAgentBinaries[agentid]; }
             if ((argentInfo == null) || (obj.parent.defaultMeshCmd == null)) { try { res.sendStatus(404); } catch (ex) { } return; }
-            setContentDispositionHeader(res, 'application/octet-stream', 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
+            setContentDispositionHeader(res, 'application/octet-stream', (req.query.meshcmd == 43) ? 'meshcmd-arm64.exe' : 'meshcmd' + ((req.query.meshcmd <= 4) ? '.exe' : ''), null, 'meshcmd');
             res.statusCode = 200;
 
             if (argentInfo.signedMeshCmdPath != null) {

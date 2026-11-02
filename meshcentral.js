@@ -3353,12 +3353,13 @@ function CreateMeshCentralServer(config, args) {
             var archid = archIds[currentArchIndex];
             currentArchIndex++;
 
-            var agentpath;
+            var agentpath, merged = null;
             if (domain.id == '') {
                 // Load all agents when processing the default domain
-                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].localname);
+                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].base || obj.meshAgentsArchitectureNumbers[archid].localname);
                 var agentpath2 = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
                 if (obj.fs.existsSync(agentpath2)) { agentpath = agentpath2; delete obj.meshAgentsArchitectureNumbers[archid].codesign; } // If the agent is present in "meshcentral-data/agents", use that one instead.
+                else if (obj.meshAgentsArchitectureNumbers[archid].base != null) { merged = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname + '.tmp'); }
             } else {
                 // When processing an extra domain, only load agents that are specific to that domain
                 agentpath = obj.path.join(obj.datapath, 'agents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
@@ -3369,7 +3370,20 @@ function CreateMeshCentralServer(config, args) {
 
             // Open the original agent with authenticode
             const signeedagentpath = obj.path.join(serverSignedAgentsPath, obj.meshAgentsArchitectureNumbers[archid].localname);
-            const originalAgent = require('./authenticode.js').createAuthenticodeHandler(agentpath);
+            if (merged != null) {
+                // MeshCmd is the service executable with the merged meshcmd.js appended. Build it next to the signed
+                // copy so the checks below compare that copy with what would be signed now, script included.
+                if (obj.defaultMeshCmd == null) { signNextAgent(); return; }
+                try { obj.fs.mkdirSync(serverSignedAgentsPath); } catch (ex) { }
+                try {
+                    obj.exeHandler.writeExeWithJavaScript({ sourceFileName: agentpath, destinationFileName: merged, js: Buffer.from(obj.defaultMeshCmd, 'utf8') });
+                } catch (ex) {
+                    addServerWarning('Failed to sign \"' + obj.meshAgentsArchitectureNumbers[archid].localname + '\": ' + ex, 22, [obj.meshAgentsArchitectureNumbers[archid].localname, ex]);
+                    signNextAgent(); return;
+                }
+            }
+            const discard = function () { if (merged != null) { try { obj.fs.unlinkSync(merged); } catch (ex) { } } };
+            const originalAgent = require('./authenticode.js').createAuthenticodeHandler(merged || agentpath);
             if (originalAgent != null) {
                 // Check if the agent is already signed correctly
                 const destinationAgent = require('./authenticode.js').createAuthenticodeHandler(signeedagentpath);
@@ -3480,6 +3494,8 @@ function CreateMeshCentralServer(config, args) {
                     if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.text').compare(destinationAgent.getHashOfSection('sha384', '.text')) != 0)) { destinationAgentOk = false; }
                     if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.data').compare(destinationAgent.getHashOfSection('sha384', '.data')) != 0)) { destinationAgentOk = false; }
                     if ((destinationAgentOk == true) && (originalAgent.getHashOfSection('sha384', '.rdata').compare(destinationAgent.getHashOfSection('sha384', '.rdata')) != 0)) { destinationAgentOk = false; }
+                    // MeshCmd's script is appended after the PE sections.
+                    if ((destinationAgentOk == true) && (originalAgent.getHashOfOverlay('sha384').compare(destinationAgent.getHashOfOverlay('sha384')) != 0)) { destinationAgentOk = false; }
 
                     // We are done comparing the destination agent, close it.
                     destinationAgent.close();
@@ -3499,6 +3515,7 @@ function CreateMeshCentralServer(config, args) {
                             try { obj.fs.unlinkSync(agentSignedFunc.signeedagentpath); } catch (ex) { }
                             addServerWarning('Failed to sign \"' + agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname + '\": ' + err, 22, [agentSignedFunc.objx.meshAgentsArchitectureNumbers[agentSignedFunc.archid].localname, err]);
                         }
+                        if (merged != null) { originalAgent.close(); discard(); }
                         // Wait 2 seconds between each codesign to avoid rate limiting from Sectigo's timestamp server
                         // https://www.sectigo.com/resource-library/time-stamping-server
                         setTimeout(signNextAgent, 2000);
@@ -3572,10 +3589,12 @@ function CreateMeshCentralServer(config, args) {
                     // Signed agent is already ok, use it.
                     signedSources[archid] = agentpath;
                     originalAgent.close();
+                    discard();
                     signNextAgent();
                 }
 
             } else {
+                discard();
                 signNextAgent();
             }
         }
@@ -3701,11 +3720,12 @@ function CreateMeshCentralServer(config, args) {
                 agentpath = override;
             } else if (domain.id == '') {
                 // Load all agents when processing the default domain
-                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].localname);
+                agentpath = obj.getAgentBinaryPath(obj.meshAgentsArchitectureNumbers[archid].base || obj.meshAgentsArchitectureNumbers[archid].localname);
                 if (obj.meshAgentsArchitectureNumbers[archid].unsigned !== true) {
                     const agentpath2 = obj.path.join(obj.datapath, 'signedagents' + suffix, obj.meshAgentsArchitectureNumbers[archid].localname);
                     // A failed signing attempt must not reuse a copy from another release.
                     if (agentpath && obj.fs.existsSync(agentpath2) && ((obj.signedAgentSources || {})[archid] === agentpath)) { agentpath = agentpath2; }
+                    else if (obj.meshAgentsArchitectureNumbers[archid].base != null) { agentpath = null; } // MeshCmd only exists signed. Without it the download merges the script on the fly.
                 }
             } else {
                 // When processing an extra domain, only load agents that are specific to that domain
@@ -3724,7 +3744,7 @@ function CreateMeshCentralServer(config, args) {
             agentTable[archid] = Object.assign({}, obj.meshAgentsArchitectureNumbers[archid]);
             if (domain.id != '') delete agentTable[archid].codesign;
             agentTable[archid].path = agentpath;
-            const release = obj.agentDefaults && obj.agentDefaults.info(obj.meshAgentsArchitectureNumbers[archid].localname);
+            const release = obj.agentDefaults && obj.agentDefaults.info(obj.meshAgentsArchitectureNumbers[archid].base || obj.meshAgentsArchitectureNumbers[archid].localname);
             if (release && domain.id === '' && agentpath !== override) agentTable[archid].release = release;
             agentTable[archid].url = 'http://' + obj.certificates.CommonName + ':' + ((typeof obj.args.aliasport == 'number') ? obj.args.aliasport : obj.args.port) + '/meshagents?id=' + archid;
             agentTable[archid].size = stats.size;
