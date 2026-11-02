@@ -5423,14 +5423,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
         // Fetch information about the target
         obj.db.Get(req.query.host, function (err, docs) {
-            if (docs.length == 0) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
+            if ((err != null) || (docs == null) || (docs.length != 1)) { console.log('ERR: Node not found'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
             var xusername = '', xdevicename = '', xdevicename2 = null, node = null;
             node = docs[0]; xdevicename2 = node.name; xdevicename = '-' + parent.common.makeFilename(node.name); ws.id = getRandomPassword(); ws.time = Date.now();
             if (!node.intelamt) { console.log('ERR: Not AMT node'); try { ws.close(); } catch (e) { } return; } // Disconnect websocket
-            var ciraconn = parent.mpsserver.GetConnectionToNode(req.query.host, null, false);
 
             // Check if this user has permission to manage this computer
-            if ((obj.GetNodeRights(user, node.meshid, node._id) & MESHRIGHT_REMOTECONTROL) == 0) { console.log('ERR: Access denied (3)'); try { ws.close(); } catch (e) { } return; }
+            const rights = obj.GetNodeRights(user, node.meshid, node._id);
+            if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOAMT) != 0))) { console.log('ERR: Access denied (3)'); try { ws.close(); } catch (e) { } return; }
+            var ciraconn = (parent.mpsserver != null) ? parent.mpsserver.GetConnectionToNode(req.query.host, null, false) : null;
 
             // Check what connectivity is available for this node
             var state = parent.GetConnectivityState(req.query.host);
@@ -10143,8 +10144,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.InvalidateNodeCache = function (user, mesh, nodeid) {
         if (user == null) { return; }
         
-        if (typeof user == 'string') { user = obj.users[user]; }
+        if (typeof user == 'string') { user = obj.users[user] || obj.userGroups[user]; }
         if (user == null) { return 0; }
+        if (user._id.startsWith('ugrp/')) {
+            for (var id in user.links) { if (id.startsWith('user/')) { obj.InvalidateNodeCache(id, mesh, nodeid); } }
+            return;
+        }
         var meshid;
         if (typeof mesh == 'string') { meshid = mesh; } else if ((typeof mesh == 'object') && (typeof mesh._id == 'string')) { meshid = mesh._id; };
         

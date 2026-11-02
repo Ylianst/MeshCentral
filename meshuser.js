@@ -62,6 +62,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
     const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
+    const MESHRIGHT_RESTRICTIONS        = MESHRIGHT_REMOTEVIEWONLY | MESHRIGHT_NOTERMINAL | MESHRIGHT_NOFILES | MESHRIGHT_NOAMT | MESHRIGHT_DESKLIMITEDINPUT | MESHRIGHT_LIMITEVENTS | MESHRIGHT_NODESKTOP | MESHRIGHT_NOREGISTRY | MESHRIGHT_NOSOFTWARE;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP        = 0x00000001; // 1
@@ -2637,8 +2638,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Remove mesh from user
                         if (deluser.links != null && deluser.links[command.meshid] != null) {
                             var delmeshrights = deluser.links[command.meshid].rights;
-                            if ((delmeshrights == MESHRIGHT_ADMIN) && (parent.GetMeshRights(user, mesh) != MESHRIGHT_ADMIN)) return; // A non-admin can't kick out an admin
+                            if ((parent.GetMeshRights(user, mesh) != MESHRIGHT_ADMIN) && ((delmeshrights == MESHRIGHT_ADMIN) || ((delmeshrights & MESHRIGHT_RESTRICTIONS) != 0))) return;
                             delete deluser.links[command.meshid];
+                            parent.InvalidateNodeCache(deluser, mesh);
                             if (deluserid.startsWith('user/')) { db.SetUser(deluser); }
                             else if (deluserid.startsWith('ugrp/')) { db.Set(deluser); }
                             parent.parent.DispatchEvent([deluser._id], obj, 'resubscribe');
@@ -3095,9 +3097,6 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // - We should try to only have one agent per subnet (using Gateway MAC) send a wake-on-lan.
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
 
-                    // Event wakeup, this will cause Intel AMT wake operations on this and other servers.
-                    parent.parent.DispatchEvent('*', obj, { action: 'wakedevices', userid: user._id, username: user.name, nodeids: command.nodeids, domain: domain.id, nolog: 1 });
-
                     // Perform wake-on-lan
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i];
@@ -3119,6 +3118,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if ((node == null) || (visible == false) || (rights & MESHRIGHT_WAKEDEVICE) == 0) {
                                 if (command.nodeids.length == 1) { try { ws.send(JSON.stringify({ action: 'wakedevices', responseid: command.responseid, result: 'Invalid nodeid' })); } catch (ex) { } }
                                 return;
+                            }
+
+                            if ((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOAMT) == 0)) {
+                                parent.parent.DispatchEvent('*', obj, { action: 'wakedevices', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1 });
                             }
 
                             // If this device is connected on MQTT, send a wake action.
@@ -3412,7 +3415,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'poweraction':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
-                    if (common.validateInt(command.actiontype, 2, 401) == false) break; // Check actiontype
+                    if ((Number.isInteger(command.actiontype) == false) || (common.validateInt(command.actiontype, 2, 401) == false)) break;
                     for (i in command.nodeids) {
                         var nodeid = command.nodeids[i];
 
@@ -3423,6 +3426,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Get the node and the rights for this node
                         parent.GetNodeWithRights(domain, user, nodeid, function (node, rights, visible) {
+                            if ((node == null) || (visible == false)) return;
+                            if ((command.actiontype >= 300) && (command.actiontype < 400) && (rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOAMT) != 0)) return;
                             if ((command.actiontype >= 400) && ((rights & MESHRIGHT_REMOTECONTROL) != 0)) {
                                 // Flash and vibrate
                                 if ((command.actiontype == 400) && common.validateInt(command.time, 1, 30000)) { routeCommandToNode({ action: 'msg', type: 'console', nodeid: node._id, value: 'flash ' + command.time }, MESHRIGHT_ADMIN, 0); }
@@ -3448,11 +3453,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                                 }
 
                                 if ((command.actiontype >= 300) && (command.actiontype < 400)) {
-                                    if ((command.actiontype != 302) && (command.actiontype != 308) && (command.actiontype < 310) && (command.actiontype > 316)) return; // Invalid action type.
+                                    if ((command.actiontype != 302) && (command.actiontype != 308) && ((command.actiontype < 310) || (command.actiontype > 316))) return; // Invalid action type.
                                     // Intel AMT power command, actiontype: 2 = Power on, 8 = Power down, 10 = reset, 11 = Power on to BIOS, 12 = Reset to BIOS, 13 = Power on to BIOS with SOL, 14 = Reset to BIOS with SOL, 15 = Power on to PXE, 16 = Reset to PXE
                                     parent.parent.DispatchEvent('*', obj, { action: 'amtpoweraction', userid: user._id, username: user.name, nodeids: [node._id], domain: domain.id, nolog: 1, actiontype: command.actiontype - 300 });
                                 } else {
-                                    if ((command.actiontype < 2) && (command.actiontype > 4)) return; // Invalid action type.
+                                    if ((command.actiontype < 2) || (command.actiontype > 4)) return; // Invalid action type.
                                     // Mesh Agent power command, get this device and send the power command
                                     const agent = parent.wsagents[node._id];
                                     if (agent != null) {
@@ -4910,7 +4915,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Get the node and the rights for this node
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if ((rights & MESHRIGHT_REMOTECONTROL) == 0) return;
+                    if ((node == null) || (node.intelamt == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0)) return;
+                    if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOAMT) != 0)) return;
                     handleAmtCommand(command, node);
                 });
                 break;
@@ -6094,12 +6100,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'webstats': [serverUserCommandWebStats, ""]
     };
 
+    function getDelegatedMeshRights(rights, requested, existing) {
+        if (rights == MESHRIGHT_ADMIN) return requested;
+        // Restrictions must survive delegation and edits to an existing link.
+        return ((requested & rights & ~MESHRIGHT_RESTRICTIONS) | ((requested | rights | existing) & MESHRIGHT_RESTRICTIONS)) >>> 0;
+    }
+
     function serverCommandAddDeviceUser(command) {
         if (typeof command.userid == 'string') { command.userids = [command.userid]; }
         var err = null;
         try {
             if (common.validateString(command.nodeid, 1, 1024) == false) { err = 'Invalid nodeid'; } // Check the nodeid
-            else if (common.validateInt(command.rights) == false) { err = 'Invalid rights'; } // Device rights must be an integer
+            else if ((Number.isInteger(command.rights) == false) || (common.validateInt(command.rights, 0, MESHRIGHT_ADMIN) == false)) { err = 'Invalid rights'; }
             else if ((command.rights & 7) != 0) { err = 'Invalid rights'; } // EDITMESH, MANAGEUSERS or MANAGECOMPUTERS rights can't be assigned to a user to device link
             else if ((common.validateStrArray(command.usernames, 1, 128) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 128 characters
             else {
@@ -6156,6 +6168,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if (command.nodeid.split('/')[1] != newuserid.split('/')[1]) return; // Domain mismatch
     
                 if (newuser != null) {
+                    var targetRights = ((newuser.links != null) && (newuser.links[command.nodeid] != null)) ? newuser.links[command.nodeid].rights : 0;
+                    if ((rights != MESHRIGHT_ADMIN) && ((targetRights == MESHRIGHT_ADMIN) || ((command.remove === true) && ((targetRights & MESHRIGHT_RESTRICTIONS) != 0)))) continue;
+                    var delegatedRights = getDelegatedMeshRights(rights, command.rights, targetRights);
+
                     // Add this user to the dispatch target list
                     dispatchTargets.push(newuser._id);
     
@@ -6175,11 +6191,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     } else {
                         // Add the new link to this user
                         if (newuser.links == null) { newuser.links = {}; }
-                        newuser.links[command.nodeid] = { rights: command.rights };
+                        newuser.links[command.nodeid] = { rights: delegatedRights };
     
                         // Add the new link to the device
                         if (node.links == null) { node.links = {}; }
-                        node.links[newuserid] = { rights: command.rights };
+                        node.links[newuserid] = { rights: delegatedRights };
                         nodeChanged = true;
                     }
     
@@ -6256,7 +6272,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         var selfMeshRights = 0;
         try {
             if (common.validateString(command.meshid, 8, 134) == false) { err = 'Invalid groupid'; } // Check the meshid
-            else if (common.validateInt(command.meshadmin) == false) { err = 'Invalid group rights'; } // Mesh rights must be an integer
+            else if ((Number.isInteger(command.meshadmin) == false) || (common.validateInt(command.meshadmin, 0, MESHRIGHT_ADMIN) == false)) { err = 'Invalid group rights'; }
             else if ((common.validateStrArray(command.usernames, 1, 128) == false) && (common.validateStrArray(command.userids, 1, 128) == false)) { err = 'Invalid usernames'; } // Username is between 1 and 128 characters
             else {
                 if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
@@ -6308,16 +6324,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 if ((targetMeshRights === MESHRIGHT_ADMIN) && (selfMeshRights != MESHRIGHT_ADMIN)) { msgs.push("Can't change rights of device group administrator"); continue; } // A non-admin can't kick out an admin
     
                 if (command.remove === true) {
+                    if ((selfMeshRights != MESHRIGHT_ADMIN) && ((targetMeshRights & MESHRIGHT_RESTRICTIONS) != 0)) { msgs.push("Can't remove restricted rights"); continue; }
                     // Remove mesh from user or user group
-                    delete newuser.links[command.meshid];
+                    if (newuser.links != null) { delete newuser.links[command.meshid]; }
                 } else {
-                    // Adjust rights since we can't add more rights that we have outself for MESHRIGHT_MANAGEUSERS
                     if ((selfMeshRights != MESHRIGHT_ADMIN) && (command.meshadmin == MESHRIGHT_ADMIN)) { msgs.push("Can't set device group administrator, if not administrator"); continue; }
-                    if (((selfMeshRights & 2) == 0) && ((command.meshadmin & 2) != 0) && ((targetMeshRights & 2) == 0)) { command.meshadmin -= 2; }
+                    var delegatedRights = getDelegatedMeshRights(selfMeshRights, command.meshadmin, targetMeshRights);
     
                     // Add mesh to user or user group
                     if (newuser.links == null) { newuser.links = {}; }
-                    if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = command.meshadmin; } else { newuser.links[command.meshid] = { rights: command.meshadmin }; }
+                    if (newuser.links[command.meshid]) { newuser.links[command.meshid].rights = delegatedRights; } else { newuser.links[command.meshid] = { rights: delegatedRights }; }
                 }
                 if (newuserid.startsWith('user/')) { db.SetUser(newuser); }
                 else if (newuserid.startsWith('ugrp/')) { db.Set(newuser); }
@@ -6351,7 +6367,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Removed user ' + newuser.name + ' from device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                 } else {
                     // Add userid to the mesh
-                    mesh.links[newuserid] = { name: newuser.name, rights: command.meshadmin };
+                    mesh.links[newuserid] = { name: newuser.name, rights: delegatedRights };
                     db.Set(mesh);
                     event = { etype: 'mesh', username: newuser.name, userid: user._id, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, action: 'meshchange', links: mesh.links, msg: 'Added user ' + newuser.name + ' to device group ' + mesh.name, domain: domain.id, invite: mesh.invite };
                 }
