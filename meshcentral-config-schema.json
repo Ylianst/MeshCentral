@@ -3209,6 +3209,12 @@
                 "maximum": 65535,
                 "default": 35500,
                 "description": "Local TCP port on 127.0.0.1 the agent listens on to receive print jobs from the printer."
+              },
+              "windowsMethod": {
+                "type": "string",
+                "enum": [ "powershell", "api" ],
+                "default": "powershell",
+                "description": "How the agent installs the printer on Windows: \"powershell\" uses the PowerShell printer commands, \"api\" calls the Windows print spooler API directly, without PowerShell. Can be changed on a device with the \"remoteprint method\" agent console command, for testing."
               }
             },
             "additionalProperties": false

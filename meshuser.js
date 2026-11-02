@@ -1043,9 +1043,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         requiredNonRights = MESHRIGHT_NOFILES | MESHRIGHT_REMOTEVIEWONLY; // Print jobs are downloaded using the files feature
                         delete command.printerName;
                         delete command.port;
+                        delete command.windowsMethod;
                         if (typeof domain.remoteprinting == 'object') {
                             if (typeof domain.remoteprinting.printername == 'string') { command.printerName = domain.remoteprinting.printername; }
                             if (typeof domain.remoteprinting.port == 'number') { command.port = domain.remoteprinting.port; }
+                            if ((domain.remoteprinting.windowsmethod == 'api') || (domain.remoteprinting.windowsmethod == 'powershell')) { command.windowsMethod = domain.remoteprinting.windowsmethod; }
                         }
                     }
 

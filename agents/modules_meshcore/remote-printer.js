@@ -50,6 +50,8 @@ var children = [];          // Keep a reference on running child processes
 var queue = [];             // Install / uninstall operations run one at a time
 var queueBusy = false;
 var startRequested = false; // Set once start() is called, so cleanup() doesn't remove a printer installed by this run
+var windowsMethod = 'powershell'; // How the printer is installed on Windows: 'powershell', or 'api' for the print spooler API (win-remote-printer.js)
+var windowsMethodOverride = null; // Set with the "remoteprint method" agent console command, for testing
 var history = [];           // Recent events, shown by the "remoteprint" agent console command
 
 function log(msg) {
@@ -218,8 +220,14 @@ function writeMarker(m) { try { fs.writeFileSync(markerFile, JSON.stringify(m));
 function deleteMarker() { try { fs.unlinkSync(markerFile); } catch (ex) { } }
 
 // Install the printer, callback(err)
+function getWindowsMethod() { return windowsMethodOverride || windowsMethod; }
+
 function installPrinter(name, port, func) {
-    if (process.platform == 'win32') {
+    if ((process.platform == 'win32') && (getWindowsMethod() == 'api')) {
+        try {
+            require('win-remote-printer').install(name, PORT_PREFIX + '_' + port, port, 'Microsoft Print To PDF', PORT_PREFIX, function (step) { log('Install step: ' + step); }, function (err) { func(err); });
+        } catch (ex) { func('Windows print spooler API: ' + ex); }
+    } else if (process.platform == 'win32') {
         var portName = PORT_PREFIX + '_' + port;
         var script = [
             // The script runs in a script block and the printer commands are functions of the PrintManagement module, which only
@@ -353,7 +361,11 @@ function installPrinter(name, port, func) {
 // Remove all printers installed by this module, callback()
 function uninstallPrinter(func) {
     var marker = readMarker();
-    if (process.platform == 'win32') {
+    if ((process.platform == 'win32') && (getWindowsMethod() == 'api')) {
+        try {
+            require('win-remote-printer').uninstall(PORT_PREFIX, function () { deleteMarker(); func(); });
+        } catch (ex) { log('Windows print spooler API: ' + ex); deleteMarker(); func(); }
+    } else if (process.platform == 'win32') {
         var script = [
             "$ErrorActionPreference = 'SilentlyContinue'",
             "$ProgressPreference = 'SilentlyContinue'",
@@ -508,6 +520,7 @@ function start(options, onJob, func) {
     var name = cleanName(options.printerName);
     var port = parseInt(options.port);
     if (isNaN(port) || (port < 1024) || (port > 65535)) { port = DEFAULT_TCP_PORT; }
+    if ((options.windowsMethod == 'api') || (options.windowsMethod == 'powershell')) { windowsMethod = options.windowsMethod; }
     startRequested = true;
     runQueued(function (done) {
         if (isSupported() == false) { func('Remote printing is not supported on this device'); done(); return; }
@@ -515,7 +528,7 @@ function start(options, onJob, func) {
         if ((current != null) && (current.port != port)) { stopListener(); }
         startListener(port, onJob, function (err) {
             if (err != null) { func(err); done(); return; }
-            log('Installing the printer: ' + name);
+            log('Installing the printer: ' + name + ((process.platform == 'win32') ? (', with ' + ((getWindowsMethod() == 'api') ? 'the print spooler API' : 'PowerShell')) : ''));
             installPrinter(name, port, function (err) {
                 if (err != null) {
                     log('Printer install failed: ' + err);
@@ -558,7 +571,15 @@ function cleanup() {
 function isRunning() { return (current != null); }
 
 function getStatus() {
-    return { supported: isSupported(), printer: current, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
+    return { supported: isSupported(), printer: current, listening: (server != null), busy: queueBusy, windowsMethod: getWindowsMethod(), windowsMethodOverride: windowsMethodOverride, jobsFolder: jobsFolder, history: history.slice() };
 }
 
-module.exports = { start: start, stop: stop, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };
+// Use the print spooler API ('api') or PowerShell ('powershell') on Windows until the agent restarts, null to use the server setting.
+// An installed printer is removed, the next refresh from the browser installs it again with this method.
+function setWindowsMethod(method) {
+    windowsMethodOverride = ((method == 'api') || (method == 'powershell')) ? method : null;
+    log('Windows install method set to ' + getWindowsMethod() + ((windowsMethodOverride == null) ? ' (server setting)' : ''));
+    if (current != null) { stop(); }
+}
+
+module.exports = { start: start, stop: stop, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, setWindowsMethod: setWindowsMethod, jobsFolder: jobsFolder };
