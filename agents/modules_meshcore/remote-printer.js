@@ -54,7 +54,7 @@ var history = [];           // Recent events, shown by the "remoteprint" agent c
 
 function log(msg) {
     history.push(new Date().toISOString() + ' ' + msg);
-    if (history.length > 30) { history.shift(); }
+    if (history.length > 60) { history.shift(); }
 }
 
 // Minimal PPD, CUPS converts the job to PDF and sends it as-is to the socket backend
@@ -138,7 +138,7 @@ function runNext() {
 
 // Collect the output of a child process, callback(exitCode, output). The child is killed if it runs too long,
 // so a stuck command can't block the operation queue.
-function watchChild(child, func) {
+function watchChild(child, func, onStep) {
     var done = false;
     var finish = function (code, output) {
         if (done) return;
@@ -150,7 +150,19 @@ function watchChild(child, func) {
     var timer = setTimeout(function () { try { child.kill(); } catch (ex) { } finish(-1, 'Timed out installing the printer'); }, COMMAND_TIMEOUT);
     children.push(child);
     child.stdout.str = ''; child.stderr.str = '';
-    child.stdout.on('data', function (c) { this.str += c.toString(); });
+    child.stdout.lines = '';
+    child.stdout.on('data', function (c) {
+        var text = c.toString();
+        this.str += text;
+        if (onStep == null) return;
+        this.lines += text; // Report "STEP <text>" lines as they arrive
+        var i;
+        while ((i = this.lines.indexOf('\n')) >= 0) {
+            var line = this.lines.substring(0, i).trim();
+            this.lines = this.lines.substring(i + 1);
+            if (line.indexOf('STEP ') == 0) { try { onStep(line.substring(5)); } catch (ex) { } }
+        }
+    });
     child.stderr.on('data', function (c) { this.str += c.toString(); });
     child.on('exit', function (code) { finish(code, getOutput(child.stdout.str, child.stderr.str)); });
 }
@@ -158,7 +170,7 @@ function watchChild(child, func) {
 // The command output used in messages: stdout, or stderr when there's none. PowerShell writes progress and
 // errors to stderr as CLIXML, keep only the error messages from it.
 function getOutput(stdout, stderr) {
-    stdout = stdout.trim();
+    stdout = stdout.split('\n').filter(function (line) { return line.trim().indexOf('STEP ') != 0; }).join('\n').trim();
     if (stdout.length > 0) return stdout;
     stderr = stderr.trim();
     if (stderr.indexOf('#< CLIXML') != 0) return stderr;
@@ -180,7 +192,7 @@ function getPowerShellPath() {
 // -EncodedCommand runs it as a script block: written to stdin, PowerShell waits for a blank line after multi-line
 // statements and never runs them, MeshAgent cuts command lines longer than 4095 characters so the script can't be
 // on the command line, and an execution policy set by Group Policy can block -File but not a script block.
-function runPowerShell(script, func) {
+function runPowerShell(script, func, onStep) {
     try { fs.writeFileSync(psFile, script); } catch (ex) { func(-1, 'Unable to write ' + psFile); return; }
     var command = "& ([ScriptBlock]::Create([IO.File]::ReadAllText(" + psQuote(psFile) + ", [Text.Encoding]::UTF8)))";
     var encoded = Buffer.alloc(command.length * 2); // -EncodedCommand takes base64 of UTF-16LE
@@ -192,7 +204,7 @@ function runPowerShell(script, func) {
     watchChild(child, function (code, output) {
         try { fs.unlinkSync(psFile); } catch (ex) { }
         func(code, output);
-    });
+    }, onStep);
     try { child.stdin.end(); } catch (ex) { }
 }
 
@@ -215,18 +227,18 @@ function installPrinter(name, port, func) {
             "$global:ErrorActionPreference = 'Stop'",
             "$ErrorActionPreference = 'Stop'",
             "$ProgressPreference = 'SilentlyContinue'",
-            "$step = 'Checking Windows'",
+            "$step = 'Checking Windows'; Write-Output ('STEP ' + $step)",
             "try {",
             "  if (-not (Get-Command Add-Printer -ErrorAction SilentlyContinue)) { throw 'Remote printing needs Windows 10 or later, the PowerShell printer commands are missing.' }",
             "  $name = " + psQuote(name) + "; $port = " + psQuote(portName) + "; $drv = 'Microsoft Print To PDF'",
-            "  $step = 'Checking the printer driver'",
+            "  $step = 'Checking the printer driver'; Write-Output ('STEP ' + $step)",
             "  $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
             "  if (-not $d) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
             // On Windows 10 LTSC the driver can stay registered from a driver package an update removed: no new printer can be added
             // with it ("file not found"), and it can't be reinstalled from the remaining package (an "older version"). Turning the
             // "Microsoft Print to PDF" feature off and on registers it again. Windows' own "Microsoft Print to PDF" printer is removed and added back.
             "  if ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (-not (Test-Path $d.InfPath))) {",
-            "    $step = 'Repairing the Microsoft Print to PDF driver, its driver package is missing'",
+            "    $step = 'Repairing the Microsoft Print to PDF driver, its driver package is missing'; Write-Output ('STEP ' + $step)",
             "    $feature = 'Printing-PrintToPDFServices-Features'",
             "    $r1 = Disable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop",
             "    try { $r2 = Enable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop }",
@@ -241,22 +253,22 @@ function installPrinter(name, port, func) {
             "      throw ('The Microsoft Print to PDF driver is damaged, its driver package is missing (' + $d.InfPath + '), and turning the Windows feature off and on did not repair it.')",
             "    }",
             "  }",
-            "  $step = 'Checking the printer name'",
+            "  $step = 'Checking the printer name'; Write-Output ('STEP ' + $step)",
             "  $existing = Get-Printer -Name $name -ErrorAction SilentlyContinue",
             "  if ($existing -and ($existing.PortName -notlike '" + PORT_PREFIX + "*')) { throw ('A printer with this name already exists: ' + $name) }",
             // Remove printers left by an earlier run with another name or port. Windows doesn't remove a printer with queued jobs, so cancel them first, and don't fail the install if it still can't be removed.
-            "  $step = 'Removing the previous printer'",
+            "  $step = 'Removing the previous printer'; Write-Output ('STEP ' + $step)",
             "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue; Remove-Printer -Name $_.Name -ErrorAction SilentlyContinue }",
-            "  $step = 'Adding the printer port'",
+            "  $step = 'Adding the printer port'; Write-Output ('STEP ' + $step)",
             "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " -ErrorAction Stop }",
             // Windows can take a few seconds to delete a printer, it's listed as pending deletion meanwhile and can't be added again
-            "  $step = 'Waiting for Windows to remove the previous printer'",
+            "  $step = 'Waiting for Windows to remove the previous printer'; Write-Output ('STEP ' + $step)",
             "  for ($i = 0; $i -lt 40; $i++) {",
             "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
             "    if ((-not $p) -or ([string]$p.PrinterStatus -notmatch 'PendingDeletion')) { break }",
             "    Start-Sleep -Milliseconds 500",
             "  }",
-            "  $step = 'Adding the printer'",
+            "  $step = 'Adding the printer'; Write-Output ('STEP ' + $step)",
             "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
             "    try {",
             "      Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop",
@@ -264,7 +276,7 @@ function installPrinter(name, port, func) {
             "      $addError = $_",
             // Windows 10 LTSC can list the driver while the files needed to add a printer with it are missing (error 0x80070002).
             // Reinstall the driver from the driver store and try again, then try the Windows printer setup tool, it adds the printer another way.
-            "      $step = 'Adding the printer after reinstalling the driver'",
+            "      $step = 'Adding the printer after reinstalling the driver'; Write-Output ('STEP ' + $step)",
             "      try { Add-PrinterDriver -Name $drv -ErrorAction Stop; Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop } catch { }",
             "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
             "        Start-Process -FilePath ($env:SystemRoot + '\\System32\\rundll32.exe') -ArgumentList ('printui.dll,PrintUIEntry /if /q /Z /b \"' + $name + '\" /r \"' + $port + '\" /m \"' + $drv + '\"') -Wait -WindowStyle Hidden",
@@ -285,7 +297,7 @@ function installPrinter(name, port, func) {
             "    }",
             "  }",
             // The printer can take a moment to be listed
-            "  $step = 'Checking the printer'",
+            "  $step = 'Checking the printer'; Write-Output ('STEP ' + $step)",
             "  for ($i = 0; $i -lt 10; $i++) {",
             "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
             "    if ($p) { break }",
@@ -317,7 +329,10 @@ function installPrinter(name, port, func) {
             "  Write-Output $msg",
             "}"
         ].join('\r\n');
-        runPowerShell(script, function (code, output) { func(((code == 0) && (output == 'OK')) ? null : (output || 'PowerShell error')); });
+        var lastStep = null;
+        runPowerShell(script, function (code, output) { func(((code == 0) && (output == 'OK')) ? null : (output || 'PowerShell error')); }, function (step) {
+            if (step != lastStep) { lastStep = step; log('Install step: ' + step); }
+        });
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
         if (lpadmin == null) { func('CUPS is not installed (lpadmin not found)'); return; }
@@ -500,6 +515,7 @@ function start(options, onJob, func) {
         if ((current != null) && (current.port != port)) { stopListener(); }
         startListener(port, onJob, function (err) {
             if (err != null) { func(err); done(); return; }
+            log('Installing the printer: ' + name);
             installPrinter(name, port, function (err) {
                 if (err != null) {
                     log('Printer install failed: ' + err);
@@ -525,6 +541,7 @@ function stop(func) {
         current = null;
         log('Stopping, removing the printer');
         uninstallPrinter(function () {
+            log('Printer removed');
             cleanJobs(true);
             if (func) { try { func(); } catch (ex) { } }
             done();
