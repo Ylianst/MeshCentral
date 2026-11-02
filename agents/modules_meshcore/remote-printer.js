@@ -40,6 +40,8 @@ var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep
 var jobsFolder = agentFolder + sep + 'PrintJobs';
 var markerFile = agentFolder + sep + 'remoteprinter.json'; // Present while a printer is installed, so leftovers can be removed
 var ppdFile = agentFolder + sep + 'remoteprinter.ppd';
+var psFile = agentFolder + sep + 'remoteprinter.ps1';     // PowerShell script being run, in the agent folder only administrators can write to
+var MAX_COMMAND_LINE = 4000;                              // MeshAgent cuts Windows command lines longer than 4095 characters
 
 var server = null;          // TCP listener receiving print jobs
 var current = null;         // { name, port } of the installed printer
@@ -174,14 +176,23 @@ function getPowerShellPath() {
     return root + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 }
 
-// Run a PowerShell script, callback(exitCode, output). The script is passed with -EncodedCommand, when it's
-// written to stdin PowerShell waits for a blank line after multi-line statements like try/catch and never runs them.
+// Run a PowerShell script, callback(exitCode, output). The script is saved to a file and a short command passed with
+// -EncodedCommand runs it as a script block: written to stdin, PowerShell waits for a blank line after multi-line
+// statements and never runs them, MeshAgent cuts command lines longer than 4095 characters so the script can't be
+// on the command line, and an execution policy set by Group Policy can block -File but not a script block.
 function runPowerShell(script, func) {
+    try { fs.writeFileSync(psFile, script); } catch (ex) { func(-1, 'Unable to write ' + psFile); return; }
+    var command = "& ([ScriptBlock]::Create([IO.File]::ReadAllText(" + psQuote(psFile) + ", [Text.Encoding]::UTF8)))";
+    var encoded = Buffer.alloc(command.length * 2); // -EncodedCommand takes base64 of UTF-16LE
+    for (var i = 0; i < command.length; i++) { encoded.writeUInt16LE(command.charCodeAt(i), i * 2); }
+    var args = ['powershell', '-NoProfile', '-NoLogo', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded.toString('base64')];
     var psPath = getPowerShellPath();
-    var encoded = Buffer.alloc(script.length * 2); // -EncodedCommand takes base64 of UTF-16LE
-    for (var i = 0; i < script.length; i++) { encoded.writeUInt16LE(script.charCodeAt(i), i * 2); }
-    var child = require('child_process').execFile(psPath, ['powershell', '-NoProfile', '-NoLogo', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded.toString('base64')], {});
-    watchChild(child, func);
+    if ((psPath.length + args.join(' ').length) > MAX_COMMAND_LINE) { func(-1, 'PowerShell command line too long'); return; }
+    var child = require('child_process').execFile(psPath, args, {});
+    watchChild(child, function (code, output) {
+        try { fs.unlinkSync(psFile); } catch (ex) { }
+        func(code, output);
+    });
     try { child.stdin.end(); } catch (ex) { }
 }
 
@@ -232,10 +243,9 @@ function installPrinter(name, port, func) {
             "    }",
             "  } catch { }",
             "  Write-Output $msg",
-            "  exit 1",
             "}"
         ].join('\r\n');
-        runPowerShell(script, function (code, output) { func(((code == 0) && (output.indexOf('OK') >= 0)) ? null : (output || 'PowerShell error')); });
+        runPowerShell(script, function (code, output) { func(((code == 0) && (output == 'OK')) ? null : (output || 'PowerShell error')); });
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
         if (lpadmin == null) { func('CUPS is not installed (lpadmin not found)'); return; }
