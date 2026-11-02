@@ -117,7 +117,7 @@ function getLpadmin() {
 function cleanName(name) {
     if ((typeof name != 'string') || (name.length == 0)) { name = DEFAULT_PRINTER_NAME; }
     name = name.replace(/[\x00-\x1F\x7F]/g, '').substring(0, 64);
-    if (process.platform == 'win32') { name = name.replace(/[\\,!]/g, '_'); } else { name = name.replace(/[\s\/#\\'"]/g, '_'); }
+    if (process.platform == 'win32') { name = name.replace(/[\\,!"]/g, '_'); } else { name = name.replace(/[\s\/#\\'"]/g, '_'); }
     if (name.trim().length == 0) { name = (process.platform == 'win32') ? DEFAULT_PRINTER_NAME : DEFAULT_PRINTER_NAME.replace(/ /g, '_'); }
     return name.trim();
 }
@@ -210,11 +210,16 @@ function installPrinter(name, port, func) {
     if (process.platform == 'win32') {
         var portName = PORT_PREFIX + '_' + port;
         var script = [
+            // The script runs in a script block and the printer commands are functions of the PrintManagement module, which only
+            // see the global $ErrorActionPreference: set it globally, and pass -ErrorAction Stop to the commands that make changes.
+            "$global:ErrorActionPreference = 'Stop'",
             "$ErrorActionPreference = 'Stop'",
             "$ProgressPreference = 'SilentlyContinue'",
-            "$step = 'Checking the printer driver'",
+            "$step = 'Checking Windows'",
             "try {",
+            "  if (-not (Get-Command Add-Printer -ErrorAction SilentlyContinue)) { throw 'Remote printing needs Windows 10 or later, the PowerShell printer commands are missing.' }",
             "  $name = " + psQuote(name) + "; $port = " + psQuote(portName) + "; $drv = 'Microsoft Print To PDF'",
+            "  $step = 'Checking the printer driver'",
             "  if (-not (Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue)) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
             "  $step = 'Checking the printer name'",
             "  $existing = Get-Printer -Name $name -ErrorAction SilentlyContinue",
@@ -223,7 +228,7 @@ function installPrinter(name, port, func) {
             "  $step = 'Removing the previous printer'",
             "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue; Remove-Printer -Name $_.Name -ErrorAction SilentlyContinue }",
             "  $step = 'Adding the printer port'",
-            "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " }",
+            "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " -ErrorAction Stop }",
             // Windows can take a few seconds to delete a printer, it's listed as pending deletion meanwhile and can't be added again
             "  $step = 'Waiting for Windows to remove the previous printer'",
             "  for ($i = 0; $i -lt 40; $i++) {",
@@ -232,26 +237,44 @@ function installPrinter(name, port, func) {
             "    Start-Sleep -Milliseconds 500",
             "  }",
             "  $step = 'Adding the printer'",
-            "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) { Add-Printer -Name $name -DriverName $drv -PortName $port }",
+            "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
+            "    try {",
+            "      Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop",
+            "    } catch {",
+            // If Add-Printer fails, try the Windows printer setup tool, it adds the printer another way. Report the Add-Printer error if that fails too.
+            "      $addError = $_",
+            "      Start-Process -FilePath ($env:SystemRoot + '\\System32\\rundll32.exe') -ArgumentList ('printui.dll,PrintUIEntry /if /q /Z /b \"' + $name + '\" /r \"' + $port + '\" /m \"' + $drv + '\"') -Wait -WindowStyle Hidden",
+            "      Start-Sleep -Seconds 2",
+            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) { throw $addError }",
+            "    }",
+            "  }",
+            // The printer can take a moment to be listed
             "  $step = 'Checking the printer'",
-            "  $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
-            "  if (-not $p) { throw 'The printer is not listed after adding it' }",
+            "  for ($i = 0; $i -lt 10; $i++) {",
+            "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
+            "    if ($p) { break }",
+            "    Start-Sleep -Milliseconds 500",
+            "  }",
+            "  if (-not $p) { throw ('The printer is not listed after adding it. Printers: ' + ((Get-Printer -ErrorAction SilentlyContinue | ForEach-Object { $_.Name + ' (' + $_.DriverName + ', ' + $_.PortName + ')' }) -join '; ')) }",
             "  if ([string]$p.PrinterStatus -match 'PendingDeletion') { throw 'Windows is still removing the previous printer, try again in a few seconds' }",
-            "  if ($p.PortName -ne $port) { Set-Printer -Name $name -PortName $port }",
+            "  if ($p.PortName -ne $port) { Set-Printer -Name $name -PortName $port -ErrorAction Stop }",
             "  Write-Output 'OK'",
             "} catch {",
             // The printer cmdlets give a generic message, the Windows error code is in the CIM error data
             "  $err = $_",
             "  $msg = $step + ': ' + $err.Exception.Message",
             "  try {",
+            "    $code = $null; $text = $null",
             "    $data = $err.Exception.ErrorData",
             "    if ($data -ne $null) {",
             "      $code = $data.CimInstanceProperties['error_Code'].Value",
             "      $text = $data.CimInstanceProperties['error_WindowsErrorMessage'].Value",
-            "      if (($code -ne $null) -and ($code -ne 0)) {",
-            "        if ([string]::IsNullOrEmpty($text)) { $text = (New-Object ComponentModel.Win32Exception([int]$code)).Message }",
-            "        $msg += ' Windows error ' + $code + ': ' + $text",
-            "      }",
+            "    }",
+            "    if (($code -ne $null) -and ($code -ne 0)) {",
+            "      if ([string]::IsNullOrEmpty($text)) { $text = (New-Object ComponentModel.Win32Exception([int]$code)).Message }",
+            "      $msg += ' Windows error ' + $code + ': ' + $text",
+            "    } elseif (($err.Exception.HResult -ne $null) -and ($err.Exception.HResult -ne 0) -and ($err.Exception.HResult -ne -2146233087)) {",
+            "      $msg += ' (HRESULT 0x' + ('{0:X8}' -f $err.Exception.HResult) + ')'",
             "    }",
             "  } catch { }",
             "  Write-Output $msg",
