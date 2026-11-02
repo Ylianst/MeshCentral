@@ -577,12 +577,29 @@ function CreateAgentDefaults(parent, options = {}) {
         retryTimer = setTimeout(() => { retryTimer = null; prepare(); }, Math.min(3600000, 60000 * Math.pow(2, retries++)));
         retryTimer.unref();
     }
+    // Releases before 1.3.0 signed and served whatever sat in the package's agents folder, and a custom
+    // file left there now counts for nothing unless it matches the pins. The release CLI runs without a
+    // server, and a mismatch in the folder it is pointed at already fails that run.
+    async function strays() {
+        if (typeof parent.activateAgentDefaults !== 'function') return;
+        for (const [name, file] of entries) {
+            const local = path.join(bundled, name);
+            try { if (!regular(local) || await verified(local, file)) continue; } catch (ex) { continue; }
+            errors.push('Ignoring "' + local + '": it does not match the pinned release file. Custom agents belong in "' + path.join(parent.datapath, 'agents') + '".');
+        }
+        for (const type of Object.values(parent.meshAgentsArchitectureNumbers)) {
+            const local = path.join(bundled, type.localname);
+            if ((type.base == null) || !regular(local)) continue;
+            errors.push('Ignoring "' + local + '": ' + type.localname + ' is built from ' + type.base + ' and meshcmd.js. Custom agents belong in "' + path.join(parent.datapath, 'agents') + '".');
+        }
+    }
     function prepare(localFiles) {
         if (busy) return busy;
         busy = (async function () {
             errors = [];
             try { if (!loaded) await load(); }
             catch (ex) { errors.push('Unable to read default agent releases: ' + ex.message); return; }
+            await strays();
             const controller = new AbortController(), timer = setTimeout(() => controller.abort(new Error('Downloads did not finish within 10 minutes.')), 600000);
             const missing = new Set();
             let cause = null;
