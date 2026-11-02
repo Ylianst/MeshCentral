@@ -4220,10 +4220,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (user == null) { res.sendStatus(404); return; }
         if (obj.force2factorPending(domain, user, req)) { res.sendStatus(404); return; } // 2FA setup is still required for this account
 
+        if ((c.p != null) && (!Number.isInteger(c.p) || ((c.p & 4) == 0))) { res.sendStatus(404); return; }
+        if ((typeof c.expire == 'number') && (c.expire <= Date.now())) { res.sendStatus(404); return; }
+
         // If this cookie has restricted usages, check that it's allowed to perform downloads
         if (Array.isArray(c.usages) && (c.usages.indexOf(10) < 0)) { res.sendStatus(404); return; } // Check protocol #10
 
-        if (c.nid != null) { req.query.n = c.nid.split('/')[2]; } // This cookie is restricted to a specific nodeid.
+        if (c.nid != null) {
+            if ((typeof c.nid != 'string') || (c.nid.split('/').length != 3) || !c.nid.startsWith('node/' + domain.id + '/')) { res.sendStatus(404); return; }
+            req.query.n = c.nid.split('/')[2];
+        }
         if (req.query.n == null) { res.sendStatus(404); return; }
 
         // Check if this user has permission to manage this computer
@@ -4231,9 +4237,17 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((node == null) || ((rights & MESHRIGHT_REMOTECONTROL) == 0) || (visible == false)) { res.sendStatus(404); return; } // We don't have remote control rights to this device
             if ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0)) { res.sendStatus(404); return; } // This user is not allowed to use files on this device
 
-            // All good, start the file transfer
-            req.query.id = getRandomLowerCase(12);
-            obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, null, res, req, domain, user, node.meshid, node._id);
+            if (c.pid != null) {
+                obj.db.GetAllTypeNodeFiltered([node._id], domain.id, 'deviceshare', null, function (err, docs) {
+                    if ((err != null) || !Array.isArray(docs) || !docs.some(function (share) { return (share.publicid === c.pid) && ((share.extrakey == null) || (share.extrakey === c.k)); })) { res.sendStatus(404); return; }
+                    startTransfer();
+                });
+            } else { startTransfer(); }
+
+            function startTransfer() {
+                req.query.id = getRandomLowerCase(12);
+                obj.meshDeviceFileHandler.CreateMeshDeviceFile(obj, null, res, req, domain, user, node.meshid, node._id, c);
+            }
         });
     }
 
