@@ -794,7 +794,7 @@
                         <div id="p11bigfail" style="display:none"><b>&#10007;</b></div>
                         <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
                         <div id=DeskParent>
-                            <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                            <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>
                         </div>
                         <div id=DeskTools>
                             <div id=deskToolsAreaTop>
@@ -4948,7 +4948,7 @@
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
-                                QH('DeskParent', '<canvas id="Desk" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                                QH('DeskParent', '<canvas id="Desk" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>');
                             } else {
                                 // This is a new device, create a canvas for it.
                                 var c = document.createElement('canvas');
@@ -9568,7 +9568,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    if(desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>'); }
+                    if(desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -11056,6 +11056,136 @@
         function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
+
+        // Touch input for the remote desktop, the direct mode of default3.handlebars without its trackpad and native zoom modes.
+        // Tap is a left click, a double tap is a double click, a long press is a right click and a long press followed by a move is a left drag.
+        // A plain one-finger drag only moves the remote cursor, and a two-finger drag scrolls.
+        var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
+        var dtouchMoved = false;
+        var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
+        var dtouchLongPressTimer = null;
+        var dtouchTwoFingerLastY = 0;
+        var dtouchLongPressed = false; // long press fired, so the next move starts a drag and a lift sends a right click
+        var dtouchDragActive = false; // left button is down on the remote until the finger lifts
+
+        // No rotation correction here as in default3, because SendMouseMsg already maps rotated views itself
+        function dtouchMakeEvent(clientX, clientY, button) {
+            return { pageX: clientX + window.scrollX, pageY: clientY + window.scrollY, addx: Q('DeskParent').scrollLeft, addy: Q('DeskParent').scrollTop, button: button || 0, buttons: 0, which: (button === 2) ? 3 : 1 };
+        }
+
+        // Same routing as dmousedown(), the WebRTC channel when it is up and the relay otherwise
+        function dtouchSend(action, ev) {
+            if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m[action](ev); desktop.m.sendKeepAlive(); } else { desktop.m[action](ev); }
+        }
+
+        function dtouchSendClick(clientX, clientY, button) {
+            var ev = dtouchMakeEvent(clientX, clientY, button);
+            dtouchSend('mousedown', ev); dtouchSend('mouseup', ev);
+        }
+
+        // Release the left button a drag left down, not gated on the input checkbox because the press already went out
+        function dtouchReleaseDrag() {
+            if (!dtouchDragActive) return;
+            dtouchDragActive = false; dtouchLongPressed = false;
+            if (!xxdialogMode && desktop != null) { dtouchSend('mouseup', dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
+        }
+
+        // The browser took the touch away (system UI, tab switch), so end a drag without sending a click
+        function dtouchcancel(e) {
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            dtouchReleaseDrag();
+            dtouchLongPressed = false; dtouchMoved = true;
+        }
+
+        function dtouchstart(e) {
+            setSessionActivity();
+            dtouchReleaseDrag(); // a second finger landing mid-drag must not leave the button down
+            dtouchMoved = false;
+            dtouchLongPressed = false; dtouchDragActive = false;
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault(); // also stops the compatibility mouse events, so a tap is not sent twice
+            if (e.touches.length === 2) { dtouchTwoFingerLastY = (e.touches[0].clientY + e.touches[1].clientY) / 2; return; }
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchStartX = dtouchLastX = t.clientX;
+            dtouchStartY = dtouchLastY = t.clientY;
+            dtouchLongPressTimer = setTimeout(function () {
+                dtouchLongPressTimer = null;
+                if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                dtouchLongPressed = true;
+                dtouchMoved = true;
+            }, 500);
+        }
+
+        function dtouchmove(e) {
+            setSessionActivity();
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                var dy = dtouchTwoFingerLastY - midY;
+                dtouchTwoFingerLastY = midY;
+                if ((Math.abs(dy) > 1) && Q('DeskControl').checked) {
+                    // Scroll at the last finger position so the remote cursor does not jump
+                    var ev = dtouchMakeEvent(dtouchLastX, dtouchLastY, 0);
+                    ev.wheelDelta = -dy * 4;
+                    dtouchSend('mousewheel', ev);
+                }
+                return;
+            }
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+            if (dtouchDragActive) {
+                if (Q('DeskControl').checked) { dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                return;
+            }
+            if (dtouchLongPressed) {
+                if ((Math.abs(t.clientX - dtouchStartX) > 4) || (Math.abs(t.clientY - dtouchStartY) > 4)) {
+                    if (Q('DeskControl').checked) {
+                        dtouchDragActive = true;
+                        dtouchSend('mousedown', dtouchMakeEvent(dtouchStartX, dtouchStartY, 0));
+                        dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0));
+                    } else { dtouchLongPressed = false; }
+                }
+                return;
+            }
+            if ((Math.abs(t.clientX - dtouchStartX) > 8) || (Math.abs(t.clientY - dtouchStartY) > 8)) {
+                dtouchMoved = true;
+                if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                if (Q('DeskControl').checked) { dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+            }
+        }
+
+        function dtouchend(e) {
+            setSessionActivity();
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (dtouchDragActive) { dtouchReleaseDrag(); return; } // before the input check, so an unchecked box cannot leave the button down
+            if (!Q('DeskControl').checked) return;
+            if (e.changedTouches.length !== 1) return;
+            var t = e.changedTouches[0];
+            if (dtouchLongPressed) {
+                dtouchLongPressed = false;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                return;
+            }
+            // 30 pixels and not the 8 of dtouchMoved, because finger pressure alone moves a tap by a few pixels
+            if ((Math.abs(t.clientX - dtouchStartX) > 30) || (Math.abs(t.clientY - dtouchStartY) > 30)) return;
+            var now = Date.now();
+            if (((now - dtouchLastTapTime) < 400) && (Math.abs(t.clientX - dtouchLastTapX) < 30) && (Math.abs(t.clientY - dtouchLastTapY) < 30)) {
+                // Second tap goes to the first tap's position, because Windows needs both clicks within 4 remote pixels.
+                // The DBLCLICK message goes out as well, as dblClickDetect() does for the mouse, because macOS never pairs two separate clicks.
+                var ev = dtouchMakeEvent(dtouchLastTapX, dtouchLastTapY, 0);
+                dtouchSend('mousedown', ev); dtouchSend('mousedblclick', ev); dtouchSend('mouseup', ev);
+                dtouchLastTapTime = 0;
+            } else {
+                dtouchSendClick(t.clientX, t.clientY, 0);
+                dtouchLastTapTime = now; dtouchLastTapX = t.clientX; dtouchLastTapY = t.clientY;
+            }
+        }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), (id + '|' + name)); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 

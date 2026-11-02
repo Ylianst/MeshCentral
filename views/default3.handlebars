@@ -1177,7 +1177,7 @@
                             <canvas id=Desk width=640 height=480 oncontextmenu="return false"
                                 onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)
                                 onmousewheel=dmousewheel(event)
-                                ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event)></canvas>
+                                ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>
                         </div>
                         <div id=DeskTools>
                             <div id=deskToolsAreaTop>
@@ -10910,7 +10910,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    if (desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event)></canvas>'); }
+                    if (desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -11205,15 +11205,18 @@
                             c.ontouchstart = null;
                             c.ontouchmove = null;
                             c.ontouchend = null;
+                            c.ontouchcancel = null;
                             c.addEventListener('touchstart', dtouchstart, { passive: false });
                             c.addEventListener('touchmove', dtouchmove, { passive: false });
                             c.addEventListener('touchend', dtouchend, { passive: false });
+                            c.addEventListener('touchcancel', dtouchcancel, { passive: false });
                         };
                         desktop.m.UnGrabMouseInput = function() {
                             var c = desktop.m.CanvasId;
                             c.removeEventListener('touchstart', dtouchstart);
                             c.removeEventListener('touchmove', dtouchmove);
                             c.removeEventListener('touchend', dtouchend);
+                            c.removeEventListener('touchcancel', dtouchcancel);
                             _origUngrab.call(desktop.m);
                         };
                         // Override SendMouseMsg to fix the bounds check for rotated canvas.
@@ -12803,9 +12806,27 @@
             if (dm) { dm.mousedown(ev); dm.mouseup(ev); }
         }
 
+        // Release the left button a drag left down, in either mode, not gated on the input checkbox because the press already went out
+        function dtouchReleaseDrag() {
+            var dm = (!xxdialogMode && desktop != null) ? dtouchGetModule() : null;
+            if (dtouchDragActive) { dtouchDragActive = false; dtouchLongPressed = false; if (dm) dm.mouseup(dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
+            if (trackpadDragActive) { trackpadDragActive = false; trackpadLongPressed = false; if (dm) dm.mouseup(trackpadMakeEvent(0)); }
+            trackpadStopEdgeScroll();
+        }
+
+        // The browser took the touch away (system UI, tab switch), so end a drag without sending a click
+        function dtouchcancel(e) {
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (trackpadTapTimer) { clearTimeout(trackpadTapTimer); trackpadTapTimer = null; }
+            dtouchReleaseDrag();
+            dtouchLongPressed = false; trackpadLongPressed = false; dtouchMoved = true; trackpadTapMoved = true;
+            trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
+        }
+
         function dtouchstart(e) {
             setSessionActivity();
             deskCloseMobileActions();
+            dtouchReleaseDrag(); // a second finger landing mid-drag must not leave the button down
             dtouchMoved = false;
             dtouchLongPressed = false; dtouchDragActive = false; trackpadStopEdgeScroll();
             if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
@@ -12994,11 +13015,7 @@
             if (trackpadMode) {
                 trackpadStopEdgeScroll();
                 trackpadLastX = null; trackpadLastY = null; trackpadDown = false;
-                if (trackpadDragActive) {
-                    trackpadDragActive = false; trackpadLongPressed = false;
-                    if (Q('DeskControl').checked) { var dm = dtouchGetModule(); if (dm) dm.mouseup(trackpadMakeEvent(0)); }
-                    return;
-                }
+                if (trackpadDragActive) { dtouchReleaseDrag(); return; }
                 if (trackpadLongPressed) {
                     trackpadLongPressed = false;
                     if (Q('DeskControl').checked) trackpadSendClick(2);
@@ -13011,16 +13028,11 @@
                 return;
             }
             // Direct mode
+            // Drag end: mouseup at the final finger position, before the input check so an unchecked box cannot leave the button down
+            if (dtouchDragActive) { dtouchReleaseDrag(); return; }
             if (!Q('DeskControl').checked) return;
             if (e.changedTouches.length !== 1) return;
             var t = e.changedTouches[0];
-            // Drag end: send mouseup at final finger position
-            if (dtouchDragActive) {
-                dtouchDragActive = false; dtouchLongPressed = false;
-                trackpadStopEdgeScroll();
-                var dm = dtouchGetModule(); if (dm) dm.mouseup(dtouchMakeEvent(t.clientX, t.clientY, 0));
-                return;
-            }
             // Long press without drag -> right-click
             if (dtouchLongPressed) {
                 dtouchLongPressed = false;
@@ -13037,7 +13049,9 @@
             if ((now - dtouchLastTapTime) < 400 && dx < 30 && dy < 30) {
                 // Use first tap's position: Windows requires both clicks within 4 remote px;
                 // a 2px finger shift × ~5x scale = 10 remote px, breaking detection.
-                dtouchSendClick(dtouchLastTapX, dtouchLastTapY, 0);
+                // The DBLCLICK message goes out as well, as dblClickDetect() does for the mouse, because macOS never pairs two separate clicks
+                var dtEv = dtouchMakeEvent(dtouchLastTapX, dtouchLastTapY, 0), dtDm = dtouchGetModule();
+                if (dtDm) { dtDm.mousedown(dtEv); dtDm.mousedblclick(dtEv); dtDm.mouseup(dtEv); }
                 dtouchLastTapTime = 0; // reset so a 3rd tap doesn't re-trigger
             } else {
                 dtouchSendClick(t.clientX, t.clientY, 0);
