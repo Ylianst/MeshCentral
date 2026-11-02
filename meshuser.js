@@ -2074,6 +2074,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     var chguser = parent.users[command.userid];
                     if (chguser) {
+                        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                         // If we are not full administrator, we can't change anything on a different full administrator
                         if ((user.siteadmin != SITERIGHT_ADMIN) & (chguser.siteadmin === SITERIGHT_ADMIN)) break;
 
@@ -2131,6 +2132,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Can only perform this operation on other users of our group.
                     var chguser = parent.users[command.userid];
                     if (chguser == null) break; // This user does not exists
+                    if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                     if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                     // Create the notification message
@@ -2169,6 +2171,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Can only perform this operation on other users of our group.
                         var chguser = parent.users[command.userid];
                         if (chguser == null) break; // This user does not exists
+                        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                         if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
 
                         // Create the notification message
@@ -3837,6 +3840,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Can only perform this operation on other users of our group.
                             var chguser = parent.users[command.id];
                             if (chguser == null) break; // This user does not exists
+                            if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) break; // Operation only valid for current domain
                             if ((user.groups != null) && (user.groups.length > 0) && ((chguser.groups == null) || (findOne(chguser.groups, user.groups) == false))) break;
                             db.Set({ _id: 'nt' + command.id, type: 'note', value: command.notes }); // Set the note for this user
                         }
@@ -6917,6 +6921,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         else {
             emailuser = parent.users[command.userid];
             if (emailuser == null) { errMsg = 'Invalid userid'; }
+            else if ((obj.crossDomain !== true) && (emailuser.domain != domain.id)) { errMsg = 'Invalid userid'; } // Operation only valid for current domain
             else if (emailuser.email == null) { errMsg = 'No validated email address for this user'; }
             else if (emailuser.emailVerified !== true) { errMsg = 'No validated email address for this user'; }
         }
@@ -7469,6 +7474,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         else {
             smsuser = parent.users[command.userid];
             if (smsuser == null) { errMsg = "Invalid username"; }
+            else if ((obj.crossDomain !== true) && (smsuser.domain != domain.id)) { errMsg = "Invalid username"; } // Operation only valid for current domain
             else if (smsuser.phone == null) { errMsg = "No phone number for this user"; }
         }
 
@@ -7492,6 +7498,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         else {
             msguser = parent.users[command.userid];
             if (msguser == null) { errMsg = "Invalid username"; }
+            else if ((obj.crossDomain !== true) && (msguser.domain != domain.id)) { errMsg = "Invalid username"; } // Operation only valid for current domain
             else if (msguser.msghandle == null) { errMsg = "No messaging service configured for this user"; }
         }
 
@@ -7530,6 +7537,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
         var chguser = parent.users[uid], flags = 0, change = 0;
         if (chguser == null) return;
+        if ((obj.crossDomain !== true) && (chguser.domain != domain.id)) return; // Operation only valid for current domain
         if (typeof chguser.flags == 'number') { flags = chguser.flags; }
 
         if (command.image == 0) {
