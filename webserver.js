@@ -589,22 +589,19 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Keep a record of the last agent issues.
     obj.getAgentIssues = function () { return obj.agentIssues; }
     obj.setAgentIssue = function (agent, issue) {
-        var addrport = agent.remoteaddrport || '';
-        if (!addrport) {
-            var addr = agent.remoteaddr || '';
-            if (!addr && agent.ws && agent.ws._socket && agent.ws._socket.remoteAddress) {
-                addr = agent.ws._socket.remoteAddress;
-            }
-            if (addr) {
-                var port = '';
-                if (agent.ws && agent.ws._socket && agent.ws._socket.remotePort) {
-                    port = ':' + agent.ws._socket.remotePort;
-                }
-                addrport = addr + port;
-            }
-        }
+        var addrport = agent.issueRemoteAddrPort || agent.remoteaddrport || '';
+
+		if (!addrport) {
+			var addr = agent.issueRemoteAddr || agent.remoteaddr || '';
+
+			if (!addr && agent.ws && agent.ws._socket && agent.ws._socket.remoteAddress) {
+				addr = agent.ws._socket.remoteAddress;
+			}
+
+			addrport = addr;
+		}
         obj.agentIssues.push([new Date().toLocaleString(), addrport, issue]);
-        while (obj.setAgentIssue.length > 50) { obj.agentIssues.shift(); }
+        while (obj.agentIssues.length > 50) { obj.agentIssues.shift(); }
     }
     obj.agentIssues = [];
 
