@@ -20,7 +20,8 @@ limitations under the License.
 // The printer is pointed at a raw TCP socket on 127.0.0.1 that this module listens on, every connection
 // is one print job. The job is saved to disk and handed to the caller so it can be downloaded by the user.
 //
-// Windows: "Microsoft Print To PDF" driver on a Standard TCP/IP port, the spooler sends the PDF to us.
+// Windows: "Microsoft Print To PDF" driver on a Standard TCP/IP port, the spooler sends the PDF to us. The printer is
+//          installed with the Windows print spooler API, see win-remote-printer.js.
 // Linux:   CUPS queue with a PPD that converts to PDF, using the "socket://" backend.
 //
 
@@ -31,7 +32,7 @@ var DEFAULT_PRINTER_NAME = 'MeshCentral Printer';
 var DEFAULT_TCP_PORT = 35500;
 var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
 var MAX_JOB_AGE = 15 * 60 * 1000;                   // Jobs older than this are deleted
-var COMMAND_TIMEOUT = 5 * 60 * 1000;                // PowerShell or lpadmin commands are killed after this, repairing the PDF driver can take a few minutes
+var COMMAND_TIMEOUT = 2 * 60 * 1000;                // lpadmin commands are killed after this
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
 var JOB_IDLE_TIMEOUT = 30 * 1000;                   // Any job is complete when no data arrives this long
 
@@ -40,8 +41,6 @@ var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep
 var jobsFolder = agentFolder + sep + 'PrintJobs';
 var markerFile = agentFolder + sep + 'remoteprinter.json'; // Present while a printer is installed, so leftovers can be removed
 var ppdFile = agentFolder + sep + 'remoteprinter.ppd';
-var psFile = agentFolder + sep + 'remoteprinter.ps1';     // PowerShell script being run, in the agent folder only administrators can write to
-var MAX_COMMAND_LINE = 4000;                              // MeshAgent cuts Windows command lines longer than 4095 characters
 
 var server = null;          // TCP listener receiving print jobs
 var current = null;         // { name, port } of the installed printer
@@ -50,8 +49,6 @@ var children = [];          // Keep a reference on running child processes
 var queue = [];             // Install / uninstall operations run one at a time
 var queueBusy = false;
 var startRequested = false; // Set once start() is called, so cleanup() doesn't remove a printer installed by this run
-var windowsMethod = 'powershell'; // How the printer is installed on Windows: 'powershell', or 'api' for the print spooler API (win-remote-printer.js)
-var windowsMethodOverride = null; // Set with the "remoteprint method" agent console command, for testing
 var history = [];           // Recent events, shown by the "remoteprint" agent console command
 
 function log(msg) {
@@ -124,8 +121,6 @@ function cleanName(name) {
     return name.trim();
 }
 
-function psQuote(str) { return "'" + str.replace(/'/g, "''") + "'"; }
-
 // Run a queued operation, operations are run one at a time
 function runQueued(func) {
     queue.push(func);
@@ -140,7 +135,7 @@ function runNext() {
 
 // Collect the output of a child process, callback(exitCode, output). The child is killed if it runs too long,
 // so a stuck command can't block the operation queue.
-function watchChild(child, func, onStep) {
+function watchChild(child, func) {
     var done = false;
     var finish = function (code, output) {
         if (done) return;
@@ -152,62 +147,15 @@ function watchChild(child, func, onStep) {
     var timer = setTimeout(function () { try { child.kill(); } catch (ex) { } finish(-1, 'Timed out installing the printer'); }, COMMAND_TIMEOUT);
     children.push(child);
     child.stdout.str = ''; child.stderr.str = '';
-    child.stdout.lines = '';
-    child.stdout.on('data', function (c) {
-        var text = c.toString();
-        this.str += text;
-        if (onStep == null) return;
-        this.lines += text; // Report "STEP <text>" lines as they arrive
-        var i;
-        while ((i = this.lines.indexOf('\n')) >= 0) {
-            var line = this.lines.substring(0, i).trim();
-            this.lines = this.lines.substring(i + 1);
-            if (line.indexOf('STEP ') == 0) { try { onStep(line.substring(5)); } catch (ex) { } }
-        }
-    });
+    child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.on('data', function (c) { this.str += c.toString(); });
     child.on('exit', function (code) { finish(code, getOutput(child.stdout.str, child.stderr.str)); });
 }
 
-// The command output used in messages: stdout, or stderr when there's none. PowerShell writes progress and
-// errors to stderr as CLIXML, keep only the error messages from it.
+// The command output used in messages: stdout, or stderr when there's none
 function getOutput(stdout, stderr) {
-    stdout = stdout.split('\n').filter(function (line) { return line.trim().indexOf('STEP ') != 0; }).join('\n').trim();
-    if (stdout.length > 0) return stdout;
-    stderr = stderr.trim();
-    if (stderr.indexOf('#< CLIXML') != 0) return stderr;
-    var errors = [], re = /<S S="Error">([^<]*)<\/S>/g, m;
-    while ((m = re.exec(stderr)) != null) { errors.push(m[1]); }
-    return errors.join('').replace(/_x000D_/g, '').replace(/_x000A_/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').trim();
-}
-
-// Path of the 64-bit PowerShell on 64-bit Windows, also from a 32-bit agent. A 32-bit PowerShell looks for
-// 32-bit printer drivers and Add-Printer fails.
-function getPowerShellPath() {
-    var root = process.env['SystemRoot'] || 'C:\\Windows';
-    var sysnative = root + '\\Sysnative\\WindowsPowerShell\\v1.0\\powershell.exe'; // Only visible to 32-bit processes on 64-bit Windows
-    try { if (fs.existsSync(sysnative)) return sysnative; } catch (ex) { }
-    return root + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
-}
-
-// Run a PowerShell script, callback(exitCode, output). The script is saved to a file and a short command passed with
-// -EncodedCommand runs it as a script block: written to stdin, PowerShell waits for a blank line after multi-line
-// statements and never runs them, MeshAgent cuts command lines longer than 4095 characters so the script can't be
-// on the command line, and an execution policy set by Group Policy can block -File but not a script block.
-function runPowerShell(script, func, onStep) {
-    try { fs.writeFileSync(psFile, script); } catch (ex) { func(-1, 'Unable to write ' + psFile); return; }
-    var command = "& ([ScriptBlock]::Create([IO.File]::ReadAllText(" + psQuote(psFile) + ", [Text.Encoding]::UTF8)))";
-    var encoded = Buffer.alloc(command.length * 2); // -EncodedCommand takes base64 of UTF-16LE
-    for (var i = 0; i < command.length; i++) { encoded.writeUInt16LE(command.charCodeAt(i), i * 2); }
-    var args = ['powershell', '-NoProfile', '-NoLogo', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded.toString('base64')];
-    var psPath = getPowerShellPath();
-    if ((psPath.length + args.join(' ').length) > MAX_COMMAND_LINE) { func(-1, 'PowerShell command line too long'); return; }
-    var child = require('child_process').execFile(psPath, args, {});
-    watchChild(child, function (code, output) {
-        try { fs.unlinkSync(psFile); } catch (ex) { }
-        func(code, output);
-    }, onStep);
-    try { child.stdin.end(); } catch (ex) { }
+    stdout = stdout.trim();
+    return (stdout.length > 0) ? stdout : stderr.trim();
 }
 
 // Run a command without a shell, callback(exitCode, output)
@@ -220,127 +168,11 @@ function writeMarker(m) { try { fs.writeFileSync(markerFile, JSON.stringify(m));
 function deleteMarker() { try { fs.unlinkSync(markerFile); } catch (ex) { } }
 
 // Install the printer, callback(err)
-function getWindowsMethod() { return windowsMethodOverride || windowsMethod; }
-
 function installPrinter(name, port, func) {
-    if ((process.platform == 'win32') && (getWindowsMethod() == 'api')) {
+    if (process.platform == 'win32') {
         try {
             require('win-remote-printer').install(name, PORT_PREFIX + '_' + port, port, 'Microsoft Print To PDF', PORT_PREFIX, function (step) { log('Install step: ' + step); }, function (err) { func(err); });
         } catch (ex) { func('Windows print spooler API: ' + ex); }
-    } else if (process.platform == 'win32') {
-        var portName = PORT_PREFIX + '_' + port;
-        var script = [
-            // The script runs in a script block and the printer commands are functions of the PrintManagement module, which only
-            // see the global $ErrorActionPreference: set it globally, and pass -ErrorAction Stop to the commands that make changes.
-            "$global:ErrorActionPreference = 'Stop'",
-            "$ErrorActionPreference = 'Stop'",
-            "$ProgressPreference = 'SilentlyContinue'",
-            "$step = 'Checking Windows'; Write-Output ('STEP ' + $step)",
-            "try {",
-            "  if (-not (Get-Command Add-Printer -ErrorAction SilentlyContinue)) { throw 'Remote printing needs Windows 10 or later, the PowerShell printer commands are missing.' }",
-            "  $name = " + psQuote(name) + "; $port = " + psQuote(portName) + "; $drv = 'Microsoft Print To PDF'",
-            "  $step = 'Checking the printer driver'; Write-Output ('STEP ' + $step)",
-            "  $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
-            "  if (-not $d) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
-            // On Windows 10 LTSC the driver can stay registered from a driver package an update removed: no new printer can be added
-            // with it ("file not found"), and it can't be reinstalled from the remaining package (an "older version"). Turning the
-            // "Microsoft Print to PDF" feature off and on registers it again. Windows' own "Microsoft Print to PDF" printer is removed and added back.
-            "  if ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (-not (Test-Path $d.InfPath))) {",
-            "    $step = 'Repairing the Microsoft Print to PDF driver, its driver package is missing'; Write-Output ('STEP ' + $step)",
-            "    $feature = 'Printing-PrintToPDFServices-Features'",
-            "    $r1 = Disable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop",
-            "    try { $r2 = Enable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop }",
-            "    catch { throw ('Turning the \"Microsoft Print to PDF\" Windows feature back on failed, turn it on again in Windows Features: ' + $_.Exception.Message) }",
-            "    for ($i = 0; $i -lt 30; $i++) {",
-            "      $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
-            "      if ($d -and ([string]::IsNullOrEmpty($d.InfPath) -or (Test-Path $d.InfPath))) { break }",
-            "      Start-Sleep -Seconds 1",
-            "    }",
-            "    if ((-not $d) -or ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (-not (Test-Path $d.InfPath)))) {",
-            "      if ($r1.RestartNeeded -or $r2.RestartNeeded) { throw 'The Microsoft Print to PDF driver was repaired, restart the device to finish.' }",
-            "      throw ('The Microsoft Print to PDF driver is damaged, its driver package is missing (' + $d.InfPath + '), and turning the Windows feature off and on did not repair it.')",
-            "    }",
-            "  }",
-            "  $step = 'Checking the printer name'; Write-Output ('STEP ' + $step)",
-            "  $existing = Get-Printer -Name $name -ErrorAction SilentlyContinue",
-            "  if ($existing -and ($existing.PortName -notlike '" + PORT_PREFIX + "*')) { throw ('A printer with this name already exists: ' + $name) }",
-            // Remove printers left by an earlier run with another name or port. Windows doesn't remove a printer with queued jobs, so cancel them first, and don't fail the install if it still can't be removed.
-            "  $step = 'Removing the previous printer'; Write-Output ('STEP ' + $step)",
-            "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue; Remove-Printer -Name $_.Name -ErrorAction SilentlyContinue }",
-            "  $step = 'Adding the printer port'; Write-Output ('STEP ' + $step)",
-            "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " -ErrorAction Stop }",
-            // Windows can take a few seconds to delete a printer, it's listed as pending deletion meanwhile and can't be added again
-            "  $step = 'Waiting for Windows to remove the previous printer'; Write-Output ('STEP ' + $step)",
-            "  for ($i = 0; $i -lt 40; $i++) {",
-            "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
-            "    if ((-not $p) -or ([string]$p.PrinterStatus -notmatch 'PendingDeletion')) { break }",
-            "    Start-Sleep -Milliseconds 500",
-            "  }",
-            "  $step = 'Adding the printer'; Write-Output ('STEP ' + $step)",
-            "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
-            "    try {",
-            "      Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop",
-            "    } catch {",
-            "      $addError = $_",
-            // Windows 10 LTSC can list the driver while the files needed to add a printer with it are missing (error 0x80070002).
-            // Reinstall the driver from the driver store and try again, then try the Windows printer setup tool, it adds the printer another way.
-            "      $step = 'Adding the printer after reinstalling the driver'; Write-Output ('STEP ' + $step)",
-            "      try { Add-PrinterDriver -Name $drv -ErrorAction Stop; Add-Printer -Name $name -DriverName $drv -PortName $port -ErrorAction Stop } catch { }",
-            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
-            "        Start-Process -FilePath ($env:SystemRoot + '\\System32\\rundll32.exe') -ArgumentList ('printui.dll,PrintUIEntry /if /q /Z /b \"' + $name + '\" /r \"' + $port + '\" /m \"' + $drv + '\"') -Wait -WindowStyle Hidden",
-            "        Start-Sleep -Seconds 2",
-            "      }",
-            "      if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) {",
-            // Find out whether the driver or the TCP/IP port is the problem: try a test printer with the driver on the port Windows uses for it
-            "        $notes = @()",
-            "        $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
-            "        if ($d) { $notes += ('driver INF ' + $d.InfPath + ', found: ' + ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (Test-Path $d.InfPath))) }",
-            "        $test = 'MeshCentral PDF test'",
-            "        try { Add-Printer -Name $test -DriverName $drv -PortName 'PORTPROMPT:' -ErrorAction Stop; $notes += 'a test printer with this driver on PORTPROMPT: works'; Remove-Printer -Name $test -ErrorAction SilentlyContinue }",
-            "        catch { $c = $null; try { $c = $_.Exception.ErrorData.CimInstanceProperties['error_Code'].Value } catch { }; $notes += ('a test printer with this driver on PORTPROMPT: fails too, Windows error ' + $c) }",
-            "        $global:installNotes = $notes -join '; '",
-            "        $step = 'Adding the printer'",
-            "        throw $addError",
-            "      }",
-            "    }",
-            "  }",
-            // The printer can take a moment to be listed
-            "  $step = 'Checking the printer'; Write-Output ('STEP ' + $step)",
-            "  for ($i = 0; $i -lt 10; $i++) {",
-            "    $p = Get-Printer -Name $name -ErrorAction SilentlyContinue",
-            "    if ($p) { break }",
-            "    Start-Sleep -Milliseconds 500",
-            "  }",
-            "  if (-not $p) { throw ('The printer is not listed after adding it. Printers: ' + ((Get-Printer -ErrorAction SilentlyContinue | ForEach-Object { $_.Name + ' (' + $_.DriverName + ', ' + $_.PortName + ')' }) -join '; ')) }",
-            "  if ([string]$p.PrinterStatus -match 'PendingDeletion') { throw 'Windows is still removing the previous printer, try again in a few seconds' }",
-            "  if ($p.PortName -ne $port) { Set-Printer -Name $name -PortName $port -ErrorAction Stop }",
-            "  Write-Output 'OK'",
-            "} catch {",
-            // The printer cmdlets give a generic message, the Windows error code is in the CIM error data
-            "  $err = $_",
-            "  $msg = $step + ': ' + $err.Exception.Message",
-            "  try {",
-            "    $code = $null; $text = $null",
-            "    $data = $err.Exception.ErrorData",
-            "    if ($data -ne $null) {",
-            "      $code = $data.CimInstanceProperties['error_Code'].Value",
-            "      $text = $data.CimInstanceProperties['error_WindowsErrorMessage'].Value",
-            "    }",
-            "    if (($code -ne $null) -and ($code -ne 0)) {",
-            "      if ([string]::IsNullOrEmpty($text)) { $text = (New-Object ComponentModel.Win32Exception([int]$code)).Message }",
-            "      $msg += ' Windows error ' + $code + ': ' + $text",
-            "    } elseif (($err.Exception.HResult -ne $null) -and ($err.Exception.HResult -ne 0) -and ($err.Exception.HResult -ne -2146233087)) {",
-            "      $msg += ' (HRESULT 0x' + ('{0:X8}' -f $err.Exception.HResult) + ')'",
-            "    }",
-            "  } catch { }",
-            "  if ($global:installNotes) { $msg += ' (' + $global:installNotes + ')' }",
-            "  Write-Output $msg",
-            "}"
-        ].join('\r\n');
-        var lastStep = null;
-        runPowerShell(script, function (code, output) { func(((code == 0) && (output == 'OK')) ? null : (output || 'PowerShell error')); }, function (step) {
-            if (step != lastStep) { lastStep = step; log('Install step: ' + step); }
-        });
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
         if (lpadmin == null) { func('CUPS is not installed (lpadmin not found)'); return; }
@@ -361,20 +193,10 @@ function installPrinter(name, port, func) {
 // Remove all printers installed by this module, callback()
 function uninstallPrinter(func) {
     var marker = readMarker();
-    if ((process.platform == 'win32') && (getWindowsMethod() == 'api')) {
+    if (process.platform == 'win32') {
         try {
             require('win-remote-printer').uninstall(PORT_PREFIX, function () { deleteMarker(); func(); });
         } catch (ex) { log('Windows print spooler API: ' + ex); deleteMarker(); func(); }
-    } else if (process.platform == 'win32') {
-        var script = [
-            "$ErrorActionPreference = 'SilentlyContinue'",
-            "$ProgressPreference = 'SilentlyContinue'",
-            "Get-Printer | Where-Object { $_.PortName -like '" + PORT_PREFIX + "*' } | ForEach-Object { Get-PrintJob -PrinterName $_.Name | Remove-PrintJob; $_ } | Remove-Printer",
-            "Start-Sleep -Milliseconds 500",
-            "Get-PrinterPort | Where-Object { $_.Name -like '" + PORT_PREFIX + "*' } | Remove-PrinterPort",
-            "Write-Output 'OK'"
-        ].join('\r\n');
-        runPowerShell(script, function () { deleteMarker(); func(); });
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
         if ((lpadmin == null) || (marker == null) || (marker.name == null)) { deleteMarker(); func(); return; }
@@ -520,7 +342,6 @@ function start(options, onJob, func) {
     var name = cleanName(options.printerName);
     var port = parseInt(options.port);
     if (isNaN(port) || (port < 1024) || (port > 65535)) { port = DEFAULT_TCP_PORT; }
-    if ((options.windowsMethod == 'api') || (options.windowsMethod == 'powershell')) { windowsMethod = options.windowsMethod; }
     startRequested = true;
     runQueued(function (done) {
         if (isSupported() == false) { func('Remote printing is not supported on this device'); done(); return; }
@@ -528,7 +349,7 @@ function start(options, onJob, func) {
         if ((current != null) && (current.port != port)) { stopListener(); }
         startListener(port, onJob, function (err) {
             if (err != null) { func(err); done(); return; }
-            log('Installing the printer: ' + name + ((process.platform == 'win32') ? (', with ' + ((getWindowsMethod() == 'api') ? 'the print spooler API' : 'PowerShell')) : ''));
+            log('Installing the printer: ' + name);
             installPrinter(name, port, function (err) {
                 if (err != null) {
                     log('Printer install failed: ' + err);
@@ -571,15 +392,7 @@ function cleanup() {
 function isRunning() { return (current != null); }
 
 function getStatus() {
-    return { supported: isSupported(), printer: current, listening: (server != null), busy: queueBusy, windowsMethod: getWindowsMethod(), windowsMethodOverride: windowsMethodOverride, jobsFolder: jobsFolder, history: history.slice() };
+    return { supported: isSupported(), printer: current, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
 }
 
-// Use the print spooler API ('api') or PowerShell ('powershell') on Windows until the agent restarts, null to use the server setting.
-// An installed printer is removed, the next refresh from the browser installs it again with this method.
-function setWindowsMethod(method) {
-    windowsMethodOverride = ((method == 'api') || (method == 'powershell')) ? method : null;
-    log('Windows install method set to ' + getWindowsMethod() + ((windowsMethodOverride == null) ? ' (server setting)' : ''));
-    if (current != null) { stop(); }
-}
-
-module.exports = { start: start, stop: stop, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, setWindowsMethod: setWindowsMethod, jobsFolder: jobsFolder };
+module.exports = { start: start, stop: stop, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };

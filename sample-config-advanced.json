@@ -431,8 +431,7 @@
       "_remotePrinting": {
         "enabled": true,
         "printerName": "MeshCentral Printer",
-        "port": 35500,
-        "windowsMethod": "powershell"
+        "port": 35500
       },
       "_limits": {
         "_maxDevices": 100,

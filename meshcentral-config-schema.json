@@ -3190,13 +3190,13 @@
               "boolean",
               "object"
             ],
-            "default": true,
-            "description": "Remote printing. When enabled by a user in the remote desktop settings, a virtual printer is installed on the remote device and documents printed to it are downloaded by the user's browser. Set to false to disable.",
+            "default": false,
+            "description": "Remote printing, off by default. Set to true, or to an object with \"enabled\": true, to let users turn it on in the remote desktop settings: a virtual printer is then installed on the remote device and documents printed to it are downloaded by the user's browser.",
             "properties": {
               "enabled": {
                 "type": "boolean",
-                "default": true,
-                "description": "When false, remote printing is disabled."
+                "default": false,
+                "description": "Set to true to allow remote printing."
               },
               "printerName": {
                 "type": "string",
@@ -3209,12 +3209,6 @@
                 "maximum": 65535,
                 "default": 35500,
                 "description": "Local TCP port on 127.0.0.1 the agent listens on to receive print jobs from the printer."
-              },
-              "windowsMethod": {
-                "type": "string",
-                "enum": [ "powershell", "api" ],
-                "default": "powershell",
-                "description": "How the agent installs the printer on Windows: \"powershell\" uses the PowerShell printer commands, \"api\" calls the Windows print spooler API directly, without PowerShell. Can be changed on a device with the \"remoteprint method\" agent console command, for testing."
               }
             },
             "additionalProperties": false

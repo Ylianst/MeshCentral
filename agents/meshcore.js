@@ -1726,7 +1726,7 @@ function handleServerCommand(data) {
                             if (remotePrintStopTimer != null) { clearTimeout(remotePrintStopTimer); remotePrintStopTimer = null; } // Keep the printer
                             remotePrintActive = true;
                             try {
-                                require('remote-printer').start({ printerName: data.printerName, port: data.port, windowsMethod: data.windowsMethod }, onRemotePrintJob, function (err, printer) {
+                                require('remote-printer').start({ printerName: data.printerName, port: data.port }, onRemotePrintJob, function (err, printer) {
                                     if (err != null) {
                                         delete remotePrintSessions[data.sessionid];
                                         mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: String(err) });
@@ -4975,22 +4975,10 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'remoteprint':
-                // Show the state of remote printing and its recent events. "remoteprint method api|powershell|default" picks how the
-                // printer is installed on Windows until the agent restarts, for testing.
+                // Show the state of remote printing and its recent events
                 try {
-                    if (args['_'][0] == 'method') {
-                        var rpMethod = String(args['_'][1] || '').toLowerCase();
-                        if ((process.platform != 'win32') || ((rpMethod != 'api') && (rpMethod != 'powershell') && (rpMethod != 'default'))) {
-                            response = 'Usage: remoteprint method api|powershell|default (Windows only)';
-                        } else {
-                            require('remote-printer').setWindowsMethod((rpMethod == 'default') ? null : rpMethod);
-                            response = 'Windows install method: ' + require('remote-printer').getStatus().windowsMethod + '. An installed printer is removed and installed again with this method within 30 seconds while a remote desktop session uses remote printing.';
-                        }
-                        break;
-                    }
                     var rpStatus = require('remote-printer').getStatus();
                     var rpLines = ['Remote printing: ' + (rpStatus.supported ? 'supported' : 'not supported on this device')];
-                    if (process.platform == 'win32') { rpLines.push('Windows install method: ' + ((rpStatus.windowsMethod == 'api') ? 'print spooler API' : 'PowerShell') + ((rpStatus.windowsMethodOverride != null) ? ' (set in the agent console)' : '')); }
                     rpLines.push('Printer: ' + ((rpStatus.printer != null) ? (rpStatus.printer.name + ', port ' + rpStatus.printer.port) : 'not installed') + ', listening: ' + rpStatus.listening + (rpStatus.busy ? ', installing or removing' : ''));
                     var rpNow = Date.now(), rpCount = 0;
                     for (var i in remotePrintSessions) { rpCount++; rpLines.push('User session: ' + remotePrintSessions[i].username + ', refreshed ' + Math.round((rpNow - remotePrintSessions[i].time) / 1000) + ' seconds ago'); }
