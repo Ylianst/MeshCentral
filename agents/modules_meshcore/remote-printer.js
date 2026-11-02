@@ -150,13 +150,34 @@ function watchChild(child, func) {
     child.stdout.str = ''; child.stderr.str = '';
     child.stdout.on('data', function (c) { this.str += c.toString(); });
     child.stderr.on('data', function (c) { this.str += c.toString(); });
-    child.on('exit', function (code) { finish(code, (child.stdout.str + child.stderr.str).trim()); });
+    child.on('exit', function (code) { finish(code, getOutput(child.stdout.str, child.stderr.str)); });
+}
+
+// The command output used in messages: stdout, or stderr when there's none. PowerShell writes progress and
+// errors to stderr as CLIXML, keep only the error messages from it.
+function getOutput(stdout, stderr) {
+    stdout = stdout.trim();
+    if (stdout.length > 0) return stdout;
+    stderr = stderr.trim();
+    if (stderr.indexOf('#< CLIXML') != 0) return stderr;
+    var errors = [], re = /<S S="Error">([^<]*)<\/S>/g, m;
+    while ((m = re.exec(stderr)) != null) { errors.push(m[1]); }
+    return errors.join('').replace(/_x000D_/g, '').replace(/_x000A_/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&').trim();
+}
+
+// Path of the 64-bit PowerShell on 64-bit Windows, also from a 32-bit agent. A 32-bit PowerShell looks for
+// 32-bit printer drivers and Add-Printer fails.
+function getPowerShellPath() {
+    var root = process.env['SystemRoot'] || 'C:\\Windows';
+    var sysnative = root + '\\Sysnative\\WindowsPowerShell\\v1.0\\powershell.exe'; // Only visible to 32-bit processes on 64-bit Windows
+    try { if (fs.existsSync(sysnative)) return sysnative; } catch (ex) { }
+    return root + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
 }
 
 // Run a PowerShell script, callback(exitCode, output). The script is passed with -EncodedCommand, when it's
 // written to stdin PowerShell waits for a blank line after multi-line statements like try/catch and never runs them.
 function runPowerShell(script, func) {
-    var psPath = (process.env['SystemRoot'] || 'C:\\Windows') + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+    var psPath = getPowerShellPath();
     var encoded = Buffer.alloc(script.length * 2); // -EncodedCommand takes base64 of UTF-16LE
     for (var i = 0; i < script.length; i++) { encoded.writeUInt16LE(script.charCodeAt(i), i * 2); }
     var child = require('child_process').execFile(psPath, ['powershell', '-NoProfile', '-NoLogo', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', encoded.toString('base64')], {});
@@ -179,16 +200,40 @@ function installPrinter(name, port, func) {
         var portName = PORT_PREFIX + '_' + port;
         var script = [
             "$ErrorActionPreference = 'Stop'",
+            "$ProgressPreference = 'SilentlyContinue'",
+            "$step = 'Checking the printer driver'",
             "try {",
             "  $name = " + psQuote(name) + "; $port = " + psQuote(portName) + "; $drv = 'Microsoft Print To PDF'",
             "  if (-not (Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue)) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
+            "  $step = 'Checking the printer name'",
             "  $existing = Get-Printer -Name $name -ErrorAction SilentlyContinue",
             "  if ($existing -and ($existing.PortName -notlike '" + PORT_PREFIX + "*')) { throw ('A printer with this name already exists: ' + $name) }",
-            "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | Remove-Printer",
+            // Remove printers left by an earlier run with another name or port. Windows doesn't remove a printer with queued jobs, so cancel them first, and don't fail the install if it still can't be removed.
+            "  $step = 'Removing the previous printer'",
+            "  Get-Printer | Where-Object { ($_.PortName -like '" + PORT_PREFIX + "*') -and (($_.Name -ne $name) -or ($_.PortName -ne $port)) } | ForEach-Object { Get-PrintJob -PrinterName $_.Name -ErrorAction SilentlyContinue | Remove-PrintJob -ErrorAction SilentlyContinue; Remove-Printer -Name $_.Name -ErrorAction SilentlyContinue }",
+            "  $step = 'Adding the printer port'",
             "  if (-not (Get-PrinterPort -Name $port -ErrorAction SilentlyContinue)) { Add-PrinterPort -Name $port -PrinterHostAddress '127.0.0.1' -PortNumber " + port + " }",
+            "  $step = 'Adding the printer'",
             "  if (-not (Get-Printer -Name $name -ErrorAction SilentlyContinue)) { Add-Printer -Name $name -DriverName $drv -PortName $port }",
             "  Write-Output 'OK'",
-            "} catch { Write-Output $_.Exception.Message; exit 1 }"
+            "} catch {",
+            // The printer cmdlets give a generic message, the Windows error code is in the CIM error data
+            "  $err = $_",
+            "  $msg = $step + ': ' + $err.Exception.Message",
+            "  try {",
+            "    $data = $err.Exception.ErrorData",
+            "    if ($data -ne $null) {",
+            "      $code = $data.CimInstanceProperties['error_Code'].Value",
+            "      $text = $data.CimInstanceProperties['error_WindowsErrorMessage'].Value",
+            "      if (($code -ne $null) -and ($code -ne 0)) {",
+            "        if ([string]::IsNullOrEmpty($text)) { $text = (New-Object ComponentModel.Win32Exception([int]$code)).Message }",
+            "        $msg += ' Windows error ' + $code + ': ' + $text",
+            "      }",
+            "    }",
+            "  } catch { }",
+            "  Write-Output $msg",
+            "  exit 1",
+            "}"
         ].join('\r\n');
         runPowerShell(script, function (code, output) { func(((code == 0) && (output.indexOf('OK') >= 0)) ? null : (output || 'PowerShell error')); });
     } else if (process.platform == 'linux') {
@@ -214,6 +259,7 @@ function uninstallPrinter(func) {
     if (process.platform == 'win32') {
         var script = [
             "$ErrorActionPreference = 'SilentlyContinue'",
+            "$ProgressPreference = 'SilentlyContinue'",
             "Get-Printer | Where-Object { $_.PortName -like '" + PORT_PREFIX + "*' } | ForEach-Object { Get-PrintJob -PrinterName $_.Name | Remove-PrintJob; $_ } | Remove-Printer",
             "Start-Sleep -Milliseconds 500",
             "Get-PrinterPort | Where-Object { $_.Name -like '" + PORT_PREFIX + "*' } | Remove-PrinterPort",

@@ -10086,11 +10086,11 @@
 
         function deskRemotePrintMessage(node, message) {
             if (message.sub == 'started') {
-                addNotification({ text: format("Documents printed to \"{0}\" will be downloaded by this browser.", message.name), title: "Remote Printing", nodeid: node._id });
+                addNotification({ text: "Documents printed to \"{0}\" will be downloaded by this browser.".replace('{0}', message.name), title: "Remote Printing", nodeid: node._id }); // Plain text, the notification box escapes it
             } else if (message.sub == 'error') {
                 deskRemotePrintFailed = true;
                 if (deskRemotePrintNode == node._id) { deskRemotePrintNode = null; }
-                addNotification({ text: EscapeHtml(message.msg), title: "Remote Printing", nodeid: node._id });
+                addNotification({ text: String(message.msg), title: "Remote Printing", nodeid: node._id });
             } else if ((message.sub == 'job') && (typeof message.path == 'string') && (desktopsettings.remoteprint == 'pdf') && (deskRemotePrintNode == node._id)) {
                 var link = 'devicefile.ashx?c=' + authCookie + '&m=' + node.meshid.split('/')[2] + '&n=' + node._id.split('/')[2] + '&f=' + encodeURIComponentEx(message.path);
                 downloadFile(link, encodeURIComponentEx(message.name));
