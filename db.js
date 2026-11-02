@@ -2341,7 +2341,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.dispose = function () { for (var x in obj) { if (obj[x].close) { obj[x].close(); } delete obj[x]; } };
             obj.getLocalAmtNodes = function (func) { sqlDbQuery('SELECT doc FROM main WHERE (type = \'node\') AND (extraex IS NULL)', null, function (err, docs) { var r = []; if (err == null) { for (var i in docs) { if (docs[i].host != null && docs[i].intelamt != null) { r.push(docs[i]); } } } func(err, r); }); };
             obj.getAmtUuidMeshNode = function (domainid, mtype, uuid, func) { sqlDbQuery('SELECT doc FROM main WHERE domain = $1 AND extraex = $2', [domainid, 'uuid/' + uuid], func); };
-            obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { sqlDbExec('SELECT COUNT(id) FROM main WHERE domain = $1 AND type = $2', [domainid, type], function (err, response) { func((response['COUNT(id)'] == null) || (response['COUNT(id)'] > max), response['COUNT(id)']) }); } }
+            obj.isMaxType = function (max, type, domainid, func) { if (max == null) { func(false); } else { sqlDbQuery('SELECT COUNT(id) FROM main WHERE domain = $1 AND type = $2', [domainid, type], function (err, count) { func((err != null) || (typeof count != 'number') || (count > max), count); }); } }
 
             // Database actions on the events collection
             obj.GetAllEvents = function (func) { sqlDbQuery('SELECT doc FROM events', null, func); };
