@@ -31,7 +31,7 @@ var DEFAULT_PRINTER_NAME = 'MeshCentral Printer';
 var DEFAULT_TCP_PORT = 35500;
 var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
 var MAX_JOB_AGE = 15 * 60 * 1000;                   // Jobs older than this are deleted
-var COMMAND_TIMEOUT = 2 * 60 * 1000;                // PowerShell or lpadmin commands are killed after this
+var COMMAND_TIMEOUT = 5 * 60 * 1000;                // PowerShell or lpadmin commands are killed after this, repairing the PDF driver can take a few minutes
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
 var JOB_IDLE_TIMEOUT = 30 * 1000;                   // Any job is complete when no data arrives this long
 
@@ -220,7 +220,27 @@ function installPrinter(name, port, func) {
             "  if (-not (Get-Command Add-Printer -ErrorAction SilentlyContinue)) { throw 'Remote printing needs Windows 10 or later, the PowerShell printer commands are missing.' }",
             "  $name = " + psQuote(name) + "; $port = " + psQuote(portName) + "; $drv = 'Microsoft Print To PDF'",
             "  $step = 'Checking the printer driver'",
-            "  if (-not (Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue)) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
+            "  $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
+            "  if (-not $d) { throw ('Printer driver not found: ' + $drv + '. Turn on the \"Microsoft Print to PDF\" Windows feature, it is included in Windows 10 and later.') }",
+            // On Windows 10 LTSC the driver can stay registered from a driver package an update removed: no new printer can be added
+            // with it ("file not found"), and it can't be reinstalled from the remaining package (an "older version"). Turning the
+            // "Microsoft Print to PDF" feature off and on registers it again. Windows' own "Microsoft Print to PDF" printer is removed and added back.
+            "  if ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (-not (Test-Path $d.InfPath))) {",
+            "    $step = 'Repairing the Microsoft Print to PDF driver, its driver package is missing'",
+            "    $feature = 'Printing-PrintToPDFServices-Features'",
+            "    $r1 = Disable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop",
+            "    try { $r2 = Enable-WindowsOptionalFeature -Online -FeatureName $feature -NoRestart -ErrorAction Stop }",
+            "    catch { throw ('Turning the \"Microsoft Print to PDF\" Windows feature back on failed, turn it on again in Windows Features: ' + $_.Exception.Message) }",
+            "    for ($i = 0; $i -lt 30; $i++) {",
+            "      $d = Get-PrinterDriver -Name $drv -ErrorAction SilentlyContinue",
+            "      if ($d -and ([string]::IsNullOrEmpty($d.InfPath) -or (Test-Path $d.InfPath))) { break }",
+            "      Start-Sleep -Seconds 1",
+            "    }",
+            "    if ((-not $d) -or ((-not [string]::IsNullOrEmpty($d.InfPath)) -and (-not (Test-Path $d.InfPath)))) {",
+            "      if ($r1.RestartNeeded -or $r2.RestartNeeded) { throw 'The Microsoft Print to PDF driver was repaired, restart the device to finish.' }",
+            "      throw ('The Microsoft Print to PDF driver is damaged, its driver package is missing (' + $d.InfPath + '), and turning the Windows feature off and on did not repair it.')",
+            "    }",
+            "  }",
             "  $step = 'Checking the printer name'",
             "  $existing = Get-Printer -Name $name -ErrorAction SilentlyContinue",
             "  if ($existing -and ($existing.PortName -notlike '" + PORT_PREFIX + "*')) { throw ('A printer with this name already exists: ' + $name) }",
