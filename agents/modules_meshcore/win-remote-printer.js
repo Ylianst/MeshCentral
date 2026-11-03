@@ -236,8 +236,14 @@ function runDism(args, func) {
     var child = require('child_process').execFile(getSystemExe('dism.exe'), ['dism'].concat(args));
     children.push(child);
     var done = false;
-    var finish = function (code) { if (done) return; done = true; clearTimeout(timer); var i = children.indexOf(child); if (i >= 0) { children.splice(i, 1); } func(code); };
-    var timer = setTimeout(function () { try { child.kill(); } catch (ex) { } finish(-1); }, DISM_TIMEOUT);
+    var finish = function (code) {
+        if (done) return;
+        done = true;
+        if (timer != null) { try { clearTimeout(timer); } catch (ex) { } } // MeshAgent's clearTimeout() throws on a timer that already fired
+        var i = children.indexOf(child); if (i >= 0) { children.splice(i, 1); }
+        func(code);
+    };
+    var timer = setTimeout(function () { timer = null; try { child.kill(); } catch (ex) { } finish(-1); }, DISM_TIMEOUT);
     child.stdout.on('data', function () { });
     child.stderr.on('data', function () { });
     child.on('exit', function (code) { finish(code); });
@@ -269,23 +275,33 @@ function install(name, portName, port, driver, portPrefix, onStep, func) {
         }
 
         // Remove printers left by an earlier run with another name or port, don't fail the install if one can't be removed
-        setStep('Removing the previous printer');
         for (var i in printers) {
             var p = printers[i];
-            if ((p.name != null) && ((p.port || '').indexOf(portPrefix) == 0) && ((p.name.toLowerCase() != name.toLowerCase()) || (p.port != portName))) { try { deletePrinter(p.name); } catch (ex) { onStep('Unable to remove ' + p.name + ': ' + ex.message); } }
+            if ((p.name != null) && ((p.port || '').indexOf(portPrefix) == 0) && ((p.name.toLowerCase() != name.toLowerCase()) || (p.port != portName))) {
+                setStep('Removing the previous printer: ' + p.name);
+                try { deletePrinter(p.name); } catch (ex) { onStep('Unable to remove ' + p.name + ': ' + ex.message); }
+            }
         }
 
-        setStep('Adding the printer port');
-        if (getPorts().indexOf(portName) < 0) { addTcpPort(portName, port); }
+        if (getPorts().indexOf(portName) < 0) {
+            setStep('Adding the printer port');
+            addTcpPort(portName, port);
+        }
     } catch (ex) { fail(ex); return; }
 
     // Windows can take a few seconds to delete a printer, it's listed as pending deletion meanwhile and can't be added again
-    setStep('Waiting for Windows to remove the previous printer');
+    var pending = null;
+    try { pending = findPrinter(name); } catch (ex) { }
+    if ((pending != null) && ((pending.status & PRINTER_STATUS_PENDING_DELETION) != 0)) { setStep('Waiting for Windows to remove the previous printer'); }
     waitFor(function () { var p = findPrinter(name); return (p == null) || ((p.status & PRINTER_STATUS_PENDING_DELETION) == 0); }, 500, 20000, function () {
-        setStep('Adding the printer');
         var add = function (repaired) {
             try {
-                if (findPrinter(name) == null) { addPrinter(name, portName, driver); }
+                if (findPrinter(name) == null) {
+                    setStep('Adding the printer');
+                    addPrinter(name, portName, driver);
+                } else {
+                    setStep('The printer is already installed');
+                }
             } catch (ex) {
                 if (isError(ex, ERROR_FILE_NOT_FOUND) && (repaired !== true)) {
                     setStep('Repairing the Microsoft Print to PDF driver, its driver package is missing');

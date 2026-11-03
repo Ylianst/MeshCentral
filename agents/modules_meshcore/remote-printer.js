@@ -34,7 +34,7 @@ var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
 var MAX_JOB_AGE = 15 * 60 * 1000;                   // Jobs older than this are deleted
 var COMMAND_TIMEOUT = 2 * 60 * 1000;                // lpadmin commands are killed after this
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
-var JOB_IDLE_TIMEOUT = 30 * 1000;                   // Any job is complete when no data arrives this long
+var JOB_IDLE_TIMEOUT = 10 * 60 * 1000;              // Any job is complete when no data arrives this long, a slow PC can take minutes to spool a large job
 
 var sep = (process.platform == 'win32') ? '\\' : '/';
 var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep));
@@ -50,6 +50,10 @@ var queue = [];             // Install / uninstall operations run one at a time
 var queueBusy = false;
 var startRequested = false; // Set once start() is called, so cleanup() doesn't remove a printer installed by this run
 var history = [];           // Recent events, shown by the "remoteprint" agent console command
+
+// Cancel a timer. MeshAgent's clearTimeout() throws on a timer that already fired, so timer callbacks also clear their
+// reference first, and this ignores the error.
+function cancelTimer(timer) { if (timer != null) { try { clearTimeout(timer); } catch (ex) { } } }
 
 function log(msg) {
     history.push(new Date().toISOString() + ' ' + msg);
@@ -140,11 +144,11 @@ function watchChild(child, func) {
     var finish = function (code, output) {
         if (done) return;
         done = true;
-        clearTimeout(timer);
+        cancelTimer(timer);
         var i = children.indexOf(child); if (i >= 0) { children.splice(i, 1); }
         func(code, output);
     };
-    var timer = setTimeout(function () { try { child.kill(); } catch (ex) { } finish(-1, 'Timed out installing the printer'); }, COMMAND_TIMEOUT);
+    var timer = setTimeout(function () { timer = null; try { child.kill(); } catch (ex) { } finish(-1, 'Timed out installing the printer'); }, COMMAND_TIMEOUT);
     children.push(child);
     child.stdout.str = ''; child.stderr.str = '';
     child.stdout.on('data', function (c) { this.str += c.toString(); });
@@ -250,11 +254,11 @@ function startListener(port, onJob, func, attempt) {
         // The Windows spooler only completes the job, and starts the next one, once the printer closes the connection.
         // So close it when the job is complete: when the other side ends it, or when no more data arrives.
         var restartTimer = function () {
-            if (job.timer != null) { clearTimeout(job.timer); }
+            cancelTimer(job.timer);
             if (indexOfBytes(job.tail, '%%EOF') >= 0) {
-                job.timer = setTimeout(function () { finish('end of PDF'); }, JOB_END_DELAY);
+                job.timer = setTimeout(function () { job.timer = null; finish('end of PDF'); }, JOB_END_DELAY);
             } else {
-                job.timer = setTimeout(function () { finish('no data for ' + (JOB_IDLE_TIMEOUT / 1000) + ' seconds'); }, JOB_IDLE_TIMEOUT);
+                job.timer = setTimeout(function () { job.timer = null; finish('no data for ' + (JOB_IDLE_TIMEOUT / 1000) + ' seconds'); }, JOB_IDLE_TIMEOUT);
             }
         };
         socket.on('data', function (chunk) {
@@ -273,7 +277,8 @@ function startListener(port, onJob, func, attempt) {
             }
         });
         var finish = function (reason) {
-            if (job.timer != null) { clearTimeout(job.timer); job.timer = null; }
+            cancelTimer(job.timer);
+            job.timer = null;
             if (job.closing !== true) {
                 job.closing = true;
                 try { socket.end(); } catch (ex) { }
@@ -314,14 +319,14 @@ function startListener(port, onJob, func, attempt) {
     var check = function (err) {
         if (checked) return;
         checked = true;
-        clearTimeout(checkTimer);
+        cancelTimer(checkTimer);
         s.onCheckConnection = null;
         try { if (c != null) { c.end(); } } catch (ex) { }
         if (err != null) { log('Listener check failed on port ' + port + ': ' + err); stopListener(); func('Unable to receive print jobs on port ' + port + ' (' + err + ')'); return; }
         log('Listening on 127.0.0.1:' + port);
         func(null);
     };
-    var checkTimer = setTimeout(function () { check('no connection received, is the port used by another program?'); }, 5000);
+    var checkTimer = setTimeout(function () { checkTimer = null; check('no connection received, is the port used by another program?'); }, 5000);
     s.onCheckConnection = function () { check(null); };
     var c = null;
     try {

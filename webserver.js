@@ -10226,7 +10226,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const acceptableUserWebStateDesktopStrings = [
         'encoding', 'showfocus', 'showmouse', 'quality', 'scaling', 'framerate', 'agentencoding', 'swapmouse',
         'rmw', 'remotekeymap', 'autoclipboard', 'autolock', 'localkeymap', 'kvmrmw', 'rdpsize', 'rdpsmb',
-        'rdprmw', 'rdpautoclipboard', 'rdpflags'
+        'rdprmw', 'rdpautoclipboard', 'rdpflags', 'remoteprint'
     ];
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
