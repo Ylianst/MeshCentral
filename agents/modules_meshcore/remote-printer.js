@@ -18,7 +18,12 @@ limitations under the License.
 //
 // Remote printing. Installs a virtual printer on this device whose output is captured by the agent.
 // The printer is pointed at a raw TCP socket on 127.0.0.1 that this module listens on, every connection
-// is one print job. The job is saved to disk and handed to the caller so it can be downloaded by the user.
+// is one print job. The job is saved to disk and sent to the users with remote printing active, so their browser
+// downloads it.
+//
+// meshcore.js passes the "remoteprint" messages from the server to handleMessage(), the "remoteprint" agent console
+// command to consoleCommand(), and calls agentStarted() when the agent starts. The browsers refresh their session
+// every 30 seconds while the remote desktop is open.
 //
 // Windows: "Microsoft Print To PDF" driver on a Standard TCP/IP port, the spooler sends the PDF to us. The printer is
 //          installed with the Windows print spooler API, see win-remote-printer.js.
@@ -35,6 +40,8 @@ var MAX_JOB_AGE = 5 * 60 * 1000;                    // Jobs older than this are 
 var COMMAND_TIMEOUT = 2 * 60 * 1000;                // lpadmin commands are killed after this
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
 var JOB_IDLE_TIMEOUT = 10 * 60 * 1000;              // Any job is complete when no data arrives this long, a slow PC can take minutes to spool a large job
+var SESSION_TIMEOUT = 90 * 1000;                    // A user session that isn't refreshed this long is removed
+var STOP_DELAY = 30 * 1000;                         // The printer is removed this long after the last session stopped, so a remote desktop that reconnects keeps it
 
 var sep = (process.platform == 'win32') ? '\\' : '/';
 var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep));
@@ -51,6 +58,10 @@ var queueBusy = false;
 var startRequested = false; // Set once start() is called, so cleanup() doesn't remove a printer installed by this run
 var permanent = false;      // Installed with install(): kept when no session uses it, and installed again when the agent starts
 var lastOptions = null;     // Printer options from the last start(), from the server configuration
+var sessions = {};          // sessionid -> { time, userid, username, sessionid, remoteaddr } of the users with remote printing active
+var sessionTimer = null;    // Removes sessions that are no longer refreshed
+var stopTimer = null;       // Set while waiting to remove the printer after the last session stopped
+var context = null;         // { send(command), log(message, state) } from meshcore.js
 var history = [];           // Recent events, shown by the "remoteprint" agent console command
 
 // Cancel a timer. MeshAgent's clearTimeout() throws on a timer that already fired, so timer callbacks also clear their
@@ -436,8 +447,107 @@ function cleanup(onJob) {
 
 function isRunning() { return (current != null); }
 
+function sessionCount() { var count = 0; for (var i in sessions) { count++; } return count; }
+
+// A print job was received, send it to all users with remote printing active
+function onJob(job) {
+    if (sessionCount() == 0) {
+        // Nobody to send it to, don't keep the document on the device
+        try { fs.unlinkSync(job.path); } catch (ex) { }
+        context.log('Remote printing job deleted, no user has remote printing active, ' + job.size + ' byte(s)');
+        return;
+    }
+    var path = job.path.split('\\').join('/');
+    for (var i in sessions) {
+        context.log('Remote printing job, ' + job.size + ' byte(s)', sessions[i]);
+        context.send({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name, size: job.size, format: job.format });
+    }
+}
+
+// Remove the sessions that are no longer refreshed. When none are left, remove the printer STOP_DELAY later:
+// Windows can take a few seconds to delete a printer, and removing and adding it again quickly can leave no printer.
+function checkSessions() {
+    var now = Date.now();
+    for (var i in sessions) { if ((now - sessions[i].time) > SESSION_TIMEOUT) { delete sessions[i]; } }
+    if (sessionCount() > 0) return;
+    if (sessionTimer != null) { clearInterval(sessionTimer); sessionTimer = null; }
+    if ((stopTimer == null) && ((current != null) || queueBusy)) {
+        stopTimer = setTimeout(function () {
+            stopTimer = null;
+            if (sessionCount() == 0) { stop(); } // Unless a session started again
+        }, STOP_DELAY);
+    }
+}
+
+// A "remoteprint" message from a user's browser, through the server. data.sub is "start", also sent to refresh the
+// session, or "stop". ctx: { send(command), log(message, state) }
+function handleMessage(data, ctx) {
+    context = ctx;
+    if (typeof data.sessionid != 'string') return;
+    if (data.sub == 'start') {
+        var isNewSession = (sessions[data.sessionid] == null);
+        sessions[data.sessionid] = { time: Date.now(), userid: data.userid, username: data.username, sessionid: data.sessionid, remoteaddr: data.remoteaddr };
+        if (sessionTimer == null) { sessionTimer = setInterval(checkSessions, 30000); }
+        cancelTimer(stopTimer); stopTimer = null; // Keep the printer
+        start({ printerName: data.printerName, port: data.port }, onJob, function (err, printer) {
+            if (err != null) {
+                delete sessions[data.sessionid];
+                context.send({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: String(err) });
+                checkSessions();
+            } else if (isNewSession) {
+                context.log('Started remote printing, printer: ' + printer.name, data);
+                context.send({ action: 'msg', type: 'remoteprint', sub: 'started', sessionid: data.sessionid, name: printer.name });
+            }
+        });
+    } else if (data.sub == 'stop') {
+        if (sessions[data.sessionid] != null) {
+            delete sessions[data.sessionid];
+            context.log('Stopped remote printing', data);
+        }
+        checkSessions();
+    }
+}
+
+// The "remoteprint" agent console command: the state and recent events, or "install" to install the printer permanently,
+// until "uninstall". Returns the response, reply(text) gets the result of install and uninstall when they're done.
+function consoleCommand(args, ctx, reply) {
+    context = ctx;
+    if (args[0] == 'install') {
+        install(onJob, function (err, printer) {
+            if (err != null) { reply('Remote printing install failed: ' + err); return; }
+            context.log('Remote printer installed permanently: ' + printer.name);
+            reply('Printer "' + printer.name + '" installed, it stays installed until "remoteprint uninstall". Documents printed while no user has remote printing active are deleted.');
+        });
+        return 'Installing the printer...';
+    }
+    if (args[0] == 'uninstall') {
+        uninstall(function () {
+            context.log('Remote printer uninstalled');
+            reply('Printer removed. It is installed again while a remote desktop session uses remote printing.');
+        });
+        return 'Removing the printer...';
+    }
+    var now = Date.now();
+    var lines = ['Remote printing: ' + (isSupported() ? 'supported' : 'not supported on this device')];
+    lines.push('Printer: ' + ((current != null) ? (current.name + ', port ' + current.port) : 'not installed') + (permanent ? ', installed permanently' : '') + ', listening: ' + (server != null) + (queueBusy ? ', installing or removing' : ''));
+    for (var i in sessions) { lines.push('User session: ' + sessions[i].username + ', refreshed ' + Math.round((now - sessions[i].time) / 1000) + ' seconds ago'); }
+    if (sessionCount() == 0) { lines.push('No user sessions'); }
+    lines.push('Jobs folder: ' + jobsFolder);
+    lines.push('Recent events:');
+    if (history.length == 0) { lines.push('  none'); }
+    for (var i in history) { lines.push('  ' + history[i]); }
+    return lines.join('\r\n');
+}
+
+// When the agent starts: install a printer installed with "remoteprint install" again, or remove one left behind by a
+// previous run of the agent. ctx: { send(command), log(message, state) }
+function agentStarted(ctx) {
+    context = ctx;
+    cleanup(onJob);
+}
+
 function getStatus() {
     return { supported: isSupported(), printer: current, permanent: permanent, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
 }
 
-module.exports = { start: start, stop: stop, install: install, uninstall: uninstall, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };
+module.exports = { handleMessage: handleMessage, consoleCommand: consoleCommand, agentStarted: agentStarted, start: start, stop: stop, install: install, uninstall: uninstall, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };

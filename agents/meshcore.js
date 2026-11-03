@@ -937,49 +937,10 @@ var networkMonitor = null;
 var nextTunnelIndex = 1;
 var apftunnel = null;
 var tunnelUserCount = { terminal: {}, files: {}, registry: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files, registry and TCP/UDP routing
-var remotePrintSessions = {}; // List of sessionid->{ time, ... } of users with remote printing active, browsers refresh this while the remote desktop is open
-var remotePrintTimer = null;
-var remotePrintActive = false;
-var remotePrintStopTimer = null; // Set while waiting to remove the printer after the last session stopped
 
-// Install again a remote printer installed with "remoteprint install", or remove one left behind by a previous run of the agent
-setTimeout(function () { try { require('remote-printer').cleanup(onRemotePrintJob); } catch (ex) { } }, 10000);
-
-// A print job was received from the remote printer, send it to all users with remote printing active
-function onRemotePrintJob(job) {
-    var path = job.path.split('\\').join('/');
-    var count = 0;
-    for (var i in remotePrintSessions) { count++; }
-    if (count == 0) {
-        // Nobody to send it to, don't keep the document on the device
-        try { require('fs').unlinkSync(job.path); } catch (ex) { }
-        MeshServerLog('Remote printing job deleted, no user has remote printing active, ' + job.size + ' byte(s)');
-        return;
-    }
-    for (var i in remotePrintSessions) {
-        MeshServerLog('Remote printing job, ' + job.size + ' byte(s)', remotePrintSessions[i]);
-        mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name, size: job.size, format: job.format });
-    }
-}
-
-// Remove remote printing sessions that have not been refreshed, stop the remote printer when no sessions are left.
-// The printer is removed 30 seconds later, so a remote desktop that reconnects keeps it: Windows can take a few
-// seconds to delete a printer, and removing and adding it again quickly can leave no printer.
-function checkRemotePrintSessions() {
-    var now = Date.now(), count = 0;
-    for (var i in remotePrintSessions) { if ((now - remotePrintSessions[i].time) > 90000) { delete remotePrintSessions[i]; } else { count++; } }
-    if (count > 0) return;
-    if (remotePrintTimer != null) { clearInterval(remotePrintTimer); remotePrintTimer = null; }
-    if (remotePrintActive && (remotePrintStopTimer == null)) {
-        remotePrintStopTimer = setTimeout(function () {
-            remotePrintStopTimer = null;
-            for (var i in remotePrintSessions) { return; } // A session started again
-            remotePrintActive = false;
-            try { require('remote-printer').stop(); } catch (ex) { }
-        }, 30000);
-    }
-}
-
+// Remote printing, see remote-printer.js
+function remotePrintContext() { return { send: function (cmd) { mesh.SendCommand(cmd); }, log: MeshServerLog }; }
+setTimeout(function () { try { require('remote-printer').agentStarted(remotePrintContext()); } catch (ex) { } }, 10000);
 
 // Add to the server event log
 function MeshServerLog(msg, state) {
@@ -1723,36 +1684,8 @@ function handleServerCommand(data) {
                     }
                     case 'remoteprint': {
                         // Remote printing, install a virtual printer and send print jobs to the user's browser for download
-                        if (typeof data.sessionid != 'string') break;
-                        if (data.sub == 'start') {
-                            var isNewPrintSession = (remotePrintSessions[data.sessionid] == null);
-                            remotePrintSessions[data.sessionid] = { time: Date.now(), userid: data.userid, username: data.username, sessionid: data.sessionid, remoteaddr: data.remoteaddr };
-                            if (remotePrintTimer == null) { remotePrintTimer = setInterval(checkRemotePrintSessions, 30000); }
-                            if (remotePrintStopTimer != null) { clearTimeout(remotePrintStopTimer); remotePrintStopTimer = null; } // Keep the printer
-                            remotePrintActive = true;
-                            try {
-                                require('remote-printer').start({ printerName: data.printerName, port: data.port }, onRemotePrintJob, function (err, printer) {
-                                    if (err != null) {
-                                        delete remotePrintSessions[data.sessionid];
-                                        mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: String(err) });
-                                        checkRemotePrintSessions();
-                                    } else if (isNewPrintSession) {
-                                        MeshServerLog('Started remote printing, printer: ' + printer.name, data);
-                                        mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'started', sessionid: data.sessionid, name: printer.name });
-                                    }
-                                });
-                            } catch (ex) {
-                                delete remotePrintSessions[data.sessionid];
-                                mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: 'Remote printing is not supported by this agent' });
-                                checkRemotePrintSessions();
-                            }
-                        } else if (data.sub == 'stop') {
-                            if (remotePrintSessions[data.sessionid] != null) {
-                                delete remotePrintSessions[data.sessionid];
-                                MeshServerLog('Stopped remote printing', data);
-                            }
-                            checkRemotePrintSessions();
-                        }
+                        try { require('remote-printer').handleMessage(data, remotePrintContext()); }
+                        catch (ex) { mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: 'Remote printing is not supported by this agent' }); }
                         break;
                     }
                     case 'setclip': {
@@ -4980,38 +4913,9 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'remoteprint':
-                // Show the state of remote printing and its recent events. "remoteprint install" installs the printer permanently,
-                // until "remoteprint uninstall", jobs printed while no user has remote printing active are deleted.
-                try {
-                    if ((args['_'][0] == 'install') || (args['_'][0] == 'uninstall')) {
-                        if (args['_'][0] == 'install') {
-                            require('remote-printer').install(onRemotePrintJob, function (err, printer) {
-                                if (err != null) { sendConsoleText('Remote printing install failed: ' + err, sessionid); return; }
-                                MeshServerLog('Remote printer installed permanently: ' + printer.name);
-                                sendConsoleText('Printer "' + printer.name + '" installed, it stays installed until "remoteprint uninstall". Documents printed while no user has remote printing active are deleted.', sessionid);
-                            });
-                            response = 'Installing the printer...';
-                        } else {
-                            require('remote-printer').uninstall(function () {
-                                MeshServerLog('Remote printer uninstalled');
-                                sendConsoleText('Printer removed. It is installed again while a remote desktop session uses remote printing.', sessionid);
-                            });
-                            response = 'Removing the printer...';
-                        }
-                        break;
-                    }
-                    var rpStatus = require('remote-printer').getStatus();
-                    var rpLines = ['Remote printing: ' + (rpStatus.supported ? 'supported' : 'not supported on this device')];
-                    rpLines.push('Printer: ' + ((rpStatus.printer != null) ? (rpStatus.printer.name + ', port ' + rpStatus.printer.port) : 'not installed') + (rpStatus.permanent ? ', installed permanently' : '') + ', listening: ' + rpStatus.listening + (rpStatus.busy ? ', installing or removing' : ''));
-                    var rpNow = Date.now(), rpCount = 0;
-                    for (var i in remotePrintSessions) { rpCount++; rpLines.push('User session: ' + remotePrintSessions[i].username + ', refreshed ' + Math.round((rpNow - remotePrintSessions[i].time) / 1000) + ' seconds ago'); }
-                    if (rpCount == 0) { rpLines.push('No user sessions'); }
-                    rpLines.push('Jobs folder: ' + rpStatus.jobsFolder);
-                    rpLines.push('Recent events:');
-                    if (rpStatus.history.length == 0) { rpLines.push('  none'); }
-                    for (var i in rpStatus.history) { rpLines.push('  ' + rpStatus.history[i]); }
-                    response = rpLines.join('\r\n');
-                } catch (ex) { response = 'Remote printing is not available: ' + ex; }
+                // Show the state of remote printing and its recent events, "remoteprint install" and "remoteprint uninstall"
+                try { response = require('remote-printer').consoleCommand(args['_'], remotePrintContext(), function (text) { sendConsoleText(text, sessionid); }); }
+                catch (ex) { response = 'Remote printing is not available: ' + ex; }
                 break;
             case 'privacybar':
                 if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null) {
