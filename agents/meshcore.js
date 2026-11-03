@@ -942,15 +942,20 @@ var remotePrintTimer = null;
 var remotePrintActive = false;
 var remotePrintStopTimer = null; // Set while waiting to remove the printer after the last session stopped
 
-// Remove a remote printer left behind by a previous run of the agent
-setTimeout(function () { try { require('remote-printer').cleanup(); } catch (ex) { } }, 10000);
+// Install again a remote printer installed with "remoteprint install", or remove one left behind by a previous run of the agent
+setTimeout(function () { try { require('remote-printer').cleanup(onRemotePrintJob); } catch (ex) { } }, 10000);
 
 // A print job was received from the remote printer, send it to all users with remote printing active
 function onRemotePrintJob(job) {
     var path = job.path.split('\\').join('/');
     var count = 0;
     for (var i in remotePrintSessions) { count++; }
-    if (count == 0) { MeshServerLog('Remote printing job received, ' + job.size + ' byte(s), but no user has remote printing active'); }
+    if (count == 0) {
+        // Nobody to send it to, don't keep the document on the device
+        try { require('fs').unlinkSync(job.path); } catch (ex) { }
+        MeshServerLog('Remote printing job deleted, no user has remote printing active, ' + job.size + ' byte(s)');
+        return;
+    }
     for (var i in remotePrintSessions) {
         MeshServerLog('Remote printing job, ' + job.size + ' byte(s)', remotePrintSessions[i]);
         mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name, size: job.size, format: job.format });
@@ -4975,11 +4980,29 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 }
                 break;
             case 'remoteprint':
-                // Show the state of remote printing and its recent events
+                // Show the state of remote printing and its recent events. "remoteprint install" installs the printer permanently,
+                // until "remoteprint uninstall", jobs printed while no user has remote printing active are deleted.
                 try {
+                    if ((args['_'][0] == 'install') || (args['_'][0] == 'uninstall')) {
+                        if (args['_'][0] == 'install') {
+                            require('remote-printer').install(onRemotePrintJob, function (err, printer) {
+                                if (err != null) { sendConsoleText('Remote printing install failed: ' + err, sessionid); return; }
+                                MeshServerLog('Remote printer installed permanently: ' + printer.name);
+                                sendConsoleText('Printer "' + printer.name + '" installed, it stays installed until "remoteprint uninstall". Documents printed while no user has remote printing active are deleted.', sessionid);
+                            });
+                            response = 'Installing the printer...';
+                        } else {
+                            require('remote-printer').uninstall(function () {
+                                MeshServerLog('Remote printer uninstalled');
+                                sendConsoleText('Printer removed. It is installed again while a remote desktop session uses remote printing.', sessionid);
+                            });
+                            response = 'Removing the printer...';
+                        }
+                        break;
+                    }
                     var rpStatus = require('remote-printer').getStatus();
                     var rpLines = ['Remote printing: ' + (rpStatus.supported ? 'supported' : 'not supported on this device')];
-                    rpLines.push('Printer: ' + ((rpStatus.printer != null) ? (rpStatus.printer.name + ', port ' + rpStatus.printer.port) : 'not installed') + ', listening: ' + rpStatus.listening + (rpStatus.busy ? ', installing or removing' : ''));
+                    rpLines.push('Printer: ' + ((rpStatus.printer != null) ? (rpStatus.printer.name + ', port ' + rpStatus.printer.port) : 'not installed') + (rpStatus.permanent ? ', installed permanently' : '') + ', listening: ' + rpStatus.listening + (rpStatus.busy ? ', installing or removing' : ''));
                     var rpNow = Date.now(), rpCount = 0;
                     for (var i in remotePrintSessions) { rpCount++; rpLines.push('User session: ' + remotePrintSessions[i].username + ', refreshed ' + Math.round((rpNow - remotePrintSessions[i].time) / 1000) + ' seconds ago'); }
                     if (rpCount == 0) { rpLines.push('No user sessions'); }

@@ -31,7 +31,7 @@ var PORT_PREFIX = 'MeshCentralPrint';               // Windows printer port name
 var DEFAULT_PRINTER_NAME = 'MeshCentral Printer';
 var DEFAULT_TCP_PORT = 35500;
 var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
-var MAX_JOB_AGE = 15 * 60 * 1000;                   // Jobs older than this are deleted
+var MAX_JOB_AGE = 5 * 60 * 1000;                    // Jobs older than this are deleted, they're downloaded right away
 var COMMAND_TIMEOUT = 2 * 60 * 1000;                // lpadmin commands are killed after this
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
 var JOB_IDLE_TIMEOUT = 10 * 60 * 1000;              // Any job is complete when no data arrives this long, a slow PC can take minutes to spool a large job
@@ -49,6 +49,8 @@ var children = [];          // Keep a reference on running child processes
 var queue = [];             // Install / uninstall operations run one at a time
 var queueBusy = false;
 var startRequested = false; // Set once start() is called, so cleanup() doesn't remove a printer installed by this run
+var permanent = false;      // Installed with install(): kept when no session uses it, and installed again when the agent starts
+var lastOptions = null;     // Printer options from the last start(), from the server configuration
 var history = [];           // Recent events, shown by the "remoteprint" agent console command
 
 // Cancel a timer. MeshAgent's clearTimeout() throws on a timer that already fired, so timer callbacks also clear their
@@ -347,10 +349,11 @@ function start(options, onJob, func) {
     var name = cleanName(options.printerName);
     var port = parseInt(options.port);
     if (isNaN(port) || (port < 1024) || (port > 65535)) { port = DEFAULT_TCP_PORT; }
+    lastOptions = { printerName: options.printerName, port: options.port };
     startRequested = true;
     runQueued(function (done) {
         if (isSupported() == false) { func('Remote printing is not supported on this device'); done(); return; }
-        if ((current != null) && (current.name == name) && (current.port == port) && (server != null)) { func(null, current); done(); return; } // Already running
+        if ((current != null) && (current.name == name) && (current.port == port) && (server != null)) { writeMarker({ name: name, port: port, permanent: permanent }); func(null, current); done(); return; } // Already running
         if ((current != null) && (current.port != port)) { stopListener(); }
         startListener(port, onJob, function (err) {
             if (err != null) { func(err); done(); return; }
@@ -364,7 +367,7 @@ function start(options, onJob, func) {
                     return;
                 }
                 current = { name: name, port: port };
-                writeMarker(current);
+                writeMarker({ name: name, port: port, permanent: permanent });
                 log('Printer installed: ' + name);
                 func(null, current);
                 done();
@@ -374,8 +377,15 @@ function start(options, onJob, func) {
 }
 
 // Stop remote printing, remove the printer and pending jobs. func() is optional.
+// A printer installed with install() is kept, uninstall() removes it.
 function stop(func) {
     runQueued(function (done) {
+        if (permanent) {
+            if (current != null) { log('No user session left, keeping the printer installed with "remoteprint install"'); }
+            if (func) { try { func(); } catch (ex) { } }
+            done();
+            return;
+        }
         stopListener();
         current = null;
         log('Stopping, removing the printer');
@@ -388,16 +398,46 @@ function stop(func) {
     });
 }
 
-// Remove a printer left behind by a previous run (agent crash or restart while printing was active)
-function cleanup() {
+// Install the printer permanently: it's kept when no user session uses it, and installed again when the agent starts,
+// until uninstall(). Uses the printer options from the server, or the defaults. func(err, { name, port })
+function install(onJob, func) {
+    var marker = readMarker();
+    var options = lastOptions || ((marker != null) ? { printerName: marker.name, port: marker.port } : {});
+    permanent = true;
+    log('Installing the printer permanently');
+    start(options, onJob, function (err, printer) {
+        if (err != null) { permanent = false; }
+        func(err, printer);
+    });
+}
+
+// Remove a printer installed with install(). func() is optional.
+function uninstall(func) {
+    permanent = false;
+    log('Removing the permanently installed printer');
+    stop(func);
+}
+
+// When the agent starts: install a printer installed with install() again, or remove one left behind by a previous run
+// (agent crash or restart while printing was active). onJob receives the jobs of a printer installed again.
+function cleanup(onJob) {
     if (startRequested) return; // Remote printing was already started by this run, the printer is in use
-    if (readMarker() != null) { log('Removing a printer left by a previous run'); stop(); } else { cleanJobs(true); }
+    var marker = readMarker();
+    if ((marker != null) && (marker.permanent === true) && (onJob != null)) {
+        permanent = true;
+        log('Installing the printer again, it was installed with "remoteprint install"');
+        start({ printerName: marker.name, port: marker.port }, onJob, function (err) { if (err != null) { log('Unable to install the printer again: ' + err); } });
+    } else if (marker != null) {
+        log('Removing a printer left by a previous run'); stop();
+    } else {
+        cleanJobs(true);
+    }
 }
 
 function isRunning() { return (current != null); }
 
 function getStatus() {
-    return { supported: isSupported(), printer: current, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
+    return { supported: isSupported(), printer: current, permanent: permanent, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
 }
 
-module.exports = { start: start, stop: stop, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };
+module.exports = { start: start, stop: stop, install: install, uninstall: uninstall, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };
