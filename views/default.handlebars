@@ -10069,7 +10069,8 @@
         }
 
         // Remote printing, keep the printer on the remote device active while the agent remote desktop is connected.
-        // The agent removes the printer when it's not refreshed for 90 seconds, so refresh it every 30 seconds.
+        // Refresh it every 30 seconds: the agent drops a session that isn't refreshed for 90 seconds, and removes the
+        // printer 30 seconds after the last session, unless it was installed with the "remoteprint install" agent console command.
         var deskRemotePrintNode = null, deskRemotePrintLast = 0, deskRemotePrintFailed = false;
         function deskRemotePrintUpdate() {
             var enabled = ((features3 & 0x00000004) != 0) && (desktopsettings.remoteprint == 'pdf') && (deskRemotePrintFailed == false) && (desktop != null) && (desktop.contype == 1) && (desktop.State == 3) && (desktopNode != null);

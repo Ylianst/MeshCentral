@@ -113,7 +113,7 @@ function enumerate(what, call) {
     return { buffer: buffer, count: readUInt32(count) };
 }
 
-// Local printers: [{ name, port, driver, status, jobs }]
+// Local printers: [{ name, port, status }]
 function getPrinters() {
     init();
     var size = (13 * P) + 32;
@@ -121,8 +121,8 @@ function getPrinters() {
     var printers = [];
     for (var i = 0; i < e.count; i++) {
         var item = e.buffer.Deref(i * size, size);
-        var dwords = item.Deref(13 * P, 32).toBuffer();
-        printers.push({ name: readString(item, P), port: readString(item, 3 * P), driver: readString(item, 4 * P), status: dwords.readUInt32LE(20), jobs: dwords.readUInt32LE(24) });
+        var dwords = item.Deref(13 * P, 32).toBuffer(); // Status is the 6th DWORD
+        printers.push({ name: readString(item, P), port: readString(item, 3 * P), status: dwords.readUInt32LE(20) });
     }
     return printers;
 }
@@ -350,4 +350,4 @@ function uninstall(portPrefix, func) {
     }, 1000);
 }
 
-module.exports = { install: install, uninstall: uninstall, getPrinters: getPrinters, getPorts: getPorts };
+module.exports = { install: install, uninstall: uninstall };

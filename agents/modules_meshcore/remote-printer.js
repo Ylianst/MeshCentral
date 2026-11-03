@@ -133,7 +133,7 @@ function getLpadmin() {
 function cleanName(name) {
     if ((typeof name != 'string') || (name.length == 0)) { name = DEFAULT_PRINTER_NAME; }
     name = name.replace(/[\x00-\x1F\x7F]/g, '').substring(0, 64);
-    if (process.platform == 'win32') { name = name.replace(/[\\,!"]/g, '_'); } else { name = name.replace(/[\s\/#\\'"]/g, '_'); }
+    if (process.platform == 'win32') { name = name.replace(/[\\,!]/g, '_'); } else { name = name.replace(/[\s\/#\\'"]/g, '_'); }
     if (name.trim().length == 0) { name = (process.platform == 'win32') ? DEFAULT_PRINTER_NAME : DEFAULT_PRINTER_NAME.replace(/ /g, '_'); }
     return name.trim();
 }
@@ -245,13 +245,8 @@ function indexOfBytes(bytes, str) {
     return -1;
 }
 
-// Figure out the file extension from the first bytes of the job
-function getJobExtension(head) {
-    if (indexOfBytes(head, '%PDF') >= 0) return 'pdf';
-    if (indexOfBytes(head, '%!PS') >= 0) return 'ps';
-    if ((head.length >= 2) && (head[0] == 0x50) && (head[1] == 0x4B)) return 'xps';
-    return 'prn';
-}
+// The file extension of the job, from its first bytes. Both the Windows driver and the CUPS queue produce PDF.
+function getJobExtension(head) { return (indexOfBytes(head, '%PDF') >= 0) ? 'pdf' : 'prn'; }
 
 function startListener(port, onJob, func, attempt) {
     if (server != null) { func(null); return; }
@@ -309,7 +304,7 @@ function startListener(port, onJob, func, attempt) {
             try { fs.renameSync(job.tmpPath, path); } catch (ex) { path = job.tmpPath; name = 'print-' + job.time + '-' + job.id + '.tmp'; }
             log('Job ' + job.id + ': saved as ' + name);
             cleanJobs(false);
-            try { onJob({ path: path, name: name, size: job.size, format: ext }); } catch (ex) { }
+            try { onJob({ path: path, name: name, size: job.size }); } catch (ex) { }
         };
         socket.on('end', function () { finish('connection closed by the spooler'); });
         socket.on('close', function () { finish('connection closed'); });
@@ -354,7 +349,7 @@ function stopListener() {
     server = null;
 }
 
-// Start remote printing. options: { printerName, port }, onJob({ path, name, size, format }), func(err, { name, port })
+// Start remote printing. options: { printerName, port }, onJob({ path, name, size }), func(err, { name, port })
 function start(options, onJob, func) {
     if (options == null) { options = {}; }
     var name = cleanName(options.printerName);
@@ -445,8 +440,6 @@ function cleanup(onJob) {
     }
 }
 
-function isRunning() { return (current != null); }
-
 function sessionCount() { var count = 0; for (var i in sessions) { count++; } return count; }
 
 // A print job was received, send it to all users with remote printing active
@@ -460,7 +453,7 @@ function onJob(job) {
     var path = job.path.split('\\').join('/');
     for (var i in sessions) {
         context.log('Remote printing job, ' + job.size + ' byte(s)', sessions[i]);
-        context.send({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name, size: job.size, format: job.format });
+        context.send({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name });
     }
 }
 
@@ -550,4 +543,4 @@ function getStatus() {
     return { supported: isSupported(), printer: current, permanent: permanent, listening: (server != null), busy: queueBusy, jobsFolder: jobsFolder, history: history.slice() };
 }
 
-module.exports = { handleMessage: handleMessage, consoleCommand: consoleCommand, agentStarted: agentStarted, start: start, stop: stop, install: install, uninstall: uninstall, cleanup: cleanup, isRunning: isRunning, isSupported: isSupported, getStatus: getStatus, jobsFolder: jobsFolder };
+module.exports = { handleMessage: handleMessage, consoleCommand: consoleCommand, agentStarted: agentStarted, start: start, stop: stop, getStatus: getStatus };
