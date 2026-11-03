@@ -319,10 +319,14 @@ function install_stylishui() {
         # Retrieve the values we need to determine compatibility
         compat_data=$(curl -fsSL "$stylishui_compat")
         meshcentral_version=$(jq -r '.version' /opt/meshcentral/meshcentral/package.json)
-        # Target the StylishUI version we need for our present Meshcentral version
+        # Target the StylishUI version we need for our present Meshcentral version, the first match is the newest one
         compat_version=$(echo "$compat_data" | jq -r --arg mcv "$meshcentral_version" \
-            '.compatibility[] | select(.meshcentral==$mcv) | .stylishui')
+            'first(.compatibility[] | select(.meshcentral==$mcv)) | .stylishui')
         echo "Data: MeshCentral: $meshcentral_version, matched StylishUI: $compat_version"
+        if [[ -z "$compat_version" ]]; then
+            echo "No StylishUI version is listed as compatible with MeshCentral $meshcentral_version, set STYLISHUI_FORCE_LATEST=true to install the latest one."
+            return 1
+        fi
 
         # From the data gathered above, compile the whole URL.
         full_url="${stylishui_base_url}/tags/${compat_version}.tar.gz"
