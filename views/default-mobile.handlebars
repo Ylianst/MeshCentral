@@ -1395,6 +1395,7 @@
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var hidePowerTimeline = '{{{hidePowerTimeline}}}';
+        var sessionTimelineEnabled = '{{{sessionTimeline}}}' === 'true';
         var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
@@ -1733,7 +1734,7 @@
                     break;
                 }
                 case 'sessiontimeline': {
-                    if (message.nodeid != sessionTimelineReq) break;
+                    if ((!sessionTimelineEnabled) || (message.nodeid != sessionTimelineReq)) break;
                     sessionTimelineNode = message.nodeid;
                     sessionTimeline = message.timeline;
                     if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceTimeline(); }
@@ -4144,8 +4145,10 @@
                     QH('p10sessiontimeline', '');
                     powerTimelineReq = currentNode._id;
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
-                    sessionTimelineReq = currentNode._id;
-                    meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
+                    if (sessionTimelineEnabled) {
+                        sessionTimelineReq = currentNode._id;
+                        meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
+                    }
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
@@ -4469,14 +4472,19 @@
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
             if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
-            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) { powerTimelineUpdate = null; meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
-            sessionTimelineReq = currentNode._id;
-            meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id }); }
+            if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) {
+                powerTimelineUpdate = null;
+                meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
+                if (sessionTimelineEnabled) {
+                    sessionTimelineReq = currentNode._id;
+                    meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
+                }
+            }
         }
 
         // Draw device power bars. The bars are 766px wide.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3 || hidePowerTimeline === 'true') { QH('p10html2', '<br />'); QH('p10sessiontimeline', ''); return; }
+            if (currentNode.mtype == 3) { QH('p10html2', '<br />'); QH('p10sessiontimeline', ''); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
 
@@ -4518,13 +4526,14 @@
                 ++count;
                 date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
-            QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>');
+            if (hidePowerTimeline === 'true') { QH('p10html2', '<br />'); }
+            else { QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>'); }
             drawDeviceSessionTimeline(totalWidth, timeline2, now);
         }
 
         // Draw user session state bars, clipped to periods where the device is powered.
         function drawDeviceSessionTimeline(totalWidth, powerBlocks, now) {
-            if ((currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
+            if ((!sessionTimelineEnabled) || (currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
                 QH('p10sessiontimeline', '');
                 return;
             }

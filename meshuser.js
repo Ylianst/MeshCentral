@@ -6907,6 +6907,8 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandPong(command) { } // NOP
 
     function serverCommandSessionTimeline(command) {
+        if (domain.sessiontimeline !== true) return;
+
         // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
             if ((visible == false) || (node == null)) return;

@@ -1943,7 +1943,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if (device.agent) {
                 // Restore the last recorded state once per connection so reconnects
                 // and server restarts do not create duplicate session-state events.
-                if ((obj.lastSessionTimelineState === undefined) && isUserSessionTimelineState(command.sessionstate)) {
+                if ((domain.sessiontimeline === true) && (obj.lastSessionTimelineState === undefined) && isUserSessionTimelineState(command.sessionstate)) {
                     db.GetNodeEventsWithLimit(obj.dbNodeKey, domain.id, 1, 'sessionstate', function (err, docs) {
                         obj.lastSessionTimelineState = ((err == null) && (docs != null) && (docs.length > 0) && isUserSessionTimelineState(docs[0].state)) ? docs[0].state : null;
                         delete obj.deviceChanging;
@@ -1958,7 +1958,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // infer "unlocked" from an empty locked-user list: after a core restart
                 // Windows may already be locked, but no lock event has been observed yet.
                 const newSessionState = command.sessionstate;
-                if (isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
+                if ((domain.sessiontimeline === true) && isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
                     const sessionStateMessages = { locked: 'Locked', unlocked: 'Unlocked', nouser: 'No active user', unknown: 'Unknown' };
                     const sessionEvent = {
                         etype: 'node',

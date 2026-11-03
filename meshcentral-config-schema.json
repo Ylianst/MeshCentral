@@ -1996,6 +1996,11 @@
             "type": "object",
             "description": "LDAP options passed to ldapauth-fork"
           },
+          "sessionTimeline": {
+            "type": "boolean",
+            "default": false,
+            "description": "When enabled, records user session state changes and displays the 7-day user session timeline in the device view."
+          },
           "hidePowerTimeline": {
             "type": "boolean",
             "default": false,
