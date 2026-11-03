@@ -1038,8 +1038,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                     // Remote printing, check that it's allowed and add the printer settings from the server configuration
                     if (command.type == 'remoteprint') {
-                        // Off unless the domain has "remotePrinting": true or "remotePrinting": { "enabled": true, ... }
-                        if ((domain.remoteprinting !== true) && ((domain.remoteprinting == null) || (typeof domain.remoteprinting != 'object') || (domain.remoteprinting.enabled !== true))) break;
+                        if (parent.isRemotePrintingAllowed(domain) == false) break;
                         requiredRights = MESHRIGHT_REMOTECONTROL;
                         requiredNonRights = MESHRIGHT_NOFILES | MESHRIGHT_REMOTEVIEWONLY; // Print jobs are downloaded using the files feature
                         delete command.printerName;

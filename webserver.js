@@ -3620,7 +3620,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (domain.sitestyle === 3) { features2 |= 0x80000000; } // Indicates that Modern UI is forced (siteStyle = 3)
         if ((typeof domain.desktop == 'object') && (domain.desktop.disableconnectall == true)) { features3 += 0x00000001; } // Disable "Connect All" button when multiple sessions are active on a device
         if (domain.upninsteadofuser === true) { features3 += 0x00000002; } // Show UPN instead of username in General tab
-        if ((domain.remoteprinting === true) || ((domain.remoteprinting != null) && (typeof domain.remoteprinting == 'object') && (domain.remoteprinting.enabled === true))) { features3 += 0x00000004; } // Remote printing is allowed, it's off by default
+        if (obj.isRemotePrintingAllowed(domain)) { features3 += 0x00000004; } // Remote printing is allowed
         return { features: features, features2: features2, features3: features3 };
     }
 
@@ -10219,6 +10219,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             }
         }
         return r;
+    }
+
+    // Remote printing is off unless the domain has "remotePrinting": true or "remotePrinting": { "enabled": true, ... }
+    obj.isRemotePrintingAllowed = function (domain) {
+        return (domain.remoteprinting === true) || ((domain.remoteprinting != null) && (typeof domain.remoteprinting == 'object') && (domain.remoteprinting.enabled === true));
     }
 
     // Filter the user web site and only output state that we need to keep
