@@ -13770,6 +13770,16 @@
             return item.type || "Value";
         }
 
+        function p9compareRegistryNames(a, b) {
+            var an = String(a || '').toLowerCase(), bn = String(b || '').toLowerCase();
+            if ((an.length > 0) && (bn.length > 0)) {
+                var ar = (an.charAt(0) == '_') ? 0 : ((an.charCodeAt(0) >= 48) && (an.charCodeAt(0) <= 57) ? 1 : 2);
+                var br = (bn.charAt(0) == '_') ? 0 : ((bn.charCodeAt(0) >= 48) && (bn.charCodeAt(0) <= 57) ? 1 : 2);
+                if (ar != br) { return ar - br; }
+            }
+            return (an < bn) ? -1 : ((an > bn) ? 1 : 0);
+        }
+
         function p9canEditValue(item) {
             if ((item == null) || (item.kind != 'value')) return false;
             return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_MULTI_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
@@ -14059,9 +14069,13 @@
             if (data.action == 'listroots') {
                 registryRoots = data.roots || [];
                 var x = '', itemCount = 0;
-                for (var i = 0; i < registryRoots.length; i++) {
+                var sortedRoots = registryRoots.slice().sort(function (a, b) {
+                    return p9compareRegistryNames(a, b);
+                });
+                registryRoots = sortedRoots;
+                for (var i = 0; i < sortedRoots.length; i++) {
                     if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                    x += p9renderRegistryRow('hive', registryRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
+                    x += p9renderRegistryRow('hive', sortedRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(sortedRoots[i]), '', sortedRoots[i], '');
                     itemCount++;
                 }
                 if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
@@ -14076,16 +14090,18 @@
                 p9setCurrentPath(p9getDisplayPath(registryCurrentHive, registryCurrentPath));
                 var x = '', itemCount = 0;
                 if ((data.subkeys != null) && (data.subkeys.length > 0)) {
-                    for (var i = 0; i < data.subkeys.length; i++) {
+                    var sortedSubkeys = data.subkeys.slice().sort(function (a, b) {
+                        return p9compareRegistryNames(a, b);
+                    });
+                    for (var i = 0; i < sortedSubkeys.length; i++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('key', data.subkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(data.subkeys[i]), data.subkeys[i], registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('key', sortedSubkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(sortedSubkeys[i]), sortedSubkeys[i], registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
                 if ((data.values != null) && (data.values.length > 0)) {
                     var sortedValues = data.values.slice().sort(function (a, b) {
-                        var an = String(a.name || '').toLowerCase(), bn = String(b.name || '').toLowerCase();
-                        return (an < bn) ? -1 : ((an > bn) ? 1 : 0);
+                        return p9compareRegistryNames(a.name, b.name);
                     });
                     for (var j = 0; j < sortedValues.length; j++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
