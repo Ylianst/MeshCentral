@@ -43,12 +43,6 @@ function isRegistryByteArray(value) {
     return Buffer.isBuffer(value) || ((typeof Uint8Array != 'undefined') && (value instanceof Uint8Array));
 }
 
-function decodeRegistryMultiSz(value) {
-    var text = '';
-    for (var i = 0; i + 1 < value.length; i += 2) { text += String.fromCharCode(value[i] | (value[i + 1] << 8)); }
-    return text.replace(/\u0000+$/, '').split('\u0000').join('\r\n');
-}
-
 function formatRegistryValue(value, valueType, commandValue) {
     if (valueType == 'REG_MULTI_SZ') {
         if (typeof commandValue == 'string' && commandValue != '') {
@@ -56,7 +50,9 @@ function formatRegistryValue(value, valueType, commandValue) {
         }
         if (Array.isArray(value)) { return value.join('\r\n'); }
         if (isRegistryByteArray(value)) {
-            return decodeRegistryMultiSz(value);
+            var text = '';
+            for (var i = 0; i + 1 < value.length; i += 2) { text += String.fromCharCode(value[i] | (value[i + 1] << 8)); }
+            return text.replace(/\u0000+$/, '').split('\u0000').join('\r\n');
         }
     }
     if (valueType == 'REG_QWORD') {
@@ -105,7 +101,7 @@ function getRegistryValueCommandInfo(hiveName, path, valueName) {
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
         if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
-        var match = line.match(/^.*?\s{2,}(REG_[A-Z0-9_]+)(?:\s{2,}(.*))?$/);
+        var match = line.match(/\b(REG_[A-Z0-9_]+)\b/);
         if (match != null) { return { type: match[1], value: match[2] || '' }; }
     }
     return null;
@@ -236,7 +232,11 @@ function setRegistryValue(hiveName, path, valueName, valueType, valueData) {
         if ((typeof valueData != 'string') || (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(valueData.trim()) == false)) { throw ('Only decimal or 0x-prefixed numeric data is supported for ' + valueType + '.'); }
         valueData = valueData.trim();
     } else if (valueType == 'REG_MULTI_SZ') {
-        valueData = String(valueData == null ? '' : valueData).replace(/\r\n|\r|\n/g, '\\0');
+        var multiLines = String(valueData == null ? '' : valueData).split(/\r\n|\r|\n/), multiValue = [];
+        for (var i = 0; i < multiLines.length; i++) {
+            if (multiLines[i].trim() != '') { multiValue.push(multiLines[i]); }
+        }
+        valueData = multiValue.join('\\0');
         if (valueData.slice(-2) != '\\0') { valueData += '\\0'; }
     } else if (valueData == null) {
         valueData = '';
