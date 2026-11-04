@@ -35,25 +35,86 @@ function guessRegistryValueType(value) {
     if (typeof value == 'number') { return ((Math.floor(value) === value) && (value >= 0) && (value <= 0xFFFFFFFF)) ? 'REG_DWORD' : 'REG_QWORD'; }
     if (typeof value == 'string') { return 'REG_SZ'; }
     if (Array.isArray(value)) { return 'REG_MULTI_SZ'; }
-    if (Buffer.isBuffer(value)) { return 'REG_BINARY'; }
+    if (Buffer.isBuffer(value) || ((typeof Uint8Array != 'undefined') && (value instanceof Uint8Array))) { return 'REG_BINARY'; }
     return 'REG_UNKNOWN';
+}
+
+function isRegistryByteArray(value) {
+    return Buffer.isBuffer(value) || ((typeof Uint8Array != 'undefined') && (value instanceof Uint8Array));
+}
+
+function decodeRegistryMultiSz(value) {
+    var text = '';
+    for (var i = 0; i + 1 < value.length; i += 2) { text += String.fromCharCode(value[i] | (value[i + 1] << 8)); }
+    return text.replace(/\u0000+$/, '').split('\u0000').join('\r\n');
+}
+
+function formatRegistryValue(value, valueType, commandValue) {
+    if (valueType == 'REG_MULTI_SZ') {
+        if (typeof commandValue == 'string' && commandValue != '') {
+            return commandValue.replace(/\\0+$/, '').replace(/\\0/g, '\r\n');
+        }
+        if (Array.isArray(value)) { return value.join('\r\n'); }
+        if (isRegistryByteArray(value)) {
+            return decodeRegistryMultiSz(value);
+        }
+    }
+    if (valueType == 'REG_QWORD') {
+        var qwordHex = null;
+        if (isRegistryByteArray(value) && (value.length >= 8)) {
+            qwordHex = '';
+            for (var i = 7; i >= 0; i--) {
+                var byteHex = value[i].toString(16);
+                qwordHex += (byteHex.length == 1) ? ('0' + byteHex) : byteHex;
+            }
+        } else if (typeof commandValue == 'string') {
+            var qwordMatch = commandValue.match(/^(?:0x)?[0-9a-fA-F]+$/);
+            if (qwordMatch != null) { qwordHex = commandValue.replace(/^0x/i, '').toLowerCase(); }
+        } else if (typeof value == 'number' && isFinite(value) && Math.floor(value) == value) {
+            qwordHex = value.toString(16);
+        }
+        if (qwordHex != null) {
+            while (qwordHex.length < 16) { qwordHex = '0' + qwordHex; }
+            var decimal = '0';
+            for (var j = 0; j < qwordHex.length; j++) {
+                var digit = parseInt(qwordHex.charAt(j), 16), carry = digit;
+                for (var k = decimal.length - 1; k >= 0; k--) {
+                    var product = (parseInt(decimal.charAt(k), 10) * 16) + carry;
+                    decimal = decimal.substring(0, k) + (product % 10) + decimal.substring(k + 1);
+                    carry = Math.floor(product / 10);
+                }
+                if (carry > 0) { decimal = carry + decimal; }
+            }
+            return decimal.replace(/^0+(?=\d)/, '');
+        }
+    }
+    if (value == null) { return ''; }
+    if (typeof value == 'object') {
+        try { return JSON.stringify(value); } catch (ex) { return String(value); }
+    }
+    return String(value);
+}
+
+function getRegistryValueCommandInfo(hiveName, path, valueName) {
+    var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
+    var args = ['query', fullPath];
+    if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
+    var output = runRegistryCommand(args, true);
+    if (typeof output != 'string') { return null; }
+    var lines = output.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
+        var match = line.match(/^.*?\s{2,}(REG_[A-Z0-9_]+)(?:\s{2,}(.*))?$/);
+        if (match != null) { return { type: match[1], value: match[2] || '' }; }
+    }
+    return null;
 }
 
 function getRegistryValueType(hiveName, path, valueName, fallbackValue) {
     try {
-        var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
-        var args = ['query', fullPath];
-        if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
-        var output = runRegistryCommand(args, true);
-        if (typeof output == 'string') {
-            var lines = output.split(/\r?\n/);
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].trim();
-                if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
-                var parts = line.split(/\s{2,}/);
-                if ((parts.length >= 2) && (parts[1].indexOf('REG_') == 0)) { return parts[1]; }
-            }
-        }
+        var info = getRegistryValueCommandInfo(hiveName, path, valueName);
+        if (info != null) { return info.type; }
     } catch (ex) { }
     return guessRegistryValueType(fallbackValue);
 }
@@ -72,12 +133,14 @@ function listRegistryKey(hiveName, path) {
             var valueName = result.values[i], valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
             try { valueData = registry.QueryKey(hive, path, valueName); } catch (ex) { valueData = null; }
             valueType = getRegistryValueType(hiveName, path, valueName, valueData);
-            if (valueData == null) { valueText = ''; }
-            else if (typeof valueData == 'object') {
-                try { valueText = JSON.stringify(valueData); } catch (ex) { valueText = String(valueData); }
-            } else {
-                valueText = String(valueData);
+            var commandValue = '';
+            if ((valueType == 'REG_MULTI_SZ') || (valueType == 'REG_QWORD')) {
+                try {
+                    var commandInfo = getRegistryValueCommandInfo(hiveName, path, valueName);
+                    if (commandInfo != null) { commandValue = commandInfo.value; }
+                } catch (ex) { }
             }
+            valueText = formatRegistryValue(valueData, valueType, commandValue);
             response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
         }
     }
@@ -172,6 +235,9 @@ function setRegistryValue(hiveName, path, valueName, valueType, valueData) {
     if ((valueType == 'REG_DWORD') || (valueType == 'REG_QWORD')) {
         if ((typeof valueData != 'string') || (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(valueData.trim()) == false)) { throw ('Only decimal or 0x-prefixed numeric data is supported for ' + valueType + '.'); }
         valueData = valueData.trim();
+    } else if (valueType == 'REG_MULTI_SZ') {
+        valueData = String(valueData == null ? '' : valueData).replace(/\r\n|\r|\n/g, '\\0');
+        if (valueData.slice(-2) != '\\0') { valueData += '\\0'; }
     } else if (valueData == null) {
         valueData = '';
     } else {
