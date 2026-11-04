@@ -11880,7 +11880,7 @@
 
         function p9canEditValue(item) {
             if ((item == null) || (item.kind != 'value')) return false;
-            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
+            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_MULTI_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
         }
 
         function p9canDeleteSelection(items) {
@@ -11894,7 +11894,7 @@
         }
 
         function p9getWritableRegistryTypes() {
-            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_DWORD', 'REG_QWORD'];
+            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_QWORD'];
         }
 
         function p9renderRegistryTypeOptions(selectedType) {
@@ -12055,11 +12055,11 @@
         function p9editRegistryValue() {
             var item = p9getSelectedItem();
             if ((item == null) || (item.kind != 'value')) return false;
-            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD."); return false; }
+            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_MULTI_SZ, REG_DWORD and REG_QWORD."); return false; }
             var x = '<div style=margin-bottom:8px><b>' + "Path" + ':</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
             x += '<div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
             x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Type" + '</b></div><select id=p9registryValueTypeEditInput onchange=p9registryValueEditCheck() style=width:100%>' + p9renderRegistryTypeOptions(item.type) + '</select>';
-            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
+            if (p9canEditValue(item) == false) { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
             x += '<textarea id=p9registryValueEditInput onkeyup=p9registryValueEditCheck(event) style=width:100%;height:140px;resize:none>' + EscapeHtml(item.value || '') + '</textarea>';
             setDialogMode(2, "Edit Registry Value", 3, p9editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
             focusTextBox('p9registryValueEditInput');
@@ -12179,9 +12179,13 @@
                     }
                 }
                 if ((data.values != null) && (data.values.length > 0)) {
-                    for (var j = 0; j < data.values.length; j++) {
+                    var sortedValues = data.values.slice().sort(function (a, b) {
+                        var an = String(a.name || '').toLowerCase(), bn = String(b.name || '').toLowerCase();
+                        return (an < bn) ? -1 : ((an > bn) ? 1 : 0);
+                    });
+                    for (var j = 0; j < sortedValues.length; j++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('value', data.values[j].name, data.values[j].type, data.values[j].value, null, null, data.values[j].rawname, registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('value', sortedValues[j].name, sortedValues[j].type, sortedValues[j].value, null, null, sortedValues[j].rawname, registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
