@@ -3215,22 +3215,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'remotedownloadselection':
                 {
-                    // Desktop "Remote Download" button: ask a Windows agent which files are highlighted in Explorer. The agent console
-                    // command is fixed here on the server, see remotedownload.js, the agent replies to this session directly.
+                    // Desktop "Remote Download" button: ask a Windows agent which files are highlighted in Explorer, with native calls
+                    // (method 'native', needs Agent Console) or PowerShell (method 'powershell', needs Run Commands). The code sent to the
+                    // agent is fixed here on the server, see remotedownload.js, the agent replies to this session directly.
                     if (common.validateString(command.nodeid, 1, 1024) == false) break;
                     if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                     if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) break; // Invalid domain
+                    const method = (command.method == 'powershell') ? 'powershell' : 'native';
                     parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
                         var err = null, agent = null;
                         if ((node == null) || (visible == false)) { err = 'Invalid nodeid'; }
-                        else if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights & MESHRIGHT_AGENTCONSOLE) == 0) || ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0))) { err = 'Access denied'; } // Same rights as the agent console, plus files
+                        else if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0))) { err = 'Access denied'; }
+                        else if ((method == 'native') && ((rights & MESHRIGHT_AGENTCONSOLE) == 0)) { err = 'Access denied'; }
+                        else if ((method == 'powershell') && ((rights & MESHRIGHT_REMOTECOMMAND) == 0)) { err = 'Access denied'; }
                         else if ((node.agent == null) || ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(node.agent.id) == -1)) { err = 'Not supported'; } // Windows agents only
                         else {
                             agent = parent.wsagents[node._id];
                             if ((agent == null) || (agent.authenticated != 2) || (agent.agentInfo == null)) { err = 'Agent not connected'; }
                         }
-                        if (err != null) { try { ws.send(JSON.stringify({ action: 'remotedownloadselection', nodeid: command.nodeid, result: err })); } catch (ex) { } return; }
-                        try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: require('./remotedownload.js').getSelectionConsoleCommand(ws.sessionId), rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                        if (err != null) { try { ws.send(JSON.stringify({ action: 'remotedownloadselection', nodeid: command.nodeid, method: method, result: err })); } catch (ex) { } return; }
+
+                        const remoteDownload = require('./remotedownload.js');
+                        if (method == 'native') {
+                            try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: remoteDownload.getSelectionConsoleCommand(ws.sessionId), rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                        } else {
+                            try { agent.send(JSON.stringify({ action: 'runcommands', type: 2, cmds: remoteDownload.powerShellScript, runAsUser: 0, reply: true, responseid: 'remotedownloadselection', sessionid: ws.sessionId })); } catch (ex) { }
+                            // Same event as the runcommands action, so this shows in the device's event log
+                            const targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                            parent.parent.DispatchEvent(targets, obj, { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'runcommands', msg: 'Running commands', msgid: 24, cmds: remoteDownload.powerShellScript, cmdType: 2, runAsUser: 0, domain: domain.id });
+                        }
                     });
                     break;
                 }

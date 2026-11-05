@@ -3755,12 +3755,7 @@
                 }
                 case 'remotedownloadselection': {
                     // The server could not ask the agent for the Remote Download selection (access denied, agent not connected...)
-                    deskRemoteDownloadGotNative(null);
-                    break;
-                }
-                case 'runcommands': {
-                    // The server could not run the Remote Download selection script (access denied, agent not connected...)
-                    if ((message.responseid === 'deskRemoteDownload') && (message.result != 'OK')) { deskRemoteDownloadGotSelection(null); }
+                    if (message.nodeid == deskRemoteDownloadNodeId) { deskRemoteDownloadGotReply(message.method, null); }
                     break;
                 }
                 case 'msg': {
@@ -3794,10 +3789,10 @@
                                 showDeskToolsServices(message);
                             } else if (message.type === 'service') {
                                 showServiceDetailsDialog(message);
-                            } else if ((message.type === 'remotedownloadselection') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                deskRemoteDownloadGotNative(message.value); // Explorer selection read with native calls, for the Remote Download button
-                            } else if ((message.type === 'runcommands') && (message.responseid === 'deskRemoteDownload') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                deskRemoteDownloadGotSelection(message.result); // Explorer selection for the Remote Download button
+                            } else if ((message.type === 'remotedownloadselection') && (message.nodeid == deskRemoteDownloadNodeId)) {
+                                deskRemoteDownloadGotReply('native', message.value); // Remote Download button, Explorer selection read with native calls
+                            } else if ((message.type === 'runcommands') && (message.responseid === 'remotedownloadselection') && (message.nodeid == deskRemoteDownloadNodeId)) {
+                                deskRemoteDownloadGotReply('powershell', message.result); // Remote Download button, Explorer selection read with PowerShell
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
@@ -9899,54 +9894,50 @@
             }
         }
 
-        // Remote Download: download the file(s) highlighted in Windows Explorer. With the Agent Console right, the server asks the agent
-        // to read the selection with native Windows calls (see remotedownload.js). Without it, or if that fails, "Run Commands" runs a
-        // PowerShell query (needs the Run Commands right). If nothing is highlighted, download the remote file(s) whose path is on the
-        // remote clipboard, and if there is none, ask for a path.
+        // Remote Download: download the file(s) highlighted in Windows Explorer. The server asks the agent for them, with native Windows
+        // calls if the user has the Agent Console right, or else with PowerShell if the user has the Run Commands right (see remotedownload.js).
+        // If nothing is highlighted, download the remote file(s) whose path is on the remote clipboard, and if there is none, ask for a path.
         // On Windows, right-click the file and use "Copy as path" (or Ctrl+Shift+C), on Linux copy the file in the file manager.
         var deskRemoteDownloadTimer = null;
-        var deskRemoteDownloadStep = null; // 'native', 'selection' (PowerShell) or 'clipboard' while waiting for the device
+        var deskRemoteDownloadStep = null; // 'native', 'powershell' or 'clipboard' while waiting for the device
         var deskRemoteDownloadFiles = null; // Files listed in the selection dialog
         var deskRemoteDownloadNodeId = null; // Device the request was made for, replies for another device or view are dropped
-        var deskRemoteDownloadConfirm = false; // Explorer had nothing highlighted, so don't download a path left on the clipboard without asking
-        // Single line PowerShell, it is read line by line from stdin. "Run as user" can still run as SYSTEM, which can't see the user's Explorer windows,
-        // so this runs as the agent and starts the Explorer query as the console user with a one-time scheduled task, like the agent does to open a URL.
-        // The query is written to a script file in that folder and run with -File, not -EncodedCommand, which antivirus treats as suspicious.
-        // Output is base64 JSON between markers, so terminal output around it does not matter.
-        var deskRemoteDownloadSelectionScript = "$m='@@MESH'+'RD@@';$j='[]';$n=$null;$d=$null;try{$u=(Get-CimInstance Win32_ComputerSystem).UserName;if(-not $u){$p=Get-CimInstance Win32_Process -Filter 'Name=''explorer.exe''' | Select-Object -First 1;if($p){$q=Invoke-CimMethod -InputObject $p -MethodName GetOwner;if($q.User){$u=$q.Domain+'\\'+$q.User}}};if($u){$d=Join-Path $env:windir ('Temp\\MeshRD-'+[guid]::NewGuid());New-Item -ItemType Directory -Path $d | Out-Null;icacls $d /grant ($u+':(OI)(CI)M') | Out-Null;$f=Join-Path $d 'out.json';$sf=Join-Path $d 'q.ps1';[IO.File]::WriteAllText($sf,('$r=@();try{foreach($w in (New-Object -ComObject Shell.Application).Windows()){try{if($w.FullName -match ''explorer\\.exe$''){$s=@();foreach($i in $w.Document.SelectedItems()){if($i.Path -and (Test-Path -LiteralPath $i.Path -PathType Leaf)){$s+=[string]$i.Path}};if($s.Count -gt 0){$r+=@{f=[string]$w.Document.Folder.Self.Path;s=$s}}}}catch{}}}catch{};$o=''@@OUT@@'';[IO.File]::WriteAllText($o+''.tmp'',(ConvertTo-Json -Compress -Depth 3 -InputObject @($r)));Move-Item -LiteralPath ($o+''.tmp'') -Destination $o').Replace('@@OUT@@',$f));$n='MeshRD-'+[guid]::NewGuid();$a=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File \"'+$sf+'\"');Register-ScheduledTask -TaskName $n -Action $a -Principal (New-ScheduledTaskPrincipal -UserId $u -LogonType Interactive) -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -Force | Out-Null;Start-ScheduledTask -TaskName $n;for($i=0;($i -lt 50) -and (-not (Test-Path -LiteralPath $f));$i++){Start-Sleep -Milliseconds 200};if(Test-Path -LiteralPath $f){$j=[IO.File]::ReadAllText($f)}}}catch{}finally{if($n){Unregister-ScheduledTask -TaskName $n -Confirm:$false -ErrorAction SilentlyContinue};if($d){Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue}};[Console]::Out.Write($m+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($j))+$m)";
+        var deskRemoteDownloadConfirm = false; // We don't know what is highlighted in Explorer, so don't download a path left on the clipboard without asking
         function deskRemoteDownloadFunction() {
             if (deskRemoteDownloadDialogOpen() || (desktop == null) || (desktop.State != 3) || (currentNode == null) || (deskRemoteDownloadStep != null)) return;
             deskRemoteDownloadNodeId = currentNode._id;
             deskRemoteDownloadConfirm = false;
-            if (isWindowsNode(currentNode) && ((GetNodeRights(currentNode) & 24) == 24)) {
-                // Remote Control and Agent Console rights: ask the server for the selection, read by the agent with native Windows calls
-                deskRemoteDownloadWait('native', 15000, function () { deskRemoteDownloadPowerShell(true); });
-                meshserver.send({ action: 'remotedownloadselection', nodeid: currentNode._id });
-            } else {
-                deskRemoteDownloadPowerShell(false);
-            }
+            deskRemoteDownloadQuery('native');
         }
 
-        // Ask Explorer for the highlighted files with PowerShell, this takes a few seconds. If that is not possible, use the clipboard.
-        // fallback is true when the native query failed, then a path on the clipboard is not downloaded without asking.
-        function deskRemoteDownloadPowerShell(fallback) {
-            if (isWindowsNode(currentNode) && ((GetNodeRights(currentNode) & 131072) != 0)) {
-                // If nothing comes back (agent busy running other commands), use the clipboard.
-                deskRemoteDownloadWait('selection', 20000, function () { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); });
-                meshserver.send({ action: 'runcommands', nodeids: [currentNode._id], type: 2, runAsUser: 0, reply: true, responseid: 'deskRemoteDownload', cmds: deskRemoteDownloadSelectionScript });
-            } else {
-                deskRemoteDownloadConfirm = fallback;
-                deskRemoteDownloadClipboard();
-            }
+        // Ask the server which files are highlighted in Explorer. Without the rights for this method, try the next one: native, PowerShell, clipboard.
+        function deskRemoteDownloadQuery(method) {
+            var rights = GetNodeRights(currentNode);
+            var allowed = isWindowsNode(currentNode) && ((method == 'native') ? ((rights & 24) == 24) : ((rights & 131072) != 0)); // Remote Control + Agent Console, or Run Commands
+            if (allowed == false) { if (method == 'native') { deskRemoteDownloadQuery('powershell'); } else { deskRemoteDownloadClipboard(); } return; }
+            deskRemoteDownloadWait(method, 20000, function () { deskRemoteDownloadFailed(method); }); // PowerShell takes a few seconds, or the agent may be busy running other commands
+            meshserver.send({ action: 'remotedownloadselection', nodeid: currentNode._id, method: method });
         }
 
-        // Called with the reply of the native query: a JSON array of { s: [paths], fg: foreground window }, or null if it could not run
-        function deskRemoteDownloadGotNative(text) {
-            if ((deskRemoteDownloadDone('native') == false) || (deskRemoteDownloadActive() == false)) return;
+        // The query could not run, try the next method
+        function deskRemoteDownloadFailed(method) {
+            deskRemoteDownloadConfirm = true;
+            if (method == 'native') { deskRemoteDownloadQuery('powershell'); } else { deskRemoteDownloadClipboard(); }
+        }
+
+        // Called with the agent's reply to deskRemoteDownloadQuery(), or null if the server could not run it
+        function deskRemoteDownloadGotReply(method, text) {
+            if ((deskRemoteDownloadDone(method) == false) || (deskRemoteDownloadActive() == false)) return;
+            if ((method == 'powershell') && (typeof text == 'string')) {
+                // PowerShell prints base64 JSON between markers, remove whatever else it printed, terminal escapes and line breaks
+                var parts = text.split('@@MESHRD@@');
+                text = null;
+                if (parts.length >= 3) { try { text = decodeURIComponent(escape(atob(parts[1].replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '').replace(/[^A-Za-z0-9+\/=]/g, '')))); } catch (ex) { } }
+            }
             var windows = null;
             if (typeof text == 'string') { try { windows = JSON.parse(text); } catch (ex) { } }
-            if (Array.isArray(windows) == false) { deskRemoteDownloadPowerShell(true); return; } // The native query failed, try PowerShell
-            deskRemoteDownloadGotWindows(windows);
+            if (windows == null) { deskRemoteDownloadFailed(method); return; }
+            deskRemoteDownloadGotWindows(Array.isArray(windows) ? windows : [windows]); // PowerShell writes a single window as an object
         }
 
         function deskRemoteDownloadClipboard() {
@@ -9994,21 +9985,6 @@
             var paths = deskRemoteDownloadParsePaths(text);
             if ((paths.length > 0) && (deskRemoteDownloadConfirm == false)) { deskRemoteDownloadPaths(paths); return; }
             showDeskRemoteDownload(paths.join('\n'));
-        }
-
-        // Called with the output of the selection script, or null if it could not run
-        function deskRemoteDownloadGotSelection(text) {
-            if ((deskRemoteDownloadDone('selection') == false) || (deskRemoteDownloadActive() == false)) return;
-            var windows = [];
-            if (typeof text == 'string') {
-                var parts = text.split('@@MESHRD@@');
-                if (parts.length >= 3) {
-                    var b64 = parts[1].replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '').replace(/[^A-Za-z0-9+\/=]/g, ''); // Remove terminal escapes and line breaks
-                    try { windows = JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch (ex) { windows = []; }
-                }
-            }
-            if (Array.isArray(windows) == false) { windows = [windows]; }
-            deskRemoteDownloadGotWindows(windows);
         }
 
         // Download the files highlighted in Explorer, windows is a list of { f: folder, s: [paths], fg: foreground window }

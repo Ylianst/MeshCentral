@@ -12,13 +12,17 @@
 "use strict";
 
 // The Remote Download button in the desktop view downloads the files highlighted in Windows Explorer on the remote computer.
-// To find them without PowerShell and without changing the agent, the server sends the agent a fixed agent console "eval"
-// command. The agent starts a short lived copy of itself in the user's session, as it does to read the desktop wallpaper,
-// and that copy asks Explorer for its selection with the Windows shell COM interfaces. The result is sent back to the
-// browser session that asked, as a { action: 'msg', type: 'remotedownloadselection' } message.
+// This file holds the code the server sends a Windows agent to find them, there are no agent changes. Two ways:
 //
-// Both functions below are not run on the server, their source is sent to the agent, so they must stay ES5 JavaScript
-// that runs in the agent's JavaScript engine, and can't use anything outside of their own body.
+// - Native (Remote Control and Agent Console rights): the server sends the agent a fixed agent console "eval" command.
+//   The agent starts a short lived copy of itself in the user's session, as it does to read the desktop wallpaper, and that
+//   copy asks Explorer for its selection with the Windows shell COM interfaces. The agent replies to the browser session
+//   that asked with a { action: 'msg', type: 'remotedownloadselection', value: JSON } message.
+// - PowerShell (Run Commands right): the server sends powerShellScript below with Run Commands, the agent replies with a
+//   { action: 'msg', type: 'runcommands', responseid: 'remotedownloadselection', result: output } message.
+//
+// explorerSelection() and launchSelection() are not run on the server, their source is sent to the agent, so they must stay
+// ES5 JavaScript that runs in the agent's JavaScript engine, and can't use anything outside of their own body.
 
 // Runs in the user's session. Prints a JSON array of { s: [file paths], fg: true if this is the foreground window },
 // one entry for each Explorer window, or tab, that is showing and has files highlighted.
@@ -147,3 +151,43 @@ module.exports.getSelectionConsoleCommand = function (sessionid) {
     const agentScript = '(' + compact(launchSelection) + ')(' + JSON.stringify(sessionid) + ',' + JSON.stringify(childScript) + ');undefined;';
     return 'eval eval(Buffer.from(\'' + Buffer.from(agentScript).toString('base64') + '\',\'base64\').toString())';
 };
+
+// Runs as the console user, from the scheduled task below: writes the files highlighted in each Explorer window to @@OUT@@,
+// as a JSON array of { f: folder, s: [file paths] }
+const powerShellQuery = [
+    "$r=@();",
+    "try{foreach($w in (New-Object -ComObject Shell.Application).Windows()){try{",
+    "if($w.FullName -match 'explorer\\.exe$'){",
+    "$s=@();foreach($i in $w.Document.SelectedItems()){if($i.Path -and (Test-Path -LiteralPath $i.Path -PathType Leaf)){$s+=[string]$i.Path}};",
+    "if($s.Count -gt 0){$r+=@{f=[string]$w.Document.Folder.Self.Path;s=$s}}",
+    "}}catch{}}}catch{};",
+    "$o='@@OUT@@';[IO.File]::WriteAllText($o+'.tmp',(ConvertTo-Json -Compress -Depth 3 -InputObject @($r)));Move-Item -LiteralPath ($o+'.tmp') -Destination $o"
+].join('');
+
+// Runs as the agent with Run Commands. "Run as user" can run as SYSTEM, which can't see the user's Explorer windows, so this starts
+// the query above as the console user with a one-time scheduled task. The query goes in a script file run with -File, antivirus
+// flags -EncodedCommand. Run Commands reads PowerShell line by line, so this is one line, and the output is base64 JSON between
+// markers so whatever else PowerShell prints does not matter.
+module.exports.powerShellScript = [
+    "$m='@@MESH'+'RD@@';$j='[]';$n=$null;$d=$null;",
+    "try{",
+    // Find the console user
+    "$u=(Get-CimInstance Win32_ComputerSystem).UserName;",
+    "if(-not $u){$p=Get-CimInstance Win32_Process -Filter 'Name=''explorer.exe''' | Select-Object -First 1;if($p){$q=Invoke-CimMethod -InputObject $p -MethodName GetOwner;if($q.User){$u=$q.Domain+'\\'+$q.User}}};",
+    "if($u){",
+    // Temporary folder the user is given write access to, for the query script and its output
+    "$d=Join-Path $env:windir ('Temp\\MeshRD-'+[guid]::NewGuid());New-Item -ItemType Directory -Path $d | Out-Null;icacls $d /grant ($u+':(OI)(CI)M') | Out-Null;",
+    "$f=Join-Path $d 'out.json';$sf=Join-Path $d 'q.ps1';",
+    "[IO.File]::WriteAllText($sf,('" + powerShellQuery.split("'").join("''") + "').Replace('@@OUT@@',$f));",
+    // Run it as the user with a one-time scheduled task, and wait up to 10 seconds for the output
+    "$n='MeshRD-'+[guid]::NewGuid();",
+    "$a=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File \"'+$sf+'\"');",
+    "Register-ScheduledTask -TaskName $n -Action $a -Principal (New-ScheduledTaskPrincipal -UserId $u -LogonType Interactive) -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -Force | Out-Null;",
+    "Start-ScheduledTask -TaskName $n;",
+    "for($i=0;($i -lt 50) -and (-not (Test-Path -LiteralPath $f));$i++){Start-Sleep -Milliseconds 200};",
+    "if(Test-Path -LiteralPath $f){$j=[IO.File]::ReadAllText($f)}",
+    "}",
+    // Remove the task and the folder, even on errors
+    "}catch{}finally{if($n){Unregister-ScheduledTask -TaskName $n -Confirm:$false -ErrorAction SilentlyContinue};if($d){Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue}};",
+    "[Console]::Out.Write($m+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($j))+$m)"
+].join('');
