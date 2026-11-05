@@ -8746,16 +8746,20 @@
         var deskRemoteDownloadTimer = null;
         var deskRemoteDownloadStep = null; // 'selection' or 'clipboard' while waiting for the device
         var deskRemoteDownloadFiles = null; // Files listed in the selection dialog
+        var deskRemoteDownloadNodeId = null; // Device the request was made for, replies for another device or view are dropped
+        var deskRemoteDownloadConfirm = false; // Explorer had nothing highlighted, so don't download a path left on the clipboard without asking
         // Single line PowerShell, it is read line by line from stdin. "Run as user" can still run as SYSTEM, which can't see the user's Explorer windows,
         // so this runs as the agent and starts the Explorer query as the console user with a one-time scheduled task, like the agent does to open a URL.
         // The query is written to a script file in that folder and run with -File, not -EncodedCommand, which antivirus treats as suspicious.
         // Output is base64 JSON between markers, so terminal output around it does not matter.
         var deskRemoteDownloadSelectionScript = "$m='@@MESH'+'RD@@';$j='[]';$n=$null;$d=$null;try{$u=(Get-CimInstance Win32_ComputerSystem).UserName;if(-not $u){$p=Get-CimInstance Win32_Process -Filter 'Name=''explorer.exe''' | Select-Object -First 1;if($p){$q=Invoke-CimMethod -InputObject $p -MethodName GetOwner;if($q.User){$u=$q.Domain+'\\'+$q.User}}};if($u){$d=Join-Path $env:windir ('Temp\\MeshRD-'+[guid]::NewGuid());New-Item -ItemType Directory -Path $d | Out-Null;icacls $d /grant ($u+':(OI)(CI)M') | Out-Null;$f=Join-Path $d 'out.json';$sf=Join-Path $d 'q.ps1';[IO.File]::WriteAllText($sf,('$r=@();try{foreach($w in (New-Object -ComObject Shell.Application).Windows()){try{if($w.FullName -match ''explorer\\.exe$''){$s=@();foreach($i in $w.Document.SelectedItems()){if($i.Path -and (Test-Path -LiteralPath $i.Path -PathType Leaf)){$s+=[string]$i.Path}};if($s.Count -gt 0){$r+=@{f=[string]$w.Document.Folder.Self.Path;s=$s}}}}catch{}}}catch{};$o=''@@OUT@@'';[IO.File]::WriteAllText($o+''.tmp'',(ConvertTo-Json -Compress -Depth 3 -InputObject @($r)));Move-Item -LiteralPath ($o+''.tmp'') -Destination $o').Replace('@@OUT@@',$f));$n='MeshRD-'+[guid]::NewGuid();$a=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File \"'+$sf+'\"');Register-ScheduledTask -TaskName $n -Action $a -Principal (New-ScheduledTaskPrincipal -UserId $u -LogonType Interactive) -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries) -Force | Out-Null;Start-ScheduledTask -TaskName $n;for($i=0;($i -lt 50) -and (-not (Test-Path -LiteralPath $f));$i++){Start-Sleep -Milliseconds 200};if(Test-Path -LiteralPath $f){$j=[IO.File]::ReadAllText($f)}}}catch{}finally{if($n){Unregister-ScheduledTask -TaskName $n -Confirm:$false -ErrorAction SilentlyContinue};if($d){Remove-Item -LiteralPath $d -Recurse -Force -ErrorAction SilentlyContinue}};[Console]::Out.Write($m+[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($j))+$m)";
         function deskRemoteDownloadFunction() {
-            if (xxdialogMode || (desktop == null) || (desktop.State != 3) || (currentNode == null) || (deskRemoteDownloadStep != null)) return;
+            if (deskRemoteDownloadDialogOpen() || (desktop == null) || (desktop.State != 3) || (currentNode == null) || (deskRemoteDownloadStep != null)) return;
+            deskRemoteDownloadNodeId = currentNode._id;
+            deskRemoteDownloadConfirm = false;
             if (isWindowsNode(currentNode) && ((GetNodeRights(currentNode) & 131072) != 0)) {
                 // Ask Explorer for the highlighted files, this takes a few seconds. If nothing comes back (agent busy running other commands), use the clipboard.
-                deskRemoteDownloadWait('selection', 20000, deskRemoteDownloadClipboard);
+                deskRemoteDownloadWait('selection', 20000, function () { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); });
                 meshserver.send({ action: 'runcommands', nodeids: [currentNode._id], type: 2, runAsUser: 0, reply: true, responseid: 'deskRemoteDownload', cmds: deskRemoteDownloadSelectionScript });
             } else {
                 deskRemoteDownloadClipboard();
@@ -8772,8 +8776,21 @@
         // Wait for a reply from the device, and dim the button while waiting
         function deskRemoteDownloadWait(step, timeout, func) {
             deskRemoteDownloadStep = step;
-            deskRemoteDownloadTimer = setTimeout(function () { deskRemoteDownloadDone(); if (currentNode != null) { func(); } }, timeout);
+            deskRemoteDownloadTimer = setTimeout(function () { deskRemoteDownloadDone(); if (deskRemoteDownloadActive()) { func(); } }, timeout);
             QS('DeskRemoteDownloadButton').opacity = 0.4;
+        }
+
+        // Returns true if we are still on the desktop of the device the request was made for
+        function deskRemoteDownloadActive() {
+            return (xxcurrentView == 11) && (desktop != null) && (desktop.State == 3) && (currentNode != null) && (currentNode._id == deskRemoteDownloadNodeId);
+        }
+
+        // Returns true if a dialog is open
+        function deskRemoteDownloadDialogOpen() { return (xxdialogMode ? true : false); }
+
+        // Open the Remote Download dialog, func is called when OK is clicked
+        function deskRemoteDownloadDialog(x, func) {
+            setDialogMode(2, "Remote Download", 3, func, x, 'remotedownload');
         }
 
         // Returns true if we were waiting for this step
@@ -8786,14 +8803,15 @@
         }
 
         function deskRemoteDownloadGotClipboard(text) {
-            if (deskRemoteDownloadDone('clipboard') == false) return;
+            if ((deskRemoteDownloadDone('clipboard') == false) || (deskRemoteDownloadActive() == false)) return;
             var paths = deskRemoteDownloadParsePaths(text);
-            if (paths.length > 0) { deskRemoteDownloadPaths(paths); } else { showDeskRemoteDownload(''); }
+            if ((paths.length > 0) && (deskRemoteDownloadConfirm == false)) { deskRemoteDownloadPaths(paths); return; }
+            showDeskRemoteDownload(paths.join('\n'));
         }
 
         // Called with the output of the selection script, or null if it could not run
         function deskRemoteDownloadGotSelection(text) {
-            if (deskRemoteDownloadDone('selection') == false) return;
+            if ((deskRemoteDownloadDone('selection') == false) || (deskRemoteDownloadActive() == false)) return;
             var windows = [], groups = [], count = 0;
             if (typeof text == 'string') {
                 var parts = text.split('@@MESHRD@@');
@@ -8809,9 +8827,9 @@
                 for (var j in selected) { var path = deskRemoteDownloadParsePaths(selected[j]); if (path.length == 1) { files.push(path[0]); count++; } }
                 if (files.length > 0) { groups.push({ folder: windows[i].f, files: files }); }
             }
-            if (groups.length == 0) { deskRemoteDownloadClipboard(); return; } // Nothing highlighted, try the clipboard
+            if (groups.length == 0) { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); return; } // Nothing highlighted, try the clipboard but ask first
             if (groups.length == 1) { deskRemoteDownloadPaths(groups[0].files); return; } // Files highlighted in one Explorer window, download them
-            if (xxdialogMode) return;
+            if (deskRemoteDownloadDialogOpen()) return;
 
             // Files are highlighted in more than one Explorer window, ask which ones to download
             deskRemoteDownloadFiles = [];
@@ -8824,7 +8842,7 @@
                 }
             }
             x += '</div>';
-            setDialogMode(2, "Remote Download", 3, deskRemoteDownloadSelectEx, x, 'remotedownload');
+            deskRemoteDownloadDialog(x, deskRemoteDownloadSelectEx);
             deskRemoteDownloadSelectValidate();
         }
 
@@ -8877,11 +8895,13 @@
         }
 
         function showDeskRemoteDownload(text) {
-            if (xxdialogMode || (desktop == null) || (desktop.State != 3)) return;
-            var x = '<div style=margin-bottom:4px>' + "Enter the path of the remote file to download, one per line." + '</div>';
+            if (deskRemoteDownloadDialogOpen() || (deskRemoteDownloadActive() == false)) return;
+            var x = '';
+            if (deskRemoteDownloadConfirm) { x += '<div style=margin-bottom:4px><b>' + "No files are highlighted in Explorer on the remote computer." + '</b></div>'; }
+            x += '<div style=margin-bottom:4px>' + "Enter the path of the remote file to download, one per line." + '</div>';
             x += '<textarea id=d2remoteDownloadPaths style="width:100%;height:80px;resize:none;box-sizing:border-box" maxlength=8192 placeholder="' + (isWindowsNode(currentNode) ? 'C:\\Users\\Public\\file.txt' : '/home/user/file.txt') + '" onkeyup=showDeskRemoteDownloadValidate() onchange=showDeskRemoteDownloadValidate()></textarea>';
             x += '<div style=margin-top:4px;font-size:smaller>' + (isWindowsNode(currentNode) ? "Tip: on the remote computer, right-click a file and select \"Copy as path\", then click the Remote Download button." : "Tip: on the remote computer, copy a file in the file manager, then click the Remote Download button.") + '</div>';
-            setDialogMode(2, "Remote Download", 3, showDeskRemoteDownloadEx, x, 'remotedownload');
+            deskRemoteDownloadDialog(x, showDeskRemoteDownloadEx);
             Q('d2remoteDownloadPaths').value = text;
             Q('d2remoteDownloadPaths').focus();
             showDeskRemoteDownloadValidate();
