@@ -240,6 +240,7 @@
     <Compile Include="public\scripts\common-0.0.1.js" />
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
+    <Compile Include="remotedownload.js" />
     <Compile Include="taskmanager.js" />
     <Compile Include="translate\translate.js" />
     <Compile Include="webauthn.js" />

@@ -3213,6 +3213,27 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
+            case 'remotedownloadselection':
+                {
+                    // Desktop "Remote Download" button: ask a Windows agent which files are highlighted in Explorer. The agent console
+                    // command is fixed here on the server, see remotedownload.js, the agent replies to this session directly.
+                    if (common.validateString(command.nodeid, 1, 1024) == false) break;
+                    if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                    if ((command.nodeid.split('/').length != 3) || (command.nodeid.split('/')[1] != domain.id)) break; // Invalid domain
+                    parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                        var err = null, agent = null;
+                        if ((node == null) || (visible == false)) { err = 'Invalid nodeid'; }
+                        else if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights & MESHRIGHT_AGENTCONSOLE) == 0) || ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOFILES) != 0))) { err = 'Access denied'; } // Same rights as the agent console, plus files
+                        else if ((node.agent == null) || ([1, 2, 3, 4, 21, 22, 34, 42, 43].indexOf(node.agent.id) == -1)) { err = 'Not supported'; } // Windows agents only
+                        else {
+                            agent = parent.wsagents[node._id];
+                            if ((agent == null) || (agent.authenticated != 2) || (agent.agentInfo == null)) { err = 'Agent not connected'; }
+                        }
+                        if (err != null) { try { ws.send(JSON.stringify({ action: 'remotedownloadselection', nodeid: command.nodeid, result: err })); } catch (ex) { } return; }
+                        try { agent.send(JSON.stringify({ action: 'msg', type: 'console', value: require('./remotedownload.js').getSelectionConsoleCommand(ws.sessionId), rights: rights, sessionid: ws.sessionId })); } catch (ex) { }
+                    });
+                    break;
+                }
             case 'runcommands':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's

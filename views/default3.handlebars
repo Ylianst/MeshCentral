@@ -3753,6 +3753,11 @@
                     mainUpdate(4);
 					break;
                 }
+                case 'remotedownloadselection': {
+                    // The server could not ask the agent for the Remote Download selection (access denied, agent not connected...)
+                    deskRemoteDownloadGotNative(null);
+                    break;
+                }
                 case 'runcommands': {
                     // The server could not run the Remote Download selection script (access denied, agent not connected...)
                     if ((message.responseid === 'deskRemoteDownload') && (message.result != 'OK')) { deskRemoteDownloadGotSelection(null); }
@@ -3789,6 +3794,8 @@
                                 showDeskToolsServices(message);
                             } else if (message.type === 'service') {
                                 showServiceDetailsDialog(message);
+                            } else if ((message.type === 'remotedownloadselection') && (currentNode != null) && (currentNode._id == message.nodeid)) {
+                                deskRemoteDownloadGotNative(message.value); // Explorer selection read with native calls, for the Remote Download button
                             } else if ((message.type === 'runcommands') && (message.responseid === 'deskRemoteDownload') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 deskRemoteDownloadGotSelection(message.result); // Explorer selection for the Remote Download button
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
@@ -9892,11 +9899,13 @@
             }
         }
 
-        // Remote Download: download the file(s) highlighted in Windows Explorer, found using "Run Commands" (needs the Run Commands right).
-        // If there are none, download the remote file(s) whose path is on the remote clipboard, and if there is none, ask for a path.
+        // Remote Download: download the file(s) highlighted in Windows Explorer. With the Agent Console right, the server asks the agent
+        // to read the selection with native Windows calls (see remotedownload.js). Without it, or if that fails, "Run Commands" runs a
+        // PowerShell query (needs the Run Commands right). If nothing is highlighted, download the remote file(s) whose path is on the
+        // remote clipboard, and if there is none, ask for a path.
         // On Windows, right-click the file and use "Copy as path" (or Ctrl+Shift+C), on Linux copy the file in the file manager.
         var deskRemoteDownloadTimer = null;
-        var deskRemoteDownloadStep = null; // 'selection' or 'clipboard' while waiting for the device
+        var deskRemoteDownloadStep = null; // 'native', 'selection' (PowerShell) or 'clipboard' while waiting for the device
         var deskRemoteDownloadFiles = null; // Files listed in the selection dialog
         var deskRemoteDownloadNodeId = null; // Device the request was made for, replies for another device or view are dropped
         var deskRemoteDownloadConfirm = false; // Explorer had nothing highlighted, so don't download a path left on the clipboard without asking
@@ -9909,13 +9918,35 @@
             if (deskRemoteDownloadDialogOpen() || (desktop == null) || (desktop.State != 3) || (currentNode == null) || (deskRemoteDownloadStep != null)) return;
             deskRemoteDownloadNodeId = currentNode._id;
             deskRemoteDownloadConfirm = false;
+            if (isWindowsNode(currentNode) && ((GetNodeRights(currentNode) & 24) == 24)) {
+                // Remote Control and Agent Console rights: ask the server for the selection, read by the agent with native Windows calls
+                deskRemoteDownloadWait('native', 15000, function () { deskRemoteDownloadPowerShell(true); });
+                meshserver.send({ action: 'remotedownloadselection', nodeid: currentNode._id });
+            } else {
+                deskRemoteDownloadPowerShell(false);
+            }
+        }
+
+        // Ask Explorer for the highlighted files with PowerShell, this takes a few seconds. If that is not possible, use the clipboard.
+        // fallback is true when the native query failed, then a path on the clipboard is not downloaded without asking.
+        function deskRemoteDownloadPowerShell(fallback) {
             if (isWindowsNode(currentNode) && ((GetNodeRights(currentNode) & 131072) != 0)) {
-                // Ask Explorer for the highlighted files, this takes a few seconds. If nothing comes back (agent busy running other commands), use the clipboard.
+                // If nothing comes back (agent busy running other commands), use the clipboard.
                 deskRemoteDownloadWait('selection', 20000, function () { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); });
                 meshserver.send({ action: 'runcommands', nodeids: [currentNode._id], type: 2, runAsUser: 0, reply: true, responseid: 'deskRemoteDownload', cmds: deskRemoteDownloadSelectionScript });
             } else {
+                deskRemoteDownloadConfirm = fallback;
                 deskRemoteDownloadClipboard();
             }
+        }
+
+        // Called with the reply of the native query: a JSON array of { s: [paths], fg: foreground window }, or null if it could not run
+        function deskRemoteDownloadGotNative(text) {
+            if ((deskRemoteDownloadDone('native') == false) || (deskRemoteDownloadActive() == false)) return;
+            var windows = null;
+            if (typeof text == 'string') { try { windows = JSON.parse(text); } catch (ex) { } }
+            if (Array.isArray(windows) == false) { deskRemoteDownloadPowerShell(true); return; } // The native query failed, try PowerShell
+            deskRemoteDownloadGotWindows(windows);
         }
 
         function deskRemoteDownloadClipboard() {
@@ -9968,7 +9999,7 @@
         // Called with the output of the selection script, or null if it could not run
         function deskRemoteDownloadGotSelection(text) {
             if ((deskRemoteDownloadDone('selection') == false) || (deskRemoteDownloadActive() == false)) return;
-            var windows = [], groups = [], count = 0;
+            var windows = [];
             if (typeof text == 'string') {
                 var parts = text.split('@@MESHRD@@');
                 if (parts.length >= 3) {
@@ -9977,12 +10008,22 @@
                 }
             }
             if (Array.isArray(windows) == false) { windows = [windows]; }
+            deskRemoteDownloadGotWindows(windows);
+        }
+
+        // Download the files highlighted in Explorer, windows is a list of { f: folder, s: [paths], fg: foreground window }
+        function deskRemoteDownloadGotWindows(windows) {
+            var groups = [], foregroundGroups = [];
             for (var i in windows) {
                 if ((windows[i] == null) || (windows[i].s == null)) continue;
                 var selected = Array.isArray(windows[i].s) ? windows[i].s : [windows[i].s], files = [];
-                for (var j in selected) { var path = deskRemoteDownloadParsePaths(selected[j]); if (path.length == 1) { files.push(path[0]); count++; } }
-                if (files.length > 0) { groups.push({ folder: windows[i].f, files: files }); }
+                for (var j in selected) { var path = deskRemoteDownloadParsePaths(selected[j]); if (path.length == 1) { files.push(path[0]); } }
+                if (files.length == 0) continue;
+                var group = { folder: windows[i].f ? windows[i].f : files[0].substring(0, files[0].lastIndexOf('/')), files: files };
+                groups.push(group);
+                if (windows[i].fg === true) { foregroundGroups.push(group); }
             }
+            if (foregroundGroups.length > 0) { groups = foregroundGroups; } // Prefer the Explorer window the remote user is looking at
             if (groups.length == 0) { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); return; } // Nothing highlighted, try the clipboard but ask first
             if (groups.length == 1) { deskRemoteDownloadPaths(groups[0].files); return; } // Files highlighted in one Explorer window, download them
             if (deskRemoteDownloadDialogOpen()) return;
