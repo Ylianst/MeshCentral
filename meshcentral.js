@@ -1484,8 +1484,9 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx1b = async function () {
         var i;
 
-        // Add NodeJS version warning if needed
-        if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 20) { addServerWarning("MeshCentral will require Node v20 or above in the future, your current version is " + process.version + "."); }
+        // Check NodeJS version. MeshCentral requires Node v22.12.0 or above.
+        const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
+        if (NodeJSVer < 22.12) { console.log("MeshCentral requires Node v22.12.0 or above, your current version is " + process.version + "."); process.exit(); }
 
         // Setup certificate operations
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
