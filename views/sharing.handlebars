@@ -2053,7 +2053,7 @@
         function p13gotDownloadCommand(cmd) {
             //console.log('p13gotDownloadCommand', cmd);
             if ((gdownloadFile == null) || (cmd.id != gdownloadFile.id)) return;
-            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id }); }
+            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id, ack: 64, bs: ((files.webrtc != null) ? 16384 : 65536) }); } // 64 blocks in flight, 64 KB blocks except on WebRTC
             else if (cmd.sub == 'cancel') { gdownloadFile = null; setDialogMode(0); }
         }
 

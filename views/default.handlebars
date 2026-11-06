@@ -1532,6 +1532,19 @@
                                 <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
                             </div>
                         </div>
+                        <div>
+                            <div>Dropped files go to</div>
+                            <select id="d7dropfolder" onchange="d7dropFolderChanged()">
+                                <option value="auto">Folder under the mouse</option>
+                                <option value="downloads">Downloads</option>
+                                <option value="desktop">Desktop</option>
+                                <option value="custom">Custom folder</option>
+                            </select>
+                        </div>
+                        <div id="d7dropcustomdiv" style="display:none">
+                            <div>Custom folder on the remote device</div>
+                            <input id="d7dropcustom" type="text" style="width:100%;box-sizing:border-box" placeholder="C:\Users\Public\Downloads" />
+                        </div>
                     </div>
                     <div id="d7amtkvm" class="tabcontent">
                         <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
@@ -10175,6 +10188,8 @@
             desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.autolock = d7deskAutoLock.checked;
+            desktopsettings.dropfolder = d7dropfolder.value;
+            desktopsettings.dropcustom = d7dropcustom.value.trim();
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.kvmrmw = d7kvmrmw.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
@@ -10227,6 +10242,9 @@
             if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.autoclipboard != null) { d7deskAutoClipboard.checked = desktopsettings.autoclipboard; }
             if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
+            d7dropfolder.value = desktopsettings.dropfolder || 'auto';
+            d7dropcustom.value = desktopsettings.dropcustom || '';
+            d7dropFolderChanged();
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             if (desktopsettings.kvmrmw) { d7kvmrmw.checked = desktopsettings.kvmrmw; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));
@@ -10397,30 +10415,155 @@
             }
         }
 
+        // Files dropped on the remote desktop are uploaded to the remote device: into the folder window under the drop point
+        // when the agent can find one, otherwise the user's Downloads folder. With Shift held, a dropped script opens the run
+        // commands dialog and a dropped text file is typed into the remote desktop.
         function p11fileDragDrop(e) {
             haltEvent(e);
             QV('p11bigfail', false);
             QV('p11bigok', false);
-            if ((xxdialogMode != null) || (desktop == null) || (desktop.State != 3) || (e.dataTransfer == null) || (e.dataTransfer.files.length == 0)) return;
+            if (xxdialogMode || (desktop == null) || (desktop.State != 3) || (e.dataTransfer == null) || (e.dataTransfer.files.length == 0)) return;
 
-            var file = e.dataTransfer.files[0];
-            var filename = file.name.toLowerCase();
-            if (filename.endsWith('.bat') || filename.endsWith('.ps1') || filename.endsWith('.sh') || filename.endsWith('.agentconsole')) {
-                d2runCommandDialog({ nodeids: [ currentNode._id ], selectedFile: file });
-            } else if (filename.endsWith('.txt')) {
-                var reader = new FileReader();
-                reader.onload = function (e) { showDeskType(e.target.result); }
-                reader.readAsText(file);
+            if (e.shiftKey || !deskDropAllowed()) {
+                var file = e.dataTransfer.files[0];
+                var filename = file.name.toLowerCase();
+                if (filename.endsWith('.bat') || filename.endsWith('.ps1') || filename.endsWith('.sh') || filename.endsWith('.agentconsole')) {
+                    d2runCommandDialog({ nodeids: [ currentNode._id ], selectedFile: file });
+                } else if (filename.endsWith('.txt')) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) { showDeskType(e.target.result); }
+                    reader.readAsText(file);
+                }
+                return;
             }
+
+            // Only files can be uploaded, skip folders
+            var xfiles = [];
+            for (var i = 0; i < e.dataTransfer.files.length; i++) {
+                var item = (e.dataTransfer.items != null) ? e.dataTransfer.items[i] : null;
+                var entry = ((item != null) && (item.webkitGetAsEntry)) ? item.webkitGetAsEntry() : null;
+                if ((entry != null) ? entry.isFile : (e.dataTransfer.files[i].size > 0)) { xfiles.push(e.dataTransfer.files[i]); }
+            }
+            if (xfiles.length > 0) { deskDropUpload(xfiles, deskDropPosition(e)); }
         }
 
         var p11dragtimer = null;
         function p11fileDragOver(e) {
             haltEvent(e);
             if (p11dragtimer != null) { clearTimeout(p11dragtimer); p11dragtimer = null; }
-            var ac = ((xxdialogMode == null) && (desktop != null) && (desktop.State == 3));
+            var ac = (!xxdialogMode && (desktop != null) && (desktop.State == 3));
             QV('p11bigok', ac);
             QV('p11bigfail', !ac);
+        }
+
+        // True if files dropped on the remote desktop can be uploaded: agent desktop and files access to the device
+        function deskDropAllowed() {
+            if ((desktop == null) || (desktop.contype != 1) || (desktopNode == null) || (desktopNode.agent == null) || ((desktopNode.agent.caps & 4) == 0)) return false;
+            var rights = GetNodeRights(desktopNode);
+            return ((rights & 8) != 0) && ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0));
+        }
+
+        // Position of a drop event in remote screen pixels, null if it is not over the remote screen. Uses the canvas
+        // on-screen box, so CSS zoom or pan of the desktop view (as some UI themes add) is taken into account.
+        function deskDropPosition(e) {
+            var m = desktop.m;
+            if ((m.Canvas == null) || (m.Canvas.canvas == null)) return null;
+            var r = m.Canvas.canvas.getBoundingClientRect();
+            if ((r.width == 0) || (r.height == 0)) return null;
+            var x = (e.clientX - r.left) * (m.Canvas.canvas.width / r.width), y = (e.clientY - r.top) * (m.Canvas.canvas.height / r.height);
+            if ((x < 0) || (y < 0) || (x > m.Canvas.canvas.width) || (y > m.Canvas.canvas.height)) return null;
+            if (m.rotation != 0) { var rx = m.crotX(x, y); y = m.crotY(x, y); x = rx; }
+            var scale = (m.ScalingLevel > 0) ? (1024 / m.ScalingLevel) : 1; // The agent scales the screen down by ScalingLevel / 1024
+            return { x: Math.round(x * scale), y: Math.round(y * scale), display: m.selectedDisplay };
+        }
+
+        // Upload files dropped on the remote desktop over a files tunnel of their own: ask the agent for the target folder,
+        // list it to pick names that don't overwrite anything, then upload.
+        var deskDropTunnel = null;
+        function deskDropUpload(xfiles, pos) {
+            if ((uploadFile != null) || (deskDropTunnel != null)) return;
+            setDialogMode(2, "Upload File", 10, function () { deskDropDone(deskDropTunnel, false); }, '<div id=p13dfileName>' + "Connecting to the remote device..." + '</div><br /><progress id=d2progressBar style="display:block;width:100%;margin-bottom:5px"></progress>', 'deskdrop');
+            var t = CreateAgentRedirect(meshserver, CreateRemoteFiles(function (data) { deskDropGotData(t, data); }, function (data) { if ((data.length > 0) && (data[0] == 123)) { var x = ''; for (var i = 0; i < data.length; i += 8192) { x += String.fromCharCode.apply(null, data.subarray(i, i + 8192)); } deskDropGotData(t, x); } }), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+            deskDropTunnel = t;
+            t.attemptWebRTC = false; // Data is sent as soon as the tunnel is up, a WebRTC switch over during the upload could reorder it
+            t.options = {};
+            if ((desktop.options != null) && (desktop.options.tsid != null)) { t.options.tsid = desktop.options.tsid; } // Same user session as the desktop
+            t.xfiles = xfiles;
+            t.xpos = pos;
+            t.xmode = desktopsettings.dropfolder || 'auto';
+            t.xtimer = setTimeout(function () { deskDropDone(t, false, "Could not open a file session to the remote device."); }, 30000);
+            t.onStateChanged = function (tunnel, state) {
+                if (state == 3) {
+                    if (tunnel.xtimer) { clearTimeout(tunnel.xtimer); delete tunnel.xtimer; }
+                    QH('p13dfileName', "Finding the destination folder...");
+                    tunnel.xtimer = setTimeout(function () { deskDropDone(tunnel, false, "The remote device did not answer, it may need an agent update."); }, 25000);
+                    if ((t.xmode == 'custom') && desktopsettings.dropcustom) {
+                        // Folder set in the desktop settings, list it to avoid overwriting files
+                        t.xpath = desktopsettings.dropcustom;
+                        t.sendText({ action: 'ls', reqid: 2, path: t.xpath });
+                        return;
+                    }
+                    tunnel.sendText({ action: 'droptarget', reqid: 1, mode: t.xmode, x: (pos ? pos.x : null), y: (pos ? pos.y : null), display: (pos ? pos.display : null) });
+                } else if (state == 0) {
+                    deskDropDone(tunnel, false, "Lost the connection to the remote device.");
+                }
+            }
+            t.onConsoleMessageChange = function () { if (t.consoleMessage && (xxdialogTag == 'deskdrop')) { QH('p13dfileName', formatAgentConsoleMessage(t.consoleMessage, t.consoleMessageId, t.consoleMessageArgs)); } }
+            t.Start(desktopNode._id);
+        }
+
+        function deskDropGotData(t, data) {
+            if (t != deskDropTunnel) return;
+            try { data = JSON.parse(decode_utf8(data)); } catch (ex) { try { data = JSON.parse(data); } catch (ex) { return; } }
+            if ((data.action != null) && (data.action.startsWith('upload'))) { if ((uploadFile != null) && (uploadFile.tunnel == t)) { p13gotUploadData(data); } return; }
+            if ((data.action == 'droptarget') && (t.xpath == null)) {
+                if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
+                if (typeof data.path != 'string') { deskDropDone(t, false, "Could not find a folder on the remote device for the dropped files." + ((typeof data.error == 'string') ? ('<br />' + EscapeHtml(data.error)) : '')); return; }
+                t.xpath = data.path;
+                t.xkind = data.kind;
+                t.xnote = data.note;
+                if ((data.v == null) && (data.kind == 'downloads')) { t.xnote = "the agent is running older code, reconnect it to update"; }
+                t.sendText({ action: 'ls', reqid: 2, path: t.xpath }); // List the folder to avoid overwriting files
+            } else if ((data.reqid == 2) && (t.xpath != null) && (t.xnames == null)) {
+                if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
+                if (data.dir == null) { deskDropDone(t, false, format("Could not open {0} on the remote device.", t.xpath)); return; }
+                var used = [];
+                for (var i in data.dir) { used.push(data.dir[i].n.toLowerCase()); }
+                t.xnames = [];
+                for (var i = 0; i < t.xfiles.length; i++) { t.xnames.push(deskDropUniqueName(t.xfiles[i].name, used)); }
+                p13startUpload(t.xfiles, { tunnel: t, path: t.xpath, names: t.xnames, drop: true, done: function (ok) { deskDropDone(t, ok); } });
+            }
+        }
+
+        // Show the custom folder box when the custom drop folder is picked in the desktop settings
+        function d7dropFolderChanged() { QV('d7dropcustomdiv', d7dropfolder.value == 'custom'); }
+
+        // Add " (1)", " (2)"... before the extension until the name is not in the used list (lower case names)
+        function deskDropUniqueName(name, used) {
+            var dot = name.lastIndexOf('.'), base = (dot > 0) ? name.substring(0, dot) : name, ext = (dot > 0) ? name.substring(dot) : '', n = name;
+            for (var i = 1; used.indexOf(n.toLowerCase()) >= 0; i++) { n = base + ' (' + i + ')' + ext; }
+            used.push(n.toLowerCase());
+            return n;
+        }
+
+        // Finish a desktop drop upload: close its tunnel and show where the files went, or why they didn't
+        function deskDropDone(t, ok, msg) {
+            if ((t == null) || (t != deskDropTunnel)) return;
+            deskDropTunnel = null;
+            if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
+            if ((uploadFile != null) && (uploadFile.tunnel == t)) { p13uploadFileCancel(); }
+            if (xxdialogTag == 'deskdrop') { setDialogMode(0); }
+            try { t.Stop(); } catch (ex) { }
+            if (ok) {
+                msg = (t.xnames.length == 1) ? format("Uploaded {0} to {1}", t.xnames[0], t.xpath) : format("Uploaded {0} files to {1}", t.xnames.length, t.xpath);
+                if ((t.xmode == 'auto') && (typeof t.xnote == 'string')) { msg += '<br /><span style="opacity:0.7;font-size:smaller">' + format("No folder window found where the files were dropped ({0})", t.xnote) + '</span>'; }
+            }
+            if (msg) {
+                QH('p11DeskConsoleMsg', msg); // format() escapes the names and paths
+                QV('p11DeskConsoleMsg', true);
+                if (p11DeskConsoleMsgTimer != null) { clearTimeout(p11DeskConsoleMsgTimer); }
+                p11DeskConsoleMsgTimer = setTimeout(p11clearConsoleMsg, 8000);
+            }
         }
 
         function p11fileDragLeave(e) {
@@ -11694,7 +11837,7 @@
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
                     if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
-                    if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
+                    if ((uploadFile != null) && (uploadFile.tunnel == xfiles)) { p13uploadFileTransferDone(false); }
                     break;
                 case 3:
                     p13filetreelocation = [];
@@ -12885,6 +13028,12 @@
 
         var gdownloadFile; // Global state for file download
 
+        // File transfer tuning: number of blocks in flight and the block size, in both directions. Many blocks in flight
+        // keep high latency links busy. WebRTC data channels keep 16 KB messages.
+        var filesTransferWindow = 64;
+        function filesTransferBlockSize(tunnel) { return ((tunnel != null) && (tunnel.webrtc != null)) ? 16384 : 65536; }
+        function filesTransferSpeed(bytesPerSecond) { return (bytesPerSecond >= 1048576) ? format("{0} MB/s", (bytesPerSecond / 1048576).toFixed(1)) : format("{0} KB/s", Math.round(bytesPerSecond / 1024)); }
+
         // Called by the html page to start a download, arguments are: path, file name and file size.
         function p13downloadfile(x, y, z, tag) {
             if (xxdialogMode || !files) return;
@@ -12901,7 +13050,7 @@
         function p13gotDownloadCommand(cmd) {
             //console.log('p13gotDownloadCommand', cmd);
             if ((gdownloadFile == null) || (cmd.id != gdownloadFile.id)) return;
-            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id }); }
+            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id, ack: filesTransferWindow, bs: filesTransferBlockSize(files) }); }
             else if (cmd.sub == 'cancel') { gdownloadFile = null; setDialogMode(0); }
         }
 
@@ -13056,11 +13205,13 @@
             }
         }
 
-        function p13uploadFileContinue(b, files) {
-            uploadFile = {};
-            uploadFile.xpath = p13filetreelocation.join('/');
-            uploadFile.xfiles = files;
-            uploadFile.xfilePtr = -1;
+        function p13uploadFileContinue(b, xfiles) { p13startUpload(xfiles, { tunnel: files, path: p13filetreelocation.join('/'), resume: true }); }
+
+        // Upload a list of files. Options: tunnel (files tunnel to use), path (target folder), names (target file names, defaults
+        // to the file names), resume (resume partial uploads using the Files tab listing), drop (files dropped on the remote desktop),
+        // done (called as done(ok) once all files are uploaded, or the upload failed or was canceled).
+        function p13startUpload(xfiles, options) {
+            uploadFile = { tunnel: options.tunnel, xpath: options.path, xfiles: xfiles, xnames: options.names, xresume: options.resume, xdrop: options.drop, xdone: options.done, xfilePtr: -1 };
             setDialogMode(2, "Upload File", 10, p13uploadFileCancel, '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style="display:block;width:100%;margin-bottom:5px" value=0 max=0></progress><div id=d2progressLabel style="text-align:center;margin-top:5px">0%</div>');
             p13uploadNextFile();
         }
@@ -13086,42 +13237,60 @@
                 uploadFile.blocksInFlight = 0;
                 uploadFile.uploadComplete = false;
                 uploadFile.uploaddoneSent = false;
+                delete uploadFile.xfile;
+                delete uploadFile.xdata;
+                delete uploadFile.xbuf;
                 var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', EscapeHtml(file.name));
+                var name = uploadFile.xname = ((uploadFile.xnames != null) ? uploadFile.xnames[uploadFile.xfilePtr] : file.name);
+                QH('p13dfileName', EscapeHtml(name));
                 Q('d2progressBar').max = file.size;
                 Q('d2progressBar').value = 0;
                 Q('d2progressLabel').textContent = '0%';
+                var cmd = { action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: name };
+                if (uploadFile.xdrop) { cmd.drop = true; }
                 if (file.xdata == null) {
                     uploadFile.xfile = file;
+                    cmd.size = file.size;
                     // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
                     var f = null;
-                    for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
+                    if (uploadFile.xresume && (p13filetree != null)) { for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == name) { f = p13filetree.dir[i]; } } }
                     if ((f != null) && (f.s <= uploadFile.xfile.size)) {
-                        performHashOnFile(uploadFile.xfile, function(hash) { files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xfile.size } })); });
+                        var x = uploadFile;
+                        // Hash the part of our file that is already on the remote device: if it matches, only the rest is sent
+                        performHashOnFile(uploadFile.xfile.slice(0, f.s), function(hash) {
+                            if (uploadFile != x) return;
+                            if (hash == null) { x.tunnel.sendText(JSON.stringify(cmd)); return; } // Can't hash, upload the whole file
+                            x.tunnel.sendText(JSON.stringify({ action: 'uploadhash', reqid: x.xfilePtr, path: x.xpath, name: name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == x.xfile.size } }));
+                        });
                     } else {
-                        files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size }));
+                        uploadFile.tunnel.sendText(JSON.stringify(cmd));
                     }
                 } else {
                     // Data already loaded
                     uploadFile.xdata = file.xdata;
-                    files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    uploadFile.xbuf = (file.xdata instanceof ArrayBuffer) ? new Uint8Array(file.xdata) : new Uint8Array(file.xdata.buffer, file.xdata.byteOffset, file.xdata.byteLength);
+                    uploadFile.xbufStart = 0;
+                    cmd.size = uploadFile.xbuf.byteLength;
+                    uploadFile.tunnel.sendText(JSON.stringify(cmd));
                 }
             } else {
-                p13uploadFileTransferDone();
+                p13uploadFileTransferDone(true);
             }
         }
 
         // Used to cancel the entire transfer.
         function p13uploadFileCancel(button, tag) {
-            if (uploadFile != null) { files.sendText(JSON.stringify({ action: 'uploadcancel', reqid: uploadFile.xfilePtr })); uploadFile = null; }
-            p13uploadFileTransferDone();
+            if (uploadFile != null) { uploadFile.tunnel.sendText(JSON.stringify({ action: 'uploadcancel', reqid: uploadFile.xfilePtr })); }
+            p13uploadFileTransferDone(false);
         }
 
-        // Used to cancel the entire transfer.
-        function p13uploadFileTransferDone() {
+        // Called when all files are uploaded (ok is true), or the transfer stopped.
+        function p13uploadFileTransferDone(ok) {
+            var x = uploadFile;
             uploadFile = null;
             setDialogMode(0);
-            p13folderup(9999);
+            if ((x == null) || (x.tunnel == files)) { p13folderup(9999); }
+            if ((x != null) && (x.xdone != null)) { x.xdone(ok === true); }
         }
 
         function p13gotFilesBinary(data) {
@@ -13175,20 +13344,20 @@
         // Receive upload ack from the mesh agent, use this to keep sending more data
         function p13gotUploadData(cmd) {
             if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
-            var ts = new Date().toISOString();
             if (cmd.action == 'uploadack' && uploadFile.uploaddoneSent) { return; }
             switch (cmd.action) {
                 case 'uploadstart':
                     uploadFile.blocksInFlight = 0;
                     uploadFile.uploadComplete = false;
+                    uploadFile.xstartTime = Date.now();
+                    uploadFile.xstartPtr = uploadFile.xptr;
                     p13uploadNextPart();
                     break;
                 case 'uploadack':
-                    if (uploadFile.uploaddoneSent) { break; }
                     if (uploadFile.blocksInFlight > 0) { uploadFile.blocksInFlight--; }
                     if (uploadFile.blocksInFlight == 0 && uploadFile.uploadComplete) {
                         uploadFile.uploaddoneSent = true;
-                        files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                        uploadFile.tunnel.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
                     } else {
                         p13uploadNextPart();
                     }
@@ -13196,23 +13365,23 @@
                 case 'uploaddone':
                     Q('d2progressBar').value = uploadFile.xfile ? uploadFile.xfile.size : uploadFile.xdata.byteLength;
                     Q('d2progressLabel').textContent = "Upload complete. Remote device saving file to disk...";
-                    p13folderup(9999); // Refresh file list after each file
+                    if (uploadFile.tunnel == files) { p13folderup(9999); } // Refresh file list after each file
                     if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); }
-                    else { p13uploadFileTransferDone(); }
+                    else { p13uploadFileTransferDone(true); }
                     break;
                 case 'uploaderror': { p13uploadFileCancel(); break; }
                 case 'uploadhash': {
                     var file = uploadFile.xfiles[uploadFile.xfilePtr];
                     if (file) {
-                        if (cmd.tag.h === cmd.hash) {
+                        if ((typeof cmd.hash == 'string') && (cmd.tag.h === cmd.hash.toUpperCase())) {
                             if (cmd.tag.skip) {
                                 p13uploadNextFile();
                             } else {
                                 uploadFile.xptr = cmd.tag.s;
-                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: true }));
+                                uploadFile.tunnel.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: uploadFile.xname, size: uploadFile.xfile.size, append: true }));
                             }
                         } else {
-                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: false }));
+                            uploadFile.tunnel.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: uploadFile.xname, size: uploadFile.xfile.size, append: false }));
                         }
                     }
                     break;
@@ -13220,70 +13389,48 @@
             }
         }
 
-        // Push the next part of the file into the websocket. If dataPriming is true, push more data only if it's not the last block of the file.
+        // Push file data into the tunnel, keeping up to filesTransferWindow blocks in flight. Files are read in 4 MB slices
+        // and sent in blocks of filesTransferBlockSize(). Each upload ack from the agent calls this again.
         function p13uploadNextPart() {
-            if (uploadFile == null) return;
-            if (uploadFile.xdata && uploadFile.xptr >= uploadFile.xdata.byteLength) return;
-            if (uploadFile.xfile && uploadFile.xptr >= uploadFile.xfile.size) return;
-            var windowSize = 8;
-            var chunkSize = attemptWebRTC ? 16384 : 65536;
-            if (uploadFile.xdata) {
-                var data = uploadFile.xdata, start = uploadFile.xptr;
-                if (start >= data.byteLength) {
-                    files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+            if ((uploadFile == null) || uploadFile.uploadComplete) return;
+            var total = (uploadFile.xdata != null) ? uploadFile.xbuf.byteLength : uploadFile.xfile.size;
+            while ((uploadFile.blocksInFlight < filesTransferWindow) && (uploadFile.xptr < total)) {
+                if ((uploadFile.xbuf == null) || (uploadFile.xptr < uploadFile.xbufStart) || (uploadFile.xptr >= (uploadFile.xbufStart + uploadFile.xbuf.byteLength))) {
+                    // Read the next slice of the file, then continue
+                    if (uploadFile.xreader != null) return;
+                    var x = uploadFile, start = uploadFile.xptr, reader = new FileReader();
+                    x.xreader = reader;
+                    reader.onerror = function (err) { console.log(err); if (uploadFile == x) { p13uploadFileCancel(); } }
+                    reader.onload = function () {
+                        if (uploadFile != x) return;
+                        delete x.xreader;
+                        x.xbuf = new Uint8Array(reader.result);
+                        x.xbufStart = start;
+                        p13uploadNextPart();
+                    }
+                    reader.readAsArrayBuffer(uploadFile.xfile.slice(start, Math.min(start + 4194304, total)));
                     return;
-                } else {
-                    var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
-                    if (end > data.byteLength) { end = data.byteLength; }
-                    var dataslice = new Uint8Array(data.slice(start, end))
-                    if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
-                        var datapart = new Uint8Array(end - start + 1);
-                        datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
-                        files.send(datapart);
-                        uploadFile.blocksInFlight++;
-                    } else {
-                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
-                        uploadFile.blocksInFlight++;
-                    }
-                    uploadFile.xptr = end;
-                    var total = uploadFile.xfile ? uploadFile.xfile.size : data.byteLength;
-                    Q('d2progressBar').value = Math.min(end, total - 1);
-                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, total - 1) / total) * 100)) + '%';
-                    if (uploadFile.xptr >= data.byteLength) {
-                        uploadFile.uploadComplete = true;
-                    } else if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
                 }
-            } else if (uploadFile.xfile) {
-                if (uploadFile.xreader != null) return;
-                if (uploadFile.xptr >= uploadFile.xfile.size) return;
-                var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
-                if (end > uploadFile.xfile.size) { end = uploadFile.xfile.size; }
-                uploadFile.xreader = new FileReader();
-                uploadFile.xreader.onerror = function (err) { console.log(err); }
-                uploadFile.xreader.onload = function () {
-                    var data = uploadFile.xreader.result;
-                    delete uploadFile.xreader;
-                    if (data == null) return;
-                    var dataslice = new Uint8Array(data)
-                    if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
-                        var datapart = new Uint8Array(data.byteLength + 1);
-                        datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
-                        files.send(datapart);
-                        uploadFile.blocksInFlight++;
-                    } else {
-                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
-                        uploadFile.blocksInFlight++;
-                    }
-                    uploadFile.xptr = end;
-                    Q('d2progressBar').value = Math.min(end, uploadFile.xfile.size - 1);
-                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, uploadFile.xfile.size - 1) / uploadFile.xfile.size) * 100)) + '%';
-                    if (uploadFile.xptr >= uploadFile.xfile.size) {
-                        uploadFile.uploadComplete = true;
-                    } else {
-                        if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
-                    }
-                };
-                uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
+                var end = Math.min(uploadFile.xptr + filesTransferBlockSize(uploadFile.tunnel), uploadFile.xbufStart + uploadFile.xbuf.byteLength);
+                var block = uploadFile.xbuf.subarray(uploadFile.xptr - uploadFile.xbufStart, end - uploadFile.xbufStart);
+                if ((block[0] == 123) || (block[0] == 0)) {
+                    // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
+                    var escaped = new Uint8Array(block.byteLength + 1);
+                    escaped.set(block, 1);
+                    block = escaped;
+                }
+                uploadFile.tunnel.send(block); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                uploadFile.blocksInFlight++;
+                uploadFile.xptr = end;
+            }
+            var shown = Math.min(uploadFile.xptr, total - 1), label = Math.min(99, Math.round((shown / total) * 100)) + '%';
+            var seconds = (Date.now() - uploadFile.xstartTime) / 1000;
+            if (seconds > 1) { label += ', ' + filesTransferSpeed((uploadFile.xptr - uploadFile.xstartPtr) / seconds); }
+            Q('d2progressBar').value = shown;
+            Q('d2progressLabel').textContent = label;
+            if (uploadFile.xptr >= total) {
+                uploadFile.uploadComplete = true;
+                if (uploadFile.blocksInFlight == 0) { uploadFile.uploaddoneSent = true; uploadFile.tunnel.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr })); } // Empty file, nothing to wait for
             }
         }
 

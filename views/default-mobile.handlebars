@@ -6588,7 +6588,7 @@
         function p13gotDownloadCommand(cmd) {
             //console.log('p13gotDownloadCommand', cmd);
             if ((downloadFile == null) || (cmd.id != downloadFile.id)) return;
-            if (cmd.sub == 'start') { downloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: downloadFile.id }); }
+            if (cmd.sub == 'start') { downloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: downloadFile.id, ack: 64, bs: ((files.webrtc != null) ? 16384 : 65536) }); } // 64 blocks in flight, 64 KB blocks except on WebRTC
             else if (cmd.sub == 'cancel') { downloadFile = null; setDialogMode(0); }
         }
 
