@@ -28,6 +28,22 @@ For more information, [visit MeshCentral.com](https://meshcentral.com).
 
 The [Design and Architecture Guide](https://meshcentral.com/docs/MeshCentral2DesignArchitecture.pdf) is a short document that includes information on the design overview, dependencies, source code descriptions of each file, certificates, TLS security, the agent to server handshake, browser to agent relay and WebRTC and the messenger service.
 
+### User session timeline
+
+The 7-day user session state timeline is disabled by default. To enable recording and display for a domain, add `"sessionTimeline": true` to that domain in `meshcentral-data/config.json` and restart MeshCentral:
+
+```json
+{
+  "domains": {
+    "": {
+      "sessionTimeline": true
+    }
+  }
+}
+```
+
+Merge this option into your existing configuration. It shows locked, unlocked, no active user, and unknown states reported by the agent in the classic, Bootstrap, and mobile device views. The `hidePowerTimeline` option controls the power graph independently. Collection starts when enabled; existing historical records are retained when disabled.
+
 ## Video Tutorials
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.
 
