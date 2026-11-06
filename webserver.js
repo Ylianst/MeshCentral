@@ -3794,7 +3794,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }),
                 hkey: encodeURIComponent(hardwareKeyChallenge).replace(/'/g, '%27'),
                 messageid: msgid,
-                flashErrors: JSON.stringify(flashErrors).replace(/"/g, '\\"'),
+                flashErrors: encodeURIComponent(JSON.stringify(flashErrors)).replace(/'/g, '%27'),
                 passhint: passhint,
 
                 welcometext: domain.welcometext ? encodeURIComponent(obj.common.replacePlaceholders(domain.welcometext, {

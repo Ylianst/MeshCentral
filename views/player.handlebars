@@ -416,6 +416,7 @@
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
                 else if ((p == 102) || (p == 200 && recFileMetadata.bpp != null)) { p = "Intel&reg; AMT KVM"; }
                 else if (p == 200) { p = "MeshMessenger"; }
+                else { p = EscapeHtml(p); }
                 x += addInfoNoEsc("Protocol", p);
             }
             var encQualityStr = "2 byte-per-pixel";
@@ -425,7 +426,7 @@
 
             if (recFileMetadata.indexInterval) {
                 recFileIndexBasePtr = recFilePtr;
-                x += addInfoNoEsc("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
+                x += addInfo("Seeking", format("Indexed every {0} seconds", recFileMetadata.indexInterval));
                 QV('SeekBackwardButton', true);
                 QV('SeekForwardButton', true);
                 QE('SeekBackwardButton', true);
@@ -504,7 +505,7 @@
             }
             QV('metadatadiv', true);
             QH('metadatadiv', x);
-            QH('deskstatus', recFile.name);
+            QH('deskstatus', EscapeHtml(recFile.name));
             QS('progressbar').width = '0px';
         }
 
