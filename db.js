@@ -1716,7 +1716,7 @@ module.exports.CreateDB = function (parent, func) {
                 args.push(type); q += '(type = $' + args.length + ') AND ';
                 args.push(domain); q += '(domain = $' + args.length + ') AND ';
                 q += (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; } }
                 args.push(limit); q += ' ORDER BY LOWER(json_extract(doc, \'$.name\')) LIMIT $' + args.length;
                 args.push(skip); q += ' OFFSET $' + args.length;
                 sqlDbQuery(q, args, function (err, docs) {
@@ -1732,7 +1732,7 @@ module.exports.CreateDB = function (parent, func) {
                 args.push(type); q += '(type = $' + args.length + ') AND ';
                 args.push(domain); q += '(domain = $' + args.length + ') AND ';
                 q += (extrasids == null) ? ('(extra IN (' + dbMergeSqlArray(meshes) + '))') : ('((extra IN (' + dbMergeSqlArray(meshes) + ')) OR (id IN (' + dbMergeSqlArray(extrasids) + ')))');
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND (LOWER(json_extract(doc, \'$.name\')) LIKE $' + args.length + ' ESCAPE \'\\\')'; } }
                 sqlDbQuery(q, args, function (err, docs) { func(err, (err == null) ? docs[0]['COUNT(doc)'] : null); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -2017,7 +2017,7 @@ module.exports.CreateDB = function (parent, func) {
                 const nameFilter = dbNameFilter(filter);
                 var query = obj.file.query('meshcentral').sort('name', true).skip(skip).take(limit).filter('type', '==', type).filter('domain', '==', domain);
                 if (id) { query = query.filter('_id', '==', id); }
-                if (nameFilter != null) { query = query.filter('name', 'like', '*' + nameFilter + '*'); }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { query = query.filter('name', 'like', '*' + w + '*'); } }
                 if (extrasids == null) {
                     query = query.filter('meshid', 'in', meshes);
                     query.get(function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, performTypedRecordDecrypt(docs)); });
@@ -2302,7 +2302,7 @@ module.exports.CreateDB = function (parent, func) {
                 args.push(domain); q += '(domain = $' + args.length + ') AND ';
                 args.push(meshes); q += '((extra = ANY ($' + args.length + '))';
                 if ((extrasids != null) || (id && (id != ''))) { args.push((extrasids == null) ? [] : extrasids); q += ' OR (id = ANY ($' + args.length + ')))'; } else { q += ')'; }
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; } }
                 args.push(limit); q += ' ORDER BY LOWER(doc->>\'name\') LIMIT $' + args.length;
                 args.push(skip); q += ' OFFSET $' + args.length;
                 sqlDbQuery(q, args, function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
@@ -2316,7 +2316,7 @@ module.exports.CreateDB = function (parent, func) {
                 args.push(domain); q += '(domain = $' + args.length + ') AND ';
                 args.push(meshes); q += '((extra = ANY ($' + args.length + '))';
                 if ((extrasids != null) || (id && (id != ''))) { args.push((extrasids == null) ? [] : extrasids); q += ' OR (id = ANY ($' + args.length + ')))'; } else { q += ')'; }
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND (LOWER(doc->>\'name\') LIKE $' + args.length + ')'; } }
                 sqlDbQuery(q, args, function (err, docs) { func(err, docs); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -2564,7 +2564,7 @@ module.exports.CreateDB = function (parent, func) {
                 var q = 'SELECT doc FROM main WHERE ';
                 if (id && (id != '')) { args.push(id); q += 'id = ? AND '; }
                 args.push(type, domain, meshes, extrasids); q += 'type = ? AND domain = ? AND (extra IN (?) OR id IN (?))';
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; } }
                 args.push(limit, skip); q += ' ORDER BY LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIMIT ? OFFSET ?';
                 sqlDbQuery(q, args, function (err, docs) { if (err == null) { for (var i in docs) { delete docs[i].type } } func(err, performTypedRecordDecrypt(docs)); });
             };
@@ -2576,7 +2576,7 @@ module.exports.CreateDB = function (parent, func) {
                 var q = 'SELECT COUNT(doc) FROM main WHERE ';
                 if (id && (id != '')) { args.push(id); q += 'id = ? AND '; }
                 args.push(type, domain, meshes, extrasids); q += 'type = ? AND domain = ? AND (extra IN (?) OR id IN (?))';
-                if (nameFilter != null) { args.push(dbNameFilterLike(nameFilter)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; }
+                if (nameFilter != null) { for (const w of dbNameFilterWords(nameFilter)) { args.push(dbNameFilterLike(w)); q += ' AND LOWER(JSON_UNQUOTE(JSON_EXTRACT(doc, \'$.name\'))) LIKE ?'; } }
                 sqlDbQuery(q, args, function (err, docs) { func(err, docs); });
             };
             obj.GetAllTypeNodeFiltered = function (nodes, domain, type, id, func) {
@@ -4529,7 +4529,9 @@ module.exports.CreateDB = function (parent, func) {
     // Device name filter used by the device list when paging is enabled (maxDeviceView). Case-insensitive "contains" match.
     function dbNameFilter(filter) { return ((typeof filter == 'string') && (filter.trim() != '')) ? filter.trim().toLowerCase() : null; }
     function dbNameFilterLike(filter) { return '%' + filter.replace(/[\\%_]/g, function (c) { return '\\' + c; }) + '%'; }
-    function dbNameFilterRegExp(filter) { return new RegExp(filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'); }
+    // Device name filters are split into words on spaces and symbols, a name matches when it contains all the words in any order.
+    function dbNameFilterWords(filter) { const words = filter.split(/[\s!-\/:-@\[-`{-~¡-¿×÷‐-‧‰-⁞　-〿！-／：-＠]+/).filter(function (w) { return w != ''; }); return (words.length == 0) ? [filter] : words; }
+    function dbNameFilterRegExp(filter) { return new RegExp('^' + dbNameFilterWords(filter).map(function (w) { return '(?=.*' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')'; }).join(''), 'is'); }
 
     return obj;
 };

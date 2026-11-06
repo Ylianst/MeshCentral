@@ -7711,7 +7711,7 @@
         function onConsoleFocus(x) { consoleFocus = x; }
 
         function parseSearchAndInput(x) {
-            var s = x.split(' ' + "and" + ' '), r = null;
+            var s = x.split(new RegExp('\\s+' + "and" + '\\s+')), r = null;
             for (var i in s) {
                 var r2 = getDevicesThatMatchFilter(s[i]);
                 if (r == null) { r = r2; } else { var r3 = []; for (var j in r2) { if (r.indexOf(r2[j]) >= 0) { r3.push(r2[j]); } } r = r3; }
@@ -7723,7 +7723,7 @@
             if (x == '') { return parseSearchAndInput(x); } // Empty search, return all devices.
             var parts = x.split(','), r = null; // Comma = OR, each part keeps its own prefix (u:, g:, t:, etc.)
             for (var p in parts) {
-                var s = parts[p].split(' ' + "or" + ' ');
+                var s = parts[p].split(new RegExp('\\s+' + "or" + '\\s+'));
                 for (var i in s) {
                     var trimmed = s[i].trim();
                     if (trimmed == '') { continue; } // Skip empty pieces from stray/extra commas
@@ -7735,9 +7735,34 @@
             return r;
         }
 
+        // Device name matcher: the search is split into words on spaces and symbols, a name matches when it contains all the words in any order.
+        // So "gulf orange" and "gulf - orange" both match "The Gulf - Orange Beach". If the search has no words (only symbols), it is matched as typed.
+        // Case and accents are ignored ("cafe" matches "Café") and a word also matches across symbols in the name ("ak201" matches "AK-201").
+        var deviceSearchSeparators = /[\s!-\/:-@\[-`{-~¡-¿×÷‐-‧‰-⁞　-〿！-／：-＠]+/g;
+        function normalizeDeviceSearchText(x) { x = x.toLowerCase(); if (x.normalize) { x = x.normalize('NFD').replace(/[̀-ͯ]/g, ''); } return x; }
+        function getDeviceNameMatcher(x) {
+            x = normalizeDeviceSearchText(x);
+            var words = x.split(deviceSearchSeparators).filter(function (w) { return w != ''; });
+            if (words.length == 0) { words = [x]; }
+            return {
+                test: function (name) {
+                    if (name == null) return false;
+                    name = normalizeDeviceSearchText(name);
+                    var compactName = null;
+                    for (var i in words) {
+                        if (name.indexOf(words[i]) >= 0) continue;
+                        if (compactName == null) { compactName = name.replace(deviceSearchSeparators, ''); }
+                        if (compactName.indexOf(words[i]) < 0) return false;
+                    }
+                    return true;
+                }
+            };
+        }
+
         function getDevicesThatMatchFilter(x) {
+            x = x.trim();
             var negate = x.startsWith('!');
-            if (negate) x = x.substring(1);
+            if (negate) x = x.substring(1).trim();
             var r = [];
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null, descSearch = null, connectivitySearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
@@ -7759,6 +7784,15 @@
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
             else if (x == 'wsc:nofirewall') { wscSearch = 4; }
             else if (x == 'wsc:any') { wscSearch = 5; }
+            if (userSearch != null) { userSearch = userSearch.trim(); }
+            if (ipSearch != null) { ipSearch = ipSearch.trim(); }
+            if (groupSearch != null) { groupSearch = groupSearch.trim(); }
+            if (tagSearch != null) { tagSearch = tagSearch.trim(); }
+            if (agentTagSearch != null) { agentTagSearch = agentTagSearch.trim(); }
+            if (osSearch != null) { osSearch = osSearch.trim(); }
+            if (amtSearch != null) { amtSearch = amtSearch.trim(); }
+            if (descSearch != null) { descSearch = descSearch.trim(); }
+            if (connectivitySearch != null) { connectivitySearch = connectivitySearch.trim(); }
 
             if (x == '') {
                 // No search
@@ -7768,32 +7802,38 @@
                 for (var d in nodes) { if ((nodes[d].ip != null) && (nodes[d].ip.toLowerCase().indexOf(ipSearch) >= 0)) { r.push(d); } }
             } else if (groupSearch != null) {
                 // Group filter
-                for (var d in nodes) { if (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(d); } }
+                var rx = getDeviceNameMatcher(groupSearch);
+                for (var d in nodes) { if (rx.test(meshes[nodes[d].meshid].name)) { r.push(d); } }
             } else if (tagSearch != null) {
                 // Tag filter
+                var rx = getDeviceNameMatcher(tagSearch);
                 for (var d in nodes) {
                     if ((nodes[d].tags == null) && (tagSearch == '')) { r.push(d); }
-                    else if (nodes[d].tags != null) { for (var j in nodes[d].tags) { if (nodes[d].tags[j].toLowerCase().indexOf(tagSearch) >= 0) { r.push(d); break; } } }
+                    else if (nodes[d].tags != null) { for (var j in nodes[d].tags) { if (rx.test(nodes[d].tags[j])) { r.push(d); break; } } }
                 }
             } else if (agentTagSearch != null) {
                 // Agent Tag filter
+                var rx = getDeviceNameMatcher(agentTagSearch);
                 for (var d in nodes) {
-                    if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0))) { r.push(d); };
+                    if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && rx.test(nodes[d].agent.tag))) { r.push(d); };
                 }
             } else if (userSearch != null) {
                 // User search
+                var rx = getDeviceNameMatcher(userSearch);
                 for (var d in nodes) {
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0 || (nodes[d].upnusers && nodes[d].upnusers[i] && nodes[d].upnusers[i].toLowerCase().indexOf(userSearch) >= 0)) { r.push(d); } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (rx.test(nodes[d].users[i]) || (nodes[d].upnusers && rx.test(nodes[d].upnusers[i]))) { r.push(d); break; } } }
                 }
             } else if (osSearch != null) {
                 // OS search
-                for (var d in nodes) { if ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)) { r.push(d); }; }
+                var rx = getDeviceNameMatcher(osSearch);
+                for (var d in nodes) { if (rx.test(nodes[d].osdesc)) { r.push(d); }; }
             } else if (amtSearch != null) {
                 // Intel AMT search
                 for (var d in nodes) { if ((nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch))) { r.push(d); } }
             } else if (descSearch != null) {
                 // Device description search
-                for (var d in nodes) { if ((nodes[d].desc != null) && (nodes[d].desc != '') && ((descSearch == '') || (nodes[d].desc.toLowerCase().indexOf(descSearch) >= 0))) { r.push(d); } }
+                var rx = getDeviceNameMatcher(descSearch);
+                for (var d in nodes) { if ((nodes[d].desc != null) && (nodes[d].desc != '') && ((descSearch == '') || rx.test(nodes[d].desc))) { r.push(d); } }
             } else if (wscSearch != null) {
                 // Windows Security Center
                 for (var d in nodes) {
@@ -7839,7 +7879,7 @@
             } else {
                 // Device name search
                 try {
-                    var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    var rx = getDeviceNameMatcher(x);
                     for (var d in nodes) {
                         if (features2 & 0x00008000) { // Both server and client names must match
                             if (features2 & 0x10000000) {
@@ -19731,12 +19771,13 @@
             sortedUsers.sort(nameSort);
 
             // Get search
-            var userSearch = Q('UserSearchInput').value.toLowerCase();
+            var userSearch = Q('UserSearchInput').value.toLowerCase().trim();
             var emailSearch = userSearch;
             if (userSearch.startsWith('email:')) { userSearch = null; emailSearch = emailSearch.substring(6); }
             else if (userSearch.startsWith('name:')) { emailSearch = null; userSearch = userSearch.substring(5); }
             else if (userSearch.startsWith('e:')) { userSearch = null; emailSearch = emailSearch.substring(2); }
             else if (userSearch.startsWith('n:')) { emailSearch = null; userSearch = userSearch.substring(2); }
+            var userRx = getDeviceNameMatcher((userSearch != null) ? userSearch.trim() : ''), emailRx = getDeviceNameMatcher((emailSearch != null) ? emailSearch.trim() : '');
 
             // Display the users using the sorted list
             var x = '<table class="table table-hover" cellpadding=0 cellspacing=0>', addHeader = true;
@@ -19751,8 +19792,8 @@
                 var user = sortedUsers[i], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions != null) &&
-                    ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
-                        ((emailSearch != null) && ((user.email != null) && (user.email.toLowerCase().indexOf(emailSearch) >= 0))))
+                    ((userSearch != null) && ((userSearch == '') || userRx.test(user.name)) ||
+                        ((emailSearch != null) && emailRx.test(user.email)))
                 ) {
                     if (maxUsers > 0) {
                         if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>' + "Online Users"; addHeader = false; }
@@ -19769,8 +19810,8 @@
                 var user = sortedUsers[i], sessions = null;
                 if (wssessions != null) { sessions = wssessions[user._id]; }
                 if ((sessions == null) &&
-                    ((userSearch != null) && ((userSearch == '') || (user.name.toLowerCase().indexOf(userSearch) >= 0)) ||
-                        ((emailSearch != null) && ((user.email != null) && (user.email.toLowerCase().indexOf(emailSearch) >= 0))))
+                    ((userSearch != null) && ((userSearch == '') || userRx.test(user.name)) ||
+                        ((emailSearch != null) && emailRx.test(user.email)))
                 ) {
                     if (maxUsers > 0) {
                         if (addHeader) { x += '<tr><td class=userTableHeader colspan=4>' + "Offline Users"; addHeader = false; }

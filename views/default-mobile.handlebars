@@ -3180,11 +3180,35 @@
             onSearchInputChanged();
         }
 
+        // Device name matcher: the search is split into words on spaces and symbols, a name matches when it contains all the words in any order.
+        // So "gulf orange" and "gulf - orange" both match "The Gulf - Orange Beach". If the search has no words (only symbols), it is matched as typed.
+        // Case and accents are ignored ("cafe" matches "Café") and a word also matches across symbols in the name ("ak201" matches "AK-201").
+        var deviceSearchSeparators = /[\s!-\/:-@\[-`{-~¡-¿×÷‐-‧‰-⁞　-〿！-／：-＠]+/g;
+        function normalizeDeviceSearchText(x) { x = x.toLowerCase(); if (x.normalize) { x = x.normalize('NFD').replace(/[̀-ͯ]/g, ''); } return x; }
+        function getDeviceNameMatcher(x) {
+            x = normalizeDeviceSearchText(x);
+            var words = x.split(deviceSearchSeparators).filter(function (w) { return w != ''; });
+            if (words.length == 0) { words = [x]; }
+            return {
+                test: function (name) {
+                    if (name == null) return false;
+                    name = normalizeDeviceSearchText(name);
+                    var compactName = null;
+                    for (var i in words) {
+                        if (name.indexOf(words[i]) >= 0) continue;
+                        if (compactName == null) { compactName = name.replace(deviceSearchSeparators, ''); }
+                        if (compactName.indexOf(words[i]) < 0) return false;
+                    }
+                    return true;
+                }
+            };
+        }
+
         function getDevicesThatMatchFilterMobile(x, rawVal) {
             var r = [];
             var negate = x.startsWith('!');
-            if (negate) x = x.substring(1);
-            if (negate) rawVal = rawVal.substring(1);
+            if (negate) x = x.substring(1).trim();
+            if (negate) rawVal = rawVal.substring(1).trim();
             var userSearch = null, ipSearch = null, groupSearch = null, tagSearch = null, agentTagSearch = null, wscSearch = null, osSearch = null, amtSearch = null;
             if (x.startsWith('user:'.toLowerCase())) { userSearch = x.substring('user:'.length); }
             else if (x.startsWith('u:'.toLowerCase())) { userSearch = x.substring('u:'.length); }
@@ -3202,6 +3226,13 @@
             else if (x == 'wsc:noupdate') { wscSearch = 3; }
             else if (x == 'wsc:nofirewall') { wscSearch = 4; }
             else if (x == 'wsc:any') { wscSearch = 5; }
+            if (userSearch != null) { userSearch = userSearch.trim(); }
+            if (ipSearch != null) { ipSearch = ipSearch.trim(); }
+            if (groupSearch != null) { groupSearch = groupSearch.trim(); }
+            if (tagSearch != null) { tagSearch = tagSearch.trim(); }
+            if (agentTagSearch != null) { agentTagSearch = agentTagSearch.trim(); }
+            if (osSearch != null) { osSearch = osSearch.trim(); }
+            if (amtSearch != null) { amtSearch = amtSearch.trim(); }
 
             if (x == '') {
                 // No search
@@ -3211,7 +3242,8 @@
                 for (var d in nodes) { if ((nodes[d].ip != null) && (nodes[d].ip.indexOf(ipSearch) >= 0)) { r.push(d); } }
             } else if (groupSearch != null) {
                 // Group filter
-                for (var d in nodes) { if (meshes[nodes[d].meshid].name.toLowerCase().indexOf(groupSearch) >= 0) { r.push(d); } }
+                var rx = getDeviceNameMatcher(groupSearch);
+                for (var d in nodes) { if (rx.test(meshes[nodes[d].meshid].name)) { r.push(d); } }
             } else if (tagSearch != null) {
                 // Tag filter
                 for (var d in nodes) {
@@ -3219,17 +3251,20 @@
                 }
             } else if (agentTagSearch != null) {
                 // Agent Tag filter
+                var rx = getDeviceNameMatcher(agentTagSearch);
                 for (var d in nodes) {
-                    if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && (nodes[d].agent.tag.toLowerCase().indexOf(agentTagSearch) >= 0))) { r.push(d); }
+                    if ((((nodes[d].agent != null) && (nodes[d].agent.tag == null)) && (agentTagSearch == '')) || ((nodes[d].agent != null) && (nodes[d].agent.tag != null) && rx.test(nodes[d].agent.tag))) { r.push(d); }
                 }
             } else if (userSearch != null) {
                 // User search
+                var rx = getDeviceNameMatcher(userSearch);
                 for (var d in nodes) {
-                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (nodes[d].users[i].toLowerCase().indexOf(userSearch) >= 0) { r.push(d); break; } } }
+                    if (nodes[d].users && nodes[d].users.length > 0) { for (var i in nodes[d].users) { if (rx.test(nodes[d].users[i])) { r.push(d); break; } } }
                 }
             } else if (osSearch != null) {
                 // OS search
-                for (var d in nodes) { if ((nodes[d].osdesc != null) && (nodes[d].osdesc.toLowerCase().indexOf(osSearch) >= 0)) { r.push(d); } }
+                var rx = getDeviceNameMatcher(osSearch);
+                for (var d in nodes) { if (rx.test(nodes[d].osdesc)) { r.push(d); } }
             } else if (amtSearch != null) {
                 // Intel AMT search
                 for (var d in nodes) { if ((nodes[d].intelamt != null) && ((amtSearch == '') || (nodes[d].intelamt.state == amtSearch))) { r.push(d); } }
@@ -3249,7 +3284,7 @@
             } else {
                 // Device name search
                 try {
-                    var rs = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), rx = new RegExp(rs); // In some cases (like +), this can throw an exception.
+                    var rx = getDeviceNameMatcher(x);
                     for (var d in nodes) {
                         if (features2 & 0x00008000) {
                             if(features2 & 0x10000000){
