@@ -838,6 +838,7 @@
                             <span id=DeskRecordButton cmenu=deskPlayerContextMenu title="Record remote desktop session to file" style="display:none"><img class="desktopButtons" id=DeskRecordButtonImage src='images/icon-film.png' onclick=deskRecordSession() height=16 width=16 /></span>
                             <span id=DeskClipboardInButton title="Download remote clipboard to local clipboard" style="display:none"><img class="desktopButtons" id=DeskClipboardInButtonImage src='images/icon-clipboard-in.png' onclick=deskClipboardInFunction() height=16 width=16 /></span>
                             <span id=DeskClipboardOutButton title="Upload local clipboard to remote device"><img class="desktopButtons" id=DeskClipboardOutButtonImage src='images/icon-clipboard-out.png' onclick=deskClipboardOutFunction() height=16 width=16 /></span>
+                            <span id=DeskRemoteDownloadButton title="Download the file(s) highlighted in Explorer, or whose path is on the remote clipboard" style="display:none"><img class="desktopButtons" id=DeskRemoteDownloadButtonImage src='images/icon-download.png' onclick=deskRemoteDownloadFunction() height=16 width=16 /></span>
                             <span id=DeskRefreshButton title="Refresh the desktop"><img class="desktopButtons" id=DeskRefreshButtonImage src='images/icon-refresh.png' onclick=deskRefreshFunction() height=16 width=16 /></span>
                             <span id=DeskInputLockedButton title="Remote input is locked"><img class="desktopButtons" id=DeskInputLockedButtonImage src='images/icon-keylock-red.png' onclick=deskInputLockFunction(0) height=16 width=16 /></span>
                             <span id=DeskInputUnLockedButton title="Remote input is unlocked"><img class="desktopButtons" id=DeskInputUnLockedButtonImage src='images/icon-keylock.png' onclick=deskInputLockFunction(1) height=16 width=16 /></span>
@@ -2870,6 +2871,11 @@
                     mainUpdate(4);
 					break;
                 }
+                case 'remotedownloadselection': {
+                    // The server could not ask the agent for the Remote Download selection (access denied, agent not connected...)
+                    if (message.nodeid == deskRemoteDownloadNodeId) { deskRemoteDownloadGotReply(message.method, null); }
+                    break;
+                }
                 case 'msg': {
                     // Check if this is a message from a node
                     if (message.nodeid != null) {
@@ -2901,9 +2907,15 @@
                                 showDeskToolsServices(message);
                             } else if (message.type === 'service') {
                                 showServiceDetailsDialog(message);
+                            } else if ((message.type === 'remotedownloadselection') && (message.nodeid == deskRemoteDownloadNodeId)) {
+                                deskRemoteDownloadGotReply('native', message.value); // Remote Download button, Explorer selection read with native calls
+                            } else if ((message.type === 'runcommands') && (message.responseid === 'remotedownloadselection') && (message.nodeid == deskRemoteDownloadNodeId)) {
+                                deskRemoteDownloadGotReply('powershell', message.result); // Remote Download button, Explorer selection read with PowerShell
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
+                                } else if (message.tag === 4) {
+                                    deskRemoteDownloadGotClipboard(message.data); // Remote Download button
                                 } else if ((message.tag === 2) || (message.tag === 3)) {
                                     // tag 2 = manual clipboard-in button, tag 3 = auto-clipboard poll
                                     if ((navigator.clipboard != null) && (message.data != deskLastClipboardReceived) && document.hasFocus()) {
@@ -8750,6 +8762,191 @@
             }
         }
 
+        // Remote Download: download the file(s) highlighted in Windows Explorer. The server asks the agent for them, with native Windows
+        // calls if the user has the Agent Console right, or else with PowerShell if the user has the Run Commands right (see remotedownload.js).
+        // If nothing is highlighted, download the remote file(s) whose path is on the remote clipboard, and if there is none, ask for a path.
+        // On Windows, right-click the file and use "Copy as path" (or Ctrl+Shift+C), on Linux copy the file in the file manager.
+        var deskRemoteDownloadTimer = null;
+        var deskRemoteDownloadStep = null; // 'native', 'powershell' or 'clipboard' while waiting for the device
+        var deskRemoteDownloadFiles = null; // Files listed in the selection dialog
+        var deskRemoteDownloadNodeId = null; // Device the request was made for, replies for another device or view are dropped
+        var deskRemoteDownloadConfirm = false; // We don't know what is highlighted in Explorer, so don't download a path left on the clipboard without asking
+        function deskRemoteDownloadFunction() {
+            if (deskRemoteDownloadDialogOpen() || (desktop == null) || (desktop.State != 3) || (currentNode == null) || (deskRemoteDownloadStep != null)) return;
+            deskRemoteDownloadNodeId = currentNode._id;
+            deskRemoteDownloadConfirm = false;
+            deskRemoteDownloadQuery('native');
+        }
+
+        // Ask the server which files are highlighted in Explorer. Without the rights for this method, try the next one: native, PowerShell, clipboard.
+        function deskRemoteDownloadQuery(method) {
+            var rights = GetNodeRights(currentNode);
+            var allowed = isWindowsNode(currentNode) && ((method == 'native') ? ((rights & 24) == 24) : ((rights & 131072) != 0)); // Remote Control + Agent Console, or Run Commands
+            if (allowed == false) { if (method == 'native') { deskRemoteDownloadQuery('powershell'); } else { deskRemoteDownloadClipboard(); } return; }
+            deskRemoteDownloadWait(method, 20000, function () { deskRemoteDownloadFailed(method); }); // PowerShell takes a few seconds, or the agent may be busy running other commands
+            meshserver.send({ action: 'remotedownloadselection', nodeid: currentNode._id, method: method });
+        }
+
+        // The query could not run, try the next method
+        function deskRemoteDownloadFailed(method) {
+            deskRemoteDownloadConfirm = true;
+            if (method == 'native') { deskRemoteDownloadQuery('powershell'); } else { deskRemoteDownloadClipboard(); }
+        }
+
+        // Called with the agent's reply to deskRemoteDownloadQuery(), or null if the server could not run it
+        function deskRemoteDownloadGotReply(method, text) {
+            if ((deskRemoteDownloadDone(method) == false) || (deskRemoteDownloadActive() == false)) return;
+            if ((method == 'powershell') && (typeof text == 'string')) {
+                // PowerShell prints base64 JSON between markers, remove whatever else it printed, terminal escapes and line breaks
+                var parts = text.split('@@MESHRD@@');
+                text = null;
+                if (parts.length >= 3) { try { text = decodeURIComponent(escape(atob(parts[1].replace(/\x1b\[[0-9;?]*[A-Za-z]/g, '').replace(/[^A-Za-z0-9+\/=]/g, '')))); } catch (ex) { } }
+            }
+            var windows = null;
+            if (typeof text == 'string') { try { windows = JSON.parse(text); } catch (ex) { } }
+            if (windows == null) { deskRemoteDownloadFailed(method); return; }
+            deskRemoteDownloadGotWindows(Array.isArray(windows) ? windows : [windows]); // PowerShell writes a single window as an object
+        }
+
+        function deskRemoteDownloadClipboard() {
+            if ((features2 & 0x0800) != 0) { showDeskRemoteDownload(''); return; } // Getting the remote clipboard is not allowed, ask for a path
+            // The agent does not reply when the remote clipboard is empty, so ask for a path if nothing comes back.
+            deskRemoteDownloadWait('clipboard', 4000, function () { showDeskRemoteDownload(''); });
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 4 });
+        }
+
+        // Wait for a reply from the device, and dim the button while waiting
+        function deskRemoteDownloadWait(step, timeout, func) {
+            deskRemoteDownloadStep = step;
+            deskRemoteDownloadTimer = setTimeout(function () { deskRemoteDownloadDone(); if (deskRemoteDownloadActive()) { func(); } }, timeout);
+            QS('DeskRemoteDownloadButton').opacity = 0.4;
+        }
+
+        // Returns true if we are still on the desktop of the device the request was made for
+        function deskRemoteDownloadActive() {
+            return (xxcurrentView == 11) && (desktop != null) && (desktop.State == 3) && (currentNode != null) && (currentNode._id == deskRemoteDownloadNodeId);
+        }
+
+        // Returns true if a dialog is open
+        function deskRemoteDownloadDialogOpen() { return (xxdialogMode ? true : false); }
+
+        // Open the Remote Download dialog, func is called when OK is clicked
+        function deskRemoteDownloadDialog(x, func) {
+            setDialogMode(2, "Remote Download", 3, func, x, 'remotedownload');
+        }
+
+        // Returns true if we were waiting for this step
+        function deskRemoteDownloadDone(step) {
+            if ((step != null) && (deskRemoteDownloadStep != step)) return false;
+            if (deskRemoteDownloadTimer != null) { clearTimeout(deskRemoteDownloadTimer); deskRemoteDownloadTimer = null; }
+            deskRemoteDownloadStep = null;
+            QS('DeskRemoteDownloadButton').opacity = null;
+            return true;
+        }
+
+        function deskRemoteDownloadGotClipboard(text) {
+            if ((deskRemoteDownloadDone('clipboard') == false) || (deskRemoteDownloadActive() == false)) return;
+            var paths = deskRemoteDownloadParsePaths(text);
+            if ((paths.length > 0) && (deskRemoteDownloadConfirm == false)) { deskRemoteDownloadPaths(paths); return; }
+            showDeskRemoteDownload(paths.join('\n'));
+        }
+
+        // Download the files highlighted in Explorer, windows is a list of { f: folder, s: [paths], fg: foreground window }
+        function deskRemoteDownloadGotWindows(windows) {
+            var groups = [], foregroundGroups = [];
+            for (var i in windows) {
+                if ((windows[i] == null) || (windows[i].s == null)) continue;
+                var selected = Array.isArray(windows[i].s) ? windows[i].s : [windows[i].s], files = [];
+                for (var j in selected) { var path = deskRemoteDownloadParsePaths(selected[j]); if (path.length == 1) { files.push(path[0]); } }
+                if (files.length == 0) continue;
+                var group = { folder: windows[i].f ? windows[i].f : files[0].substring(0, files[0].lastIndexOf('/')), files: files };
+                groups.push(group);
+                if (windows[i].fg === true) { foregroundGroups.push(group); }
+            }
+            if (foregroundGroups.length > 0) { groups = foregroundGroups; } // Prefer the Explorer window the remote user is looking at
+            if (groups.length == 0) { deskRemoteDownloadConfirm = true; deskRemoteDownloadClipboard(); return; } // Nothing highlighted, try the clipboard but ask first
+            if (groups.length == 1) { deskRemoteDownloadPaths(groups[0].files); return; } // Files highlighted in one Explorer window, download them
+            if (deskRemoteDownloadDialogOpen()) return;
+
+            // Files are highlighted in more than one Explorer window, ask which ones to download
+            deskRemoteDownloadFiles = [];
+            var x = '<div style=margin-bottom:4px>' + "Files are highlighted in more than one Explorer window. Select the files to download." + '</div><div style="max-height:260px;overflow-y:auto">';
+            for (var i in groups) {
+                x += '<div style="font-weight:bold;margin-top:4px">' + EscapeHtml(groups[i].folder ? groups[i].folder : '') + '</div>';
+                for (var j in groups[i].files) {
+                    x += '<label style=display:block><input type=checkbox class=d2remoteDownloadFile value=' + deskRemoteDownloadFiles.length + ' checked onchange=deskRemoteDownloadSelectValidate()> ' + EscapeHtml(groups[i].files[j].split('/').pop()) + '</label>';
+                    deskRemoteDownloadFiles.push(groups[i].files[j]);
+                }
+            }
+            x += '</div>';
+            deskRemoteDownloadDialog(x, deskRemoteDownloadSelectEx);
+            deskRemoteDownloadSelectValidate();
+        }
+
+        function deskRemoteDownloadSelected() {
+            var paths = [], checkboxes = document.getElementsByClassName('d2remoteDownloadFile');
+            for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { paths.push(deskRemoteDownloadFiles[parseInt(checkboxes[i].value)]); } }
+            return paths;
+        }
+        function deskRemoteDownloadSelectValidate() { QE('idx_dlgOkButton', deskRemoteDownloadSelected().length > 0); }
+        function deskRemoteDownloadSelectEx() { deskRemoteDownloadPaths(deskRemoteDownloadSelected()); deskRemoteDownloadFiles = null; }
+
+        // Return the list of remote file paths in this text, one per line, or an empty list if any line is not an absolute path.
+        // Accepts quoted paths ("Copy as path" on Windows) and file:// URLs (Linux file managers). Windows paths use / like the Files tab.
+        function deskRemoteDownloadParsePaths(text) {
+            var paths = [], windows = isWindowsNode(currentNode);
+            if ((typeof text != 'string') || (text.length > 32768)) return paths;
+            var lines = text.split(/\r?\n/);
+            for (var i in lines) {
+                var x = lines[i].trim();
+                if ((x == '') || (x == 'copy') || (x == 'cut') || (x.charAt(0) == '#')) continue; // Skip blank lines and the GNOME "copy" / "cut" header
+                if ((x.length > 1) && (x.charAt(0) == '"') && (x.charAt(x.length - 1) == '"')) { x = x.substring(1, x.length - 1); }
+                if (x.toLowerCase().startsWith('file://')) {
+                    x = x.substring(7);
+                    x = x.substring(x.indexOf('/')); // Remove the host name, if any
+                    try { x = decodeURIComponent(x); } catch (ex) { return []; }
+                    if (windows && /^\/[a-zA-Z]:\//.test(x)) { x = x.substring(1); }
+                }
+                if (windows) {
+                    x = x.split('\\').join('/');
+                    if ((/^[a-zA-Z]:\/./.test(x) == false) && (/^\/\/[^\/]+\/./.test(x) == false)) return []; // Drive or UNC path
+                } else {
+                    if ((x.length < 2) || (x.charAt(0) != '/')) return [];
+                }
+                if (x.charAt(x.length - 1) == '/') return []; // This is a folder
+                if (paths.indexOf(x) == -1) { paths.push(x); }
+                if (paths.length > 50) return [];
+            }
+            return paths;
+        }
+
+        function deskRemoteDownloadPaths(paths) {
+            for (var i in paths) {
+                var name = paths[i].split('/').pop();
+                var link = 'devicefile.ashx?c=' + authCookie;
+                link += '&m=' + currentNode.meshid.split('/')[2];
+                link += '&n=' + currentNode._id.split('/')[2];
+                link += '&f=' + encodeURIComponentEx(paths[i]);
+                downloadFile(link, encodeURIComponentEx(name));
+            }
+        }
+
+        function showDeskRemoteDownload(text) {
+            if (deskRemoteDownloadDialogOpen() || (deskRemoteDownloadActive() == false)) return;
+            var x = '';
+            if (deskRemoteDownloadConfirm) { x += '<div style=margin-bottom:4px><b>' + "No files are highlighted in Explorer on the remote computer." + '</b></div>'; }
+            x += '<div style=margin-bottom:4px>' + "Enter the path of the remote file to download, one per line." + '</div>';
+            x += '<textarea id=d2remoteDownloadPaths style="width:100%;height:80px;resize:none;box-sizing:border-box" maxlength=8192 placeholder="' + (isWindowsNode(currentNode) ? 'C:\\Users\\Public\\file.txt' : '/home/user/file.txt') + '" onkeyup=showDeskRemoteDownloadValidate() onchange=showDeskRemoteDownloadValidate()></textarea>';
+            x += '<div style=margin-top:4px;font-size:smaller>' + (isWindowsNode(currentNode) ? "Tip: on the remote computer, right-click a file and select \"Copy as path\", then click the Remote Download button." : "Tip: on the remote computer, copy a file in the file manager, then click the Remote Download button.") + '</div>';
+            deskRemoteDownloadDialog(x, showDeskRemoteDownloadEx);
+            Q('d2remoteDownloadPaths').value = text;
+            Q('d2remoteDownloadPaths').focus();
+            showDeskRemoteDownloadValidate();
+        }
+
+        function showDeskRemoteDownloadValidate() { QE('idx_dlgOkButton', deskRemoteDownloadParsePaths(Q('d2remoteDownloadPaths').value).length > 0); }
+        function showDeskRemoteDownloadEx() { deskRemoteDownloadPaths(deskRemoteDownloadParsePaths(Q('d2remoteDownloadPaths').value)); }
+
         // Called to lock or unlock remote desktop user input
         function deskInputLockFunction(value) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
@@ -9653,6 +9850,8 @@
             QV('DeskClipboardOutButton', online && inputAllowed && (desktop != null) && ((features2 & 0x1000) == 0) && (navigator.clipboard != null) && (navigator.clipboard.readText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QV('d7deskAutoClipboardLabel', (navigator.clipboard.readText != null) && ((features2 & 0x1000) == 0));
             QV('DeskClipboardInButton', online && inputAllowed && (desktop != null) && ((features2 & 0x0800) == 0) && (navigator.clipboard != null) && (navigator.clipboard.writeText != null) && ((autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
+            // Remote Download needs files rights on a Windows or Linux agent, and is not used with RDP or Intel AMT KVM
+            QV('DeskRemoteDownloadButton', online && (deskState == 3) && (desktop.contype == 1) && (currentNode.agent != null) && (currentNode.agent.caps != null) && ((currentNode.agent.caps & 4) != 0) && ((rights & 8) != 0) && ((rights == 0xFFFFFFFF) || ((rights & 1024) == 0)) && (isMacNode(currentNode) == false) && (currentNode.agent.id != 14));
             if (deskState != 3) {
                 QV('DeskInputLockedButton', false);
                 QV('DeskInputUnLockedButton', false);
