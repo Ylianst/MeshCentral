@@ -1011,21 +1011,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                
+                // The inventory needs the software right, an uninstall needs full administrator rights on the device, same as the web UI.
+                var swfunc = null;
+                if (command.responseid != null) { swfunc = function (r) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: r ? 'OK' : 'Denied' })); } catch (ex) { } }; }
+                if (common.validateString(command.nodeid, 1, 1024) == false) { if (swfunc) { swfunc(false); } break; }
+                if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if (node == null) return;
-                    var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
-                        var agent = parent.wsagents[command.nodeid];
-                        if (agent != null) {
-                            routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-                        } else {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
-                        }
-                    } else {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                    }
+                    var allowed = false;
+                    if ((command.type == 'installedapps') || (command.type == 'installedstoreapps')) { allowed = ((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) == 0)); }
+                    else if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) { allowed = (rights == MESHRIGHT_ADMIN); }
+                    if ((node == null) || (allowed == false)) { if (swfunc) { swfunc(false); } return; }
+                    routeCommandToNode(command, null, null, swfunc);
                 });
                 break;
             }
@@ -1046,6 +1042,20 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // Check if getting / setting clipboard data is allowed
                     if ((command.type == 'getclip') && (domain.clipboardget == false)) { console.log('CG-EXIT'); break; }
                     if ((command.type == 'setclip') && (domain.clipboardset == false)) { console.log('CS-EXIT'); break; }
+
+                    // Rights needed on top of the remote control or view only rights that routeCommandToNode() checks
+                    switch (command.type) {
+                        case 'console': { requiredRights = MESHRIGHT_AGENTCONSOLE; break; }
+                        case 'messagebox':
+                        case 'alertbox': { requiredRights = MESHRIGHT_CHATNOTIFY; break; }
+                        case 'pskill':
+                        case 'serviceStart':
+                        case 'serviceStop':
+                        case 'serviceRestart':
+                        case 'setclip':
+                        case 'openUrl':
+                        case 'deskBackground': { requiredRights = MESHRIGHT_REMOTECONTROL; requiredNonRights = MESHRIGHT_REMOTEVIEWONLY; break; } // View only users can look, but not change anything
+                    }
 
                     // Before routing this command, let's do some security checking.
                     // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
