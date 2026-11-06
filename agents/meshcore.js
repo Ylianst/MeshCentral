@@ -855,18 +855,18 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 function onUserSessionChanged(user, locked) {
+    if (process.platform == 'linux' && user == null) {
+        // Older agents fire 'changed' in bursts from utmp churn. Coalesce them; the previous
+        // answer (removeAllListeners within 10s of start) went deaf for good and left the server
+        // showing the boot-time user until the agent restarted.
+        if (userSession._changeTimer != null) { return; }
+        userSession._changeTimer = setTimeout(function () { userSession._changeTimer = null; onUserSessionChangedNow(null, false); }, 1000);
+        return;
+    }
+    onUserSessionChangedNow(user, locked);
+}
+function onUserSessionChangedNow(user, locked) {
     userSession.enumerateUsers().then(function (users) {
-        if (process.platform == 'linux') {
-            if (userSession._startTime == null) {
-                userSession._startTime = Date.now();
-                userSession._count = users.length;
-            }
-            else if (Date.now() - userSession._startTime < 10000 && users.length == userSession._count) {
-                userSession.removeAllListeners('changed');
-                return;
-            }
-        }
-
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
