@@ -2783,6 +2783,8 @@ module.exports.CreateDB = function (parent, func) {
                 obj.deletePlugin = function (id, func) { sqlDbQuery('DELETE FROM plugin WHERE id = ?', [id], func); }; // Delete plugin
                 obj.setPluginStatus = function (id, status, func) { sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_SET(doc,"$.status",?) WHERE id=?', [status,id], func); };
                 obj.updatePlugin = function (id, args, func) { delete args._id; sqlDbQuery('UPDATE meshcentral.plugin SET doc=JSON_MERGE_PATCH(doc,?) WHERE id=?', [JSON.stringify(args),id], func); };
+                obj.getPluginPermissions = function (pluginName, func) { sqlDbQuery('SELECT doc FROM pluginpermissions WHERE id = $1', ['pluginpermission//' + pluginName], function(err, docs) { if (docs && docs.length > 0) { func(null, [docs[0].doc]); } else { func(null, []); } }); };
+                obj.setPluginPermissions = function (pluginName, data, func) { delete data._id; sqlDbQuery('INSERT INTO pluginpermissions VALUES ($1, $2) ON DUPLICATE KEY UPDATE doc = $2', ['pluginpermission//' + pluginName, JSON.stringify(data)], func); };
             }
         } else if (obj.databaseType == DB_MONGODB) {
             // Database actions on the main collection (MongoDB)
