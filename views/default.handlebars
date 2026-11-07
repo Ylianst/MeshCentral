@@ -1532,6 +1532,13 @@
                                 <label style="display:block" id="d7deskAutoLockLabel"><input type="checkbox" id="d7deskAutoLock" />Lock on Disconnect</label>
                             </div>
                         </div>
+                        <div id="d7deskRemotePrintDiv">
+                            <div>Remote Printing</div>
+                            <select id="d7deskRemotePrint" title="Install a printer on the remote device, documents printed to it are downloaded by this browser">
+                                <option value="">Disabled</option>
+                                <option value="pdf">Download as PDF</option>
+                            </select>
+                        </div>
                     </div>
                     <div id="d7amtkvm" class="tabcontent">
                         <!--<h4>Intel&reg; AMT Hardware KVM</h4>-->
@@ -2912,6 +2919,8 @@
                                         navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { });
                                     }
                                 }
+                            } else if (message.type === 'remoteprint') {
+                                deskRemotePrintMessage(nodes[index], message);
                             } else if ((message.type === 'setclip') && (xxdialogTag === 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
                                 // Display success/fail on the clipboard dialog box.
                                 QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Success" + '</span>' : '<span style=color:red>' + "Failed" + '</span>')
@@ -10071,10 +10080,42 @@
                     //console.log('Unknown onDesktopStateChange state', state);
                     break;
             }
+            if (state == 3) { deskRemotePrintFailed = false; }
+            deskRemotePrintUpdate();
             updateDesktopButtons();
             deskAdjust();
             setTimeout(deskAdjust, 50);
             updateMetadata(desktop, 'deskmetadata');
+        }
+
+        // Remote printing, keep the printer on the remote device active while the agent remote desktop is connected.
+        // Refresh it every 30 seconds: the agent drops a session that isn't refreshed for 90 seconds, and removes the
+        // printer 30 seconds after the last session, unless it was installed with the "remoteprint install" agent console command.
+        var deskRemotePrintNode = null, deskRemotePrintLast = 0, deskRemotePrintFailed = false;
+        function deskRemotePrintUpdate() {
+            var enabled = ((features3 & 0x00000004) != 0) && (desktopsettings.remoteprint == 'pdf') && (deskRemotePrintFailed == false) && (desktop != null) && (desktop.contype == 1) && (desktop.State == 3) && (desktopNode != null);
+            if ((deskRemotePrintNode != null) && ((enabled == false) || (deskRemotePrintNode != desktopNode._id))) {
+                meshserver.send({ action: 'msg', type: 'remoteprint', sub: 'stop', nodeid: deskRemotePrintNode });
+                deskRemotePrintNode = null;
+            }
+            if (enabled && ((deskRemotePrintNode == null) || ((Date.now() - deskRemotePrintLast) >= 30000))) {
+                deskRemotePrintNode = desktopNode._id;
+                deskRemotePrintLast = Date.now();
+                meshserver.send({ action: 'msg', type: 'remoteprint', sub: 'start', nodeid: deskRemotePrintNode });
+            }
+        }
+
+        function deskRemotePrintMessage(node, message) {
+            if (message.sub == 'started') {
+                addNotification({ text: "Documents printed to \"{0}\" will be downloaded by this browser.".replace('{0}', message.name), title: "Remote Printing", nodeid: node._id }); // Plain text, the notification box escapes it
+            } else if (message.sub == 'error') {
+                deskRemotePrintFailed = true;
+                if (deskRemotePrintNode == node._id) { deskRemotePrintNode = null; }
+                addNotification({ text: String(message.msg), title: "Remote Printing", nodeid: node._id });
+            } else if ((message.sub == 'job') && (typeof message.path == 'string') && (desktopsettings.remoteprint == 'pdf') && (deskRemotePrintNode == node._id)) {
+                var link = 'devicefile.ashx?c=' + authCookie + '&m=' + node.meshid.split('/')[2] + '&n=' + node._id.split('/')[2] + '&f=' + encodeURIComponentEx(message.path);
+                downloadFile(link, encodeURIComponentEx(message.name));
+            }
         }
 
         function updateSessionTime() {
@@ -10085,6 +10126,7 @@
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
+                deskRemotePrintUpdate();
                 // Auto-clipboard
                 var autoClipEnabled = ((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true));
                 if (autoClipEnabled && (navigator.clipboard != null)) {
@@ -10175,6 +10217,8 @@
             desktopsettings.remotekeymap = d7deskRemoteKeyMap.checked;
             desktopsettings.autoclipboard = d7deskAutoClipboard.checked;
             desktopsettings.autolock = d7deskAutoLock.checked;
+            desktopsettings.remoteprint = d7deskRemotePrint.value;
+            deskRemotePrintFailed = false;
             desktopsettings.localkeymap = d7localKeyMap.checked;
             desktopsettings.kvmrmw = d7kvmrmw.checked;
             desktopsettings.rdpsize = d7rdpsize.value;
@@ -10187,6 +10231,7 @@
             putstore('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
             updateDesktopButtons();
+            deskRemotePrintUpdate();
             if (desktop) {
                 if (desktop.contype == 1) { // Mesh Agent Remote Desktop
                     desktop.m.SwapMouse = desktopsettings.swapmouse;
@@ -10227,6 +10272,8 @@
             if (desktopsettings.remotekeymap != null) { d7deskRemoteKeyMap.checked = desktopsettings.remotekeymap; }
             if (desktopsettings.autoclipboard != null) { d7deskAutoClipboard.checked = desktopsettings.autoclipboard; }
             if (desktopsettings.autolock != null) { d7deskAutoLock.checked = desktopsettings.autolock; }
+            d7deskRemotePrint.value = (desktopsettings.remoteprint == 'pdf') ? 'pdf' : '';
+            QV('d7deskRemotePrintDiv', (features3 & 0x00000004) != 0);
             if (desktopsettings.localkeymap) { d7localKeyMap.checked = desktopsettings.localkeymap; }
             if (desktopsettings.kvmrmw) { d7kvmrmw.checked = desktopsettings.kvmrmw; }
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (desktop.state != 0) && (desktopsettings.showfocus));

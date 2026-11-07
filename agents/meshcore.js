@@ -938,6 +938,9 @@ var nextTunnelIndex = 1;
 var apftunnel = null;
 var tunnelUserCount = { terminal: {}, files: {}, registry: {}, tcp: {}, udp: {}, msg: {} }; // List of userid->count sessions for terminal, files, registry and TCP/UDP routing
 
+// Remote printing, see remote-printer.js
+function remotePrintContext() { return { send: function (cmd) { mesh.SendCommand(cmd); }, log: MeshServerLog }; }
+setTimeout(function () { try { require('remote-printer').agentStarted(remotePrintContext()); } catch (ex) { } }, 10000);
 
 // Add to the server event log
 function MeshServerLog(msg, state) {
@@ -1677,6 +1680,12 @@ function handleServerCommand(data) {
                                 }
                             });
                         }
+                        break;
+                    }
+                    case 'remoteprint': {
+                        // Remote printing, install a virtual printer and send print jobs to the user's browser for download
+                        try { require('remote-printer').handleMessage(data, remotePrintContext()); }
+                        catch (ex) { mesh.SendCommand({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: 'Remote printing is not supported by this agent' }); }
                         break;
                     }
                     case 'setclip': {
@@ -4789,7 +4798,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
                 availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbdelete,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
                 availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getclip,setclip,log,cpuinfo,sysinfo,';
-                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps';
+                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps,remoteprint';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -4902,6 +4911,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                         }
                     }
                 }
+                break;
+            case 'remoteprint':
+                // Show the state of remote printing and its recent events, "remoteprint install" and "remoteprint uninstall"
+                try { response = require('remote-printer').consoleCommand(args['_'], remotePrintContext(), function (text) { sendConsoleText(text, sessionid); }); }
+                catch (ex) { response = 'Remote printing is not available: ' + ex; }
                 break;
             case 'privacybar':
                 if (process.platform != 'win32' || require('notifybar-desktop').DefaultPinned == null) {

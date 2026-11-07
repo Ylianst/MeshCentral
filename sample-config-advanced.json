@@ -429,6 +429,11 @@
       },
       "_urlSwitching": false,
       "_desktopPrivacyBarText": "Privacy bar: {0}, {1}",
+      "_remotePrinting": {
+        "enabled": true,
+        "printerName": "MeshCentral Printer",
+        "port": 35500
+      },
       "_limits": {
         "_maxDevices": 100,
         "_maxUserAccounts": 100,

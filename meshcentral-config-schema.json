@@ -3201,6 +3201,34 @@
             "default": true,
             "description": "When false, users can't get the clipboard of a remove device."
           },
+          "remotePrinting": {
+            "type": [
+              "boolean",
+              "object"
+            ],
+            "default": false,
+            "description": "Remote printing, off by default. Set to true, or to an object with \"enabled\": true, to let users turn it on in the remote desktop settings: a virtual printer is then installed on the remote device and documents printed to it are downloaded by the user's browser.",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": false,
+                "description": "Set to true to allow remote printing."
+              },
+              "printerName": {
+                "type": "string",
+                "default": "MeshCentral Printer",
+                "description": "Name of the printer installed on the remote device."
+              },
+              "port": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 65535,
+                "default": 35500,
+                "description": "Local TCP port on 127.0.0.1 the agent listens on to receive print jobs from the printer."
+              }
+            },
+            "additionalProperties": false
+          },
           "localSessionRecording": {
             "type": "boolean",
             "default": true,

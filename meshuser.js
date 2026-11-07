@@ -1047,6 +1047,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.type == 'getclip') && (domain.clipboardget == false)) { console.log('CG-EXIT'); break; }
                     if ((command.type == 'setclip') && (domain.clipboardset == false)) { console.log('CS-EXIT'); break; }
 
+                    // Remote printing, check that it's allowed and add the printer settings from the server configuration
+                    if (command.type == 'remoteprint') {
+                        if (parent.isRemotePrintingAllowed(domain) == false) break;
+                        requiredRights = MESHRIGHT_REMOTECONTROL;
+                        requiredNonRights = MESHRIGHT_NOFILES | MESHRIGHT_REMOTEVIEWONLY; // Print jobs are downloaded using the files feature
+                        delete command.printerName;
+                        delete command.port;
+                        if (typeof domain.remoteprinting == 'object') {
+                            if (typeof domain.remoteprinting.printername == 'string') { command.printerName = domain.remoteprinting.printername; }
+                            if (typeof domain.remoteprinting.port == 'number') { command.port = domain.remoteprinting.port; }
+                        }
+                    }
+
                     // Before routing this command, let's do some security checking.
                     // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
                     if (command.type == 'tunnel') {
