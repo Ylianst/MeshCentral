@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Web-RDP</title>
+    <script src="scripts/guacamole/all.min.js"></script>
+    <style>
+        html,body,#display { width:100%;height:100%;margin:0;overflow:hidden;background:#000;font-family:sans-serif; }
+        #display { display:none;position:absolute;inset:0;align-items:center;justify-content:center; }
+        #display > div { position:relative; }
+        #login { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#003366,#0055aa);color:#fff; }
+        #login form { width:min(390px,calc(100% - 32px)); }
+        #login h1 { text-align:center;font-size:24px;font-weight:400; }
+        #login label { display:block;margin-top:10px; }
+        #login input,#login select,#login button { box-sizing:border-box;width:100%;padding:8px;margin-top:4px;font-size:16px;border-radius:4px;border:1px solid #ccc; }
+        #login button { cursor:pointer;margin-top:16px; }
+        #status { min-height:22px;margin-top:12px;color:#ffdf72;text-align:center; }
+        body.embed #login { display:none; }
+    </style>
+</head>
+<body>
+    <div id="login">
+        <form onsubmit="return connectFromForm()">
+            <h1 id="computerName"></h1>
+            <label id="modeRow" style="display:none">Credentials
+                <select id="credentialMode" onchange="updateCredentialMode()"><option value="server">Use server credentials</option><option value="new">Use new credentials</option></select>
+            </label>
+            <div id="credentialFields">
+                <label>Domain<input id="domain" autocomplete="off"></label>
+                <label>Username<input id="username" autocomplete="username"></label>
+                <label>Password<input id="password" type="password" autocomplete="current-password"></label>
+                <label><input id="savepass" type="checkbox" style="width:auto"> Remember credentials</label>
+            </div>
+            <button type="submit">Connect</button>
+            <div id="status"></div>
+        </form>
+    </div>
+    <div id="display"></div>
+    <script>
+        var authCookie = '{{{cookie}}}';
+        var serverCredentials = parseInt('{{{serverCredentials}}}') || 0;
+        var computerName = decodeURIComponent('{{{name}}}');
+        var features = parseInt('{{{features}}}') || 0;
+        var client = null, tunnel = null, mouse = null, keyboard = null, lastClipboard = '';
+        var embedded = new URLSearchParams(location.search).get('embed') === '1';
+        if (embedded) document.body.classList.add('embed');
+        document.getElementById('computerName').textContent = computerName;
+        document.title = (computerName ? computerName + ' - ' : '') + 'Web-RDP';
+        if (serverCredentials === 1) document.getElementById('modeRow').style.display = '';
+        else document.getElementById('credentialMode').value = 'new';
+
+        function notifyParent(action, data) {
+            if (!embedded || window.parent === window) return;
+            var message = data || {};
+            message.action = action;
+            window.parent.postMessage(message, location.origin);
+        }
+
+        function MeshCentralTunnel(url, init) {
+            var self = this, socket = null, parser = null;
+            this.sendMessage = function () {
+                if ((socket == null) || (socket.readyState !== WebSocket.OPEN)) return;
+                socket.send(Guacamole.Parser.toInstruction(arguments));
+            };
+            this.connect = function () {
+                self.setState(Guacamole.Tunnel.State.CONNECTING);
+                parser = new Guacamole.Parser();
+                parser.oninstruction = function (opcode, parameters) { if (self.oninstruction) self.oninstruction(opcode, parameters); };
+                socket = new WebSocket(url, 'guacamole');
+                socket.onopen = function () { socket.send(JSON.stringify(init)); self.setState(Guacamole.Tunnel.State.OPEN); };
+                socket.onmessage = function (event) { try { parser.receive(event.data); } catch (ex) { if (self.onerror) self.onerror(new Guacamole.Status(Guacamole.Status.Code.SERVER_ERROR, ex.message)); } };
+                socket.onerror = function () { if (self.onerror) self.onerror(new Guacamole.Status(Guacamole.Status.Code.UPSTREAM_NOT_FOUND, 'Web-RDP relay unavailable.')); };
+                socket.onclose = function () { self.setState(Guacamole.Tunnel.State.CLOSED); };
+            };
+            this.disconnect = function () { if (socket) socket.close(); self.setState(Guacamole.Tunnel.State.CLOSED); };
+        }
+        MeshCentralTunnel.prototype = new Guacamole.Tunnel();
+
+        function resizeDisplay() {
+            if (!client) return;
+            var display = client.getDisplay();
+            var width = Math.max(320, window.innerWidth), height = Math.max(200, window.innerHeight);
+            var scale = Math.min(width / Math.max(1, display.getWidth()), height / Math.max(1, display.getHeight()));
+            display.scale(scale || 1);
+            client.sendSize(width, height);
+        }
+
+        function connectRdp(credentials) {
+            if (!authCookie || client) return;
+            document.getElementById('status').textContent = 'Connecting...';
+            var init = {
+                action: 'connect', cookie: authCookie,
+                domain: credentials.domain || '', username: credentials.username || '', password: credentials.password || '',
+                useServerCreds: credentials.servercred === true,
+                savepass: credentials.savecred === true,
+                width: credentials.width || window.innerWidth, height: credentials.height || window.innerHeight,
+                dpi: Math.max(96, Math.round(96 * (window.devicePixelRatio || 1))),
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Europe/Amsterdam'
+            };
+            tunnel = new MeshCentralTunnel('mstscrelay.ashx', init);
+            client = new Guacamole.Client(tunnel);
+            var displayElement = client.getDisplay().getElement();
+            document.getElementById('display').appendChild(displayElement);
+
+            client.onerror = function (status) {
+                var message = status.message || 'Web-RDP connection failed.';
+                document.getElementById('status').textContent = message;
+                document.getElementById('display').style.display = 'none';
+                if (!embedded) document.getElementById('login').style.display = 'flex';
+                notifyParent('meshcentral-rdp-state', { state: 0, message: message });
+            };
+            client.onstatechange = function (state) {
+                if (state === Guacamole.Client.State.CONNECTED) {
+                    document.getElementById('login').style.display = 'none';
+                    document.getElementById('display').style.display = 'flex';
+                    document.getElementById('status').textContent = '';
+                    notifyParent('meshcentral-rdp-state', { state: 3 });
+                    resizeDisplay();
+                } else if (state === Guacamole.Client.State.DISCONNECTED) {
+                    document.getElementById('display').style.display = 'none';
+                    if (!embedded) document.getElementById('login').style.display = 'flex';
+                    notifyParent('meshcentral-rdp-state', { state: 0 });
+                    document.getElementById('display').textContent = '';
+                    client = tunnel = mouse = keyboard = null;
+                } else {
+                    notifyParent('meshcentral-rdp-state', { state: 2 });
+                }
+            };
+            client.onclipboard = function (stream, mimetype) {
+                if (mimetype.indexOf('text/') !== 0) return;
+                var reader = new Guacamole.StringReader(stream), text = '';
+                reader.ontext = function (chunk) { text += chunk; };
+                reader.onend = function () {
+                    lastClipboard = text;
+                    notifyParent('meshcentral-rdp-clipboard', { text: text });
+                    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).catch(function () { });
+                };
+            };
+            client.getDisplay().onresize = function (width, height) { resizeDisplay(); notifyParent('meshcentral-rdp-size', { width: width, height: height }); };
+            mouse = new Guacamole.Mouse(displayElement);
+            var sendMouseEvent = function (state) { client.sendMouseState(state, true); };
+            mouse.onmousedown = sendMouseEvent;
+            mouse.onmouseup = sendMouseEvent;
+            mouse.onmousemove = sendMouseEvent;
+            displayElement.oncontextmenu = function (event) { event.preventDefault(); return false; };
+            client.getDisplay().oncursor = function (canvas, x, y) {
+                // Prefer the native browser cursor. It stays physically aligned
+                // with the local pointer and avoids a second software cursor.
+                client.getDisplay().showCursor(!mouse.setCursor(canvas, x, y));
+            };
+            keyboard = new Guacamole.Keyboard(document);
+            keyboard.onkeydown = function (keysym) { client.sendKeyEvent(1, keysym); };
+            keyboard.onkeyup = function (keysym) { client.sendKeyEvent(0, keysym); };
+            client.connect();
+        }
+
+        function sendClipboard(text) {
+            if (!client) return;
+            var stream = client.createClipboardStream('text/plain');
+            var writer = new Guacamole.StringWriter(stream);
+            writer.sendText(text || '');
+            writer.sendEnd();
+        }
+
+        function updateCredentialMode() {
+            document.getElementById('credentialFields').style.display = (document.getElementById('credentialMode').value === 'server') ? 'none' : '';
+        }
+        updateCredentialMode();
+
+        function connectFromForm() {
+            var useServer = serverCredentials === 1 && document.getElementById('credentialMode').value === 'server';
+            connectRdp({
+                servercred: useServer,
+                domain: document.getElementById('domain').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                savecred: document.getElementById('savepass').checked
+            });
+            return false;
+        }
+
+        window.addEventListener('message', function (event) {
+            if ((event.origin !== location.origin) || !event.data) return;
+            if (event.data.action === 'meshcentral-rdp-connect') connectRdp(event.data.credentials || {});
+            if (event.data.action === 'meshcentral-rdp-disconnect' && client) client.disconnect();
+            if (event.data.action === 'meshcentral-rdp-clipboard') sendClipboard(event.data.text);
+            if (event.data.action === 'meshcentral-rdp-resize') resizeDisplay();
+            if (event.data.action === 'meshcentral-rdp-cad' && client) {
+                client.sendKeyEvent(1, 0xFFE3); client.sendKeyEvent(1, 0xFFE9); client.sendKeyEvent(1, 0xFFFF);
+                client.sendKeyEvent(0, 0xFFFF); client.sendKeyEvent(0, 0xFFE9); client.sendKeyEvent(0, 0xFFE3);
+            }
+        });
+        window.addEventListener('resize', function () { window.clearTimeout(window._rdpResizeTimer); window._rdpResizeTimer = window.setTimeout(resizeDisplay, 150); });
+        window.addEventListener('beforeunload', function () { if (client) client.disconnect(); });
+    </script>
+</body>
+</html>
