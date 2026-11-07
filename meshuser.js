@@ -3978,15 +3978,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         var otplib = null;
                         try { otplib = require('otplib'); } catch (ex) { }
                         if (otplib == null) { break; }
-                        const verified = require('otplib').verifySync({ 
-                            epochTolerance: 60, 
-                            token: command.token, 
-                            secret: command.secret,
-                            guardrails: otplib.createGuardrails({
-                                MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
-                            })
-                        });
-                        if (verified.valid === true) {
+                        let verified = null;
+                        try {
+                            verified = require('otplib').verifySync({
+                                epochTolerance: 60,
+                                token: command.token,
+                                secret: command.secret,
+                                guardrails: otplib.createGuardrails({
+                                    MIN_SECRET_BYTES: 10, // https://github.com/yeojz/otplib/issues/671#issuecomment-4368647105
+                                })
+                            });
+                        } catch (ex) {
+                            // Malformed token (e.g. pasted Base32 secret) makes otplib throw TokenFormatError.
+                            // Swallow it and report failure instead of crashing the whole MeshCentral service.
+                            parent.parent.debug('user', 'otpauth-setup: Invalid OTP token, not enabling 2FA: ' + ex);
+                        }
+                        if ((verified != null) && (verified.valid === true)) {
                             // Token is valid, activate 2-step login on this account.
                             user.otpsecret = command.secret;
                             parent.db.SetUser(user);
