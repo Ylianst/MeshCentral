@@ -3710,8 +3710,6 @@ function onTunnelData(data)
                 // Look for a TSID
                 var tsid = null;
                 if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
-                require('MeshAgent')._tsid = tsid;
-                this.tsid = tsid;
 
                 // If MacOS, Wake up device with caffeinate
                 if(process.platform == 'darwin'){
@@ -3727,7 +3725,21 @@ function onTunnelData(data)
                     } catch(err) { }
                 }
                 // Remote desktop using native pipes
-                this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
+                var kvm = mesh.getRemoteDesktopStream(tsid);
+                if (!kvm.hasOwnProperty('connectionCount')) {
+                    try { kvm.tsid = (tsid != null) ? tsid : require('user-sessions').consoleUid(); } catch (ex) { kvm.tsid = null; }
+                } else if ((tsid != null) && (kvm.tsid !== tsid)) {
+                    // The agent runs one remote desktop at a time and every viewer joins it, so turn away a viewer that picked another session
+                    var kvmusers = [];
+                    for (var i in kvm.tunnels) { if ((kvm.tunnels[i].httprequest != null) && (kvmusers.indexOf(kvm.tunnels[i].httprequest.username) == -1)) { kvmusers.push(kvm.tunnels[i].httprequest.username); } }
+                    this.httprequest.protocol = 999999;
+                    this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Remote desktop is in use on another session by " + kvmusers.join(', '), msgid: 15, msgargs: [kvmusers.join(', ')] }));
+                    this.end();
+                    return;
+                }
+                require('MeshAgent')._tsid = tsid;
+                this.tsid = tsid;
+                this.httprequest.desktop = { state: 0, kvm: kvm, tunnel: this };
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                 this.desktop = this.httprequest.desktop;
 

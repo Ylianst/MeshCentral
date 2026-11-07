@@ -559,6 +559,14 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             try { json = JSON.parse(data); } catch (ex) { }
             if (json == null) return;
             if ((json.type == 'options') && (obj.protocolOptions == null)) { obj.protocolOptions = json; }
+            else if ((json.type == 'options') && (typeof json.tsid == 'number') && (json.tsid !== obj.protocolOptions.tsid)) {
+                // Every viewer gets the session the first viewer picked, so turn away a viewer that picked another one
+                var names = [];
+                for (var i in obj.viewers) { if ((obj.viewers[i] != viewer) && (obj.viewers[i].user != null) && (names.indexOf(obj.viewers[i].user.name) == -1)) { names.push(obj.viewers[i].user.name); } }
+                try { viewer.ws.send(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Remote desktop is in use on another session by " + names.join(', '), msgid: 15, msgargs: [names.join(', ')] })); } catch (ex) { }
+                viewer.close();
+                return;
+            }
             if (json.ctrlChannel == '102938') {
                 if ((json.type == 'lock') && (viewer.viewOnly == false)) { obj.sendToAgent('{"ctrlChannel":"102938","type":"lock"}'); } // Account lock support
                 if ((json.type == 'autolock') && (viewer.viewOnly == false) && (typeof json.value == 'boolean')) { obj.sendToAgent('{"ctrlChannel":"102938","type":"autolock","value":' + json.value + '}'); } // Lock on disconnect
