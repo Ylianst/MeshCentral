@@ -2166,38 +2166,6 @@ function CreateMeshCentralServer(config, args) {
 
                     // Start collecting server stats every 5 minutes
                     obj.trafficStats = obj.webserver.getTrafficStats();
-
-                    // On Windows, os.loadavg() always returns [0, 0, 0] because
-                    // Node.js does not expose system load averages on Windows.
-                    // Sample per-core idle time from os.cpus() frequently and
-                    // derive an equivalent "busy cores" load average for the 1,
-                    // 5 and 15 minute windows so the Server Stats "CPU Load"
-                    // stat is meaningful on Windows (same shape as Linux).
-                    if (process.platform === 'win32') {
-                        obj.cpuLoadHistory = [];
-                        obj.cpuLoadPrevIdle = null;
-                        obj.cpuLoadPrevTime = null;
-                        if (obj.cpuLoadSampler == null) {
-                            obj.cpuLoadSampler = setInterval(function () {
-                                try {
-                                    var os = require('os');
-                                    var now = Date.now();
-                                    var cores = os.cpus();
-                                    var idle = 0;
-                                    for (var i = 0; i < cores.length; i++) { idle += (cores[i].times.idle || 0); }
-                                    if ((obj.cpuLoadPrevIdle != null) && (now - obj.cpuLoadPrevTime > 0)) {
-                                        var busy = (cores.length - ((idle - obj.cpuLoadPrevIdle) / (now - obj.cpuLoadPrevTime)));
-                                        obj.cpuLoadHistory.push({ t: now, load: Math.round(busy * 1000) / 1000 });
-                                    }
-                                    obj.cpuLoadPrevIdle = idle;
-                                    obj.cpuLoadPrevTime = now;
-                                    // Keep only the last 15 minutes of samples.
-                                    var cutoff = now - (15 * 60 * 1000);
-                                    while ((obj.cpuLoadHistory.length > 0) && (obj.cpuLoadHistory[0].t < cutoff)) { obj.cpuLoadHistory.shift(); }
-                                } catch (ex) { }
-                            }, 1000);
-                        }
-                    }
                     setInterval(function () {
                         obj.serverStatsCounter++;
                         var hours = 720; // Start with all events lasting 30 days.
@@ -2226,25 +2194,7 @@ function CreateMeshCentralServer(config, args) {
                             },
                             traffic: trafficStats.delta
                         };
-                        try {
-                            if ((process.platform === 'win32') && (obj.cpuLoadHistory != null)) {
-                                // Windows has no real load average; derive the 1,
-                                // 5 and 15 minute "busy cores" averages from the
-                                // sampled per-core idle time (see sampler above).
-                                var now = Date.now();
-                                var sum1 = 0, count1 = 0, sum5 = 0, count5 = 0, sum15 = 0, count15 = 0;
-                                for (var i = obj.cpuLoadHistory.length - 1; i >= 0; i--) {
-                                    var s = obj.cpuLoadHistory[i];
-                                    var age = now - s.t;
-                                    if (age < 60000) { sum1 += s.load; count1++; }
-                                    if (age < 300000) { sum5 += s.load; count5++; }
-                                    if (age < 900000) { sum15 += s.load; count15++; }
-                                }
-                                data.cpu = [count1 ? Math.round((sum1 / count1) * 1000) / 1000 : 0, count5 ? Math.round((sum5 / count5) * 1000) / 1000 : 0, count15 ? Math.round((sum15 / count15) * 1000) / 1000 : 0];
-                            } else {
-                                data.cpu = require('os').loadavg();
-                            }
-                        } catch (ex) { }
+                        try { data.cpu = require('os').loadavg(); } catch (ex) { }
                         if (obj.mpsserver != null) {
                             data.conn.amc = 0;
                             for (var i in obj.mpsserver.ciraConnections) { data.conn.amc += obj.mpsserver.ciraConnections[i].length; }
