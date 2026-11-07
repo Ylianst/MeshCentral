@@ -972,6 +972,27 @@ sha = require('SHA256Stream');
 mesh = require('MeshAgent');
 childProcess = require('child_process');
 
+// monitor-info stops looking for a display 3 minutes after it loads, so a desktop that comes up later (a slow display
+// manager, a GUI started by hand) never got the Desktop tab until the agent restarted. Its check runs shell commands,
+// so only repeat it for a few minutes after the X or Wayland sockets change.
+var kvmSupportTimer = null, kvmSupportSockets = null, kvmSupportTries = 0;
+function kvmSupportCheck() {
+    if ((meshCoreObj.caps & 1) != 0) { clearInterval(kvmSupportTimer); kvmSupportTimer = null; return; }
+    var mi = require('monitor-info');
+    if ((typeof mi._kvmcheck != 'function') || (mi._xtries <= 18)) return; // Its own retries are still running
+    var sockets = [];
+    try { fs.readdirSync('/tmp/.X11-unix').forEach(function (f) { sockets.push('/tmp/.X11-unix/' + f); }); } catch (ex) { }
+    try {
+        fs.readdirSync('/run/user').forEach(function (uid) {
+            try { fs.readdirSync('/run/user/' + uid).forEach(function (f) { if (f.startsWith('wayland-') && !f.endsWith('.lock')) { sockets.push('/run/user/' + uid + '/' + f); } }); } catch (ex) { }
+        });
+    } catch (ex) { }
+    // A socket left behind by a display server that is gone keeps its time, a new one gets a new time
+    var key = sockets.map(function (s) { try { return s + ' ' + fs.statSync(s).mtime; } catch (ex) { return s; } }).join(',');
+    if (key != kvmSupportSockets) { kvmSupportSockets = key; kvmSupportTries = 3; }
+    if ((sockets.length > 0) && (kvmSupportTries > 0)) { kvmSupportTries--; try { mi._kvmcheck(); } catch (ex) { } }
+}
+
 if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
     // Check if this computer supports a desktop
     try {
@@ -979,6 +1000,8 @@ if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
             meshCoreObj.caps |= 1; meshCoreObjChanged();
         } else if (process.platform == 'linux' || process.platform == 'freebsd') {
             require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
+            kvmSupportTimer = setInterval(kvmSupportCheck, 60000);
+            kvmSupportTimer.metadata = 'meshcore (KVM Support Timer)';
         }
     } catch (ex) { }
 }
