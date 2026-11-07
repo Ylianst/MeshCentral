@@ -16905,13 +16905,15 @@
         function account_createLoginToken() {
             if (xxdialogMode) return false;
             var y = '', x = "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account." + '<br /><br />';
-            var options = { 0: "Unlimited", 1: "1 minute", 5: "5 minutes", 10: "10 minutes", 15: "15 minutes", 30: "30 minutes", 45: "45 minutes", 60: "60 minutes", 120: "2 hours", 240: "4 hours", 480: "8 hours", 720: "12 hours", 960: "16 hours", 1440: "24 hours", 2880: "2 days", 5760: "4 days", 10080: "7 days" }
+            var options = { 0: "Unlimited", 1: "1 minute", 5: "5 minutes", 10: "10 minutes", 15: "15 minutes", 30: "30 minutes", 45: "45 minutes", 60: "60 minutes", 120: "2 hours", 240: "4 hours", 480: "8 hours", 720: "12 hours", 960: "16 hours", 1440: "24 hours", 2880: "2 days", 5760: "4 days", 10080: "7 days", 43200: "1 month", 86400: "2 months", 525600: "1 year", 1051200: "2 years" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += '<div class="form-floating mb-3">';
             x += '<input type=text class="boxsize form-control" id=d2tokenName maxlength="100" placeholder="' + "Token Name" + '" onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate()>';
             x += '<label for=d2tokenName>' + "Token Name" + '</label>';
             x += '</div>';
-            x += addHtmlFormFloating("Expire Time", '<select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>')
+            x += addHtmlFormFloating("Expire Time", '<select class="boxsize form-select" id=d2tokenExpire>' + y + '</select>');
+            x += '<div class="form-check mb-3"><input class="form-check-input" type="checkbox" id=d2tokenCustomExpire onchange="account_createLoginTokenToggleCustom();account_createLoginTokenValidate()"><label class="form-check-label" for=d2tokenCustomExpire>' + "Custom expiration" + '</label></div>';
+            x += '<div id=d2tokenCustomExpireDiv style="display:none">' + addHtmlFormFloating("Custom Minutes", '<input type="number" min="1" class="boxsize form-control" id=d2tokenCustomMinutes value="60" onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate()>') + '</div>';
 
             setModalContent('xxAddAgent', "Create Login Token", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', account_createLoginTokenEx);
@@ -16921,11 +16923,26 @@
         }
 
         function account_createLoginTokenValidate() {
-            QE('idx_dlgOkButton', Q('d2tokenName').value.length > 0);
+            var nameValid = Q('d2tokenName').value.length > 0;
+            var customChecked = Q('d2tokenCustomExpire').checked;
+            var expireValid = true;
+            if (customChecked) { expireValid = parseInt(Q('d2tokenCustomMinutes').value) > 0; }
+            QE('idx_dlgOkButton', nameValid && expireValid);
+        }
+
+        function account_createLoginTokenToggleCustom() {
+            var d = Q('d2tokenCustomExpireDiv');
+            var dd = Q('d2tokenExpire');
+            var checked = Q('d2tokenCustomExpire').checked;
+            if (d) { d.style.display = checked ? 'block' : 'none'; }
+            if (dd) { dd.disabled = checked; }
         }
 
         function account_createLoginTokenEx() {
-            meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: parseInt(Q('d2tokenExpire').value) });
+            var expire = 0;
+            if (Q('d2tokenCustomExpire').checked) { expire = parseInt(Q('d2tokenCustomMinutes').value); }
+            else { expire = parseInt(Q('d2tokenExpire').value); }
+            meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: expire });
             return false;
         }
 
