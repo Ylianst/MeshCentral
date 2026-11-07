@@ -30,6 +30,20 @@ function getRegistryHiveEnum(hiveName) {
     }
 }
 
+function getRegistryValueName(valueName) {
+    return (valueName == null) || (valueName === '') || (valueName === '(Default)') ? '' : valueName;
+}
+
+function getRegistryValueData(registry, hive, path, valueName) {
+    var normalizedName = getRegistryValueName(valueName);
+    var valueData = registry.QueryKey(hive, path, normalizedName);
+    if (normalizedName === '' && (valueData != null) && (typeof valueData == 'object')) {
+        if (Object.prototype.hasOwnProperty.call(valueData, 'default')) { return valueData.default; }
+        if (Object.prototype.hasOwnProperty.call(valueData, 'subkeys') || Object.prototype.hasOwnProperty.call(valueData, 'values')) { return ''; }
+    }
+    return valueData;
+}
+
 function guessRegistryValueType(value) {
     if (value == null) { return 'REG_NONE'; }
     if (typeof value == 'number') { return ((Math.floor(value) === value) && (value >= 0) && (value <= 0xFFFFFFFF)) ? 'REG_DWORD' : 'REG_QWORD'; }
@@ -92,6 +106,7 @@ function formatRegistryValue(value, valueType, commandValue) {
 }
 
 function getRegistryValueCommandInfo(hiveName, path, valueName) {
+    valueName = getRegistryValueName(valueName);
     var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
     var args = ['query', fullPath];
     if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
@@ -101,7 +116,7 @@ function getRegistryValueCommandInfo(hiveName, path, valueName) {
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i].trim();
         if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
-        var match = line.match(/\b(REG_[A-Z0-9_]+)\b/);
+        var match = line.match(/\b(REG_[A-Z0-9_]+)(?:\s+(.*))?$/);
         if (match != null) { return { type: match[1], value: match[2] || '' }; }
     }
     return null;
@@ -124,21 +139,31 @@ function listRegistryKey(hiveName, path) {
     if (result == null) { return { hive: hiveName, path: path, subkeys: [], values: [] }; }
 
     var response = { hive: hiveName, path: path, subkeys: (result.subkeys || []), values: [] };
-    if (result.values != null) {
-        for (var i = 0; i < result.values.length; i++) {
-            var valueName = result.values[i], valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
-            try { valueData = registry.QueryKey(hive, path, valueName); } catch (ex) { valueData = null; }
-            valueType = getRegistryValueType(hiveName, path, valueName, valueData);
-            var commandValue = '';
-            if ((valueType == 'REG_MULTI_SZ') || (valueType == 'REG_QWORD')) {
-                try {
-                    var commandInfo = getRegistryValueCommandInfo(hiveName, path, valueName);
-                    if (commandInfo != null) { commandValue = commandInfo.value; }
-                } catch (ex) { }
-            }
-            valueText = formatRegistryValue(valueData, valueType, commandValue);
-            response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
+    var valueNames = [], valueNameSet = Object.create(null);
+    for (var i = 0; i < (result.values || []).length; i++) {
+        var listedValueName = getRegistryValueName(result.values[i]);
+        if (valueNameSet[listedValueName] == null) {
+            valueNameSet[listedValueName] = true;
+            valueNames.push(listedValueName);
         }
+    }
+    if (valueNameSet[''] == null) {
+        valueNameSet[''] = true;
+        valueNames.push('');
+    }
+    for (var i = 0; i < valueNames.length; i++) {
+        var valueName = getRegistryValueName(valueNames[i]), valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
+        try { valueData = getRegistryValueData(registry, hive, path, valueName); } catch (ex) { valueData = null; }
+        valueType = getRegistryValueType(hiveName, path, valueName, valueData);
+        var commandValue = '';
+        if ((valueType == 'REG_MULTI_SZ') || (valueType == 'REG_QWORD')) {
+            try {
+                var commandInfo = getRegistryValueCommandInfo(hiveName, path, valueName);
+                if (commandInfo != null) { commandValue = commandInfo.value; }
+            } catch (ex) { }
+        }
+        valueText = formatRegistryValue(valueData, valueType, commandValue);
+        response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
     }
     return response;
 }
@@ -216,7 +241,8 @@ function deleteRegistryEntries(items) {
             runRegistryCommand(['delete', getRegistryFullPath(item.hive, ((item.path != null) && (item.path !== '')) ? (item.path + '\\' + item.name) : item.name), '/f']);
         } else if (item.kind == 'value') {
             var args = ['delete', getRegistryFullPath(item.hive, item.path || '')];
-            if ((item.name == null) || (item.name === '')) { args.push('/ve'); } else { args.push('/v', item.name); }
+            var valueName = getRegistryValueName(item.name);
+            if (valueName === '') { args.push('/ve'); } else { args.push('/v', valueName); }
             args.push('/f');
             runRegistryCommand(args);
         } else {
@@ -226,6 +252,7 @@ function deleteRegistryEntries(items) {
 }
 
 function setRegistryValue(hiveName, path, valueName, valueType, valueData) {
+    valueName = getRegistryValueName(valueName);
     if ((valueType == null) || (valueType === '')) { throw ('Registry value type is required.'); }
     valueType = valueType.toUpperCase();
     if ((valueType == 'REG_DWORD') || (valueType == 'REG_QWORD')) {
@@ -264,7 +291,7 @@ function renameRegistryEntry(item, newName) {
         if ((item.name == null) || (item.name === '')) { throw ('The default registry value cannot be renamed in this increment.'); }
         var hive = getRegistryHiveEnum(item.hive), valueData = null, valueType = 'REG_UNKNOWN';
         if (hive == null) { throw ('Unknown registry hive: ' + item.hive); }
-        try { valueData = require('win-registry').QueryKey(hive, item.path || '', item.name); } catch (ex) { valueData = null; }
+        try { valueData = getRegistryValueData(require('win-registry'), hive, item.path || '', item.name); } catch (ex) { valueData = null; }
         valueType = getRegistryValueType(item.hive, item.path || '', item.name, valueData);
         setRegistryValue(item.hive, item.path || '', newName, valueType, valueData);
         deleteRegistryEntries([{ kind: 'value', hive: item.hive, path: item.path || '', name: item.name }]);
