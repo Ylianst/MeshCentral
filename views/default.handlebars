@@ -11878,9 +11878,19 @@
             return item.type || "Value";
         }
 
+        function p9compareRegistryNames(a, b) {
+            var an = String(a || '').toLowerCase(), bn = String(b || '').toLowerCase();
+            if ((an.length > 0) && (bn.length > 0)) {
+                var ar = (an.charAt(0) == '_') ? 0 : ((an.charCodeAt(0) >= 48) && (an.charCodeAt(0) <= 57) ? 1 : 2);
+                var br = (bn.charAt(0) == '_') ? 0 : ((bn.charCodeAt(0) >= 48) && (bn.charCodeAt(0) <= 57) ? 1 : 2);
+                if (ar != br) { return ar - br; }
+            }
+            return (an < bn) ? -1 : ((an > bn) ? 1 : 0);
+        }
+
         function p9canEditValue(item) {
             if ((item == null) || (item.kind != 'value')) return false;
-            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
+            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_MULTI_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
         }
 
         function p9canDeleteSelection(items) {
@@ -11894,7 +11904,7 @@
         }
 
         function p9getWritableRegistryTypes() {
-            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_DWORD', 'REG_QWORD'];
+            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_QWORD'];
         }
 
         function p9renderRegistryTypeOptions(selectedType) {
@@ -12055,11 +12065,11 @@
         function p9editRegistryValue() {
             var item = p9getSelectedItem();
             if ((item == null) || (item.kind != 'value')) return false;
-            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD."); return false; }
+            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_MULTI_SZ, REG_DWORD and REG_QWORD."); return false; }
             var x = '<div style=margin-bottom:8px><b>' + "Path" + ':</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
             x += '<div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
             x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Type" + '</b></div><select id=p9registryValueTypeEditInput onchange=p9registryValueEditCheck() style=width:100%>' + p9renderRegistryTypeOptions(item.type) + '</select>';
-            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
+            if (p9canEditValue(item) == false) { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
             x += '<textarea id=p9registryValueEditInput onkeyup=p9registryValueEditCheck(event) style=width:100%;height:140px;resize:none>' + EscapeHtml(item.value || '') + '</textarea>';
             setDialogMode(2, "Edit Registry Value", 3, p9editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
             focusTextBox('p9registryValueEditInput');
@@ -12131,7 +12141,8 @@
         }
 
         function p9renderRegistryRow(kind, name, type, value, funcName, encodedName, rawName, hive, path) {
-            var item = { kind: kind, hive: hive, path: path, rawName: (rawName || name), displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, rawName || name) };
+            var itemRawName = (rawName == null) ? name : rawName;
+            var item = { kind: kind, hive: hive, path: path, rawName: itemRawName, displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, itemRawName) };
             var rowIndex = p9registerRenderedItem(item);
             var checked = (registryCheckedIds[item.id] != null) ? ' checked=checked' : '';
             var icon = ((kind == 'value') ? '<img src="images/key12.png" style="float:left;margin-top:2px;margin-right:4px" width=12 height=12 />' : '<div class=fileIcon2' + ((funcName != null) ? (' onclick=' + funcName + '("' + encodedName + '")') : '') + '></div>');
@@ -12155,9 +12166,13 @@
             if (data.action == 'listroots') {
                 registryRoots = data.roots || [];
                 var x = '', itemCount = 0;
-                for (var i = 0; i < registryRoots.length; i++) {
+                var sortedRoots = registryRoots.slice().sort(function (a, b) {
+                    return p9compareRegistryNames(a, b);
+                });
+                registryRoots = sortedRoots;
+                for (var i = 0; i < sortedRoots.length; i++) {
                     if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                    x += p9renderRegistryRow('hive', registryRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
+                    x += p9renderRegistryRow('hive', sortedRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(sortedRoots[i]), '', sortedRoots[i], '');
                     itemCount++;
                 }
                 if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
@@ -12172,16 +12187,22 @@
                 p9setCurrentPath(p9getDisplayPath(registryCurrentHive, registryCurrentPath));
                 var x = '', itemCount = 0;
                 if ((data.subkeys != null) && (data.subkeys.length > 0)) {
-                    for (var i = 0; i < data.subkeys.length; i++) {
+                    var sortedSubkeys = data.subkeys.slice().sort(function (a, b) {
+                        return p9compareRegistryNames(a, b);
+                    });
+                    for (var i = 0; i < sortedSubkeys.length; i++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('key', data.subkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(data.subkeys[i]), data.subkeys[i], registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('key', sortedSubkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(sortedSubkeys[i]), sortedSubkeys[i], registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
                 if ((data.values != null) && (data.values.length > 0)) {
-                    for (var j = 0; j < data.values.length; j++) {
+                    var sortedValues = data.values.slice().sort(function (a, b) {
+                        return p9compareRegistryNames(a.name, b.name);
+                    });
+                    for (var j = 0; j < sortedValues.length; j++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('value', data.values[j].name, data.values[j].type, data.values[j].value, null, null, data.values[j].rawname, registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('value', sortedValues[j].name, sortedValues[j].type, sortedValues[j].value, null, null, sortedValues[j].rawname, registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
