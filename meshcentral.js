@@ -1484,10 +1484,6 @@ function CreateMeshCentralServer(config, args) {
     obj.StartEx1b = async function () {
         var i;
 
-        // Check NodeJS version. MeshCentral requires Node v22.12.0 or above.
-        const NodeJSVer = Number(process.version.match(/^v(\d+\.\d+)/)[1]);
-        if (NodeJSVer < 22.12) { console.log("MeshCentral requires Node v22.12.0 or above, your current version is " + process.version + "."); process.exit(); }
-
         // Setup certificate operations
         obj.certificateOperations = require('./certoperations.js').CertificateOperations(obj);
 
@@ -4465,8 +4461,8 @@ var meshserver = null;
 var childProcess = null;
 var previouslyInstalledModules = {};
 function mainStart() {
-    // Check the NodeJS is version 16 or better.
-    if (Number(process.version.match(/^v(\d+\.\d+)/)[1]) < 16) { console.log("MeshCentral requires Node v16 or above, current version is " + process.version + "."); return; }
+    // Check the NodeJS is version 22.21.1 or better.
+    if (!common.versionAtLeast(process.versions.node, '22.21.1')) { console.log("MeshCentral requires Node v22.21.1 or above, current version is " + process.version + "."); return; }
 
     // If running within the node_modules folder, move working directory to the parent of the node_modules folder.
     if (__dirname.endsWith('\\node_modules\\meshcentral') || __dirname.endsWith('/node_modules/meshcentral')) { process.chdir(require('path').join(__dirname, '..', '..')); }

@@ -632,3 +632,10 @@ module.exports.replacePlaceholders = function (template, values) {
     }
   });
 }
+
+// Check number is at least above
+module.exports.versionAtLeast = function (cur, min) {
+    const a = cur.split('.').map(Number), b = min.split('.').map(Number);
+    for (let i = 0; i < 3; i++) { const x = a[i] || 0, y = b[i] || 0; if (x !== y) return x > y; }
+    return true;
+}
