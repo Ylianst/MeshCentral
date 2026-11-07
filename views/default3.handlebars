@@ -14045,7 +14045,8 @@
         }
 
         function p9renderRegistryRow(kind, name, type, value, funcName, encodedName, rawName, hive, path) {
-            var item = { kind: kind, hive: hive, path: path, rawName: (rawName || name), displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, rawName || name) };
+            var itemRawName = (rawName == null) ? name : rawName;
+            var item = { kind: kind, hive: hive, path: path, rawName: itemRawName, displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, itemRawName) };
             var rowIndex = p9registerRenderedItem(item);
             var checked = (registryCheckedIds[item.id] != null) ? ' checked=checked' : '';
             var icon = ((kind == 'value') ? '<img src="images/key12.png" style="float:left;margin-top:2px;margin-right:4px" width=12 height=12 />' : '<div class=fileIcon2' + ((funcName != null) ? (' onclick=' + funcName + '("' + encodedName + '")') : '') + '></div>');
