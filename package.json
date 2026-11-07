@@ -40,7 +40,7 @@
     "@seald-io/nedb": "4.1.2",
     "@zip.js/zip.js": "2.8.26",
     "cbor": "5.2.0",
-    "compression": "1.8.1",
+    "compression": "1.8.2",
     "cookie-session": "2.1.1",
     "express": "4.22.2",
     "express-handlebars": "7.1.3",
