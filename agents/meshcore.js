@@ -297,6 +297,8 @@ function getCoreTranslation() {
     if (global.coretranslations != null) {
         try {
             var lang = require('util-language').current;
+            lang = lang.toLowerCase();
+            lang = lang.replace('_', '-');
             if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
             if (coretranslations[lang] == null) { lang = 'en'; }
             if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
