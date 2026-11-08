@@ -173,7 +173,11 @@ function getRegistryFullPath(hiveName, path) {
 }
 
 function getRegistryExecutableCandidates() {
-    return ['C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
+    return [
+        (process.env.SystemRoot || process.env.windir || 'C:\\Windows') + '\\Sysnative\\reg.exe',
+        (process.env.SystemRoot || process.env.windir || 'C:\\Windows') + '\\System32\\reg.exe',
+        (process.env.SystemDrive || 'C:') + '\\WINNT\\System32\\reg.exe'
+    ];
 }
 
 // MeshAgent builds a Windows command line from this array, so arguments containing
