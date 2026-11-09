@@ -525,6 +525,12 @@ function handleMessage(data, ctx) {
     context = ctx;
     if (typeof data.sessionid != 'string') return;
     if (data.sub == 'start') {
+        // The server checks this too: remote control and files rights, not view only. Jobs are downloaded with the files feature.
+        var rights = data.rights;
+        if ((rights !== 0xFFFFFFFF) && ((typeof rights != 'number') || ((rights & 8) == 0) || ((rights & 0x500) != 0))) {
+            context.send({ action: 'msg', type: 'remoteprint', sub: 'error', sessionid: data.sessionid, msg: 'Remote printing needs remote control and files rights on this device, without view only.' });
+            return;
+        }
         var isNewSession = (sessions[data.sessionid] == null);
         sessions[data.sessionid] = { time: Date.now(), userid: data.userid, username: data.username, sessionid: data.sessionid, remoteaddr: data.remoteaddr };
         if (sessionTimer == null) { sessionTimer = setInterval(checkSessions, 30000); }

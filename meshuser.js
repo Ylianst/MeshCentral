@@ -1111,6 +1111,13 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // If a response is needed, set a callback function
                     var func = null;
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
+
+                    // Remote printing: routeCommandToNode() only stops a command that fails the rights checks when it has a callback, so always
+                    // give it one. It's only called on failure, tell the browser so it stops asking.
+                    if ((command.type == 'remoteprint') && (func == null)) {
+                        var rpNodeId = command.nodeid;
+                        func = function (r) { if (r === false) { try { ws.send(JSON.stringify({ action: 'msg', type: 'remoteprint', sub: 'error', nodeid: rpNodeId, msg: "Remote printing needs remote control and files rights on this device, without view only." })); } catch (ex) { } } };
+                    }
 					
                     // Route this command to a target node
                     routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
