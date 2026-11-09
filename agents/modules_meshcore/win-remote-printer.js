@@ -356,20 +356,21 @@ function install(name, portName, port, driver, ourPorts, onStep, func) {
 }
 
 // Remove the printers on the given ports, then the ports. Only the exact port names: another agent on the same device can
-// have a printer on another MeshCentralPrint port. func()
+// have a printer on another MeshCentralPrint port. func(err), err when a printer couldn't be removed.
 function uninstall(portNames, func) {
+    var error = null;
     try {
         init();
         var printers = getPrinters();
-        for (var i in printers) { if ((printers[i].name != null) && (portNames.indexOf(printers[i].port) >= 0)) { try { deletePrinter(printers[i].name); } catch (ex) { } } }
-    } catch (ex) { }
+        for (var i in printers) { if ((printers[i].name != null) && (portNames.indexOf(printers[i].port) >= 0)) { try { deletePrinter(printers[i].name); } catch (ex) { error = ex.message; } } }
+    } catch (ex) { error = ex.message; }
     // The port can only be deleted once no printer uses it
     setTimeout(function () {
         try {
             var ports = getPorts();
             for (var i in ports) { if (portNames.indexOf(ports[i]) >= 0) { try { deleteTcpPort(ports[i]); } catch (ex) { } } }
         } catch (ex) { }
-        func();
+        func(error);
     }, 1000);
 }
 

@@ -136,10 +136,31 @@ var linuxPpd = [
 
 function isSupported() { return (process.platform == 'win32') || ((process.platform == 'linux') && (getLpadmin() != null)); }
 
-function getLpadmin() {
-    var paths = ['/usr/sbin/lpadmin', '/usr/bin/lpadmin', '/sbin/lpadmin'];
+function findCupsCommand(name) {
+    var paths = ['/usr/sbin/' + name, '/usr/bin/' + name, '/sbin/' + name, '/bin/' + name];
     for (var i in paths) { if (fs.existsSync(paths[i])) return paths[i]; }
     return null;
+}
+function getLpadmin() { return findCupsCommand('lpadmin'); }
+
+// lpstat runs in English, its output is read
+var LPSTAT_OPTIONS = { env: { LANG: 'C', LC_ALL: 'C', PATH: '/usr/sbin:/usr/bin:/sbin:/bin' } };
+
+// Device URI of a CUPS queue, func(uri), null if there's no such queue, or CUPS isn't running
+function getQueueUri(name, func) {
+    var lpstat = findCupsCommand('lpstat');
+    if (lpstat == null) { func(null); return; }
+    runCommand(lpstat, ['lpstat', '-v', name], function (code, output) {
+        var m = (code == 0) ? /^device for [^:]+:\s*(\S+)/m.exec(output) : null;
+        func((m != null) ? m[1] : null);
+    }, LPSTAT_OPTIONS);
+}
+
+// func(true) if the CUPS scheduler is running. lpstat says the same about a missing queue when it isn't.
+function isCupsRunning(func) {
+    var lpstat = findCupsCommand('lpstat');
+    if (lpstat == null) { func(false); return; }
+    runCommand(lpstat, ['lpstat', '-r'], function (code, output) { func((code == 0) && (output.trim() == 'scheduler is running')); }, LPSTAT_OPTIONS);
 }
 
 // Make the printer name safe for the platform
@@ -189,8 +210,8 @@ function getOutput(stdout, stderr) {
 }
 
 // Run a command without a shell, callback(exitCode, output)
-function runCommand(path, args, func) {
-    watchChild(require('child_process').execFile(path, args), func);
+function runCommand(path, args, func, options) {
+    watchChild((options != null) ? require('child_process').execFile(path, args, options) : require('child_process').execFile(path, args), func);
 }
 
 function readMarker() { try { return JSON.parse(fs.readFileSync(markerFile).toString()); } catch (ex) { return null; } }
@@ -214,13 +235,18 @@ function installPrinter(name, port, func) {
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
         if (lpadmin == null) { func('CUPS is not installed (lpadmin not found)'); return; }
-        try { fs.writeFileSync(ppdFile, linuxPpd); } catch (ex) { func('Unable to write PPD file'); return; }
-        // If the printer name changed, remove the old queue first
+        var uri = 'socket://127.0.0.1:' + port;
         var marker = readMarker();
-        var removeOld = function (next) { if ((marker != null) && (marker.name != null) && (marker.name != name)) { runCommand(lpadmin, ['lpadmin', '-x', marker.name], function () { next(); }); } else { next(); } };
-        removeOld(function () {
-            runCommand(lpadmin, ['lpadmin', '-p', name, '-E', '-v', 'socket://127.0.0.1:' + port, '-P', ppdFile, '-D', 'MeshCentral Remote Printer', '-o', 'printer-is-shared=false'], function (code, output) {
-                func((code == 0) ? null : (output || ('lpadmin error ' + code)));
+        // "lpadmin -p" changes an existing queue, so don't take over one that isn't ours
+        getQueueUri(name, function (existingUri) {
+            if ((existingUri != null) && (existingUri != uri) && ((marker == null) || (marker.name != name))) { func('A printer with this name already exists: ' + name); return; }
+            try { fs.writeFileSync(ppdFile, linuxPpd); } catch (ex) { func('Unable to write PPD file'); return; }
+            // If the printer name changed, remove the old queue first
+            var removeOld = function (next) { if ((marker != null) && (marker.name != null) && (marker.name != name)) { runCommand(lpadmin, ['lpadmin', '-x', marker.name], function () { next(); }); } else { next(); } };
+            removeOld(function () {
+                runCommand(lpadmin, ['lpadmin', '-p', name, '-E', '-v', uri, '-P', ppdFile, '-D', 'MeshCentral Remote Printer', '-o', 'printer-is-shared=false'], function (code, output) {
+                    func((code == 0) ? null : (output || ('lpadmin error ' + code)));
+                });
             });
         });
     } else {
@@ -228,19 +254,30 @@ function installPrinter(name, port, func) {
     }
 }
 
-// Remove the printer installed by this module, on port or the port in the marker, callback()
+// Remove the printer installed by this module, on port or the port in the marker, func(err). The marker is only deleted
+// once the printer is gone, so the next agent start tries again when the removal failed.
 function uninstallPrinter(port, func) {
     var marker = readMarker();
     if (process.platform == 'win32') {
         try {
-            require('win-remote-printer').uninstall(getOurPortNames(port), function () { deleteMarker(); func(); });
-        } catch (ex) { log('Windows print spooler API: ' + ex); deleteMarker(); func(); }
+            require('win-remote-printer').uninstall(getOurPortNames(port), function (err) { if (err == null) { deleteMarker(); } func(err); });
+        } catch (ex) { func('Windows print spooler API: ' + ex); }
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
-        if ((lpadmin == null) || (marker == null) || (marker.name == null)) { deleteMarker(); func(); return; }
-        runCommand(lpadmin, ['lpadmin', '-x', marker.name], function () { try { fs.unlinkSync(ppdFile); } catch (ex) { } deleteMarker(); func(); });
+        if ((lpadmin == null) || (marker == null) || (marker.name == null)) { deleteMarker(); func(null); return; }
+        runCommand(lpadmin, ['lpadmin', '-x', marker.name], function (code, output) {
+            if (code == 0) { try { fs.unlinkSync(ppdFile); } catch (ex) { } deleteMarker(); func(null); return; }
+            var failed = 'lpadmin -x ' + marker.name + ' failed: ' + (output || ('exit code ' + code));
+            isCupsRunning(function (running) {
+                if (running == false) { func(failed + ', CUPS is not running'); return; }
+                getQueueUri(marker.name, function (uri) {
+                    if (uri == null) { deleteMarker(); func(null); return; } // Already gone
+                    func(failed);
+                });
+            });
+        });
     } else {
-        deleteMarker(); func();
+        deleteMarker(); func(null);
     }
 }
 
@@ -458,8 +495,8 @@ function stop(func) {
         current = null;
         closeListenerLater(); // Starting again soon then doesn't need to bind the port again
         log('Stopping, removing the printer');
-        uninstallPrinter(port, function () {
-            log('Printer removed');
+        uninstallPrinter(port, function (err) {
+            if (err != null) { log('Unable to remove the printer, trying again when the agent starts: ' + err); } else { log('Printer removed'); }
             cleanJobs(true);
             if (func) { try { func(); } catch (ex) { } }
             done();
