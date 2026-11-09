@@ -32,7 +32,7 @@ limitations under the License.
 
 var fs = require('fs');
 
-var PORT_PREFIX = 'MeshCentralPrint';               // Windows printer port name prefix, used to find our printers
+var PORT_PREFIX = 'MeshCentralPrint';               // Windows printer port names are MeshCentralPrint_<port>
 var DEFAULT_PRINTER_NAME = 'MeshCentral Printer';
 var DEFAULT_TCP_PORT = 35500;
 var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
@@ -193,11 +193,19 @@ function readMarker() { try { return JSON.parse(fs.readFileSync(markerFile).toSt
 function writeMarker(m) { try { fs.writeFileSync(markerFile, JSON.stringify(m)); } catch (ex) { } }
 function deleteMarker() { try { fs.unlinkSync(markerFile); } catch (ex) { } }
 
+// Windows port names of this agent: the one for port, and the one it used before, from the marker, if the port changed
+function getOurPortNames(port) {
+    var names = [], marker = readMarker();
+    if (port != null) { names.push(PORT_PREFIX + '_' + port); }
+    if ((marker != null) && (marker.port != null) && (marker.port != port)) { names.push(PORT_PREFIX + '_' + marker.port); }
+    return names;
+}
+
 // Install the printer, callback(err)
 function installPrinter(name, port, func) {
     if (process.platform == 'win32') {
         try {
-            require('win-remote-printer').install(name, PORT_PREFIX + '_' + port, port, 'Microsoft Print To PDF', PORT_PREFIX, function (step) { log('Install step: ' + step); }, function (err) { func(err); });
+            require('win-remote-printer').install(name, PORT_PREFIX + '_' + port, port, 'Microsoft Print To PDF', getOurPortNames(port), function (step) { log('Install step: ' + step); }, function (err) { func(err); });
         } catch (ex) { func('Windows print spooler API: ' + ex); }
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
@@ -216,12 +224,12 @@ function installPrinter(name, port, func) {
     }
 }
 
-// Remove all printers installed by this module, callback()
-function uninstallPrinter(func) {
+// Remove the printer installed by this module, on port or the port in the marker, callback()
+function uninstallPrinter(port, func) {
     var marker = readMarker();
     if (process.platform == 'win32') {
         try {
-            require('win-remote-printer').uninstall(PORT_PREFIX, function () { deleteMarker(); func(); });
+            require('win-remote-printer').uninstall(getOurPortNames(port), function () { deleteMarker(); func(); });
         } catch (ex) { log('Windows print spooler API: ' + ex); deleteMarker(); func(); }
     } else if (process.platform == 'linux') {
         var lpadmin = getLpadmin();
@@ -414,7 +422,7 @@ function start(options, onJob, func) {
                         log('Printer install failed: ' + err);
                         stopListener();
                         current = null;
-                        uninstallPrinter(function () { func(err); done(); });
+                        uninstallPrinter(port, function () { func(err); done(); });
                         return;
                     }
                     current = { name: name, port: port };
@@ -438,10 +446,11 @@ function stop(func) {
             done();
             return;
         }
+        var port = (current != null) ? current.port : null;
         stopListener();
         current = null;
         log('Stopping, removing the printer');
-        uninstallPrinter(function () {
+        uninstallPrinter(port, function () {
             log('Printer removed');
             cleanJobs(true);
             if (func) { try { func(); } catch (ex) { } }

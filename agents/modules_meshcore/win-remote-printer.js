@@ -281,8 +281,10 @@ function repairPdfDriver(func) {
     });
 }
 
-// Install the printer. onStep(text) reports each step as it starts, func(err)
-function install(name, portName, port, driver, portPrefix, onStep, func) {
+// Install the printer on portName, the port is added if needed. ourPorts lists the ports of this agent: portName and the one
+// it used before, if the port changed. Only printers on those ports are changed: another agent on the same device can have
+// a printer on another MeshCentralPrint port. onStep(text) reports each step as it starts, func(err)
+function install(name, portName, port, driver, ourPorts, onStep, func) {
     var step = '';
     var setStep = function (text) { step = text; try { onStep(text); } catch (ex) { } };
     var fail = function (err) { func(step + ': ' + ((err && err.message) ? err.message : String(err))); };
@@ -291,13 +293,13 @@ function install(name, portName, port, driver, portPrefix, onStep, func) {
         setStep('Checking the printer name');
         var printers = getPrinters();
         for (var i in printers) {
-            if ((printers[i].name != null) && (printers[i].name.toLowerCase() == name.toLowerCase()) && ((printers[i].port || '').indexOf(portPrefix) != 0)) { fail('A printer with this name already exists: ' + name); return; }
+            if ((printers[i].name != null) && (printers[i].name.toLowerCase() == name.toLowerCase()) && (ourPorts.indexOf(printers[i].port) < 0)) { fail('A printer with this name already exists: ' + name); return; }
         }
 
         // Remove printers left by an earlier run with another name or port, don't fail the install if one can't be removed
         for (var i in printers) {
             var p = printers[i];
-            if ((p.name != null) && ((p.port || '').indexOf(portPrefix) == 0) && ((p.name.toLowerCase() != name.toLowerCase()) || (p.port != portName))) {
+            if ((p.name != null) && (ourPorts.indexOf(p.port) >= 0) && ((p.name.toLowerCase() != name.toLowerCase()) || (p.port != portName))) {
                 setStep('Removing the previous printer: ' + p.name);
                 try { deletePrinter(p.name); } catch (ex) { onStep('Unable to remove ' + p.name + ': ' + ex.message); }
             }
@@ -353,18 +355,19 @@ function install(name, portName, port, driver, portPrefix, onStep, func) {
     });
 }
 
-// Remove all printers and ports starting with the prefix. func()
-function uninstall(portPrefix, func) {
+// Remove the printers on the given ports, then the ports. Only the exact port names: another agent on the same device can
+// have a printer on another MeshCentralPrint port. func()
+function uninstall(portNames, func) {
     try {
         init();
         var printers = getPrinters();
-        for (var i in printers) { if ((printers[i].name != null) && ((printers[i].port || '').indexOf(portPrefix) == 0)) { try { deletePrinter(printers[i].name); } catch (ex) { } } }
+        for (var i in printers) { if ((printers[i].name != null) && (portNames.indexOf(printers[i].port) >= 0)) { try { deletePrinter(printers[i].name); } catch (ex) { } } }
     } catch (ex) { }
     // The port can only be deleted once no printer uses it
     setTimeout(function () {
         try {
             var ports = getPorts();
-            for (var i in ports) { if ((ports[i] != null) && (ports[i].indexOf(portPrefix) == 0)) { try { deleteTcpPort(ports[i]); } catch (ex) { } } }
+            for (var i in ports) { if (portNames.indexOf(ports[i]) >= 0) { try { deleteTcpPort(ports[i]); } catch (ex) { } } }
         } catch (ex) { }
         func();
     }, 1000);
