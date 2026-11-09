@@ -44,6 +44,7 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_NOSOFTWARE = 8388608;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
@@ -1348,6 +1349,12 @@ function tunnel_onError()
     sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e));
 }
 
+// The server stamps the user's rights on each command it routes. View only users can look, but not change anything on the device.
+function server_hasControlRights(data) {
+    if (typeof data.rights != 'number') return false;
+    return ((data.rights == MESHRIGHT_ADMIN) || (((data.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((data.rights & MESHRIGHT_REMOTEVIEW) == 0)));
+}
+
 // Handle a mesh agent command
 function handleServerCommand(data) {
     if (typeof data == 'object') {
@@ -1461,6 +1468,7 @@ function handleServerCommand(data) {
                     }
                     case 'messagebox': {
                         // Display a message box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
                             if (process.platform == 'win32') {
@@ -1543,6 +1551,7 @@ function handleServerCommand(data) {
                     }
                     case 'pskill': {
                         // Kill a process
+                        if (!server_hasControlRights(data)) break;
                         if (data.value) {
                             var info = data.value.split('|'), pid = data.value, msg = " (Unknown)";
                             if (info.length > 1) { pid = info[0]; msg = " (" + info[1] + ")"; } else { info[1] = "Unknown"; }
@@ -1595,6 +1604,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStop': {
                         // Stop a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.stop(); }
@@ -1603,6 +1613,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStart': {
                         // Start a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.start(); }
@@ -1611,6 +1622,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceRestart': {
                         // Restart a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.restart(); }
@@ -1620,6 +1632,7 @@ function handleServerCommand(data) {
                     case 'deskBackground':
                         {
                             // Toggle desktop background
+                            if (!server_hasControlRights(data)) break;
                             try {
                                 if (process.platform == 'win32') {
                                     var stype = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : 0;
@@ -1656,6 +1669,7 @@ function handleServerCommand(data) {
                         }
                     case 'openUrl': {
                         // Open a local web browser and return success/fail
+                        if (!server_hasControlRights(data)) break;
                         MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                         sendConsoleText("OpenURL: " + data.url);
                         if (data.url) { mesh.SendCommand({ action: 'msg', type: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
@@ -1682,6 +1696,7 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'setclip': {
+                        if (!server_hasControlRights(data)) break;
                         if (pendingSetClip) return;
                         // Set the load clipboard to a user value
                         if (typeof data.data == 'string') {
@@ -1753,6 +1768,7 @@ function handleServerCommand(data) {
                         break;
                     case 'alertbox': {
                         // Display an old style alert box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
                             try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
@@ -1780,6 +1796,10 @@ function handleServerCommand(data) {
                         sessionid: data.sessionid 
                     });
                 };
+                // Uninstall is for full administrators of the device only, the inventory for users without the No Software restriction, same as the web UI
+                var denied = (typeof data.rights != 'number');
+                if (!denied && (data.rights != MESHRIGHT_ADMIN)) { denied = (((data.rights & MESHRIGHT_NOSOFTWARE) != 0) || (data.type == 'uninstallapp') || (data.type == 'uninstallstoreapp')); }
+                if (denied) { sendSoftwareResponse({ success: false, error: 'Denied' }); break; }
                 if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
