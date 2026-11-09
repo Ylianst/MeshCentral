@@ -468,10 +468,13 @@ function stop(func) {
 }
 
 // Install the printer permanently: it's kept when no user session uses it, and installed again when the agent starts,
-// until uninstall(). Uses the printer options from the server, or the defaults. func(err, { name, port })
+// until uninstall(). Uses the printer options the server sent, it's refused before the server sent any: the server only
+// sends them when remote printing is enabled, so this doesn't install a printer the server doesn't allow, or with default
+// options instead of the configured ones. func(err, { name, port })
 function install(onJob, func) {
     var marker = readMarker();
-    var options = lastOptions || ((marker != null) ? { printerName: marker.name, port: marker.port } : {});
+    var options = lastOptions || ((marker != null) ? { printerName: marker.name, port: marker.port } : null);
+    if (options == null) { func('Remote printing must be enabled on the server and used in a remote desktop session on this device first, the printer is then installed with the name and port the server sends.'); return; }
     permanent = true;
     log('Installing the printer permanently');
     start(options, onJob, function (err, printer) {
