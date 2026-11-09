@@ -940,7 +940,7 @@ var tunnelUserCount = { terminal: {}, files: {}, registry: {}, tcp: {}, udp: {},
 
 // Remote printing, see remote-printer.js
 function remotePrintContext() { return { send: function (cmd) { mesh.SendCommand(cmd); }, log: MeshServerLog }; }
-setTimeout(function () { try { require('remote-printer').agentStarted(remotePrintContext()); } catch (ex) { } }, 10000);
+var remotePrintStartTimer = setTimeout(function () { remotePrintStartTimer = null; try { require('remote-printer').agentStarted(remotePrintContext()); } catch (ex) { } }, 10000); // Keep a reference, some agent builds drop unreferenced timers
 
 // Add to the server event log
 function MeshServerLog(msg, state) {

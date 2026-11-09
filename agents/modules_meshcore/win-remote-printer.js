@@ -211,6 +211,14 @@ function deletePrinter(name) {
     }
 }
 
+// setTimeout() that keeps a reference on the timer until it fires. Some MeshAgent builds drop timers nothing references.
+var pendingTimers = [];
+function later(func, delay) {
+    var timer = setTimeout(function () { var i = pendingTimers.indexOf(timer); if (i >= 0) { pendingTimers.splice(i, 1); } func(); }, delay);
+    pendingTimers.push(timer);
+    return timer;
+}
+
 // Poll until test() returns true, or the time runs out. func(true if test passed)
 function waitFor(test, intervalMs, maxMs, func) {
     var start = Date.now();
@@ -219,7 +227,7 @@ function waitFor(test, intervalMs, maxMs, func) {
         try { ok = test(); } catch (ex) { }
         if (ok) { func(true); return; }
         if ((Date.now() - start) >= maxMs) { func(false); return; }
-        setTimeout(check, intervalMs);
+        later(check, intervalMs);
     };
     check();
 }
@@ -365,7 +373,7 @@ function uninstall(portNames, func) {
         for (var i in printers) { if ((printers[i].name != null) && (portNames.indexOf(printers[i].port) >= 0)) { try { deletePrinter(printers[i].name); } catch (ex) { error = ex.message; } } }
     } catch (ex) { error = ex.message; }
     // The port can only be deleted once no printer uses it
-    setTimeout(function () {
+    later(function () {
         try {
             var ports = getPorts();
             for (var i in ports) { if (portNames.indexOf(ports[i]) >= 0) { try { deleteTcpPort(ports[i]); } catch (ex) { } } }

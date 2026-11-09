@@ -73,7 +73,7 @@ var history = [];           // Recent events, shown by the "remoteprint" agent c
 // reference first, and this ignores the error.
 function cancelTimer(timer) { if (timer != null) { try { clearTimeout(timer); } catch (ex) { } } }
 
-// setTimeout() that keeps a reference on the timer until it fires
+// setTimeout() that keeps a reference on the timer until it fires. Some MeshAgent builds drop timers nothing references.
 var pendingTimers = [];
 function later(func, delay) {
     var timer = setTimeout(function () { var i = pendingTimers.indexOf(timer); if (i >= 0) { pendingTimers.splice(i, 1); } func(); }, delay);
@@ -393,7 +393,7 @@ function startListener(port, onJob, func, firstAttempt) {
             if (job.closing !== true) {
                 job.closing = true;
                 try { socket.end(); } catch (ex) { }
-                setTimeout(function () { try { if (typeof socket.destroy == 'function') { socket.destroy(); } } catch (ex) { } }, 5000); // If the other side keeps it half open
+                later(function () { try { if (typeof socket.destroy == 'function') { socket.destroy(); } } catch (ex) { } }, 5000); // If the other side keeps it half open
             }
             if (job.done) return;
             job.done = true;
