@@ -43,6 +43,8 @@ var JOB_END_DELAY = 2000;                           // A PDF job is complete whe
 var JOB_IDLE_TIMEOUT = 10 * 60 * 1000;              // Any job is complete when no data arrives this long, a slow PC can take minutes to spool a large job
 var SESSION_TIMEOUT = 90 * 1000;                    // A user session that isn't refreshed this long is removed
 var STOP_DELAY = 30 * 1000;                         // The printer is removed this long after the last session stopped, so a remote desktop that reconnects keeps it
+var LISTENER_KEEP = 10 * 60 * 1000;                 // The listener is closed this long after the printer is removed, so starting again soon doesn't bind the port again
+var BIND_RETRY_TIME = 4 * 60 * 1000;                // Retry binding the port this long: closed job connections can hold it in TIME_WAIT, and the agent binds exclusively on Windows
 
 var sep = (process.platform == 'win32') ? '\\' : '/';
 var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep));
@@ -51,6 +53,8 @@ var markerFile = agentFolder + sep + 'remoteprinter.json'; // Present while a pr
 var ppdFile = agentFolder + sep + 'remoteprinter.ppd';
 
 var server = null;          // TCP listener receiving print jobs
+var listenerPort = null;    // Port the listener is bound to
+var listenerCloseTimer = null; // Set while the listener is kept after the printer was removed
 var current = null;         // { name, port } of the installed printer
 var jobCounter = 0;
 var children = [];          // Keep a reference on running child processes
@@ -298,12 +302,16 @@ function indexOfBytes(bytes, str) {
 // The file extension of the job, from its first bytes. Both the Windows driver and the CUPS queue produce PDF.
 function getJobExtension(head) { return (indexOfBytes(head, '%PDF') >= 0) ? 'pdf' : 'prn'; }
 
-function startListener(port, onJob, func, attempt) {
-    if (server != null) { func(null); return; }
-    if (attempt == null) { attempt = 1; }
+function startListener(port, onJob, func, firstAttempt) {
+    cancelTimer(listenerCloseTimer); listenerCloseTimer = null;
+    if ((server != null) && (listenerPort == port)) { func(null); return; } // Still open from before
+    if (server != null) { stopListener(); }
+    if (firstAttempt == null) { firstAttempt = Date.now(); }
     var s = require('net').createServer();
+    s.connections = [];
     s.on('connection', function (socket) {
-        if (s.onCheckConnection != null) { var f = s.onCheckConnection; s.onCheckConnection = null; f(); }
+        s.connections.push(socket);
+        socket.on('close', function () { var i = s.connections.indexOf(socket); if (i >= 0) { s.connections.splice(i, 1); } });
         var job = { id: ++jobCounter, time: Date.now(), size: 0, head: [], tail: [], fd: null, done: false, timer: null };
         job.baseName = 'print-' + job.time + '-' + job.id + '-' + randomHex();
         job.tmpPath = jobsFolder + sep + job.baseName + '.tmp';
@@ -366,38 +374,38 @@ function startListener(port, onJob, func, attempt) {
     try {
         s.listen({ port: port, host: '127.0.0.1' });
     } catch (ex) {
-        log('Unable to listen on port ' + port + ' (attempt ' + attempt + '): ' + ex);
-        if (attempt < 5) { setTimeout(function () { startListener(port, onJob, func, attempt + 1); }, 1000); return; } // The port can take a moment to be released after the listener closes
-        func('Unable to listen on port ' + port);
+        // The agent binds exclusively on Windows: the port is refused while a connection of the previous listener is still open or in TIME_WAIT
+        if ((Date.now() - firstAttempt) < 1000) { log('Port ' + port + ' is in use, retrying for up to ' + (BIND_RETRY_TIME / 60000) + ' minutes: ' + ex); }
+        if ((Date.now() - firstAttempt) < BIND_RETRY_TIME) { later(function () { startListener(port, onJob, func, firstAttempt); }, 2000); return; }
+        log('Unable to listen on port ' + port + ': ' + ex);
+        func('Unable to listen on port ' + port + ', it is used by another program');
         return;
     }
     server = s;
-
-    // Check that the listener receives connections, if another program uses the port the connection goes to it instead
-    var checked = false;
-    var check = function (err) {
-        if (checked) return;
-        checked = true;
-        cancelTimer(checkTimer);
-        s.onCheckConnection = null;
-        try { if (c != null) { c.end(); } } catch (ex) { }
-        if (err != null) { log('Listener check failed on port ' + port + ': ' + err); stopListener(); func('Unable to receive print jobs on port ' + port + ' (' + err + ')'); return; }
-        log('Listening on 127.0.0.1:' + port);
-        func(null);
-    };
-    var checkTimer = setTimeout(function () { checkTimer = null; check('no connection received, is the port used by another program?'); }, 5000);
-    s.onCheckConnection = function () { check(null); };
-    var c = null;
-    try {
-        c = require('net').createConnection({ host: '127.0.0.1', port: port });
-        c.on('error', function (err) { check(String(err)); });
-    } catch (ex) { check(String(ex)); }
+    listenerPort = port;
+    log('Listening on 127.0.0.1:' + port);
+    func(null);
 }
 
+// Close the listener LISTENER_KEEP after the printer was removed, unless a printer is installed again meanwhile
+function closeListenerLater() {
+    cancelTimer(listenerCloseTimer);
+    listenerCloseTimer = later(function () {
+        listenerCloseTimer = null;
+        if (queueBusy) { closeListenerLater(); return; } // Check again when the install or removal is done
+        if (current == null) { stopListener(); }
+    }, LISTENER_KEEP);
+}
+
+// Close the listener and its open connections, so nothing is left bound to the port
 function stopListener() {
+    cancelTimer(listenerCloseTimer); listenerCloseTimer = null;
     if (server == null) return;
+    var connections = server.connections || [];
+    for (var i in connections) { try { if (typeof connections[i].destroy == 'function') { connections[i].destroy(); } else { connections[i].end(); } } catch (ex) { } }
     try { server.close(); } catch (ex) { }
     server = null;
+    listenerPort = null;
 }
 
 // Start remote printing. options: { printerName, port }, onJob({ path, name, size }), func(err, { name, port })
@@ -447,8 +455,8 @@ function stop(func) {
             return;
         }
         var port = (current != null) ? current.port : null;
-        stopListener();
         current = null;
+        closeListenerLater(); // Starting again soon then doesn't need to bind the port again
         log('Stopping, removing the printer');
         uninstallPrinter(port, function () {
             log('Printer removed');
