@@ -1395,7 +1395,7 @@
         var authCookieRenewTimer = null;
         var webRelayPort = parseInt('{{{webRelayPort}}}');
         var hidePowerTimeline = '{{{hidePowerTimeline}}}';
-        var sessionTimelineEnabled = '{{{sessionTimeline}}}' === 'true';
+        var sessionTimelineEnabled = '{{{sessionTimeline}}}';
         var webRelayDns = '{{{webRelayDns}}}';
         var meshserver = null;
         var xdr = null;
@@ -1475,6 +1475,7 @@
             meshserver.onMessage = onMessage;
             meshserver.trace = args.trace;
             meshserver.Start();
+            setInterval(updateDeviceTimeline, 120000); // Refresh the current device timeline.
 
             // Setup stared devices
             try { stars = JSON.parse(getstore('stars', '{}')); } catch (ex) { }
@@ -1524,6 +1525,10 @@
                 if (errorCode == 'noauth') { QH('p0span', "Unable to perform authentication"); return; }
                 if (prevState == 2) { setTimeout(serverPoll, 5000); } else { QH('p0span', "Unable to connect web socket"); }
                 // Clean up here
+                powerTimeline = powerTimelineReq = powerTimelineNode = powerTimelineUpdate = null;
+                sessionTimelineNode = sessionTimelineReq = null;
+                sessionTimeline = [];
+                sessionTimelineLive = [];
                 if (authCookieRenewTimer != null) { clearInterval(authCookieRenewTimer); authCookieRenewTimer = null; }
                 devicePagingState = null;
                 updateDevicePageState();
@@ -1730,13 +1735,16 @@
                     powerTimeline = message.timeline;
                     powerTimelineUpdate = Date.now() + 300000; // Update every 5 minutes
                     for (var i in powerTimeline) { if (i % 2 == 1) { powerTimeline[i] = powerTimeline[i] * 1000; } } // Decompress time
-                    if (currentNode._id == message.nodeid) { drawDeviceTimeline(); }
+                    if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceTimeline(); }
                     break;
                 }
                 case 'sessiontimeline': {
-                    if ((!sessionTimelineEnabled) || (message.nodeid != sessionTimelineReq)) break;
+                    if ((sessionTimelineEnabled !== 'true') || (message.nodeid != sessionTimelineReq) || (message.tag !== sessionTimelineTag)) break;
                     sessionTimelineNode = message.nodeid;
-                    sessionTimeline = message.timeline;
+                    // A database snapshot can arrive after a live event that it did not include.
+                    var saved = new Set(message.timeline.map(function (entry) { return entry.join(':'); }));
+                    sessionTimelineLive = sessionTimelineLive.filter(function (entry) { return !saved.has(entry.join(':')); });
+                    sessionTimeline = message.timeline.concat(sessionTimelineLive).sort(function (a, b) { return a[0] - b[0]; });
                     if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceTimeline(); }
                     break;
                 }
@@ -1932,6 +1940,10 @@
                     */
                     if (message.event.noact) break; // Take no action on this event
                     switch (message.event.action) {
+                        case 'sessionstate': {
+                            updateSessionTimelineFromEvent(message.event);
+                            break;
+                        }
                         case 'serverinfochange': {
                             if (message.event.lock2factor != null) { serverinfo.lock2factor = message.event.lock2factor; updateSelf(); }
                             break;
@@ -3842,7 +3854,9 @@
         var powerTimeline = null;
         var sessionTimelineNode = null;
         var sessionTimelineReq = null;
-        var sessionTimeline = null;
+        var sessionTimeline = [];
+        var sessionTimelineLive = [];
+        var sessionTimelineTag = 0;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
 
@@ -4140,15 +4154,12 @@
                 QH('MainComputerImage', '<div class="i' + icon + '"></div>');
 
                 // Request the power timeline
-                if ((powerTimelineNode != currentNode._id) && (powerTimelineReq != currentNode._id)) {
+                if (powerTimelineReq != currentNode._id) {
                     QH('p10html2', '');
                     QH('p10sessiontimeline', '');
                     powerTimelineReq = currentNode._id;
                     meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
-                    if (sessionTimelineEnabled) {
-                        sessionTimelineReq = currentNode._id;
-                        meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
-                    }
+                    requestSessionTimeline(currentNode);
                     meshserver.send({ action: 'lastconnect', nodeid: currentNode._id });
                     meshserver.send({ action: 'getsysinfo', nodeid: currentNode._id });
                     meshserver.send({ action: 'getnetworkinfo', nodeid: currentNode._id });
@@ -4469,30 +4480,49 @@
             }
         }
 
+        function requestSessionTimeline(node) {
+            if (node._id != sessionTimelineReq) {
+                sessionTimelineReq = sessionTimelineNode = null;
+                sessionTimeline = [];
+                sessionTimelineLive = [];
+            }
+            if ((sessionTimelineEnabled !== 'true') || (node.agent == null) || (serverinfo == null) || !Array.isArray(serverinfo.sessionTimelineAgentIds) || (serverinfo.sessionTimelineAgentIds.indexOf(node.agent.id) < 0)) return;
+
+            var start = new Date();
+            start.setHours(0, 0, 0, 0);
+            start.setDate(start.getDate() - 6);
+            sessionTimelineReq = node._id;
+            meshserver.send({ action: 'sessiontimeline', nodeid: node._id, start: start.getTime(), tag: ++sessionTimelineTag });
+        }
+
+        function updateSessionTimelineFromEvent(event) {
+            if ((sessionTimelineEnabled !== 'true') || (currentNode == null) || (event.nodeid != currentNode._id) || (event.nodeid != sessionTimelineReq)) return;
+            if (['locked', 'unlocked', 'nouser', 'unknown'].indexOf(event.state) < 0) return;
+            var time = Date.parse(event.time);
+            if (!Number.isFinite(time) || sessionTimeline.some(function (entry) { return (entry[0] === time) && (entry[1] === event.state); })) return;
+            var entry = [time, event.state];
+            sessionTimelineNode = event.nodeid;
+            sessionTimelineLive.push(entry);
+            sessionTimeline.push(entry);
+            sessionTimeline.sort(function (a, b) { return a[0] - b[0]; });
+            drawDeviceTimeline();
+        }
+
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
             if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
             if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) {
                 powerTimelineUpdate = null;
                 meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
-                if (sessionTimelineEnabled) {
-                    sessionTimelineReq = currentNode._id;
-                    meshserver.send({ action: 'sessiontimeline', nodeid: currentNode._id });
-                }
+                requestSessionTimeline(currentNode);
             }
         }
 
-        // Draw device power bars. The bars are 766px wide.
+        // Draw device power bars.
         function drawDeviceTimeline() {
-            if (currentNode.mtype == 3) { QH('p10html2', '<br />'); QH('p10sessiontimeline', ''); return; }
+            if ((currentNode == null) || (currentNode.mtype == 3)) { QH('p10html2', '<br />'); QH('p10sessiontimeline', ''); return; }
             var timeline = null, now = Date.now();
             if (currentNode._id == powerTimelineNode) { timeline = powerTimeline; }
-
-            // Calculate when the timeline starts
-            var d = new Date();
-            d.setHours(0, 0, 0, 0);
-            d = new Date(d.getTime() - (1000 * 60 * 60 * 24 * 6));
-            var timelineStart = d.getTime();
 
             // De-compact the timeline
             var timeline2 = [];
@@ -4509,64 +4539,67 @@
 
             // Draw the timeline
             var x = '', count = 1, date = new Date();
-            var totalWidth = Q('masthead').offsetWidth - (90 + 9 + 9 + 14); // Compute the total width of the power bar
             date.setHours(0, 0, 0, 0);
             for (var i = 0; i < 7; i++) {
-                var datavalue = '', start = date.getTime(), end = start + (1000 * 60 * 60 * 24);
+                var start = date.getTime(), end = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
+                var datavalue = '<div style="position:relative;height:16px;width:100%">';
                 for (var j in timeline2) {
                     var block = timeline2[j];
                     if (isTimeBlockInside(start, end, block[0], block[1]) == true) {
                         var ts = Math.max(start, block[0]);
                         var te = Math.min(Math.min(end, block[1]), now);
-                        var width = Math.round(((te - ts) * totalWidth) / 86400000);
-                        if (width > 0) { datavalue += '<div style=display:table-cell;width:' + width + 'px;background-color:' + powerColor(block[2]) + ';height:16px></div>'; }
+                        var left = ((ts - start) * 100) / (end - start);
+                        var width = ((te - ts) * 100) / (end - start);
+                        if (width > 0) { datavalue += '<div style="position:absolute;left:' + left + '%;width:' + width + '%;background-color:' + powerColor(block[2]) + ';height:16px"></div>'; }
                     }
                 }
-                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td><div>' + datavalue + '</div></td></tr>';
+                x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td>' + datavalue + '</div></td></tr>';
                 ++count;
                 date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
             if (hidePowerTimeline === 'true') { QH('p10html2', '<br />'); }
-            else { QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>'); }
-            drawDeviceSessionTimeline(totalWidth, timeline2, now);
+            else { QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;table-layout:fixed;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>'); }
+            drawDeviceSessionTimeline(timeline2, now);
         }
 
         // Draw user session state bars, clipped to periods where the device is powered.
-        function drawDeviceSessionTimeline(totalWidth, powerBlocks, now) {
-            if ((!sessionTimelineEnabled) || (currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
+        function drawDeviceSessionTimeline(powerBlocks, now) {
+            if ((sessionTimelineEnabled !== 'true') || (currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
                 QH('p10sessiontimeline', '');
                 return;
             }
 
-            var blocks = [];
+            // Both histories are ordered. Intersect them once before rendering each day.
+            var blocks = [], powerIndex = 0;
             for (var i = 0; i < sessionTimeline.length; i++) {
-                var blockStart = sessionTimeline[i][0];
-                var blockEnd = ((i + 1) < sessionTimeline.length) ? sessionTimeline[i + 1][0] : now;
-                var blockState = sessionTimeline[i][1];
-                if ((typeof blockStart == 'number') && (typeof blockEnd == 'number') && (blockEnd > blockStart)) {
-                    blocks.push([blockStart, blockEnd, blockState]);
+                var start = sessionTimeline[i][0];
+                var end = (i + 1 < sessionTimeline.length) ? sessionTimeline[i + 1][0] : now;
+                var state = sessionTimeline[i][1];
+                if ((state === 'unknown') || (end <= start)) continue;
+                while ((powerIndex < powerBlocks.length) && (powerBlocks[powerIndex][1] <= start)) { powerIndex++; }
+                for (var j = powerIndex; (j < powerBlocks.length) && (powerBlocks[j][0] < end); j++) {
+                    var power = powerBlocks[j];
+                    var from = Math.max(start, power[0]);
+                    var until = Math.min(end, power[1], now);
+                    if ((power[2] == 1) && (from < until)) { blocks.push([from, until, state]); }
                 }
             }
 
             var x = '', count = 1, date = new Date();
             date.setHours(0, 0, 0, 0);
             for (var d = 0; d < 7; d++) {
-                var dayStart = date.getTime(), dayEnd = dayStart + 86400000;
-                var datavalue = '<div style="position:relative;height:16px;width:' + totalWidth + 'px">';
+                var dayStart = date.getTime(), dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1).getTime();
+                var datavalue = '<div style="position:relative;height:16px;width:100%">';
                 for (var j = 0; j < blocks.length; j++) {
                     var block = blocks[j];
-                    for (var k = 0; k < powerBlocks.length; k++) {
-                        var powerBlock = powerBlocks[k];
-                        if (powerBlock[2] != 1) continue;
-                        var ts = Math.max(dayStart, block[0], powerBlock[0]);
-                        var te = Math.min(dayEnd, block[1], powerBlock[1], now);
-                        if (te <= ts) continue;
-                        var left = Math.round(((ts - dayStart) * totalWidth) / 86400000);
-                        var width = Math.max(1, Math.round(((te - ts) * totalWidth) / 86400000));
-                        var label = sessionStateText(block[2]);
-                        var title = format("{0} from {1} to {2}.", label, printTime(new Date(ts)), printTime(new Date(te)));
-                        datavalue += '<div class="pwState" title="' + title + '" style="position:absolute;left:' + left + 'px;width:' + width + 'px;height:16px;background-color:' + sessionStateColor(block[2]) + '"></div>';
-                    }
+                    var ts = Math.max(dayStart, block[0]);
+                    var te = Math.min(dayEnd, block[1]);
+                    if (te <= ts) continue;
+                    var left = ((ts - dayStart) * 100) / (dayEnd - dayStart);
+                    var width = ((te - ts) * 100) / (dayEnd - dayStart);
+                    var label = sessionStateText(block[2]);
+                    var title = format("{0} from {1} to {2}.", label, printTime(new Date(ts)), printTime(new Date(te)));
+                    datavalue += '<div title="' + title + '" style="position:absolute;left:' + left + '%;width:' + width + '%;height:16px;background-color:' + sessionStateColor(block[2]) + '"></div>';
                 }
                 datavalue += '</div>';
                 x += '<tr style=' + (((count % 2) == 0) ? 'background-color:#DDD' : '') + '><td><div>&nbsp;' + printDate(date) + '<div></div></div></td><td>' + datavalue + '</td></tr>';
@@ -4574,7 +4607,7 @@
                 date = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
             }
 
-            QH('p10sessiontimeline', '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.35)"><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><thead><tr><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "7 Day User Session State" + '</th></tr></thead><tbody>' + x + '</tbody><tfoot><tr><td aria-hidden="true" style="border:0"></td><td style="border:0;text-align:center;padding:4px 2px">' + sessionTimelineLegend() + '</td></tr></tfoot></table></div>');
+            QH('p10sessiontimeline', '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(128,128,128,0.35)"><table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;table-layout:fixed;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><thead><tr><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "7 Day User Session State" + '</th></tr></thead><tbody>' + x + '</tbody><tfoot><tr><td aria-hidden="true" style="border:0"></td><td style="border:0;text-align:center;padding:4px 2px">' + sessionTimelineLegend() + '</td></tr></tfoot></table></div>');
         }
 
         function sessionTimelineLegend() {

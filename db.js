@@ -1903,17 +1903,16 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
                 var dataarray = [nodeid, domain];
-                if (filter != null) {
-                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
-                    dataarray.push(filter);
-                } else {
-                    query = query + ") ORDER BY time DESC LIMIT $3";
+                if (filter != null) { dataarray.push(filter); query += ' AND action = $' + dataarray.length; }
+                if (timeRange != null) {
+                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= $' + dataarray.length; }
+                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < $' + dataarray.length; }
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query, dataarray, func);
+                sqlDbQuery(query + ') ORDER BY time DESC LIMIT $' + dataarray.length, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ";
@@ -2142,12 +2141,14 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetUserLoginEvents = function (domain, userid, func) {
                 obj.file.query('events').filter('domain', '==', domain).filter('action', 'in', ['authfail', 'login']).filter('userid', '==', userid).filter('msgArgs', 'exists').sort('time', false).get({ include: ['action', 'time', 'msgid', 'msgArgs', 'tokenName'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
-                if (filter != null) {
-                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('action', '==', filter).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
-                } else {
-                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+                const query = obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid);
+                if (filter != null) { query.filter('action', '==', filter); }
+                if (timeRange != null) {
+                    if (timeRange.start != null) { query.filter('time', '>=', timeRange.start); }
+                    if (timeRange.end != null) { query.filter('time', '<', timeRange.end); }
                 }
+                query.sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 if (filter != null) {
@@ -2449,17 +2450,16 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
                 var dataarray = [nodeid, domain];
-                if (filter != null) {
-                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
-                    dataarray.push(filter);
-                } else {
-                    query = query + ") ORDER BY time DESC LIMIT $3";
+                if (filter != null) { dataarray.push(filter); query += ' AND action = $' + dataarray.length; }
+                if (timeRange != null) {
+                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= $' + dataarray.length; }
+                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < $' + dataarray.length; }
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query, dataarray, func);
+                sqlDbQuery(query + ') ORDER BY time DESC LIMIT $' + dataarray.length, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2 AND ((userid = $3) OR (userid IS NULL))";
@@ -2698,17 +2698,16 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
                 var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ?";
                 var dataarray = [nodeid, domain];
-                if (filter != null) {
-                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
-                    dataarray.push(filter);
-                } else {
-                    query = query + ") ORDER BY time DESC LIMIT ?";
+                if (filter != null) { dataarray.push(filter); query += ' AND action = ?'; }
+                if (timeRange != null) {
+                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= ?'; }
+                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < ?'; }
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query, dataarray, func);
+                sqlDbQuery(query + ') ORDER BY time DESC LIMIT ?', dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ? AND ((userid = ?) OR (userid IS NULL))";
@@ -2983,9 +2982,14 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }).project({ type: 0, _id: 0, domain: 0, node: 0 }).sort({ time: 1 }).toArray(func); };
             obj.GetUserLoginEvents = function (domain, userid, func) { obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }).project({ action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }).toArray(func); };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
                 var finddata = { domain: domain, nodeid: nodeid };
                 if (filter != null) finddata.action = filter;
+                if (timeRange != null) {
+                    finddata.time = {};
+                    if (timeRange.start != null) { finddata.time.$gte = timeRange.start; }
+                    if (timeRange.end != null) { finddata.time.$lt = timeRange.end; }
+                }
                 obj.eventsfile.find(finddata).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
@@ -3217,9 +3221,14 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }, func);
                 }
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
                 var finddata = { domain: domain, nodeid: nodeid };
                 if (filter != null) finddata.action = filter;
+                if (timeRange != null) {
+                    finddata.time = {};
+                    if (timeRange.start != null) { finddata.time.$gte = timeRange.start; }
+                    if (timeRange.end != null) { finddata.time.$lt = timeRange.end; }
+                }
                 if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {

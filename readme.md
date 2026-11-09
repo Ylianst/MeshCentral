@@ -42,7 +42,7 @@ The 7-day user session state timeline is disabled by default. To enable recordin
 }
 ```
 
-Merge this option into your existing configuration. It shows locked, unlocked, no active user, and unknown states reported by the agent in the classic, Bootstrap, and mobile device views. The `hidePowerTimeline` option controls the power graph independently. Collection starts when enabled; existing historical records are retained when disabled.
+Merge this option into your existing configuration. It shows locked, unlocked, no active user, and unknown states reported by Windows agents in the classic, Bootstrap, and mobile device views. The timeline updates when the agent reports a change. Use a JSON boolean for `sessionTimeline`. The `hidePowerTimeline` option controls the power graph independently. Collection starts when enabled; existing historical records are retained when disabled.
 
 ## Video Tutorials
 You can watch many tutorial videos on the [MeshCentral YouTube Channel](https://www.youtube.com/channel/UCJWz607A8EVlkilzcrb-GKg/videos). Two videos to get started involve installation and basic usages.

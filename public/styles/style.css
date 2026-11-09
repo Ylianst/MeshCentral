@@ -1684,7 +1684,9 @@ NoMeshesPanel img {
     float: left;
 }
 
-#p10html2 table {
+#p10html2 table,
+#p10sessiontimeline table {
+    table-layout: fixed;
     color: black;
     background-color: #EEE;
     border-color: #AAA;
@@ -1694,12 +1696,14 @@ NoMeshesPanel img {
     width: 100%;
 }
 
-#p10html2 thead {
+#p10html2 thead,
+#p10sessiontimeline thead {
     background-color: #AAA;
     font-weight: bold;
 }
 
-#p10html2 thead tr {
+#p10html2 thead tr,
+#p10sessiontimeline thead tr {
     background-color: #AAA;
     font-weight: bold;
 }
@@ -1710,7 +1714,8 @@ NoMeshesPanel img {
     padding: 3px;
 }
 
-#p10html2 .altBack {
+#p10html2 .altBack,
+#p10sessiontimeline .altBack {
     background-color: #DDD;
 }
 

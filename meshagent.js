@@ -1920,7 +1920,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     function isUserSessionTimelineState(state) {
-        return ((state == 'locked') || (state == 'unlocked') || (state == 'nouser') || (state == 'unknown'));
+        return ((state === 'locked') || (state === 'unlocked') || (state === 'nouser') || (state === 'unknown'));
     }
 
     // Change the current core information string and event it
@@ -1941,9 +1941,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
             if (device.agent) {
+                const architecture = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId];
+                const recordSessionState = (domain.sessiontimeline === true) && (architecture != null) && (architecture.platform === 'win32');
                 // Restore the last recorded state once per connection so reconnects
                 // and server restarts do not create duplicate session-state events.
-                if ((domain.sessiontimeline === true) && (obj.lastSessionTimelineState === undefined) && isUserSessionTimelineState(command.sessionstate)) {
+                if (recordSessionState && (obj.lastSessionTimelineState === undefined) && isUserSessionTimelineState(command.sessionstate)) {
                     db.GetNodeEventsWithLimit(obj.dbNodeKey, domain.id, 1, 'sessionstate', function (err, docs) {
                         obj.lastSessionTimelineState = ((err == null) && (docs != null) && (docs.length > 0) && isUserSessionTimelineState(docs[0].state)) ? docs[0].state : null;
                         delete obj.deviceChanging;
@@ -1958,7 +1960,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // infer "unlocked" from an empty locked-user list: after a core restart
                 // Windows may already be locked, but no lock event has been observed yet.
                 const newSessionState = command.sessionstate;
-                if ((domain.sessiontimeline === true) && isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
+                if (recordSessionState && isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
                     const sessionStateMessages = { locked: 'Locked', unlocked: 'Unlocked', nouser: 'No active user', unknown: 'Unknown' };
                     const sessionEvent = {
                         etype: 'node',
@@ -1967,7 +1969,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         nodeid: obj.dbNodeKey,
                         domain: domain.id,
                         state: newSessionState,
-                        msg: 'User session state: ' + sessionStateMessages[newSessionState]
+                        msg: 'User session state: ' + sessionStateMessages[newSessionState] + ' (' + String(device.name || device.rname || obj.dbNodeKey).replace(/[\r\n]/g, ' ') + ')'
                     };
                     parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, sessionEvent);
                     obj.lastSessionTimelineState = newSessionState;

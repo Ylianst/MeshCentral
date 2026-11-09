@@ -1523,6 +1523,9 @@ function CreateMeshCentralServer(config, args) {
             if (obj.config.domains[i].limits == null) { obj.config.domains[i].limits = {}; }
             if (obj.config.domains[i].dns == null) { obj.config.domains[i].url = (i == '') ? '/' : ('/' + i + '/'); } else { obj.config.domains[i].url = '/'; }
             obj.config.domains[i].id = i;
+            if (Object.prototype.hasOwnProperty.call(obj.config.domains[i], 'sessiontimeline') && (typeof obj.config.domains[i].sessiontimeline !== 'boolean')) {
+                addServerWarning('Invalid sessionTimeline in domain "' + i + '". Use the JSON boolean true or false. The feature is disabled.');
+            }
             if ((typeof obj.config.domains[i].maxdeviceview != 'number') || (obj.config.domains[i].maxdeviceview < 1)) { delete obj.config.domains[i].maxdeviceview; }
             if (typeof obj.config.domains[i].loginkey == 'string') { obj.config.domains[i].loginkey = [obj.config.domains[i].loginkey]; }
             if ((obj.config.domains[i].loginkey != null) && (obj.common.validateAlphaNumericArray(obj.config.domains[i].loginkey, 1, 128) == false)) { console.log("ERROR: Invalid login key, must be alpha-numeric string with no spaces."); process.exit(); return; }

@@ -576,6 +576,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 features2: allFeatures.features2,
                 features3: allFeatures.features3
             };
+            if (domain.sessiontimeline === true) {
+                const architectures = parent.parent.meshAgentsArchitectureNumbers;
+                serverinfo.sessionTimelineAgentIds = Object.keys(architectures).filter(function (id) { return architectures[id].platform === 'win32'; }).map(Number);
+            }
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
@@ -6909,26 +6913,31 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     function serverCommandSessionTimeline(command) {
         if (domain.sessiontimeline !== true) return;
 
-        // Get the node and the rights for this node
         parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-            if ((visible == false) || (node == null)) return;
+            if ((visible == false) || (node == null) || (node.agent == null)) return;
+            const architecture = parent.parent.meshAgentsArchitectureNumbers[node.agent.id];
+            if ((architecture == null) || (architecture.platform !== 'win32')) return;
 
-            // Session-state transitions are stored as node events by meshagent.js.
+            // Accept the browser's first displayed midnight. Eight days allows for DST
+            // and clock skew while bounding how much history a client can request.
+            const now = Date.now();
+            const start = new Date(Number.isFinite(command.start) && (command.start >= now - 8 * 86400000) && (command.start <= now) ? command.start : now - 7 * 86400000);
             db.GetNodeEventsWithLimit(node._id, domain.id, 10000, 'sessionstate', function (err, docs) {
-                var timeline = [];
-                if ((err == null) && (docs != null)) {
-                    // GetNodeEventsWithLimit returns newest first. Send oldest first.
-                    for (var i = docs.length - 1; i >= 0; i--) {
-                        var doc = docs[i];
-                        if ((doc.state != 'locked') && (doc.state != 'unlocked') && (doc.state != 'nouser') && (doc.state != 'unknown')) continue;
-                        var time = (doc.time instanceof Date) ? doc.time.getTime() : Date.parse(doc.time);
-                        if (isNaN(time) == false) {
-                            if ((timeline.length == 0) || (timeline[timeline.length - 1][1] != doc.state)) { timeline.push([time, doc.state]); }
-                        }
-                    }
+                if ((err != null) || (docs == null)) return;
+                const timeline = [];
+                function append(doc) {
+                    if ((doc.state !== 'locked') && (doc.state !== 'unlocked') && (doc.state !== 'nouser') && (doc.state !== 'unknown')) return;
+                    const time = (doc.time instanceof Date) ? doc.time.getTime() : Date.parse(doc.time);
+                    if (Number.isFinite(time) && ((timeline.length == 0) || (timeline[timeline.length - 1][1] !== doc.state))) { timeline.push([time, doc.state]); }
                 }
-                obj.send({ action: 'sessiontimeline', nodeid: node._id, timeline: timeline, tag: command.tag });
-            });
+                db.GetNodeEventsWithLimit(node._id, domain.id, 1, 'sessionstate', function (err, previous) {
+                    // If the window hit its limit, a gap before its oldest result has
+                    // unknown state. Do not fill the gap with the pre-window state.
+                    if ((err == null) && (previous != null) && (previous.length > 0) && (docs.length < 10000)) { append(previous[0]); }
+                    for (var i = docs.length - 1; i >= 0; i--) { append(docs[i]); }
+                    obj.send({ action: 'sessiontimeline', nodeid: node._id, timeline: timeline, tag: command.tag });
+                }, { end: start });
+            }, { start: start });
         });
     }
 

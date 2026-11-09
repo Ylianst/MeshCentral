@@ -868,31 +868,25 @@ function onUserSessionChanged(user, locked) {
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
         var ret = getDomainInfo();
-        var activeSessionKeys = {};
+        var activeSessionKeys = {}, lockedUsers = Object.create(null);
+        var windows = (process.platform == 'win32');
         for (var i = 0; i < a.length; i++) {
             var un = a[i].Domain ? (a[i].Domain + '\\' + a[i].Username) : (a[i].Username);
-            var sessionMatch = false;
-            if (user) {
-                if ((a[i].SessionId != null) && (user.SessionId != null)) {
-                    sessionMatch = (a[i].SessionId == user.SessionId);
-                } else {
-                    sessionMatch = ((a[i].Username == user.Username) && (a[i].Domain == user.Domain));
+            if (windows) {
+                var sessionStateKey = getUserSessionLockKey(a[i]);
+                if (sessionStateKey != null) {
+                    activeSessionKeys[sessionStateKey] = true;
+                    var sessionMatch = user && ((a[i].SessionId != null && user.SessionId != null) ?
+                        (a[i].SessionId == user.SessionId) : ((a[i].Username == user.Username) && (a[i].Domain == user.Domain)));
+                    if (sessionMatch) { userSessionLockState[sessionStateKey] = locked; }
+                    else if (userSessionLockState[sessionStateKey] == null) {
+                        var initialLockState = getWindowsUserSessionLockState(a[i]);
+                        if (initialLockState != null) { userSessionLockState[sessionStateKey] = initialLockState; }
+                    }
                 }
-            }
-            var sessionStateKey = getUserSessionLockKey(a[i]);
-            if (sessionStateKey != null) {
-                activeSessionKeys[sessionStateKey] = true;
-                if (user && sessionMatch) { userSessionLockState[sessionStateKey] = locked; }
-                else if (userSessionLockState[sessionStateKey] == null) {
-                    var initialLockState = getWindowsUserSessionLockState(a[i]);
-                    if (initialLockState != null) { userSessionLockState[sessionStateKey] = initialLockState; }
-                }
-            }
-            if (user && locked && sessionMatch) {
-                if (meshCoreObj.lusers.indexOf(un) == -1) { meshCoreObj.lusers.push(un); }
-            } else if (user && !locked && sessionMatch) {
-                var lockedUserIndex = meshCoreObj.lusers.indexOf(un);
-                if (lockedUserIndex >= 0) { meshCoreObj.lusers.splice(lockedUserIndex, 1); }
+                // A user with several active sessions is locked only if all of them are locked.
+                var sessionLocked = (sessionStateKey != null) && (userSessionLockState[sessionStateKey] === true);
+                lockedUsers[un] = (lockedUsers[un] !== false) && sessionLocked;
             }
             if (u.indexOf(un) == -1) { u.push(un); } // Only push users in the list once.
             if ((a[i].Domain != null && a[i].Domain == 'AzureAD') || getJoinState() == 1 ){
@@ -925,11 +919,13 @@ function onUserSessionChanged(user, locked) {
                 }
             }
         }
-        for (var sessionStateKey in userSessionLockState) {
-            if (activeSessionKeys[sessionStateKey] !== true) { delete userSessionLockState[sessionStateKey]; }
+        if (windows) {
+            for (var sessionStateKey in userSessionLockState) {
+                if (activeSessionKeys[sessionStateKey] !== true) { delete userSessionLockState[sessionStateKey]; }
+            }
+            meshCoreObj.sessionstate = getUserSessionAggregateState(a);
+            meshCoreObj.lusers = u.filter(function (name) { return lockedUsers[name] === true; });
         }
-        meshCoreObj.sessionstate = getUserSessionAggregateState(a);
-        meshCoreObj.lusers = meshCoreObj.lusers;
         meshCoreObj.users = u;
         meshCoreObjChanged();
     });
@@ -938,6 +934,15 @@ function onUserSessionChanged(user, locked) {
 try {
     var userSession = require('user-sessions');
     userSession.on('changed', function () { onUserSessionChanged(null, false); });
+    // Embedded user-sessions handles logon, logoff and lock notifications, but
+    // does not emit changed on console or remote connect/disconnect (WTS 1-4).
+    if ((process.platform == 'win32') && (userSession._messagepump != null)) {
+        userSession._messagepump.on('message', function (msg) {
+            if ((msg.message == 0x02B1) && (msg.wparam >= 1) && (msg.wparam <= 4)) {
+                setImmediate(function () { onUserSessionChanged(null, false); });
+            }
+        });
+    }
     userSession.emit('changed');
     userSession.on('locked', function (user) { if(user != undefined && user != null) { onUserSessionChanged(user, true); } });
     userSession.on('unlocked', function (user) { if(user != undefined && user != null) { onUserSessionChanged(user, false); } });
