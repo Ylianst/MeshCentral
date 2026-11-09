@@ -37,6 +37,7 @@ var DEFAULT_PRINTER_NAME = 'MeshCentral Printer';
 var DEFAULT_TCP_PORT = 35500;
 var MAX_JOB_SIZE = 256 * 1024 * 1024;               // Larger jobs are dropped
 var MAX_JOB_AGE = 5 * 60 * 1000;                    // Jobs older than this are deleted, they're downloaded right away
+var DOWNLOAD_WINDOW = 2 * 60 * 1000;                // A job sent to the browsers is deleted this long after, they download it right away
 var COMMAND_TIMEOUT = 2 * 60 * 1000;                // lpadmin commands are killed after this
 var JOB_END_DELAY = 2000;                           // A PDF job is complete when no data arrives this long after its %%EOF marker
 var JOB_IDLE_TIMEOUT = 10 * 60 * 1000;              // Any job is complete when no data arrives this long, a slow PC can take minutes to spool a large job
@@ -45,7 +46,7 @@ var STOP_DELAY = 30 * 1000;                         // The printer is removed th
 
 var sep = (process.platform == 'win32') ? '\\' : '/';
 var agentFolder = process.execPath.substring(0, process.execPath.lastIndexOf(sep));
-var jobsFolder = agentFolder + sep + 'PrintJobs';
+var jobsFolder = agentFolder + sep + 'PrintJobs';    // Only readable by SYSTEM / root and administrators, see prepareJobsFolder()
 var markerFile = agentFolder + sep + 'remoteprinter.json'; // Present while a printer is installed, so leftovers can be removed
 var ppdFile = agentFolder + sep + 'remoteprinter.ppd';
 
@@ -67,6 +68,14 @@ var history = [];           // Recent events, shown by the "remoteprint" agent c
 // Cancel a timer. MeshAgent's clearTimeout() throws on a timer that already fired, so timer callbacks also clear their
 // reference first, and this ignores the error.
 function cancelTimer(timer) { if (timer != null) { try { clearTimeout(timer); } catch (ex) { } } }
+
+// setTimeout() that keeps a reference on the timer until it fires
+var pendingTimers = [];
+function later(func, delay) {
+    var timer = setTimeout(function () { var i = pendingTimers.indexOf(timer); if (i >= 0) { pendingTimers.splice(i, 1); } func(); }, delay);
+    pendingTimers.push(timer);
+    return timer;
+}
 
 function log(msg) {
     history.push(new Date().toISOString() + ' ' + msg);
@@ -223,6 +232,39 @@ function uninstallPrinter(func) {
     }
 }
 
+// Create the jobs folder, readable only by SYSTEM / root and administrators, func(err). On Windows the folder would
+// otherwise inherit read access for all users from Program Files.
+function prepareJobsFolder(func) {
+    try { fs.mkdirSync(jobsFolder); } catch (ex) { }
+    if (process.platform == 'win32') {
+        try { require('win-remote-printer').restrictFolder(jobsFolder, func); } catch (ex) { func(String(ex)); }
+    } else {
+        try { fs.chmodSync(jobsFolder, 448); func(null); } catch (ex) { func('Unable to set the permissions of ' + jobsFolder + ': ' + ex); } // 0700
+    }
+}
+
+// Random hexadecimal string for job file names, so a job can't be fetched by guessing its name
+function randomHex() {
+    var str = '';
+    for (var i = 0; i < 4; i++) {
+        var n = null;
+        try { n = parseInt(require('tls').generateRandomInteger('0', '4294967295')); } catch (ex) { }
+        if ((n == null) || isNaN(n)) { n = Math.floor(Math.random() * 4294967296); }
+        str += ('00000000' + n.toString(16)).slice(-8);
+    }
+    return str;
+}
+
+// Delete a job file once its download window is over. A file being downloaded can't be deleted on Windows, so retry.
+function deleteJobLater(path, delay, attempt) {
+    if (attempt == null) { attempt = 1; }
+    later(function () {
+        try { fs.unlinkSync(path); } catch (ex) {
+            if (fs.existsSync(path) && (attempt < 20)) { deleteJobLater(path, 30000, attempt + 1); }
+        }
+    }, delay);
+}
+
 // Delete old jobs. If all is true, delete all of them.
 function cleanJobs(all) {
     var files = null;
@@ -251,13 +293,14 @@ function getJobExtension(head) { return (indexOfBytes(head, '%PDF') >= 0) ? 'pdf
 function startListener(port, onJob, func, attempt) {
     if (server != null) { func(null); return; }
     if (attempt == null) { attempt = 1; }
-    try { fs.mkdirSync(jobsFolder); } catch (ex) { }
     var s = require('net').createServer();
     s.on('connection', function (socket) {
         if (s.onCheckConnection != null) { var f = s.onCheckConnection; s.onCheckConnection = null; f(); }
         var job = { id: ++jobCounter, time: Date.now(), size: 0, head: [], tail: [], fd: null, done: false, timer: null };
-        job.tmpPath = jobsFolder + sep + 'print-' + job.time + '-' + job.id + '.tmp';
+        job.baseName = 'print-' + job.time + '-' + job.id + '-' + randomHex();
+        job.tmpPath = jobsFolder + sep + job.baseName + '.tmp';
         try { job.fd = fs.openSync(job.tmpPath, 'wbN'); } catch (ex) { socket.end(); return; }
+        if (process.platform != 'win32') { try { fs.chmodSync(job.tmpPath, 384); } catch (ex) { } } // 0600
 
         // The Windows spooler only completes the job, and starts the next one, once the printer closes the connection.
         // So close it when the job is complete: when the other side ends it, or when no more data arrives.
@@ -299,9 +342,9 @@ function startListener(port, onJob, func, attempt) {
             try { fs.closeSync(job.fd); } catch (ex) { }
             if (job.size == 0) { try { fs.unlinkSync(job.tmpPath); } catch (ex) { } return; }
             var ext = getJobExtension(job.head);
-            var name = 'print-' + job.time + '-' + job.id + '.' + ext;
+            var name = job.baseName + '.' + ext;
             var path = jobsFolder + sep + name;
-            try { fs.renameSync(job.tmpPath, path); } catch (ex) { path = job.tmpPath; name = 'print-' + job.time + '-' + job.id + '.tmp'; }
+            try { fs.renameSync(job.tmpPath, path); } catch (ex) { path = job.tmpPath; name = job.baseName + '.tmp'; }
             log('Job ' + job.id + ': saved as ' + name);
             cleanJobs(false);
             try { onJob({ path: path, name: name, size: job.size }); } catch (ex) { }
@@ -361,22 +404,25 @@ function start(options, onJob, func) {
         if (isSupported() == false) { func('Remote printing is not supported on this device'); done(); return; }
         if ((current != null) && (current.name == name) && (current.port == port) && (server != null)) { writeMarker({ name: name, port: port, permanent: permanent }); func(null, current); done(); return; } // Already running
         if ((current != null) && (current.port != port)) { stopListener(); }
-        startListener(port, onJob, function (err) {
-            if (err != null) { func(err); done(); return; }
-            log('Installing the printer: ' + name);
-            installPrinter(name, port, function (err) {
-                if (err != null) {
-                    log('Printer install failed: ' + err);
-                    stopListener();
-                    current = null;
-                    uninstallPrinter(function () { func(err); done(); });
-                    return;
-                }
-                current = { name: name, port: port };
-                writeMarker({ name: name, port: port, permanent: permanent });
-                log('Printer installed: ' + name);
-                func(null, current);
-                done();
+        prepareJobsFolder(function (err) {
+            if (err != null) { log('Unable to restrict access to the jobs folder: ' + err); func('Unable to restrict access to the print jobs folder: ' + err); done(); return; }
+            startListener(port, onJob, function (err) {
+                if (err != null) { func(err); done(); return; }
+                log('Installing the printer: ' + name);
+                installPrinter(name, port, function (err) {
+                    if (err != null) {
+                        log('Printer install failed: ' + err);
+                        stopListener();
+                        current = null;
+                        uninstallPrinter(function () { func(err); done(); });
+                        return;
+                    }
+                    current = { name: name, port: port };
+                    writeMarker({ name: name, port: port, permanent: permanent });
+                    log('Printer installed: ' + name);
+                    func(null, current);
+                    done();
+                });
             });
         });
     });
@@ -455,6 +501,7 @@ function onJob(job) {
         context.log('Remote printing job, ' + job.size + ' byte(s)', sessions[i]);
         context.send({ action: 'msg', type: 'remoteprint', sub: 'job', sessionid: i, path: path, name: job.name });
     }
+    deleteJobLater(job.path, DOWNLOAD_WINDOW); // Don't keep the document on the device once the browsers had time to download it
 }
 
 // Remove the sessions that are no longer refreshed. When none are left, remove the printer STOP_DELAY later:

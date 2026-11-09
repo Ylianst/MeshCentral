@@ -231,6 +231,26 @@ function getSystemExe(name) {
     return root + '\\System32\\' + name;
 }
 
+// Let only SYSTEM and Administrators use the folder: remove the permissions it inherits, for example read access for
+// all users from Program Files, func(err). Uses the well-known SIDs, so it works with any Windows language.
+function restrictFolder(path, func) {
+    // MeshAgent builds the command line from the arguments without quoting them, so quote the path
+    var child = require('child_process').execFile(getSystemExe('icacls.exe'), ['icacls', '"' + path + '"', '/inheritance:r', '/grant:r', '*S-1-5-18:(OI)(CI)F', '*S-1-5-32-544:(OI)(CI)F', '/Q']);
+    children.push(child);
+    var done = false, output = '';
+    var finish = function (code) {
+        if (done) return;
+        done = true;
+        if (timer != null) { try { clearTimeout(timer); } catch (ex) { } }
+        var i = children.indexOf(child); if (i >= 0) { children.splice(i, 1); }
+        func((code == 0) ? null : ('icacls exit code ' + code + (output ? (': ' + output.trim()) : '')));
+    };
+    var timer = setTimeout(function () { timer = null; try { child.kill(); } catch (ex) { } finish(-1); }, 60000);
+    child.stdout.on('data', function (c) { output += c.toString(); });
+    child.stderr.on('data', function (c) { output += c.toString(); });
+    child.on('exit', function (code) { finish(code); });
+}
+
 // Run dism.exe, func(exitCode). 3010 means a restart is needed.
 function runDism(args, func) {
     var child = require('child_process').execFile(getSystemExe('dism.exe'), ['dism'].concat(args));
@@ -350,4 +370,4 @@ function uninstall(portPrefix, func) {
     }, 1000);
 }
 
-module.exports = { install: install, uninstall: uninstall };
+module.exports = { install: install, uninstall: uninstall, restrictFolder: restrictFolder };
