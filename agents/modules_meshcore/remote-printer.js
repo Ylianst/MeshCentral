@@ -55,7 +55,7 @@ var ppdFile = agentFolder + sep + 'remoteprinter.ppd';
 var server = null;          // TCP listener receiving print jobs
 var listenerPort = null;    // Port the listener is bound to
 var listenerCloseTimer = null; // Set while the listener is kept after the printer was removed
-var current = null;         // { name, port } of the installed printer
+var current = null;         // { name, port, description } of the installed printer
 var jobCounter = 0;
 var children = [];          // Keep a reference on running child processes
 var queue = [];             // Install / uninstall operations run one at a time
@@ -172,6 +172,13 @@ function cleanName(name) {
     return name.trim();
 }
 
+// The name people see: the Windows printer name, or the CUPS queue description, which keeps spaces
+function displayName(name, printerName) {
+    if (process.platform == 'win32') return name;
+    var text = ((typeof printerName == 'string') ? printerName : '').replace(/[\x00-\x1F\x7F]/g, '').substring(0, 64).trim();
+    return (text.length > 0) ? text : DEFAULT_PRINTER_NAME;
+}
+
 // Run a queued operation, operations are run one at a time
 function runQueued(func) {
     queue.push(func);
@@ -227,7 +234,7 @@ function getOurPortNames(port) {
 }
 
 // Install the printer, callback(err)
-function installPrinter(name, port, func) {
+function installPrinter(name, description, port, func) {
     if (process.platform == 'win32') {
         try {
             require('win-remote-printer').install(name, PORT_PREFIX + '_' + port, port, 'Microsoft Print To PDF', getOurPortNames(port), function (step) { log('Install step: ' + step); }, function (err) { func(err); });
@@ -244,7 +251,7 @@ function installPrinter(name, port, func) {
             // If the printer name changed, remove the old queue first
             var removeOld = function (next) { if ((marker != null) && (marker.name != null) && (marker.name != name)) { runCommand(lpadmin, ['lpadmin', '-x', marker.name], function () { next(); }); } else { next(); } };
             removeOld(function () {
-                runCommand(lpadmin, ['lpadmin', '-p', name, '-E', '-v', uri, '-P', ppdFile, '-D', 'MeshCentral Remote Printer', '-o', 'printer-is-shared=false'], function (code, output) {
+                runCommand(lpadmin, ['lpadmin', '-p', name, '-E', '-v', uri, '-P', ppdFile, '-D', description, '-o', 'printer-is-shared=false'], function (code, output) {
                     func((code == 0) ? null : (output || ('lpadmin error ' + code)));
                 });
             });
@@ -449,20 +456,21 @@ function stopListener() {
 function start(options, onJob, func) {
     if (options == null) { options = {}; }
     var name = cleanName(options.printerName);
+    var description = displayName(name, options.printerName);
     var port = parseInt(options.port);
     if (isNaN(port) || (port < 1024) || (port > 65535)) { port = DEFAULT_TCP_PORT; }
     lastOptions = { printerName: options.printerName, port: options.port };
     startRequested = true;
     runQueued(function (done) {
         if (isSupported() == false) { func('Remote printing is not supported on this device'); done(); return; }
-        if ((current != null) && (current.name == name) && (current.port == port) && (server != null)) { writeMarker({ name: name, port: port, permanent: permanent }); func(null, current); done(); return; } // Already running
+        if ((current != null) && (current.name == name) && (current.description == description) && (current.port == port) && (server != null)) { writeMarker({ name: name, port: port, permanent: permanent }); func(null, current); done(); return; } // Already running
         if ((current != null) && (current.port != port)) { stopListener(); }
         prepareJobsFolder(function (err) {
             if (err != null) { log('Unable to restrict access to the jobs folder: ' + err); func('Unable to restrict access to the print jobs folder: ' + err); done(); return; }
             startListener(port, onJob, function (err) {
                 if (err != null) { func(err); done(); return; }
                 log('Installing the printer: ' + name);
-                installPrinter(name, port, function (err) {
+                installPrinter(name, description, port, function (err) {
                     if (err != null) {
                         log('Printer install failed: ' + err);
                         stopListener();
@@ -470,7 +478,7 @@ function start(options, onJob, func) {
                         uninstallPrinter(port, function () { func(err); done(); });
                         return;
                     }
-                    current = { name: name, port: port };
+                    current = { name: name, port: port, description: description };
                     writeMarker({ name: name, port: port, permanent: permanent });
                     log('Printer installed: ' + name);
                     func(null, current);
@@ -599,7 +607,7 @@ function handleMessage(data, ctx) {
                 checkSessions();
             } else if (isNewSession) {
                 context.log('Started remote printing, printer: ' + printer.name, data);
-                context.send({ action: 'msg', type: 'remoteprint', sub: 'started', sessionid: data.sessionid, name: printer.name });
+                context.send({ action: 'msg', type: 'remoteprint', sub: 'started', sessionid: data.sessionid, name: printer.description });
             }
         });
     } else if (data.sub == 'stop') {
@@ -632,7 +640,7 @@ function consoleCommand(args, ctx, reply) {
     }
     var now = Date.now();
     var lines = ['Remote printing: ' + (isSupported() ? 'supported' : 'not supported on this device')];
-    lines.push('Printer: ' + ((current != null) ? (current.name + ', port ' + current.port) : 'not installed') + (permanent ? ', installed permanently' : '') + ', listening: ' + (server != null) + (queueBusy ? ', installing or removing' : ''));
+    lines.push('Printer: ' + ((current != null) ? (current.name + ((current.description != current.name) ? (' (shown as "' + current.description + '")') : '') + ', port ' + current.port) : 'not installed') + (permanent ? ', installed permanently' : '') + ', listening: ' + (server != null) + (queueBusy ? ', installing or removing' : ''));
     for (var i in sessions) { lines.push('User session: ' + sessions[i].username + ', refreshed ' + Math.round((now - sessions[i].time) / 1000) + ' seconds ago'); }
     if (sessionCount() == 0) { lines.push('No user sessions'); }
     lines.push('Jobs folder: ' + jobsFolder);
