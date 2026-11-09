@@ -3099,6 +3099,13 @@ function terminal_promise_consent_resolved()
     this.that = null;
     this.httprequest = null;
 }
+// The session a remote desktop opened for tsid shows now. Without a pick it follows the console, which Windows moves to a new
+// session at every logoff and user switch, and 0, the Linux login screen, is followed into the session that logs in.
+function kvmShownSession(tsid)
+{
+    if ((tsid != null) && (tsid != 0)) { return (tsid); }
+    try { return (require('user-sessions').consoleUid()); } catch (ex) { return (null); }
+}
 function tunnel_kvm_end()
 {
     --this.desktop.kvm.connectionCount;
@@ -3769,11 +3776,13 @@ function onTunnelData(data)
                         cmdchild.on('exit', function () { cmdchild = undefined; });
                     } catch(err) { }
                 }
-                // Remote desktop using native pipes
-                var kvm = mesh.getRemoteDesktopStream(tsid);
+                // Remote desktop using native pipes. A pick of the console opens the same desktop as no pick, which follows the console when its session changes.
+                var kvmtsid = tsid;
+                try { if ((tsid != null) && (tsid == require('user-sessions').consoleUid())) { kvmtsid = null; } } catch (ex) { }
+                var kvm = mesh.getRemoteDesktopStream(kvmtsid);
                 if (!kvm.hasOwnProperty('connectionCount')) {
-                    try { kvm.tsid = (tsid != null) ? tsid : require('user-sessions').consoleUid(); } catch (ex) { kvm.tsid = null; }
-                } else if ((tsid != null) && (kvm.tsid !== tsid)) {
+                    kvm.tsid = kvmtsid;
+                } else if ((tsid != null) && (kvmShownSession(kvmtsid) != kvmShownSession(kvm.tsid))) {
                     // The agent runs one remote desktop at a time and every viewer joins it, so turn away a viewer that picked another session
                     var kvmusers = [];
                     for (var i in kvm.tunnels) { if ((kvm.tunnels[i].httprequest != null) && (kvmusers.indexOf(kvm.tunnels[i].httprequest.username) == -1)) { kvmusers.push(kvm.tunnels[i].httprequest.username); } }

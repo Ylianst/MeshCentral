@@ -65718,6 +65718,37 @@
       ]
     },
     {
+      "bs": "{0} koristi udaljenu radnu površinu na drugoj sesiji",
+      "ca": "{0} està utilitzant l'escriptori remot en una altra sessió",
+      "cs": "Vzdálenou plochu používá {0} v jiné relaci",
+      "da": "Fjernskrivebordet bruges i en anden session af {0}",
+      "de": "Remotedesktop wird in einer anderen Sitzung von {0} verwendet",
+      "en": "Remote desktop is in use on another session by {0}",
+      "es": "{0} está usando el escritorio remoto en otra sesión",
+      "fi": "{0} käyttää etätyöpöytää toisessa istunnossa",
+      "fr": "Le bureau distant est utilisé dans une autre session par {0}",
+      "hi": "रिमोट डेस्कटॉप किसी अन्य सत्र में {0} द्वारा उपयोग में है",
+      "hu": "A távoli asztalt egy másik munkamenetben {0} használja",
+      "it": "Il desktop remoto è in uso in un'altra sessione da parte di {0}",
+      "ja": "リモートデスクトップは {0} が別のセッションで使用中です",
+      "ko": "{0}이(가) 다른 세션에서 원격 데스크탑을 사용 중입니다",
+      "nl": "Extern bureaublad wordt in een andere sessie gebruikt door {0}",
+      "pl": "Zdalny pulpit jest używany w innej sesji przez {0}",
+      "pt": "A área de trabalho remota está a ser utilizada noutra sessão por {0}",
+      "pt-br": "A área de trabalho remota está em uso em outra sessão por {0}",
+      "ru": "Удаленный рабочий стол используется в другом сеансе пользователем {0}",
+      "sv": "Fjärrskrivbordet används i en annan session av {0}",
+      "tr": "Uzak masaüstü başka bir oturumda {0} tarafından kullanılıyor",
+      "uk": "Віддалена стільниця використовується в іншому сеансі користувачем {0}",
+      "zh-chs": "远程桌面正由 {0} 在另一个会话中使用",
+      "zh-cht": "遠程桌面正由 {0} 在另一個會話中使用",
+      "xloc": [
+        "default-mobile.handlebars->55->648",
+        "default.handlebars->121->1408",
+        "default3.handlebars->123->1415"
+      ]
+    },
+    {
       "bs": "Daljinski ulaz je zaključan",
       "ca": "L'entrada remota està bloquejada",
       "cs": "Vzdálený vstup je uzamčen",

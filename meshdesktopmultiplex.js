@@ -559,8 +559,9 @@ function CreateDesktopMultiplexor(parent, domain, nodeid, id, func) {
             try { json = JSON.parse(data); } catch (ex) { }
             if (json == null) return;
             if ((json.type == 'options') && (obj.protocolOptions == null)) { obj.protocolOptions = json; }
-            else if ((json.type == 'options') && (typeof json.tsid == 'number') && (json.tsid !== obj.protocolOptions.tsid)) {
-                // Every viewer gets the session the first viewer picked, so turn away a viewer that picked another one
+            else if ((json.type == 'options') && (typeof json.tsid == 'number') && (json.tsid != 0) && (typeof obj.protocolOptions.tsid == 'number') && (obj.protocolOptions.tsid != 0) && (json.tsid != obj.protocolOptions.tsid)) {
+                // Every viewer gets the desktop the first viewer opened, so turn away a viewer that picked another session. Without a pick, or with 0
+                // (the Linux login screen), that desktop follows the console and the server cannot tell which session is the console, so let it join.
                 var names = [];
                 for (var i in obj.viewers) { if ((obj.viewers[i] != viewer) && (obj.viewers[i].user != null) && (names.indexOf(obj.viewers[i].user.name) == -1)) { names.push(obj.viewers[i].user.name); } }
                 try { viewer.ws.send(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Remote desktop is in use on another session by " + names.join(', '), msgid: 15, msgargs: [names.join(', ')] })); } catch (ex) { }
