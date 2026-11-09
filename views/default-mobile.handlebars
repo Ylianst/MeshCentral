@@ -1648,6 +1648,8 @@
                     QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
                     if (serverinfo != null) updateSelf();
+                    // The server only accepts account security commands until a second factor is set up, so start there
+                    if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || (userinfo.otpduo > 0) || (userinfo.otpdev > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1))) && (xxcurrentView != 3)) { go(3); setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); }
                     break;
                 }
                 case 'users': {

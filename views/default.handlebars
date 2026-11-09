@@ -794,7 +794,7 @@
                         <div id="p11bigfail" style="display:none"><b>&#10007;</b></div>
                         <div id=DeskFocus oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></div>
                         <div id=DeskParent>
-                            <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event)></canvas>
+                            <canvas id=Desk width=640 height=480 oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) onmousewheel=dmousewheel(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>
                         </div>
                         <div id=DeskTools>
                             <div id=deskToolsAreaTop>
@@ -2713,6 +2713,8 @@
                     userinfo = message.userinfo;
                     updateSiteAdmin();
                     updateSelf();
+                    // The server only accepts account security commands until a second factor is set up, so start there
+                    if ((features & 0x00040000) && (count2factoraAuths() == 0) && (xxcurrentView != 2)) { go(2); setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); }
                     break;
                 }
                 case 'users': {
@@ -3225,7 +3227,7 @@
                             var secret = message.secret;
                             if (secret.length == 52) { secret = secret.split(/(.............)/).filter(Boolean).join(' '); }
                             else if (secret.length == 32) { secret = secret.split(/(....)/).filter(Boolean).join(' '); secret = secret.substring(0, 20) + '<br/>' + secret.substring(20) }
-                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() maxlength=6 id=d2otpauthinput type=text></td></table>');
+                            QH('d2optinfo', '<table style=width:380px><tr><td style=vertical-align:top>' + format("Install" + ' <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" rel="noreferrer noopener" target=_blank>' + "Google Authenticator" + '</a> ' + "or a compatible application and scan the barcode, use <a href=\"{0}\" rel=\"noreferrer noopener\" target=_blank>this link</a> or enter the secret. Then, enter the current 6 digit token below to activate 2-Step login.", message.url) + '<br /><br />' + 'Secret <img src=images/link4.png height=10 width=10 title="' + "Copy Secret to clipboard" + '" style=cursor:pointer onclick=d2CopySecretToClip()>' + '<br /><tt id=d2optsecret secret="' + message.secret + '" style=font-size:12px>' + secret + '</tt><br /><br /></td><td style=width:1px;vertical-align:top><a href="' + message.url + '" rel="noreferrer noopener" target=_blank><div id="qrcode"></div></a></td><tr><td colspan=2 style="text-align:center;border-top:1px solid black"><br />' + "Enter the token here for 2-step login:" + ' <input type=text autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" onkeypress="return (event.keyCode == 8) || (event.charCode >= 48 && event.charCode <= 57)" onkeyup=account_addOtpCheck(event) onkeydown=account_addOtpCheck() onpaste="return account_addOtpPaste()" maxlength=6 id=d2otpauthinput type=text></td></table>');
                             new QRCode(Q('qrcode'), { text: message.url, width: 128, height: 128, colorDark: '#000000', colorLight: '#EEE', correctLevel: QRCode.CorrectLevel.H });
                             QV('idx_dlgOkButton', true);
                             QE('idx_dlgOkButton', false);
@@ -4375,6 +4377,8 @@
             x += '<label><input id=d2c1 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('links') >= 0)?' checked':'') + '>' + "MeshCentral Router Links" + '</label><br />';
             x += '<label><input id=d2c2 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('user') >= 0)?' checked':'') + '>' + "Logged in users" + '</label><br />';
             x += '<label><input id=d2c3 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('ip') >= 0)?' checked':'') + '>' + "Agent IP address" + '</label><br />';
+            x += '<label><input id=d2c18 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('wan') >= 0)?' checked':'') + '>' + "WAN IP address" + '</label><br />';
+            x += '<label><input id=d2c19 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('lan') >= 0)?' checked':'') + '>' + "LAN IP address" + '</label><br />';
             x += '<label><input id=d2c4 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('conn') >= 0)?' checked':'') + '>' + "Server Connectivity" + '</label><br />';
             x += '<label><input id=d2c15 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amthost') >= 0)?' checked':'') + '>' + "Intel&reg; AMT hostname" + '</label><br />';
             x += '<label><input id=d2c17 type=checkbox' + ((deviceViewSettings.devsCols.indexOf('amtstate') >= 0)?' checked':'') + '>' + "Intel&reg; AMT state" + '</label><br />';
@@ -4387,6 +4391,8 @@
             if (Q('d2c1').checked) { cols.push('links'); }
             if (Q('d2c2').checked) { cols.push('user'); }
             if (Q('d2c3').checked) { cols.push('ip'); }
+            if (Q('d2c18').checked) { cols.push('wan'); }
+            if (Q('d2c19').checked) { cols.push('lan'); }
             if (Q('d2c4').checked) { cols.push('conn'); }
             if (Q('d2c5').checked) { cols.push('os'); }
             if (Q('d2c6').checked) { cols.push('desc'); }
@@ -4862,6 +4868,8 @@
                             if (deviceViewSettings.devsCols.indexOf('user') >= 0) { colums += '<th style=color:gray;width:120px>' + "User"; }
                         }
                         if (deviceViewSettings.devsCols.indexOf('ip') >= 0) { colums += '<th style=color:gray;width:150px>' + "Address"; }
+                        if (deviceViewSettings.devsCols.indexOf('wan') >= 0) { colums += '<th style=color:gray;width:150px>' + "WAN"; }
+                        if (deviceViewSettings.devsCols.indexOf('lan') >= 0) { colums += '<th style=color:gray;width:150px>' + "IP"; }
                         if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { colums += '<th style=color:gray;width:100px>' + "Connectivity"; }
                         if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT Host"; }
                         if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) { colums += '<th style=color:gray;width:100px>' + "AMT State"; }
@@ -4940,7 +4948,7 @@
                                 multiDesktop[id] = desktop;
                                 desktop = desktopNode = currentNode = null;
                                 // Setup a replacement desktop
-                                QH('DeskParent', '<canvas id="Desk" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>');
+                                QH('DeskParent', '<canvas id="Desk" oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>');
                             } else {
                                 // This is a new device, create a canvas for it.
                                 var c = document.createElement('canvas');
@@ -5188,13 +5196,25 @@
                     var linkip = null;
                     if (typeof ip == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(ip)) { linkip = ip.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(ip) && (ip.indexOf(':') != ip.lastIndexOf(':'))) { linkip = ip; } }
                     if ((linkip != null) && !isPrivateIP(linkip)) { ipHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkip) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(ip) + '</a>'; }
-                    var lanip = node.defaultRouteIp || node.defaultRouteIp6 || '';
-                    if ((lanip != '') && (lanip != ip)) {
-                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lanip + ' / ' + ip) + '">' + "LAN" + ' ' + EscapeHtml(lanip) + '<br />' + "WAN" + ' ' + ipHtml;
+                    r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + ipHtml;
+                } // IP address (host)
+                if (deviceViewSettings.devsCols.indexOf('wan') >= 0) {
+                    var wan = '';
+                    if ((node.mtype == 1) || (node.mtype == 3)) { wan = node.host || ''; } else if (node.ip) { wan = node.ip; }
+                    var wanHtml = EscapeHtml(wan);
+                    var linkwan = null;
+                    if (typeof wan == 'string') { if (/^(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(wan)) { linkwan = wan.split(':')[0]; } else if (/^[0-9a-f]*:[0-9a-f:]+$/i.test(wan) && (wan.indexOf(':') != wan.lastIndexOf(':'))) { linkwan = wan; } }
+                    if ((linkwan != null) && !isPrivateIP(linkwan)) { wanHtml = '<a href="https://iplocation.com/?ip=' + encodeURIComponent(linkwan) + '" rel="noreferrer noopener" target="MeshIPLookup">' + EscapeHtml(wan) + '</a>'; }
+                    r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(wan) + '">' + wanHtml;
+                } // WAN address
+                if (deviceViewSettings.devsCols.indexOf('lan') >= 0) {
+                    var lan = node.defaultRouteIp || node.defaultRouteIp6 || '';
+                    if (lan != '') {
+                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(lan) + '">' + EscapeHtml(lan);
                     } else {
-                        r += '<td style=text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis title="' + EscapeHtml(ip) + '">' + ipHtml;
+                        r += '<td style=text-align:center>&nbsp;</td>';
                     }
-                } // IP address
+                } // LAN address
                 if (deviceViewSettings.devsCols.indexOf('conn') >= 0) { r += '<td style=text-align:center>' + states.join('&nbsp;+&nbsp;'); } // Connectivity
                 if (deviceViewSettings.devsCols.indexOf('amthost') >= 0) { r += '<td style=text-align:center>' + (((node.intelamt == null) || (node.intelamt.host == null)) ? '' : EscapeHtml(node.intelamt.host)); }
                 if (deviceViewSettings.devsCols.indexOf('amtstate') >= 0) {
@@ -9548,7 +9568,7 @@
                     delete multiDesktop[currentNode._id];
                 } else {
                     // Device is not already connected, just setup a blank canvas
-                    if(desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event)></canvas>'); }
+                    if(desktop == null) { QH('DeskParent', '<canvas id=Desk oncontextmenu="return false" onmousedown=dmousedown(event) onmouseup=dmouseup(event) onmousemove=dmousemove(event) ontouchstart=dtouchstart(event) ontouchmove=dtouchmove(event) ontouchend=dtouchend(event) ontouchcancel=dtouchcancel(event)></canvas>'); }
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
@@ -9818,7 +9838,7 @@
                     if (desktopsettings.swapmouse) { desktop.m.SwapMouse = desktopsettings.swapmouse; }
                     if (desktopsettings.rmw) { desktop.m.ReverseMouseWheel = desktopsettings.rmw; }
                     if (desktopsettings.remotekeymap == true) { desktop.m.remoteKeyMap = desktopsettings.remotekeymap; }
-                    //desktop.m.onDisplayinfo = deskDisplayInfo;
+                    desktop.m.onDisplayinfo = deskDisplayInfo;
                     desktop.m.onScreenSizeChange = deskAdjust;
                     desktop.Start(desktopNode._id);
                     desktop.latency.callback = function(ms) { /* console.log('latency', ms); */ updateSessionTime(); };
@@ -11033,9 +11053,139 @@
 
         function dmousedown(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousedown(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousedown(e); } } dblClickDetect(e); }
         function dmouseup(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mouseup(e); desktop.m.sendKeepAlive(); } else { desktop.m.mouseup(e); } }
-        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { Q('Desk').style.cursor = ''; if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
+        function dmousemove(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if (Q('Desk').style.cursor == 'not-allowed') { Q('Desk').style.cursor = ''; } if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousemove(e); desktop.m.sendKeepAlive(); } else { desktop.m.mousemove(e); } } else if (!xxdialogMode && desktop != null && !Q('DeskControl').checked) { Q('Desk').style.cursor = 'not-allowed'; } }
         function dmousewheel(e) { setSessionActivity(); e.addx = Q('DeskParent').scrollLeft; e.addy = Q('DeskParent').scrollTop; if (!xxdialogMode && desktop != null && Q('DeskControl').checked) { if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m.mousewheel(e); desktop.m.sendKeepAlive(); } else { if (desktop.m.mousewheel) { desktop.m.mousewheel(e); } } haltEvent(e); return true; } return false; }
         function drotate(x) { if (!xxdialogMode && desktop != null) { desktop.m.setRotation(desktop.m.rotation + x); deskAdjust(); deskAdjust(); } }
+
+        // Touch input for the remote desktop, the direct mode of default3.handlebars without its trackpad and native zoom modes.
+        // Tap is a left click, a double tap is a double click, a long press is a right click and a long press followed by a move is a left drag.
+        // A plain one-finger drag only moves the remote cursor, and a two-finger drag scrolls.
+        var dtouchStartX = 0, dtouchStartY = 0, dtouchLastX = 0, dtouchLastY = 0;
+        var dtouchMoved = false;
+        var dtouchLastTapTime = 0, dtouchLastTapX = 0, dtouchLastTapY = 0; // double-tap tracking
+        var dtouchLongPressTimer = null;
+        var dtouchTwoFingerLastY = 0;
+        var dtouchLongPressed = false; // long press fired, so the next move starts a drag and a lift sends a right click
+        var dtouchDragActive = false; // left button is down on the remote until the finger lifts
+
+        // No rotation correction here as in default3, because SendMouseMsg already maps rotated views itself
+        function dtouchMakeEvent(clientX, clientY, button) {
+            return { pageX: clientX + window.scrollX, pageY: clientY + window.scrollY, addx: Q('DeskParent').scrollLeft, addy: Q('DeskParent').scrollTop, button: button || 0, buttons: 0, which: (button === 2) ? 3 : 1 };
+        }
+
+        // Same routing as dmousedown(), the WebRTC channel when it is up and the relay otherwise
+        function dtouchSend(action, ev) {
+            if ((webRtcDesktop != null) && (webRtcDesktop.softdesktop != null)) { webRtcDesktop.softdesktop.m[action](ev); desktop.m.sendKeepAlive(); } else { desktop.m[action](ev); }
+        }
+
+        function dtouchSendClick(clientX, clientY, button) {
+            var ev = dtouchMakeEvent(clientX, clientY, button);
+            dtouchSend('mousedown', ev); dtouchSend('mouseup', ev);
+        }
+
+        // Release the left button a drag left down, not gated on the input checkbox because the press already went out
+        function dtouchReleaseDrag() {
+            if (!dtouchDragActive) return;
+            dtouchDragActive = false; dtouchLongPressed = false;
+            if (!xxdialogMode && desktop != null) { dtouchSend('mouseup', dtouchMakeEvent(dtouchLastX, dtouchLastY, 0)); }
+        }
+
+        // The browser took the touch away (system UI, tab switch), so end a drag without sending a click
+        function dtouchcancel(e) {
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            dtouchReleaseDrag();
+            dtouchLongPressed = false; dtouchMoved = true;
+        }
+
+        function dtouchstart(e) {
+            setSessionActivity();
+            dtouchReleaseDrag(); // a second finger landing mid-drag must not leave the button down
+            dtouchMoved = false;
+            dtouchLongPressed = false; dtouchDragActive = false;
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault(); // also stops the compatibility mouse events, so a tap is not sent twice
+            if (e.touches.length === 2) { dtouchTwoFingerLastY = (e.touches[0].clientY + e.touches[1].clientY) / 2; return; }
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchStartX = dtouchLastX = t.clientX;
+            dtouchStartY = dtouchLastY = t.clientY;
+            dtouchLongPressTimer = setTimeout(function () {
+                dtouchLongPressTimer = null;
+                if (dtouchMoved || xxdialogMode || desktop == null || !Q('DeskControl').checked) return;
+                dtouchLongPressed = true;
+                dtouchMoved = true;
+            }, 500);
+        }
+
+        function dtouchmove(e) {
+            setSessionActivity();
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                var dy = dtouchTwoFingerLastY - midY;
+                dtouchTwoFingerLastY = midY;
+                if ((Math.abs(dy) > 1) && Q('DeskControl').checked) {
+                    // Scroll at the last finger position so the remote cursor does not jump
+                    var ev = dtouchMakeEvent(dtouchLastX, dtouchLastY, 0);
+                    ev.wheelDelta = -dy * 4;
+                    dtouchSend('mousewheel', ev);
+                }
+                return;
+            }
+            if (e.touches.length !== 1) return;
+            var t = e.touches[0];
+            dtouchLastX = t.clientX; dtouchLastY = t.clientY;
+            if (dtouchDragActive) {
+                if (Q('DeskControl').checked) { dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+                return;
+            }
+            if (dtouchLongPressed) {
+                if ((Math.abs(t.clientX - dtouchStartX) > 4) || (Math.abs(t.clientY - dtouchStartY) > 4)) {
+                    if (Q('DeskControl').checked) {
+                        dtouchDragActive = true;
+                        dtouchSend('mousedown', dtouchMakeEvent(dtouchStartX, dtouchStartY, 0));
+                        dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0));
+                    } else { dtouchLongPressed = false; }
+                }
+                return;
+            }
+            if ((Math.abs(t.clientX - dtouchStartX) > 8) || (Math.abs(t.clientY - dtouchStartY) > 8)) {
+                dtouchMoved = true;
+                if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+                if (Q('DeskControl').checked) { dtouchSend('mousemove', dtouchMakeEvent(t.clientX, t.clientY, 0)); }
+            }
+        }
+
+        function dtouchend(e) {
+            setSessionActivity();
+            if (dtouchLongPressTimer) { clearTimeout(dtouchLongPressTimer); dtouchLongPressTimer = null; }
+            if (xxdialogMode || desktop == null) return;
+            e.preventDefault();
+            if (dtouchDragActive) { dtouchReleaseDrag(); return; } // before the input check, so an unchecked box cannot leave the button down
+            if (!Q('DeskControl').checked) return;
+            if (e.changedTouches.length !== 1) return;
+            var t = e.changedTouches[0];
+            if (dtouchLongPressed) {
+                dtouchLongPressed = false;
+                dtouchSendClick(dtouchLastX, dtouchLastY, 2);
+                return;
+            }
+            // 30 pixels and not the 8 of dtouchMoved, because finger pressure alone moves a tap by a few pixels
+            if ((Math.abs(t.clientX - dtouchStartX) > 30) || (Math.abs(t.clientY - dtouchStartY) > 30)) return;
+            var now = Date.now();
+            if (((now - dtouchLastTapTime) < 400) && (Math.abs(t.clientX - dtouchLastTapX) < 30) && (Math.abs(t.clientY - dtouchLastTapY) < 30)) {
+                // Second tap goes to the first tap's position, because Windows needs both clicks within 4 remote pixels.
+                // The DBLCLICK message goes out as well, as dblClickDetect() does for the mouse, because macOS never pairs two separate clicks.
+                var ev = dtouchMakeEvent(dtouchLastTapX, dtouchLastTapY, 0);
+                dtouchSend('mousedown', ev); dtouchSend('mousedblclick', ev); dtouchSend('mouseup', ev);
+                dtouchLastTapTime = 0;
+            } else {
+                dtouchSendClick(t.clientX, t.clientY, 0);
+                dtouchLastTapTime = now; dtouchLastTapX = t.clientX; dtouchLastTapY = t.clientY;
+            }
+        }
         function stopProcess(id, name) { setDialogMode(2, "Process Control", 3, stopProcessEx, format("Stop process #{0} \"{1}\"?", id, name), (id + '|' + name)); return false; }
         function stopProcessEx(buttons, tag) { meshserver.send({ action: 'msg', type: 'pskill', nodeid: currentNode._id, value: tag }); setTimeout(refreshDeskTools, 300); }
 
@@ -11728,9 +11878,19 @@
             return item.type || "Value";
         }
 
+        function p9compareRegistryNames(a, b) {
+            var an = String(a || '').toLowerCase(), bn = String(b || '').toLowerCase();
+            if ((an.length > 0) && (bn.length > 0)) {
+                var ar = (an.charAt(0) == '_') ? 0 : ((an.charCodeAt(0) >= 48) && (an.charCodeAt(0) <= 57) ? 1 : 2);
+                var br = (bn.charAt(0) == '_') ? 0 : ((bn.charCodeAt(0) >= 48) && (bn.charCodeAt(0) <= 57) ? 1 : 2);
+                if (ar != br) { return ar - br; }
+            }
+            return (an < bn) ? -1 : ((an > bn) ? 1 : 0);
+        }
+
         function p9canEditValue(item) {
             if ((item == null) || (item.kind != 'value')) return false;
-            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
+            return ((item.type == 'REG_SZ') || (item.type == 'REG_EXPAND_SZ') || (item.type == 'REG_MULTI_SZ') || (item.type == 'REG_DWORD') || (item.type == 'REG_QWORD'));
         }
 
         function p9canDeleteSelection(items) {
@@ -11744,7 +11904,7 @@
         }
 
         function p9getWritableRegistryTypes() {
-            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_DWORD', 'REG_QWORD'];
+            return ['REG_SZ', 'REG_EXPAND_SZ', 'REG_MULTI_SZ', 'REG_DWORD', 'REG_QWORD'];
         }
 
         function p9renderRegistryTypeOptions(selectedType) {
@@ -11905,11 +12065,11 @@
         function p9editRegistryValue() {
             var item = p9getSelectedItem();
             if ((item == null) || (item.kind != 'value')) return false;
-            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_DWORD and REG_QWORD."); return false; }
+            if (p9canEditValue(item) == false) { messagebox("Registry", "Editing is currently enabled only for REG_SZ, REG_EXPAND_SZ, REG_MULTI_SZ, REG_DWORD and REG_QWORD."); return false; }
             var x = '<div style=margin-bottom:8px><b>' + "Path" + ':</b> ' + EscapeHtml(p9getSelectedFullPath()) + '</div>';
             x += '<div style=margin-bottom:4px><b>' + "Name" + '</b></div><input type=text id=p9registryValueNameEditInput maxlength=255 value="' + EscapeHtml(item.displayName) + '" readonly=readonly style=width:100%;background-color:#EEE />';
             x += '<div style="margin-top:8px;margin-bottom:4px"><b>' + "Type" + '</b></div><select id=p9registryValueTypeEditInput onchange=p9registryValueEditCheck() style=width:100%>' + p9renderRegistryTypeOptions(item.type) + '</select>';
-            if (item.type != 'REG_SZ' && item.type != 'REG_EXPAND_SZ' && item.type != 'REG_DWORD' && item.type != 'REG_QWORD') { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
+            if (p9canEditValue(item) == false) { x += '<div style="margin-top:6px;color:#666">' + "This type is currently shown as read-only." + '</div>'; }
             x += '<textarea id=p9registryValueEditInput onkeyup=p9registryValueEditCheck(event) style=width:100%;height:140px;resize:none>' + EscapeHtml(item.value || '') + '</textarea>';
             setDialogMode(2, "Edit Registry Value", 3, p9editRegistryValueEx, x, { kind: item.kind, hive: item.hive, path: item.path, name: item.rawName, type: item.type });
             focusTextBox('p9registryValueEditInput');
@@ -11981,7 +12141,8 @@
         }
 
         function p9renderRegistryRow(kind, name, type, value, funcName, encodedName, rawName, hive, path) {
-            var item = { kind: kind, hive: hive, path: path, rawName: (rawName || name), displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, rawName || name) };
+            var itemRawName = (rawName == null) ? name : rawName;
+            var item = { kind: kind, hive: hive, path: path, rawName: itemRawName, displayName: name, type: type, value: value, id: p9selectionId(kind, hive, path, itemRawName) };
             var rowIndex = p9registerRenderedItem(item);
             var checked = (registryCheckedIds[item.id] != null) ? ' checked=checked' : '';
             var icon = ((kind == 'value') ? '<img src="images/key12.png" style="float:left;margin-top:2px;margin-right:4px" width=12 height=12 />' : '<div class=fileIcon2' + ((funcName != null) ? (' onclick=' + funcName + '("' + encodedName + '")') : '') + '></div>');
@@ -12005,9 +12166,13 @@
             if (data.action == 'listroots') {
                 registryRoots = data.roots || [];
                 var x = '', itemCount = 0;
-                for (var i = 0; i < registryRoots.length; i++) {
+                var sortedRoots = registryRoots.slice().sort(function (a, b) {
+                    return p9compareRegistryNames(a, b);
+                });
+                registryRoots = sortedRoots;
+                for (var i = 0; i < sortedRoots.length; i++) {
                     if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                    x += p9renderRegistryRow('hive', registryRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(registryRoots[i]), '', registryRoots[i], '');
+                    x += p9renderRegistryRow('hive', sortedRoots[i], "Hive", '', 'p9openRoot', encodeURIComponentEx(sortedRoots[i]), '', sortedRoots[i], '');
                     itemCount++;
                 }
                 if (itemCount == 0) { x = '<div style="padding:8px 10px;color:#666"><i>' + "No registry roots were returned." + '</i></div>'; }
@@ -12022,16 +12187,22 @@
                 p9setCurrentPath(p9getDisplayPath(registryCurrentHive, registryCurrentPath));
                 var x = '', itemCount = 0;
                 if ((data.subkeys != null) && (data.subkeys.length > 0)) {
-                    for (var i = 0; i < data.subkeys.length; i++) {
+                    var sortedSubkeys = data.subkeys.slice().sort(function (a, b) {
+                        return p9compareRegistryNames(a, b);
+                    });
+                    for (var i = 0; i < sortedSubkeys.length; i++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('key', data.subkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(data.subkeys[i]), data.subkeys[i], registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('key', sortedSubkeys[i], 'Key', '', 'p9openSubKey', encodeURIComponentEx(sortedSubkeys[i]), sortedSubkeys[i], registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
                 if ((data.values != null) && (data.values.length > 0)) {
-                    for (var j = 0; j < data.values.length; j++) {
+                    var sortedValues = data.values.slice().sort(function (a, b) {
+                        return p9compareRegistryNames(a.name, b.name);
+                    });
+                    for (var j = 0; j < sortedValues.length; j++) {
                         if (itemCount == 0) { x = p9renderRegistryHeader(); }
-                        x += p9renderRegistryRow('value', data.values[j].name, data.values[j].type, data.values[j].value, null, null, data.values[j].rawname, registryCurrentHive, registryCurrentPath);
+                        x += p9renderRegistryRow('value', sortedValues[j].name, sortedValues[j].type, sortedValues[j].value, null, null, sortedValues[j].rawname, registryCurrentHive, registryCurrentPath);
                         itemCount++;
                     }
                 }
@@ -12419,7 +12590,7 @@
                             // Server link
                             //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
                             // Server link
-                            link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                            link = '<a onclick=p13downloadDeviceFile("' + encodeURIComponentEx(newlinkpath + '/' + name) + '") style=cursor:pointer>' + shortname + '</a>';
                         }
                     }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + parseInt(i) + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
@@ -12818,11 +12989,7 @@
             for (var i = 0; i < checkboxes.length; i++) { 
                 if (checkboxes[i].checked) { 
                     var thefile = p13filetree.dir[checkboxes[i].value];
-                    var link = 'devicefile.ashx?c=' + authCookie;
-                    link += '&m=' + currentNode.meshid.split('/')[2];
-                    link += '&n=' + currentNode._id.split('/')[2];
-                    link += '&f=' + encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n);
-                    downloadFile(link,encodeURIComponentEx(thefile.n));
+                    p13downloadDeviceFile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n));
                 }
             }
         }
@@ -14551,6 +14718,19 @@
             if (e && (e.keyCode == 13) && tokenIsValid) { dialogclose(1); }
         }
 
+        function account_addOtpPaste(e) {
+            // Pasting a Base32 secret (alphanumeric) is otherwise truncated to 6 chars by maxlength=6,
+            // then submitted, which crashes otplib.verifySync() server-side. Strip non-digits here.
+            var el = Q('d2otpauthinput');
+            if (!el) return;
+            var text = '';
+            if (e && e.clipboardData) { text = e.clipboardData.getData('Text'); }
+            else if (window.clipboardData) { text = window.clipboardData.getData('Text'); } // IE
+            el.value = (text || '').replace(/[^0-9]/g, '').substring(0, 6);
+            if (e && e.preventDefault) { e.preventDefault(); }
+            account_addOtpCheck();
+        }
+
         function account_removeOtp() {
             if (xxdialogMode || (userinfo.otpsecret != 1) || ((features & 4096) == 0)) return;
             setDialogMode(2, "Authenticator App", 3, function () { meshserver.send({ action: 'otpauth-clear' }); }, "Confirm removal of authenticator application 2-step login?");
@@ -14680,21 +14860,40 @@
         function account_createLoginToken() {
             if (xxdialogMode) return false;
             var y = '', x = "Create a temporary username and password that can be used as alternative login to your account. This is useful for allowing tools or other services to access your account." + '<br /><br />';
-            var options = { 0 : "Unlimited", 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 10080 : "7 days" }
+            var options = { 0 : "Unlimited", 1 : "1 minute", 5 : "5 minutes", 10 : "10 minutes", 15 : "15 minutes", 30 : "30 minutes", 45 : "45 minutes", 60 : "60 minutes", 120 : "2 hours", 240 : "4 hours", 480 : "8 hours", 720 : "12 hours", 960 : "16 hours", 1440 : "24 hours", 2880 : "2 days", 5760 : "4 days", 10080 : "7 days", 43200 : "1 month", 86400 : "2 months", 525600 : "1 year", 1051200 : "2 years" }
             for (var i in options) { y += '<option value=' + i + '>' + options[i] + '</option>'; }
             x += addHtmlValue("Token Name", '<input class=boxsize id=d2tokenName style=width:250px maxlength=100 type=text onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate() />');
             x += addHtmlValue("Expire Time", '<select class=boxsize id=d2tokenExpire style=width:250px>' + y + '</select>');
+            x += '<div><label><input id=d2tokenCustomExpire type=checkbox onchange="account_createLoginTokenToggleCustom();account_createLoginTokenValidate();" />' + "Custom expiration" + '</label></div>';
+            x += '<div id=d2tokenCustomExpireDiv style="display:none">';
+            x += addHtmlValue("Custom Minutes", '<input class=boxsize id=d2tokenCustomMinutes style=width:250px min=1 type=number value=60 onchange=account_createLoginTokenValidate() onkeyup=account_createLoginTokenValidate() />');
+            x += '</div>';
             setDialogMode(2, "Create Login Token", 3, account_createLoginTokenEx, x);
             QE('idx_dlgOkButton', false);
             Q('d2tokenName').focus();
         }
 
         function account_createLoginTokenValidate() {
-            QE('idx_dlgOkButton', Q('d2tokenName').value.length > 0);
+            var nameValid = Q('d2tokenName').value.length > 0;
+            var customChecked = Q('d2tokenCustomExpire').checked;
+            var expireValid = true;
+            if (customChecked) { expireValid = parseInt(Q('d2tokenCustomMinutes').value) > 0; }
+            QE('idx_dlgOkButton', nameValid && expireValid);
+        }
+
+        function account_createLoginTokenToggleCustom() {
+            var d = Q('d2tokenCustomExpireDiv');
+            var dd = Q('d2tokenExpire');
+            var checked = Q('d2tokenCustomExpire').checked;
+            if (d) { d.style.display = checked ? 'block' : 'none'; }
+            if (dd) { dd.disabled = checked; }
         }
 
         function account_createLoginTokenEx() {
-            meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: parseInt(Q('d2tokenExpire').value) });
+            var expire = 0;
+            if (Q('d2tokenCustomExpire').checked) { expire = parseInt(Q('d2tokenCustomMinutes').value); }
+            else { expire = parseInt(Q('d2tokenExpire').value); }
+            meshserver.send({ action: 'createLoginToken', name: Q('d2tokenName').value, expire: expire });
         }
 
         function account_showAccountNotifySettings() {
@@ -15323,7 +15522,7 @@
                     if ((meshrights == 0xFFFFFFFF) || (currentMesh.links[sortedusers[i].id].rights != 0xFFFFFFFF)) {
                         trash = '<a href=# onclick=\'return p20deleteUser(event,"' + encodeURIComponentEx(sortedusers[i].id) + '")\' title="' + "Remove user rights to this device group" + '" style=cursor:pointer><img src=images/trash.png border=0 height=10 width=10></a>';
                     }
-                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer src=images/link5.png></span>';
+                    rights = '<span tabindex=0 style=cursor:pointer onclick=p20viewuser("' + encodeURIComponentEx(sortedusers[i].id) + '") onkeypress="if (event.key==\'Enter\') p20viewuser(\'' + encodeURIComponentEx(sortedusers[i].id) + '\')">' + rights + ' <img class=hoverButton style=cursor:pointer;filter:invert(0); src=images/link5.png></span>';
                 }
                 if (sortedusers[i].id.startsWith('ugrp/')) { icon = 4; }
                 var username = EscapeHtml(decodeURIComponent(sortedusers[i].name));
@@ -21682,6 +21881,18 @@
             document.body.appendChild(element);
             setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
+        }
+
+        // Device file downloads are posted so the authentication cookie stays out of the URL, the browser history and proxy logs.
+        function p13downloadDeviceFile(path) {
+            var form = document.createElement('form'), iframe = document.createElement('iframe');
+            iframe.name = 'p13dl' + Math.random().toString(36).substring(2);
+            iframe.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            form.method = 'post'; form.action = 'devicefile.ashx'; form.target = iframe.name; form.style.display = 'none';
+            var fields = { c: authCookie, m: currentNode.meshid.split('/')[2], n: currentNode._id.split('/')[2], f: decodeURIComponent(path) };
+            for (var i in fields) { var input = document.createElement('input'); input.type = 'hidden'; input.name = i; input.value = fields[i]; form.appendChild(input); }
+            document.body.appendChild(iframe); document.body.appendChild(form); form.submit();
+            setTimeout(function () { try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) { } }, 10000);
         }
 
         // Make the dialog box movable

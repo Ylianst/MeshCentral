@@ -1354,6 +1354,17 @@ function createAuthenticodeHandler(path) {
         return hash.digest();
     }
 
+    obj.getHashOfOverlay = function (algo) {
+        var start = 0;
+        for (var name in obj.header.sections) {
+            const section = obj.header.sections[name];
+            start = Math.max(start, section.rawAddr + section.rawSize);
+        }
+        const hash = crypto.createHash(algo);
+        runHash(hash, start, obj.header.sigpos > 0 ? obj.header.sigpos : obj.filesize);
+        return hash.digest();
+    }
+
     // Hash the file from start to end loading 64k chunks
     function runHash(hash, start, end) {
         var ptr = start;

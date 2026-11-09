@@ -543,7 +543,7 @@
                             </div>
                             <div id="termarea3" style="width:100%;height: calc(100% - 60px);" cellpadding=0 cellspacing=0>
                                 <div id="termarea3x" style="width:100%;height:100%">
-                                    <div style="width:100%;height:100%" id="termarea3xdiv"></div>
+                                    <div style="width:100%;height:100%;text-align:left" id="termarea3xdiv"></div>
                                 </div>
                             </div>
                             <div id="termarea4" style="position:relative;height:32px;">
@@ -1813,12 +1813,6 @@
                     }
                 }
                 */         
-                // If the server requires a shell type
-                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
-                    if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
-                    if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
-                    if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
-                }
 
                 // Setup a mesh agent xterm terminal
                 QV('termarea3xdiv', true);
@@ -1830,7 +1824,7 @@
                 xtermimage = new ImageAddon.ImageAddon();
                 if (xtermfit) { xterm.loadAddon(xtermfit); }
                 xterm.loadAddon(xtermimage);
-                xterm.setOption('scrollback', 0);
+                //xterm.setOption('scrollback', 0);
                 //xterm.setOption('fontSize', 15);
                 xterm.open(Q('termarea3xdiv'));
                 xterm.onData(function (data) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } })
