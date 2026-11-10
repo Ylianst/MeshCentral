@@ -3099,6 +3099,13 @@ function terminal_promise_consent_resolved()
     this.that = null;
     this.httprequest = null;
 }
+// The session a remote desktop opened for tsid shows now. Without a pick it follows the console, which Windows moves to a new
+// session at every logoff and user switch, and 0, the Linux login screen, is followed into the session that logs in.
+function kvmShownSession(tsid)
+{
+    if ((tsid != null) && (tsid != 0)) { return (tsid); }
+    try { return (require('user-sessions').consoleUid()); } catch (ex) { return (null); }
+}
 function tunnel_kvm_end()
 {
     --this.desktop.kvm.connectionCount;
@@ -3755,8 +3762,6 @@ function onTunnelData(data)
                 // Look for a TSID
                 var tsid = null;
                 if ((this.httprequest.xoptions != null) && (typeof this.httprequest.xoptions.tsid == 'number')) { tsid = this.httprequest.xoptions.tsid; }
-                require('MeshAgent')._tsid = tsid;
-                this.tsid = tsid;
 
                 // If MacOS, Wake up device with caffeinate
                 if(process.platform == 'darwin'){
@@ -3771,8 +3776,24 @@ function onTunnelData(data)
                         cmdchild.on('exit', function () { cmdchild = undefined; });
                     } catch(err) { }
                 }
-                // Remote desktop using native pipes
-                this.httprequest.desktop = { state: 0, kvm: mesh.getRemoteDesktopStream(tsid), tunnel: this };
+                // Remote desktop using native pipes. A pick of the console opens the same desktop as no pick, which follows the console when its session changes.
+                var kvmtsid = tsid;
+                try { if ((tsid != null) && (tsid == require('user-sessions').consoleUid())) { kvmtsid = null; } } catch (ex) { }
+                var kvm = mesh.getRemoteDesktopStream(kvmtsid);
+                if (!kvm.hasOwnProperty('connectionCount')) {
+                    kvm.tsid = kvmtsid;
+                } else if ((tsid != null) && (kvmShownSession(kvmtsid) != kvmShownSession(kvm.tsid))) {
+                    // The agent runs one remote desktop at a time and every viewer joins it, so turn away a viewer that picked another session
+                    var kvmusers = [];
+                    for (var i in kvm.tunnels) { if ((kvm.tunnels[i].httprequest != null) && (kvmusers.indexOf(kvm.tunnels[i].httprequest.username) == -1)) { kvmusers.push(kvm.tunnels[i].httprequest.username); } }
+                    this.httprequest.protocol = 999999;
+                    this.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Remote desktop is in use on another session by " + kvmusers.join(', '), msgid: 15, msgargs: [kvmusers.join(', ')] }));
+                    this.end();
+                    return;
+                }
+                require('MeshAgent')._tsid = tsid;
+                this.tsid = tsid;
+                this.httprequest.desktop = { state: 0, kvm: kvm, tunnel: this };
                 this.httprequest.desktop.kvm.parent = this.httprequest.desktop;
                 this.desktop = this.httprequest.desktop;
 
