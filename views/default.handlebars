@@ -20531,13 +20531,11 @@
         function setDialogMode(x, y, b, f, c, tag) {
             setSessionActivity();
             QV('uiMenu', false);
-            // Opening/closing a dialog over an active remote desktop: release any keys the desktop is
-            // still holding and pause keyboard capture, so keys typed into the dialog (e.g. Ctrl+V into
-            // the Clipboard box) don't leak to the agent and stick down (Wayland then auto-repeats the
-            // held key, e.g. "vvvv"). Resume capture when the dialog closes.
+            // Opening a dialog over an active remote desktop releases the keys it still holds, because the key-up of a key typed into the dialog never reaches the remote, so the key would stay held there (Wayland then auto-repeats it, "vvvv").
+            // There is no key grab to pause, because ondockeydown, ondockeypress and ondockeyup already ignore keys while a dialog is open.
+            // Calling GrabKeyInput() when the dialog closes would send every key typed on any tab to the remote until the desktop stops.
             if ((xxcurrentView == 11) && desktop && desktop.m && Q('DeskControl') && Q('DeskControl').checked) {
-                if (x && !xxdialogMode) { if (desktop.m.handleReleaseKeys) { desktop.m.handleReleaseKeys(); } if (desktop.m.UnGrabKeyInput) { desktop.m.UnGrabKeyInput(); } }
-                else if (!x && xxdialogMode) { if (desktop.m.GrabKeyInput) { desktop.m.GrabKeyInput(); } }
+                if (x && !xxdialogMode && desktop.m.handleReleaseKeys) { desktop.m.handleReleaseKeys(); }
             }
             xxdialogMode = x;
             xxdialogFunc = f;
