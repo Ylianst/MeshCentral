@@ -1709,6 +1709,22 @@
         var deskKeyboardStrings = [];
         var deskLastClipboardSent = null;
         var deskLastClipboardReceived = null;
+        var deskLastClipboardFp = null; // Agent's fingerprint of deskLastClipboardReceived, sent back with each poll so an unchanged text isn't sent again
+        // Normalized compare, Windows stores \r\n
+        function deskClipboardEq(a, b) { if (a === b) { return true; } return ((a == null) || (b == null)) ? (a == b) : (a.replace(/\r\n/g, '\n') == b.replace(/\r\n/g, '\n')); }
+        var deskClipboardMaxBytes = 1048576; // The auto clipboard doesn't send a local text over this many UTF-8 bytes, the agent can't read a longer one back
+        function deskClipboardTooLarge(t) { return ((t.length > deskClipboardMaxBytes) || ((t.length * 3 > deskClipboardMaxBytes) && (new Blob([t]).size > deskClipboardMaxBytes))); }
+        var deskClipboardRemoteSeq = 0; // Counts the device texts written to the local clipboard
+        var deskClipboardWriting = 0; // Number of such writes in progress
+        // Writes a device text (getclip, RDP) to the local clipboard. The tick skips its read meanwhile, and a failed write restores the old values
+        function deskClipboardWriteLocal(text, prevReceived) {
+            var prevSent = deskLastClipboardSent;
+            deskLastClipboardSent = text; // prevent echo back to remote
+            var seq = ++deskClipboardRemoteSeq;
+            deskClipboardWriting++;
+            // Rolled back only when no newer write came after it
+            navigator.clipboard.writeText(text).then(function() { deskClipboardWriting--; }).catch(function(err) { deskClipboardWriting--; if (seq != deskClipboardRemoteSeq) { return; } deskLastClipboardFp = null; deskLastClipboardSent = prevSent; if (prevReceived !== undefined) { deskLastClipboardReceived = prevReceived; } });
+        }
         var requestedLastConnects = false;
         var devicePagingState = null;
 
@@ -2903,20 +2919,28 @@
                             } else if (message.type === 'service') {
                                 showServiceDetailsDialog(message);
                             } else if ((message.type === 'getclip') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
+                                if ((message.tag == 1) && (xxdialogTag === 'clipboard') && (message.error != null)) {
+                                    // The agent couldn't read the clipboard, shown where Set Clipboard shows Success or Failed
+                                    deskClipStatus(message.error, true);
+                                } else if ((message.tag == 1) && (xxdialogTag === 'clipboard')) {
                                     Q('d2clipText').value = message.data; // Put remote clipboard data into dialog box
                                 } else if ((message.tag === 2) || (message.tag === 3)) {
                                     // tag 2 = manual clipboard-in button, tag 3 = auto-clipboard poll
-                                    if ((navigator.clipboard != null) && (message.data != deskLastClipboardReceived) && document.hasFocus()) {
-                                        deskLastClipboardReceived = message.data;
-                                        deskLastClipboardSent = message.data; // prevent echo back to remote
-                                        navigator.clipboard.writeText(message.data).then(function() { }).catch(function(err) { });
+                                    if ((navigator.clipboard != null) && document.hasFocus()) {
+                                        // Sent back with the next poll, so the agent only answers when its text changed. Without focus nothing is taken and the agent sends it again
+                                        deskLastClipboardFp = (message.fp != null) ? message.fp : null;
+                                        if (!deskClipboardEq(message.data, deskLastClipboardReceived)) {
+                                            var clipPrevReceived = deskLastClipboardReceived;
+                                            deskLastClipboardReceived = message.data;
+                                            // Not written back when the device only holds what this page just sent, that would replace the local clipboard and its formatting with plain text
+                                            if ((message.tag === 2) || !deskClipboardEq(message.data, deskLastClipboardSent)) { deskClipboardWriteLocal(message.data, clipPrevReceived); }
+                                        }
                                     }
                                 }
                             } else if ((message.type === 'setclip') && (xxdialogTag === 'clipboard') && (currentNode != null) && (currentNode._id == message.nodeid)) {
-                                // Display success/fail on the clipboard dialog box.
-                                QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Success" + '</span>' : '<span style=color:red>' + "Failed" + '</span>')
-                                setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, 2000);
+                                // Display success/fail on the clipboard dialog box, with the agent's reason for a failure
+                                if (message.success) { deskClipStatus("Success", false, 2000); }
+                                else { deskClipStatus("Failed" + ((typeof message.error == 'string') ? (': ' + message.error) : ''), true); }
                             } else if ((message.type === 'userSessions') && (currentNode != null) && (currentNode._id === message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
@@ -9636,7 +9660,7 @@
             QE('connectbutton1h', hwonline);
             QV('deskFocusBtn', (desktop != null) && (desktop.contype == 2) && (deskState != 0) && (desktopsettings.showfocus));
             QE('DeskClip', deskState == 3);
-            QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && (currentNode.agent.id != 11) && (currentNode.agent.id != 16) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null))); // Clipboard not supported on macOS
+            QV('DeskClip', (inputAllowed) && (currentNode.agent) && ((features2 & 0x1800) != 0x1800) && ((desktop == null) || (desktop.contype != 2)) && ((desktopsettings.autoclipboard != true) || (navigator.clipboard == null) || (navigator.clipboard.readText == null)));
             QE('DeskESC', (deskState == 3) && (desktop.contype != 4));
             QV('DeskESC', browserfullscreen && inputAllowed);
             QE('DeskType', deskState == 3);
@@ -9852,7 +9876,8 @@
                     desktop = CreateRDPDesktop('Desk', domainUrl);
                     desktop.onStateChanged = onDesktopStateChange;
                     desktop.m.onScreenSizeChange = mdeskAdjust;
-                    desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function() { }).catch(function(err) { console.log(err); }) } } // Put remote clipboard data into our clipboard
+                    // Recorded as sent and not written back when equal, else the tick bounced every RDP copy back as plain text
+                    desktop.m.onClipboardChanged = function(text) { if ((text != null) && (desktopsettings.rdpautoclipboard) && (navigator.clipboard != null) && !deskClipboardEq(text, deskLastClipboardSent)) { deskClipboardWriteLocal(text); } } // Put remote clipboard data into our clipboard
                     if (desktopsettings.rdpsmb) { desktop.m.SwapMouse = desktopsettings.rdpsmb; }
                     if (desktopsettings.rdprmw) { desktop.m.ReverseMouseWheel = desktopsettings.rdprmw; }
                     desktop.Start(desktopNode._id, currentNode.rdpport ? currentNode.rdpport : 3389, tsid);
@@ -10058,6 +10083,7 @@
                     if (desktop && (desktop.serverIsRecording == true)) { QV('deskRecordIcon', true); }
                     desktop.startTime = new Date();
                     deskLastClipboardReceived = null;
+                    deskLastClipboardFp = null;
                     // Pre-seed sent value with current local clipboard so we don't blast it to the remote on connect
                     if ((navigator.clipboard != null) && (navigator.clipboard.readText != null) && (Mstsc.browser() != 'firefox')) {
                         try {
@@ -10088,13 +10114,18 @@
                 QH('DeskLatency', latencyStr);
                 // Auto-clipboard
                 var autoClipEnabled = ((desktop.contype != 4) && (desktopsettings.autoclipboard === true)) || ((desktop.contype == 4) && (desktopsettings.rdpautoclipboard === true));
-                if (autoClipEnabled && (navigator.clipboard != null)) {
+                // Only with focus, Chrome and Edge refuse readText() without it and a getclip reply isn't written to the local clipboard
+                if (autoClipEnabled && (navigator.clipboard != null) && document.hasFocus()) {
                     // Local -> Remote: skip on Firefox as readText triggers an annoying paste popup every second
                     if ((Mstsc.browser() != 'firefox') && (navigator.clipboard.readText != null)) {
                         try {
+                            // Dropped when a device text landed while readText() ran, that result is the old text, the next tick reads again
+                            var clipSeq = deskClipboardRemoteSeq;
                             navigator.clipboard.readText().then(function(text) {
                                 if (desktop == null) return;
-                                if ((text != null) && (deskLastClipboardSent != text)) {
+                                if (deskClipboardWriting || (clipSeq != deskClipboardRemoteSeq)) return;
+                                // Skipped because readText() gives "" for a clipboard without text (an image) and sending that cleared the device's clipboard
+                                if ((text != null) && (text != '') && !deskClipboardEq(deskLastClipboardSent, text) && !deskClipboardTooLarge(text)) {
                                     if (desktop.m.setClipboard) {
                                         desktop.m.setClipboard(text);
                                     } else {
@@ -10106,8 +10137,9 @@
                         } catch (ex) { console.log(ex); }
                     }
                     // Remote -> Local: poll remote clipboard every second (non-RDP only; RDP uses onClipboardChanged callback)
+                    // known lets the agent leave out a text the page already has
                     if ((desktop.contype != 4) && (currentNode != null) && (navigator.clipboard.writeText != null)) {
-                        meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 3 });
+                        meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 3, known: deskLastClipboardFp });
                     }
                 }
             } else {
@@ -10749,30 +10781,39 @@
 
         // Show clipboard dialog
         function showDeskClip() {
-            if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskClip').blur();
+            if ((xxdialogMode == 2) && (xxdialogTag == 'clipboard')) { dialogclose(0); return; }
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
             var x = '';
             if ((features2 & 0x0800) == 0) x += '<input id=dlgClipGet type=button value="' + "Get Clipboard" + '" style=width:160px onclick=showDeskClipGet()>';
             if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="' + "Set Clipboard" + '" style=width:160px onclick=showDeskClipSet()>';
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
-            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
+            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px>&nbsp;</div><div></div>';
             setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
             Q('d2clipText').focus();
         }
 
+        var deskClipStatusTimer = null;
+        function deskClipStatus(text, isError, ms) {
+            clearTimeout(deskClipStatusTimer);
+            QH('dlgClipStatus', text ? ('<span style=color:' + (isError ? 'red' : 'green') + '>' + EscapeHtml(text) + '</span>') : '');
+            if (ms) { deskClipStatusTimer = setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, ms); }
+        }
+
         function showDeskClipGet() {
             if (desktop == null || desktop.State != 3) return;
+            deskClipStatus('');
             meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 1 });
         }
 
         function showDeskClipSet() {
             if (desktop == null || desktop.State != 3) return;
+            deskClipStatus('');
             if (desktop.m.setClipboard) {
                 desktop.m.setClipboard(Q('d2clipText').value);
             } else {
                 meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
-                QV('linuxClipWarn', currentNode && currentNode.agent && (currentNode.agent.id > 4) && (currentNode.agent.id != 21) && (currentNode.agent.id != 22) && (currentNode.agent.id != 34));
             }
         }
 
@@ -10852,6 +10893,24 @@
                 if(newWidth < (Q('DeskParent').clientWidth-10)) Q('DeskTools').style.width = newWidth + 'px';
             }
         });
+        // A click or tap outside closes the clipboard window without reaching the desktop, the tap's mouse events and click are swallowed for 1 s.
+        // The Clipboard button toggles it itself.
+        var deskClipSwallowHeld = false, deskClipSwallowUntil = 0;
+        document.addEventListener('pointerdown', function (e) {
+            deskClipSwallowHeld = false; deskClipSwallowUntil = 0;
+            if ((xxdialogMode == 2) && (xxdialogTag == 'clipboard') && !Q('dialog').contains(e.target) && (e.target.id != 'DeskClip')) {
+                deskClipSwallowHeld = true;
+                dialogclose(0);
+                e.preventDefault(); e.stopPropagation();
+            }
+        }, true);
+        function deskClipSwallow(e) {
+            if (!deskClipSwallowHeld && (Date.now() > deskClipSwallowUntil)) return;
+            e.preventDefault(); e.stopPropagation();
+            if ((e.type == 'pointerup') || (e.type == 'pointercancel')) { deskClipSwallowHeld = false; deskClipSwallowUntil = Date.now() + 1000; }
+            if (e.type == 'click') { deskClipSwallowHeld = false; deskClipSwallowUntil = 0; }
+        }
+        ['pointerup', 'pointercancel', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click'].forEach(function (t) { document.addEventListener(t, deskClipSwallow, { capture: true, passive: false }); });
         function sortProcess(sort) { deskTools.sort = sort; showDeskToolsProcesses(deskTools.msg); }
         function sortService(sort) { deskTools.ssort = sort; showDeskToolsServices(deskTools.smsg); }
         function sortProcessPid(a, b) { if (a.p > b.p) return 1; if (a.p < b.p) return (-1); return sortProcessName(a, b); }
