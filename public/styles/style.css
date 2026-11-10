@@ -3650,6 +3650,10 @@ a {
     opacity: 1;
 }
 
+.night .hoverButton {
+    filter: invert(100);
+}
+
 .tagSpan {
     background-color: lightgray;
     padding: 3px;

@@ -765,7 +765,7 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
@@ -777,10 +777,11 @@
             // Terminal
             seconds = 0;
             if (terminal && terminal.startTime) {
-                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                QH('TermLatency', (terminal.latency && (terminal.latency.current >= 0)) ? format('{0} ms, ', terminal.latency.current) : '');
                 seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
+                QH('TermLatency', '');
                 QH('TermTimer', '');
             }
 
@@ -1801,7 +1802,7 @@
                         //link = '<a href="devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '" download="' + name + '" style=cursor:pointer>' + shortname + '</a>';
                         // Server link
                         //link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&m=' + currentNode.meshid.split('/')[2] + '&n=' + currentNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
-                        link = '<a onclick=downloadFile("devicefile.ashx?c=' + authCookie + '&f=' + encodeURIComponentEx(newlinkpath + '/' + name) + '","' + encodeURIComponentEx(name) + '") style=cursor:pointer>' + shortname + '</a>';
+                        link = '<a onclick=p13downloadDeviceFile("' + encodeURIComponentEx(newlinkpath + '/' + name) + '") style=cursor:pointer>' + shortname + '</a>';
                     }
                     h = '<div id=fileEntry cmenu=filesContextMenu fileIndex=' + parseInt(i) + ' class=filelist file=3><input file=3 style=float:left name=fd class=fcb type=checkbox onchange=p13setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span class=fsize>' + fdatestr + '</span><span style=float:right>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
@@ -2386,6 +2387,18 @@
             document.body.appendChild(element);
             setTimeout(function() { try { if (element.parentNode) { document.body.removeChild(element); } } catch(e) { } }, 10000);
             if (closeDialog) { setDialogMode(0); }
+        }
+
+        // Device file downloads are posted so the share cookie stays out of the URL, the browser history and proxy logs.
+        function p13downloadDeviceFile(path) {
+            var form = document.createElement('form'), iframe = document.createElement('iframe');
+            iframe.name = 'p13dl' + Math.random().toString(36).substring(2);
+            iframe.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
+            form.method = 'post'; form.action = 'devicefile.ashx'; form.target = iframe.name; form.style.display = 'none';
+            var fields = { c: authCookie, f: decodeURIComponent(path) };
+            for (var i in fields) { var input = document.createElement('input'); input.type = 'hidden'; input.name = i; input.value = fields[i]; form.appendChild(input); }
+            document.body.appendChild(iframe); document.body.appendChild(form); form.submit();
+            setTimeout(function () { try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) { } }, 10000);
         }
 
         start();
