@@ -1057,6 +1057,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         case 'deskBackground': { requiredRights = MESHRIGHT_REMOTECONTROL; requiredNonRights = MESHRIGHT_REMOTEVIEWONLY; break; } // View only users can look, but not change anything
                     }
 
+                    // Remote printing, check that it's allowed and add the printer settings from the server configuration
+                    if (command.type == 'remoteprint') {
+                        if (parent.isRemotePrintingAllowed(domain) == false) break;
+                        requiredRights = MESHRIGHT_REMOTECONTROL;
+                        requiredNonRights = MESHRIGHT_NOFILES | MESHRIGHT_REMOTEVIEWONLY; // Print jobs are downloaded using the files feature
+                        delete command.printerName;
+                        delete command.port;
+                        if (typeof domain.remoteprinting == 'object') {
+                            if (typeof domain.remoteprinting.printername == 'string') { command.printerName = domain.remoteprinting.printername; }
+                            if (typeof domain.remoteprinting.port == 'number') { command.port = domain.remoteprinting.port; }
+                        }
+                    }
+
                     // Before routing this command, let's do some security checking.
                     // If this is a tunnel request, we need to make sure the NodeID in the URL matches the NodeID in the command.
                     if (command.type == 'tunnel') {
@@ -1119,6 +1132,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     // If a response is needed, set a callback function
                     var func = null;
                     if (command.responseid != null) { func = function (r) { try { ws.send(JSON.stringify({ action: 'msg', result: r ? 'OK' : 'Unable to route', tag: command.tag, responseid: command.responseid })); } catch (ex) { } } }
+
+                    // Remote printing: when the command can't be routed (missing rights, agent not connected), tell the browser so it stops asking
+                    if ((command.type == 'remoteprint') && (func == null)) {
+                        var rpNodeId = command.nodeid;
+                        func = function (r) { if (r === false) { try { ws.send(JSON.stringify({ action: 'msg', type: 'remoteprint', sub: 'error', nodeid: rpNodeId, msg: "Remote printing is not available: it needs remote control and files rights on this device, without view only, and the device must be connected." })); } catch (ex) { } } };
+                    }
 					
                     // Route this command to a target node
                     routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
