@@ -895,6 +895,7 @@
                         <tr>
                             <td class="areaFoot">
                                 <div class="toright2">
+                                    <span id="TermLatency" title="Terminal Session Latency"></span>
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false" onkeydown="return false" class="bottombutton" value="CR+LF" title="Toggle what the return key will send" onclick="termToggleCr()" />
@@ -10081,7 +10082,7 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
@@ -10117,10 +10118,11 @@
             // Terminal
             seconds = 0;
             if (terminal && terminal.startTime) {
-                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                QH('TermLatency', (terminal.latency && (terminal.latency.current >= 0)) ? format('{0} ms, ', terminal.latency.current) : '');
                 seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
+                QH('TermLatency', '');
                 QH('TermTimer', '');
             }
 
