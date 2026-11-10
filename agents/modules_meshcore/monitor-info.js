@@ -1,4 +1,4 @@
-﻿/*
+/*
 Copyright 2018 Intel Corporation
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,45 +36,8 @@ var AnyPropertyType = 0;
 
 function getLibInfo(libname)
 {
-    var child = require('child_process').execFile('/bin/sh', ['sh']);
-    child.stdout.str = '';
-    child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-    child.stdin.write("whereis ldconfig | awk '{ print $2 }'\nexit\n");
-    child.waitExit();
-
-    if (child.stdout.str.trim() != '')
-    {
-        var ldconfig = child.stdout.str.trim();
-        child = require('child_process').execFile('/bin/sh', ['sh']);
-        child.stdout.str = '';
-        child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-        child.stdin.write(ldconfig + " -p | grep '" + libname + ".so.' | tr '\\n' '^' | awk -F^ '{ printf \"[\"; for(i=1;i<=NF;++i) {" + ' split($i, plat, ")"); split(plat[1], plat2, "("); ifox=split(plat2[2], ifo, ","); libc=""; hwcap="0"; for(ifoi=1;ifoi<=ifox;++ifoi) { if(split(ifo[ifoi], jnk, "libc")==2) { libc=ifo[ifoi]; } if(split(ifo[ifoi], jnk, "hwcap:")==2) { split(ifo[ifoi], jnk, "0x"); hwcap=jnk[2]; }   }      x=split($i, tok, " "); if(tok[1]!="") { printf "%s{\\"lib\\": \\"%s\\", \\"path\\": \\"%s\\", \\"hwcap\\": \\"%s\\", \\"libc\\": \\"%s\\"}", (i!=1?",":""), tok[1], tok[x], hwcap, libc; }} printf "]"; }\'\nexit\n');
-        child.waitExit();
-
-        try
-        {
-            var v = JSON.parse(child.stdout.str.trim());
-            if (v.length != 0) { return (v); }
-        }
-        catch (e)
-        {
-        }
-    }
-
-    // No ldconfig, or no result returned;
-    child = require('child_process').execFile('/bin/sh', ['sh']);
-    child.stdout.str = ''; child.stdout.on('data', function (c) { this.str += c.toString(); });
-    child.stderr.on('data', function () { });
-    child.stdin.write('ls /lib/' + libname + '.*' + " | tr '\\n' '`' | awk -F'`' '{" + ' DEL=""; printf "["; for(i=1;i<NF;++i) { if($1~/((\\.so)(\\.[0-9]+)*)$/) { printf "%s{\\"path\\": \\"%s\\"}",DEL,$i; DEL=","; } } printf "]"; }\'\nexit\n');
-    child.waitExit();
-    try
-    {
-        return (JSON.parse(child.stdout.str.trim()));
-    }
-    catch (e)
-    {
-        return ([]);
-    }
+    var p = require('lib-finderV2').findLibrary(libname);
+    return (p ? [{ path: p }] : []);
 }
 
 function monitorinfo()
@@ -144,163 +107,21 @@ function monitorinfo()
             }));
         }
     }
-    else if (process.platform == 'linux')
+    else if ((process.platform == 'linux') || (process.platform == 'freebsd'))
     {
-        // First thing we need to do, is determine where the X11 libraries are
+        // First thing we need to do, is determine where the X11 libraries are, lib-finderV2 asks the loader for the one this agent can load
         this._check = function _check()
         {
-            var ix;
-            if(!this.Location_X11LIB)
+            var names = { Location_X11LIB: 'libX11', Location_X11TST: 'libXtst', Location_X11EXT: 'libXext', Location_X11FIXES: 'libXfixes', Location_X11KB: 'libxkbfile' };
+            for (var prop in names)
             {
-                var x11info = getLibInfo('libX11');
-                for (ix in x11info)
-                {
-                    if (x11info.length == 1 || x11info[ix].hwcap == "0")
-                    {
-                        try
-                        {
-                            Object.defineProperty(this, 'Location_X11LIB', { value: x11info[ix].path });
-                            break;
-                        }
-                        catch (ex)
-                        {
-                        }
-                    }
-                }
-                try
-                {
-                    if (process.env['Location_X11LIB']) { Object.defineProperty(this, 'Location_X11LIB', { value: process.env['Location_X11LIB'] }); }
-                }
-                catch(xx)
-                {
-                }
-            }
-            if(!this.Location_X11TST)
-            {
-                var xtstinfo = getLibInfo('libXtst');
-                for (ix in xtstinfo)
-                {
-                    if (xtstinfo.length == 1 || xtstinfo[ix].hwcap == "0")
-                    {
-                        try
-                        {
-                            Object.defineProperty(this, 'Location_X11TST', { value: xtstinfo[ix].path });
-                            break;
-                        }
-                        catch (ex)
-                        {
-                        }
-                    }
-                }
-                try
-                {
-                    if (process.env['Location_X11TST']) { Object.defineProperty(this, 'Location_X11TST', { value: process.env['Location_X11TST'] }); }
-                }
-                catch (xx)
-                {
-                }
-
-            }
-            if(!this.Location_X11EXT)
-            {
-                var xextinfo = getLibInfo('libXext');
-                for (ix in xextinfo)
-                {
-                    if (xextinfo.length == 1 || xextinfo[ix].hwcap == "0")
-                    {
-                        try
-                        {
-                            Object.defineProperty(this, 'Location_X11EXT', { value: xextinfo[ix].path });
-                            break;
-                        }
-                        catch (ex)
-                        {
-                        }
-                    }
-                }
-                try
-                {
-                    if (process.env['Location_X11EXT']) { Object.defineProperty(this, 'Location_X11EXT', { value: process.env['Location_X11EXT'] }); }
-                }
-                catch(xx)
-                {
-                }
-
-            }
-            if(!this.Location_X11FIXES)
-            {
-                var xfixesinfo = getLibInfo('libXfixes');
-                for (ix in xfixesinfo)
-                {
-                    if (xfixesinfo.length == 1 || xfixesinfo[ix].hwcap == "0")
-                    {
-                        try
-                        {
-                            Object.defineProperty(this, 'Location_X11FIXES', { value: xfixesinfo[ix].path });
-                            break;
-                        }
-                        catch (ex)
-                        {
-                        }
-                    }
-                }
-                try
-                {
-                    if (process.env['Location_X11FIXES']) { Object.defineProperty(this, 'Location_X11FIXES', { value: process.env['Location_X11FIXES'] }); }
-                }
-                catch(xx)
-                {
-                }
-            }
-            if (!this.Location_X11KB)
-            {
-                var xkbinfo = getLibInfo('libxkbfile');
-                for (ix in xkbinfo)
-                {
-                    if (xkbinfo.length == 1 || xkbinfo[ix].hwcap == "0")
-                    {
-                        try
-                        {
-                            Object.defineProperty(this, 'Location_X11KB', { value: xkbinfo[ix].path });
-                            break;
-                        }
-                        catch (ex)
-                        {
-                        }
-                    }
-                }
-                try
-                {
-                    if (process.env['Location_X11KB']) { Object.defineProperty(this, 'Location_X11KB', { value: process.env['Location_X11KB'] }); }
-                }
-                catch (xx)
-                {
-                }
+                if (this[prop]) { continue; }
+                var path = process.env[prop];
+                // Not the agent's embedded lib-finder, whose find() calls back into monitor-info while this constructor runs
+                if (!path) { path = require('lib-finderV2').findLibrary(names[prop]); }
+                if (path) { try { Object.defineProperty(this, prop, { value: path }); } catch (ex) { } }
             }
         };
-    }
-    if(process.platform == 'freebsd')
-    {
-        this._check = function _check()
-        {
-            var lib;
-            if(!this.Location_X11LIB)
-            {
-                if ((lib = require('lib-finder')('libX11')[0])) { Object.defineProperty(this, 'Location_X11LIB', { value: lib.location }); }
-            }
-            if(!this.Location_X11TST)
-            {
-                if ((lib = require('lib-finder')('libXtst')[0])) { Object.defineProperty(this, 'Location_X11TST', { value: lib.location }); }
-            }
-            if (!this.Location_X11EXT)
-            {
-                if ((lib = require('lib-finder')('libXext')[0])) { Object.defineProperty(this, 'Location_X11EXT', { value: lib.location }); }
-            }
-            if (!this.Location_X11FIXES)
-            {
-                if ((lib = require('lib-finder')('libXfixes')[0])) { Object.defineProperty(this, 'Location_X11FIXES', { value: lib.location }); }
-            }
-        }
     }
 
     if(process.platform == 'linux' || process.platform == 'freebsd')
@@ -343,13 +164,18 @@ function monitorinfo()
             {
                 var uid = 0;
 
-                try
+                // seat0's active session from logind, consoleUid() only without it, on systemd 257 it picks a logged-out user's manager session
+                try { var seat = require('seat-info').active(); if (seat != null) { uid = seat.uid; } } catch (z) { uid = 0; }
+                if (!(uid > 0))
                 {
-                    uid = require('user-sessions').consoleUid({ active: true });
-                    if (Array.isArray(uid)) { uid = (uid.length > 0 ? parseInt(uid[0]) : 0); }
+                    try
+                    {
+                        uid = require('user-sessions').consoleUid({ active: true });
+                        if (Array.isArray(uid)) { uid = (uid.length > 0 ? parseInt(uid[0]) : 0); }
+                    }
+                    catch (z) { }
+                    if (uid == null || uid <= 0) { try { uid = require('user-sessions').consoleUid(); } catch (zz) { uid = 0; } }
                 }
-                catch (z) { }
-                if (uid == null || uid <= 0) { try { uid = require('user-sessions').consoleUid(); } catch (zz) { uid = 0; } }
 
                 if (this._kvmcheck_wayland_user(uid)) { return true; }
 
@@ -366,108 +192,92 @@ function monitorinfo()
         };
         this._kvmcheck = function _kvmcheck()
         {
-            var retry = false;
-            if (this._kvmcheck_wayland())
+            // Any throw is a retry, a lookup that fails while the core starts costs one 10 s try
+            var found = false;
+            try
+            {
+                found = this._kvmcheck_wayland();
+                if (!found)
+                {
+                    if (!(this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT))
+                    {
+                        this._check();
+                    }
+                    if (this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT)
+                    {
+                        if (!this._X11)
+                        {
+                            this._X11 = this._gm.CreateNativeProxy(this.Location_X11LIB);
+                            this._X11.CreateMethod('XChangeProperty');
+                            this._X11.CreateMethod('XChangeWindowAttributes');
+                            this._X11.CreateMethod('XCloseDisplay');
+                            this._X11.CreateMethod('XConnectionNumber');
+                            this._X11.CreateMethod('XConvertSelection');
+                            this._X11.CreateMethod('XCreateGC');
+                            this._X11.CreateMethod('XCreateWindow');
+                            this._X11.CreateMethod('XCreateSimpleWindow');
+                            this._X11.CreateMethod('XDefaultColormap');
+                            this._X11.CreateMethod('XDefaultScreen');
+                            this._X11.CreateMethod('XDestroyWindow');
+                            this._X11.CreateMethod('XDrawLine');
+                            this._X11.CreateMethod('XDisplayHeight');
+                            this._X11.CreateMethod('XDisplayWidth');
+                            this._X11.CreateMethod('XFetchName');
+                            this._X11.CreateMethod('XFlush');
+                            this._X11.CreateMethod('XFree');
+                            this._X11.CreateMethod('XGetAtomName');
+                            this._X11.CreateMethod('XGetWindowProperty');
+                            this._X11.CreateMethod('XKeysymToKeycode');
+                            this._X11.CreateMethod('XInternAtom');
+                            this._X11.CreateMethod('XMapWindow');
+                            this._X11.CreateMethod({ method: 'XNextEvent', threadDispatch: true });
+                            this._X11.CreateMethod({ method: 'XNextEvent', newName: 'XNextEventSync' });
+                            this._X11.CreateMethod('XOpenDisplay');
+                            this._X11.CreateMethod('XPending');
+                            this._X11.CreateMethod('XRootWindow');
+                            this._X11.CreateMethod('XSelectInput');
+                            this._X11.CreateMethod('XScreenCount');
+                            this._X11.CreateMethod('XScreenOfDisplay');
+                            this._X11.CreateMethod('XSendEvent');
+                            this._X11.CreateMethod('XSetForeground');
+                            this._X11.CreateMethod('XSetFunction');
+                            this._X11.CreateMethod('XSetLineAttributes');
+                            this._X11.CreateMethod('XSetNormalHints');
+                            this._X11.CreateMethod('XSetSelectionOwner');
+                            this._X11.CreateMethod('XSetSubwindowMode');
+                            this._X11.CreateMethod('XSetWMProtocols');
+                            this._X11.CreateMethod('XStoreName');
+                            this._X11.CreateMethod('XSync');
+                            this._X11.CreateMethod('XBlackPixel');
+                            this._X11.CreateMethod('XWhitePixel');
+                            this._X11.CreateMethod('Xutf8SetWMProperties');
+
+                            this._X11.CreateMethod('XDisplayKeycodes');
+                            this._X11.CreateMethod('XGetKeyboardMapping');
+                            this._X11.CreateMethod('XStringToKeysym');
+                            this._X11.CreateMethod('XChangeKeyboardMapping');
+                        }
+                        found = xServerRunning();
+                    }
+                }
+            }
+            catch (e) { }
+            if (found)
             {
                 this.kvm_x11_serverFound = true;
                 this.emit('kvmSupportDetected', true);
-                return;
             }
-            if (!(this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT))
-            {
-                this._check();
-            }
-            if (this.Location_X11LIB && this.Location_X11TST && this.Location_X11EXT)
-            {
-                if (!this._X11)
-                {
-                    this._X11 = this._gm.CreateNativeProxy(this.Location_X11LIB);
-                    this._X11.CreateMethod('XChangeProperty');
-                    this._X11.CreateMethod('XChangeWindowAttributes');
-                    this._X11.CreateMethod('XCloseDisplay');
-                    this._X11.CreateMethod('XConnectionNumber');
-                    this._X11.CreateMethod('XConvertSelection');
-                    this._X11.CreateMethod('XCreateGC');
-                    this._X11.CreateMethod('XCreateWindow');
-                    this._X11.CreateMethod('XCreateSimpleWindow');
-                    this._X11.CreateMethod('XDefaultColormap');
-                    this._X11.CreateMethod('XDefaultScreen');
-                    this._X11.CreateMethod('XDestroyWindow');
-                    this._X11.CreateMethod('XDrawLine');
-                    this._X11.CreateMethod('XDisplayHeight');
-                    this._X11.CreateMethod('XDisplayWidth');
-                    this._X11.CreateMethod('XFetchName');
-                    this._X11.CreateMethod('XFlush');
-                    this._X11.CreateMethod('XFree');
-                    this._X11.CreateMethod('XCreateGC');
-                    this._X11.CreateMethod('XGetAtomName');
-                    this._X11.CreateMethod('XGetWindowProperty');
-                    this._X11.CreateMethod('XKeysymToKeycode');
-                    this._X11.CreateMethod('XInternAtom');
-                    this._X11.CreateMethod('XMapWindow');
-                    this._X11.CreateMethod({ method: 'XNextEvent', threadDispatch: true });
-                    this._X11.CreateMethod({ method: 'XNextEvent', newName: 'XNextEventSync' });
-                    this._X11.CreateMethod('XOpenDisplay');
-                    this._X11.CreateMethod('XPending');
-                    this._X11.CreateMethod('XRootWindow');
-                    this._X11.CreateMethod('XSelectInput');
-                    this._X11.CreateMethod('XScreenCount');
-                    this._X11.CreateMethod('XScreenOfDisplay');
-                    this._X11.CreateMethod('XSelectInput');
-                    this._X11.CreateMethod('XSendEvent');
-                    this._X11.CreateMethod('XSetForeground');
-                    this._X11.CreateMethod('XSetFunction');
-                    this._X11.CreateMethod('XSetLineAttributes');
-                    this._X11.CreateMethod('XSetNormalHints');
-                    this._X11.CreateMethod('XSetSelectionOwner');
-                    this._X11.CreateMethod('XSetSubwindowMode');
-                    this._X11.CreateMethod('XSetWMProtocols');
-                    this._X11.CreateMethod('XStoreName');
-                    this._X11.CreateMethod('XSync');
-                    this._X11.CreateMethod('XBlackPixel');
-                    this._X11.CreateMethod('XWhitePixel');
-                    this._X11.CreateMethod('Xutf8SetWMProperties');
-
-                    this._X11.CreateMethod('XDisplayKeycodes');
-                    this._X11.CreateMethod('XGetKeyboardMapping');
-                    this._X11.CreateMethod('XStringToKeysym');
-                    this._X11.CreateMethod('XChangeKeyboardMapping');
-                }
-
-                var ch = require('child_process').execFile('/bin/sh', ['sh']);
-                ch.stderr.on('data', function () { });
-                ch.stdout.str = ''; ch.stdout.on('data', function (c) { this.str += c.toString(); });
-                if (process.platform == 'freebsd')
-                {
-                    ch.stdin.write('ps -ax | grep X\nexit\n');
-                }
-                else
-                {
-                    ch.stdin.write('ps -e | grep X\nexit\n');
-                }
-                ch.waitExit();
-
-                if (ch.stdout.str.trim() != '')
-                {
-                    // X Server found
-                    this.kvm_x11_serverFound = true;
-                    this.emit('kvmSupportDetected', true);
-                }
-                else
-                {
-                    retry = true;
-                }
-            }
-            else
-            {
-                retry = true;
-            }
-            if(retry && this._xtries++ < 18)
+            else if (this._xtries++ < 18)
             {
                 this._xtry = setTimeout(function (that) { that._kvmcheck.call(that); }, 10000, this);
             }
         };
         this._kvmcheck();
+        // A login or logout runs the 18 tries again, so a desktop that starts later still gets the Desktop tab.
+        // With logind only while someone is at seat0, 'changed' also fires for SSH logins. Without logind every change counts.
+        var self = this;
+        var seatActive = function () { try { var si = require('seat-info'); return (!si.hasLogind() || (si.active() != null)); } catch (e) { return (true); } };
+        try { require('user-sessions').on('changed', function () { if (!self.kvm_x11_serverFound && seatActive()) { self._xtries = 0; if (self._xtry) { try { clearTimeout(self._xtry); } catch (e) { } self._xtry = null; } self._kvmcheck(); } }); } catch (e) { }
         Object.defineProperty(this, 'kvm_x11_support', { get: function () { return (this.kvm_x11_serverFound); } });
         this.on('newListener', function (name, handler)
         {
@@ -569,17 +379,19 @@ function monitorinfo()
             if (!process.env.XAUTHORITY || !process.env.DISPLAY)
             {
                 var xinfo = this.getXInfo(require('user-sessions').getUid(require('user-sessions').whoami()));
-                process.setenv('XAUTHORITY', xinfo.xauthority);
+                if (xinfo == null || !xinfo.display) { ret._rej('No X display found'); return (ret); }
+                if (xinfo.xauthority) { process.setenv('XAUTHORITY', xinfo.xauthority); }
                 process.setenv('DISPLAY', xinfo.display);
             }
 
             var display = info._X11.XOpenDisplay(info._gm.CreateVariable(process.env.DISPLAY));
             if (display.Val == 0)
             {
-                require('fs').writeFileSync('/var/tmp/agentSlave', 'XOpenDisplay Failed', { flags: 'a' });
                 ret._rej('XOpenDisplay Failed');
                 return (ret);
             }
+            // Closed when the last holder of the display is gone, like workspaceSetup() does. Xorg takes no more than 256 clients
+            try { display._X11 = info._X11; display.on('~', function () { display._X11.XCloseDisplay(display); }); } catch (e) { }
 
             var screenCount = info._X11.XScreenCount(display).Val;
             var ifo = [];
@@ -596,29 +408,282 @@ function monitorinfo()
 
             return (ret);
         }
-        function xinfo_xdm(info, uid)
+        // The result of every lookup, xauthority is left out when none is known
+        function xinfo(uid, display, xauthority, tty) { return ({ tty: tty || '?', xauthority: xauthority, display: display, uid: uid, exportEnv: exportEnv }); }
+        // This user's X server when it names its key file: rootless Xorg, or Xwayland under mutter and KWin. null otherwise
+        function xinfoFromXServer(procs, xs, uid)
         {
-            if (process.platform != 'linux') { return(info); }
-            var child = require('child_process').execFile('/bin/sh', ['sh']);
-            child.stdout.str = '';
-            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-            child.stdin.write("ps -e -o uid -o cmd | grep X | grep " + uid + " | tr '\\n' '`' | awk '{ xl=split($2,x,\"/\"); print x[xl]; }'\nexit\n");
-            child.waitExit();
-            if(child.stdout.str.trim() != '')
-            {
-                if (info == null) { info = {}; }
-                info.xdm = child.stdout.str.trim().toLowerCase();
-            }
-            return (info);
+            if ((xs == null) || (xs.auth == '')) { return (null); }
+            var ret = xinfo(uid, xs.display, xs.auth), v;
+            if ((ret.display == '') && ((v = procEnvValues(procs, ['DISPLAY'])) != null)) { ret.display = v.DISPLAY; }
+            return (ret);
         }
-        this.getXInfo = function getXInfo(consoleuid)
+        // Both values from one of the user's processes, else DISPLAY alone, null without one
+        function xinfoFromEnv(procs, uid)
+        {
+            var v = procEnvValues(procs, ['XAUTHORITY', 'DISPLAY']);
+            if (v != null) { return (xinfo(uid, v.DISPLAY, v.XAUTHORITY)); }
+            if ((v = procEnvValues(procs, ['DISPLAY'])) != null) { return (xinfo(uid, v.DISPLAY)); }
+            return (null);
+        }
+        // Xwayland's key file in the user's runtime folder, mutter's .mutter-Xwaylandauth.* or KWin's xauth_*, null without one
+        function xinfo_runtimeAuth(uid)
+        {
+            try
+            {
+                var dir = '/run/user/' + uid, files = require('fs').readdirSync(dir);
+                for (var i = 0; i < files.length; ++i)
+                {
+                    if ((files[i].indexOf('.mutter-Xwaylandauth.') == 0) || (files[i].indexOf('xauth_') == 0)) { return (dir + '/' + files[i]); }
+                }
+            }
+            catch (e) { }
+            return (null);
+        }
+
+        // The agent's Buffer.toString() stops at the first NUL, so a NUL-separated cmdline or environ is split by byte before it is decoded
+        function nulSplit(b)
+        {
+            var ret = [], start = 0;
+            for (var i = 0; (b != null) && (i < b.length); ++i) { if (b[i] == 0) { if (i > start) { ret.push(b.slice(start, i).toString()); } start = i + 1; } }
+            if ((b != null) && (start < b.length)) { ret.push(b.slice(start).toString()); }
+            return (ret);
+        }
+
+        // The processes of a uid from /proc, each with its argv and a lazy env(). The real uid is read from status, because /proc/<pid> is owned by root for a process that is not dumpable.
+        // The agent itself is left out, its environment carries the DISPLAY and XAUTHORITY getInfo() set for an earlier session.
+        function procList(uid)
+        {
+            var fs = require('fs'), ret = [], pids;
+            try { pids = fs.readdirSync('/proc'); } catch (e) { return (ret); }
+            for (var i = 0; i < pids.length; ++i)
+            {
+                if (!/^[0-9]+$/.test(pids[i]) || (parseInt(pids[i]) == process.pid)) { continue; }
+                try
+                {
+                    var m = /^Uid:\s+([0-9]+)/m.exec(bufStr(fs.readFileSync('/proc/' + pids[i] + '/status')));
+                    if ((m == null) || (parseInt(m[1]) != uid)) { continue; }
+                    var argv = nulSplit(fs.readFileSync('/proc/' + pids[i] + '/cmdline'));
+                    ret.push({ pid: parseInt(pids[i]), argv: argv, env: procEnv });
+                }
+                catch (e) { }
+            }
+            return (ret);
+        }
+        function procEnv()
+        {
+            if (this._env == null)
+            {
+                this._env = {};
+                try
+                {
+                    var parts = nulSplit(require('fs').readFileSync('/proc/' + this.pid + '/environ'));
+                    for (var i = 0; i < parts.length; ++i) { var k = parts[i].indexOf('='); if (k > 0) { this._env[parts[i].substring(0, k)] = parts[i].substring(k + 1); } }
+                }
+                catch (e) { }
+            }
+            return (this._env);
+        }
+        // The first process that has every name set, as { name: value }, null when none has
+        function procEnvValues(procs, names)
+        {
+            for (var i = 0; i < procs.length; ++i)
+            {
+                var env = procs[i].env(), ret = {}, j;
+                for (j = 0; j < names.length; ++j) { if (!env[names[j]]) { break; } ret[names[j]] = env[names[j]]; }
+                if (j == names.length) { return (ret); }
+            }
+            return (null);
+        }
+
+        // logind's sessions of a uid from its state files, as the KEY=VALUE pairs it writes (UID, SEAT, CLASS, TTY, DISPLAY, STATE, LEADER), the active one first.
+        // Only sessions on a seat and not a manager session, like the loginctl list this replaces. The files say "private data", so a missing key counts as no session
+        function logindSessions(uid)
+        {
+            var fs = require('fs'), ret = [], files;
+            try { files = fs.readdirSync('/run/systemd/sessions'); } catch (e) { return (ret); }
+            for (var i = 0; i < files.length; ++i)
+            {
+                if (/\.ref$/.test(files[i])) { continue; }
+                var s = { id: files[i] }, lines;
+                try { lines = bufStr(fs.readFileSync('/run/systemd/sessions/' + files[i])).split('\n'); } catch (e) { continue; }
+                for (var j = 0; j < lines.length; ++j) { var k = lines[j].indexOf('='); if ((k > 0) && (lines[j].charAt(0) != '#')) { s[lines[j].substring(0, k)] = lines[j].substring(k + 1).trim(); } }
+                if ((parseInt(s.UID) != uid) || !s.SEAT || (s.CLASS == 'manager') || (s.STATE == 'closing')) { continue; }     // A closing session's compositor is already gone
+                ret.push(s);
+            }
+            ret.sort(function (a, b) { return ((b.STATE == 'active') - (a.STATE == 'active')); });
+            return (ret);
+        }
+
+        // An X server of any user (X, Xorg, Xwayland, Xvfb), from /proc so no shell and no waitExit() while the core starts.
+        // FreeBSD has no /proc and keeps the shell, a throw there is a retry in _kvmcheck()
+        function xServerRunning()
+        {
+            if (process.platform == 'freebsd')
+            {
+                var ch = require('child_process').execFile('/bin/sh', ['sh']);
+                ch.stderr.on('data', function () { });
+                ch.stdout.str = ''; ch.stdout.on('data', function (c) { this.str += c.toString(); });
+                ch.stdin.write('ps -ax | grep X\nexit\n');
+                ch.waitExit();
+                return (ch.stdout.str.trim() != '');
+            }
+            var fs = require('fs'), pids;
+            try { pids = fs.readdirSync('/proc'); } catch (e) { return (false); }
+            for (var i = 0; i < pids.length; ++i)
+            {
+                if (!/^[0-9]+$/.test(pids[i])) { continue; }
+                try { if (/X/.test(bufStr(fs.readFileSync('/proc/' + pids[i] + '/comm')))) { return (true); } } catch (e) { }
+            }
+            return (false);
+        }
+
+        // This user's X server (X, Xorg, Xwayland) with its ':N' and '-auth <file>' arguments, the one with -auth when there are several, null without one
+        function xServerOf(procs)
         {
             var ret = null;
-            var uname = require('user-sessions').getUsername(consoleuid);
+            for (var i = 0; i < procs.length; ++i)
+            {
+                var argv = procs[i].argv;
+                if ((argv.length == 0) || !/^X/.test(argv[0].split('/').pop())) { continue; }
+                var xs = { pid: procs[i].pid, display: '', auth: '' };
+                for (var j = 1; j < argv.length; ++j)
+                {
+                    if (/^:[0-9]/.test(argv[j])) { xs.display = argv[j]; }
+                    else if ((argv[j] == '-auth') && (j + 1 < argv.length)) { xs.auth = argv[++j]; }
+                }
+                if (xs.auth != '') { return (xs); }
+                if (ret == null) { ret = xs; }
+            }
+            return (ret);
+        }
+
+        // The display of the X11 socket this user owns in /tmp/.X11-unix. mutter and KWin bind it themselves, so it is there before an on-demand Xwayland runs
+        function x11SocketOf(uid)
+        {
+            var fs = require('fs'), files;
+            try { files = fs.readdirSync('/tmp/.X11-unix'); } catch (e) { return (null); }
+            for (var i = 0; i < files.length; ++i)
+            {
+                var m = /^X([0-9]+)$/.exec(files[i]);
+                if (m == null) { continue; }
+                try { if (fs.statSync('/tmp/.X11-unix/' + files[i]).uid == uid) { return (':' + m[1]); } } catch (e) { }
+            }
+            return (null);
+        }
+
+        // ':N' is stale when the pid in /tmp/.XN-lock is dead, a logout leaves the socket and the lock behind. Xorg, mutter and KWin write the lock, a display without one counts as live
+        function displayAlive(display)
+        {
+            var fs = require('fs'), m = /^:([0-9]+)/.exec(display || '');
+            if (m == null) { return (false); }
+            try { var pid = parseInt(bufStr(fs.readFileSync('/tmp/.X' + m[1] + '-lock')).trim()); return (isNaN(pid) || fs.existsSync('/proc/' + pid)); } catch (e) { return (true); }
+        }
+
+        // Linux, from /proc and logind's state files, so no process runs and nothing can hang
+        function xinfo_linux(consoleuid)
+        {
+            var fs = require('fs'), procs = procList(consoleuid), ret = xinfoFromXServer(procs, xServerOf(procs), consoleuid), v;
+            if (ret != null) { return (ret); }
+
+            var sessions = logindSessions(consoleuid);
+            if (sessions.length > 0)
+            {
+                // The session's display, logind names none for a Wayland session, then the X11 socket the compositor owns
+                var pw = passwdEntry(consoleuid);
+                ret = xinfo(consoleuid, '', ((pw.home || '') + '/.Xauthority').split('//').join('/'), sessions[0].TTY);
+                for (var i = 0; i < sessions.length; ++i) { if (sessions[i].DISPLAY) { ret.display = sessions[i].DISPLAY; break; } }
+                if ((ret.display == '') && ((v = x11SocketOf(consoleuid)) != null)) { ret.display = v; }
+                // The key file in the runtime folder first, on-demand Xwayland has no key in ~/.Xauthority ("Can't open display: :0", GNOME 50)
+                var wlAuth = xinfo_runtimeAuth(consoleuid);
+                if (wlAuth != null) { ret.xauthority = wlAuth; }
+                if (!fs.existsSync(ret.xauthority))
+                {
+                    // XAUTHORITY from the user's processes, then the system locations of lightdm and sddm
+                    if ((v = procEnvValues(procs, ['XAUTHORITY'])) != null) { ret.xauthority = v.XAUTHORITY; }
+                    if ((pw.name != null) && fs.existsSync('/run/lightdm/' + pw.name + '/xauthority')) { ret.xauthority = '/run/lightdm/' + pw.name + '/xauthority'; }
+                    if ((consoleuid == require('user-sessions').gdmUid) && fs.existsSync('/run/sddm'))
+                    {
+                        var files = fs.readdirSync('/run/sddm');
+                        for (var j = 0; j < files.length; ++j)
+                        {
+                            try { if (fs.statSync('/run/sddm/' + files[j]).uid == consoleuid) { ret.xauthority = '/run/sddm/' + files[j]; break; } } catch (e) { }
+                        }
+                    }
+                }
+                if ((ret.display == '') && ((v = procEnvValues(procs, ['DISPLAY'])) != null)) { ret.display = v.DISPLAY; }
+                if (!displayAlive(ret.display)) { ret.display = ''; }
+                return (ret);
+            }
+
+            // No X server and no session, the environment of the user's processes is all that is left
+            ret = xinfoFromEnv(procs, consoleuid);
+            return (((ret != null) && !displayAlive(ret.display)) ? null : ret);
+        }
+
+        // FreeBSD, from sysctl kern.proc.* through libc, so no process runs and nothing can hang. null where libc has no sysctlbyname (OpenBSD)
+        var bsdLibc = null;
+        function bsdSysctl(name)
+        {
+            var gm = require('_GenericMarshal');
+            if (bsdLibc == null) { bsdLibc = gm.CreateNativeProxy('libc.so.7'); bsdLibc.CreateMethod('sysctlbyname'); }
+            // One call for the size, one for the data, with room for what starts in between
+            var len = gm.CreateVariable(8);
+            if (bsdLibc.sysctlbyname(gm.CreateVariable(name), 0, len, 0, 0).Val != 0) { return (null); }
+            var size = len.Deref(0, 4).toBuffer().readUInt32LE(0) + 16384, buf = gm.CreateVariable(size);
+            len.Deref(0, 4).toBuffer().writeUInt32LE(size, 0);
+            if (bsdLibc.sysctlbyname(gm.CreateVariable(name), buf, len, 0, 0).Val != 0) { return (null); }
+            return (buf.Deref(0, len.Deref(0, 4).toBuffer().readUInt32LE(0)).toBuffer());
+        }
+        function bsdProcList(uid)
+        {
+            var all, ret = [];
+            try { all = bsdSysctl('kern.proc.proc'); } catch (e) { return (null); }
+            if (all == null) { return (null); }
+            // struct kinfo_proc: ki_structsize first, ki_pid after two ints and eight pointers, ki_uid 96 bytes later (six pids, two shorts, ki_tdev_freebsd11, four sigsets)
+            var ps = require('_GenericMarshal').PointerSize, pidOff = 8 + 8 * ps, uidOff = pidOff + 96;
+            for (var off = 0; off + uidOff + 4 <= all.length; )
+            {
+                var size = all.readInt32LE(off), pid = all.readInt32LE(off + pidOff);
+                if (size <= 0) { break; }
+                if ((all.readUInt32LE(off + uidOff) == uid) && (pid != process.pid))
+                {
+                    var args = bsdSysctl('kern.proc.args.' + pid);
+                    if (args != null) { ret.push({ pid: pid, argv: nulSplit(args), env: bsdProcEnv }); }
+                }
+                off += size;
+            }
+            return (ret);
+        }
+        function bsdProcEnv()
+        {
+            if (this._env == null)
+            {
+                this._env = {};
+                var e = nulSplit(bsdSysctl('kern.proc.env.' + this.pid));
+                for (var i = 0; i < e.length; ++i) { var k = e[i].indexOf('='); if (k > 0) { this._env[e[i].substring(0, k)] = e[i].substring(k + 1); } }
+            }
+            return (this._env);
+        }
+
+        // FreeBSD: the user's X server with its key file, else both values from one of the user's processes, else DISPLAY alone. No logind and no /proc here, so nothing checks a stale display
+        function xinfo_ps(consoleuid)
+        {
+            var procs = bsdProcList(consoleuid);
+            if (procs == null) { return (xinfo_ps_shell(consoleuid)); }
+            var ret = xinfoFromXServer(procs, xServerOf(procs), consoleuid);
+            return ((ret != null) ? ret : xinfoFromEnv(procs, consoleuid));
+        }
+
+        // The shell version, OpenBSD only now: no sysctlbyname there. These waitExit() calls have no timeout
+        function xinfo_ps_shell(consoleuid)
+        {
+            var ret = null;
+            var uname = passwdEntry(consoleuid).name;
             var child = require('child_process').execFile('/bin/sh', ['sh']);
             child.stdout.str = '';
             child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-            child.stdin.write("ps " + (process.platform == 'freebsd' ? "-ax " : "") + "-e -o uid -o tty -o command | grep X | ");
+            child.stdin.write("ps -ax -e -o uid -o tty -o command | grep X | ");
             child.stdin.write("awk '{ ");
             child.stdin.write('        display="";');
             child.stdin.write('        if($4~/^:/)');
@@ -628,303 +693,94 @@ function monitorinfo()
             child.stdin.write('        match($0, /-auth .+/);');
             child.stdin.write('       split(substr($0,RSTART+6,RLENGTH-6), _authtok, " ");');
             child.stdin.write('        _auth = _authtok[1];');
-            //child.stdin.write('        _auth = substr($0,RSTART+6,RLENGTH-6);');
             child.stdin.write('        if($1=="' + consoleuid + '" && _auth!="")');
             child.stdin.write("        {");
-            child.stdin.write("           printf \"%s,%s,%s,%s\",$1,$2,_auth,display;");
+            child.stdin.write("           printf \"%s,%s,%s,%s\\n\",$1,$2,_auth,display;");
             child.stdin.write("        }");
             child.stdin.write("     }'\nexit\n");
-
             child.waitExit();
-            var tokens = child.stdout.str.trim().split(',');
-            console.info1(JSON.stringify(tokens));
-            if (tokens.length == 4)
+            var tokens = child.stdout.str.trim().split('\n')[0].split(',');     // One line per X server, a user can have Xorg and Xwayland
+            if (tokens.length == 4) { ret = xinfo(consoleuid, tokens[3], tokens[2], tokens[1]); }
+            if ((ret != null) || (uname == null)) { return (ret); }
+
+            // No X server with a key file, so the environment of every process of this user is inspected
+            child = require('child_process').execFile('/bin/sh', ['sh']);
+            child.stdout.str = '';
+            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
+            child.stdin.write("ps -ax -e -o pid -o user | grep \" " + uname + "$\" | awk '{ print $1 }'\nexit\n");
+            child.waitExit();
+            var lines = child.stdout.str.split('\n'), envs = [];
+            for (var n = 0; n < lines.length; ++n)
             {
-                ret = { tty: tokens[1], xauthority: tokens[2], display: tokens[3], exportEnv: exportEnv };
-                console.info1('ret => ' + JSON.stringify(ret));
+                var ln = lines[n].trim();
+                if (ln.length == 0) { continue; }
+                var e = require('user-sessions').getEnvFromPid(ln);
+                if (e.XAUTHORITY && e.DISPLAY) { return (xinfo(consoleuid, e.DISPLAY, e.XAUTHORITY)); }
+                envs.push(e);
             }
+            for (n = 0; n < envs.length; ++n) { if (envs[n].DISPLAY) { return (xinfo(consoleuid, envs[n].DISPLAY)); } }
+            return (null);
+        }
 
-            if (ret == null)
+        // display, xauthority and uid of the console user's X session, with exportEnv() for a child's environment. null when none is found
+        this.getXInfo = function getXInfo(consoleuid)
+        {
+            var ret = (process.platform == 'linux') ? xinfo_linux(consoleuid) : xinfo_ps(consoleuid);
+            console.info1('xinfo => ' + JSON.stringify(ret));
+            return (ret);
+        };
+
+        // Called by agentcore.c of agents with the session picker for every X11 capture child.
+        // A greeter is captured as root: LightDM and SDDM run its X server as root, GDM runs it as the greeter account, whose key root can read.
+        this.getCaptureXInfo = function getCaptureXInfo(uid)
+        {
+            var mi = require('monitor-info'), ret = mi.getXInfo(uid);     // agentcore.c also calls this without a this object
+            if ((uid == 0) && ((ret == null) || !ret.display))
             {
-                // This Linux Distro does not spawn an XServer instance in the user session, that specifies the XAUTHORITY.
-                if (process.platform == 'linux' && require('user-sessions').hasLoginCtl)
+                try
                 {
-                    child = require('child_process').execFile('/bin/sh', ['sh']);
-                    child.stdout.str = ''; child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                    child.stderr.str = ''; child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
-
-                    child.stdin.write("loginctl list-sessions | tr '\\n' '`' | awk '{");
-                    child.stdin.write('printf "[";');
-                    child.stdin.write('del="";');
-                    child.stdin.write('n=split($0, lines, "`");');
-                    child.stdin.write('for(i=1;i<n;++i)');
-                    child.stdin.write('{');
-                    child.stdin.write('   split(lines[i], tok, " ");');
-                    child.stdin.write('   if((tok[2]+0)==' + consoleuid + ')');
-                    child.stdin.write('   {');
-                    child.stdin.write('      if(tok[4]=="") { continue; }');
-                    child.stdin.write('      printf "%s{\\"Username\\": \\"%s\\", \\"SessionId\\": \\"%s\\", \\"State\\": \\"Online\\", \\"uid\\": \\"%s\\", \\"tty\\": \\"%s\\"}", del, tok[3], tok[1], tok[2], tok[5];');
-                    child.stdin.write('      del=",";');
-                    child.stdin.write('   }');
-                    child.stdin.write('}');
-                    child.stdin.write('printf "]";');
-                    child.stdin.write("}'\nexit\n");
-                    child.waitExit();
-
-                    console.info1('loginctl => ' + child.stdout.str);
-                    var info1 = JSON.parse(child.stdout.str);
-                    var sids = [];
-                    var ttys = [];
-                    var i;
-                    for (i = 0; i < info1.length; ++i)
-                    {
-                        sids.push(info1[i].SessionId);
-                        if (info1[i].tty != '') { ttys.push(info1[i].tty); }
-                    }
-                    child = require('child_process').execFile('/bin/sh', ['sh']);
-                    child.stdout.str = ''; child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                    child.stderr.str = ''; child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
-                    child.stdin.write("loginctl show-session -p State -p Display " + sids.join(' ') + " | tr '\\n' '`' | awk '{");
-                    child.stdin.write('   len=split($0,tok,"``");');
-                    child.stdin.write('   for(n=1;n<=len;++n)');
-                    child.stdin.write('   {');
-                    child.stdin.write('      len2=split(tok[n],val,"`");');
-                    child.stdin.write('      display="";');
-                    child.stdin.write('      active="";');
-                    child.stdin.write('      for(i=1;i<=len2;++i)');
-                    child.stdin.write('      {');
-                    child.stdin.write('         if(val[i] ~ /^Display=/)');
-                    child.stdin.write('         {');
-                    child.stdin.write('             gsub(/^Display=/,"",val[i]);');
-                    child.stdin.write('             display=val[i];');
-                    child.stdin.write('         }');
-                    child.stdin.write('         if(val[i] ~ /^State=/)');
-                    child.stdin.write('         {');
-                    child.stdin.write('            gsub(/^State=/,"",val[i]);');
-                    child.stdin.write('            active=val[i];');
-                    child.stdin.write('         }');
-                    child.stdin.write('      }');
-                    child.stdin.write('      if(active=="active") { print display; break; }');
-                    child.stdin.write('   }');
-                    child.stdin.write("}'\nexit\n");
-                    child.waitExit();
-
-                    ret = { tty: '?', xauthority: (require('user-sessions').getHomeFolder(consoleuid) + '/.Xauthority').split('//').join('/'), display: child.stdout.str.trim(), exportEnv: exportEnv };
-                    if (!require('fs').existsSync(ret.xauthority))
-                    {
-                        console.info1(ret.xauthority + ' => DOES NOT EXIST');
-                        child = require('child_process').execFile('/bin/sh', ['sh']);
-                        child.stdout.str = ''; child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                        child.stderr.str = ''; child.stderr.on('data', function (chunk) { this.str += chunk.toString(); });
-                        child.stdin.write('loginctl session-status ' + sids.join(' ') + " | tr '\\n' '`' | awk '{");
-                        child.stdin.write('len=split($0,X,"`");');
-                        child.stdin.write('Z="";');
-                        child.stdin.write('printf "[";');
-                        child.stdin.write('for(i=1;i<=len;++i)');
-                        child.stdin.write('{');
-                        child.stdin.write('   if(X[i]~/^.+├─/)');
-                        child.stdin.write('   {');
-                        child.stdin.write('      gsub(/^.+├─/,"",X[i]);');
-                        child.stdin.write('      split(X[i],VAL," ");');
-                        child.stdin.write('      printf "%s%s",Z,VAL[1];');
-                        child.stdin.write('      Z=",";');
-                        child.stdin.write('   }');
-                        child.stdin.write('}');
-                        child.stdin.write('printf "]";');
-                        child.stdin.write("}'\nexit\n");
-                        child.waitExit();
-
-                        var pids = null;
-                        try
-                        {
-                            pids = JSON.parse(child.stdout.str);
-                        }
-                        catch(z)
-                        {
-                        }
-
-                        console.info1('Detected PIDS => ' + JSON.stringify(pids));
-
-                        if (pids != null)
-                        {
-                            var e, i;
-                            for (i in pids)
-                            {
-                                e = require('user-sessions').getEnvFromPid(pids[i]);
-                                if (e.XAUTHORITY)
-                                {
-                                    ret.xauthority = e.XAUTHORITY;
-                                    console.info1('  => Setting Xauthority: ' + e.XAUTHORITY + ' from PID: ' + pids[i]);
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Still no Xauthority found, so lets check the system location for lightdm
-                        if(require('fs').existsSync('/run/lightdm/' + uname + '/xauthority'))
-                        {
-                            ret.xauthority = '/run/lightdm/' + uname + '/xauthority';
-                        }
-                        if(consoleuid == require('user-sessions').gdmUid && require('fs').existsSync('/run/sddm'))
-                        {
-                            var info;
-                            var files = require('fs').readdirSync('/run/sddm');
-                            var gdmuid = require('user-sessions').gdmUid;
-                            for(var i=0;i<files.length;++i)
-                            {
-                                info = require('fs').statSync('/run/sddm/' + files[i]);
-                                if(info.uid == gdmuid)
-                                {
-                                    ret.xauthority = '/run/sddm/' + files[i];
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (ret.display == '' && ttys.length > 0)
-                    {
-                        // We need to find $DISPLAY by looking at all the processes running on the same tty as the XServer instance for this user session
-                        while (ttys.length > 0)
-                        {
-                            var tty = ttys.pop();
-                            child = require('child_process').execFile('/bin/sh', ['sh']);
-                            child.stdout.str = '';
-                            child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                            child.stdin.write("ps -e -o tty -o pid -o uid | grep " + tty + " | grep " + consoleuid + " | awk '{ print $2 }' \nexit\n");
-                            child.waitExit();
-
-                            var lines = child.stdout.str.split('\n');
-                            var ps, psx, v, vs = 0;
-                            for (var x in lines)
-                            {
-                                if (lines[x].trim().length > 0)
-                                {
-                                    try
-                                    {
-                                        ps = require('fs').readFileSync('/proc/' + lines[x].trim() + '/environ');
-                                    }
-                                    catch (pse)
-                                    {
-                                        continue;
-                                    }
-                                    vs = 0;
-                                    for (psx = 0; psx < ps.length; ++psx)
-                                    {
-                                        if (ps[psx] == 0)
-                                        {
-                                            v = ps.slice(vs, psx).toString().split('=');
-                                            if (v[0] == 'DISPLAY')
-                                            {
-                                                ret.display = v[1];
-                                                ret.tty = tty;
-                                                return (xinfo_xdm(ret, consoleuid));
-                                            }
-                                            vs = psx + 1;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return (xinfo_xdm(ret, consoleuid));
+                    var greeter = require('user-sessions').gdmUid;
+                    var g = (greeter > 0) ? mi.getXInfo(greeter) : null;
+                    if ((g != null) && g.xauthority && g.display) { ret = g; }
                 }
-
-
-                // So we're going to brute force it, by enumerating all processes owned by this user, and inspect the environment variables
-                var child = require('child_process').execFile('/bin/sh', ['sh']);
-                child.stdout.str = '';
-                child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                child.stdin.write("ps " + (process.platform=='freebsd'?"-ax ":"") + "-e -o pid -o user | grep \" " + uname + "$\" | awk '{ print $1 }'\nexit\n");
-                child.waitExit();
-
-                var lines = child.stdout.str.split('\n');
-                for(var n in lines)
-                {
-                    var ln = lines[n].trim();
-                    if(ln.length>0)
-                    {
-                        var e = require('user-sessions').getEnvFromPid(ln);
-                        if(e.XAUTHORITY && e.DISPLAY)
-                        {
-                            ret = { tty: '?', xauthority: e.XAUTHORITY, display: e.DISPLAY, exportEnv: exportEnv };
-                            return (xinfo_xdm(ret, consoleuid));
-                        }
-                    }
-                }
-                if(ret == null)
-                {
-                    // We couldn't find XAUTHORITY and DISPLAY, so as a last ditch effort, lets just look for DISPLAY
-                    for (var n in lines)
-                    {
-                        var ln = lines[n].trim();
-                        if (ln.length > 0)
-                        {
-                            var e = require('user-sessions').getEnvFromPid(ln);
-                            if (e.DISPLAY)
-                            {
-                                ret = { tty: '?', display: e.DISPLAY, exportEnv: exportEnv };
-                                return (xinfo_xdm(ret, consoleuid));
-                            }
-                        }
-                    }
-                }
+                catch (e) { }
             }
-            else if(ret.display == null || ret.display === '')
-            {
-                // We need to find $DISPLAY by looking at all the processes running on the same tty as the XServer instance for this user session
-                child = require('child_process').execFile('/bin/sh', ['sh']);
-                child.stdout.str = '';
-                child.stdout.on('data', function (chunk) { this.str += chunk.toString(); });
-                child.stdin.write("ps -e -o tty -o pid -o user:9999 | grep " + ret.tty + " | grep " + uname + " | awk '{ print $2 }' \nexit\n");
-                child.waitExit();
-
-                var lines = child.stdout.str.split('\n');
-                var ps, psx, v, vs = 0;
-                for(var x in lines)
-                {
-                    if(lines[x].trim().length>0)
-                    {
-                        try
-                        {
-                            ps = require('fs').readFileSync('/proc/' + lines[x].trim() + '/environ');
-                        }
-                        catch(pse)
-                        {
-                            continue;
-                        }
-                        vs = 0;
-                        for(psx=0;psx<ps.length;++psx)
-                        {
-                            if (ps[psx] == 0)
-                            {
-                                if (psx == 0) { continue; }
-                                v = ps.slice(vs, psx).toString().split('=');
-                                if (v[0] == 'DISPLAY')
-                                {
-                                    ret.display = v[1];
-                                    return (xinfo_xdm(ret, consoleuid));
-                                }
-                                vs = psx + 1;
-                            }
-                        }
-                    }
-                }
-            }
-            return (xinfo_xdm(ret, consoleuid));
+            return (ret);
         };
     }
 }
 
+// toString() of an empty buffer gives null on these agents
+function bufStr(b) { return ((b != null && b.length > 0) ? b.toString() : ''); }
+
+// name and home of a uid from /etc/passwd, null for a field that is not found. user-sessions (getent in a shell) only for a user the file lacks (LDAP, SSSD)
+function passwdEntry(uid)
+{
+    try
+    {
+        var lines = bufStr(require('fs').readFileSync('/etc/passwd')).split('\n');
+        for (var i = 0; i < lines.length; ++i) { var f = lines[i].split(':'); if ((f.length >= 7) && (parseInt(f[2]) == uid)) { return ({ name: f[0], home: f[5] }); } }
+    }
+    catch (e) { }
+    var us = require('user-sessions'), ret = { name: null, home: null };
+    try { ret.name = us.getUsername(uid); } catch (e) { }
+    try { ret.home = us.getHomeFolder(uid); } catch (e) { }
+    return (ret);
+}
+
+// Left out when none was found, an empty XAUTHORITY stops libX11's fallback to ~/.Xauthority (xclip then says "Can't open display"). HOME is the user's for that fallback
 function exportEnv()
 {
     var r =
         {
-            XAUTHORITY: this.xauthority?this.xauthority:"", DISPLAY: this.display,
+            DISPLAY: this.display,
             Location_X11LIB: require('monitor-info').Location_X11LIB,
             Location_X11TST: require('monitor-info').Location_X11TST,
             Location_X11EXT: require('monitor-info').Location_X11EXT,
             Location_X11FIXES: require('monitor-info').Location_X11FIXES
         };
+    if (this.xauthority) { r.XAUTHORITY = this.xauthority; }
+    if (this.uid != null) { var home = passwdEntry(this.uid).home; if (home) { r.HOME = home; } }
     return (r);
 }
 

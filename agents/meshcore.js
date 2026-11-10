@@ -49,6 +49,9 @@ var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
 
+// Until agents read seat0 themselves, user-sessions.consoleUid() answers from logind's seat0, see seat-info.js
+try { require('seat-info').patchUserSessions(); } catch (ex) { }
+
 //
 // This is a helper function used by the 32 bit Windows Agent, when running on 64 bit windows. It will check if the agent is already patched for this
 // and will use this helper if it is not. This helper will inject 'sysnative' into the results when calling readdirSync() on %windir%.
