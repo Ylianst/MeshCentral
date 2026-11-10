@@ -47,8 +47,14 @@ var MESHRIGHT_NODESKTOP = 65536;
 var MESHRIGHT_NOSOFTWARE = 8388608;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
-var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
-
+// View-only desktop users may not read or set the clipboard, same rules as the desktop session, for servers that don't refuse it
+function clipboardAllowed(data) {
+    if ((typeof data.rights != 'number') || (data.desktopviewonly == true)) { return false; }
+    if (data.rights == 0xFFFFFFFF) { return true; }
+    return (((data.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((data.rights & MESHRIGHT_REMOTEVIEW) == 0) && ((data.rights & MESHRIGHT_NODESKTOP) == 0));
+}
+// Lets the clipboard module log and write to the console without importing meshcore.js
+var clipHost = { log: MeshServerLogEx, console: sendConsoleText };
 // Until agents read seat0 themselves, user-sessions.consoleUid() answers from logind's seat0, see seat-info.js
 try { require('seat-info').patchUserSessions(); } catch (ex) { }
 
@@ -1702,67 +1708,18 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'getclip': {
-                        // Send the load clipboard back to the user
-                        //sendConsoleText('getClip: ' + JSON.stringify(data));
-                        if (require('MeshAgent').isService) {
-                            require('clipboard').dispatchRead().then(function (str) {
-                                if (str) {
-                                    if (data.tag != 3) { MeshServerLogEx(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data); }
-                                    mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
-                                }
-                            });
-                        } else {
-                            require('clipboard').read().then(function (str) {
-                                if (str) {
-                                    if (data.tag != 3) { MeshServerLogEx(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data); }
-                                    mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag });
-                                }
-                            });
+                        // Send the local clipboard back to the user
+                        try { require('clipboard').getclip(data, clipboardAllowed(data), clipHost); }
+                        catch (ex) {    // The module did not load, answered like a failed read
+                            if (data.tag == 1) { mesh.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, tag: 1, error: String(ex) }); }
+                            else if (data.tag != 3) { sendConsoleText('getclip: ' + ex, data.sessionid); }
                         }
                         break;
                     }
                     case 'setclip': {
-                        if (!server_hasControlRights(data)) break;
-                        if (pendingSetClip) return;
-                        // Set the load clipboard to a user value
-                        if (typeof data.data == 'string') {
-                            MeshServerLogEx(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-                            if (require('MeshAgent').isService) {
-                                if (process.platform != 'win32') {
-                                    require('clipboard').dispatchWrite(data.data);
-                                    mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
-                                }
-                                else {
-                                    var clipargs = data.data;
-                                    var uid = require('user-sessions').consoleUid();
-                                    var user = require('user-sessions').getUsername(uid);
-                                    var domain = require('user-sessions').getDomain(uid);
-                                    user = (domain + '\\' + user);
-
-                                    if (this._dispatcher) { this._dispatcher.close(); }
-                                    this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
-                                    this._dispatcher.parent = this;
-                                    //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                                    pendingSetClip = true;
-                                    this._dispatcher.on('connection', function (c) {
-                                        this._c = c;
-                                        this._c.root = this.parent;
-                                        this._c.on('end', function ()
-                                        {
-                                            pendingSetClip = false;
-                                            try { this.root._dispatcher.close(); } catch (ex) { }
-                                            this.root._dispatcher = null;
-                                            this.root = null;
-                                            mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
-                                        });
-                                    });
-                                }
-                            }
-                            else {
-                                require('clipboard')(data.data);
-                                mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: true });
-                            } // Set the clipboard
-                        }
+                        // Set the local clipboard to a user value
+                        try { require('clipboard').setclip(data, clipboardAllowed(data), clipHost); }
+                        catch (ex) { mesh.SendCommand({ action: 'msg', type: 'setclip', sessionid: data.sessionid, success: false, error: String(ex) }); }
                         break;
                     }
                     case 'userSessions': {
@@ -5817,51 +5774,14 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length != 1) { response = 'Proper usage: log "sample text"'; } else { MeshServerLog(args['_'][0]); response = 'ok'; }
                 break;
             case 'getclip':
-                if (require('MeshAgent').isService) {
-                    require('clipboard').dispatchRead().then(function (str) { sendConsoleText(str, sessionid); });
-                } else {
-                    require('clipboard').read().then(function (str) { sendConsoleText(str, sessionid); });
-                }
+                try { require('clipboard').consoleGetclip(sessionid, clipHost); } catch (ex) { sendConsoleText('getclip: ' + ex, sessionid); }
                 break;
             case 'setclip': {
-                if (pendingSetClip) {
-                    response = 'Busy';
-                } else if (args['_'].length != 1) {
+                if (args['_'].length != 1) {
                     response = 'Proper usage: setclip "sample text"';
                 } else {
-                    if (require('MeshAgent').isService) {
-                        if (process.platform != 'win32') {
-                            require('clipboard').dispatchWrite(args['_'][0]);
-                        }
-                        else {
-                            var clipargs = args['_'][0];
-                            var uid = require('user-sessions').consoleUid();
-                            var user = require('user-sessions').getUsername(uid);
-                            var domain = require('user-sessions').getDomain(uid);
-                            user = (domain + '\\' + user);
-
-                            if (this._dispatcher) { this._dispatcher.close(); }
-                            this._dispatcher = require('win-dispatcher').dispatch({ user: user, modules: [{ name: 'clip-dispatch', script: "module.exports = { dispatch: function dispatch(val) { require('clipboard')(val); process.exit(); } };" }], launch: { module: 'clip-dispatch', method: 'dispatch', args: [clipargs] } });
-                            this._dispatcher.parent = this;
-                            //require('events').setFinalizerMetadata.call(this._dispatcher, 'clip-dispatch');
-                            pendingSetClip = true;
-                            this._dispatcher.on('connection', function (c) {
-                                this._c = c;
-                                this._c.root = this.parent;
-                                this._c.on('end', function ()
-                                {
-                                    pendingSetClip = false;
-                                    try { this.root._dispatcher.close(); } catch (ex) { }
-                                    this.root._dispatcher = null;
-                                    this.root = null;
-                                });
-                            });
-                        }
-                        response = 'Setting clipboard to: "' + args['_'][0] + '"';
-                    }
-                    else {
-                        require('clipboard')(args['_'][0]); response = 'Setting clipboard to: "' + args['_'][0] + '"';
-                    }
+                    try { require('clipboard').consoleSetclip(args['_'][0], sessionid, clipHost); } catch (ex) { sendConsoleText('setclip: ' + ex, sessionid); }
+                    response = 'Setting clipboard to: "' + args['_'][0] + '"';
                 }
                 break;
             }
