@@ -117,6 +117,58 @@ function targetUserId(sid)
     var active = require('user-sessions').Current().Active;
     return ((active.length > 0) ? parseInt(active[0].SessionId) : 0);
 }
+// Windows: a session's clipboard is only served while a viewer can see that session, so it has to be active and unlocked.
+// The page keeps the session it connected to, and a switched-away session still opens its clipboard.
+var _winLocked = {};
+function winSessionRefusal(id, picked)
+{
+    // Windows is asked first, the lock events are for a Windows that cannot tell
+    var asked = winSessionLocked(id);
+    if ((asked === true) || ((asked == null) && _winLocked[id])) { return (ERR_LOCKED); }
+    if (!picked) { return (null); }     // The console's session was just taken from the active ones
+    var s = null;
+    try { s = require('user-sessions').Current()[id]; } catch (e) { }
+    return (((s != null) && (s.State == 'Active')) ? null : ERR_WIN_NOT_ACTIVE);
+}
+// true or false from WTSQuerySessionInformationW(WTSSessionInfoEx), null when Windows cannot tell. Kept WIN_LOCK_KEEP_MS
+var WIN_LOCK_KEEP_MS = 1000;
+var WTS_SESSION_INFO_EX = 25;
+var _winLockAsked = {};
+function winSessionLocked(id)
+{
+    var now = Date.now(), c = _winLockAsked[id];
+    if ((c != null) && ((now - c.at) < WIN_LOCK_KEEP_MS)) { return (c.locked); }
+    var locked = null;
+    try
+    {
+        // WTSINFOEXW: Level at 0, then WTSINFOEX_LEVEL1_W at 8 with SessionId, SessionState and SessionFlags at 16
+        var b = require('user-sessions').getRawSessionAttribute(id, WTS_SESSION_INFO_EX);
+        if ((b != null) && (b.length >= 20) && (b.readUInt32LE(0) == 1))
+        {
+            var flags = b.readInt32LE(16);     // WTS_SESSIONSTATE_LOCK 0, WTS_SESSIONSTATE_UNLOCK 1, WTS_SESSIONSTATE_UNKNOWN -1
+            if ((flags == 0) || (flags == 1)) { locked = (flags == 0); if (winFlagsSwapped()) { locked = !locked; } }
+        }
+    }
+    catch (e) { }
+    _winLockAsked[id] = { at: now, locked: locked };
+    return (locked);
+}
+// Windows 7 and Server 2008 R2 report SessionFlags with LOCK and UNLOCK swapped, as Microsoft documents
+var _winSwapped = null;
+function winFlagsSwapped()
+{
+    if (_winSwapped != null) { return (_winSwapped); }
+    _winSwapped = false;
+    try
+    {
+        var k = require('_GenericMarshal').CreateNativeProxy('kernel32.dll');
+        k.CreateMethod('GetVersion');
+        var v = k.GetVersion().Val;
+        _winSwapped = (((v & 0xFF) == 6) && (((v >> 8) & 0xFF) == 1));
+    }
+    catch (e) { }
+    return (_winSwapped);
+}
 function dispatchRead(sid)
 {
     var id = targetUserId(sid);
@@ -125,6 +177,8 @@ function dispatchRead(sid)
     {
         // Session 0 is the service's own, nobody's clipboard
         if (id == 0) { return (rejectedPromise('Nobody is logged in')); }
+        var no = winSessionRefusal(id, sid != null);
+        if (no != null) { return (rejectedPromise(no)); }
         // No one-shot read child when the watcher failed, it's the same kind of child in the same session
         return (watchedRead('win:' + id, function () { return (watchStartWindows(id)); }, function () { return (rejectedPromise(ERR_WIN_WATCH_FAILED)); }));
     }
@@ -216,6 +270,8 @@ function dispatchWrite(data, sid)
         // Writes go through the watcher, which says whether the text landed
         var id = targetUserId(sid);
         if (id == 0) { return (rejectedPromise('Nobody is logged in')); }
+        var no = winSessionRefusal(id, sid != null);
+        if (no != null) { return (rejectedPromise(no)); }
         var w = watchGetOrStart('win:' + id, function () { return (watchStartWindows(id)); });
         return ((w == null) ? rejectedPromise(ERR_WIN_WATCH_FAILED) : watchRequest(w, { w: data }));
     }
@@ -1158,6 +1214,8 @@ function lin_copytext(txt)
 var ERR_WIN_OPEN_FAILED = 'The clipboard could not be opened, the session is locked or another program holds it';
 // The watcher ended early in this session less than WIN_WATCH_RETRY_MS ago, or could not start. A login or logout tries it again
 var ERR_WIN_WATCH_FAILED = 'The clipboard watcher could not run in the user session';
+var ERR_LOCKED = 'The session is locked';
+var ERR_WIN_NOT_ACTIVE = 'The session is no longer active, reconnect the desktop';
 
 // The user32 and kernel32 proxies are created once, an agent without a service reads in-process every second with Automatic Clipboard
 var _winApi = null;
@@ -1310,7 +1368,10 @@ switch(process.platform)
 // 'changed' fires on a login or logout (on Linux when /var/run/utmp changes), so the cached console user, X display, helper and watcher go at once
 try { require('user-sessions').on('changed', resetSession); } catch (e) { }
 // A lock does not move GetClipboardSequenceNumber(), so the watcher's copy is dropped at the lock
-try { require('user-sessions').on('locked', function () { var w = _watcher; if ((w != null) && w.takesRequests) { w.gen++; w.valid = false; w.text = null; } }); } catch (e) { }
+try { require('user-sessions').on('locked', function (u) { if ((u != null) && (u.SessionId != null)) { _winLocked[u.SessionId] = true; } var w = _watcher; if ((w != null) && w.takesRequests) { w.gen++; w.valid = false; w.text = null; } }); } catch (e) { }
+try { require('user-sessions').on('unlocked', function (u) { if ((u != null) && (u.SessionId != null)) { delete _winLocked[u.SessionId]; } }); } catch (e) { }
+// A session that logged off while locked would keep its entry, and Windows gives the id to a later session
+try { if (process.platform == 'win32') { require('user-sessions').on('changed', function () { var cur = {}; try { cur = require('user-sessions').Current(); } catch (e) { } for (var id in _winLocked) { if (cur[id] == null) { delete _winLocked[id]; } } }); } } catch (e) { }
 
 var POLLER_EXPIRY_MS = 5000;    // A session without a poll for this long stops getting pushes
 var GC_INTERVAL_MS = 10000;     // garbage collection interval when automatic clipboard is on
@@ -1357,6 +1418,12 @@ function matchesSetLast(str) { return ((clipState.setLast.text != null) && (toUn
 function pushToPollers(str, w)
 {
     if (!str || isTooLarge(str)) { return; }
+    // A copy in a locked or switched-away session is not sent to any page
+    if ((w != null) && (process.platform == 'win32') && (winSessionRefusal(w.uid, true) != null)) { return; }
+    whenUnlocked(function () { pushToPollersNow(str, w); }, function () { });
+}
+function pushToPollersNow(str, w)
+{
     var now = Date.now(), fp = fingerprint(str), logData = null, logAt = 0;
     var echo = matchesSetLast(str);
     prunePollers(now);
@@ -1374,6 +1441,17 @@ function pushToPollers(str, w)
         clipState.host.log(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", logData);
         clipState.lastLogged = str;
     }
+}
+
+// Linux and macOS: runs go() unless the console session is locked, then refuse(ERR_LOCKED). Called only where text is about to cross, so an idle poll starts no process.
+// Windows refuses in dispatchRead() and dispatchWrite().
+function whenUnlocked(go, refuse)
+{
+    if ((process.platform != 'linux') && (process.platform != 'darwin')) { go(); return; }
+    var p = null;
+    try { p = require('seat-info').isLocked(); } catch (e) { }
+    if (p == null) { go(); return; }
+    p.then(function (locked) { if (locked) { refuse(ERR_LOCKED); } else { go(); } }, function () { go(); });
 }
 
 // Read also routes darwin through dispatch, so a hand-started Mac agent reuses the watcher instead of pbpaste
@@ -1408,13 +1486,18 @@ function getclip(data, allowed, host)
         if (isTooLarge(str)) { failed(ERR_TOO_LARGE); return; }
         var fp = fingerprint(str);
         if ((data.tag == 3) && (fp != null) && (data.known === fp)) { return; } // The page already has this text
-        if ((data.tag == 3) && matchesSetLast(str)) { clipState.lastLogged = str; } // A setclip read back isn't a new copy and isn't logged
-        if ((data.tag != 3) || (str !== clipState.lastLogged))
+        // An automatic read is checked here, only when it has text to send. A dialog or button read was checked before the read
+        var check = (data.tag == 3) ? whenUnlocked : function (go) { go(); };
+        check(function ()
         {
-            host.log(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data);
-            if (data.tag == 3) { clipState.lastLogged = str; }
-        }
-        meshAgent.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag, fp: fp });
+            if ((data.tag == 3) && matchesSetLast(str)) { clipState.lastLogged = str; } // A setclip read back isn't a new copy and isn't logged
+            if ((data.tag != 3) || (str !== clipState.lastLogged))
+            {
+                host.log(21, [str.length], "Getting clipboard content, " + str.length + " byte(s)", data);
+                if (data.tag == 3) { clipState.lastLogged = str; }
+            }
+            meshAgent.SendCommand({ action: 'msg', type: 'getclip', sessionid: data.sessionid, data: str, tag: data.tag, fp: fp });
+        }, failed);
     };
     if ((data.tag == 3) && (typeof data.sessionid == 'string'))
     {
@@ -1425,14 +1508,19 @@ function getclip(data, allowed, host)
         clipState.pollers[data.sessionid] = { at: now, data: data };
         if (!clipState.hooked) { clipState.hooked = true; clipState.host = host; _watchListener = pushToPollers; }
     }
-    try
+    var read = function ()
     {
-        var p = clipRead(pickedSession(data));
-        // The watcher this read used, pushes from another session's watcher are not for this page
-        if ((data.tag == 3) && (clipState.pollers[data.sessionid] != null)) { clipState.pollers[data.sessionid].key = (_watcher != null) ? _watcher.key : null; }
-        p.then(send, failed);
-    }
-    catch (ex) { failed(ex); }     // dispatchRead() throws before it has a promise when the console user lookup fails
+        try
+        {
+            var p = clipRead(pickedSession(data));
+            // The watcher this read used, pushes from another session's watcher are not for this page
+            if ((data.tag == 3) && (clipState.pollers[data.sessionid] != null)) { clipState.pollers[data.sessionid].key = (_watcher != null) ? _watcher.key : null; }
+            p.then(send, failed);
+        }
+        catch (ex) { failed(ex); }     // dispatchRead() throws before it has a promise when the console user lookup fails
+    };
+    // A dialog or button read is checked before it starts, KDE empties the clipboard while locked and an empty read gets no reply
+    if (data.tag == 3) { read(); } else { whenUnlocked(read, failed); }
 }
 
 function setclip(data, allowed, host)
@@ -1446,33 +1534,42 @@ function setclip(data, allowed, host)
     };
     if (!allowed) { answer('not allowed with view-only desktop rights'); return; }
     if (typeof data.data != 'string') { return; }
-    host.log(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
-    clipState.setLast.text = data.data; clipState.setLast.sessionid = data.sessionid;
-    try
+    whenUnlocked(function ()
     {
-        checkGC();
-        var p = clipWrite(data.data, pickedSession(data));
-        if ((p != null) && (typeof p.then == 'function')) { p.then(function () { answer(); }, answer); } else { answer(); }
-    }
-    catch (ex) { answer(ex); }
+        host.log(22, [data.data.length], "Setting clipboard content, " + data.data.length + " byte(s)", data);
+        clipState.setLast.text = data.data; clipState.setLast.sessionid = data.sessionid;
+        try
+        {
+            checkGC();
+            var p = clipWrite(data.data, pickedSession(data));
+            if ((p != null) && (typeof p.then == 'function')) { p.then(function () { answer(); }, answer); } else { answer(); }
+        }
+        catch (ex) { answer(ex); }
+    }, answer);
 }
 
 function consoleGetclip(sessionid, host)
 {
     var err = function (e) { host.console('getclip: ' + e, sessionid); };
-    try { clipRead().then(function (str) { host.console(str, sessionid); }, err); } catch (ex) { err(ex); }
+    whenUnlocked(function ()
+    {
+        try { clipRead().then(function (str) { host.console(str, sessionid); }, err); } catch (ex) { err(ex); }
+    }, err);
 }
 
 function consoleSetclip(txt, sessionid, host)
 {
     var err = function (e) { host.console('setclip: ' + e, sessionid); };
-    try
+    whenUnlocked(function ()
     {
-        checkGC();
-        var p = clipWrite(txt);
-        if ((p != null) && (typeof p.then == 'function')) { p.then(function () { }, err); }
-    }
-    catch (ex) { err(ex); }
+        try
+        {
+            checkGC();
+            var p = clipWrite(txt);
+            if ((p != null) && (typeof p.then == 'function')) { p.then(function () { }, err); }
+        }
+        catch (ex) { err(ex); }
+    }, err);
 }
 
 module.exports.nativeAddModule = nativeAddModule;

@@ -5780,8 +5780,8 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 if (args['_'].length != 1) {
                     response = 'Proper usage: setclip "sample text"';
                 } else {
+                    sendConsoleText('Setting clipboard...', sessionid);
                     try { require('clipboard').consoleSetclip(args['_'][0], sessionid, clipHost); } catch (ex) { sendConsoleText('setclip: ' + ex, sessionid); }
-                    response = 'Setting clipboard to: "' + args['_'][0] + '"';
                 }
                 break;
             }
