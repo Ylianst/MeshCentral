@@ -521,7 +521,7 @@ function emptyFailures()
 function watchNotifyListener(w, text)
 {
     if ((_watchListener == null) || w.stopped || !text) { return; }
-    try { _watchListener(text); } catch (e) { }
+    try { _watchListener(text, w); } catch (e) { }
 }
 
 // The shell needs PATH to find mktemp and the tools
@@ -1353,8 +1353,8 @@ function checkGC()
 // CRLF-normalized string compare to prevent cross OS mismatch
 function matchesSetLast(str) { return ((clipState.setLast.text != null) && (toUnixNewlines(str) === toUnixNewlines(clipState.setLast.text))); }
 
-// A watcher's new text goes to every polling page at once, so a copy on the device doesn't wait for the next poll
-function pushToPollers(str)
+// A watcher's new text goes to every page polling that watcher's session at once, so a copy on the device doesn't wait for the next poll
+function pushToPollers(str, w)
 {
     if (!str || isTooLarge(str)) { return; }
     var now = Date.now(), fp = fingerprint(str), logData = null, logAt = 0;
@@ -1363,6 +1363,7 @@ function pushToPollers(str)
     for (var sid in clipState.pollers)
     {
         var t = clipState.pollers[sid];
+        if ((w != null) && (t.key != null) && (t.key != w.key)) { continue; }    // A page that picked another session
         if (echo && (sid == clipState.setLast.sessionid)) { continue; }
         meshAgent.SendCommand({ action: 'msg', type: 'getclip', sessionid: sid, data: str, tag: 3, fp: fp });
         if ((logData == null) || (t.at < logAt)) { logData = t.data; logAt = t.at; } // The event names the earliest poll, not the session the loop visited last
@@ -1376,8 +1377,10 @@ function pushToPollers(str)
 }
 
 // Read also routes darwin through dispatch, so a hand-started Mac agent reuses the watcher instead of pbpaste
-function clipRead() { return ((meshAgent.isService || (process.platform == 'darwin')) ? dispatchRead() : module.exports.read()); }
-function clipWrite(txt) { return (meshAgent.isService ? dispatchWrite(txt) : module.exports(txt)); }
+function clipRead(sid) { return ((meshAgent.isService || (process.platform == 'darwin')) ? dispatchRead(sid) : module.exports.read()); }
+function clipWrite(txt, sid) { return (meshAgent.isService ? dispatchWrite(txt, sid) : module.exports(txt)); }
+// The session the page picked for its desktop, null for the console. Windows only, Linux takes seat0's user
+function pickedSession(data) { return (((process.platform == 'win32') && (typeof data.tsid == 'number') && (data.tsid > 0)) ? data.tsid : null); }
 
 function getclip(data, allowed, host)
 {
@@ -1422,7 +1425,14 @@ function getclip(data, allowed, host)
         clipState.pollers[data.sessionid] = { at: now, data: data };
         if (!clipState.hooked) { clipState.hooked = true; clipState.host = host; _watchListener = pushToPollers; }
     }
-    try { clipRead().then(send, failed); } catch (ex) { failed(ex); }     // dispatchRead() throws before it has a promise when the console user lookup fails
+    try
+    {
+        var p = clipRead(pickedSession(data));
+        // The watcher this read used, pushes from another session's watcher are not for this page
+        if ((data.tag == 3) && (clipState.pollers[data.sessionid] != null)) { clipState.pollers[data.sessionid].key = (_watcher != null) ? _watcher.key : null; }
+        p.then(send, failed);
+    }
+    catch (ex) { failed(ex); }     // dispatchRead() throws before it has a promise when the console user lookup fails
 }
 
 function setclip(data, allowed, host)
@@ -1441,7 +1451,7 @@ function setclip(data, allowed, host)
     try
     {
         checkGC();
-        var p = clipWrite(data.data);
+        var p = clipWrite(data.data, pickedSession(data));
         if ((p != null) && (typeof p.then == 'function')) { p.then(function () { answer(); }, answer); } else { answer(); }
     }
     catch (ex) { answer(ex); }

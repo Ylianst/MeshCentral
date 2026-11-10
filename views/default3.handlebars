@@ -2435,6 +2435,8 @@
         var deskLastClipboardSent = null;
         var deskLastClipboardReceived = null;
         var deskLastClipboardFp = null; // Agent's fingerprint of deskLastClipboardReceived, sent back with each poll so an unchanged text isn't sent again
+        // The session picked when the desktop connected (a Windows session id), so the clipboard is that session's and not the console's. undefined is left out of the message
+        function deskClipTsid() { var t = ((desktop != null) && (desktop.options != null)) ? desktop.options.tsid : null; return ((typeof t == 'number') ? t : undefined); }
         // Normalized compare, Windows stores \r\n
         function deskClipboardEq(a, b) { if (a === b) { return true; } return ((a == null) || (b == null)) ? (a == b) : (a.replace(/\r\n/g, '\n') == b.replace(/\r\n/g, '\n')); }
         var deskClipboardMaxBytes = 1048576; // The auto clipboard doesn't send a local text over this many UTF-8 bytes, the agent can't read a longer one back
@@ -9925,7 +9927,7 @@
                 var text = desktop.m.getClipboard();
                 if ((text != null) && (navigator.clipboard != null)) { navigator.clipboard.writeText(text).then(function () { }).catch(function (err) { console.log(err); }) } // Put remote clipboard data into our clipboard
             } else {
-                meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 2 });
+                meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tsid: deskClipTsid(), tag: 2 });
             }
         }
 
@@ -9940,7 +9942,7 @@
             if ((navigator.clipboard != null) && (navigator.clipboard.readText != null)) {
                 try {
                     navigator.clipboard.readText().then(function (text) {
-                        if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text }); }
+                        if (desktop.m.setClipboard) { desktop.m.setClipboard(text); } else { meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, tsid: deskClipTsid(), data: text }); }
                     }).catch(function (err) { console.log(err); });
                 } catch (ex) { console.log(ex); }
             }
@@ -11597,7 +11599,7 @@
                                     if (desktop.m.setClipboard) {
                                         desktop.m.setClipboard(text);
                                     } else {
-                                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: text });
+                                        meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, tsid: deskClipTsid(), data: text });
                                     }
                                     deskLastClipboardSent = text;
                                 }
@@ -11607,7 +11609,7 @@
                     // Remote -> Local: poll remote clipboard every second (non-RDP only; RDP uses onClipboardChanged callback)
                     // known lets the agent leave out a text the page already has
                     if ((desktop.contype != 4) && (currentNode != null) && (navigator.clipboard.writeText != null)) {
-                        meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 3, known: deskLastClipboardFp });
+                        meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tsid: deskClipTsid(), tag: 3, known: deskLastClipboardFp });
                     }
                 }
             } else {
@@ -12307,7 +12309,7 @@
         function showDeskClipGet() {
             if (desktop == null || desktop.State != 3) return;
             deskClipStatus('');
-            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tag: 1 });
+            meshserver.send({ action: 'msg', type: 'getclip', nodeid: currentNode._id, tsid: deskClipTsid(), tag: 1 });
         }
 
         function showDeskClipSet() {
@@ -12316,7 +12318,7 @@
             if (desktop.m.setClipboard) {
                 desktop.m.setClipboard(Q('d2clipText').value);
             } else {
-                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, data: Q('d2clipText').value });
+                meshserver.send({ action: 'msg', type: 'setclip', nodeid: currentNode._id, tsid: deskClipTsid(), data: Q('d2clipText').value });
             }
         }
 
