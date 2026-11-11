@@ -2060,6 +2060,16 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                         });
                         break;
                     }
+                    case 'envpaths': {
+                        // The File Commander's locations. Over SFTP only the home folder is known.
+                        if (obj.sftp == null) return;
+                        obj.sftp.realpath('.', function (err, home) {
+                            const env = {};
+                            if ((err == null) && (typeof home == 'string') && (home[0] == '/')) { env.HOME = home; env.DESKTOP = home + '/Desktop'; env.DOCUMENTS = home + '/Documents'; env.DOWNLOADS = home + '/Downloads'; }
+                            try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'envpaths', reqid: msg.reqid, platform: 'sftp', env: env }))); } catch (ex) { }
+                        });
+                        break;
+                    }
                     case 'mkdir': {
                         if (obj.sftp == null) return;
                         var requestedPath = msg.path;

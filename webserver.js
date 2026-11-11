@@ -3504,7 +3504,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
-                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
+                    fileCommander: encodeURIComponent(JSON.stringify(((domain.filecommander != null) && (typeof domain.filecommander == 'object')) ? domain.filecommander : {})).replace(/'/g, '%27')
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;

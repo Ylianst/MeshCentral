@@ -14,6 +14,7 @@
     <link type="text/css" href="styles/ol3-contextmenu.min.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/xterm.css" media="screen" rel="stylesheet" title="CSS" />
     <link type="text/css" href="styles/flatpickr.min.css" media="screen" rel="stylesheet" title="CSS">
+    <link type="text/css" href="styles/filecommander.css" media="screen" rel="stylesheet" title="CSS" />
     {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
@@ -47,6 +48,7 @@
     <script keeplink=1 type="text/javascript" src="scripts/moment{{min}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/chartjs-adapter-moment{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/filesaver.min.js"></script>
+    <script type="text/javascript" src="scripts/filecommander.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/ol3-contextmenu{{{min}}}.js"></script>
     <script keeplink=1 type="text/javascript" src="scripts/purify{{{min}}}.js"></script>
@@ -933,6 +935,7 @@
                     <tr>
                         <td class="areaHead" style="line-height:22px">
                             <div class="toright2">
+                                <input id=p13CommanderButton type=button title="Dual pane file manager. Copy files between this computer and the device, or between two folders on the device." value="Commander" onclick=p13toggleCommander() />
                                 <input id="filesActionsBtn" type=button title="Perform power actions on the device" value=Actions onclick=deviceActionFunction() />
                                 <div id="filesRecordIcon" class='deskareaicon' title="Server is recording this session" style="display:none;background-color:red;width:12px;height:12px;border-radius:6px;margin-top:5px;margin-left:5px"></div>
                                 <div id="filesCustomUpperRight" style="float:left;margin-right:6px"></div>
@@ -1001,6 +1004,7 @@
                     <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
                     <span id="p13files"></span>
                 </div>
+                <div id="p13commander" style="display:none"></div>
                 <table id="p13toolbarBottom" cellpadding=0 cellspacing=0>
                     <tr><td class=style6>&nbsp;<span id="p13bottomstatus"></span></td></tr>
                 </table>
@@ -1883,6 +1887,7 @@
             Q('p13filetable').addEventListener('drop', p13fileDragDrop, false);
             Q('p13filetable').addEventListener('dragover', p13fileDragOver, false);
             Q('p13filetable').addEventListener('dragleave', p13fileDragLeave, false);
+            p13setupCommander();
 
             // Timeline update interval
             setInterval(updateDeviceTimeline, 120000); // Check every 2 minutes
@@ -3740,6 +3745,8 @@
                                 node.httpport = message.event.node.httpport;
                                 node.httpsport = message.event.node.httpsport;
                                 node.consent = message.event.node.consent;
+                                node.filecommander = message.event.node.filecommander;
+                                if ((fileCommander != null) && (filesNode != null) && (filesNode._id == node._id)) { fileCommander.refreshLocations(); }
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
                                 if (message.event.node.agent != null) {
@@ -11671,6 +11678,7 @@
             QV('p13Connects', ((features2 & 0x200) != 0) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));
             QV('p13Disconnect', files != null);
             p13setActions();
+            if ((fileCommander != null) && (files == null)) { fileCommander.onDisconnect(); } // Clear the device panes of the previous device
         }
 
         function onFilesStateChange(xfiles, state) {
@@ -11695,6 +11703,7 @@
                     QV('filesRecordIcon', false);
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
+                    if (fileCommander != null) { fileCommander.onDisconnect(); }
                     if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
                     if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
                     break;
@@ -11708,6 +11717,7 @@
                         p13filetreelocation = p13targetpath.split('/');
                         files.sendText({ action: 'ls', reqid: 1, path: p13targetpath });
                         if (files.serverIsRecording == true) { QV('filesRecordIcon', true); }
+                        if (fileCommander != null) { fileCommander.onConnect(); }
                     }
                     break;
                 default:
@@ -12410,14 +12420,60 @@
         var p13targetpath = null;
         var p13filetreelocation = [];
 
+        //
+        // FILE COMMANDER (dual pane view, see scripts/filecommander.js)
+        //
+
+        var fileCommander = null;
+        function p13setupCommander() {
+            if ((typeof FileCommander == 'undefined') || (Q('p13commander') == null)) { QV('p13CommanderButton', false); return; }
+            var config = {}; // The domain's fileCommander settings from config.json
+            try { config = JSON.parse(decodeURIComponent('{{{fileCommander}}}')); } catch (ex) { }
+            fileCommander = FileCommander.create({
+                root: Q('p13commander'),
+                config: config,
+                send: function (x) { if (files != null) { files.sendText(x); } },
+                sendBinary: function (x) { if (files != null) { files.send(x); } },
+                isConnected: function () { return (files != null) && (files.State == 3); },
+                isWindows: function () { return (filesNode != null) && isWindowsNode(filesNode); },
+                isSftp: function () { return (files != null) && (files.contype == 2); },
+                nodeId: function () { return (filesNode != null) ? filesNode._id : null; },
+                nodeName: function () { return (filesNode != null) ? filesNode.name : ''; },
+                chunkSize: function () { return attemptWebRTC ? 16384 : 65536; },
+                formatDate: function (d) { return d.toLocaleString(args.locale); },
+                downloadUrl: function (path) {
+                    if ((filesNode == null) || (filesNode.mtype == 3) || (files == null) || (files.contype == 2)) return null; // Pulled through the files tunnel instead
+                    return 'devicefile.ashx?c=' + authCookie + '&m=' + filesNode.meshid.split('/')[2] + '&n=' + filesNode._id.split('/')[2] + '&f=' + encodeURIComponentEx(path);
+                },
+                downloadFile: function (url, name) { downloadFile(url, encodeURIComponentEx(name)); },
+                openOnDevice: function (path, isDir) { if (files != null) { files.sendText({ action: 'open', reqid: 1, path: path, dir: isDir }); } },
+                deviceConfig: function () { return (filesNode != null) ? filesNode.filecommander : null; }, // This device's own locations, set below
+                canEditDevice: function () { return (filesNode != null) && ((GetNodeRights(filesNode) & 4) != 0); }, // MESHRIGHT_MANAGECOMPUTERS, as the server checks
+                saveDeviceConfig: function (settings) {
+                    if (filesNode == null) return;
+                    if (settings == null) { delete filesNode.filecommander; } else { filesNode.filecommander = settings; } // Shown right away, the server sends the change to everyone else
+                    meshserver.send({ action: 'changedevice', nodeid: filesNode._id, filecommander: settings });
+                },
+                onActiveChanged: function (active) {
+                    var rows = Q('p13toolbar').rows;
+                    rows[1].style.display = rows[2].style.display = (active ? 'none' : '');
+                    QV('p13filetable', !active);
+                    QV('p13toolbarBottom', !active);
+                    Q('p13CommanderButton').value = active ? "Classic View" : "Commander";
+                }
+            });
+        }
+        function p13toggleCommander() { if (fileCommander != null) { fileCommander.toggle(); } }
+
         function p13fileOperationDialogEx(b) { if ((b == 0) && (files != null)) { files.sendText({ action: 'cancel' }); } }
 
         function p13gotFiles(data) {
-            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { if ((fileCommander != null) && fileCommander.processBinaryString(data)) return; p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
             //console.log('p13gotFiles', data);
             try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
                 try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse: ' + data); return; }
             }
+            if ((fileCommander != null) && fileCommander.processData(data)) return; // Response to a File Commander request
             if (data.action == 'download') { p13gotDownloadCommand(data); return; }
 
             // Find file result
@@ -13158,6 +13214,7 @@
                 p13gotFiles(binStr);
                 return;
             }
+            if ((fileCommander != null) && fileCommander.processBinary(data)) return;
             if (!gdownloadFile || gdownloadFile.state == 0) return;
             if (data.length > 4) {
                 var payload = data.subarray(4);

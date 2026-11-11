@@ -141,6 +141,25 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     obj.send = function (object) { try { ws.send(JSON.stringify(object)); } catch(ex) {} }
 
     // Clean a IPv6 address that encodes a IPv4 address
+    // File Commander settings of a device, keeping only what the page uses. Returns null when nothing is left.
+    function cleanFileCommanderSettings(x) {
+        if ((x == null) || (typeof x != 'object')) return null;
+        var r = {};
+        if ((typeof x.startpath == 'string') && (x.startpath.trim().length > 0) && (x.startpath.length <= 1024)) { r.startpath = x.startpath.trim(); }
+        if (Array.isArray(x.locations)) {
+            var locs = [];
+            for (var i = 0; (i < x.locations.length) && (locs.length < 100); i++) {
+                var l = x.locations[i];
+                if ((l == null) || (typeof l.path != 'string') || (l.path.trim().length == 0) || (l.path.length > 1024)) continue;
+                var c = { path: l.path.trim() };
+                if ((typeof l.name == 'string') && (l.name.trim().length > 0)) { c.name = l.name.trim().substring(0, 128); }
+                locs.push(c);
+            }
+            if (locs.length > 0) { r.locations = locs; }
+        }
+        return (Object.keys(r).length == 0) ? null : r;
+    }
+
     function cleanRemoteAddr(addr) { if (addr.startsWith('::ffff:')) { return addr.substring(7); } else { return addr; } }
 
     // Send a PING/PONG message
@@ -3671,6 +3690,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             group2.sort();
                             if (node.tags != group2) { node.tags = group2; change = 1; }
                         } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
+
+                        if (command.filecommander !== undefined) { // Locations the File Commander offers for this device, null removes them
+                            var fc = cleanFileCommanderSettings(command.filecommander);
+                            if (JSON.stringify(fc) != JSON.stringify(node.filecommander || null)) {
+                                if (fc == null) { delete node.filecommander; } else { node.filecommander = fc; }
+                                change = 1; changes.push('file commander locations');
+                            }
+                        }
 
                         if (change == 1) {
                             // Save the node
