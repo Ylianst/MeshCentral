@@ -14270,8 +14270,11 @@
         var fileCommander = null;
         function p13setupCommander() {
             if ((typeof FileCommander == 'undefined') || (Q('p13commander') == null)) { QV('p13CommanderButton', false); return; }
+            var config = {}; // The domain's fileCommander settings from config.json
+            try { config = JSON.parse(decodeURIComponent('{{{fileCommander}}}')); } catch (ex) { }
             fileCommander = FileCommander.create({
                 root: Q('p13commander'),
+                config: config,
                 send: function (x) { if (files != null) { files.sendText(x); } },
                 sendBinary: function (x) { if (files != null) { files.send(x); } },
                 isConnected: function () { return (files != null) && (files.State == 3); },

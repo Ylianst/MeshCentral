@@ -2435,6 +2435,91 @@ function getSystemInformation(func) {
 }
 
 // Get a formatted response for a given directory path
+// Folders the File Commander offers as locations, as environment variables. When someone is logged in, the
+// user's folders replace the agent's own, so %USERPROFILE% or $HOME is that user's and not the service account's.
+// Only values that are a single absolute path are sent.
+function sendEnvPaths(ws, reqid) {
+    var win = (process.platform == 'win32'), env = {}, user = null, k;
+    for (k in process.env) { env[win ? k.toUpperCase() : k] = process.env[k]; }
+    function expand(v) { return (typeof v != 'string') ? v : v.replace(/%([^%]+)%/g, function (m, n) { var x = env[n.toUpperCase()]; return (typeof x == 'string') ? x : m; }); }
+    function send() {
+        var r = {};
+        for (k in env) {
+            var v = env[k];
+            if ((typeof v != 'string') || (v.indexOf(win ? ';' : ':') >= 0)) continue;
+            if ((win && /^[A-Za-z]:(\\|$)/.test(v)) || (!win && (v[0] == '/'))) { r[k] = v; }
+        }
+        try { ws.write(Buffer.from(JSON.stringify({ action: 'envpaths', reqid: reqid, platform: process.platform, user: user, env: r }))); } catch (ex) { }
+    }
+    if (win) {
+        var p = null;
+        try { p = require('user-sessions').enumerateUsers(); } catch (ex) { }
+        if (p == null) { send(); return; }
+        p.then(function (u) {
+            var name = null, consoleId = null;
+            try { consoleId = require('user-sessions').consoleUid(); } catch (ex) { }
+            for (var i in u) { if ((u[i].State == 'Active') && ((name == null) || (i == consoleId))) { name = u[i].Username; } }
+            if (name != null) { try { user = name; winUserPaths(name, env, expand); } catch (ex) { } }
+            send();
+        }, function () { send(); });
+    } else {
+        try {
+            var uid = require('user-sessions').consoleUid();
+            var name = require('user-sessions').getUsername(uid), home = null;
+            if (process.platform == 'darwin') { home = '/Users/' + name; }
+            else {
+                var pw = require('fs').readFileSync('/etc/passwd').toString().split('\n');
+                for (var i = 0; i < pw.length; i++) { var f = pw[i].split(':'); if ((f.length > 5) && (f[2] == String(uid))) { home = f[5]; break; } }
+            }
+            if (home) { user = name; env.HOME = home; env.USER = name; }
+        } catch (ex) { }
+        if (env.HOME) {
+            var dirs = { DESKTOP: 'Desktop', DOCUMENTS: 'Documents', DOWNLOADS: 'Downloads', PICTURES: 'Pictures', MUSIC: 'Music', VIDEOS: 'Videos' };
+            for (k in dirs) { env[k] = env.HOME + '/' + dirs[k]; }
+            try { // Linux desktops can rename these folders
+                var x = require('fs').readFileSync(env.HOME + '/.config/user-dirs.dirs').toString().split('\n');
+                for (var i = 0; i < x.length; i++) {
+                    var m = /^XDG_([A-Z]+)_DIR="(.*)"$/.exec(x[i].trim());
+                    if (m && (m[1] in dirs)) { env[m[1]] = m[2].replace('$HOME', env.HOME); }
+                }
+            } catch (ex) { }
+        }
+        send();
+    }
+}
+
+// Set the profile folders of a logged in Windows user into env, from the registry
+function winUserPaths(name, env, expand) {
+    var reg = require('win-registry'), list = 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList';
+    var sids = reg.QueryKey(reg.HKEY.LocalMachine, list).subkeys || [], sid = null, profile = null, n = name.toLowerCase();
+    for (var i = 0; i < sids.length; i++) {
+        var p = null;
+        try { p = expand(reg.QueryKey(reg.HKEY.LocalMachine, list + '\\' + sids[i], 'ProfileImagePath')); } catch (ex) { }
+        if (typeof p != 'string') continue;
+        var base = p.split('\\').pop().toLowerCase();
+        if (base == n) { sid = sids[i]; profile = p; break; } // Exact folder name wins over sam.DOMAIN
+        if ((profile == null) && (base.indexOf(n + '.') == 0)) { sid = sids[i]; profile = p; }
+    }
+    if (profile == null) return;
+    env.USERNAME = name;
+    env.USERPROFILE = profile;
+    env.HOMEDRIVE = profile.substring(0, 2);
+    env.HOMEPATH = profile.substring(2);
+    env.APPDATA = profile + '\\AppData\\Roaming';
+    env.LOCALAPPDATA = profile + '\\AppData\\Local';
+    env.TEMP = env.TMP = env.LOCALAPPDATA + '\\Temp';
+    var known = { DESKTOP: 'Desktop', DOCUMENTS: 'Documents', DOWNLOADS: 'Downloads', PICTURES: 'Pictures', MUSIC: 'Music', VIDEOS: 'Videos' };
+    for (var k in known) { env[k] = profile + '\\' + known[k]; }
+    try { // The user's own variables, such as OneDrive or a moved TEMP
+        var ue = reg.QueryKey(reg.HKEY.Users, sid + '\\Environment').values || [];
+        for (var i = 0; i < ue.length; i++) { var v = reg.QueryKey(reg.HKEY.Users, sid + '\\Environment', ue[i]); if (typeof v == 'string') { env[ue[i].toUpperCase()] = expand(v); } }
+    } catch (ex) { }
+    // Known folders, which OneDrive and folder redirection move
+    var usf = sid + '\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\User Shell Folders';
+    var shell = { DESKTOP: 'Desktop', DOCUMENTS: 'Personal', DOWNLOADS: '{374DE290-123F-4565-9164-39C4925E467B}', PICTURES: 'My Pictures', MUSIC: 'My Music', VIDEOS: 'My Video' };
+    for (var k in shell) { try { var v = reg.QueryKey(reg.HKEY.Users, usf, shell[k]); if (typeof v == 'string') { env[k] = expand(v); } } catch (ex) { } }
+}
+
 function getDirectoryInfo(reqpath) {
     var response = { path: reqpath, dir: [] };
     if (((reqpath == undefined) || (reqpath == '')) && (process.platform == 'win32')) {
@@ -4129,6 +4214,11 @@ function onTunnelData(data)
                         //console.log('Starting watcher: ' + this.httprequest.watcher.path);
                     }
                     */
+                    break;
+                }
+                case 'envpaths': {
+                    // Folders the File Commander offers as locations
+                    sendEnvPaths(this, cmd.reqid);
                     break;
                 }
                 case 'mkdir': {

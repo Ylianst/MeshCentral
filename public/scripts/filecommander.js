@@ -91,7 +91,14 @@ var FileCommander = (function () {
         var remoteDrives = null; // Root listing of a Windows device
         var recentLocal = [];    // Recently used local folder handles
         var favLocal = [];       // Favorite local folder handles
-        var favRemote = storeGet('fcFavRemote', []); // Favorite device folders: [{ w: windows, segs }]
+        var favRemote = storeGet('fcFavRemote', []); // Favorite device folders: [{ w: windows, path }], the path may use variables
+        var cfg = host.config || {};  // The domain's fileCommander settings (lower case keys)
+        var remoteEnv = null;         // { platform, user, env } from the device, used to resolve %VAR% and $VAR in locations
+        var envPromise = null;
+        favRemote = favRemote.filter(function (f) { return f && ((typeof f.path == 'string') || Array.isArray(f.segs)); }).map(function (f) {
+            if (typeof f.path == 'string') return f;
+            return { w: f.w, path: f.w ? (f.segs.join('\\') + ((f.segs.length == 1) ? '\\' : '')) : ('/' + f.segs.join('/')) }; // Older entries kept the folder as segments
+        });
         var menuEl = null, modalEl = null;
         var dragSource = null;
 
@@ -122,6 +129,83 @@ var FileCommander = (function () {
                 pending[reqid] = { resolve: resolve, reject: reject, timer: setTimeout(function () { delete pending[reqid]; reject(new Error('The device did not answer')); }, 120000) };
                 host.send({ action: 'ls', reqid: reqid, path: path });
             });
+        }
+
+        // Ask the device for its path variables once per connection. Resolves to null when the agent is too old to answer.
+        function requestEnv() {
+            if (envPromise) return envPromise;
+            envPromise = new Promise(function (resolve) {
+                if (!connected()) { resolve(null); return; }
+                var reqid = nextId('e');
+                pending[reqid] = { raw: true, resolve: function (data) { remoteEnv = { platform: data.platform, user: data.user, env: data.env || {} }; resolve(remoteEnv); }, reject: function () { resolve(null); }, timer: setTimeout(function () { delete pending[reqid]; resolve(null); }, 6000) };
+                host.send({ action: 'envpaths', reqid: reqid });
+            });
+            return envPromise;
+        }
+
+        // Replace %VAR% (Windows) or $VAR, ${VAR} and a leading ~ (other systems) with the device's values.
+        // Returns null when a variable is unknown on the device.
+        function expandVars(text) {
+            var env = (remoteEnv && remoteEnv.env) || {}, bad = false, s = String(text).trim();
+            function get(n) { var v = env[host.isWindows() ? n.toUpperCase() : n]; if (typeof v != 'string') { bad = true; return ''; } return v; }
+            if (host.isWindows()) { s = s.replace(/%([^%\\\/]+)%/g, function (m, n) { return get(n); }); }
+            else {
+                s = s.replace(/^~(?=\/|$)/, function () { return get('HOME'); });
+                s = s.replace(/\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)/g, function (m, a, b) { return get(a || b); });
+            }
+            return bad ? null : s;
+        }
+
+        function remoteOs() {
+            if (host.isWindows()) return 'windows';
+            return (remoteEnv && (remoteEnv.platform == 'darwin')) ? 'mac' : 'linux';
+        }
+
+        // Which devices a location is for: its os setting, or a guess from how the path is written
+        function locationFits(loc) {
+            var os = (typeof loc.os == 'string') ? loc.os.toLowerCase() : null, path = loc.path;
+            if (os == null) {
+                if (/%[^%]+%|^[A-Za-z]:|\\/.test(path)) { os = 'windows'; }
+                else if (/^[\/$~]/.test(path)) { os = 'unix'; }
+                else { return true; }
+            }
+            var dev = remoteOs();
+            return (os == dev) || ((os == 'unix') && (dev != 'windows'));
+        }
+
+        // Built-in locations. user: only shown when someone is logged in, since the agent's own profile is not useful.
+        var builtinLocations = [
+            { name: 'Desktop', path: '%DESKTOP%', user: 1 }, { name: 'Documents', path: '%DOCUMENTS%', user: 1 }, { name: 'Downloads', path: '%DOWNLOADS%', user: 1 },
+            { name: 'User profile', path: '%USERPROFILE%', user: 1 }, { name: 'AppData (Roaming)', path: '%APPDATA%', user: 1 }, { name: 'AppData (Local)', path: '%LOCALAPPDATA%', user: 1 },
+            { name: 'User temp', path: '%TEMP%', user: 1 }, { name: 'Users', path: '%SystemDrive%\\Users' }, { name: 'Public Desktop', path: '%PUBLIC%\\Desktop' },
+            { name: 'ProgramData', path: '%ProgramData%' }, { name: 'Program Files', path: '%ProgramFiles%' }, { name: 'Program Files (x86)', path: '%ProgramFiles(x86)%' },
+            { name: 'Windows temp', path: '%SystemRoot%\\Temp' },
+            { name: 'Home', path: '~' }, { name: 'Desktop', path: '$DESKTOP', user: 1 }, { name: 'Documents', path: '$DOCUMENTS', user: 1 }, { name: 'Downloads', path: '$DOWNLOADS', user: 1 },
+            { name: 'Applications', path: '/Applications', os: 'mac' }, { name: '/tmp', path: '/tmp' }, { name: '/var/log', path: '/var/log' }, { name: '/etc', path: '/etc' }
+        ];
+
+        // The locations to offer for this device, resolved: [{ name, path, segs }]
+        function deviceLocations() {
+            var list = [], seen = {};
+            var extra = Array.isArray(cfg.locations) ? cfg.locations : [];
+            extra = extra.map(function (l) { return (typeof l == 'string') ? { path: l } : l; }).filter(function (l) { return l && (typeof l.path == 'string'); });
+            if (cfg.commonlocations !== false) { extra = extra.concat(builtinLocations.filter(function (l) { return !l.user || (remoteEnv && remoteEnv.user); })); }
+            extra.forEach(function (l) {
+                if (!locationFits(l)) return;
+                var x = expandVars(l.path);
+                if (x == null) return;
+                var segs = rParse(x), key = rPath(segs).toLowerCase();
+                if (seen[key]) return;
+                seen[key] = 1;
+                list.push({ name: (typeof l.name == 'string') ? l.name : l.path, path: l.path, segs: segs });
+            });
+            return list;
+        }
+
+        function startSegs() {
+            if (typeof cfg.startpath != 'string') return [];
+            var x = expandVars(cfg.startpath);
+            return (x == null) ? [] : rParse(x);
         }
 
         function remoteItem(f) {
@@ -402,7 +486,14 @@ var FileCommander = (function () {
         }
 
         function gotoPath(p, text) {
-            if (p.type == 'remote') { loadRemote(p, rParse(text)); return; }
+            if (p.type == 'remote') {
+                requestEnv().then(function () {
+                    var x = expandVars(text);
+                    if (x == null) { flash(p, remoteEnv ? 'Unknown variable in ' + text : 'This agent cannot resolve variables yet'); renderPath(p); return; }
+                    loadRemote(p, rParse(x));
+                });
+                return;
+            }
             // Local panes can only move inside the chosen folder
             var parts = rParse(text), stack = p.stack.slice(0, 1);
             if ((stack.length == 0) || (parts.length == 0) || (parts[0] != stack[0].name)) { flash(p, (stack.length == 0) ? 'Open a folder first' : ('Local paths must start with ' + stack[0].name)); renderPath(p); return; }
@@ -453,13 +544,30 @@ var FileCommander = (function () {
         }
 
         function remoteFavIndex(segs) {
-            var w = host.isWindows(), key = segs.join('/');
+            var w = host.isWindows(), key = rPath(segs);
             if (w) { key = key.toLowerCase(); }
             for (var i = 0; i < favRemote.length; i++) {
                 var f = favRemote[i];
-                if ((f.w == w) && ((w ? f.segs.join('/').toLowerCase() : f.segs.join('/')) == key)) return i;
+                if (f.w != w) continue;
+                var x = expandVars(f.path);
+                if (x == null) continue;
+                var k = rPath(rParse(x));
+                if ((w ? k.toLowerCase() : k) == key) return i;
             }
             return -1;
+        }
+
+        // Edit the device favorites as text, one folder per line. Lines can use variables.
+        async function editFavorites(p) {
+            var w = host.isWindows(), mine = favRemote.filter(function (f) { return f.w == w; }), others = favRemote.filter(function (f) { return f.w != w; });
+            var help = w ? 'One folder per line. Variables such as %USERPROFILE%\\Desktop or %DOWNLOADS% are read from the device, for the logged in user.' : 'One folder per line. Variables such as $HOME/projects, ~/Downloads or ${DESKTOP} are read from the device, for the logged in user.';
+            var r = await modal('Favorites for ' + (w ? 'Windows' : 'Linux and macOS') + ' devices', esc(help), [['Save', 'save', true], ['Cancel', null]], { multiline: true, value: mine.map(function (f) { return f.path; }).join('\n') });
+            if (r.value != 'save') return;
+            var lines = r.text.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l != ''; });
+            favRemote = others.concat(lines.map(function (l) { return { w: w, path: l }; }));
+            storeSet('fcFavRemote', favRemote);
+            renderDrives(panes[0]); renderDrives(panes[1]);
+            updateFavButton(panes[0]); updateFavButton(panes[1]);
         }
 
         // row: a folder row to add or remove, or null for the folder the pane shows
@@ -469,7 +577,7 @@ var FileCommander = (function () {
                 if (segs.length == 0) return;
                 var i = remoteFavIndex(segs);
                 if (i >= 0) { favRemote.splice(i, 1); flash(p, 'Removed from favorites', true); }
-                else { favRemote.push({ w: host.isWindows(), segs: segs.slice() }); flash(p, 'Added to favorites', true); }
+                else { favRemote.push({ w: host.isWindows(), path: rDisplay(segs) }); flash(p, 'Added to favorites', true); }
                 storeSet('fcFavRemote', favRemote);
             } else {
                 var hd = row ? row.handle : p.stack[p.stack.length - 1];
@@ -506,12 +614,6 @@ var FileCommander = (function () {
             if (p.stack.length == 0) { set(false, false); return; }
             var hd = p.stack[p.stack.length - 1];
             localFavIndex(hd).then(function (i) { if (p.stack[p.stack.length - 1] === hd) { set(i >= 0, true); } });
-        }
-
-        // Common folders offered for devices, next to the user's favorites
-        function commonRemote() {
-            if (host.isWindows()) return [['C:', 'Users'], ['C:', 'Users', 'Public', 'Desktop'], ['C:', 'ProgramData'], ['C:', 'Program Files'], ['C:', 'Windows', 'Temp']];
-            return [['home'], ['root'], ['tmp'], ['var', 'log'], ['etc']];
         }
 
         function setPaneType(p, type) {
@@ -618,14 +720,19 @@ var FileCommander = (function () {
             function opt(v, t) { return '<option value="' + esc(v) + '">' + esc(t) + '</option>'; }
             if (p.type == 'remote') {
                 var w = host.isWindows();
-                x += opt(':root', w ? 'Computer' : '/');
-                if (w) { (remoteDrives || []).forEach(function (d) { x += opt('d:' + d.name, d.name + ' ' + fileType(d)); }); }
+                if (cfg.drives !== false) {
+                    x += opt(':root', w ? 'Computer' : '/');
+                    if (w) { (remoteDrives || []).forEach(function (d) { x += opt('d:' + d.name, d.name + ' ' + fileType(d)); }); }
+                }
+                p.locs = deviceLocations();
+                group('Locations' + ((remoteEnv && remoteEnv.user) ? ' (' + remoteEnv.user + ')' : ''), p.locs.map(function (l, i) { return opt('loc:' + i, l.name); }));
                 var favs = [];
-                favRemote.forEach(function (f, i) { if (f.w == w) { favs.push(opt('fav:' + i, '\u2605 ' + rDisplay(f.segs))); } });
+                favRemote.forEach(function (f, i) { if ((f.w == w) && (expandVars(f.path) != null)) { favs.push(opt('fav:' + i, '\u2605 ' + f.path)); } });
                 group('Favorites', favs);
-                group('Common locations', commonRemote().map(function (c, i) { return opt('com:' + i, rDisplay(c)); }));
+                x += opt(':favs', 'Edit favorites...');
                 if (p.segs.length == 0) { sel = ':root'; }
                 else if (w && (p.segs.length == 1)) { sel = 'd:' + p.segs[0]; }
+                else { p.locs.forEach(function (l, i) { if (rPath(l.segs).toLowerCase() == rPath(p.segs).toLowerCase()) { sel = 'loc:' + i; } }); }
             } else {
                 x += opt(':root', 'This computer');
                 group('Favorites', favLocal.map(function (hd, i) { return opt('f:' + i, '\u2605 ' + hd.name); }));
@@ -794,9 +901,10 @@ var FileCommander = (function () {
                 var v = e.drives.value, n = parseInt(v.split(':')[1]);
                 if (p.type == 'remote') {
                     if (v == ':root') { loadRemote(p, []); }
+                    else if (v == ':favs') { editFavorites(p); }
                     else if (v.indexOf('d:') == 0) { loadRemote(p, [v.substring(2)]); }
-                    else if ((v.indexOf('fav:') == 0) && favRemote[n]) { loadRemote(p, favRemote[n].segs.slice()); }
-                    else if (v.indexOf('com:') == 0) { loadRemote(p, commonRemote()[n]); }
+                    else if ((v.indexOf('fav:') == 0) && favRemote[n]) { gotoPath(p, favRemote[n].path); }
+                    else if ((v.indexOf('loc:') == 0) && p.locs && p.locs[n]) { loadRemote(p, p.locs[n].segs.slice()); }
                 } else {
                     if (v == ':root') { loadLocal(p, []); }
                     else if (v == ':pick') { chooseLocalFolder(p); }
@@ -924,7 +1032,7 @@ var FileCommander = (function () {
             else if (k == 'Enter') { openRow(p, p.rows[p.cursor]); }
             else if (k == 'Backspace') { goUp(p); }
             else if (k == 'Tab') { setActive(1 - p.idx); panes[activeIdx].el.scroll.focus(); }
-            else if ((k == ' ') || (k == 'Insert')) { toggleMark(p, p.cursor); setCursor(p, p.cursor + 1); }
+            else if (((k == ' ') && !typing(p)) || (k == 'Insert')) { toggleMark(p, p.cursor); setCursor(p, p.cursor + 1); }
             else if ((k == 'a' || k == 'A') && (ev.ctrlKey || ev.metaKey)) { p.marked = {}; p.rows.forEach(function (r) { if (!r.up) { p.marked[r.name] = 1; } }); renderMarks(p); }
             else if ((k == 'r' || k == 'R') && (ev.ctrlKey || ev.metaKey)) { refresh(p); }
             else if ((k == 'Escape') && job) { cancelJob(job); }
@@ -937,8 +1045,23 @@ var FileCommander = (function () {
             else if (k == 'F6') { copyCmd(true); }
             else if (k == 'F7') { mkdirCmd(); }
             else if ((k == 'F8') || (k == 'Delete')) { deleteCmd(); }
+            else if ((k.length == 1) && !ev.ctrlKey && !ev.altKey && !ev.metaKey) { typeAhead(p, k); }
             else { handled = false; }
             if (handled) { ev.preventDefault(); ev.stopPropagation(); }
+        }
+
+        // Typing jumps to names: a letter goes to the next name starting with it (pressing it again cycles),
+        // letters typed quickly go to the first name starting with all of them.
+        function typing(p) { return (p.typeBuf != '') && (p.typeBuf != null) && ((Date.now() - p.typeTime) < 1000); }
+        function typeAhead(p, ch) {
+            var buf = (typing(p) ? p.typeBuf : '') + ch.toLowerCase();
+            p.typeBuf = buf; p.typeTime = Date.now();
+            var cycle = buf.split('').every(function (c) { return c == buf[0]; }), prefix = cycle ? buf[0] : buf, n = p.rows.length;
+            var start = cycle ? (p.cursor + 1) : p.cursor;
+            for (var i = 0; i < n; i++) {
+                var j = (start + i) % n, r = p.rows[j];
+                if (!r.up && (r.name.toLowerCase().indexOf(prefix) == 0)) { setCursor(p, j); return; }
+            }
         }
 
         //
@@ -1466,7 +1589,7 @@ var FileCommander = (function () {
             if ((typeof data.reqid == 'string') && (data.reqid.indexOf('fc') == 0)) {
                 if ((typeof data.action == 'string') && (data.action.indexOf('upload') == 0)) { uploadMessage(data); return true; }
                 var pr = pending[data.reqid];
-                if (pr) { delete pending[data.reqid]; clearTimeout(pr.timer); pr.resolve(data.dir == null ? null : data.dir); }
+                if (pr) { delete pending[data.reqid]; clearTimeout(pr.timer); pr.resolve(pr.raw ? data : ((data.dir == null) ? null : data.dir)); }
                 return true;
             }
             if ((data.action == 'download') && (typeof data.id == 'string') && (data.id.indexOf('fc') == 0)) { downloadMessage(data); return true; }
@@ -1486,22 +1609,36 @@ var FileCommander = (function () {
             remoteDrives = null;
             var saved = null;
             storeGet('fcPaths', []).forEach(function (x) { if (x.n == host.nodeId()) { saved = x.p; } });
+            remoteEnv = null; envPromise = null;
             panes.forEach(function (p, i) {
-                p.segs = (saved && Array.isArray(saved[i])) ? saved[i] : [];
+                p.needStart = !(saved && Array.isArray(saved[i])); // A device seen before reopens its last folders
+                p.segs = p.needStart ? [] : saved[i];
                 if (p.type != 'remote') return;
                 p.items = []; p.rows = []; p.marked = {}; p.message = null;
                 renderPane(p);
-                if (obj.active) { loadRemote(p, p.segs); } // Otherwise loaded when the commander is shown
             });
-            if (obj.active && host.isWindows() && !panes.some(function (p) { return (p.type == 'remote') && (p.segs.length == 0); })) {
-                rList('').then(function (dir) { if (dir) { remoteDrives = dir.map(remoteItem).filter(function (x) { return x.kind == 'drive'; }); renderDrives(panes[0]); renderDrives(panes[1]); } }, function () { });
-            }
+            if (obj.active) { openRemotePanes(); } // Otherwise when the commander is shown
             renderButtons();
         };
+
+        function openRemotePanes() {
+            requestEnv().then(function () { renderDrives(panes[0]); renderDrives(panes[1]); });
+            panes.forEach(function (p) {
+                if ((p.type != 'remote') || (p.items.length > 0)) return;
+                if (!p.needStart || (typeof cfg.startpath != 'string')) { p.needStart = false; loadRemote(p, p.segs); return; }
+                p.needStart = false;
+                p.loading = true; renderStatus(p);
+                requestEnv().then(function () { loadRemote(p, startSegs()); });
+            });
+            if (host.isWindows() && !panes.some(function (p) { return (p.type == 'remote') && (p.segs.length == 0); })) {
+                rList('').then(function (dir) { if (dir) { remoteDrives = dir.map(remoteItem).filter(function (x) { return x.kind == 'drive'; }); renderDrives(panes[0]); renderDrives(panes[1]); } }, function () { });
+            }
+        }
 
         obj.onDisconnect = function () {
             for (var k in pending) { clearTimeout(pending[k].timer); pending[k].reject(new Error('Disconnected')); }
             pending = {};
+            remoteEnv = null; envPromise = null;
             if (job) { job.canceled = true; }
             uploadCancel(); downloadCancel();
             panes.forEach(function (p) { if (p.type == 'remote') { p.loadSeq++; p.loading = false; p.items = []; p.rows = []; p.marked = {}; p.message = 'Not connected. Use the Connect button above.'; renderPane(p); } });
@@ -1516,10 +1653,8 @@ var FileCommander = (function () {
             if (host.onActiveChanged) { host.onActiveChanged(obj.active); }
             if (obj.active) {
                 fit();
-                panes.forEach(function (p) {
-                    if ((p.type == 'remote') && connected() && (p.items.length == 0)) { loadRemote(p, p.segs); }
-                    else { renderPane(p); }
-                });
+                panes.forEach(function (p) { renderPane(p); });
+                if (connected()) { openRemotePanes(); }
                 setActive(activeIdx);
                 panes[activeIdx].el.scroll.focus();
             }

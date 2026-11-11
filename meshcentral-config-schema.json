@@ -2116,6 +2116,46 @@
             "default": false,
             "description": "When enabled, device groups will be collapsed by default in the devices tab."
           },
+          "fileCommander": {
+            "type": "object",
+            "description": "Locations offered in the device pane of the File Commander (Files tab, Commander button). Paths can use environment variables of the device: %VAR% on Windows, $VAR or ${VAR} and ~ elsewhere. On Windows %DESKTOP%, %DOCUMENTS%, %DOWNLOADS%, %PICTURES%, %MUSIC% and %VIDEOS% are the logged in user's folders, also when OneDrive moved them, and %USERPROFILE%, %APPDATA%, %LOCALAPPDATA% and %TEMP% are that user's. Locations whose variables the device does not have are not shown.",
+            "additionalProperties": false,
+            "properties": {
+              "drives": {
+                "type": "boolean",
+                "default": true,
+                "description": "Show Computer and the drive letters of Windows devices in the location list."
+              },
+              "commonLocations": {
+                "type": "boolean",
+                "default": true,
+                "description": "Show the built-in locations, such as Desktop, Downloads, AppData and ProgramData on Windows or Home, /tmp and /var/log elsewhere."
+              },
+              "startPath": {
+                "type": "string",
+                "description": "Folder the device pane opens on the first time a device is opened, for example %USERPROFILE% or $HOME. Later visits reopen the last folder. Default: the list of drives on Windows, / elsewhere."
+              },
+              "locations": {
+                "type": "array",
+                "description": "Extra locations, shown above the built-in ones. Each is a path or { name, path, os }.",
+                "items": {
+                  "anyOf": [
+                    { "type": "string" },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": { "type": "string", "description": "Name shown in the list. Default: the path." },
+                        "path": { "type": "string", "description": "Folder, for example %DESKTOP%, D:\\Shares or /srv/data." },
+                        "os": { "type": "string", "enum": [ "windows", "linux", "mac", "unix" ], "description": "Devices the location is shown for. unix is Linux, macOS and other non-Windows devices. Default: guessed from the path." }
+                      },
+                      "required": [ "path" ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
           "terminalUserVariable": {
             "type": "string",
             "enum": [
