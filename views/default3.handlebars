@@ -1553,7 +1553,7 @@
                                     <option value=20 title=MB>Megabytes</option>
                                     <option value=30 title=GB>Gigabyte</option>
                                 </select>
-                                <select id=p13sortdropdown class="form-select-sm me-2" onchange=p13updateFiles()>
+                                <select id=p13sortdropdown class="form-select-sm me-2" onchange=p13sortChanged()>
                                     <option value=1 selected="selected">Sort by name</option>
                                     <option value=2>Sort by size</option>
                                     <option value=3>Sort by date</option>
@@ -1561,6 +1561,7 @@
                                     <option value=5>Descend by size</option>
                                     <option value=6>Descend by date</option>
                                 </select>
+                                <i class="fa-solid fa-gear me-2" role="button" id=p13FilesSettings title="Files settings" onclick="p13showFilesSettings()"></i>
                             </div>
                             <div id="p13pathrow" style="display:none" ondblclick="p13pathRowClick(event)">&nbsp;&nbsp;<span id="p13currentpath" ondblclick="p13pathRowClick(event)"></span><input type="text" id="p13currentpathinput" class="form-control form-control-sm" style="width: auto; min-width: 400px; display:none;" onkeydown="return p13onPathKeyDown(event)" onblur="p13hidePathInput()" /></div>
                         </td>
@@ -2579,6 +2580,7 @@
             // Setup page controls
             Q('sortselect').selectedIndex = sort = getstore('sort', 0);
             Q('sizeselect').selectedIndex = getstore('viewsize', 1);
+            p13applySortSetting();
             Q('KvmSearchInput').value = Q('SearchInput').value = getstore('_search', '');
             showRealNames = (getstore('showRealNames', 0) == 1);
             Q('RealNameCheckBox').checked = showRealNames;
@@ -14682,6 +14684,27 @@
         }
 
         var p13sortorder;
+
+        // Files sort order: 'filesSortDefault' is 0 to remember the last selection, or 1 to 6 to always start with that sort order.
+        function p13getSortSetting(name) { var v = parseInt(getstore(name, 0)); return ((v >= 1) && (v <= 6)) ? v : 0; }
+        function p13applySortSetting() { var v = p13getSortSetting('filesSortDefault'); if (v == 0) { v = p13getSortSetting('filesSort'); } Q('p13sortdropdown').value = (v == 0) ? 1 : v; }
+        function p13sortChanged() { putstore('filesSort', Q('p13sortdropdown').value); p13updateFiles(); }
+
+        function p13showFilesSettings() {
+            if (xxdialogMode) return;
+            var sorts = ["Sort by name", "Sort by size", "Sort by date", "Descend by name", "Descend by size", "Descend by date"], current = p13getSortSetting('filesSortDefault');
+            var x = '<option value=0' + ((current == 0) ? ' selected' : '') + '>' + "Remember last selection" + '</option>';
+            for (var i = 0; i < sorts.length; i++) { x += '<option value=' + (i + 1) + ((current == (i + 1)) ? ' selected' : '') + '>' + sorts[i] + '</option>'; }
+            x = addHtmlFormFloating("Default sort", '<select id=d2filesSortDefault class=form-select>' + x + '</select>');
+            setModalContent('xxAddAgent', "Files Settings", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13showFilesSettingsEx());
+        }
+
+        function p13showFilesSettingsEx() {
+            var v = parseInt(Q('d2filesSortDefault').value);
+            putstore('filesSortDefault', '' + v);
+            if (v != 0) { Q('p13sortdropdown').value = v; putstore('filesSort', '' + v); p13updateFiles(); }
+        }
         function p13sort_filename(a, b) { if (a.ln > b.ln) return (1 * p13sortorder); if (a.ln < b.ln) return (-1 * p13sortorder); return 0; }
         function p13sort_timestamp(a, b) { if (a.d > b.d) return (1 * p13sortorder); if (a.d < b.d) return (-1 * p13sortorder); return 0; }
         function p13sort_bysize(a, b) { if (a.s == b.s) return p13sort_filename(a, b); return (((a.s - b.s)) * p13sortorder); }
