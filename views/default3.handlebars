@@ -21,6 +21,7 @@
     {{{customCSSTags}}}
     <link rel="apple-touch-icon" href="/favicon-303x303.png" />
     <script type="text/javascript" src="scripts/common-0.0.1{{{min}}}.js"></script>
+    <script type="text/javascript" src="scripts/meshdeploy-0.0.1.js"></script>
     <script type="text/javascript" src="scripts/meshcentral{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-0.2.0{{{min}}}.js"></script>
     <script type="text/javascript" src="scripts/amt-wsman-0.2.0{{{min}}}.js"></script>
@@ -561,6 +562,7 @@
                         </button>
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=SelectAllButton onclick="selectallButtonFunction();" value="Select All" />
                         <input type=button class="btn btn-primary me-1 btn-sm" id=GroupActionButton disabled="disabled" value="Group Action" onclick=groupActionFunction() />
+                        <input type=button class="btn btn-primary me-1 btn-sm" id=MassDeployButton value="Deploy" title="Push files and run commands on the selected devices" onclick=openMassDeploy() />
                         <input type=button class="btn btn-secondary me-1 btn-sm" id=ScrollToTopButton onclick="onDevicesScroll(true);" value="Scroll To Top" />
                         <input type="text" id=SearchInput class="form-control-sm me-1 btn-sm" placeholder="Filter" onchange=onDeviceSearchChanged(event) onclick=onDeviceSearchChanged(event) onkeyup=onDeviceSearchChanged(event) onfocus=onSearchFocus(1) onblur=onSearchFocus(0) title="Filter devices by name or prefix: user: (u:) ip: group: (g:) tag: (t:) atag: (a:) os: amt: desc: wsc:ok/noav/noupdate/nofirewall/any connectivity: (c:) - Prefix with ! to negate, e.g. !tag:abc - Separate terms with `,`, `or`, or `and`: `device1,device2` or `device1 or device2` = OR; `device1 and device2` = AND; prefix with `!` to exclude, e.g. `u:user1 and !g:group1`.">
                         <span id=SearchInputClearButton style="display:none;position:relative">
@@ -2576,6 +2578,11 @@
             meshserver.trace = args.trace;
             meshserver.Start();
 
+            // Mass deployment of files and commands
+            MeshDeploy.init({ send: function (cmd) { meshserver.send(cmd); }, getNode: getNodeFromId, isWindows: isWindowsNode, getRights: GetNodeRights, authCookie: function () { return authCookie; }, gotoDevice: function (nodeid) { gotoDevice(nodeid, 10); }, onRunningChange: updateMassDeployButton });
+            Q('xdevices').addEventListener('dragover', function (e) { if ((getCheckedDevices().length > 0) && e.dataTransfer && (Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') >= 0)) { e.preventDefault(); } });
+            Q('xdevices').addEventListener('drop', function (e) { if ((getCheckedDevices().length > 0) && e.dataTransfer && (e.dataTransfer.files.length > 0)) { e.preventDefault(); openMassDeploy(e.dataTransfer.files); } });
+
             // Setup page controls
             Q('sortselect').selectedIndex = sort = getstore('sort', 0);
             Q('sizeselect').selectedIndex = getstore('viewsize', 1);
@@ -3233,6 +3240,7 @@
             } else if (state == 2) {
                 // Fetch list of meshes, nodes, files
                 meshserver.send({ action: 'usergroups' });
+                MeshDeploy.refresh();
                 meshserver.send({ action: 'meshes' });
                 deviceServerFilter = getDeviceServerFilter();
                 meshserver.send({ action: 'nodes', id: '{{currentNode}}', skip: (devicePagingState == null) ? 0 : devicePagingState.skip, filter: deviceServerFilter });
@@ -3475,6 +3483,7 @@
 
         function onMessage(server, message) {
             switch (message.action) {
+                case 'meshdeploy': { MeshDeploy.onMessage(message); break; }
                 case 'trace': {
                     serverTrace.unshift(message);
                     displayServerTrace();
@@ -4330,6 +4339,7 @@
                     if (message.event.noact) break; // Take no action on this event
 
                     switch (message.event.action) {
+                        case 'meshdeploy': { MeshDeploy.onEvent(message.event); break; }
                         case 'serverinfochange': {
                             if (message.event.lock2factor != null) { serverinfo.lock2factor = message.event.lock2factor; updateSelf(); updateSiteAdmin(); }
                             break;
@@ -7281,6 +7291,7 @@
                 if ((rights & 64) && ((added & 8) == 0)) { added |= 8; addedOptions.push({ v: 100, name: "Wake-up devices" }); }
                 if ((rights & 262144) && ((added & 4) == 0)) { added |= 4; addedOptions.push({ v: 4, name: "Sleep devices" }); addedOptions.push({ v: 3, name: "Reset devices" }); addedOptions.push({ v: 2, name: "Power off devices" }); }
                 if ((rights & 131072) && ((added & 16) == 0)) { added |= 16; addedOptions.push({ v: 106, name: "Run commands" }); }
+                if ((node.agent != null) && ((rights & 24) == 24) && ((added & 1024) == 0)) { added |= 1024; addedOptions.push({ v: 113, name: "Run agent console commands" }); }
                 if ((rights & 16384) && ((added & 32) == 0)) { added |= 32; addedOptions.push({ v: 108, name: "Device notification" }); }
                 if ((rights & 4) && ((added & 64) == 0)) { added |= 64; addedOptions.push({ v: 107, name: "Edit tags" }); }
                 if ((rights & 8) && ((added & 256) == 0)) { added |= 256; addedOptions.push({ v: 109, name: "Upload files" }); }
@@ -7302,6 +7313,15 @@
             setModalContent('xxAddAgent', "Group Action", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton', groupActionFunctionEx);
         }
+
+        // Open the mass deployment dialog for the checked devices, or the deployment activity if no devices are checked
+        function openMassDeploy(files) {
+            if (xxdialogMode) return;
+            if ((features & 0x00040000) && (count2factoraAuths() == 0)) { setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" tab and look at the \"Account Security\" section."); return; }
+            var nodeids = getCheckedDevices();
+            if ((nodeids.length == 0) && (files == null)) { MeshDeploy.openActivity(); } else { MeshDeploy.open(nodeids, files); }
+        }
+        function updateMassDeployButton(count) { if (Q('MassDeployButton')) { Q('MassDeployButton').value = (count > 0) ? format("Deploy ({0})", count) : "Deploy"; } }
 
         // Get the list of checked devices
         function getCheckedDevices() { return Object.keys(checkedNodeids); }
@@ -7353,6 +7373,9 @@
                 p2downloadDeviceInfo();
             } else if (op == 106) {
                 // Run commands
+                openMassDeploy();
+            } else if (op == 113) {
+                // Run agent console commands
                 d2runCommandDialog({ nodeids: getCheckedDevices(), title: "Run commands on selected devices.", func: uncheckAllDevices });
             } else if (op == 107) {
                 // Edit tags
@@ -7400,19 +7423,7 @@
                 Q('d2notifyMsg').focus();
             } else if (op == 109) {
                 // Upload files
-                var wintype = false, linuxtype = false, chkNodeIds = getCheckedDevices();
-                for (var i in chkNodeIds) { var n = getNodeFromId(chkNodeIds[i]); if (n.agent) { if (isWindowsNode(n)) { wintype = true; } else { linuxtype = true; } } }
-                var x = "Upload selected files to all selected devices" + '<br /><br />';
-                x += '<form method=post enctype=multipart/form-data action=uploadfilebatch.ashx target=fileUploadFrame>';
-                x += '<input type=hidden name=authCookie value=' + authCookie + ' /><input type=hidden name=nodeIds value=' + chkNodeIds.join(',') + ' /><input type=submit id=d2batchUploadSubmit style=display:none />';
-                x += '<input type=file name=files id=d2uploadinput class="form-control" multiple=multiple onchange="d2batchUploadValidate()" /><br /><br />';
-                if (wintype) { x += addHtmlFormFloating("Windows Path", '<input type=text class="form-control" onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=winpath id=d2winuploadpath placeholder="C:\\temp" value="" />'); }
-                if (linuxtype) { x += addHtmlFormFloating("Linux Path", '<input type=text class="form-control" onchange="d2batchUploadValidate()" onkeyup="d2batchUploadValidate()" name=linuxpath id=d2linuxuploadpath placeholder="/tmp" value="" />'); }
-                x += '<br /><label><input type=checkbox class="form-check-input me-2" name=createFolder />' + "Create folder if it does not exists?" + '</label><br />';
-                x += '<label><input type=checkbox class="form-check-input me-2" name=overwriteFiles />' + "Overwrite if file exists?" + '</label></form>';
-                setModalContent('xxAddAgent', "Batch File Upload", x);
-                showModal('xxAddAgentModal', 'idx_dlgOkButton', () => d2batchUploadValidateOk());
-                d2batchUploadValidate();
+                openMassDeploy();
             } else if (op == 110) {
                 // Force agent update
                 var x = "Force agent update on selected devices?" + '<br /><br />';

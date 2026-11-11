@@ -3239,6 +3239,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     });
                     break;
                 }
+            case 'meshdeploy':
+                {
+                    // Mass deployment of files and commands to many devices. Rights are checked for each device by the engine.
+                    if (typeof command.op != 'string') break;
+                    if (parent.meshDeploy == null) break;
+                    parent.meshDeploy.handleUserCommand(user, domain, req, ws, command);
+                    break;
+                }
             case 'runcommands':
                 {
                     if (common.validateArray(command.nodeids, 1) == false) break; // Check nodeid's
