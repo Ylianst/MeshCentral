@@ -351,6 +351,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Main lists
     obj.wsagents = {};                // NodeId --> Agent
+    obj.meshDeploy = require('./meshdeploy.js').CreateMeshDeploy(obj); // Mass deployment of files and commands to many devices
     obj.wsagentsWithBadWebCerts = {}; // NodeId --> Agent
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
@@ -4261,6 +4262,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         var c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 5); // 5 minute timeout
         if ((c == null) || (c.a != 'tmpdl') || (c.d != domain.id) || (c.nid == null) || (c.f == null) || (obj.common.IsFilenameValid(c.f) == false)) { res.sendStatus(404); return; }
 
+        // This file is part of a mass deployment job, the job tracks the transfer
+        if (c.mdj != null) { obj.meshDeploy.handleFileRequest(c, res); return; }
+
         // Send the file back
         try { res.sendFile(obj.path.join(obj.filespath, 'tmp', c.f)); return; } catch (ex) { res.sendStatus(404); }
     }
@@ -5274,6 +5278,45 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.parent.DispatchEvent([user._id], obj, { action: 'notify', value: "Disk quota exceed", nolog: 1, id: Math.random() });
             }
             res.send('');
+        });
+    }
+
+    // Upload files to the server for a mass deployment job. Returns the identifiers of the staged files as JSON.
+    function handleMeshDeployUpload(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form();
+        form.parse(req, function (err, fields, files) {
+            const cleanup = function () { if ((files != null) && (files.files != null)) { for (var i in files.files) { const p = resolveSafeUploadTempPath(files.files[i].path); if (p != null) { obj.fs.unlink(p, function () { }); } } } }
+            if (err) { cleanup(); res.sendStatus(400); return; }
+
+            // The login cookie of the page is required, this also protects against cross site requests.
+            var authUserid = null;
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; }
+            }
+            if ((authUserid == null) || (req.session == null) || (req.session.userid !== authUserid)) { cleanup(); res.sendStatus(401); return; }
+            const user = obj.users[authUserid];
+            if (user == null) { cleanup(); res.sendStatus(401); return; }
+
+            // Check the files
+            var list = [];
+            if ((files == null) || (files.files == null) || (files.files.length == 0)) { res.sendStatus(400); return; }
+            for (var i in files.files) {
+                const file = files.files[i];
+                const originalFilename = (typeof file.originalFilename === 'string') ? file.originalFilename : '';
+                const safeName = obj.path.basename(originalFilename);
+                const tempPath = resolveSafeUploadTempPath(file.path);
+                if ((tempPath == null) || (safeName !== originalFilename) || (obj.common.IsFilenameValid(safeName) == false)) { cleanup(); res.status(400).json({ result: 'Invalid file name: ' + safeName }); return; }
+                list.push({ name: safeName, size: file.size, tempPath: tempPath });
+            }
+            obj.meshDeploy.stageFiles(user, domain, list, function (err, staged) {
+                if (err) { res.status(500).json({ result: err }); return; }
+                res.json({ result: 'OK', files: staged });
+            });
         });
     }
 
@@ -7623,6 +7666,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'commander.ashx', handleMeshCommander);
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
+                obj.app.post(url + 'meshdeployupload.ashx', handleMeshDeployUpload);
                 obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
                 obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
                 obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);
@@ -10531,6 +10575,14 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
     // Route a command from a agent. domainid, nodeid and meshid are the values of the source agent.
     obj.routeAgentCommand = function (command, domainid, nodeid, meshid) {
+        // Replies to mass deployment commands go to the deployment engine, that may be on a peer server.
+        if (obj.meshDeploy.isDeployReply(command)) {
+            if ((obj.meshDeploy.handleAgentReply(nodeid, command) == false) && (parent.multiServer != null)) {
+                parent.multiServer.DispatchMessage({ action: 'meshDeployReply', nodeid: nodeid, responseid: command.responseid, result: command.result });
+            }
+            return;
+        }
+
         // Route a message.
         // If this command has a sessionid, that is the target.
         if (command.sessionid != null) {
