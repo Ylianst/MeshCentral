@@ -473,3 +473,10 @@ html:not([data-bs-theme]) body.night .fc-root {
     font-size: 12px;
     line-height: 1.5;
 }
+
+.fc-extra-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+}

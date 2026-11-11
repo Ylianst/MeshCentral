@@ -184,28 +184,70 @@ var FileCommander = (function () {
             { name: 'Applications', path: '/Applications', os: 'mac' }, { name: '/tmp', path: '/tmp' }, { name: '/var/log', path: '/var/log' }, { name: '/etc', path: '/etc' }
         ];
 
-        // The locations to offer for this device, resolved: [{ name, path, segs }]
+        // This device's own settings, saved on the device record by anyone who can manage it: { startpath, locations }
+        function deviceSettings() { var d = host.deviceConfig ? host.deviceConfig() : null; return ((d != null) && (typeof d == 'object')) ? d : {}; }
+        function canEditDevice() { return !!(host.canEditDevice && host.saveDeviceConfig && host.canEditDevice()); }
+
+        // The locations to offer for this device, resolved: [{ name, path, segs, own }]. The device's own come first,
+        // then config.json, then the built-in ones. A device's own location the device cannot resolve is kept with segs null.
         function deviceLocations() {
-            var list = [], seen = {};
-            var extra = Array.isArray(cfg.locations) ? cfg.locations : [];
-            extra = extra.map(function (l) { return (typeof l == 'string') ? { path: l } : l; }).filter(function (l) { return l && (typeof l.path == 'string'); });
-            if (cfg.commonlocations !== false) { extra = extra.concat(builtinLocations.filter(function (l) { return !l.user || (remoteEnv && remoteEnv.user); })); }
-            extra.forEach(function (l) {
-                if (!locationFits(l)) return;
-                var x = expandVars(l.path);
-                if (x == null) return;
-                var segs = rParse(x), key = rPath(segs).toLowerCase();
+            var list = [], seen = {}, dev = deviceSettings();
+            function norm(a) { return (Array.isArray(a) ? a : []).map(function (l) { return (typeof l == 'string') ? { path: l } : l; }).filter(function (l) { return l && (typeof l.path == 'string'); }); }
+            function add(l, own) {
+                if (!own && !locationFits(l)) return;
+                var x = expandVars(l.path), segs = (x == null) ? null : rParse(x);
+                if (segs == null) { if (own) { list.push({ name: l.name || l.path, path: l.path, segs: null, own: true }); } return; }
+                var key = rPath(segs).toLowerCase();
                 if (seen[key]) return;
                 seen[key] = 1;
-                list.push({ name: (typeof l.name == 'string') ? l.name : l.path, path: l.path, segs: segs });
-            });
+                list.push({ name: (typeof l.name == 'string') ? l.name : l.path, path: l.path, segs: segs, own: own });
+            }
+            if (typeof dev.startpath == 'string') { add({ name: 'Start folder', path: dev.startpath }, true); }
+            norm(dev.locations).forEach(function (l) { add(l, true); });
+            norm(cfg.locations).forEach(function (l) { add(l, false); });
+            if (cfg.commonlocations !== false) { builtinLocations.forEach(function (l) { if (!l.user || (remoteEnv && remoteEnv.user)) { add(l, false); } }); }
             return list;
         }
 
+        // Where a device opens the first time: its own start folder, else the one in config.json
+        function startPath() {
+            var dev = deviceSettings();
+            if (typeof dev.startpath == 'string') return dev.startpath;
+            return (typeof cfg.startpath == 'string') ? cfg.startpath : null;
+        }
+
         function startSegs() {
-            if (typeof cfg.startpath != 'string') return [];
-            var x = expandVars(cfg.startpath);
+            var sp = startPath();
+            if (sp == null) return [];
+            var x = expandVars(sp);
             return (x == null) ? [] : rParse(x);
+        }
+
+        // Edit this device's start folder and locations. Saved on the device for everyone who can see it.
+        async function editDeviceLocations(p) {
+            if (!canEditDevice()) return;
+            var dev = deviceSettings(), w = host.isWindows();
+            var lines = (Array.isArray(dev.locations) ? dev.locations : []).map(function (l) { return (l.name ? (l.name + ' = ') : '') + l.path; });
+            var help = 'Shown for everyone who opens this device, above the locations of config.json. One folder per line, optionally named as <i>Name = folder</i>. ' +
+                (w ? 'Variables such as %USERPROFILE%, %DESKTOP% or %DOWNLOADS% are read from the device, for the logged in user.' : 'Variables such as $HOME, ~/projects or ${DOWNLOADS} are read from the device, for the logged in user.');
+            var r = await modal('Locations for ' + (host.nodeName() || 'this device'), help, [['Save', 'save', true], ['Cancel', null]],
+                { multiline: true, value: lines.join('\n'), extra: { label: 'Start folder, used the first time the device is opened (empty for the default)', value: dev.startpath || '' } });
+            if (r.value != 'save') return;
+            var locs = [];
+            r.text.split(/\r?\n/).forEach(function (l) {
+                l = l.trim();
+                if ((l == '') || (l[0] == '#')) return;
+                var i = l.indexOf(' = ');
+                locs.push((i > 0) ? { name: l.substring(0, i).trim(), path: l.substring(i + 3).trim() } : { path: l });
+            });
+            var settings = {};
+            if (r.extra.trim() != '') { settings.startpath = r.extra.trim(); }
+            if (locs.length > 0) { settings.locations = locs.slice(0, 100); }
+            if (Object.keys(settings).length == 0) { settings = null; }
+            host.saveDeviceConfig(settings);
+            if (settings && settings.startpath && host.nodeId()) { storeSet('fcPaths', storeGet('fcPaths', []).filter(function (x) { return x.n != host.nodeId(); })); } // So this browser opens the new start folder next time
+            flash(p, 'Saved for this device', true);
+            renderDrives(panes[0]); renderDrives(panes[1]);
         }
 
         function remoteItem(f) {
@@ -725,14 +767,21 @@ var FileCommander = (function () {
                     if (w) { (remoteDrives || []).forEach(function (d) { x += opt('d:' + d.name, d.name + ' ' + fileType(d)); }); }
                 }
                 p.locs = deviceLocations();
-                group('Locations' + ((remoteEnv && remoteEnv.user) ? ' (' + remoteEnv.user + ')' : ''), p.locs.map(function (l, i) { return opt('loc:' + i, l.name); }));
+                var own = [], shared = [];
+                p.locs.forEach(function (l, i) {
+                    if (l.segs == null) { own.push('<option value=":na" disabled title="' + esc(l.path) + '">' + esc(l.name + ' (not on this device now)') + '</option>'); }
+                    else { (l.own ? own : shared).push('<option value="loc:' + i + '" title="' + esc(l.path) + '">' + esc(l.name) + '</option>'); }
+                });
+                group('This device', own);
+                group('Locations' + ((remoteEnv && remoteEnv.user) ? ' (' + remoteEnv.user + ')' : ''), shared);
                 var favs = [];
                 favRemote.forEach(function (f, i) { if ((f.w == w) && (expandVars(f.path) != null)) { favs.push(opt('fav:' + i, '\u2605 ' + f.path)); } });
                 group('Favorites', favs);
                 x += opt(':favs', 'Edit favorites...');
+                if (canEditDevice()) { x += opt(':dev', 'Edit locations for this device...'); }
                 if (p.segs.length == 0) { sel = ':root'; }
                 else if (w && (p.segs.length == 1)) { sel = 'd:' + p.segs[0]; }
-                else { p.locs.forEach(function (l, i) { if (rPath(l.segs).toLowerCase() == rPath(p.segs).toLowerCase()) { sel = 'loc:' + i; } }); }
+                else { p.locs.forEach(function (l, i) { if (l.segs && (rPath(l.segs).toLowerCase() == rPath(p.segs).toLowerCase())) { sel = 'loc:' + i; } }); }
             } else {
                 x += opt(':root', 'This computer');
                 group('Favorites', favLocal.map(function (hd, i) { return opt('f:' + i, '\u2605 ' + hd.name); }));
@@ -902,9 +951,10 @@ var FileCommander = (function () {
                 if (p.type == 'remote') {
                     if (v == ':root') { loadRemote(p, []); }
                     else if (v == ':favs') { editFavorites(p); }
+                    else if (v == ':dev') { editDeviceLocations(p); }
                     else if (v.indexOf('d:') == 0) { loadRemote(p, [v.substring(2)]); }
                     else if ((v.indexOf('fav:') == 0) && favRemote[n]) { gotoPath(p, favRemote[n].path); }
-                    else if ((v.indexOf('loc:') == 0) && p.locs && p.locs[n]) { loadRemote(p, p.locs[n].segs.slice()); }
+                    else if ((v.indexOf('loc:') == 0) && p.locs && p.locs[n] && p.locs[n].segs) { loadRemote(p, p.locs[n].segs.slice()); }
                 } else {
                     if (v == ':root') { loadLocal(p, []); }
                     else if (v == ':pick') { chooseLocalFolder(p); }
@@ -1120,7 +1170,14 @@ var FileCommander = (function () {
                 box.append(h('div', 'fc-modal-title', esc(title)));
                 var content = h('div', 'fc-modal-body', body || '');
                 box.append(content);
-                var inp = null;
+                var inp = null, extra = null;
+                if (input && input.extra) {
+                    var lab = h('label', 'fc-extra-label');
+                    lab.textContent = input.extra.label || '';
+                    extra = h('input', 'fc-input'); extra.type = 'text'; extra.spellcheck = false; extra.value = input.extra.value || '';
+                    lab.append(extra);
+                    content.append(lab);
+                }
                 if (input) {
                     inp = h(input.multiline ? 'textarea' : 'input', input.multiline ? 'fc-editor' : 'fc-input');
                     if (!input.multiline) { inp.type = 'text'; }
@@ -1133,7 +1190,7 @@ var FileCommander = (function () {
                     if (modalEl == null) return;
                     modalEl.remove(); modalEl = null;
                     var p = activePane(); if (p) { p.el.scroll.focus(); }
-                    resolve(inp ? { value: v, text: inp.value } : v);
+                    resolve(inp ? { value: v, text: inp.value, extra: extra ? extra.value : null } : v);
                 }
                 buttons.forEach(function (b) { var x = h('button', 'fc-btn' + (b[2] ? ' fc-primary' : '')); x.textContent = b[0]; x.onclick = function () { done(b[1]); }; bar.append(x); });
                 box.append(bar);
@@ -1598,6 +1655,9 @@ var FileCommander = (function () {
 
         obj.processBinary = function (data) { return downloadBlock(data); };
 
+        // The device's own locations changed, from this browser or another
+        obj.refreshLocations = function () { renderDrives(panes[0]); renderDrives(panes[1]); };
+
         obj.processBinaryString = function (str) {
             if ((download == null) || (download.state != 1)) return false;
             var b = new Uint8Array(str.length);
@@ -1625,7 +1685,7 @@ var FileCommander = (function () {
             requestEnv().then(function () { renderDrives(panes[0]); renderDrives(panes[1]); });
             panes.forEach(function (p) {
                 if ((p.type != 'remote') || (p.items.length > 0)) return;
-                if (!p.needStart || (typeof cfg.startpath != 'string')) { p.needStart = false; loadRemote(p, p.segs); return; }
+                if (!p.needStart || (startPath() == null)) { p.needStart = false; loadRemote(p, p.segs); return; }
                 p.needStart = false;
                 p.loading = true; renderStatus(p);
                 requestEnv().then(function () { loadRemote(p, startSegs()); });

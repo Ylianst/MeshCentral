@@ -4640,6 +4640,8 @@
                                 node.httpport = message.event.node.httpport;
                                 node.httpsport = message.event.node.httpsport;
                                 node.consent = message.event.node.consent;
+                                node.filecommander = message.event.node.filecommander;
+                                if ((fileCommander != null) && (filesNode != null) && (filesNode._id == node._id)) { fileCommander.refreshLocations(); }
                                 node.pmt = message.event.node.pmt;
                                 if (message.event.node.links != null) { node.links = message.event.node.links; } else { delete node.links; }
                                 if (message.event.node.agent != null) {
@@ -14290,6 +14292,13 @@
                 },
                 downloadFile: function (url, name) { downloadFile(url, encodeURIComponentEx(name)); },
                 openOnDevice: function (path, isDir) { if (files != null) { files.sendText({ action: 'open', reqid: 1, path: path, dir: isDir }); } },
+                deviceConfig: function () { return (filesNode != null) ? filesNode.filecommander : null; }, // This device's own locations, set below
+                canEditDevice: function () { return (filesNode != null) && ((GetNodeRights(filesNode) & 4) != 0); }, // MESHRIGHT_MANAGECOMPUTERS, as the server checks
+                saveDeviceConfig: function (settings) {
+                    if (filesNode == null) return;
+                    if (settings == null) { delete filesNode.filecommander; } else { filesNode.filecommander = settings; } // Shown right away, the server sends the change to everyone else
+                    meshserver.send({ action: 'changedevice', nodeid: filesNode._id, filecommander: settings });
+                },
                 onActiveChanged: function (active) {
                     var rows = Q('p13toolbar').rows;
                     rows[1].style.display = rows[2].style.display = (active ? 'none' : '');
