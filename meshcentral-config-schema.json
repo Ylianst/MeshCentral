@@ -2132,6 +2132,17 @@
             "default": false,
             "description": "When enabled, device groups will be collapsed by default in the devices tab."
           },
+          "activeSessionsPanel": {
+            "type": [ "boolean", "object" ],
+            "default": false,
+            "description": "When enabled, shows an \"Active Sessions\" section above all device groups in the devices tab listing every device with open remote sessions (desktop, terminal, files...), even across device groups. Each user can collapse it and pick between their own sessions and, if allowed, all users' sessions.",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": { "type": "boolean", "default": true, "description": "Set to false to disable the panel." },
+              "defaultScope": { "type": "string", "enum": [ "own", "all" ], "default": "own", "description": "Scope used until the user picks one. \"all\" only applies to users allowed by allowAllScope." },
+              "allowAllScope": { "type": "string", "enum": [ "fulladmin", "manageusers", "everyone", "none" ], "default": "fulladmin", "description": "Who may switch the panel to show all users' sessions: full site administrators, users with the manage users right, everyone, or no one. Users only ever see sessions on devices they already have access to." }
+            }
+          },
           "terminalUserVariable": {
             "type": "string",
             "enum": [

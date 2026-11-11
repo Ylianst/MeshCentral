@@ -3204,6 +3204,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
+    // Compute the "Active Sessions" panel settings for a given user. This panel is shown at the top of the
+    // devices list and lists all devices the user currently has remote sessions open on, across device groups.
+    // Configured using "activeSessionsPanel" in the domain section of config.json, either as a boolean or as:
+    //   { "enabled": true, "defaultScope": "own" | "all", "allowAllScope": "fulladmin" | "manageusers" | "everyone" | "none" }
+    // The user picks the scope ("own" or "all") and collapses the panel from the panel itself, saved in their web state.
+    function getActiveSessionsPanelSettings(domain, user) {
+        var c = domain.activesessionspanel, r = { enabled: false, defaultScope: 'own', canSeeAll: false };
+        if ((c == null) || (c === false)) return r;
+        if (typeof c != 'object') { c = {}; }
+        if (c.enabled === false) return r;
+        r.enabled = true;
+        var allowAll = (typeof c.allowallscope == 'string') ? c.allowallscope.toLowerCase() : 'fulladmin';
+        var siteadmin = ((user != null) && (typeof user.siteadmin == 'number')) ? user.siteadmin : 0;
+        if (allowAll == 'everyone') { r.canSeeAll = true; }
+        else if (allowAll == 'manageusers') { r.canSeeAll = ((siteadmin == 0xFFFFFFFF) || ((siteadmin & 2) != 0)); }
+        else if (allowAll == 'none') { r.canSeeAll = false; }
+        else { r.canSeeAll = (siteadmin == 0xFFFFFFFF); }
+        if ((typeof c.defaultscope == 'string') && (c.defaultscope.toLowerCase() == 'all') && r.canSeeAll) { r.defaultScope = 'all'; }
+        return r;
+    }
+
     function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null;
         res.set({ 'Cache-Control': 'no-store' });
@@ -3504,7 +3525,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
-                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
+                    activeSessionsPanel: encodeURIComponent(JSON.stringify(getActiveSessionsPanelSettings(domain, user))).replace(/'/g, '%27')
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;

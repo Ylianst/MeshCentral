@@ -221,6 +221,7 @@
       "_hidePowerTimeline": true,
       "_showNotesPanel": true,
       "_collapseGroups": true,
+      "_activeSessionsPanel": { "enabled": true, "defaultScope": "own", "allowAllScope": "fulladmin" },
       "_userSessionsSort": "Username",
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],

@@ -1694,6 +1694,8 @@
         var goBackStack = [];
         var CollapsedGroups = {};
         var collapseGroups = '{{{collapseGroups}}}';
+        var activeSessionsPanel = null;
+        try { activeSessionsPanel = JSON.parse(decodeURIComponent('{{{activeSessionsPanel}}}')); } catch (ex) { }
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
         var deviceViewSettings = {};
         try { deviceViewSettings = JSON.parse(getstore('_deviceViewSettings', '{}')); } catch(ex) {}
@@ -3478,6 +3480,7 @@
                                     if ((webstate.sort != null) && (webstate.sort != oldSort)) { document.getElementById('sortselect').selectedIndex = sort = parseInt(webstate.sort); mainUpdate(6); }
                                     if ((webstate.loctag != null) && (webstate.loctag != oldLoctag)) { if (webstate.loctag != null) { args.locale = webstate.loctag; } else { delete args.locale; } mainUpdate(0xFFFFFFFF); }
                                     if ((webstate.nightMode != null) && (webstate.nightMode != oldNightMode)) { putstore('nightMode', webstate.nightMode); setNightMode(); }
+                                    if ((webstate.activeSessionsScope != null) || (webstate.activeSessionsCollapsed != null)) { updateActiveSessionsPanel(); }
                                     if ((webstate.footerBar != null) && (webstate.footerBar != oldFooterBar)) { footerBar = (webstate.footerBar == '1'); QS('container')['grid-template-rows'] = null; QS('container')['-ms-grid-rows'] = null; adjustPanels(); }
                                     if ((webstate.stars != null) && (webstate.stars != JSON.stringify(stars))) {
                                         stars = JSON.parse(webstate.stars);
@@ -3896,7 +3899,7 @@
                                 if ((message.event.conn & 1) && currentNode && (currentNode._id == node._id) && (xxcurrentView == 18)) { loadInstalledApps(); }
 
                                 // Clear sesssion and battery information if needed
-                                if ((node.conn & 1) == 0) { delete node.sessions; }
+                                if ((node.conn & 1) == 0) { if (node.sessions != null) { delete node.sessions; updateActiveSessionsPanel(); } }
 
                                 // Web page update
                                 var filter = Q('DevFilterSelect').value;
@@ -4004,6 +4007,7 @@
                                 if (Object.keys(node.sessions).length == 0) { delete node.sessions; }
                             }
                             updateDeviceViewDevice(node);
+                            updateActiveSessionsPanel();
                             if ((currentNode != null) && (currentNode._id == message.event.nodeid)) { gotoDevice(currentNode._id, xxcurrentView, true); }
 
                             // If we are looking at the sessions dialog box for this device now, update it
@@ -4898,7 +4902,9 @@
                 }
                 r += '</div><br/>';
 
+                if (view < 3) { r = getActiveSessionsPanelContainer() + r; } // Active sessions panel above all device groups
                 QH('xdevices', r);
+                updateActiveSessionsPanel();
                 deviceHeaderSet();
 
                 for (var i in deviceHeaders) { QH(i, deviceHeaders[i]); }
@@ -21768,6 +21774,105 @@
             var outputArray = new Uint8Array(rawData.length);
             for (var i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
             return outputArray;
+        }
+
+        //
+        // Active Sessions panel. Shown at the top of the devices list, lists every device that currently has
+        // remote sessions (desktop, terminal, files...) open, across all device groups. Enabled with
+        // "activeSessionsPanel" in the domain section of config.json. Each user picks "My sessions" or,
+        // when allowed by the server, "All users", and can collapse the panel. Both choices are saved in
+        // the user's web state so they follow the user across browsers.
+        //
+
+        var activeSessionsTypes = { multidesk: "Desktop", kvm: "Desktop", terminal: "Terminal", files: "Files", registry: "Registry", tcp: "TCP", udp: "UDP" };
+
+        function getActiveSessionsScope() {
+            if ((activeSessionsPanel == null) || (activeSessionsPanel.enabled !== true)) return null;
+            var scope = getstore('activeSessionsScope', activeSessionsPanel.defaultScope);
+            if ((scope != 'all') || (activeSessionsPanel.canSeeAll !== true)) { scope = 'own'; }
+            return scope;
+        }
+
+        // Returns a list of { node, users: { userid: [types] } } for all devices with sessions in the given scope
+        function getActiveSessionsList(scope) {
+            var r = [];
+            if (nodes == null) return r;
+            for (var i in nodes) {
+                var node = nodes[i], users = {}, found = false;
+                if (node.sessions == null) continue;
+                for (var t in activeSessionsTypes) {
+                    if ((t == 'kvm') && (node.sessions.multidesk != null)) continue; // Multi-desktop sessions supersede the KVM list
+                    var s = node.sessions[t];
+                    if ((s == null) || (typeof s != 'object')) continue;
+                    for (var userid in s) {
+                        if ((typeof userid != 'string') || (userid.startsWith('user/') == false)) continue; // Skip "busy" and other non-user entries
+                        if ((scope != 'all') && (userid != userinfo._id)) continue;
+                        if (users[userid] == null) { users[userid] = []; }
+                        if (users[userid].indexOf(activeSessionsTypes[t]) == -1) { users[userid].push(activeSessionsTypes[t]); }
+                        found = true;
+                    }
+                }
+                if (found) { r.push({ node: node, users: users }); }
+            }
+            r.sort(function (a, b) { var x = (a.node.name || '').toLowerCase(), y = (b.node.name || '').toLowerCase(); return (x > y) ? 1 : ((x < y) ? -1 : 0); });
+            return r;
+        }
+
+        // Returns the HTML container for the panel, the content is filled by updateActiveSessionsPanel()
+        function getActiveSessionsPanelContainer() {
+            if (getActiveSessionsScope() == null) return '';
+            return '<div id=activeSessionsPanel style=margin-bottom:6px></div>';
+        }
+
+        function updateActiveSessionsPanel() {
+            var scope = getActiveSessionsScope(), panel = Q('activeSessionsPanel');
+            if ((scope == null) || (panel == null)) return;
+            var list = getActiveSessionsList(scope), collapsed = (getstore('activeSessionsCollapsed', '0') == '1');
+            var x = '<div class=DevSt style=width:100%;padding-top:4px>';
+            x += '<span class=devHeaderx style=float:right>';
+            if (activeSessionsPanel.canSeeAll === true) {
+                x += '<select id=activeSessionsScopeSelect style=font-size:11px;margin-right:4px onchange=setActiveSessionsScope(this.value) onclick=haltEvent(event)>';
+                x += '<option value=own' + ((scope == 'own') ? ' selected' : '') + '>' + "My sessions" + '</option>';
+                x += '<option value=all' + ((scope == 'all') ? ' selected' : '') + '>' + "All users" + '</option>';
+                x += '</select>';
+            }
+            x += ((list.length == 1) ? "1 device" : format("{0} devices", list.length)) + '</span>';
+            x += '<img class=collapseImage src=images/c' + (collapsed ? '1' : '2') + '.png height=8 width=8 style=margin-left:2px;margin-right:2px;cursor:pointer onclick=toggleActiveSessionsPanel()></img>';
+            x += '<span style=cursor:pointer onclick=toggleActiveSessionsPanel()>' + ((scope == 'all') ? "Active Sessions - All Users" : "My Active Sessions") + '</span></div>';
+            if (collapsed == false) {
+                x += '<div style=padding:2px;padding-left:14px>';
+                if (list.length == 0) {
+                    x += '<div style=padding:4px><i>' + ((scope == 'all') ? "No devices have active sessions." : "You have no active sessions.") + '</i></div>';
+                } else {
+                    x += '<table style=width:100% cellpadding=0 cellspacing=0>';
+                    for (var i in list) {
+                        var node = list[i].node, mesh = meshes[node.meshid], parts = [];
+                        for (var userid in list[i].users) {
+                            var types = list[i].users[userid].join(', ');
+                            if (scope == 'all') { parts.push('<b>' + EscapeHtml(getUserName(userid)) + '</b>' + ((userid == userinfo._id) ? (' (' + "You" + ')') : '') + ': ' + EscapeHtml(types)); } else { parts.push(EscapeHtml(types)); }
+                        }
+                        x += '<tr style=cursor:pointer onclick=\'gotoDevice("' + node._id + '",10,null,event)\' title="' + "Go to device" + '">';
+                        x += '<td style=width:20px;padding:2px><div class="j' + node.icon + '" style=width:16px;height:16px></div></td>';
+                        x += '<td style=width:30%;max-width:0;padding:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis><b>' + EscapeHtml(node.name) + '</b></td>';
+                        x += '<td style=width:20%;max-width:0;padding:2px;color:gray;white-space:nowrap;overflow:hidden;text-overflow:ellipsis>' + (mesh ? EscapeHtml(mesh.name) : ('<i>' + "Individual Devices" + '</i>')) + '</td>';
+                        x += '<td style=padding:2px>' + parts.join('<br />') + '</td></tr>';
+                    }
+                    x += '</table>';
+                }
+                x += '</div>';
+            }
+            panel.innerHTML = x;
+        }
+
+        function setActiveSessionsScope(scope) {
+            if ((scope != 'own') && (scope != 'all')) return;
+            putstore('activeSessionsScope', scope);
+            updateActiveSessionsPanel();
+        }
+
+        function toggleActiveSessionsPanel() {
+            putstore('activeSessionsCollapsed', (getstore('activeSessionsCollapsed', '0') == '1') ? '0' : '1');
+            updateActiveSessionsPanel();
         }
 
         function putstore(name, val) {
