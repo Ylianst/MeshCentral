@@ -219,6 +219,7 @@
       "_ipkvm": false,
       "_minify": true,
       "_hidePowerTimeline": true,
+      "_sessionTimeline": false,
       "_showNotesPanel": true,
       "_collapseGroups": true,
       "_userSessionsSort": "Username",

@@ -579,6 +579,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 features2: allFeatures.features2,
                 features3: allFeatures.features3
             };
+            if (domain.sessiontimeline === true) {
+                const architectures = parent.parent.meshAgentsArchitectureNumbers;
+                serverinfo.sessionTimelineAgentIds = Object.keys(architectures).filter(function (id) { return architectures[id].platform === 'win32'; }).map(Number);
+            }
             serverinfo.languages = parent.renderLanguages;
             serverinfo.tlshash = Buffer.from(parent.webCertificateFullHashs[domain.id], 'binary').toString('hex').toUpperCase(); // SHA384 of server HTTPS certificate
             serverinfo.agentCertHash = parent.agentCertificateHashBase64;
@@ -1137,7 +1141,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         var actionfilter = null;
                         if (command.filter != null) {
-                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) actionfilter = command.filter;
+                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands','sessionstate'].includes(command.filter)) actionfilter = command.filter;
                         }
 
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
@@ -1169,7 +1173,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                             var filter = null;
                             if (command.filter != null) {
-                                if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) filter = command.filter;
+                                if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands','sessionstate'].includes(command.filter)) filter = command.filter;
                             }
 
                             if (((rights & MESHRIGHT_LIMITEVENTS) != 0) && (rights != MESHRIGHT_ADMIN)) {
@@ -1202,7 +1206,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         var actionfilter = null;
                         if (command.filter != null) {
-                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands'].includes(command.filter)) actionfilter = command.filter;
+                            if (['agentlog','batchupload','changenode','manual','relaylog','removenode','runcommands','sessionstate'].includes(command.filter)) actionfilter = command.filter;
                         }
 
                         if ((command.limit == null) || (typeof command.limit != 'number')) {
@@ -6032,6 +6036,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'ping': serverCommandPing,
         'pong': serverCommandPong,
         'powertimeline': serverCommandPowerTimeline,
+        'sessiontimeline': serverCommandSessionTimeline,
         'print': serverCommandPrint,
         'removePhone': serverCommandRemovePhone,
         'removeMessaging': serverCommandRemoveMessaging,
@@ -7200,6 +7205,48 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverCommandPing(command) { try { ws.send('{"action":"pong"}'); } catch (ex) { } }
     function serverCommandPong(command) { } // NOP
+
+    function serverCommandSessionTimeline(command) {
+        if (domain.sessiontimeline !== true) return;
+
+        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+            if ((visible == false) || (node == null) || (node.agent == null)) return;
+            const architecture = parent.parent.meshAgentsArchitectureNumbers[node.agent.id];
+            if ((architecture == null) || (architecture.platform !== 'win32')) return;
+
+            // Accept the browser's first displayed midnight. Eight days allows for DST
+            // and clock skew while bounding how much history a client can request.
+            const now = Date.now();
+            const start = new Date(Number.isFinite(command.start) && (command.start >= now - 8 * 86400000) && (command.start <= now) ? command.start : now - 7 * 86400000);
+            db.getSessionTimeline(node._id, function (err, docs) {
+                if ((err != null) || (docs == null)) return;
+                const timeline = [];
+                let lastServer;
+                // SQL DATETIME may order records only to the nearest second.
+                const samples = docs.map(function (doc) { return { doc: doc, time: new Date(doc.time).getTime() }; })
+                    .filter(function (sample) { return Number.isFinite(sample.time); });
+                samples.sort(function (a, b) {
+                    if (a.time !== b.time) return a.time - b.time;
+                    // An availability boundary takes precedence over a report at the same millisecond.
+                    return Number(a.doc.sessionState == null || a.doc.validUntil === a.time) - Number(b.doc.sessionState == null || b.doc.validUntil === b.time);
+                });
+                for (const { doc, time } of samples) {
+                    if (doc.sessionState == null) {
+                        // Wildcard power records mark a server startup or shutdown.
+                        if ((timeline.length > 0) && (doc.server === lastServer)) { timeline.push([time, 'unknown', time]); }
+                    } else {
+                        timeline.push([time, doc.sessionState, doc.validUntil]);
+                        lastServer = doc.server;
+                    }
+                }
+                let first = timeline.findIndex(function (entry) { return entry[0] >= start.getTime(); });
+                if (first < 0) { first = timeline.length; }
+                // Keep the preceding sample only if it is still valid at the start.
+                if ((first > 0) && (timeline[first - 1][2] > start.getTime())) { first--; }
+                obj.send({ action: 'sessiontimeline', nodeid: node._id, timeline: timeline.slice(first), tag: command.tag });
+            });
+        });
+    }
 
     function serverCommandPowerTimeline(command) {
         // Get the node and the rights for this node
