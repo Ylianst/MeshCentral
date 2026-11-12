@@ -14846,7 +14846,10 @@
                 }
             }
             setModalContent('xxAddAgent', "Unzip To Folder", '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p13unzipFileEx(3, { action: 'unzip', input: input }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => {
+                xxdialogTag = 'fileMsgDialog';
+                p13unzipFileEx(3, { action: 'unzip', input: input });
+            });
             focusTextBox('p13unzipfolderinput');
         }
 
