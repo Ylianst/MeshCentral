@@ -1837,6 +1837,23 @@ function handleServerCommand(data) {
                             status: function (state) { sendMsi({ status: state }); }
                         }).then(function (r) { r.done = true; sendMsi(r); }, function (e) { sendMsi({ done: true, error: e.toString() }); });
                     } catch (e) { sendMsi({ done: true, error: e.toString() }); }
+                } else if ((data.type == 'installpackage') || (data.type == 'installflatpak')) {
+                    // Linux: install a package uploaded to the server (deb, rpm, flatpak, flatpakref, AppImage) or a Flatpak app by id.
+                    // The package tool is started directly, never through a shell.
+                    var sendPkg = function (r) { r.name = data.name; r.kind = data.kind; mesh.SendCommand({ action: 'software', type: data.type, value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'linux') { sendPkg({ done: true, error: "Package install is only supported on Linux devices" }); return; }
+                    try {
+                        var pkgMod = require('linux-software');
+                        if (pkgMod.isBusy()) { sendPkg({ done: true, error: "A package installation is already in progress" }); return; }
+                        var pkgStatus = function (state) { sendPkg({ status: state }); };
+                        var pkgDone = function (r) { r.done = true; sendPkg(r); }, pkgFail = function (e) { sendPkg({ done: true, error: e.toString() }); };
+                        if (data.type == 'installflatpak') {
+                            pkgMod.installFlatpak(data.remote, data.appid, pkgStatus).then(pkgDone, pkgFail);
+                        } else {
+                            if ((typeof data.urlpath != 'string') || (data.urlpath.charAt(0) != '/') || (typeof data.hash != 'string') || (/^[0-9a-fA-F]{96}$/.test(data.hash) == false)) { sendPkg({ done: true, error: "Invalid request" }); return; }
+                            pkgMod.installFromServer({ url: 'http' + getServerTargetUrlEx('*' + data.urlpath).substring(2), hash: data.hash, kind: data.kind, name: data.name, servertlshash: data.servertlshash, status: pkgStatus }).then(pkgDone, pkgFail);
+                        }
+                    } catch (e) { sendPkg({ done: true, error: e.toString() }); }
                 } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });

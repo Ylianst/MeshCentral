@@ -31,7 +31,6 @@ var MSI_RESULTS = {
 
 var _msi = null;
 var _busy = false;
-var _request = null; // Keep a reference on the active download
 
 function resultName(code) { return (MSI_RESULTS[code] != null) ? MSI_RESULTS[code] : ('Error' + code); }
 
@@ -68,7 +67,7 @@ function installProduct(packagePath, commandLine, logPath) {
 }
 
 // Download an MSI from the MeshCentral server, check its SHA384 hash and install it.
-// options: { url, hash (SHA384 hex), properties, status: function(state) }
+// options: { url, hash (SHA384 hex), servertlshash, properties, status: function(state) }
 // Resolves with { code, result, success, rebootRequired, log }.
 function installFromServer(options) {
     var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
@@ -76,53 +75,17 @@ function installFromServer(options) {
     if ((options == null) || (typeof options.url != 'string') || (typeof options.hash != 'string')) { ret._rej(new Error('Invalid arguments')); return ret; }
     _busy = true;
 
-    var fs = require('fs');
     var base = (process.env['windir'] || 'C:\\Windows') + '\\Temp\\meshcentral-msi-' + Date.now().toString(36) + Math.floor(Math.random() * 0x7FFFFFFF).toString(36);
     var msiPath = base + '.msi', logPath = base + '.log';
-    var finished = false;
+    var status = function (state) { if (typeof options.status == 'function') { try { options.status(state); } catch (e) { } } };
+    var finish = function (err, result) { _busy = false; removeFile(msiPath); if (err) { ret._rej(err); } else { ret._res(result); } };
 
-    function finish(err, result) {
-        if (finished) return;
-        finished = true;
-        _busy = false;
-        _request = null;
-        removeFile(msiPath);
-        if (err) { ret._rej(err); } else { ret._res(result); }
-    }
-
-    try {
-        var opts = require('http').parseUri(options.url);
-        opts.rejectUnauthorized = false;
-        opts.checkServerIdentity = function checkServerIdentity(certs) {
-            // Accept the server only if it presents the certificate used by the agent control channel
-            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.digest == certs[0].digest) return; } catch (ex) { }
-            try { if (require('MeshAgent').ServerInfo.ControlChannelCertificate.fingerprint == certs[0].fingerprint) return; } catch (ex) { }
-            if ((typeof options.servertlshash == 'string') && (certs[0].digest != null) && (options.servertlshash.toLowerCase() == certs[0].digest.split(':').join('').toLowerCase())) return;
-            throw new Error('BadCert');
-        }
-        if (typeof options.status == 'function') { try { options.status('downloading'); } catch (e) { } }
-        _request = require('https').get(opts);
-        _request.on('error', function (e) { finish(new Error('Download failed: ' + e)); });
-        _request.on('response', function (res) {
-            if (res.statusCode != 200) { finish(new Error('Download failed, HTTP ' + res.statusCode)); return; }
-            var hash = null, closed = false;
-            var check = function () {
-                if ((hash == null) || (closed == false) || finished) return;
-                if (hash != options.hash.toLowerCase()) { finish(new Error('Downloaded package failed the hash check')); return; }
-                if (typeof options.status == 'function') { try { options.status('installing'); } catch (e) { } }
-                var cmdLine = ((typeof options.properties == 'string') ? (options.properties + ' ') : '') + 'REBOOT=ReallySuppress';
-                installProduct(msiPath, cmdLine, logPath).then(function (r) { r.log = logPath; finish(null, r); }, function (e) { finish(e); });
-            };
-            try {
-                var file = fs.createWriteStream(msiPath, { flags: 'wb' });
-                var hasher = require('SHA384Stream').create();
-                hasher.on('hash', function (h) { hash = h.toString('hex').toLowerCase(); check(); });
-                file.on('close', function () { closed = true; check(); });
-                res.pipe(file);
-                res.pipe(hasher);
-            } catch (ex) { finish(ex); }
-        });
-    } catch (ex) { finish(ex); }
+    status('downloading');
+    require('software-download').download({ url: options.url, hash: options.hash, path: msiPath, servertlshash: options.servertlshash }).then(function () {
+        status('installing');
+        var cmdLine = ((typeof options.properties == 'string') ? (options.properties + ' ') : '') + 'REBOOT=ReallySuppress';
+        installProduct(msiPath, cmdLine, logPath).then(function (r) { r.log = logPath; finish(null, r); }, function (e) { finish(e); });
+    }, function (e) { finish(e); });
     return ret;
 }
 

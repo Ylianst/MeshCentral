@@ -1138,6 +1138,7 @@
 				<input type="button" id="p18RefreshBtn" value="Refresh" onclick="loadInstalledApps()" style="padding-right:4px" />
 				<input type="button" id="p18WinUpdatesBtn" value="Windows Updates" onclick="loadWinUpdates()" style="display:none" />
 				<input type="button" id="p18InstallMsiBtn" value="Install MSI..." onclick="showInstallMsiDialog()" style="display:none" />
+				<input type="button" id="p18InstallPkgBtn" value="Install Package..." onclick="showInstallPackageDialog()" style="display:none" />
 				<input type="text" id="p18SearchInput" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
 				<label><input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" />Show Store Apps</label>
 				<span id="p18Status" style="margin-left:20px"></span>
@@ -2830,7 +2831,7 @@
                 }
                 case 'software': {
                     if ((message.type == 'winupdates') || (message.type == 'installwinupdates')) { handleWinUpdatesResponse(message); break; }
-                    if (message.type == 'installmsi') { handleMsiResponse(message); break; }
+                    if ((message.type == 'installmsi') || (message.type == 'installpackage') || (message.type == 'installflatpak')) { handleMsiResponse(message); break; }
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
@@ -7829,6 +7830,7 @@
                 QH('p18wuhtml', '');
                 QV('p18WinUpdatesBtn', isWindowsAgentNode(currentNode));
                 QV('p18InstallMsiBtn', isWindowsAgentNode(currentNode) && canInstallMsi(currentNode));
+                QV('p18InstallPkgBtn', isLinuxAgentNode(currentNode) && canInstallMsi(currentNode));
                 msiInstalling = false;
                 QH('p18msihtml', '');
                 installedAppsData = { desktop: [], store: [] };
@@ -14139,7 +14141,7 @@
         function isWindowsAgentNode(node) {
             if ((node == null) || (node.agent == null)) return false;
             var id = node.agent.id;
-            return (((id > 0) && (id < 5)) || (id == 34) || ((id > 41) && (id < 44)));
+            return ([1, 2, 3, 4, 21, 22, 42, 43, 10003, 10004, 10006, 11000, 11001, 11002].indexOf(id) >= 0);
         }
 
         function canManageSoftware(node) {
@@ -14318,7 +14320,10 @@
         function p18msiUpload(nodeid) {
             var f = Q('p18msifile'), props = Q('p18msiprops');
             if ((f == null) || (f.files.length != 1)) return;
-            var file = f.files[0], properties = props.value.trim();
+            p18pkgUpload(nodeid, f.files[0], 'installmsi', props.value.trim());
+        }
+
+        function p18pkgUpload(nodeid, file, type, properties) {
             var fd = new FormData();
             fd.append('auth', authCookie);
             fd.append('files', file, file.name);
@@ -14336,14 +14341,16 @@
                     return;
                 }
                 p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", r.name)) + '</i>');
-                meshserver.send({ action: 'software', nodeid: nodeid, type: 'installmsi', uploadid: r.id, properties: properties });
+                var cmd = { action: 'software', nodeid: nodeid, type: type, uploadid: r.id };
+                if (properties) { cmd.properties = properties; }
+                meshserver.send(cmd);
             };
             xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + "Upload failed" + '</span>'); };
             xhr.send(fd);
         }
 
         function p18msiShow(html) {
-            QH('p18msihtml', '<div style="margin-bottom:15px;padding:8px;border:1px solid #ddd;border-radius:4px"><b>' + "MSI Install" + '</b>: ' + html + '</div>');
+            QH('p18msihtml', '<div style="margin-bottom:15px;padding:8px;border:1px solid #ddd;border-radius:4px"><b>' + "Software Install" + '</b>: ' + html + '</div>');
         }
 
         function handleMsiResponse(message) {
@@ -14360,6 +14367,8 @@
                 var x = name + ' &mdash; <b style="color:' + (r.success ? '#28a745' : '#cc0000') + '">' + EscapeHtml(String(r.result)) + '</b> (' + EscapeHtml(String(r.code)) + ')';
                 if (r.rebootRequired) { x += ' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>'; }
                 if (r.log) { x += '<br /><span style="font-size:11px;color:gray">' + "Installer log on device" + ': ' + EscapeHtml(r.log) + '</span>'; }
+                if (r.path) { x += '<br /><span style="font-size:11px;color:gray">' + "Installed to" + ': ' + EscapeHtml(r.path) + '</span>'; }
+                if (r.output) { x += '<details style="margin-top:4px"><summary style="font-size:11px;color:gray;cursor:pointer">' + "Output" + (r.tool ? (' (' + EscapeHtml(r.tool) + ')') : '') + '</summary><pre style="font-size:11px;max-height:200px;overflow:auto;white-space:pre-wrap">' + EscapeHtml(r.output) + '</pre></details>'; }
                 p18msiShow(x);
                 if (r.success) { loadInstalledApps(); }
             }
@@ -14367,6 +14376,69 @@
 
         // ============================================
         // END MSI INSTALL
+        // ============================================
+
+        // ============================================
+        // LINUX PACKAGE INSTALL (Panel 18)
+        // deb, rpm, flatpak, flatpakref and AppImage files are uploaded to the server, then the agent downloads them,
+        // checks the hash and installs them with the distribution tools. Flatpak apps can also be installed by id.
+        // Needs "Manage Software" and "Remote Commands" rights.
+        // ============================================
+
+        function isLinuxAgentNode(node) {
+            if ((node == null) || (node.agent == null)) return false;
+            return ([5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 18, 19, 20, 24, 25, 26, 27, 28, 32, 33, 35, 36, 37, 40, 41, 45].indexOf(node.agent.id) >= 0);
+        }
+
+        function p18openDialog(title, x, func) {
+            if ((typeof setModalContent == 'function') && (typeof showModal == 'function')) {
+                setModalContent('xxAddAgent', title, x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', func);
+            } else {
+                setDialogMode(2, title, 3, func, x);
+            }
+        }
+
+        function showInstallPackageDialog() {
+            if (xxdialogMode || (currentNode == null) || msiInstalling || !canInstallMsi(currentNode)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18Status', "Device is offline."); return; }
+            var x = '<div style="max-width:500px">';
+            x += '<p>' + "Upload a package to install on this device:" + '<br /><span style="font-size:11px;color:gray">.deb, .rpm, .flatpak, .flatpakref, .AppImage</span></p>';
+            x += '<input type=file id=p18pkgfile class="form-control form-control-sm" accept=".deb,.rpm,.flatpak,.flatpakref,.AppImage,.appimage" style="width:100%" onchange="p18pkgValidate()" /><br /><br />';
+            x += '<p>' + "Or install a Flatpak application by ID:" + '</p>';
+            x += '<table style="width:100%"><tr><td style="width:90px"><label for=p18pkgremote>' + "Remote" + '</label></td><td><input type=text id=p18pkgremote class="form-control form-control-sm" maxlength=64 value="flathub" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr>';
+            x += '<tr><td><label for=p18pkgappid>' + "App ID" + '</label></td><td><input type=text id=p18pkgappid class="form-control form-control-sm" maxlength=255 placeholder="org.mozilla.firefox" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr></table>';
+            x += '<div id=p18pkgerror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<p><i>' + "The package is installed as root with the package tools of the device (apt, dnf, zypper, rpm or flatpak). AppImages are placed in /opt/AppImages." + '</i></p>';
+            x += '</div>';
+            var nodeid = currentNode._id;
+            p18openDialog("Install Package", x, function () {
+                var f = Q('p18pkgfile');
+                if (f.files.length == 1) { p18pkgUpload(nodeid, f.files[0], 'installpackage', null); }
+                else { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", Q('p18pkgappid').value)) + '</i>'); meshserver.send({ action: 'software', nodeid: nodeid, type: 'installflatpak', remote: Q('p18pkgremote').value.trim(), appid: Q('p18pkgappid').value.trim() }); }
+            });
+            p18pkgValidate();
+        }
+
+        function p18pkgValidate() {
+            var f = Q('p18pkgfile'), remote = Q('p18pkgremote'), appid = Q('p18pkgappid');
+            if ((f == null) || (remote == null) || (appid == null)) return;
+            var err = '', ok = false, a = appid.value.trim(), r = remote.value.trim();
+            if (f.files.length == 1) {
+                if (/\.(deb|rpm|flatpak|flatpakref|appimage)$/i.test(f.files[0].name) == false) { err = "Unsupported package type"; }
+                else if (a != '') { err = "Choose a file or a Flatpak app ID, not both"; }
+                else { ok = true; }
+            } else if (a != '') {
+                if (/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(r) == false) { err = "Invalid Flatpak remote"; }
+                else if (/^[A-Za-z][A-Za-z0-9_-]*(\.[A-Za-z0-9_-]+){2,}(\/\/[A-Za-z0-9_.-]+)?$/.test(a) == false) { err = "Invalid Flatpak application id"; }
+                else { ok = true; }
+            }
+            QH('p18pkgerror', EscapeHtml(err));
+            QE('idx_dlgOkButton', ok);
+        }
+
+        // ============================================
+        // END LINUX PACKAGE INSTALL
         // ============================================
 
         // ============================================
@@ -17262,7 +17334,9 @@
             166: "Windows Update installation finished: {0}, reboot required: {1}",
             167: "Uninstall software: {0}",
             168: "Started MSI installation of {0}",
-            169: "MSI installation of {0} finished: {1}"
+            169: "MSI installation of {0} finished: {1}",
+            170: "Started installation of package {0}",
+            171: "Installation of package {0} finished: {1}"
         };
 
         var eventsShortMessageId = {

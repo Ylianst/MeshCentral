@@ -1318,14 +1318,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 parent.parent.DispatchEvent(wuTargets, obj, wuEvent);
                             }
                         }
-                        if ((command.type == 'installmsi') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
-                            // Audit the outcome of an MSI installation
+                        if (((command.type == 'installmsi') || (command.type == 'installpackage') || (command.type == 'installflatpak')) && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
+                            // Audit the outcome of a package installation
                             var msiResult = null;
                             try { msiResult = JSON.parse(command.value); } catch (ex) { }
                             if ((msiResult != null) && (msiResult.done === true)) {
                                 var msiName = (typeof msiResult.name == 'string') ? msiResult.name.substring(0, 256) : '';
                                 var msiOutcome = (typeof msiResult.error == 'string') ? ('Error: ' + msiResult.error.substring(0, 256)) : (String(msiResult.result).substring(0, 64) + ' (' + parseInt(msiResult.code) + ')');
-                                var msiEvent = { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 169, msgArgs: [msiName, msiOutcome], msg: 'MSI installation of ' + msiName + ' finished: ' + msiOutcome };
+                                var msiEvent = (command.type == 'installmsi') ?
+                                    { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 169, msgArgs: [msiName, msiOutcome], msg: 'MSI installation of ' + msiName + ' finished: ' + msiOutcome } :
+                                    { etype: 'node', action: 'packageinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 171, msgArgs: [msiName, msiOutcome], msg: 'Installation of package ' + msiName + ' finished: ' + msiOutcome };
                                 var msiTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
                                 if (typeof command.sessionid == 'string') {
                                     var msiSplit = command.sessionid.split('/');
