@@ -1821,6 +1821,22 @@ function handleServerCommand(data) {
                         wui.installUpdates(ids).then(function (r) { r.done = true; sendWuInstall(r); }, function (e) { sendWuInstall({ done: true, error: e.toString() }); });
                         sendWuInstall({ status: 'started', count: ids.length });
                     } catch (e) { sendWuInstall({ error: e.toString() }); }
+                } else if (data.type == 'installmsi') {
+                    // Download an MSI from the server and install it through the Windows Installer API (no msiexec.exe process)
+                    var sendMsi = function (r) { r.name = data.name; mesh.SendCommand({ action: 'software', type: 'installmsi', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendMsi({ done: true, error: "MSI install is only supported on Windows devices" }); return; }
+                    if ((typeof data.urlpath != 'string') || (data.urlpath.charAt(0) != '/') || (typeof data.hash != 'string') || (/^[0-9a-fA-F]{96}$/.test(data.hash) == false)) { sendMsi({ done: true, error: "Invalid request" }); return; }
+                    try {
+                        var msiMod = require('win-msi');
+                        if (msiMod.isBusy()) { sendMsi({ done: true, error: "An MSI installation is already in progress" }); return; }
+                        msiMod.installFromServer({
+                            url: 'http' + getServerTargetUrlEx('*' + data.urlpath).substring(2),
+                            hash: data.hash,
+                            servertlshash: data.servertlshash,
+                            properties: (typeof data.properties == 'string') ? data.properties : null,
+                            status: function (state) { sendMsi({ status: state }); }
+                        }).then(function (r) { r.done = true; sendMsi(r); }, function (e) { sendMsi({ done: true, error: e.toString() }); });
+                    } catch (e) { sendMsi({ done: true, error: e.toString() }); }
                 } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });

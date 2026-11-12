@@ -1004,9 +1004,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             case 'software': {
                 // Software inventory and management. Read operations need the device to be visible and "No Software" not set.
                 // Operations that change the device (install updates, uninstall) also need MESHRIGHT_SOFTWAREMANAGE or full rights.
+                // Installing an MSI runs arbitrary code as SYSTEM, so it additionally needs MESHRIGHT_REMOTECOMMAND.
                 if ((common.validateString(command.nodeid, 8, 128) == false) || (typeof command.type != 'string')) break;
                 const softwareReadTypes = ['installedapps', 'installedstoreapps', 'winupdates'];
-                const softwareManageTypes = ['uninstallapp', 'uninstallstoreapp', 'installwinupdates'];
+                const softwareManageTypes = ['uninstallapp', 'uninstallstoreapp', 'installwinupdates', 'installmsi'];
                 const softwareManage = (softwareManageTypes.indexOf(command.type) >= 0);
                 if ((softwareManage == false) && (softwareReadTypes.indexOf(command.type) < 0)) break;
                 const softwareError = function (err) { try { ws.send(JSON.stringify({ action: 'software', type: command.type, nodeid: command.nodeid, responseid: command.responseid, value: JSON.stringify({ error: err }) })); } catch (ex) { } };
@@ -1029,6 +1030,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (swIdsOk == false) { softwareError('Invalid update identifier'); break; }
                     swcmd.updateids = command.updateids.slice();
                     swEventMsgId = 165; swEventArgs = [swcmd.updateids.length]; swEventMsg = 'Started Windows Update installation of ' + swcmd.updateids.length + ' update(s)';
+                } else if (command.type == 'installmsi') {
+                    if (common.validateString(command.uploadid, 1, 64) == false) { softwareError('Invalid package'); break; }
+                    var swUpload = (parent.softwareUploads != null) ? parent.softwareUploads[command.uploadid] : null;
+                    if ((swUpload == null) || (swUpload.userid != user._id) || (swUpload.domainid != domain.id)) { softwareError('Package not found, upload it again'); break; }
+                    if (command.properties != null) {
+                        // Public MSI properties only, NAME=value or NAME="value with spaces". REBOOT is always forced to ReallySuppress by the agent.
+                        if ((typeof command.properties != 'string') || (command.properties.length > 1024) || (/^\s*([A-Z_][A-Z0-9_.]*=("[^"]*"|[^\s"]*)\s*)*$/.test(command.properties) == false) || (/(^|\s)REBOOT=/.test(command.properties))) { softwareError('Invalid MSI properties'); break; }
+                        if (command.properties.trim() != '') { swcmd.properties = command.properties.trim(); }
+                    }
+                    swcmd.name = swUpload.name;
+                    swcmd.hash = swUpload.hash;
+                    swEventMsgId = 168; swEventArgs = [swUpload.name]; swEventMsg = 'Started MSI installation of ' + swUpload.name;
                 }
 
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -1037,6 +1050,17 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { softwareError('Denied'); return; }
                         if ((rights & MESHRIGHT_NOSOFTWARE) != 0) { softwareError('Denied'); return; }
                         if (softwareManage && ((rights & MESHRIGHT_SOFTWAREMANAGE) == 0)) { softwareError('Denied'); return; }
+                        if ((command.type == 'installmsi') && ((rights & MESHRIGHT_REMOTECOMMAND) == 0)) { softwareError('Denied'); return; }
+                    }
+                    if (command.type == 'installmsi') {
+                        // Windows agents only. The agent fetches the package with a short lived download cookie bound to this device.
+                        if (parent.wsagents[node._id] == null) { softwareError('MSI install needs the device to be connected to this server'); return; } // The package is stored on this server
+                        if ((node.agent == null) || (((node.agent.id < 1) || (node.agent.id > 4)) && (node.agent.id != 34) && (node.agent.id != 42) && (node.agent.id != 43))) { softwareError('MSI install is only supported on Windows devices'); return; }
+                        swcmd.urlpath = domain.url + 'agentdownload.ashx?c=' + parent.parent.encodeCookie({ a: 'tmpdl', d: domain.id, nid: node._id, f: swUpload.target }, parent.parent.loginCookieEncryptionKey);
+                        if ((parent.parent.args.ignoreagenthashcheck == null) || (parent.parent.args.ignoreagenthashcheck === false)) {
+                            var swTlsHash = (parent.webCertificateFullHashs != null) ? parent.webCertificateFullHashs[domain.id] : null;
+                            if (swTlsHash != null) { swcmd.servertlshash = Buffer.from(swTlsHash, 'binary').toString('hex'); }
+                        }
                     }
                     if ((parent.wsagents[node._id] == null) && ((parent.parent.multiServer == null) || (parent.parent.GetRoutingServerIdNotSelf(node._id, 1) == null))) { softwareError('Agent offline'); return; }
 

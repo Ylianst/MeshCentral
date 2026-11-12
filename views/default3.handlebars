@@ -1728,6 +1728,7 @@
                     <div class="d-flex align-items-center">
                         <input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm me-1" value="Refresh" onclick="loadInstalledApps()" />
                         <input type="button" id="p18WinUpdatesBtn" class="btn btn-primary btn-sm me-1" value="Windows Updates" onclick="loadWinUpdates()" style="display:none" />
+                        <input type="button" id="p18InstallMsiBtn" class="btn btn-primary btn-sm me-1" value="Install MSI..." onclick="showInstallMsiDialog()" style="display:none" />
                         <input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
                         <label style="margin-left:15px">
                             <input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
@@ -1736,7 +1737,7 @@
                     </div>
                 </div>
                 <div id="p18info" style="overflow-y:auto;padding:10px">
-                    <div id="p18wuhtml"></div>
+                    <div id="p18msihtml"></div><div id="p18wuhtml"></div>
                     <div id="p18html">
                         <div style="text-align:center;padding:50px">
                             <i>Click Refresh to load installed software...</i>
@@ -3711,6 +3712,7 @@
                 }
                 case 'software': {
                     if ((message.type == 'winupdates') || (message.type == 'installwinupdates')) { handleWinUpdatesResponse(message); break; }
+                    if (message.type == 'installmsi') { handleMsiResponse(message); break; }
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
@@ -8960,6 +8962,9 @@
                 winUpdatesInstalling = false;
                 QH('p18wuhtml', '');
                 QV('p18WinUpdatesBtn', isWindowsAgentNode(currentNode));
+                QV('p18InstallMsiBtn', isWindowsAgentNode(currentNode) && canInstallMsi(currentNode));
+                msiInstalling = false;
+                QH('p18msihtml', '');
                 installedAppsData = { desktop: [], store: [] };
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
@@ -16350,7 +16355,7 @@
             if (winUpdatesInstalling) {
                 x += '<div style="padding:8px"><i>' + "Windows Update installation in progress on this device..." + '</i></div>';
             } else if (manage && (winUpdatesData.length > 0)) {
-                x += '<div style="padding:8px 0"><input type=button value="' + "Install Selected" + '" onclick="installSelectedWinUpdates()" /></div>';
+                x += '<div style="padding:8px 0"><button class="btn btn-sm btn-primary" onclick="installSelectedWinUpdates()">' + "Install Selected" + '</button></div>';
             }
             x += '</div>';
             QH('p18wuhtml', x);
@@ -16376,10 +16381,11 @@
             for (var i in titles) { x += EscapeHtml(titles[i]) + '<br />'; }
             x += '</div><p style="margin-top:10px"><i>' + "Updates are downloaded and installed by Windows Update on the device. The device will not be restarted automatically." + '</i></p></div>';
             var nodeid = currentNode._id;
-            setDialogMode(2, "Install Windows Updates", 3, function () {
+            setModalContent('xxAddAgent', "Install Windows Updates", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
                 meshserver.send({ action: 'software', nodeid: nodeid, type: 'installwinupdates', updateids: ids });
                 QH('p18Status', "Install request sent...");
-            }, x);
+            });
         }
 
         function displayWinUpdateResults(r) {
@@ -16401,13 +16407,114 @@
                 x += '</tr>';
             }
             x += '</tbody></table>';
-            x += '<div style="padding:8px 0"><input type=button value="' + "Check for Updates" + '" onclick="loadWinUpdates()" /></div></div>';
+            x += '<div style="padding:8px 0"><button class="btn btn-sm btn-secondary" onclick="loadWinUpdates()">' + "Check for Updates" + '</button></div></div>';
             QH('p18wuhtml', x);
             QH('p18Status', EscapeHtml("Windows Update" + ': ' + String(r.result)));
         }
 
         // ============================================
         // END WINDOWS UPDATES
+        // ============================================
+
+        // ============================================
+        // MSI INSTALL (Panel 18)
+        // The package is uploaded to the server, then the agent downloads it, checks its hash and installs
+        // it through the Windows Installer API. Needs "Manage Software" and "Remote Commands" rights.
+        // ============================================
+
+        var msiInstalling = false;
+
+        function canInstallMsi(node) {
+            if (canManageSoftware(node) == false) return false;
+            var rights = GetNodeRights(node);
+            return ((rights == 0xFFFFFFFF) || ((rights & 131072) != 0));
+        }
+
+        function showInstallMsiDialog() {
+            if (xxdialogMode || (currentNode == null) || msiInstalling || !canInstallMsi(currentNode)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18Status', "Device is offline."); return; }
+            var x = '<div style="max-width:500px">';
+            x += '<p>' + "Select a Windows Installer package (.msi) to install on this device." + '</p>';
+            x += '<input type=file id=p18msifile class="form-control form-control-sm" accept=".msi" onchange="p18msiValidate()" /><br /><br />';
+            x += '<label for=p18msiprops>' + "MSI properties (optional)" + '</label><br />';
+            x += '<input type=text id=p18msiprops class="form-control form-control-sm" maxlength=1024 placeholder="ALLUSERS=1 INSTALLDIR=&quot;C:\\Program Files\\App&quot;" onkeyup="p18msiValidate()" />';
+            x += '<div id=p18msierror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<p><i>' + "The package is installed silently by the Windows Installer service. The device will not be restarted automatically." + '</i></p>';
+            x += '</div>';
+            var nodeid = currentNode._id;
+            setModalContent('xxAddAgent', "Install MSI Package", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { p18msiUpload(nodeid); });
+            p18msiValidate();
+        }
+
+        function p18msiPropsValid(v) {
+            if (v.length > 1024) return false;
+            if (/(^|\s)REBOOT=/.test(v)) return false;
+            return /^\s*([A-Z_][A-Z0-9_.]*=("[^"]*"|[^\s"]*)\s*)*$/.test(v);
+        }
+
+        function p18msiValidate() {
+            var f = Q('p18msifile'), props = Q('p18msiprops');
+            if ((f == null) || (props == null)) return;
+            var err = '';
+            if ((f.files.length == 1) && (f.files[0].name.toLowerCase().endsWith('.msi') == false)) { err = "Only .msi files can be installed"; }
+            else if (!p18msiPropsValid(props.value)) { err = "Use uppercase NAME=value pairs, quote values with spaces. REBOOT can't be set."; }
+            QH('p18msierror', EscapeHtml(err));
+            QE('idx_dlgOkButton', (f.files.length == 1) && (err == ''));
+        }
+
+        function p18msiUpload(nodeid) {
+            var f = Q('p18msifile'), props = Q('p18msiprops');
+            if ((f == null) || (f.files.length != 1)) return;
+            var file = f.files[0], properties = props.value.trim();
+            var fd = new FormData();
+            fd.append('auth', authCookie);
+            fd.append('files', file, file.name);
+            msiInstalling = true;
+            p18msiShow('<i>' + EscapeHtml(format("Uploading {0}...", file.name)) + '</i>');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'uploadsoftware.ashx');
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { p18msiShow('<i>' + EscapeHtml(format("Uploading {0}... {1}%", file.name, Math.round(e.loaded * 100 / e.total))) + '</i>'); } };
+            xhr.onload = function () {
+                var r = null;
+                try { r = JSON.parse(xhr.responseText); } catch (ex) { }
+                if ((xhr.status != 200) || (r == null) || (r.id == null)) {
+                    msiInstalling = false;
+                    p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(((r != null) && r.error) ? r.error : ("Upload failed" + ' (' + xhr.status + ')')) + '</span>');
+                    return;
+                }
+                p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", r.name)) + '</i>');
+                meshserver.send({ action: 'software', nodeid: nodeid, type: 'installmsi', uploadid: r.id, properties: properties });
+            };
+            xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + "Upload failed" + '</span>'); };
+            xhr.send(fd);
+        }
+
+        function p18msiShow(html) {
+            QH('p18msihtml', '<div style="margin-bottom:15px;padding:8px;border:1px solid #ddd;border-radius:4px"><b>' + "MSI Install" + '</b>: ' + html + '</div>');
+        }
+
+        function handleMsiResponse(message) {
+            if ((currentNode == null) || (message.nodeid != currentNode._id)) return;
+            var r = null;
+            try { r = JSON.parse(message.value); } catch (ex) { return; }
+            if (r == null) return;
+            var name = EscapeHtml(r.name || '');
+            if (r.error) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</span>'); return; }
+            if (r.status == 'downloading') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Device is downloading {0}...", r.name || '')) + '</i>'); return; }
+            if (r.status == 'installing') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Installing {0}...", r.name || '')) + '</i>'); return; }
+            if (r.done) {
+                msiInstalling = false;
+                var x = name + ' &mdash; <b style="color:' + (r.success ? '#28a745' : '#cc0000') + '">' + EscapeHtml(String(r.result)) + '</b> (' + EscapeHtml(String(r.code)) + ')';
+                if (r.rebootRequired) { x += ' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>'; }
+                if (r.log) { x += '<br /><span style="font-size:11px;color:gray">' + "Installer log on device" + ': ' + EscapeHtml(r.log) + '</span>'; }
+                p18msiShow(x);
+                if (r.success) { loadInstalledApps(); }
+            }
+        }
+
+        // ============================================
+        // END MSI INSTALL
         // ============================================
 
         // ============================================
@@ -19674,7 +19781,9 @@
             164: "Create file: \"{0}\"",
             165: "Started Windows Update installation of {0} update(s)",
             166: "Windows Update installation finished: {0}, reboot required: {1}",
-            167: "Uninstall software: {0}"
+            167: "Uninstall software: {0}",
+            168: "Started MSI installation of {0}",
+            169: "MSI installation of {0} finished: {1}"
         };
 
         var eventsShortMessageId = {

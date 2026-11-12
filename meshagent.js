@@ -1318,6 +1318,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                                 parent.parent.DispatchEvent(wuTargets, obj, wuEvent);
                             }
                         }
+                        if ((command.type == 'installmsi') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
+                            // Audit the outcome of an MSI installation
+                            var msiResult = null;
+                            try { msiResult = JSON.parse(command.value); } catch (ex) { }
+                            if ((msiResult != null) && (msiResult.done === true)) {
+                                var msiName = (typeof msiResult.name == 'string') ? msiResult.name.substring(0, 256) : '';
+                                var msiOutcome = (typeof msiResult.error == 'string') ? ('Error: ' + msiResult.error.substring(0, 256)) : (String(msiResult.result).substring(0, 64) + ' (' + parseInt(msiResult.code) + ')');
+                                var msiEvent = { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 169, msgArgs: [msiName, msiOutcome], msg: 'MSI installation of ' + msiName + ' finished: ' + msiOutcome };
+                                var msiTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
+                                if (typeof command.sessionid == 'string') {
+                                    var msiSplit = command.sessionid.split('/');
+                                    if (msiSplit.length == 4) { var msiUser = parent.users[msiSplit[0] + '/' + msiSplit[1] + '/' + msiSplit[2]]; if (msiUser != null) { msiEvent.userid = msiUser._id; msiEvent.username = msiUser.name; msiTargets.push(msiUser._id); } }
+                                }
+                                parent.parent.DispatchEvent(msiTargets, obj, msiEvent);
+                            }
+                        }
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
                     }
