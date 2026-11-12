@@ -38,6 +38,7 @@ function isAgentConnectionAllowedByEnrollmentPolicy(settings, domain, ip, nodeEx
 module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     const forge = parent.parent.certificateOperations.forge;
     const common = parent.parent.common;
+    const autoTags = require('./autotags.js');
     parent.agentStats.createMeshAgentCount++;
     parent.parent.debug('agent', 'New agent at ' + req.clientIp + ':' + ws._socket.remotePort);
 
@@ -121,6 +122,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             db.Remove('nt' + obj.dbNodeKey);                          // Remove notes
             db.Remove('lc' + obj.dbNodeKey);                          // Remove last connect time
             db.Remove('si' + obj.dbNodeKey);                          // Remove system information
+            db.Remove('at' + obj.dbNodeKey);                          // Remove auto tag collector values
             db.Remove('al' + obj.dbNodeKey);                          // Remove error log last time
             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(obj.dbNodeKey); }  // Remove SMBios data
             db.RemoveAllNodeEvents(domain.id, obj.dbNodeKey);         // Remove all events for this node
@@ -1524,6 +1526,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             // Event the new sysinfo hash, this will notify everyone that the sysinfo document was changed
                             var event = { etype: 'node', action: 'sysinfohash', nodeid: obj.dbNodeKey, domain: domain.id, hash: command.data.hash, nolog: 1 };
                             parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
+
+                            // Re-run auto tags if they read system information
+                            const autoTagRules = getAutoTagRules();
+                            if ((autoTagRules != null) && autoTagRules.usesSysInfo) { obj.autoTagSysInfo = autoTags.pruneSysInfo(autoTagRules, command.data); UpdateAutoTags(); }
                         };
 
                         var volumes = command.data.hardware?.windows?.volumes;
@@ -1555,6 +1561,19 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                             saveSysInfo();   // non-Windows
                         }
                     }
+                    break;
+                }
+                case 'autotagdata': {
+                    // Values from the auto-tag collectors the server sent this agent (see autotags.js)
+                    if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) break;
+                    const autoTagRules = getAutoTagRules();
+                    if ((autoTagRules == null) || !autoTagRules.hasCollectors) { obj.send(JSON.stringify({ action: 'autotagcollect', collectors: {} })); break; } // Collectors from an old config, stop them.
+                    const data = autoTags.cleanCollected(autoTagRules, command.data);
+                    if (data == null) break;
+                    if ((obj.autoTagInputsLoaded === true) && (JSON.stringify(data) == JSON.stringify(obj.autoTagCollected || {}))) break;
+                    obj.autoTagCollected = data;
+                    db.Set({ _id: 'at' + obj.dbNodeKey, type: 'autotagdata', domain: domain.id, time: Date.now(), data: data });
+                    UpdateAutoTags();
                     break;
                 }
                 case 'sysinfocheck': {
@@ -1976,6 +1995,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
         if ((command == null) || (command == null)) return; // Safety, should never happen.
 
+        // Auto tags need their inputs loaded before the node is changed. A full core info (with caps) means a core started,
+        // which has no collectors yet, so send them.
+        const autoTagRules = getAutoTagRules();
+        if ((autoTagRules != null) && (obj.autoTagInputsLoaded !== true)) { whenAutoTagInputsLoaded(autoTagRules, function () { ChangeAgentCoreInfo(command); }); return; }
+        if ((command.caps != null) && (obj.autoTagCoreSeen !== command.value)) { obj.autoTagCoreSeen = command.value; sendAutoTagCollectors(autoTagRules); }
+
         // If the device is pending a change, hold.
         if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentCoreInfo(command); }, 100); return; }
         obj.deviceChanging = true;
@@ -2038,6 +2063,15 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     if (!device.lastbootuptime) { device.lastbootuptime = ""; }
                     if (device.lastbootuptime != command.lastbootuptime) { /*changes.push('Last Boot Up Time');*/ device.lastbootuptime = command.lastbootuptime; change = 1; log = 1; }
                 }
+                if ((command.winact != null) && (typeof command.winact == 'object')) { // Windows activation
+                    const w = command.winact, winact = {};
+                    if (typeof w.status == 'number') { winact.status = w.status; }
+                    if ((typeof w.state == 'string') && (w.state.length <= 32)) { winact.state = w.state; }
+                    if (typeof w.activated == 'boolean') { winact.activated = w.activated; }
+                    if ((typeof w.name == 'string') && (w.name.length <= 256)) { winact.name = w.name; }
+                    if ((typeof w.channel == 'string') && (w.channel.length <= 64)) { winact.channel = w.channel; }
+                    if (JSON.stringify(device.winact) != JSON.stringify(winact)) { device.winact = winact; change = 1; }
+                }
                 if (command.idletime != null) { // Idle Time
                     if (!device.idletime) { device.idletime = 0; }
                     if (parseInt(device.idletime) != parseInt(command.idletime)) { /*changes.push('Idle Time');*/ device.idletime = parseInt(command.idletime); change = 1; } // Don't log idle time changes, this is too volatile.
@@ -2062,6 +2096,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                 // Remove old volumes and BitLocker data, this is part of sysinfo.
                 delete device.volumes;
+
+                // Automatic tags, last so the rules see the values set above
+                if (applyAutoTags(device, mesh)) { change = 1; }
 
                 // If there are changes, event the new device
                 if (change == 1) {
@@ -2107,6 +2144,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 if ((device != null) && (device.agent != null) && (((ip4 != null) && (device.defaultRouteIp != ip4)) || ((ip6 != null) && (device.defaultRouteIp6 != ip6)))) {
                     if (ip4 != null) { device.defaultRouteIp = ip4; }
                     if (ip6 != null) { device.defaultRouteIp6 = ip6; }
+                    applyAutoTags(device, mesh); // rules can tag the LAN address
                     delete device.conn; delete device.pwr; delete device.agct; delete device.cict; // runtime fields the server adds, not part of the stored node
                     db.Set(device);
                     var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), msg: 'Changed device ' + device.name + ' from group ' + mesh.name + ': default route address', nolog: 1 };
@@ -2165,6 +2203,76 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         });
     }
 
+    // --- Automatic device tags, see autotags.js ---
+
+    // Compiled auto-tag rules for this domain, or null when it has none.
+    function getAutoTagRules() { return autoTags.getRules(domain, function (msg) { console.log(msg); }); }
+
+    // Load what the rules read besides the node: the parts of the system information document they use, and the values the
+    // agent's collectors last reported. Done once per connection; after that the sysinfo and autotagdata handlers keep both current.
+    function whenAutoTagInputsLoaded(rules, func) {
+        if ((rules == null) || (obj.autoTagInputsLoaded === true)) { func(); return; }
+        if (obj.autoTagLoadWaiters != null) { obj.autoTagLoadWaiters.push(func); return; }
+        obj.autoTagLoadWaiters = [func];
+        var pending = 2;
+        const done = function () {
+            if (--pending > 0) return;
+            obj.autoTagInputsLoaded = true;
+            const waiters = obj.autoTagLoadWaiters;
+            delete obj.autoTagLoadWaiters;
+            for (var i in waiters) { waiters[i](); }
+        };
+        // A value set by a handler while the read was in flight is newer than the database copy, so it is kept.
+        if (rules.usesSysInfo) {
+            db.Get('si' + obj.dbNodeKey, function (err, docs) { if (obj.autoTagSysInfo === undefined) { obj.autoTagSysInfo = ((docs != null) && (docs.length == 1)) ? autoTags.pruneSysInfo(rules, docs[0]) : null; } done(); });
+        } else { obj.autoTagSysInfo = null; done(); }
+        if (rules.hasCollectors) {
+            db.Get('at' + obj.dbNodeKey, function (err, docs) { if (obj.autoTagCollected === undefined) { obj.autoTagCollected = ((docs != null) && (docs.length == 1)) ? autoTags.cleanCollected(rules, docs[0].data) : null; } done(); });
+        } else { obj.autoTagCollected = null; done(); }
+    }
+
+    // Apply the rules to a node read from the database, in place. Returns true when its tags or tag colors changed.
+    function applyAutoTags(device, mesh) {
+        const rules = getAutoTagRules();
+        if ((rules != null) && (obj.autoTagInputsLoaded !== true)) return false; // Inputs not loaded yet, leave the tags alone for now.
+        return autoTags.update(rules, device, obj.autoTagSysInfo, mesh, obj.autoTagCollected);
+    }
+
+    // Send the collectors the agent should run. An empty set stops collectors a previous config started, since the core keeps
+    // running across server restarts.
+    function sendAutoTagCollectors(rules) {
+        const collectors = autoTags.agentCollectors(rules);
+        if ((collectors == null) && (obj.autoTagCollectorsSent !== true)) return;
+        obj.autoTagCollectorsSent = (collectors != null);
+        obj.send(JSON.stringify({ action: 'autotagcollect', collectors: (collectors || {}) }));
+    }
+
+    // Re-run the rules after an input changed outside of a core info update (new system information, new collector values).
+    function UpdateAutoTags() {
+        if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
+        const rules = getAutoTagRules();
+        if (rules == null) return;
+        if (obj.autoTagInputsLoaded !== true) { whenAutoTagInputsLoaded(rules, UpdateAutoTags); return; }
+        const mesh = parent.meshes[obj.dbMeshKey];
+        if (mesh == null) return;
+
+        if (obj.deviceChanging === true) { setTimeout(UpdateAutoTags, 100); return; }
+        obj.deviceChanging = true;
+
+        db.Get(obj.dbNodeKey, function (err, nodes) {
+            try {
+                const device = ((nodes != null) && (nodes.length == 1)) ? nodes[0] : null;
+                if ((device != null) && (device.agent != null) && applyAutoTags(device, mesh)) {
+                    delete device.conn; delete device.pwr; delete device.agct; delete device.cict; // runtime fields the server adds, not part of the stored node
+                    db.Set(device);
+                    var event = { etype: 'node', action: 'changenode', nodeid: obj.dbNodeKey, domain: domain.id, node: parent.CloneSafeNode(device), nolog: 1 };
+                    if (db.changeStream) { event.noact = 1; } // the change stream sends its own event to update the node
+                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, event);
+                }
+            } finally { delete obj.deviceChanging; }
+        });
+    }
+
     // Update the mesh agent tab in the database
     function ChangeAgentTag(tag) {
         if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
@@ -2217,15 +2325,16 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Sort the tags
                         serverTags.sort();
 
-                        // Stringify the tags
-                        var st2 = '', st1 = serverTags.join(',');
-                        if (device.tags != null) { st2 = device.tags.join(','); }
+                        // Stringify the tags. Tags added by auto tags are left out and kept, they are not the agent's to set.
+                        var autoOwned = Array.isArray(device.autotags) ? device.autotags : [];
+                        var keptAutoTags = (device.tags || []).filter(function (t) { return autoOwned.indexOf(t) >= 0; });
+                        var st2 = (device.tags || []).filter(function (t) { return autoOwned.indexOf(t) == -1; }).join(','), st1 = serverTags.join(',');
 
                         // Set the device's server tags
-                        if ((domain.agenttag.servertags === 1) && (st1 != st2)) { device.tags = serverTags; changes = true; }
+                        if ((domain.agenttag.servertags === 1) && (st1 != st2)) { device.tags = serverTags.concat(keptAutoTags); changes = true; }
 
                         // Set the device's server tags if there are not tags
-                        if ((domain.agenttag.servertags === 2) && (st2 == '')) { device.tags = serverTags; changes = true; }
+                        if ((domain.agenttag.servertags === 2) && (st2 == '')) { device.tags = serverTags.concat(keptAutoTags); changes = true; }
 
                         // Append to device's server tags
                         if ((domain.agenttag.servertags === 3) && (st1 != st2)) {
@@ -2236,6 +2345,9 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         }
                     }
                 }
+
+                // Automatic tags, so a tag the agent set doesn't push out a generated one until the next core info
+                if (applyAutoTags(device, parent.meshes[obj.dbMeshKey])) { changes = true; }
 
                 if (changes == true) {
                     // Do some clean up if needed, these values should not be in the database.

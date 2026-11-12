@@ -239,6 +239,7 @@ module.exports.CreateDB = function (parent, func) {
                                     obj.Remove('nt' + node._id);                          // Remove notes
                                     obj.Remove('lc' + node._id);                          // Remove last connect time
                                     obj.Remove('si' + node._id);                          // Remove system information
+                                    obj.Remove('at' + node._id);                          // Remove auto tag collector values
                                     obj.Remove('al' + node._id);                          // Remove error log last time
                                     if (obj.RemoveSMBIOS) { obj.RemoveSMBIOS(node._id); } // Remove SMBios data
                                     obj.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node

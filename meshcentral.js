@@ -1152,6 +1152,7 @@ function CreateMeshCentralServer(config, args) {
                                         db.Remove('nt' + node._id);                          // Remove notes
                                         db.Remove('lc' + node._id);                          // Remove last connect time
                                         db.Remove('si' + node._id);                          // Remove system information
+                                        db.Remove('at' + node._id);                          // Remove auto tag collector values
                                         if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
                                         db.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node
                                         db.removeAllPowerEventsForNode(node._id);            // Remove all power events for this node

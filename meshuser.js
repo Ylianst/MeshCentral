@@ -3039,6 +3039,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             db.Remove('nt' + node._id);                          // Remove notes
                             db.Remove('lc' + node._id);                          // Remove last connect time
                             db.Remove('si' + node._id);                          // Remove system information
+                            db.Remove('at' + node._id);                          // Remove auto tag collector values
                             db.Remove('al' + node._id);                          // Remove error log last time
                             if (db.RemoveSMBIOS) { db.RemoveSMBIOS(node._id); }  // Remove SMBios data
                             db.RemoveAllNodeEvents(node.domain, node._id);       // Remove all events for this node
@@ -3671,6 +3672,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             group2.sort();
                             if (node.tags != group2) { node.tags = group2; change = 1; }
                         } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
+                        if ((command.tags != null) && (change == 1)) {
+                            // Tag colors and remote desktop toolbar tags follow the edit now; generated tags are re-checked on the agent's next report.
+                            const autoTags = require('./autotags.js');
+                            autoTags.refreshTagStyles(autoTags.getRules(domain, function (msg) { console.log(msg); }), node);
+                        }
 
                         if (change == 1) {
                             // Save the node
@@ -6071,6 +6077,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         'amtstats': [serverUserCommandAmtStats, ""],
         'args': [serverUserCommandArgs, ""],
         'autobackup': [serverUserCommandAutoBackup, ""],
+        'autotags': [serverUserCommandAutoTags, "Shows the tags auto tags would give a device: autotags <nodeid>. Without a device, summarizes the config."],
         'backupconfig': [serverUserCommandBackupConfig, ""],
         'badlogins': [serverUserCommandBadLogins, "Displays or resets the invalid login rate limiting table."],
         'bad2fa': [serverUserCommandBad2fa, "Displays or resets the invalid 2FA rate limiting table."],
@@ -8303,6 +8310,39 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
     function serverUserCommandVersions(cmdData) {
         cmdData.result = JSON.stringify(process.versions, null, 4);
+    }
+
+    // Dry run of the domain's auto tag rules on one device, to check rules without waiting for the agent to report.
+    function serverUserCommandAutoTags(cmdData) {
+        const autoTags = require('./autotags.js');
+        const rules = autoTags.getRules(domain, function (msg) { console.log(msg); });
+        if (rules == null) { cmdData.result = 'Auto tags are not configured for this domain.'; return; }
+        var nodeid = cmdData.cmdargs['_'][0];
+        if (nodeid == null) {
+            cmdData.result = rules.rules.length + ' rule(s), ' + rules.colors.length + ' color rule(s), collectors: ' + (Object.keys(rules.collectors).join(', ') || 'none') + '\r\nUsage: autotags <nodeid>';
+            return;
+        }
+        nodeid = String(nodeid);
+        if (nodeid.indexOf('/') == -1) { nodeid = 'node/' + domain.id + '/' + nodeid; }
+        const reply = function (text) { try { obj.send({ action: 'serverconsole', value: text, tag: cmdData.command.tag }); } catch (ex) { } };
+        db.Get(nodeid, function (err, nodes) {
+            if ((nodes == null) || (nodes.length != 1) || (nodes[0].domain != domain.id)) { reply('Device not found.'); return; }
+            const node = nodes[0];
+            db.Get('si' + nodeid, function (err, sis) {
+                db.Get('at' + nodeid, function (err, ats) {
+                    const si = ((sis != null) && (sis.length == 1)) ? autoTags.pruneSysInfo(rules, sis[0]) : null;
+                    const collected = ((ats != null) && (ats.length == 1)) ? autoTags.cleanCollected(rules, ats[0].data) : null;
+                    const r = autoTags.computeTags(rules, node, si, parent.meshes[node.meshid], collected);
+                    const x = [];
+                    x.push('Generated tags: ' + ((r.tags.length > 0) ? r.tags.join(', ') : '(none)'));
+                    for (var t in r.colors) { x.push('  ' + t + ' -> ' + r.colors[t]); }
+                    x.push('Tags on device: ' + (Array.isArray(node.tags) ? node.tags.join(', ') : '(none)'));
+                    x.push('Added by auto tags: ' + (Array.isArray(node.autotags) ? node.autotags.join(', ') : '(none)'));
+                    x.push('Collected values: ' + ((collected != null) ? JSON.stringify(collected) : '(none)'));
+                    reply(x.join('\r\n'));
+                });
+            });
+        });
     }
 
     function serverUserCommandArgs(cmdData) {

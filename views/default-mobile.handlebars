@@ -2135,6 +2135,7 @@
                                 node.wifiloc = message.event.node.wifiloc;
                                 node.gpsloc = message.event.node.gpsloc;
                                 node.tags = message.event.node.tags;
+                                node.tagcolors = message.event.node.tagcolors;
                                 node.ssh = message.event.node.ssh;
                                 node.rdp = message.event.node.rdp;
                                 node.userloc = message.event.node.userloc;
@@ -2172,6 +2173,7 @@
                                 if (message.event.node.wsc != null) { node.wsc = message.event.node.wsc; }
                                 if (message.event.node.pr != null) { node.pr = message.event.node.pr; }
                                 if (message.event.node.defender != null) { node.defender = message.event.node.defender; }
+                                if (message.event.node.winact != null) { node.winact = message.event.node.winact; }
                                 node.namel = node.name.toLowerCase();
                                 if (node.rname) { node.rnamel = node.rname.toLowerCase(); } else { node.rnamel = node.namel; }
                                 if (message.event.node.icon) { node.icon = message.event.node.icon; }
@@ -4061,7 +4063,7 @@
 
                 // Node tags
                 var groupingTags = '<i>' + "None" + '</i>';
-                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += '<span class=tagSpan>' + EscapeHtml(node.tags[i]) + '</span> '; } }
+                if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += deviceTagHtml(node, node.tags[i]) + ' '; } }
                 if ((meshrights & 4) != 0) {
                     x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=cursor:pointer;color:black>' + groupingTags + '</span>');
                 } else {
@@ -4543,6 +4545,15 @@
             if ((blockStart > start) && (blockStart < end)) return true;
             if ((blockEnd > start) && (blockEnd < end)) return true;
             return false;
+        }
+
+        // A device tag, in the color auto tags gave it. The server only stores #rrggbb values in node.tagcolors; checked again here.
+        function deviceTagHtml(node, tag) {
+            var c = (node.tagcolors != null) ? node.tagcolors[tag] : null;
+            if ((typeof c != 'string') || !/^#[0-9a-f]{6}$/i.test(c)) { return '<span class=tagSpan>' + EscapeHtml(tag) + '</span>'; }
+            var r = parseInt(c.substring(1, 3), 16), g = parseInt(c.substring(3, 5), 16), b = parseInt(c.substring(5, 7), 16);
+            var fg = ((((r * 299) + (g * 587) + (b * 114)) / 1000) > 140) ? 'black' : 'white';
+            return '<span class=tagSpan style="background-color:' + c + ';color:' + fg + '">' + EscapeHtml(tag) + '</span>';
         }
 
         function addDeviceAttribute(name, value) {
@@ -6943,6 +6954,13 @@
             }
 
             
+            // Windows activation
+            if (node.winact && (node.winact.state != null)) {
+                var y = '<span style=color:' + ((node.winact.activated === true) ? 'green' : 'red') + '>' + EscapeHtml(node.winact.state) + '</span>';
+                if (node.winact.channel) { y += ' (' + EscapeHtml(node.winact.channel) + ')'; }
+                x += addDetailItem("Windows Activation", y);
+            }
+
             // Pending Reboot
             if (node.pr) {
                 var y = [];
