@@ -61,6 +61,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
     const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
+    const MESHRIGHT_SOFTWAREMANAGE      = 0x01000000; // 16777216
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
 
     // Site rights
@@ -623,6 +624,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '');
             serverinfo.domainsuffix = xdomain;
 
+            if (domain.softwaremanagement === false) { serverinfo.softwaremanagement = false; }
             if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; } else {
                 if (typeof domain.guestdevicesharing == 'object') {
                     if (typeof domain.guestdevicesharing.maxsessiontime == 'number') { serverinfo.guestdevicesharingmaxtime = domain.guestdevicesharing.maxsessiontime; }
@@ -1000,21 +1002,54 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
-                
+                // Software inventory and management. Read operations need the device to be visible and "No Software" not set.
+                // Operations that change the device (install updates, uninstall) also need MESHRIGHT_SOFTWAREMANAGE or full rights.
+                if ((common.validateString(command.nodeid, 8, 128) == false) || (typeof command.type != 'string')) break;
+                const softwareReadTypes = ['installedapps', 'installedstoreapps', 'winupdates'];
+                const softwareManageTypes = ['uninstallapp', 'uninstallstoreapp', 'installwinupdates'];
+                const softwareManage = (softwareManageTypes.indexOf(command.type) >= 0);
+                if ((softwareManage == false) && (softwareReadTypes.indexOf(command.type) < 0)) break;
+                const softwareError = function (err) { try { ws.send(JSON.stringify({ action: 'software', type: command.type, nodeid: command.nodeid, responseid: command.responseid, value: JSON.stringify({ error: err }) })); } catch (ex) { } };
+                if (softwareManage && (domain.softwaremanagement === false)) { softwareError('Software management is disabled on this server'); break; }
+
+                // Only forward the fields the agent needs
+                const swcmd = { action: 'software', nodeid: command.nodeid, type: command.type };
+                var swEventMsg = null, swEventMsgId = 0, swEventArgs = null;
+                if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) {
+                    if (common.validateString(command.value, 1, 8192) == false) { softwareError('Invalid value'); break; }
+                    swcmd.value = command.value;
+                    var swAppName = command.value;
+                    if (command.type == 'uninstallapp') { try { swAppName = Buffer.from(command.value, 'base64').toString(); } catch (ex) { } }
+                    swAppName = swAppName.substring(0, 256);
+                    swEventMsgId = 167; swEventArgs = [swAppName]; swEventMsg = 'Uninstall software: ' + swAppName;
+                } else if (command.type == 'installwinupdates') {
+                    if ((Array.isArray(command.updateids) == false) || (command.updateids.length < 1) || (command.updateids.length > 100)) { softwareError('Invalid update list'); break; }
+                    var swIdsOk = true;
+                    for (var i in command.updateids) { if ((typeof command.updateids[i] != 'string') || (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(command.updateids[i]) == false)) { swIdsOk = false; } }
+                    if (swIdsOk == false) { softwareError('Invalid update identifier'); break; }
+                    swcmd.updateids = command.updateids.slice();
+                    swEventMsgId = 165; swEventArgs = [swcmd.updateids.length]; swEventMsg = 'Started Windows Update installation of ' + swcmd.updateids.length + ' update(s)';
+                }
+
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    if (node == null) return;
-                    var mesh = parent.meshes[node.meshid];
-                    if ((node != null) && (mesh != null) && (rights === MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) === 0)) {
-                        var agent = parent.wsagents[command.nodeid];
-                        if (agent != null) {
-                            routeCommandToNode(command, requiredRights, requiredNonRights, func, routingOptions);
-                        } else {
-                            if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Agent offline' })); } catch (ex) { } }
-                        }
-                    } else {
-                        if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'Denied' })); } catch (ex) { } }
+                    if ((node == null) || (visible == false) || (parent.meshes[node.meshid] == null)) { softwareError('Denied'); return; }
+                    if (rights != MESHRIGHT_ADMIN) {
+                        if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { softwareError('Denied'); return; }
+                        if ((rights & MESHRIGHT_NOSOFTWARE) != 0) { softwareError('Denied'); return; }
+                        if (softwareManage && ((rights & MESHRIGHT_SOFTWAREMANAGE) == 0)) { softwareError('Denied'); return; }
                     }
+                    if ((parent.wsagents[node._id] == null) && ((parent.parent.multiServer == null) || (parent.parent.GetRoutingServerIdNotSelf(node._id, 1) == null))) { softwareError('Agent offline'); return; }
+
+                    // Audit operations that change the device
+                    if (swEventMsg != null) {
+                        var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'software', swtype: command.type, msgid: swEventMsgId, msgArgs: swEventArgs, msg: swEventMsg, domain: domain.id };
+                        if (command.type == 'installwinupdates') { event.updateids = swcmd.updateids; }
+                        if ((user._id === req.session.userid) && (req.session.tokenUser != null) && (req.session.tokenName != null)) { event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser; }
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+
+                    routeCommandToNode(swcmd, softwareManage ? MESHRIGHT_SOFTWAREMANAGE : null, MESHRIGHT_NOSOFTWARE, function (ok) { if (ok === false) { softwareError('Unable to route'); } });
                 });
                 break;
             }

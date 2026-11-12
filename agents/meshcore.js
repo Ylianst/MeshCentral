@@ -1800,6 +1800,27 @@ function handleServerCommand(data) {
                     } else {
                         sendSoftwareResponse({ success: false, error: "Not supported" });
                     }
+                } else if (data.type == 'winupdates') {
+                    // List available Windows Updates using the Windows Update Agent COM API (no external process)
+                    var sendWuList = function (r) { mesh.SendCommand({ action: 'software', type: 'winupdates', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendWuList({ error: "Windows Update is only supported on Windows devices" }); return; }
+                    try {
+                        var wu = require('win-updates');
+                        wu.getAvailableUpdates().then(function (u) { sendWuList({ updates: u, installing: wu.isInstallInProgress() }); }, function (e) { sendWuList({ error: e.toString() }); });
+                    } catch (e) { sendWuList({ error: e.toString() }); }
+                } else if (data.type == 'installwinupdates') {
+                    // Download and install the selected Windows Updates using the Windows Update Agent COM API (no external process)
+                    var sendWuInstall = function (r) { mesh.SendCommand({ action: 'software', type: 'installwinupdates', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendWuInstall({ error: "Windows Update is only supported on Windows devices" }); return; }
+                    var ids = [];
+                    if (Array.isArray(data.updateids)) { for (var i = 0; i < data.updateids.length; i++) { if ((typeof data.updateids[i] == 'string') && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(data.updateids[i])) { ids.push(data.updateids[i]); } } }
+                    if (ids.length == 0) { sendWuInstall({ error: "No valid updates selected" }); return; }
+                    try {
+                        var wui = require('win-updates');
+                        if (wui.isInstallInProgress()) { sendWuInstall({ error: "An update installation is already in progress" }); return; }
+                        wui.installUpdates(ids).then(function (r) { r.done = true; sendWuInstall(r); }, function (e) { sendWuInstall({ done: true, error: e.toString() }); });
+                        sendWuInstall({ status: 'started', count: ids.length });
+                    } catch (e) { sendWuInstall({ error: e.toString() }); }
                 } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });

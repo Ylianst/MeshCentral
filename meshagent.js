@@ -1302,6 +1302,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'software':
                     {
                         // Todo - save software into database for offline access but send to web clients for now
+                        if ((command.type == 'installwinupdates') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
+                            // Audit the outcome of a Windows Update installation, even if the requesting user is no longer connected
+                            var wuResult = null;
+                            try { wuResult = JSON.parse(command.value); } catch (ex) { }
+                            if ((wuResult != null) && (wuResult.done === true)) {
+                                var wuOutcome = (typeof wuResult.error == 'string') ? ('Error: ' + wuResult.error.substring(0, 256)) : String(wuResult.result).substring(0, 64);
+                                var wuReboot = (wuResult.rebootRequired === true) ? 'Yes' : 'No';
+                                var wuEvent = { etype: 'node', action: 'winupdatesinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 166, msgArgs: [wuOutcome, wuReboot], msg: 'Windows Update installation finished: ' + wuOutcome + ', reboot required: ' + wuReboot };
+                                var wuTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
+                                if (typeof command.sessionid == 'string') {
+                                    var wuSplit = command.sessionid.split('/');
+                                    if (wuSplit.length == 4) { var wuUser = parent.users[wuSplit[0] + '/' + wuSplit[1] + '/' + wuSplit[2]]; if (wuUser != null) { wuEvent.userid = wuUser._id; wuEvent.username = wuUser.name; wuTargets.push(wuUser._id); } }
+                                }
+                                parent.parent.DispatchEvent(wuTargets, obj, wuEvent);
+                            }
+                        }
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
                     }

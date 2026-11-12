@@ -1136,6 +1136,7 @@
 			</div>
 			<div id="p18toolbar" class="areaHead">
 				<input type="button" id="p18RefreshBtn" value="Refresh" onclick="loadInstalledApps()" style="padding-right:4px" />
+				<input type="button" id="p18WinUpdatesBtn" value="Windows Updates" onclick="loadWinUpdates()" style="display:none" />
 				<input type="text" id="p18SearchInput" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
 				<label><input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" />Show Store Apps</label>
 				<span id="p18Status" style="margin-left:20px"></span>
@@ -2826,6 +2827,7 @@
                     break;
                 }
                 case 'software': {
+                    if ((message.type == 'winupdates') || (message.type == 'installwinupdates')) { handleWinUpdatesResponse(message); break; }
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
@@ -7819,6 +7821,10 @@
                 }
 
                 // Clear installedAppsData for Software tab
+                winUpdatesData = null;
+                winUpdatesInstalling = false;
+                QH('p18wuhtml', '');
+                QV('p18WinUpdatesBtn', isWindowsAgentNode(currentNode));
                 installedAppsData = { desktop: [], store: [] };
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
@@ -8567,6 +8573,7 @@
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
+            if (rights & 16777216) str.push("Manage Software");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -8602,6 +8609,7 @@
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
+            if (rights & 16777216) str.push("Manage Software");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -13983,7 +13991,7 @@
                     x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">';
                     var userRights = GetNodeRights(currentNode);						
-					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+					if (hasUninstall && canManageSoftware(currentNode)) {
 						x += '<input type="button" value="' + "Uninstall" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')" />';
 					} else {
 						x += '<span style="color:#999">-</span>';
@@ -14038,7 +14046,7 @@
 						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">' + scopeBadge + '</td>';
 						x += '<td style="text-align:center;padding:6px 8px;border:1px solid #c3e6cb">';
 						var userRights = GetNodeRights(currentNode);						
-						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+						if (hasUninstall && canManageSoftware(currentNode)) {
 							x += '<input type="button" value="' + "Remove" + '" style="padding:2px 8px;cursor:pointer" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')" />';
 						} else {
 							x += '<span style="color:#999">-</span>';
@@ -14113,6 +14121,147 @@
                 }
             } catch(e) {}
         }
+
+        // ============================================
+        // WINDOWS UPDATES (Panel 18)
+        // Listing and installing is done by the agent through the Windows Update Agent COM API.
+        // ============================================
+
+        var winUpdatesData = null; // null = not loaded, otherwise array of available updates
+        var winUpdatesInstalling = false;
+
+        function isWindowsAgentNode(node) {
+            if ((node == null) || (node.agent == null)) return false;
+            var id = node.agent.id;
+            return (((id > 0) && (id < 5)) || (id == 34) || ((id > 41) && (id < 44)));
+        }
+
+        function canManageSoftware(node) {
+            if ((node == null) || (serverinfo.softwaremanagement === false)) return false;
+            var rights = GetNodeRights(node);
+            return ((rights == 0xFFFFFFFF) || ((rights & 16777216) != 0));
+        }
+
+        function loadWinUpdates() {
+            if ((currentNode == null) || (isWindowsAgentNode(currentNode) == false)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000"><b>' + "Device is offline." + '</b></div>'); return; }
+            winUpdatesData = null;
+            QH('p18wuhtml', '<div style="padding:10px"><i>' + "Searching for Windows updates, this can take a few minutes..." + '</i></div>');
+            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'winupdates' });
+        }
+
+        function handleWinUpdatesResponse(message) {
+            if ((currentNode == null) || (message.nodeid != currentNode._id)) return;
+            var r = null;
+            try { r = JSON.parse(message.value); } catch (ex) { return; }
+            if (r == null) return;
+            if (message.type == 'winupdates') {
+                if (r.error) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</div>'); return; }
+                winUpdatesData = Array.isArray(r.updates) ? r.updates : [];
+                winUpdatesInstalling = (r.installing === true);
+                displayWinUpdates();
+            } else if (message.type == 'installwinupdates') {
+                if (r.status == 'started') {
+                    winUpdatesInstalling = true;
+                    QH('p18Status', EscapeHtml(format("Installing {0} Windows update(s)...", r.count)));
+                    displayWinUpdates();
+                    return;
+                }
+                winUpdatesInstalling = false;
+                if (r.error) { QH('p18Status', '<span>' + "ERROR: " + EscapeHtml(r.error) + '</span>'); displayWinUpdates(); return; }
+                displayWinUpdateResults(r);
+            }
+        }
+
+        function displayWinUpdates() {
+            if (winUpdatesData == null) { QH('p18wuhtml', ''); return; }
+            var manage = canManageSoftware(currentNode), cols = manage ? 5 : 4;
+            var x = '<div style="margin-bottom:20px">';
+            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Available Windows Updates" + ' (' + winUpdatesData.length + ')</h4>';
+            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
+            if (manage) { x += '<th style="padding:8px;border:1px solid #ddd;width:30px"><input type=checkbox onclick="p18wuSelectAll(this.checked)"' + (winUpdatesInstalling ? ' disabled' : '') + ' /></th>'; }
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Severity" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Downloaded" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Mandatory" + '</th>';
+            x += '</tr></thead><tbody>';
+            if (winUpdatesData.length == 0) {
+                x += '<tr><td colspan="' + cols + '" style="text-align:center;color:gray;padding:20px">' + "No Windows updates available" + '</td></tr>';
+            } else {
+                for (var i = 0; i < winUpdatesData.length; i++) {
+                    var u = winUpdatesData[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
+                    x += '<tr style="background-color:' + rowColor + '">';
+                    if (manage) { x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee"><input type=checkbox class=p18wucheck value="' + EscapeHtml(u.updateID || '') + '"' + ((winUpdatesInstalling || !u.updateID) ? ' disabled' : '') + ' /></td>'; }
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.severity || '-') + '</td>';
+                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isDownloaded ? "Yes" : "No") + '</td>';
+                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isMandatory ? "Yes" : "No") + '</td>';
+                    x += '</tr>';
+                }
+            }
+            x += '</tbody></table>';
+            if (winUpdatesInstalling) {
+                x += '<div style="padding:8px"><i>' + "Windows Update installation in progress on this device..." + '</i></div>';
+            } else if (manage && (winUpdatesData.length > 0)) {
+                x += '<div style="padding:8px 0"><input type=button value="' + "Install Selected" + '" onclick="installSelectedWinUpdates()" /></div>';
+            }
+            x += '</div>';
+            QH('p18wuhtml', x);
+        }
+
+        function p18wuSelectAll(v) {
+            var c = document.getElementsByClassName('p18wucheck');
+            for (var i = 0; i < c.length; i++) { if (!c[i].disabled) { c[i].checked = v; } }
+        }
+
+        function installSelectedWinUpdates() {
+            if (xxdialogMode || (currentNode == null) || winUpdatesInstalling || !canManageSoftware(currentNode)) return;
+            var ids = [], titles = [], c = document.getElementsByClassName('p18wucheck');
+            for (var i = 0; i < c.length; i++) {
+                if (c[i].checked) {
+                    ids.push(c[i].value);
+                    for (var j in winUpdatesData) { if (winUpdatesData[j].updateID == c[i].value) { titles.push(winUpdatesData[j].title); } }
+                }
+            }
+            if (ids.length == 0) { QH('p18Status', "No updates selected"); return; }
+            var x = '<div style="max-width:500px"><p><b>' + EscapeHtml(format("Install {0} Windows update(s) on this device?", ids.length)) + '</b></p>';
+            x += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;font-size:11px;max-height:150px;overflow-y:auto">';
+            for (var i in titles) { x += EscapeHtml(titles[i]) + '<br />'; }
+            x += '</div><p style="margin-top:10px"><i>' + "Updates are downloaded and installed by Windows Update on the device. The device will not be restarted automatically." + '</i></p></div>';
+            var nodeid = currentNode._id;
+            setDialogMode(2, "Install Windows Updates", 3, function () {
+                meshserver.send({ action: 'software', nodeid: nodeid, type: 'installwinupdates', updateids: ids });
+                QH('p18Status', "Install request sent...");
+            }, x);
+        }
+
+        function displayWinUpdateResults(r) {
+            var x = '<div style="margin-bottom:20px">';
+            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Windows Update Results" + '</h4>';
+            x += '<div style="padding:4px 0 8px 0">' + "Result" + ': <b>' + EscapeHtml(String(r.result)) + '</b>' + ((r.rebootRequired === true) ? (' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>') : '') + '</div>';
+            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:180px">' + "Status" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Code" + '</th>';
+            x += '</tr></thead><tbody>';
+            var list = Array.isArray(r.updates) ? r.updates : [];
+            for (var i = 0; i < list.length; i++) {
+                var u = list[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
+                x += '<tr style="background-color:' + rowColor + '">';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || u.updateID || '-') + '</td>';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.status || '-') + (u.rebootRequired ? ' (' + "restart" + ')' : '') + '</td>';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.hresult || '-') + '</td>';
+                x += '</tr>';
+            }
+            x += '</tbody></table>';
+            x += '<div style="padding:8px 0"><input type=button value="' + "Check for Updates" + '" onclick="loadWinUpdates()" /></div></div>';
+            QH('p18wuhtml', x);
+            QH('p18Status', EscapeHtml("Windows Update" + ': ' + String(r.result)));
+        }
+
+        // ============================================
+        // END WINDOWS UPDATES
+        // ============================================
 
         // ============================================
         // END INSTALLED SOFTWARE
@@ -15837,6 +15986,7 @@
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20softwaremanage>' + "Manage Software" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
             x += '<label><input type=checkbox onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
@@ -15920,6 +16070,7 @@
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
                 if (urights & 2097152) { Q('p20relay').checked = true; }
+                if (urights & 16777216) { Q('p20softwaremanage').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -15971,6 +16122,7 @@
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
                 Q('p20relay').checked = ((devrights & 2097152) != 0);
+                Q('p20softwaremanage').checked = ((devrights & 16777216) != 0);
                 ok = (nodeid != '');
             }
 
@@ -16055,6 +16207,7 @@
             QE('p20resetoff', nc);
             QE('p20details', nc);
             QE('p20relay', nc);
+            QE('p20softwaremanage', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -16087,6 +16240,7 @@
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
                 if (Q('p20relay').checked == true) meshadmin += 2097152;
+                if (Q('p20softwaremanage').checked == true) meshadmin += 16777216;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -16177,6 +16331,7 @@
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
                     if ((meshrights & 2097152) != 0) r.push("Relay");
+                    if ((meshrights & 16777216) != 0) r.push("Manage Software");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
@@ -16996,7 +17151,10 @@
             161: "Disabled Duo two-factor authentication",
             162: "Started messenger session \"{0}\" from {1} to {2}",
             163: "Removed device {0} from user group {1}",
-            164: "Create file: \"{0}\""
+            164: "Create file: \"{0}\"",
+            165: "Started Windows Update installation of {0} update(s)",
+            166: "Windows Update installation finished: {0}, reboot required: {1}",
+            167: "Uninstall software: {0}"
         };
 
         var eventsShortMessageId = {
