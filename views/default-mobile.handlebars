@@ -1745,7 +1745,7 @@
                     var saved = new Set(message.timeline.map(function (entry) { return entry.join(':'); }));
                     sessionTimelineLive = sessionTimelineLive.filter(function (entry) { return !saved.has(entry.join(':')); });
                     sessionTimeline = message.timeline.concat(sessionTimelineLive).sort(function (a, b) { return a[0] - b[0]; });
-                    if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceTimeline(); }
+                    if ((currentNode != null) && (currentNode._id == message.nodeid)) { drawDeviceSessionTimeline(Date.now()); }
                     break;
                 }
                 case 'getsysinfo': {
@@ -3857,6 +3857,7 @@
         var sessionTimeline = [];
         var sessionTimelineLive = [];
         var sessionTimelineTag = 0;
+        var sessionTimelineUpdate = 0;
         function getCurrentNode() { return currentNode; };
         function gotoDevice(nodeid, panel, refresh) {
 
@@ -4492,29 +4493,31 @@
             start.setHours(0, 0, 0, 0);
             start.setDate(start.getDate() - 6);
             sessionTimelineReq = node._id;
+            sessionTimelineUpdate = Date.now() + 300000;
             meshserver.send({ action: 'sessiontimeline', nodeid: node._id, start: start.getTime(), tag: ++sessionTimelineTag });
         }
 
         function updateSessionTimelineFromEvent(event) {
             if ((sessionTimelineEnabled !== 'true') || (currentNode == null) || (event.nodeid != currentNode._id) || (event.nodeid != sessionTimelineReq)) return;
             if (['locked', 'unlocked', 'nouser', 'unknown'].indexOf(event.state) < 0) return;
-            var time = Date.parse(event.time);
+            var time = event.sessionTime;
             if (!Number.isFinite(time) || sessionTimeline.some(function (entry) { return (entry[0] === time) && (entry[1] === event.state); })) return;
-            var entry = [time, event.state];
+            var entry = [time, event.state, event.validUntil];
             sessionTimelineNode = event.nodeid;
             sessionTimelineLive.push(entry);
             sessionTimeline.push(entry);
             sessionTimeline.sort(function (a, b) { return a[0] - b[0]; });
-            drawDeviceTimeline();
+            drawDeviceSessionTimeline(Date.now());
         }
 
         // Look to see if we need to update the device timeline
         function updateDeviceTimeline() {
-            if ((meshserver.State != 2) || (powerTimelineNode == null) || (powerTimelineUpdate == null) || (currentNode == null) || (currentNode.mtype == 3)) return;
+            if ((meshserver.State != 2) || (currentNode == null) || (currentNode.mtype == 3)) return;
+            if ((sessionTimelineReq === currentNode._id) && (sessionTimelineUpdate <= Date.now())) { requestSessionTimeline(currentNode); }
+            if ((powerTimelineNode == null) || (powerTimelineUpdate == null)) return;
             if ((powerTimelineNode == powerTimelineReq) && (currentNode._id == powerTimelineNode) && (powerTimelineUpdate < Date.now())) {
                 powerTimelineUpdate = null;
                 meshserver.send({ action: 'powertimeline', nodeid: currentNode._id });
-                requestSessionTimeline(currentNode);
             }
         }
 
@@ -4559,29 +4562,27 @@
             }
             if (hidePowerTimeline === 'true') { QH('p10html2', '<br />'); }
             else { QH('p10html2', '<table style="color:black;background-color:#EEE;border-color:#AAA;border-width:1px;border-style:solid;border-collapse:collapse;table-layout:fixed;width:calc(100% - 18px);margin:9px" border=0 cellpadding=2 cellspacing=0><tbody><tr style=background-color:#AAAAAA;font-weight:bold><th scope=col style=text-align:center;width:90px>' + "Day" + '</th><th scope=col style=text-align:center>' + "Power State" + '</th></tr>' + x + '</tbody></table>'); }
-            drawDeviceSessionTimeline(timeline2, now);
+            drawDeviceSessionTimeline(now);
         }
 
-        // Draw user session state bars, clipped to periods where the device is powered.
-        function drawDeviceSessionTimeline(powerBlocks, now) {
+        // Draw intervals for which MeshAgent reported a user session state.
+        function drawDeviceSessionTimeline(now) {
             if ((sessionTimelineEnabled !== 'true') || (currentNode == null) || (currentNode._id != sessionTimelineNode) || (!Array.isArray(sessionTimeline)) || (sessionTimeline.length == 0)) {
                 QH('p10sessiontimeline', '');
                 return;
             }
 
-            // Both histories are ordered. Intersect them once before rendering each day.
-            var blocks = [], powerIndex = 0;
+            var blocks = [];
             for (var i = 0; i < sessionTimeline.length; i++) {
-                var start = sessionTimeline[i][0];
-                var end = (i + 1 < sessionTimeline.length) ? sessionTimeline[i + 1][0] : now;
-                var state = sessionTimeline[i][1];
-                if ((state === 'unknown') || (end <= start)) continue;
-                while ((powerIndex < powerBlocks.length) && (powerBlocks[powerIndex][1] <= start)) { powerIndex++; }
-                for (var j = powerIndex; (j < powerBlocks.length) && (powerBlocks[j][0] < end); j++) {
-                    var power = powerBlocks[j];
-                    var from = Math.max(start, power[0]);
-                    var until = Math.min(end, power[1], now);
-                    if ((power[2] == 1) && (from < until)) { blocks.push([from, until, state]); }
+                var sample = sessionTimeline[i];
+                var next = (i + 1 < sessionTimeline.length) ? sessionTimeline[i + 1][0] : now;
+                var end = Math.min(next, sample[2], now);
+                if ((sample[1] === 'unknown') || !(end > sample[0])) continue;
+                var previous = blocks[blocks.length - 1];
+                if (previous && (previous[1] === sample[0]) && (previous[2] === sample[1])) {
+                    previous[1] = end;
+                } else {
+                    blocks.push([sample[0], end, sample[1]]);
                 }
             }
 

@@ -31,6 +31,15 @@ module.exports.CreateDB = function (parent, func) {
     var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire server stats after 30 days (2592000). (Seconds * Minutes * Hours * Days)
+    // Session telemetry uses the timeline store under a separate key. It is
+    // retained and deleted with power data but does not change power history.
+    function sessionTimelineKey(nodeid) { return 'session:' + nodeid; }
+    obj.storeSessionTimelineEvent = function (nodeid, state, time, validUntil) {
+        obj.storePowerEvent({ nodeid: sessionTimelineKey(nodeid), time: new Date(time), sessionState: state, validUntil: validUntil }, parent.multiServer);
+    };
+    obj.getSessionTimeline = function (nodeid, func) { obj.getPowerTimeline(sessionTimelineKey(nodeid), func); };
+    obj.getSessionTimelineCheckpointInterval = function () { return Math.max(1000, Math.min(900000, expirePowerEventsSeconds * 500)); };
+
     const common = require('./common.js');
     const path = require('path');
     const fs = require('fs');
@@ -1903,16 +1912,17 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
                 var dataarray = [nodeid, domain];
-                if (filter != null) { dataarray.push(filter); query += ' AND action = $' + dataarray.length; }
-                if (timeRange != null) {
-                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= $' + dataarray.length; }
-                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < $' + dataarray.length; }
+                if (filter != null) {
+                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT $3";
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query + ') ORDER BY time DESC LIMIT $' + dataarray.length, dataarray, func);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1) AND (domain = $2) AND ((userid = $3) OR (userid IS NULL)) ";
@@ -1936,7 +1946,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (NULL, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN ($1, $2)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2141,14 +2151,12 @@ module.exports.CreateDB = function (parent, func) {
             obj.GetUserLoginEvents = function (domain, userid, func) {
                 obj.file.query('events').filter('domain', '==', domain).filter('action', 'in', ['authfail', 'login']).filter('userid', '==', userid).filter('msgArgs', 'exists').sort('time', false).get({ include: ['action', 'time', 'msgid', 'msgArgs', 'tokenName'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
-                const query = obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid);
-                if (filter != null) { query.filter('action', '==', filter); }
-                if (timeRange != null) {
-                    if (timeRange.start != null) { query.filter('time', '>=', timeRange.start); }
-                    if (timeRange.end != null) { query.filter('time', '<', timeRange.end); }
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
+                if (filter != null) {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).filter('action', '==', filter).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
+                } else {
+                    obj.file.query('events').take(limit).filter('domain', '==', domain).filter('nodeid', '==', nodeid).sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
                 }
-                query.sort('time', false).get({ exclude: ['type', 'etype', '_id', 'domain', 'ids', 'node', 'nodeid'] }, function (snapshots) { const docs = []; for (var i in snapshots) { docs.push(snapshots[i].val()); } func(null, docs); });
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 if (filter != null) {
@@ -2195,7 +2203,7 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.removeAllPowerEventsForNode = function (nodeid) {
                 if (nodeid == null) return;
-                obj.file.query('power').filter('nodeid', '==', nodeid).remove().then(function () { if (func) { func(); } });
+                obj.file.query('power').filter('nodeid', 'in', [nodeid, sessionTimelineKey(nodeid)]).remove().then(function () { if (func) { func(); } });
             };
 
             // Database actions on the SMBIOS collection
@@ -2450,16 +2458,17 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2";
                 var dataarray = [nodeid, domain];
-                if (filter != null) { dataarray.push(filter); query += ' AND action = $' + dataarray.length; }
-                if (timeRange != null) {
-                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= $' + dataarray.length; }
-                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < $' + dataarray.length; }
+                if (filter != null) {
+                    query = query + " AND action = $3) ORDER BY time DESC LIMIT $4";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT $3";
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query + ') ORDER BY time DESC LIMIT $' + dataarray.length, dataarray, func);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = $1 AND domain = $2 AND ((userid = $3) OR (userid IS NULL))";
@@ -2483,7 +2492,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (DEFAULT, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, event], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN ($1, $2)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2698,16 +2707,17 @@ module.exports.CreateDB = function (parent, func) {
                 }
             };
             //obj.GetUserLoginEvents = function (domain, userid, func) { } // TODO
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ?";
                 var dataarray = [nodeid, domain];
-                if (filter != null) { dataarray.push(filter); query += ' AND action = ?'; }
-                if (timeRange != null) {
-                    if (timeRange.start != null) { dataarray.push(timeRange.start); query += ' AND time >= ?'; }
-                    if (timeRange.end != null) { dataarray.push(timeRange.end); query += ' AND time < ?'; }
+                if (filter != null) {
+                    query = query + " AND action = ?) ORDER BY time DESC LIMIT ?";
+                    dataarray.push(filter);
+                } else {
+                    query = query + ") ORDER BY time DESC LIMIT ?";
                 }
                 dataarray.push(limit);
-                sqlDbQuery(query + ') ORDER BY time DESC LIMIT ?', dataarray, func);
+                sqlDbQuery(query, dataarray, func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
                 var query = "SELECT doc FROM events WHERE (nodeid = ? AND domain = ? AND ((userid = ?) OR (userid IS NULL))";
@@ -2729,9 +2739,9 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
-            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time ASC', [nodeid], func); };
+            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE nodeid IN (?, ?) ORDER BY time ASC', [nodeid, '*'], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN (?, ?)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2982,14 +2992,9 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.GetEventsTimeRange = function (ids, domain, msgids, start, end, func) { obj.eventsfile.find({ domain: domain, $or: [{ ids: { $in: ids } }], msgid: { $in: msgids }, time: { $gte: start, $lte: end } }).project({ type: 0, _id: 0, domain: 0, node: 0 }).sort({ time: 1 }).toArray(func); };
             obj.GetUserLoginEvents = function (domain, userid, func) { obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }).project({ action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }).toArray(func); };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var finddata = { domain: domain, nodeid: nodeid };
                 if (filter != null) finddata.action = filter;
-                if (timeRange != null) {
-                    finddata.time = {};
-                    if (timeRange.start != null) { finddata.time.$gte = timeRange.start; }
-                    if (timeRange.end != null) { finddata.time.$lt = timeRange.end; }
-                }
                 obj.eventsfile.find(finddata).project({ type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).toArray(func);
             };
             obj.GetNodeEventsSelfWithLimit = function (nodeid, domain, userid, limit, filter, func) {
@@ -3035,7 +3040,7 @@ module.exports.CreateDB = function (parent, func) {
 
             obj.getPowerTimeline = function (nodeid, func) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }).project({ _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).toArray(func); };
             obj.removeAllPowerEvents = function () { obj.powerfile.deleteMany({}, { multi: true }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.deleteMany({ nodeid: nodeid }, { multi: true }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.deleteMany({ nodeid: { $in: [nodeid, sessionTimelineKey(nodeid)] } }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}).toArray(func); };
@@ -3221,14 +3226,9 @@ module.exports.CreateDB = function (parent, func) {
                     obj.eventsfile.find({ domain: domain, action: { $in: ['authfail', 'login'] }, userid: userid, msgArgs: { $exists: true } }, { action: 1, time: 1, msgid: 1, msgArgs: 1, tokenName: 1 }).sort({ time: -1 }, func);
                 }
             };
-            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func, timeRange) {
+            obj.GetNodeEventsWithLimit = function (nodeid, domain, limit, filter, func) {
                 var finddata = { domain: domain, nodeid: nodeid };
                 if (filter != null) finddata.action = filter;
-                if (timeRange != null) {
-                    finddata.time = {};
-                    if (timeRange.start != null) { finddata.time.$gte = timeRange.start; }
-                    if (timeRange.end != null) { finddata.time.$lt = timeRange.end; }
-                }
                 if (obj.databaseType == DB_NEDB) {
                     obj.eventsfile.find(finddata, { type: 0, etype: 0, _id: 0, domain: 0, ids: 0, node: 0, nodeid: 0 }).sort({ time: -1 }).limit(limit).exec(func);
                 } else {
@@ -3254,7 +3254,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
             obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == DB_NEDB) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
             obj.removeAllPowerEvents = function () { obj.powerfile.remove({}, { multi: true }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.remove({ nodeid: { $in: [nodeid, sessionTimelineKey(nodeid)] } }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
             if (obj.smbiosfile != null) {

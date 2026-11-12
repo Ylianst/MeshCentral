@@ -6922,22 +6922,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // and clock skew while bounding how much history a client can request.
             const now = Date.now();
             const start = new Date(Number.isFinite(command.start) && (command.start >= now - 8 * 86400000) && (command.start <= now) ? command.start : now - 7 * 86400000);
-            db.GetNodeEventsWithLimit(node._id, domain.id, 10000, 'sessionstate', function (err, docs) {
+            db.getSessionTimeline(node._id, function (err, docs) {
                 if ((err != null) || (docs == null)) return;
                 const timeline = [];
-                function append(doc) {
-                    if ((doc.state !== 'locked') && (doc.state !== 'unlocked') && (doc.state !== 'nouser') && (doc.state !== 'unknown')) return;
-                    const time = (doc.time instanceof Date) ? doc.time.getTime() : Date.parse(doc.time);
-                    if (Number.isFinite(time) && ((timeline.length == 0) || (timeline[timeline.length - 1][1] !== doc.state))) { timeline.push([time, doc.state]); }
+                let lastServer;
+                // SQL DATETIME may order records only to the nearest second.
+                const samples = docs.map(function (doc) { return { doc: doc, time: new Date(doc.time).getTime() }; })
+                    .filter(function (sample) { return Number.isFinite(sample.time); });
+                samples.sort(function (a, b) {
+                    if (a.time !== b.time) return a.time - b.time;
+                    // An availability boundary takes precedence over a report at the same millisecond.
+                    return Number(a.doc.sessionState == null || a.doc.validUntil === a.time) - Number(b.doc.sessionState == null || b.doc.validUntil === b.time);
+                });
+                for (const { doc, time } of samples) {
+                    if (doc.sessionState == null) {
+                        // Wildcard power records mark a server startup or shutdown.
+                        if ((timeline.length > 0) && (doc.server === lastServer)) { timeline.push([time, 'unknown', time]); }
+                    } else {
+                        timeline.push([time, doc.sessionState, doc.validUntil]);
+                        lastServer = doc.server;
+                    }
                 }
-                db.GetNodeEventsWithLimit(node._id, domain.id, 1, 'sessionstate', function (err, previous) {
-                    // If the window hit its limit, a gap before its oldest result has
-                    // unknown state. Do not fill the gap with the pre-window state.
-                    if ((err == null) && (previous != null) && (previous.length > 0) && (docs.length < 10000)) { append(previous[0]); }
-                    for (var i = docs.length - 1; i >= 0; i--) { append(docs[i]); }
-                    obj.send({ action: 'sessiontimeline', nodeid: node._id, timeline: timeline, tag: command.tag });
-                }, { end: start });
-            }, { start: start });
+                let first = timeline.findIndex(function (entry) { return entry[0] >= start.getTime(); });
+                if (first < 0) { first = timeline.length; }
+                // Keep the preceding sample only if it is still valid at the start.
+                if ((first > 0) && (timeline[first - 1][2] > start.getTime())) { first--; }
+                obj.send({ action: 'sessiontimeline', nodeid: node._id, timeline: timeline.slice(first), tag: command.tag });
+            });
         });
     }
 

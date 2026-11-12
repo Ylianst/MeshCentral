@@ -96,9 +96,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // Stop any current self-share
         if (obj.guestSharing === true) { removeGuestSharing(); }
 
+        if (obj.sessionTimelineTimer != null) { clearInterval(obj.sessionTimelineTimer); delete obj.sessionTimelineTimer; }
+
         // Remove this agent from the webserver list
         if (parent.wsagents[obj.dbNodeKey] == obj) {
             delete parent.wsagents[obj.dbNodeKey];
+            if (obj.sessionTimelineState != null) { dispatchSessionTimelineState('unknown', writeSessionTimelineState('unknown', true)); }
             parent.parent.ClearConnectivityState(obj.dbMeshKey, obj.dbNodeKey, 1, null, { remoteaddrport: obj.remoteaddrport, name: obj.name });
         }
 
@@ -1923,6 +1926,24 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         return ((state === 'locked') || (state === 'unlocked') || (state === 'nouser') || (state === 'unknown'));
     }
 
+    // Renew the latest state while the agent is connected, so a stable state
+    // survives history retention. Limit stale data after an unclean shutdown.
+    function writeSessionTimelineState(state, offline) {
+        const time = Date.now();
+        const validUntil = offline ? time : time + (2 * db.getSessionTimelineCheckpointInterval());
+        db.storeSessionTimelineEvent(obj.dbNodeKey, state, time, validUntil);
+        return { time: time, validUntil: validUntil };
+    }
+
+    function dispatchSessionTimelineState(state, sample, message) {
+        const event = {
+            etype: 'node', action: 'sessionstate', meshid: obj.dbMeshKey, nodeid: obj.dbNodeKey, domain: domain.id,
+            state: state, sessionTime: sample.time, validUntil: sample.validUntil
+        };
+        if (message == null) { event.nolog = 1; } else { event.msg = message; }
+        parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(obj.dbMeshKey, obj.dbNodeKey), obj, event);
+    }
+
     // Change the current core information string and event it
     function ChangeAgentCoreInfo(command) {
         if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
@@ -1940,6 +1961,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         db.Get(obj.dbNodeKey, function (err, nodes) { // TODO: THIS IS A BIG RACE CONDITION HERE, WE NEED TO FIX THAT. If this call is made twice at the same time on the same device, data will be missed.
             if ((nodes == null) || (nodes.length != 1)) { delete obj.deviceChanging; return; }
             const device = nodes[0];
+            if ((obj.authenticated !== 2) || (parent.wsagents[obj.dbNodeKey] !== obj)) { delete obj.deviceChanging; return; }
             if (device.agent) {
                 const architecture = parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId];
                 const recordSessionState = (domain.sessiontimeline === true) && (architecture != null) && (architecture.platform === 'win32');
@@ -1960,19 +1982,22 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // infer "unlocked" from an empty locked-user list: after a core restart
                 // Windows may already be locked, but no lock event has been observed yet.
                 const newSessionState = command.sessionstate;
-                if (recordSessionState && isUserSessionTimelineState(newSessionState) && (newSessionState != obj.lastSessionTimelineState)) {
-                    const sessionStateMessages = { locked: 'Locked', unlocked: 'Unlocked', nouser: 'No active user', unknown: 'Unknown' };
-                    const sessionEvent = {
-                        etype: 'node',
-                        action: 'sessionstate',
-                        meshid: device.meshid,
-                        nodeid: obj.dbNodeKey,
-                        domain: domain.id,
-                        state: newSessionState,
-                        msg: 'User session state: ' + sessionStateMessages[newSessionState] + ' (' + String(device.name || device.rname || obj.dbNodeKey).replace(/[\r\n]/g, ' ') + ')'
-                    };
-                    parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(device.meshid, [obj.dbNodeKey]), obj, sessionEvent);
-                    obj.lastSessionTimelineState = newSessionState;
+                if (recordSessionState && isUserSessionTimelineState(newSessionState) && (newSessionState !== obj.sessionTimelineState)) {
+                    obj.sessionTimelineState = newSessionState;
+                    const sample = writeSessionTimelineState(newSessionState, false);
+                    if (obj.sessionTimelineTimer == null) {
+                        obj.sessionTimelineTimer = setInterval(function () {
+                            if (parent.wsagents[obj.dbNodeKey] === obj) { writeSessionTimelineState(obj.sessionTimelineState, false); }
+                        }, db.getSessionTimelineCheckpointInterval());
+                    }
+
+                    let message;
+                    if (newSessionState !== obj.lastSessionTimelineState) {
+                        const labels = { locked: 'Locked', unlocked: 'Unlocked', nouser: 'No active user', unknown: 'Unknown' };
+                        message = 'User session state: ' + labels[newSessionState] + ' (' + String(device.name || device.rname || obj.dbNodeKey).replace(/[\r\n]/g, ' ') + ')';
+                        obj.lastSessionTimelineState = newSessionState;
+                    }
+                    dispatchSessionTimelineState(newSessionState, sample, message);
                 }
 
                 // Check if anything changes
