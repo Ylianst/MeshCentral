@@ -2177,6 +2177,163 @@
               }
             }
           },
+          "autoTags": {
+            "type": [
+              "object",
+              "array"
+            ],
+            "description": "Generates device tags automatically from rules. Rules read device fields (name, host, ip, defaultRouteIp, osdesc, winact, av, wsc, users, agent.*, mesh.name, platform, ...), system information (hardware.*), and values from collectors the agent runs (collected.<name>). Tags added this way are removed again when they stop applying; tags set by hand are kept. Use the 'autotags <nodeid>' server console command to test rules on a device. Can also be just the array of rules. Device groups and devices can add their own rules, collectors and colors in the web UI (Auto Tags on the group and device pages), and a tag typed with {placeholders} in a device's tag editor works as a template.",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "default": true,
+                "description": "Set to false to turn auto tags off without removing the config."
+              },
+              "rules": {
+                "type": "array",
+                "description": "Tag rules, applied in order.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tag": {
+                      "type": "string",
+                      "description": "Tag template, for example \"SN:{hardware.identifiers.bios_serial|upper}\". Placeholders are {path|filter|filter:arg}; filters are upper, lower, trim, default:X, truncate:N, replace:find:with, split:sep:index, regex:pattern, first, last, count, join:sep, date (or date:format with YYYY, YY, MMM, MM, M, DD, D, ddd; reads YYYYMMDD, YYYY-MM-DD and month-day-year like 11 12 2026), days. A placeholder with no value skips the tag. Use {{ and }} for literal braces."
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Several tag templates for one rule."
+                    },
+                    "if": {
+                      "type": [
+                        "object",
+                        "array"
+                      ],
+                      "description": "Condition: { \"field\": path, test: value } with tests equals, notEquals, in, notIn, contains, matches (regex), exists, gt, gte, lt, lte, olderThanDays, newerThanDays; combine with { \"all\": [...] }, { \"any\": [...] }, { \"not\": {...} }. An array means all."
+                    },
+                    "forEach": {
+                      "type": "string",
+                      "description": "Path to an array; the rule runs once per element, which templates and conditions read as item (and its position as index)."
+                    },
+                    "color": {
+                      "type": "string",
+                      "description": "Tag color: #rgb, #rrggbb, or red, orange, yellow, green, teal, blue, purple, pink, gray, black, white."
+                    },
+                    "desktop": {
+                      "type": "boolean",
+                      "default": false,
+                      "description": "Show this rule's tags in the remote desktop toolbar."
+                    },
+                    "enabled": {
+                      "type": "boolean",
+                      "default": true
+                    }
+                  }
+                }
+              },
+              "colors": {
+                "type": "array",
+                "description": "Colors for any tag on a device, including tags set by hand: { \"tag\": name, \"color\": c } or { \"match\": regex, \"color\": c }.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "tag": {
+                      "type": "string"
+                    },
+                    "match": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "uiCollectors": {
+                "type": "boolean",
+                "default": true,
+                "description": "Set to false so collectors can only be set in config.json. Rules, colors and tag templates can still be set on device groups and devices in the web UI. When true, collectors set in the web UI need file access rights (and registry access rights for registry collectors) on the device or group."
+              },
+              "desktopTags": {
+                "type": [
+                  "boolean",
+                  "array"
+                ],
+                "description": "Tags shown in the remote desktop toolbar: true for all, or a list of tag names and \"/regex/\" patterns."
+              },
+              "collect": {
+                "type": "object",
+                "description": "Values the agent collects for rules to read as collected.<name>. Names are 1 to 32 letters, digits, _ or -. Up to 32 collectors. The agent runs these as SYSTEM/root and anyone who can see a device can see the tags made from them.",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "ini",
+                        "regex",
+                        "dir",
+                        "fileinfo",
+                        "registry",
+                        "env"
+                      ],
+                      "description": "ini: value of key in path (optionally in [section]). regex: first capture group of pattern in the file at path. dir: entry of folder path whose name matches match, picked by pick. fileinfo: property (exists, size, mtime) of path. registry: Windows registry value key under path (HKLM\\\\... or HKU\\\\...). env: environment variable name."
+                    },
+                    "path": {
+                      "type": [
+                        "string",
+                        "array"
+                      ],
+                      "description": "File or folder, or a list of them tried in order until one gives a value."
+                    },
+                    "section": {
+                      "type": "string"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "pattern": {
+                      "type": "string"
+                    },
+                    "match": {
+                      "type": "string"
+                    },
+                    "pick": {
+                      "type": "string",
+                      "enum": [
+                        "first",
+                        "last",
+                        "newest",
+                        "oldest",
+                        "count"
+                      ],
+                      "default": "last"
+                    },
+                    "property": {
+                      "type": "string",
+                      "enum": [
+                        "exists",
+                        "size",
+                        "mtime"
+                      ],
+                      "default": "exists"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "interval": {
+                      "type": "integer",
+                      "default": 60,
+                      "minimum": 1,
+                      "description": "Minutes between runs."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "lockAgentDownload": {
             "type": "boolean",
             "default": false,

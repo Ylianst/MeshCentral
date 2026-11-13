@@ -928,6 +928,8 @@ var tunnels = {};
 var lastNetworkInfo = null;
 var lastPublicLocationInfo = null;
 var selfInfoUpdateTimer = null;
+var autoTagCollector = null;
+var winActivationChecked = 0;
 var http = require('http');
 var net = require('net');
 var fs = require('fs');
@@ -2161,6 +2163,14 @@ function handleServerCommand(data) {
                 getSystemInformation(function (results) {
                     if ((results != null) && (data.hash != results.hash)) { mesh.SendCommand({ action: 'sysinfo', sessionid: this.sessionid, data: results }); }
                 });
+                break;
+            }
+            case 'autotagcollect': {
+                // Collectors from the server's auto tag config, run on their own intervals (see autotag-collect.js)
+                try {
+                    if (autoTagCollector == null) { autoTagCollector = require('autotag-collect').create(function (values) { mesh.SendCommand({ action: 'autotagdata', data: values }); }); }
+                    autoTagCollector.setCollectors(data.collectors);
+                } catch (ex) { }
                 break;
             }
             case 'ping': { mesh.SendCommand('{"action":"pong"}'); break; }
@@ -4834,7 +4844,7 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                 var fin = '', f = '', availcommands = 'domain,translations,agentupdate,errorlog,msh,timerinfo,coreinfo,coreinfoupdate,coredump,service,fdsnapshot,fdcount,startupoptions,';
                 availcommands += 'alert,agentsize,versions,help,info,osinfo,args,print,type,dbkeys,dbget,dbset,dbdelete,dbcompact,eval,parseuri,httpget,wslist,plugin,wsconnect,wssend,wsclose,notify,';
                 availcommands += 'ls,ps,kill,netinfo,location,power,wakeonlan,setdebug,smbios,rawsmbios,toast,lock,users,openurl,getclip,setclip,log,cpuinfo,sysinfo,';
-                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps';
+                availcommands += 'apf,scanwifi,wallpaper,agentmsg,task,uninstallagent,display,openfile,installedapps,autotags';
                 if (require('os').dns != null) { availcommands += ',dnsinfo'; }
                 try { require('linux-dhcp'); availcommands += ',dhcp'; } catch (ex) { }
                 if (process.platform == 'win32') {
@@ -5057,6 +5067,11 @@ function processConsoleCommand(cmd, args, rights, sessionid) {
                     try { output(wmi.query(ns, q, null, includeSysProp, null, (showProgress ? sessionid : null) )); } catch (e) { error(e); }
                 }
                 break;
+            case 'autotags': { // Show the auto tag collectors the server sent and their last values or errors
+                response = (autoTagCollector == null) ? 'No auto tag collectors.' : autoTagCollector.status();
+                if ((autoTagCollector != null) && (args['_'][0] == 'run')) { autoTagCollector.run(true); response = autoTagCollector.status(); }
+                break;
+            }
             case 'translations': {
                 response = JSON.stringify(coretranslations, null, 2);
                 break;
@@ -7589,6 +7604,14 @@ function sendPeriodicServerUpdate(flags, force) {
                 meshCoreObj.defender = require('win-info').defender();
                 meshCoreObjChanged();
             } catch (ex) { }
+
+            // Windows activation, checked once an hour since it rarely changes and the licensing query is slow
+            if ((Date.now() - winActivationChecked) > 3600000) {
+                winActivationChecked = Date.now();
+                try {
+                    require('win-info').activation().then(function (r) { meshCoreObj.winact = r; meshCoreObjChanged(); }, function () { });
+                } catch (ex) { }
+            }
 
             // Calculate Windows Idle Time
             try {
