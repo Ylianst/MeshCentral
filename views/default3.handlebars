@@ -1235,8 +1235,8 @@
                         </div>
                         <div id="deskarea4Icons" class="d-flex ms-auto align-items-center">
                             <span id=DeskMonitorSelectionSpan></span>
-                            <span id="DeskLatency" style="width:70px" class="text-end me-1" title="Desktop Session Latency"></span>
-                            <span id="DeskTimer" style="width:70px" class="text-start" title="Session time"></span>
+                            <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
+                            <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
                             <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
@@ -1425,7 +1425,6 @@
                                         style="display:none" />
                                 </div>
                                 <div class="d-flex align-items-center ms-auto">
-                                    <span id="TermLatency" class="me-1" title="Terminal Session Latency"></span>
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false"
@@ -7037,37 +7036,41 @@
         * @param {*} [b=null] - An optional parameter passed to the callback.
         * @param {*} [tag=null] - Another optional parameter passed to the callback.
         */
+        var xxModalPendingOpen = null;
+
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
+            if (xxModal != null && (xxModalHidePending || xxModal._isTransitioning)) {
+                xxModalPendingOpen = function () { showModal(modalId, okButtonId, okCallback, b, tag); };
+                return;
+            }
             if (xxModal == null) {
-                ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
-                    Q(id).onclick = null;
-                    QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
-                    QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
-                });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 xxModalShown = false; xxModalHidePending = false;
-                // mark shown so a hide deferred during the fade-in can fire
                 var shownModal = function (event) {
                     xxModalShown = true;
-                    document.getElementById(modalId).removeEventListener('shown.bs.modal', shownModal);
                     if (xxModalHidePending) { xxModalHidePending = false; if (xxModal) xxModal.hide(); }
-                }
+                };
                 document.getElementById(modalId).addEventListener('shown.bs.modal', shownModal);
                 var hiddenModal = function (event) {
-                    if (xxModal) { xxModal.dispose(); xxModal = null; }
                     xxModalShown = false; xxModalHidePending = false;
                     if (xxdialogMode != 0) { xxdialogMode = 0; }
-                    document.getElementById(modalId).removeEventListener('hidden.bs.modal', hiddenModal);
-                }
+                    if (xxModalPendingOpen) { var fn = xxModalPendingOpen; xxModalPendingOpen = null; fn(); }
+                };
                 document.getElementById(modalId).addEventListener('hidden.bs.modal', hiddenModal);
             }
-            xxModal.show();
+            ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                Q(id).onclick = null;
+                QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
+                QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
+            });
+            var showCount = (xxModal._showCount = (xxModal._showCount || 0) + 1);
+            if (!xxModal._isShown) { xxModal.show(); }
             document.getElementById(okButtonId).onclick = function () {
                 if (typeof okCallback === 'function' && okCallback) {
                     xxdialogMode = 0; // reset xxdialogMode back to 0 because we might be opening up another dialog and it checks if one is already open
                     var callbackResult = okCallback(b, tag);
-                    // Close the modal by default unless `false` is explicitly returned from the callback function
-                    if (callbackResult !== false) { xxModal.hide(); }
+                    // Close the modal by default unless `false` is explicitly returned or okCallback opened another modal
+                    if (callbackResult !== false && xxModal && xxModal._showCount === showCount && !xxModalPendingOpen) { xxModal.hide(); }
                 } else {
                     if (xxModal) { xxModal.hide(); }
                 }
@@ -11550,7 +11553,7 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
@@ -11586,11 +11589,10 @@
             // Terminal
             seconds = 0;
             if (terminal && terminal.startTime) {
-                QH('TermLatency', (terminal.latency && (terminal.latency.current >= 0)) ? format('{0} ms, ', terminal.latency.current) : '');
+                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
                 seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
-                QH('TermLatency', '');
                 QH('TermTimer', '');
             }
 
@@ -14356,24 +14358,43 @@
             // Display a dialog message
             if (data.action == 'dialogmessage') {
                 if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
-                    setDialogMode(0); // Close the dialog box
-                } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
-                    // Show the dialog box message
-                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Compressing files..." + '</div>');
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
-                } else if ((data.msg == 'unzipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
-                    // Show the dialog box message
-                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Unzipping file..." + '</div>');
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
-                } else if ((data.msg == 'unziperror') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
-                    // Show the dialog box message
-                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error));
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton');
-                } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
-                    // Show the dialog box message
-                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />');
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
+                        xxdialogTag = null;
+                        xxModalPendingOpen = null;
+                        setDialogMode(0); // Close the dialog box
+                        return;
+                    }
+
+                if (xxdialogMode && xxdialogTag != 'fileMsgDialog') return;
+
+                let bodyHtml = null;
+                switch (data.msg) {
+                    case 'zipping':
+                        bodyHtml = '<div style="margin:10px">Compressing files...</div><br /><progress style="width:100%"></progress>';
+                        break;
+                    case 'unzipping':
+                        bodyHtml = '<div style="margin:10px">Unzipping file...</div><br /><progress style="width:100%"></progress>';
+                        break;
+                    case 'zippingFile':
+                        bodyHtml = `<div style=margin:10px">${EscapeHtml(data.file)}</div><br /><progress value="${EscapeHtml(data.progress)}" max="100" style="width:100%"></progress>`;
+                        break;
+                    case 'unzippingFile':
+                        bodyHtml = `<div style="margin:10px">${EscapeHtml(data.file)}</div><br /><progress value="${EscapeHtml(data.progress)}" max="100" style="width:100%"></progress>`;
+                        break;
+                    case 'unziperror':
+                        bodyHtml = `<div style="margin:10px">Unzipping Error</div><br />${EscapeHtml(data.error)}`;
+                        break;
                 }
+
+                if (bodyHtml) {
+                    xxdialogMode = 1;
+                    xxdialogTag = 'fileMsgDialog';
+
+                    const okHandler = (data.msg == 'zipping' || data.msg == 'zippingFile') ? () => p13fileOperationDialogEx(10) : undefined;
+
+                    setModalContent('xxAddAgent', 'File Operation', bodyHtml);
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', okHandler);
+                }
+
                 return;
             }
 
@@ -16907,13 +16928,11 @@
         }
 
         function account_showLocalizationSettingsEx() {
-            // Set user language, the dropdown only exists when the server has translated pages
-            var langSelect = Q('d2langselect');
-            if (langSelect != null) {
-                var lang = langSelect.value;
-                if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
-                if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
-            }
+            // Set user language
+            var langSelectElement = Q('d2langselect');
+            var lang = langSelectElement ? langSelectElement.value : null;
+            if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
+            if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
 
             // Set date localization
             var n = getstore('loctag', 0);
