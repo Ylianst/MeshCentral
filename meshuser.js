@@ -1051,7 +1051,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.type == 'installmsi') != (swUpload.kind == 'msi')) { softwareError('This package type can not be installed on this device'); break; }
                     if ((command.type == 'installmsi') && (command.properties != null)) {
                         // Public MSI properties only, NAME=value or NAME="value with spaces". REBOOT is always forced to ReallySuppress by the agent.
-                        if ((typeof command.properties != 'string') || (command.properties.length > 1024) || (/^\s*([A-Z_][A-Z0-9_.]*=("[^"]*"|[^\s"]*)\s*)*$/.test(command.properties) == false) || (/(^|\s)REBOOT=/.test(command.properties))) { softwareError('Invalid MSI properties'); break; }
+                        if (common.validateMsiProperties(command.properties) == false) { softwareError('Invalid MSI properties'); break; }
                         if (command.properties.trim() != '') { swcmd.properties = command.properties.trim(); }
                     }
                     swcmd.name = swUpload.name;

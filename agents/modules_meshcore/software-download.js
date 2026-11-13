@@ -26,6 +26,9 @@ function download(options) {
 
     try {
         var opts = require('http').parseUri(options.url);
+        // MeshCentral servers usually have self-signed certificates, so CA validation can't be used. Instead the certificate
+        // is pinned below: it must be the one the agent control channel already trusts, or match the hash sent by the server,
+        // otherwise the connection fails. This is the same pattern meshcore.js uses for core updates and batch file uploads.
         opts.rejectUnauthorized = false;
         opts.checkServerIdentity = function checkServerIdentity(certs) {
             // Accept the server only if it presents the certificate used by the agent control channel

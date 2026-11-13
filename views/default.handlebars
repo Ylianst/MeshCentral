@@ -14503,10 +14503,25 @@
             p18msiValidate();
         }
 
+        // Same check as the server (common.validateMsiProperties), a single pass instead of a regular expression
         function p18msiPropsValid(v) {
-            if (v.length > 1024) return false;
-            if (/(^|\s)REBOOT=/.test(v)) return false;
-            return /^\s*([A-Z_][A-Z0-9_.]*=("[^"]*"|[^\s"]*)\s*)*$/.test(v);
+            if ((typeof v != 'string') || (v.length > 1024)) return false;
+            var i = 0, n = v.length, isSpace = function (c) { return (c == ' ') || (c == '\t') || (c == '\r') || (c == '\n'); };
+            while (i < n) {
+                while ((i < n) && isSpace(v[i])) { i++; }
+                if (i >= n) break;
+                var start = i, c = v[i];
+                if (!(((c >= 'A') && (c <= 'Z')) || (c == '_'))) return false; // Public properties are upper case
+                i++;
+                while ((i < n) && (((v[i] >= 'A') && (v[i] <= 'Z')) || ((v[i] >= '0') && (v[i] <= '9')) || (v[i] == '_') || (v[i] == '.'))) { i++; }
+                if (v.substring(start, i) == 'REBOOT') return false; // Always forced to ReallySuppress by the agent
+                if (v[i] != '=') return false;
+                i++;
+                if (v[i] == '"') { var e = v.indexOf('"', i + 1); if (e < 0) return false; i = e + 1; }
+                else { while ((i < n) && !isSpace(v[i]) && (v[i] != '"')) { i++; } }
+                if ((i < n) && !isSpace(v[i])) return false; // Pairs are separated by white space
+            }
+            return true;
         }
 
         function p18msiValidate() {
