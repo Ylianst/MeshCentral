@@ -44,7 +44,9 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_REMOTECOMMAND = 131072;
 var MESHRIGHT_NOSOFTWARE = 8388608;
+var MESHRIGHT_SOFTWAREMANAGE = 16777216;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
@@ -1822,7 +1824,14 @@ function handleServerCommand(data) {
                 // Uninstall is for full administrators of the device only, the inventory for users without the No Software restriction, same as the web UI
                 var denied = (typeof data.rights != 'number');
                 if (!denied && (data.rights != MESHRIGHT_ADMIN)) { denied = (((data.rights & MESHRIGHT_NOSOFTWARE) != 0) || (data.type == 'uninstallapp') || (data.type == 'uninstallstoreapp')); }
-                if (denied) { sendSoftwareResponse({ success: false, error: 'Denied' }); break; }
+                // Installing updates needs Manage Software, installing a package (code that runs as SYSTEM/root) also needs Remote Commands
+                var swInstallTypes = { installwinupdates: false, installmsi: true, installpackage: true, installflatpak: true };
+                if (!denied && (data.rights != MESHRIGHT_ADMIN) && (swInstallTypes[data.type] != null)) { denied = (((data.rights & MESHRIGHT_SOFTWAREMANAGE) == 0) || ((swInstallTypes[data.type] === true) && ((data.rights & MESHRIGHT_REMOTECOMMAND) == 0))); }
+                if (denied) {
+                    if ((data.type == 'winupdates') || (swInstallTypes[data.type] != null)) { mesh.SendCommand({ action: 'software', type: data.type, value: JSON.stringify({ done: true, error: 'Denied' }), sessionid: data.sessionid }); } // Typed reply so the page stops waiting
+                    else { sendSoftwareResponse({ success: false, error: 'Denied' }); }
+                    break;
+                }
                 if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {

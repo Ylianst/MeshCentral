@@ -16203,7 +16203,7 @@
                     x += '<td>' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center">';
                     var userRights = GetNodeRights(currentNode);				
-					if (hasUninstall && canManageSoftware(currentNode)) {
+					if (hasUninstall && (GetNodeRights(currentNode) == 0xFFFFFFFF)) {
 						x += '<button class="btn btn-sm btn-secondary" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')">Uninstall</button>';
 					} else {
 						x += '<span style="color:var(--bs-secondary)">-</span>';
@@ -16257,7 +16257,7 @@
 						x += '<td style="text-align:center">' + scopeBadge + '</td>';
 						x += '<td style="text-align:center">';
 						var userRights = GetNodeRights(currentNode);
-						if (hasUninstall && canManageSoftware(currentNode)) {
+						if (hasUninstall && (GetNodeRights(currentNode) == 0xFFFFFFFF)) {
 							x += '<button class="btn btn-sm btn-secondary" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')">Remove</button>';
 						} else {
 							x += '<span style="color:var(--bs-secondary)">-</span>';

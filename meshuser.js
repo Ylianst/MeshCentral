@@ -1014,7 +1014,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 }
             case 'software': {
                 // Software inventory and management. Read operations need the device to be visible and "No Software" not set.
-                // Operations that change the device (install updates, uninstall) also need MESHRIGHT_SOFTWAREMANAGE or full rights.
+                // Installing updates also needs MESHRIGHT_SOFTWAREMANAGE or full rights. Uninstall needs full administrator rights on the device.
                 // Installing a package (MSI, deb, rpm, Flatpak, AppImage) runs arbitrary code as SYSTEM/root, so it additionally needs MESHRIGHT_REMOTECOMMAND.
                 if ((typeof command.nodeid == 'string') && (command.nodeid.indexOf('/') == -1)) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; } // Accept short device identifiers
                 if ((common.validateString(command.nodeid, 8, 128) == false) || (typeof command.type != 'string')) break;
@@ -1077,6 +1077,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (rights != MESHRIGHT_ADMIN) {
                         if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { softwareError('Denied'); return; }
                         if ((rights & MESHRIGHT_NOSOFTWARE) != 0) { softwareError('Denied'); return; }
+                        if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) { softwareError('Denied'); return; } // Full administrators only
                         if (softwareManage && ((rights & MESHRIGHT_SOFTWAREMANAGE) == 0)) { softwareError('Denied'); return; }
                         if ((softwarePackageTypes[command.type] != null) && ((rights & MESHRIGHT_REMOTECOMMAND) == 0)) { softwareError('Denied'); return; }
                     }
