@@ -1235,8 +1235,8 @@
                         </div>
                         <div id="deskarea4Icons" class="d-flex ms-auto align-items-center">
                             <span id=DeskMonitorSelectionSpan></span>
-                            <span id="DeskLatency" style="width:70px" class="text-center" title="Desktop Session Latency"></span>
-                            <span id="DeskTimer" style="width:70px" class="text-center" title="Session time"></span>
+                            <span id="DeskLatency" style="width:70px" class="text-end me-1" title="Desktop Session Latency"></span>
+                            <span id="DeskTimer" style="width:70px" class="text-start" title="Session time"></span>
                             <input id=DeskToolsButton type=button class="btn btn-primary btn-sm mx-1" value=Tools title="Toggle tools view" onkeypress="return false" onkeydown="return false" onclick="toggleDeskTools()" />
                             <span id=DeskGuestShareButton title="Share the device with a guest" role="button">
                                 <i class="fa-solid fa-fw fa-share-nodes" id=DeskInputUnLockedButtonImage onclick=showShareDevice()></i>
@@ -1425,6 +1425,7 @@
                                         style="display:none" />
                                 </div>
                                 <div class="d-flex align-items-center ms-auto">
+                                    <span id="TermLatency" class="me-1" title="Terminal Session Latency"></span>
                                     <span id="TermTimer" title="Session time"></span>&nbsp;
                                     <span id="terminalSettingsButtons" style="display:none">
                                         <input id="id_tcrbutton" type="button" onkeypress="return false"
@@ -11553,7 +11554,7 @@
             // Desktop
             var latencyStr = '', seconds = 0;
             if (desktop && desktop.startTime) {
-                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms', desktop.latency.current); }
+                if (desktop.latency && (desktop.latency.current >= 0)) { latencyStr = format('{0} ms, ', desktop.latency.current); }
                 seconds = Math.floor((new Date() - desktop.startTime) / 1000);
                 QH('DeskTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
                 QH('DeskLatency', latencyStr);
@@ -11589,10 +11590,11 @@
             // Terminal
             seconds = 0;
             if (terminal && terminal.startTime) {
-                if (terminal.latency && (terminal.latency.current >= 0)) { latencyStr = format('{0} ms, ', terminal.latency.current); }
+                QH('TermLatency', (terminal.latency && (terminal.latency.current >= 0)) ? format('{0} ms, ', terminal.latency.current) : '');
                 seconds = Math.floor((new Date() - terminal.startTime) / 1000);
-                QH('TermTimer', latencyStr + zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
+                QH('TermTimer', zeroPad(Math.floor(seconds / 3600), 2) + ':' + zeroPad((Math.floor(seconds / 60) % 60), 2) + ':' + zeroPad((seconds % 60), 2));
             } else {
+                QH('TermLatency', '');
                 QH('TermTimer', '');
             }
 
@@ -16928,11 +16930,13 @@
         }
 
         function account_showLocalizationSettingsEx() {
-            // Set user language
-            var langSelectElement = Q('d2langselect');
-            var lang = langSelectElement ? langSelectElement.value : null;
-            if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
-            if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            // Set user language, the dropdown only exists when the server has translated pages
+            var langSelect = Q('d2langselect');
+            if (langSelect != null) {
+                var lang = langSelect.value;
+                if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
+                if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            }
 
             // Set date localization
             var n = getstore('loctag', 0);
