@@ -8991,6 +8991,8 @@
                 QV('p18InstallMsiBtn', isWindowsAgentNode(currentNode) && canInstallMsi(currentNode));
                 QV('p18InstallPkgBtn', isLinuxAgentNode(currentNode) && canInstallMsi(currentNode));
                 msiInstalling = false;
+                msiStopWait();
+                winUpdatesStopWait();
                 QH('p18msihtml', '');
                 installedAppsData = { desktop: [], store: [] };
                 installedAppsLoading = false;
@@ -16353,12 +16355,30 @@
             return ((rights == 0xFFFFFFFF) || ((rights & 16777216) != 0));
         }
 
-        function loadWinUpdates() {
+        var winUpdatesOnline = false;     // True when the shown list comes from an online scan
+        var winUpdatesWait = null;        // { timer, start } while waiting for the device
+
+        function winUpdatesStopWait() { if (winUpdatesWait != null) { clearInterval(winUpdatesWait.timer); winUpdatesWait = null; } }
+
+        // online: false uses the result of the last scan Windows made (a few seconds), true asks Windows to scan now (can take several minutes)
+        function loadWinUpdates(online) {
             if ((currentNode == null) || (isWindowsAgentNode(currentNode) == false)) return;
             if ((currentNode.conn & 1) == 0) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000"><b>' + "Device is offline." + '</b></div>'); return; }
+            online = (online === true);
             winUpdatesData = null;
-            QH('p18wuhtml', '<div style="padding:10px"><i>' + "Searching for Windows updates, this can take a few minutes..." + '</i></div>');
-            meshserver.send({ action: 'software', nodeid: currentNode._id, type: 'winupdates' });
+            winUpdatesStopWait();
+            var nodeid = currentNode._id, limit = online ? (20 * 60) : 120; // Seconds before giving up
+            var msg = online ? "Windows is checking online for updates, this can take several minutes..." : "Loading the result of the last Windows update check...";
+            var show = function () {
+                var secs = Math.floor((Date.now() - winUpdatesWait.start) / 1000);
+                if (secs >= limit) { winUpdatesStopWait(); QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</div>'); return; }
+                QH('p18wuhtml', '<div style="padding:10px"><i>' + EscapeHtml(msg) + '</i> <span style="color:gray">(' + secs + 's)</span></div>');
+            };
+            winUpdatesWait = { start: Date.now(), timer: setInterval(function () { if ((currentNode == null) || (currentNode._id != nodeid)) { winUpdatesStopWait(); return; } show(); }, 1000) };
+            show();
+            var cmd = { action: 'software', nodeid: nodeid, type: 'winupdates' };
+            if (online) { cmd.online = true; }
+            meshserver.send(cmd);
         }
 
         function handleWinUpdatesResponse(message) {
@@ -16367,7 +16387,9 @@
             try { r = JSON.parse(message.value); } catch (ex) { return; }
             if (r == null) return;
             if (message.type == 'winupdates') {
+                winUpdatesStopWait();
                 if (r.error) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</div>'); return; }
+                winUpdatesOnline = (r.online === true);
                 winUpdatesData = Array.isArray(r.updates) ? r.updates : [];
                 winUpdatesInstalling = (r.installing === true);
                 displayWinUpdates();
@@ -16389,6 +16411,7 @@
             var manage = canManageSoftware(currentNode), cols = manage ? 5 : 4;
             var x = '<div style="margin-bottom:20px">';
             x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Available Windows Updates" + ' (' + winUpdatesData.length + ')</h4>';
+            x += '<div style="padding:0 0 8px 0;font-size:12px;color:gray">' + (winUpdatesOnline ? "Result of an online check made just now." : "Result of the last update check made by Windows.") + ' ' + '<button class="btn btn-sm btn-secondary" onclick="loadWinUpdates(true)">' + "Check online" + '</button>' + '</div>';
             x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
             if (manage) { x += '<th style="padding:8px;border:1px solid #ddd;width:30px"><input type=checkbox onclick="p18wuSelectAll(this.checked)"' + (winUpdatesInstalling ? ' disabled' : '') + ' /></th>'; }
             x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
@@ -16482,6 +16505,16 @@
         // ============================================
 
         var msiInstalling = false;
+        var msiWaitTimer = null; // Fires if the device never answers an install request
+
+        function msiStopWait() { if (msiWaitTimer != null) { clearTimeout(msiWaitTimer); msiWaitTimer = null; } }
+        function msiStartWait() {
+            msiStopWait();
+            msiWaitTimer = setTimeout(function () {
+                msiWaitTimer = null;
+                if (msiInstalling) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</span>'); }
+            }, 60000);
+        }
 
         function canInstallMsi(node) {
             if (canManageSoftware(node) == false) return false;
@@ -16549,6 +16582,7 @@
                 var cmd = { action: 'software', nodeid: nodeid, type: type, uploadid: r.id };
                 if (properties) { cmd.properties = properties; }
                 meshserver.send(cmd);
+                msiStartWait();
             };
             xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + "Upload failed" + '</span>'); };
             xhr.send(fd);
@@ -16564,6 +16598,7 @@
             try { r = JSON.parse(message.value); } catch (ex) { return; }
             if (r == null) return;
             var name = EscapeHtml(r.name || '');
+            msiStopWait(); // The device answered, installs can then take as long as they need
             if (r.error) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</span>'); return; }
             if (r.status == 'downloading') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Device is downloading {0}...", r.name || '')) + '</i>'); return; }
             if (r.status == 'installing') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Installing {0}...", r.name || '')) + '</i>'); return; }
@@ -16620,7 +16655,7 @@
             p18openDialog("Install Package", x, function () {
                 var f = Q('p18pkgfile');
                 if (f.files.length == 1) { p18pkgUpload(nodeid, f.files[0], 'installpackage', null); }
-                else { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", Q('p18pkgappid').value)) + '</i>'); meshserver.send({ action: 'software', nodeid: nodeid, type: 'installflatpak', remote: Q('p18pkgremote').value.trim(), appid: Q('p18pkgappid').value.trim() }); }
+                else { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", Q('p18pkgappid').value)) + '</i>'); meshserver.send({ action: 'software', nodeid: nodeid, type: 'installflatpak', remote: Q('p18pkgremote').value.trim(), appid: Q('p18pkgappid').value.trim() }); msiStartWait(); }
             });
             p18pkgValidate();
         }

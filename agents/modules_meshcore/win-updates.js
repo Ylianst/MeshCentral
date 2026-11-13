@@ -270,7 +270,9 @@ function cleanup(h) {
     delete active_handlers[h._hashCode()];
 }
 
-function getAvailableUpdates() {
+// getAvailableUpdates(options) - options.online === false searches the local Windows Update data store only.
+// That returns the result of the last scan Windows made in a few seconds; an online scan can take several minutes.
+function getAvailableUpdates(options) {
     var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
 
     try {
@@ -286,6 +288,7 @@ function getAvailableUpdates() {
 
         var searcher = searcherPtr.Deref();
         searcher.funcs = COM.marshalFunctions(searcher, UpdateSearcherFunctions);
+        if ((options != null) && (options.online === false)) { searcher.funcs.put_Online(searcher, 0); } // VARIANT_FALSE, use cached scan data
 
         var criteriaBSTR = makeBSTR('IsInstalled=0 and IsHidden=0');
         var searchJobPtr = GM.CreatePointer();
@@ -750,6 +753,7 @@ function installUpdates(updateIds) {
         if (hr !== 0) { throw new Error('CreateUpdateSearcher failed: ' + hrHex(hr)); }
         state.searcher = searcherPtr.Deref();
         state.searcher.funcs = COM.marshalFunctions(state.searcher, UpdateSearcherFunctions);
+        state.searcher.funcs.put_Online(state.searcher, 0); // The ids come from an earlier search, resolve them from the local data store instead of scanning again
 
         var searchDone = makeCallback(GM, COM, IID_IUSCC, function (job) {
             var srPtr = GM.CreatePointer();

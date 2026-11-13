@@ -1347,6 +1347,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'coreinfo':
                     {
                         // Sent by the agent to update agent information
+                        // Remember which Software tab features the running core supports, older cores do not send this
+                        if (Array.isArray(command.swcaps)) { obj.softwareCaps = command.swcaps.filter(function (c) { return (typeof c == 'string') && (c.length < 64); }).slice(0, 32); }
                         ChangeAgentCoreInfo(command);
 
                         if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {

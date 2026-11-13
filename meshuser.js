@@ -1028,6 +1028,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                 // Only forward the fields the agent needs
                 const swcmd = { action: 'software', nodeid: command.nodeid, type: command.type };
+                if ((command.type == 'winupdates') && (command.online === true)) { swcmd.online = true; } // Default is the cached result of the last Windows scan
                 var swEventMsg = null, swEventMsgId = 0, swEventArgs = null;
                 if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) {
                     if (common.validateString(command.value, 1, 8192) == false) { softwareError('Invalid value'); break; }
@@ -1094,6 +1095,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         }
                     }
                     if ((parent.wsagents[node._id] == null) && ((parent.parent.multiServer == null) || (parent.parent.GetRoutingServerIdNotSelf(node._id, 1) == null))) { softwareError('Agent offline'); return; }
+
+                    // Newer features need a core that supports them. Older cores silently ignore unknown requests, so say so instead of waiting forever.
+                    const swNewTypes = ['winupdates', 'installwinupdates', 'installmsi', 'installpackage', 'installflatpak'];
+                    const swAgent = parent.wsagents[node._id];
+                    if ((swNewTypes.indexOf(command.type) >= 0) && (swAgent != null) && ((Array.isArray(swAgent.softwareCaps) == false) || (swAgent.softwareCaps.indexOf(command.type) < 0))) {
+                        softwareError('The agent core on this device does not support this yet. Restart the MeshCentral server after updating it, then restart the agent or wait for it to reconnect so it receives the new core.');
+                        return;
+                    }
 
                     // Audit operations that change the device
                     if (swEventMsg != null) {

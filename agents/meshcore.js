@@ -851,7 +851,7 @@ else {
 
 
 // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot(), swcaps: ['winupdates', 'installwinupdates', 'installmsi', 'installpackage', 'installflatpak'] }; // swcaps: Software tab features this core supports. Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
@@ -1851,7 +1851,8 @@ function handleServerCommand(data) {
                     if (process.platform != 'win32') { sendWuList({ error: "Windows Update is only supported on Windows devices" }); return; }
                     try {
                         var wu = require('win-updates');
-                        wu.getAvailableUpdates().then(function (u) { sendWuList({ updates: u, installing: wu.isInstallInProgress() }); }, function (e) { sendWuList({ error: e.toString() }); });
+                        var wuOnline = (data.online === true);
+                        wu.getAvailableUpdates({ online: wuOnline }).then(function (u) { sendWuList({ updates: u, online: wuOnline, installing: wu.isInstallInProgress() }); }, function (e) { sendWuList({ error: e.toString(), online: wuOnline }); });
                     } catch (e) { sendWuList({ error: e.toString() }); }
                 } else if (data.type == 'installwinupdates') {
                     // Download and install the selected Windows Updates using the Windows Update Agent COM API (no external process)
