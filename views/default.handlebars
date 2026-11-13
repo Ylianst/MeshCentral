@@ -1694,6 +1694,7 @@
         var goBackStack = [];
         var CollapsedGroups = {};
         var collapseGroups = '{{{collapseGroups}}}';
+        var keepDesktopSessions = parseInt('{{{keepDesktopSessions}}}'); if (isNaN(keepDesktopSessions)) { keepDesktopSessions = 0; }
         var activeSessionsPanel = null;
         try { activeSessionsPanel = JSON.parse(decodeURIComponent('{{{activeSessionsPanel}}}')); } catch (ex) { }
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
@@ -9534,17 +9535,82 @@
         // DESKTOP
         //
 
+        //
+        // Background desktop sessions. When "keepDesktopSessions" is set in the domain config, switching to
+        // another device no longer disconnects the remote desktop of the previous device. Instead the session
+        // is parked in the background (paused, so it uses almost no bandwidth) and picked up again, still
+        // connected, when the user comes back to that device's Desktop tab.
+        //
+
+        var parkedDesktops = {}; // nodeid --> desktop session
+
+        // Park the current desktop session. Returns false if it can't be parked, in which case the caller stops it.
+        function parkDesktop() {
+            if ((keepDesktopSessions <= 0) || (desktop == null) || (desktopNode == null)) return false;
+            if ((desktop.State == 0) || (desktop.contype != 1) || (desktop.m == null)) return false; // Only agent desktops, not Intel AMT or RDP
+            if ((webRtcDesktop != null) || (desktop.m.recordedData != null)) return false; // Not while WebRTC or a local recording is active
+            var d = desktop, nodeid = desktopNode._id, noop = function () { };
+            if ((multiDesktop[nodeid] != null) || (parkedDesktops[nodeid] != null)) return false;
+
+            // Save the event handlers that tie this session to the page, they are put back when the session is restored
+            d.xxparked = {
+                onStateChanged: d.onStateChanged, onMetadataChange: d.onMetadataChange, onConsoleMessageChange: d.onConsoleMessageChange,
+                onDisplayinfo: d.m.onDisplayinfo, onKeyboardStateChanged: d.m.onKeyboardStateChanged, onRemoteInputLockChanged: d.m.onRemoteInputLockChanged,
+                onScreenSizeChange: d.m.onScreenSizeChange, onClipboardChanged: d.m.onClipboardChanged
+            };
+            d.onStateChanged = function (xdesk, state) { if ((state == 0) && (parkedDesktops[nodeid] == xdesk)) { delete parkedDesktops[nodeid]; } };
+            d.onMetadataChange = d.onConsoleMessageChange = noop;
+            d.m.onDisplayinfo = d.m.onKeyboardStateChanged = d.m.onRemoteInputLockChanged = d.m.onScreenSizeChange = d.m.onClipboardChanged = noop;
+            if (d.m.mouseCursorActive) { d.m.mouseCursorActive(false); }
+            if (d.m.SendPause) { d.m.SendPause(); }
+
+            d.xxparkedTime = Date.now();
+            parkedDesktops[nodeid] = d;
+
+            // Too many parked sessions, disconnect the oldest ones
+            var ids = Object.keys(parkedDesktops);
+            ids.sort(function (a, b) { return parkedDesktops[a].xxparkedTime - parkedDesktops[b].xxparkedTime; });
+            while (ids.length > keepDesktopSessions) { var oldid = ids.shift(), old = parkedDesktops[oldid]; delete parkedDesktops[oldid]; old.Stop(); }
+
+            // Reset the desktop tab for the next device, then take the canvas out of the page. It keeps its content while parked.
+            desktop = desktopNode = null;
+            onDesktopStateChange({ contype: 0 }, 0);
+            var c = d.m.CanvasId;
+            if (c != null) { c.removeAttribute('id'); if (c.parentNode != null) { c.parentNode.removeChild(c); } }
+            return true;
+        }
+
+        // If the given device has a parked desktop session, hand it to multiDesktop so setupDesktop() adopts it.
+        function unparkDesktop(nodeid) {
+            var d = parkedDesktops[nodeid];
+            if (d == null) return;
+            delete parkedDesktops[nodeid];
+            var p = d.xxparked;
+            delete d.xxparked;
+            if (p != null) {
+                d.onStateChanged = p.onStateChanged; d.onMetadataChange = p.onMetadataChange; d.onConsoleMessageChange = p.onConsoleMessageChange;
+                d.m.onDisplayinfo = p.onDisplayinfo; d.m.onKeyboardStateChanged = p.onKeyboardStateChanged; d.m.onRemoteInputLockChanged = p.onRemoteInputLockChanged;
+                d.m.onScreenSizeChange = p.onScreenSizeChange; d.m.onClipboardChanged = p.onClipboardChanged;
+            }
+            if (d.State == 0) return; // Disconnected while parked
+            if (d.m.SendUnPause) { d.m.SendUnPause(); }
+            if (d.m.SendRefresh) { d.m.SendRefresh(); }
+            multiDesktop[nodeid] = d;
+        }
+
         var desktopNode;
         function setupDesktop() {
             // Setup the remote desktop
             if ((desktopNode != currentNode) && (desktop != null)) {
                 if (desktopNode._id != currentNode._id) {
-                    desktop.Stop(); desktopNode = null; desktop = null;
+                    if (parkDesktop() == false) { desktop.Stop(); } // Keep the session in the background if allowed, otherwise disconnect it
+                    desktopNode = null; desktop = null;
                 }
             }
 
             // If the device desktop is already connected in multi-desktop, use that.
             if ((desktopNode != currentNode) || (desktop == null)) {
+                unparkDesktop(currentNode._id); // If this device has a background session, it gets adopted below
                 var xdesk = multiDesktop[currentNode._id];
                 if (xdesk != null) {
                     // This device already has a canvas, use it.
@@ -9579,8 +9645,11 @@
                     desktopNode = currentNode;
                 }
                 // Setup the mouse wheel
-                Q('Desk').addEventListener('DOMMouseScroll', function (e) { return dmousewheel(e); });
-                Q('Desk').addEventListener('mousewheel', function (e) { return dmousewheel(e); });
+                if (Q('Desk').xxwheel !== true) { // Only once per canvas, a canvas can come back from the background
+                    Q('Desk').xxwheel = true;
+                    Q('Desk').addEventListener('DOMMouseScroll', function (e) { return dmousewheel(e); });
+                    Q('Desk').addEventListener('mousewheel', function (e) { return dmousewheel(e); });
+                }
             }
             desktopNode = currentNode;
             if(desktop){ desktop.m.onDisplayinfo = deskDisplayInfo; deskDisplayInfo(desktop.m, desktop.m.displays, desktop.m.selectedDisplay); }

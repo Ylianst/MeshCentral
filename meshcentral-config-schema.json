@@ -2140,7 +2140,18 @@
             "properties": {
               "enabled": { "type": "boolean", "default": true, "description": "Set to false to disable the panel." },
               "defaultScope": { "type": "string", "enum": [ "own", "all" ], "default": "own", "description": "Scope used until the user picks one. \"all\" only applies to users allowed by allowAllScope." },
-              "allowAllScope": { "type": "string", "enum": [ "fulladmin", "manageusers", "everyone", "none" ], "default": "fulladmin", "description": "Who may switch the panel to show all users' sessions: full site administrators, users with the manage users right, everyone, or no one. Users only ever see sessions on devices they already have access to." }
+              "allowAllScope": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": "fulladmin", "description": "Who may switch the panel to show all users' sessions: \"fulladmin\", \"manageusers\" (users with the manage users right), \"everyone\", \"none\", or an array of user ids (user//name) and user group ids (ugrp//xxx). Users only ever see sessions on devices they already have access to." }
+            }
+          },
+          "keepDesktopSessions": {
+            "type": [ "boolean", "object" ],
+            "default": false,
+            "description": "When enabled for a user, moving to another device no longer disconnects the remote desktop of the previous device. The session is paused in the background and resumes, still connected, when the user returns to that device's Desktop tab. true is the same as { \"allow\": \"fulladmin\", \"max\": 4 }. Only applies to agent remote desktop, not Intel AMT or RDP.",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": { "type": "boolean", "default": true, "description": "Set to false to disable." },
+              "allow": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": "fulladmin", "description": "Who may keep desktop sessions in the background: \"fulladmin\", \"manageusers\", \"everyone\", \"none\", or an array of user ids (user//name) and user group ids (ugrp//xxx)." },
+              "max": { "type": "integer", "minimum": 0, "maximum": 20, "default": 4, "description": "Maximum number of background desktop sessions per browser tab. When exceeded, the one parked longest is disconnected." }
             }
           },
           "terminalUserVariable": {

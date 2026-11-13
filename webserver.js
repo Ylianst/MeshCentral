@@ -3207,7 +3207,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Compute the "Active Sessions" panel settings for a given user. This panel is shown at the top of the
     // devices list and lists all devices the user currently has remote sessions open on, across device groups.
     // Configured using "activeSessionsPanel" in the domain section of config.json, either as a boolean or as:
-    //   { "enabled": true, "defaultScope": "own" | "all", "allowAllScope": "fulladmin" | "manageusers" | "everyone" | "none" }
+    //   { "enabled": true, "defaultScope": "own" | "all", "allowAllScope": "fulladmin" | "manageusers" | "everyone" | "none" | [ "user//name", "ugrp//xxx" ] }
     // The user picks the scope ("own" or "all") and collapses the panel from the panel itself, saved in their web state.
     function getActiveSessionsPanelSettings(domain, user) {
         var c = domain.activesessionspanel, r = { enabled: false, defaultScope: 'own', canSeeAll: false };
@@ -3215,14 +3215,44 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (typeof c != 'object') { c = {}; }
         if (c.enabled === false) return r;
         r.enabled = true;
-        var allowAll = (typeof c.allowallscope == 'string') ? c.allowallscope.toLowerCase() : 'fulladmin';
-        var siteadmin = ((user != null) && (typeof user.siteadmin == 'number')) ? user.siteadmin : 0;
-        if (allowAll == 'everyone') { r.canSeeAll = true; }
-        else if (allowAll == 'manageusers') { r.canSeeAll = ((siteadmin == 0xFFFFFFFF) || ((siteadmin & 2) != 0)); }
-        else if (allowAll == 'none') { r.canSeeAll = false; }
-        else { r.canSeeAll = (siteadmin == 0xFFFFFFFF); }
+        r.canSeeAll = userMatchesConfigScope(user, c.allowallscope);
         if ((typeof c.defaultscope == 'string') && (c.defaultscope.toLowerCase() == 'all') && r.canSeeAll) { r.defaultScope = 'all'; }
         return r;
+    }
+
+    // Returns true if the user matches a scope from config.json: "fulladmin", "manageusers", "everyone", "none",
+    // or an array of user ids ("user//name") and user group ids ("ugrp//xxx").
+    function userMatchesConfigScope(user, scope) {
+        if (user == null) return false;
+        var siteadmin = (typeof user.siteadmin == 'number') ? user.siteadmin : 0;
+        if (Array.isArray(scope)) {
+            for (var i in scope) {
+                if (typeof scope[i] != 'string') continue;
+                var id = scope[i].toLowerCase();
+                if (id == user._id.toLowerCase()) return true;
+                if (id.startsWith('ugrp/') && (user.links != null)) { for (var j in user.links) { if (j.toLowerCase() == id) return true; } }
+            }
+            return false;
+        }
+        scope = (typeof scope == 'string') ? scope.toLowerCase() : 'fulladmin';
+        if (scope == 'everyone') return true;
+        if (scope == 'none') return false;
+        if (scope == 'manageusers') return ((siteadmin == 0xFFFFFFFF) || ((siteadmin & 2) != 0));
+        return (siteadmin == 0xFFFFFFFF);
+    }
+
+    // Number of remote desktop sessions this user may keep connected in the background while moving between
+    // devices, 0 if the feature is off for this user. Configured using "keepDesktopSessions" in the domain:
+    //   { "allow": "fulladmin" | "manageusers" | "everyone" | [ "user//name", "ugrp//xxx" ], "max": 4 }
+    // or true, which is the same as { "allow": "fulladmin", "max": 4 }.
+    function getKeepDesktopSessions(domain, user) {
+        var c = domain.keepdesktopsessions;
+        if ((c == null) || (c === false)) return 0;
+        if (typeof c != 'object') { c = {}; }
+        if (c.enabled === false) return 0;
+        if (userMatchesConfigScope(user, c.allow) == false) return 0;
+        var max = (typeof c.max == 'number') ? Math.floor(c.max) : 4;
+        return Math.max(0, Math.min(max, 20));
     }
 
     function handleRootRequestEx(req, res, domain, direct) {
@@ -3526,6 +3556,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
                     collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
+                    keepDesktopSessions: getKeepDesktopSessions(domain, user),
                     activeSessionsPanel: encodeURIComponent(JSON.stringify(getActiveSessionsPanelSettings(domain, user))).replace(/'/g, '%27')
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }
