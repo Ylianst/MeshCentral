@@ -2182,7 +2182,7 @@
               "object",
               "array"
             ],
-            "description": "Generates device tags automatically from rules. Rules read device fields (name, host, ip, defaultRouteIp, osdesc, winact, av, wsc, users, agent.*, mesh.name, platform, ...), system information (hardware.*), and values from collectors the agent runs (collected.<name>). Tags added this way are removed again when they stop applying; tags set by hand are kept. Use the 'autotags <nodeid>' server console command to test rules on a device. Can also be just the array of rules.",
+            "description": "Generates device tags automatically from rules. Rules read device fields (name, host, ip, defaultRouteIp, osdesc, winact, av, wsc, users, agent.*, mesh.name, platform, ...), system information (hardware.*), and values from collectors the agent runs (collected.<name>). Tags added this way are removed again when they stop applying; tags set by hand are kept. Use the 'autotags <nodeid>' server console command to test rules on a device. Can also be just the array of rules. Device groups and devices can add their own rules, collectors and colors in the web UI (Auto Tags on the group and device pages), and a tag typed with {placeholders} in a device's tag editor works as a template.",
             "properties": {
               "enabled": {
                 "type": "boolean",
@@ -2250,6 +2250,11 @@
                     }
                   }
                 }
+              },
+              "uiCollectors": {
+                "type": "boolean",
+                "default": true,
+                "description": "Set to false so collectors can only be set in config.json. Rules, colors and tag templates can still be set on device groups and devices in the web UI. When true, collectors set in the web UI need file access rights (and registry access rights for registry collectors) on the device or group."
               },
               "desktopTags": {
                 "type": [

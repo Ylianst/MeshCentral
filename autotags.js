@@ -231,6 +231,7 @@ function compileCondition(c, paths) {
     if (c.all != null) { if (!Array.isArray(c.all)) { throw new Error('"all" must be an array'); } return { all: c.all.map(function (x) { return compileCondition(x, paths); }) }; }
     if (c.any != null) { if (!Array.isArray(c.any)) { throw new Error('"any" must be an array'); } return { any: c.any.map(function (x) { return compileCondition(x, paths); }) }; }
     if (c.not != null) { return { not: compileCondition(c.not, paths) }; }
+    checkKeys(c, ['field', 'comment'].concat(CONDITION_OPS), 'condition');
     const segs = parsePath(c.field);
     paths.push(segs);
     const ops = [];
@@ -300,7 +301,8 @@ function normalizeColor(c) {
 
 function compileCollector(name, c) {
     if (!/^[a-z0-9_\-]{1,32}$/.test(name)) { throw new Error('collector name must be 1 to 32 letters, digits, "_" or "-"'); }
-    if ((c == null) || (typeof c != 'object')) { throw new Error('collector must be an object'); }
+    if ((c == null) || (typeof c != 'object') || Array.isArray(c)) { throw new Error('collector must be an object'); }
+    checkKeys(c, ['type', 'path', 'section', 'key', 'pattern', 'match', 'pick', 'property', 'name', 'interval', 'comment'], 'collector');
     const type = String(c.type || '').toLowerCase();
     if (COLLECTOR_TYPES.indexOf(type) == -1) { throw new Error('collector type must be one of ' + COLLECTOR_TYPES.join(', ')); }
     const r = { type: type };
@@ -333,11 +335,31 @@ function compileCollector(name, c) {
 
 // --- Compile -------------------------------------------------------------
 
+// Copy with every key in lowercase, the way config.json keys arrive. Settings made in the web UI keep the case they were
+// typed in ("forEach", "olderThanDays"), so everything is compiled from a lowercased copy.
+function lowerKeys(v) {
+    if ((v == null) || (typeof v != 'object')) return v;
+    if (Array.isArray(v)) return v.map(lowerKeys);
+    const r = {};
+    for (const k of Object.keys(v)) { r[k.toLowerCase()] = lowerKeys(v[k]); }
+    return r;
+}
+
+function checkKeys(o, known, what) {
+    for (const k of Object.keys(o)) { if (known.indexOf(k) == -1) { throw new Error('unknown setting "' + k + '" in ' + what); } }
+}
+
+const TOP_KEYS = ['enabled', 'rules', 'colors', 'desktoptags', 'collect', 'uicollectors', 'comment'];
+const RULE_KEYS = ['tag', 'tags', 'if', 'foreach', 'color', 'desktop', 'enabled', 'name', 'comment'];
+
 function compile(cfg, log) {
     if (Array.isArray(cfg)) { cfg = { rules: cfg }; }
-    if ((cfg == null) || (typeof cfg != 'object') || (cfg.enabled === false)) return null;
+    if ((cfg == null) || (typeof cfg != 'object')) return null;
+    cfg = lowerKeys(cfg);
+    if (cfg.enabled === false) return null;
     const paths = [], rules = [], colors = [], collectors = {};
     const warn = function (what, ex) { if (log) { log('AutoTags: ' + what + ' ignored: ' + ((ex && ex.message) ? ex.message : ex)); } };
+    for (const k of Object.keys(cfg)) { if (TOP_KEYS.indexOf(k) == -1) { warn('setting "' + k + '"', 'unknown setting (expected ' + TOP_KEYS.join(', ') + ')'); } }
 
     if ((cfg.collect != null) && (typeof cfg.collect == 'object')) {
         const names = Object.keys(cfg.collect);
@@ -351,7 +373,8 @@ function compile(cfg, log) {
     for (var i = 0; i < ruleList.length; i++) {
         const r = ruleList[i];
         try {
-            if ((r == null) || (typeof r != 'object')) { throw new Error('rule must be an object'); }
+            if ((r == null) || (typeof r != 'object') || Array.isArray(r)) { throw new Error('rule must be an object'); }
+            checkKeys(r, RULE_KEYS, 'rule');
             if (r.enabled === false) continue;
             var texts = (r.tags != null) ? r.tags : r.tag;
             if (typeof texts == 'string') { texts = [texts]; }
@@ -370,6 +393,7 @@ function compile(cfg, log) {
         const c = colorList[j];
         try {
             if ((c == null) || (typeof c != 'object')) { throw new Error('must be an object'); }
+            checkKeys(c, ['tag', 'match', 'color', 'comment'], 'color');
             const color = normalizeColor(c.color);
             if (color == null) { throw new Error('color must be #rgb, #rrggbb or one of ' + Object.keys(NAMED_COLORS).join(', ')); }
             if (typeof c.tag == 'string') { colors.push({ tag: c.tag.toLowerCase(), color: color }); }
@@ -417,6 +441,122 @@ function getRules(domain, log) {
         compiledCache.set(domain, c);
     }
     return c || null;
+}
+
+// --- Settings from the web UI ----------------------------------------------
+//
+// Besides config.json, auto tags can be set in the web UI on a device group (mesh.autotagcfg) and on a device
+// (node.autotagcfg), in the same format. A device can also have tag templates (node.tagtemplates): tags such as
+// "LAN:{defaultRouteIp}" typed in the device's tag editor, which work like a rule with only a "tag".
+// For a device, the rules are config.json's, then its group's, then its own. Collectors with the same name are replaced
+// by the later layer, so a device can override a group's collector.
+
+const MAX_UI_CONFIG_SIZE = 32768;   // JSON length of the settings saved on one device or group
+const MAX_TEMPLATES = 32;
+const MAX_TEMPLATE_LENGTH = 256;
+const layeredCache = new Map();     // JSON of the layers -> compiled rules, or false
+const MAX_LAYERED_CACHE = 1000;
+
+// Device fields that hold auto tag settings, or null when it has none.
+function nodeLayer(node) {
+    if ((node == null) || ((node.autotagcfg == null) && (node.tagtemplates == null))) return null;
+    return { cfg: node.autotagcfg, templates: node.tagtemplates };
+}
+
+// Merge config layers (already lowercased) into one config.
+function mergeLayers(layers) {
+    const r = { rules: [], colors: [], collect: {}, desktoptags: [] };
+    var desktopAll = false, any = false;
+    for (const l of layers) {
+        if ((l == null) || (l.enabled === false)) continue;
+        any = true;
+        if (Array.isArray(l.rules)) { r.rules.push(...l.rules); }
+        if (Array.isArray(l.colors)) { r.colors.push(...l.colors); }
+        if ((l.collect != null) && (typeof l.collect == 'object') && !Array.isArray(l.collect)) { Object.assign(r.collect, l.collect); }
+        if (l.desktoptags === true) { desktopAll = true; } else if (Array.isArray(l.desktoptags)) { r.desktoptags.push(...l.desktoptags); }
+    }
+    if (!any) return null;
+    if (desktopAll) { r.desktoptags = true; }
+    return r;
+}
+
+function templatesToRules(templates) {
+    if (!Array.isArray(templates)) return [];
+    return templates.filter(function (t) { return typeof t == 'string'; }).map(function (t) { return { tag: t }; });
+}
+
+// Compiled rules for one device: config.json, then its group, then its own settings. Null when none apply.
+function getRulesFor(domain, mesh, layer, log) {
+    if ((domain == null) || (typeof domain != 'object')) return null;
+    const meshCfg = (mesh != null) ? mesh.autotagcfg : null;
+    const nodeCfg = (layer != null) ? layer.cfg : null;
+    const templates = (layer != null) ? layer.templates : null;
+    if ((meshCfg == null) && (nodeCfg == null) && !Array.isArray(templates)) return getRules(domain, log);
+
+    const domainCfg = (domain.autotags != null) ? lowerKeys(Array.isArray(domain.autotags) ? { rules: domain.autotags } : domain.autotags) : null;
+    const uiCollectors = !((domainCfg != null) && (domainCfg.uicollectors === false));
+    const ui = function (c) {
+        if ((c == null) || (typeof c != 'object')) return null;
+        c = lowerKeys(Array.isArray(c) ? { rules: c } : c);
+        if (!uiCollectors) { c = Object.assign({}, c); delete c.collect; } // collectors from the web UI are turned off in config.json
+        return c;
+    };
+    const key = (domain.id || '') + '\n' + JSON.stringify([meshCfg, nodeCfg, templates, uiCollectors]);
+    var c = layeredCache.get(key);
+    if (c === undefined) {
+        try {
+            const merged = mergeLayers([domainCfg, ui(meshCfg), ui(nodeCfg), { rules: templatesToRules(templates) }]);
+            c = compile(merged, log) || false;
+        } catch (ex) { if (log) { log('AutoTags: settings ignored: ' + ex); } c = false; }
+        if (layeredCache.size >= MAX_LAYERED_CACHE) { layeredCache.delete(layeredCache.keys().next().value); }
+        layeredCache.set(key, c);
+    }
+    return c || null;
+}
+
+// Check settings typed in the web UI before they are saved. Stricter than config.json: anything that would be ignored is an error.
+// Returns { errors: [...], hasCollectors, collectorTypes }.
+function validateUiConfig(cfg) {
+    const errors = [];
+    if (cfg == null) return { errors: errors, hasCollectors: false, collectorTypes: [] };
+    if ((typeof cfg != 'object')) { errors.push('Settings must be a JSON object or a list of rules.'); return { errors: errors, hasCollectors: false, collectorTypes: [] }; }
+    var size = 0;
+    try { size = JSON.stringify(cfg).length; } catch (ex) { errors.push('Settings can not be read.'); }
+    if (size > MAX_UI_CONFIG_SIZE) { errors.push('Settings are ' + size + ' characters, the limit is ' + MAX_UI_CONFIG_SIZE + '.'); }
+    const lc = lowerKeys(Array.isArray(cfg) ? { rules: cfg } : cfg);
+    if (lc.uicollectors !== undefined) { errors.push('"uiCollectors" can only be set in config.json.'); }
+    var compiled = null;
+    try { compiled = compile(lc, function (msg) { errors.push(msg.replace(/^AutoTags: /, '')); }); } catch (ex) { errors.push(String(ex.message || ex)); }
+    const types = [];
+    if ((lc.collect != null) && (typeof lc.collect == 'object')) { for (const n of Object.keys(lc.collect)) { const t = lc.collect[n] && String(lc.collect[n].type || '').toLowerCase(); if (types.indexOf(t) == -1) { types.push(t); } } }
+    return { errors: errors, hasCollectors: (lc.collect != null) && (Object.keys(lc.collect).length > 0), collectorTypes: types, compiled: compiled };
+}
+
+// Check tag templates typed in the device tag editor. Returns a list of errors.
+function validateTemplates(templates) {
+    const errors = [];
+    if (templates == null) return errors;
+    if (!Array.isArray(templates)) { errors.push('Templates must be a list.'); return errors; }
+    if (templates.length > MAX_TEMPLATES) { errors.push('At most ' + MAX_TEMPLATES + ' tag templates.'); }
+    for (const t of templates) {
+        if ((typeof t != 'string') || (t.length == 0) || (t.length > MAX_TEMPLATE_LENGTH)) { errors.push('Each template must be text of at most ' + MAX_TEMPLATE_LENGTH + ' characters.'); continue; }
+        if (t.indexOf(',') >= 0) { errors.push('"' + t + '": a tag can not contain a comma.'); continue; }
+        try { compileTemplate(t, []); } catch (ex) { errors.push('"' + t + '": ' + ex.message); }
+    }
+    return errors;
+}
+
+// A tag typed in the device tag editor is a template when it has a {placeholder}.
+function isTemplate(tag) { return (typeof tag == 'string') && /\{[^{}]+\}/.test(tag.split('{{').join('').split('}}').join('')); }
+
+// Collectors read files, the registry and environment variables as SYSTEM/root, so setting them from the web UI
+// takes the rights to read those through MeshCentral already: file access, and registry access for registry collectors.
+function collectorRightsOk(rights, collectorTypes) {
+    if (rights == 0xFFFFFFFF) return true;
+    if ((rights & 8) == 0) return false;                 // MESHRIGHT_REMOTECONTROL
+    if ((rights & (256 | 1024)) != 0) return false;      // MESHRIGHT_REMOTEVIEWONLY, MESHRIGHT_NOFILES
+    if ((collectorTypes.indexOf('registry') >= 0) && ((rights & 0x00400000) != 0)) return false; // MESHRIGHT_NOREGISTRY
+    return true;
 }
 
 // --- Context -------------------------------------------------------------
@@ -598,6 +738,12 @@ function agentCollectors(compiled) { return ((compiled == null) || !compiled.has
 
 module.exports = {
     getRules: getRules,
+    getRulesFor: getRulesFor,
+    nodeLayer: nodeLayer,
+    validateUiConfig: validateUiConfig,
+    validateTemplates: validateTemplates,
+    isTemplate: isTemplate,
+    collectorRightsOk: collectorRightsOk,
     compile: compile,
     pruneSysInfo: pruneSysInfo,
     cleanCollected: cleanCollected,

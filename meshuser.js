@@ -3538,6 +3538,78 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'toast', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
                     break;
                 }
+            case 'autotagconfig':
+                {
+                    // Auto tag settings on a device (nodeid) or a device group (meshid): get them, test them, or save them.
+                    // { action: 'autotagconfig', nodeid|meshid, config: {...}|null, op: 'get'|'test'|'set' }
+                    const autoTags = require('./autotags.js');
+                    const reply = function (x) { x.action = 'autotagconfig'; x.op = command.op; x.nodeid = command.nodeid; x.meshid = command.meshid; x.tag = command.tag; x.responseid = command.responseid; try { ws.send(JSON.stringify(x)); } catch (ex) { } };
+                    if (['get', 'test', 'set'].indexOf(command.op) == -1) { reply({ result: 'Invalid operation' }); break; }
+                    const domainAutoTags = (domain.autotags != null) && (typeof domain.autotags == 'object') ? domain.autotags : null;
+                    const uiCollectorsOff = (domainAutoTags != null) && (domainAutoTags.uicollectors === false);
+
+                    // Check settings and the rights they need. Returns an error list.
+                    const checkConfig = function (rights, editRight) {
+                        if ((rights & editRight) == 0) return ['Access denied.'];
+                        if (command.config == null) return [];
+                        if (common.validateObjectForMongo(command.config, 2048) == false) return ['Settings contain names or values that can not be stored.'];
+                        const v = autoTags.validateUiConfig(command.config);
+                        if (v.hasCollectors && uiCollectorsOff) { v.errors.push('Collectors can only be set in config.json on this server.'); }
+                        else if (v.hasCollectors && !autoTags.collectorRightsOk(rights, v.collectorTypes)) { v.errors.push('Collectors read files and settings on the device, so they need file access rights' + ((v.collectorTypes.indexOf('registry') >= 0) ? ' and registry access rights' : '') + ' here.'); }
+                        return v.errors;
+                    };
+                    const isEmptyConfig = function (c) { return (c == null) || (Array.isArray(c) && (c.length == 0)) || ((typeof c == 'object') && (Object.keys(c).length == 0)); };
+
+                    if (command.nodeid != null) {
+                        if (common.validateString(command.nodeid, 1, 1024) == false) { reply({ result: 'Invalid nodeid' }); break; }
+                        if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                        if (command.nodeid.split('/')[1] != domain.id) { reply({ result: 'Invalid nodeid' }); break; }
+                        parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
+                            if ((node == null) || (visible == false)) { reply({ result: 'Invalid nodeid' }); return; }
+                            const mesh = parent.meshes[node.meshid];
+                            if (command.op == 'get') { reply({ result: 'ok', config: node.autotagcfg || null, templates: node.tagtemplates || [], group: (mesh && mesh.autotagcfg) || null }); return; }
+                            const errors = checkConfig(rights, MESHRIGHT_MANAGECOMPUTERS);
+                            if (errors.length > 0) { reply({ result: 'error', errors: errors }); return; }
+                            const config = isEmptyConfig(command.config) ? null : command.config;
+                            const candidate = Object.assign({}, node);
+                            if (config == null) { delete candidate.autotagcfg; } else { candidate.autotagcfg = config; }
+                            if (command.op == 'test') {
+                                // Dry run: the tags this device would have with these settings
+                                applyAutoTagsToNode(candidate, mesh, function () { reply({ result: 'ok', tags: candidate.tags || [], generated: candidate.autotags || [], colors: candidate.tagcolors || {}, desktop: candidate.desktoptags || null }); }, true);
+                                return;
+                            }
+                            if (config == null) { delete node.autotagcfg; } else { node.autotagcfg = config; }
+                            applyAutoTagsToNode(node, mesh, function () {
+                                db.Set(parent.cleanDevice(node));
+                                var event = { etype: 'node', userid: user._id, username: user.name, action: 'changenode', nodeid: node._id, domain: domain.id, node: parent.CloneSafeNode(node), msg: 'Changed auto tags of device ' + node.name + ' from group ' + (mesh ? mesh.name : '') };
+                                if (db.changeStream) { event.noact = 1; }
+                                parent.parent.DispatchEvent(parent.CreateNodeDispatchTargets(node.meshid, node._id, [user._id]), obj, event);
+                                reply({ result: 'ok', tags: node.tags || [] });
+                            });
+                        });
+                    } else if (command.meshid != null) {
+                        if (common.validateString(command.meshid, 1, 1024) == false) { reply({ result: 'Invalid meshid' }); break; }
+                        if (command.meshid.indexOf('/') == -1) { command.meshid = 'mesh/' + domain.id + '/' + command.meshid; }
+                        const mesh = parent.meshes[command.meshid];
+                        if ((mesh == null) || (mesh.domain != domain.id) || (mesh.deleted != null)) { reply({ result: 'Invalid meshid' }); break; }
+                        const rights = parent.GetMeshRights(user, mesh);
+                        if (rights == 0) { reply({ result: 'Invalid meshid' }); break; }
+                        if (command.op == 'get') { reply({ result: 'ok', config: mesh.autotagcfg || null }); break; }
+                        const errors = checkConfig(rights, MESHRIGHT_EDITMESH);
+                        if (errors.length > 0) { reply({ result: 'error', errors: errors }); break; }
+                        const config = isEmptyConfig(command.config) ? null : command.config;
+                        if (command.op == 'test') { reply({ result: 'ok' }); break; } // Settings are valid; each device's tags show once saved
+                        if (config == null) { delete mesh.autotagcfg; } else { mesh.autotagcfg = config; }
+                        db.Set(mesh);
+                        var event = { etype: 'mesh', userid: user._id, username: user.name, meshid: mesh._id, name: mesh.name, mtype: mesh.mtype, desc: mesh.desc, flags: mesh.flags, consent: mesh.consent, action: 'meshchange', links: mesh.links, msg: 'Changed auto tags of group ' + mesh.name, domain: domain.id, invite: mesh.invite, expireDevs: mesh.expireDevs, relayid: mesh.relayid, autotagcfg: (config || null) };
+                        if (db.changeStream) { event.noact = 1; }
+                        parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(mesh, [user._id]), obj, event);
+                        // Connected agents in the group pick up the new settings now, others when they connect
+                        for (var agentid in parent.wsagents) { const agent = parent.wsagents[agentid]; if ((agent.dbMeshKey == mesh._id) && (typeof agent.autoTagConfigChanged == 'function')) { agent.autoTagConfigChanged(null); } }
+                        reply({ result: 'ok' });
+                    } else { reply({ result: 'Missing nodeid or meshid' }); }
+                    break;
+                }
             case 'changedevice':
                 {
                     var err = null;
@@ -3665,19 +3737,33 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Only allow the user to set Intel AMT TLS state if AMT Manager is not active. AMT manager will auto-detect TLS state.
                             if ((parent.parent.amtManager != null) && (command.intelamt.tls != null) && (command.intelamt.tls != node.intelamt.tls)) { change = 1; node.intelamt.tls = command.intelamt.tls; changes.push('Intel AMT TLS'); }
                         }
-                        if (command.tags) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
-                            var ok = true, group2 = [];
-                            if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
-                            for (var i in command.tags) { var tname = command.tags[i].trim(); if ((tname.length > 0) && (tname.length < 64) && (group2.indexOf(tname) == -1)) { group2.push(tname); } }
-                            group2.sort();
-                            if (node.tags != group2) { node.tags = group2; change = 1; }
-                        } else if ((command.tags === '') && node.tags) { delete node.tags; change = 1; }
-                        if ((command.tags != null) && (change == 1)) {
-                            // Tag colors and remote desktop toolbar tags follow the edit now; generated tags are re-checked on the agent's next report.
+                        var autoTagsChanged = false;
+                        if ((command.tags != null) && ((command.tags !== '') || node.tags || node.tagtemplates)) { // Node grouping tag, this is a array of strings that can't be empty and can't contain a comma
+                            // A tag with a {placeholder}, such as "LAN:{defaultRouteIp}", is an auto tag template, kept in node.tagtemplates.
+                            // Tags made by auto tags are not the user's to set, so they are kept whether or not the editor sent them back.
                             const autoTags = require('./autotags.js');
-                            autoTags.refreshTagStyles(autoTags.getRules(domain, function (msg) { console.log(msg); }), node);
+                            var group2 = [], templates = [];
+                            if (common.validateString(command.tags, 0, 4096) == true) { command.tags = command.tags.split(','); }
+                            for (var i in command.tags) {
+                                var tname = command.tags[i].trim();
+                                if (tname.length == 0) continue;
+                                if (autoTags.isTemplate(tname)) { if (templates.indexOf(tname) == -1) { templates.push(tname); } }
+                                else if ((tname.length < 64) && (group2.indexOf(tname) == -1)) { group2.push(tname); }
+                            }
+                            const templateErrors = autoTags.validateTemplates(templates);
+                            if (templateErrors.length > 0) {
+                                try { ws.send(JSON.stringify({ action: 'msg', type: 'notify', id: Math.random(), title: "Tag templates", value: templateErrors.join(' ') })); } catch (ex) { }
+                                if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: templateErrors.join(' ') })); } catch (ex) { } }
+                                return;
+                            }
+                            const generated = Array.isArray(node.autotags) ? node.autotags : [];
+                            for (var j in (node.tags || [])) { if ((generated.indexOf(node.tags[j]) >= 0) && (group2.indexOf(node.tags[j]) == -1)) { group2.push(node.tags[j]); } }
+                            group2.sort();
+                            if (JSON.stringify(node.tags || []) != JSON.stringify(group2)) { if (group2.length > 0) { node.tags = group2; } else { delete node.tags; } change = 1; autoTagsChanged = true; }
+                            if (JSON.stringify(node.tagtemplates || []) != JSON.stringify(templates)) { if (templates.length > 0) { node.tagtemplates = templates; } else { delete node.tagtemplates; } change = 1; autoTagsChanged = true; changes.push('tag templates'); }
                         }
 
+                        const saveDevice = function () {
                         if (change == 1) {
                             // Save the node
                             db.Set(parent.cleanDevice(node));
@@ -3699,6 +3785,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
 
                         // Send response if required
                         if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'changedevice', responseid: command.responseid, result: 'ok' })); } catch (ex) { } }
+                        };
+
+                        // Tags or templates changed: work out the generated tags, tag colors and toolbar tags before the one save
+                        if (autoTagsChanged) { applyAutoTagsToNode(node, mesh, function () { saveDevice(); }); } else { saveDevice(); }
                     });
                     break;
                 }
@@ -8312,14 +8402,35 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         cmdData.result = JSON.stringify(process.versions, null, 4);
     }
 
+    // Work out a device's generated tags, tag colors and toolbar tags in place, from config.json and its group's and its own
+    // auto tag settings, using its stored system information and collector values. Calls func() when done. Unless this is a
+    // dry run, a connected agent is told about the device's settings, so it reloads them and runs the right collectors.
+    function applyAutoTagsToNode(node, mesh, func, dryRun) {
+        const autoTags = require('./autotags.js');
+        const rules = autoTags.getRulesFor(domain, mesh, autoTags.nodeLayer(node), function (msg) { console.log(msg); });
+        const done = function () {
+            if (dryRun !== true) { const agent = parent.wsagents[node._id]; if ((agent != null) && (typeof agent.autoTagConfigChanged == 'function')) { agent.autoTagConfigChanged(node); } }
+            func();
+        };
+        if (rules == null) { autoTags.update(null, node, null, mesh, null); done(); return; }
+        db.Get('si' + node._id, function (err, sis) {
+            db.Get('at' + node._id, function (err, ats) {
+                const si = ((sis != null) && (sis.length == 1)) ? autoTags.pruneSysInfo(rules, sis[0]) : null;
+                const collected = ((ats != null) && (ats.length == 1)) ? autoTags.cleanCollected(rules, ats[0].data) : null;
+                try { autoTags.update(rules, node, si, mesh, collected); } catch (ex) { console.log('AutoTags: ' + ex); }
+                done();
+            });
+        });
+    }
+
     // Dry run of the domain's auto tag rules on one device, to check rules without waiting for the agent to report.
     function serverUserCommandAutoTags(cmdData) {
         const autoTags = require('./autotags.js');
-        const rules = autoTags.getRules(domain, function (msg) { console.log(msg); });
-        if (rules == null) { cmdData.result = 'Auto tags are not configured for this domain.'; return; }
+        const log = function (msg) { console.log(msg); };
+        const rules = autoTags.getRules(domain, log);
         var nodeid = cmdData.cmdargs['_'][0];
         if (nodeid == null) {
-            cmdData.result = rules.rules.length + ' rule(s), ' + rules.colors.length + ' color rule(s), collectors: ' + (Object.keys(rules.collectors).join(', ') || 'none') + '\r\nUsage: autotags <nodeid>';
+            cmdData.result = ((rules == null) ? 'No auto tags in config.json for this domain.' : ('config.json: ' + rules.rules.length + ' rule(s), ' + rules.colors.length + ' color rule(s), collectors: ' + (Object.keys(rules.collectors).join(', ') || 'none'))) + '\r\nGroups and devices can add their own in the web UI.\r\nUsage: autotags <nodeid>';
             return;
         }
         nodeid = String(nodeid);
@@ -8327,13 +8438,16 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         const reply = function (text) { try { obj.send({ action: 'serverconsole', value: text, tag: cmdData.command.tag }); } catch (ex) { } };
         db.Get(nodeid, function (err, nodes) {
             if ((nodes == null) || (nodes.length != 1) || (nodes[0].domain != domain.id)) { reply('Device not found.'); return; }
-            const node = nodes[0];
+            const node = nodes[0], mesh = parent.meshes[node.meshid];
+            const nodeRules = autoTags.getRulesFor(domain, mesh, autoTags.nodeLayer(node), log);
+            if (nodeRules == null) { reply('No auto tags apply to this device (config.json, its group and the device have none).'); return; }
             db.Get('si' + nodeid, function (err, sis) {
                 db.Get('at' + nodeid, function (err, ats) {
-                    const si = ((sis != null) && (sis.length == 1)) ? autoTags.pruneSysInfo(rules, sis[0]) : null;
-                    const collected = ((ats != null) && (ats.length == 1)) ? autoTags.cleanCollected(rules, ats[0].data) : null;
-                    const r = autoTags.computeTags(rules, node, si, parent.meshes[node.meshid], collected);
+                    const si = ((sis != null) && (sis.length == 1)) ? autoTags.pruneSysInfo(nodeRules, sis[0]) : null;
+                    const collected = ((ats != null) && (ats.length == 1)) ? autoTags.cleanCollected(nodeRules, ats[0].data) : null;
+                    const r = autoTags.computeTags(nodeRules, node, si, mesh, collected);
                     const x = [];
+                    x.push('Rules: ' + nodeRules.rules.length + ' (config.json' + ((mesh && mesh.autotagcfg) ? ', group' : '') + (node.autotagcfg ? ', device' : '') + (node.tagtemplates ? ', ' + node.tagtemplates.length + ' template(s)' : '') + '), collectors: ' + (Object.keys(nodeRules.collectors).join(', ') || 'none'));
                     x.push('Generated tags: ' + ((r.tags.length > 0) ? r.tags.join(', ') : '(none)'));
                     for (var t in r.colors) { x.push('  ' + t + ' -> ' + r.colors[t]); }
                     x.push('Tags on device: ' + (Array.isArray(node.tags) ? node.tags.join(', ') : '(none)'));

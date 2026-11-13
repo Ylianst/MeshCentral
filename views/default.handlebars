@@ -3142,6 +3142,10 @@
                     }
                     break;
                 }
+                case 'autotagconfig': {
+                    autoTagsResponse(message);
+                    break;
+                }
                 case 'serverconsole': {
                     p15consoleReceive('serverconsole', message.value);
                     break;
@@ -3626,6 +3630,7 @@
                                 if (message.event.invite != null) { meshes[message.event.meshid].invite = message.event.invite; } else { delete meshes[message.event.meshid].invite; }
                                 if (message.event.expireDevs != null) { if (message.event.expireDevs > 0) { meshes[message.event.meshid].expireDevs = message.event.expireDevs; } else { delete meshes[message.event.meshid].expireDevs; } }
                                 if (message.event.relayid != null) { meshes[message.event.meshid].relayid = message.event.relayid; }
+                                if ('autotagcfg' in message.event) { if (message.event.autotagcfg == null) { delete meshes[message.event.meshid].autotagcfg; } else { meshes[message.event.meshid].autotagcfg = message.event.autotagcfg; } }
 
                                 // Check if we lost rights to this mesh in this change.
                                 if (IsMeshViewable(message.event.meshid) == false) {
@@ -3733,6 +3738,9 @@
                                 node.tags = message.event.node.tags;
                                 node.tagcolors = message.event.node.tagcolors;
                                 node.desktoptags = message.event.node.desktoptags;
+                                node.autotags = message.event.node.autotags;
+                                node.autotagcfg = message.event.node.autotagcfg;
+                                node.tagtemplates = message.event.node.tagtemplates;
                                 if (currentNode == node) { updateDeskTags(); }
                                 node.ssh = message.event.node.ssh;
                                 node.rdp = message.event.node.rdp;
@@ -8116,7 +8124,7 @@
                 var groupingTags = '<i>' + "None" + '</i>';
                 if (node.tags != null) { groupingTags = ''; for (var i in node.tags) { groupingTags += deviceTagHtml(node, node.tags[i]) + ' '; } }
                 if ((meshrights & 4) != 0) {
-                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span>');
+                    x += addDeviceAttribute("Tags", '<span onclick=showEditNodeValueDialog(3) style=line-height:26px;cursor:pointer>' + groupingTags + ' <img class=hoverButton src="images/link5.png" width=10 height=10 /></span> <a href=# onclick="return showAutoTagsDialog(\'node\')" style=margin-left:8px;font-size:x-small title="' + ((node.autotagcfg != null) ? EscapeHtml(autoTagsSummary(node.autotagcfg)) : "Rules, collectors and colors for this device") + '">' + "Auto Tags" + ((node.autotagcfg != null) ? ' (' + EscapeHtml(autoTagsSummary(node.autotagcfg)) + ')' : '') + '</a>');
                 } else {
                     x += addDeviceAttribute("Tags", '<span style=line-height:26px>' + groupingTags + '</span>');
                 }
@@ -9497,6 +9505,126 @@
         function showClearRdpDialog() { setDialogMode(2, "Edit Device", 3, showClearRdpDialogEx, "Clear RDP credentials?"); }
         function showClearRdpDialogEx(button, mode) { meshserver.send({ action: 'changedevice', nodeid: currentNode._id, rdp: 0 }); }
 
+        //
+        // AUTO TAGS
+        //
+        // Tags with {placeholders}, such as LAN:{defaultRouteIp}, are templates the server fills in for the device. Generated
+        // tags are the server's to set, so the tag editor lists the device's own tags and templates, and the Auto Tags dialog
+        // edits the full settings of a device or a device group (the same format as autoTags in config.json).
+
+        var autoTagsDialogTarget = null, autoTagsDrafts = {};
+
+        function autoTagsSummary(cfg) {
+            if ((cfg == null) || (typeof cfg != 'object')) return null;
+            var rules = Array.isArray(cfg) ? cfg : (Array.isArray(cfg.rules) ? cfg.rules : []);
+            var collectors = ((!Array.isArray(cfg)) && (cfg.collect != null) && (typeof cfg.collect == 'object')) ? Object.keys(cfg.collect).length : 0;
+            var x = rules.length + ' ' + ((rules.length == 1) ? "rule" : "rules");
+            if (collectors > 0) { x += ', ' + collectors + ' ' + ((collectors == 1) ? "collector" : "collectors"); }
+            if (cfg.enabled === false) { x += ' (' + "off" + ')'; }
+            return x;
+        }
+
+        function showAutoTagsDialogMesh() { return showAutoTagsDialog('mesh'); }
+        function showAutoTagsDialogNode() { if (xxdialogMode) { dialogclose(0); } return showAutoTagsDialog('node'); }
+        function showAutoTagsDialog(kind) {
+            if (xxdialogMode) return false;
+            var target = (kind == 'mesh') ? currentMesh : currentNode;
+            if (target == null) return false;
+            autoTagsDialogTarget = { kind: kind, id: target._id };
+            var text = autoTagsDrafts[target._id];
+            if (text == null) { text = (target.autotagcfg == null) ? '' : JSON.stringify(target.autotagcfg, null, 2); }
+            var x = '<div style=width:560px;max-width:80vw>';
+            x += '<div style=margin-bottom:6px>' + ((kind == 'mesh') ? "Rules, collectors and colors for every device in this group, added to the server's." : "Rules, collectors and colors for this device only, added to its group's and the server's.") + ' <a href=# onclick="return autoTagsShowExample()">' + "Show example" + '</a></div>';
+            x += '<textarea id=autotagsjson spellcheck=false style="width:100%;height:260px;font-family:monospace;font-size:12px;resize:vertical;box-sizing:border-box" onkeyup=autoTagsValidate() onchange=autoTagsValidate()></textarea>';
+            x += '<div style=margin-top:6px><input type=button id=autotagstestbutton value="' + "Test" + '" onclick=autoTagsTest() /> <span id=autotagsstatus></span></div>';
+            x += '<div id=autotagsresult style="margin-top:6px;max-height:180px;overflow-y:auto;line-height:24px"></div></div>';
+            setDialogMode(2, "Auto Tags", 3, autoTagsSave, x);
+            Q('autotagsjson').value = text;
+            autoTagsValidate();
+            Q('autotagsjson').focus();
+            return false;
+        }
+
+        function autoTagsParse() {
+            var t = Q('autotagsjson').value.trim();
+            if (t == '') return { config: null };
+            try { return { config: JSON.parse(t) }; } catch (ex) { return { error: ex.message }; }
+        }
+
+        function autoTagsValidate() {
+            var p = autoTagsParse();
+            QE('idx_dlgOkButton', p.error == null);
+            QE('autotagstestbutton', p.error == null);
+            QH('autotagsstatus', (p.error != null) ? ('<span style=color:red>' + EscapeHtml("Not valid JSON" + ': ' + p.error) + '</span>') : ((p.config == null) ? ('<i>' + "Empty: saving removes these settings." + '</i>') : ''));
+        }
+
+        function autoTagsSend(op) {
+            var p = autoTagsParse();
+            if (p.error != null) return false;
+            var x = { action: 'autotagconfig', op: op, config: p.config };
+            x[(autoTagsDialogTarget.kind == 'mesh') ? 'meshid' : 'nodeid'] = autoTagsDialogTarget.id;
+            meshserver.send(x);
+            return true;
+        }
+
+        function autoTagsTest() { if (autoTagsSend('test')) { QH('autotagsresult', '<i>' + "Testing..." + '</i>'); } }
+
+        function autoTagsSave() {
+            autoTagsDrafts[autoTagsDialogTarget.id] = Q('autotagsjson').value; // Kept until the server accepts it
+            autoTagsSend('set');
+        }
+
+        function autoTagsShowExample() {
+            var example = {
+                rules: [
+                    { tag: 'Activated', color: 'green', 'if': { field: 'winact.activated', equals: true } },
+                    { tag: 'NotActivated', color: 'red', desktop: true, 'if': { field: 'winact.activated', equals: false } },
+                    { tag: 'LAN:{defaultRouteIp}', color: 'blue', desktop: true },
+                    { tag: 'SN:{hardware.identifiers.bios_serial|upper}' },
+                    { tag: 'App {collected.appver}', color: 'purple' },
+                    { tag: 'Reboot-30d', color: 'orange', 'if': { field: 'lastbootuptime', olderThanDays: 30 } }
+                ],
+                collect: {
+                    appver: { type: 'regex', path: 'C:\\ProgramData\\Contoso\\App\\config.xml', pattern: '<Version>([^<]+)</Version>', interval: 60 }
+                }
+            };
+            var x = '<div><b>' + "Example" + '</b> &nbsp;<a href=# onclick="return autoTagsUseExample()">' + "Use this example" + '</a></div>';
+            x += '<pre id=autotagsexample style="margin:4px 0;font-size:11px;white-space:pre-wrap;line-height:normal">' + EscapeHtml(JSON.stringify(example, null, 2)) + '</pre>';
+            x += '<div style=font-size:x-small>' + EscapeHtml("Fields: name, host, ip, defaultRouteIp, osdesc, users, winact.*, wsc.*, mesh.name, platform, hardware.*, collected.<name>. Collector types: ini, regex, dir, fileinfo, registry, env. Collectors need file access rights on the device.") + '</div>';
+            QH('autotagsresult', x);
+            return false;
+        }
+
+        function autoTagsUseExample() {
+            if ((Q('autotagsjson').value.trim() != '') && (confirm("Replace the current settings with the example?") == false)) return false;
+            Q('autotagsjson').value = Q('autotagsexample').textContent;
+            autoTagsValidate();
+            return false;
+        }
+
+        function autoTagsErrorsHtml(message) {
+            var errors = Array.isArray(message.errors) ? message.errors : [message.result];
+            var x = '';
+            for (var i in errors) { x += '<div style=color:red>' + EscapeHtml(errors[i]) + '</div>'; }
+            return x;
+        }
+
+        function autoTagsResponse(message) {
+            var id = autoTagsDialogTarget ? autoTagsDialogTarget.id : null;
+            if (message.op == 'set') {
+                if (message.result == 'ok') { if (id != null) { delete autoTagsDrafts[id]; } return; }
+                if (xxdialogMode) return;
+                setDialogMode(2, "Auto Tags", 1, null, '<div style=max-width:560px>' + "The settings were not saved:" + autoTagsErrorsHtml(message) + '<div style=margin-top:8px>' + "Your changes are kept, open Auto Tags again to fix them." + '</div></div>');
+                return;
+            }
+            if ((message.op != 'test') || (Q('autotagsresult') == null)) return;
+            if (message.result != 'ok') { QH('autotagsresult', autoTagsErrorsHtml(message)); return; }
+            if (message.meshid != null) { QH('autotagsresult', '<span style=color:green>' + "The settings are valid. Each device in the group gets its tags once they are saved." + '</span>'); return; }
+            var fake = { tagcolors: message.colors || {} }, generated = message.generated || [], tags = message.tags || [], x = '';
+            for (var i in tags) { x += '<span title="' + ((generated.indexOf(tags[i]) >= 0) ? "Generated" : "Set by hand") + '">' + deviceTagHtml(fake, tags[i]) + '</span> '; }
+            QH('autotagsresult', '<div>' + "With these settings this device would have:" + '</div>' + ((x == '') ? ('<i>' + "No tags" + '</i>') : x));
+        }
+
         var showEditNodeValueDialog_modes = ["Device Name", "Hostname", "Description", "Tags"];
         var showEditNodeValueDialog_modes2 = ['name', 'host', 'desc', 'tags'];
         var showEditNodeValueDialog_modes3 = ['', '', '', "Tag1, Tag2, Tag3"];
@@ -9514,9 +9642,17 @@
                     x += '<div style=margin-top:8px;width:370px;line-height:26px;max-height:160px;overflow-y:auto>' + y + '</div>';
                 }
             }
+            var generatedTags = (Array.isArray(currentNode.autotags) ? currentNode.autotags : []);
+            if (mode == 3) {
+                // Templates are edited here with the tags; generated tags are left out, they are the server's to set
+                x += '<div style="margin-top:8px;width:370px;font-size:x-small;color:gray">' + EscapeHtml("A tag with {placeholders} is filled in for this device, for example LAN:{defaultRouteIp} or Win:{winact.state}.");
+                if (generatedTags.length > 0) { x += ' ' + EscapeHtml("Generated tags are not listed here") + ': ' + EscapeHtml(generatedTags.join(', ')) + '.'; }
+                x += ' <a href=# onclick="return showAutoTagsDialogNode()">' + "Auto Tags..." + '</a></div>';
+            }
             setDialogMode(2, "Edit Device", 3, showEditNodeValueDialogEx, x, mode);
             var v = currentNode[showEditNodeValueDialog_modes2[mode]];
             if (v == null) v = '';
+            if ((mode == 3) && Array.isArray(v)) { v = v.filter(function (t) { return generatedTags.indexOf(t) == -1; }).concat(currentNode.tagtemplates || []); }
             if (Array.isArray(v)) { v = v.join(', '); }
             Q('dp10devicevalue').value = v;
             p10editdevicevalueValidate();
@@ -15385,6 +15521,7 @@
             var x = '';
             if ((args.hide & 8) != 0) { x += addHtmlValue("Name", mname); } // If title bar is hidden, display the mesh name here
             x += addHtmlValue("Description", addLinkConditional(((currentMesh.desc && currentMesh.desc != '')?EscapeHtml(currentMesh.desc):('<i>' + "None" + '</i>')), 'p20editmesh(2)', (meshrights & 1) != 0));
+            if (currentMesh.mtype == 2) { x += addHtmlValue("Auto Tags", addLinkConditional(((currentMesh.autotagcfg != null) ? EscapeHtml(autoTagsSummary(currentMesh.autotagcfg)) : ('<i>' + "None" + '</i>')), 'showAutoTagsDialogMesh()', (meshrights & 1) != 0)); }
 
             // Display group type
             x += addHtmlValue("Type", meshtype);

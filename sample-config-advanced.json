@@ -364,7 +364,7 @@
         },
         "rules": [
           { "tag": "Activated", "color": "green", "if": { "field": "winact.activated", "equals": true } },
-          { "tag": "NotActivated", "color": "red", "if": { "all": [ { "field": "platform", "equals": "windows" }, { "field": "winact.activated", "notEquals": true } ] } },
+          { "tag": "NotActivated", "color": "red", "if": { "field": "winact.activated", "equals": false } },
           { "tag": "SN:{hardware.identifiers.bios_serial|upper}" },
           { "tag": "Model:{hardware.identifiers.product_name|truncate:30}" },
           { "tag": "LAN:{defaultRouteIp}", "color": "blue" },

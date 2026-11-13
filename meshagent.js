@@ -942,6 +942,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     }
 
     function completeAgentConnection3(device, mesh) {
+        obj.autoTagNodeLayer = autoTags.nodeLayer(device); // This device's own auto tag settings
+
         // Check if this agent is already connected
         const dupAgent = parent.wsagents[obj.dbNodeKey];
         parent.wsagents[obj.dbNodeKey] = obj;
@@ -1567,7 +1569,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     // Values from the auto-tag collectors the server sent this agent (see autotags.js)
                     if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) break;
                     const autoTagRules = getAutoTagRules();
-                    if ((autoTagRules == null) || !autoTagRules.hasCollectors) { obj.send(JSON.stringify({ action: 'autotagcollect', collectors: {} })); break; } // Collectors from an old config, stop them.
+                    if ((autoTagRules == null) || !autoTagRules.hasCollectors) { obj.autoTagCollectorsSent = '{}'; obj.send(JSON.stringify({ action: 'autotagcollect', collectors: {} })); break; } // Collectors from an old config, stop them.
                     const data = autoTags.cleanCollected(autoTagRules, command.data);
                     if (data == null) break;
                     if ((obj.autoTagInputsLoaded === true) && (JSON.stringify(data) == JSON.stringify(obj.autoTagCollected || {}))) break;
@@ -1999,7 +2001,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         // which has no collectors yet, so send them.
         const autoTagRules = getAutoTagRules();
         if ((autoTagRules != null) && (obj.autoTagInputsLoaded !== true)) { whenAutoTagInputsLoaded(autoTagRules, function () { ChangeAgentCoreInfo(command); }); return; }
-        if ((command.caps != null) && (obj.autoTagCoreSeen !== command.value)) { obj.autoTagCoreSeen = command.value; sendAutoTagCollectors(autoTagRules); }
+        if ((command.caps != null) && (obj.autoTagCoreSeen !== command.value)) { obj.autoTagCoreSeen = command.value; delete obj.autoTagCollectorsSent; sendAutoTagCollectors(autoTagRules); }
 
         // If the device is pending a change, hold.
         if (obj.deviceChanging === true) { setTimeout(function () { ChangeAgentCoreInfo(command); }, 100); return; }
@@ -2097,7 +2099,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 // Remove old volumes and BitLocker data, this is part of sysinfo.
                 delete device.volumes;
 
-                // Automatic tags, last so the rules see the values set above
+                // Automatic tags, last so the rules see the values set above. If the device's or its group's auto tag settings
+                // changed without this connection being told (moved to another group, an edit made through another server),
+                // reload them first.
+                const autoTagLayer = autoTags.nodeLayer(device), autoTagKey = JSON.stringify([autoTagLayer, mesh.autotagcfg || null]);
+                if (obj.autoTagLayerKey === undefined) { obj.autoTagLayerKey = JSON.stringify([obj.autoTagNodeLayer || null, mesh.autotagcfg || null]); }
+                if (autoTagKey !== obj.autoTagLayerKey) { obj.autoTagLayerKey = autoTagKey; obj.autoTagNodeLayer = autoTagLayer; resetAutoTagInputs(); setTimeout(function () { obj.autoTagConfigChanged(null); }, 0); }
                 if (applyAutoTags(device, mesh)) { change = 1; }
 
                 // If there are changes, event the new device
@@ -2205,8 +2212,27 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
     // --- Automatic device tags, see autotags.js ---
 
-    // Compiled auto-tag rules for this domain, or null when it has none.
-    function getAutoTagRules() { return autoTags.getRules(domain, function (msg) { console.log(msg); }); }
+    // Compiled auto-tag rules for this device: config.json's, its group's and its own, or null when none apply.
+    function getAutoTagRules() { return autoTags.getRulesFor(domain, parent.meshes[obj.dbMeshKey], obj.autoTagNodeLayer, function (msg) { console.log(msg); }); }
+
+    // Forget the loaded inputs, so they are loaded again for the current rules (which may read other sysinfo paths or collectors).
+    function resetAutoTagInputs() {
+        if (obj.autoTagLoadWaiters != null) { obj.autoTagReloadAfterLoad = true; return; } // A load is running, it starts over when done
+        delete obj.autoTagInputsLoaded;
+        obj.autoTagSysInfo = undefined;
+        obj.autoTagCollected = undefined;
+    }
+
+    // Called when this device's or its group's auto tag settings change (from the web UI, see meshuser.js). With the device,
+    // its settings are taken from it and its tags were already worked out; without, the tags are worked out again here.
+    obj.autoTagConfigChanged = function (device) {
+        if (device != null) { obj.autoTagNodeLayer = autoTags.nodeLayer(device); }
+        const mesh = parent.meshes[obj.dbMeshKey];
+        obj.autoTagLayerKey = JSON.stringify([obj.autoTagNodeLayer || null, (mesh && mesh.autotagcfg) || null]);
+        resetAutoTagInputs();
+        sendAutoTagCollectors(getAutoTagRules());
+        if (device == null) { UpdateAutoTags(); }
+    };
 
     // Load what the rules read besides the node: the parts of the system information document they use, and the values the
     // agent's collectors last reported. Done once per connection; after that the sysinfo and autotagdata handlers keep both current.
@@ -2217,6 +2243,17 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         var pending = 2;
         const done = function () {
             if (--pending > 0) return;
+            if (obj.autoTagReloadAfterLoad === true) {
+                // The settings changed while loading: load again for the new rules, then run everything that was waiting.
+                delete obj.autoTagReloadAfterLoad;
+                const pendingWaiters = obj.autoTagLoadWaiters;
+                delete obj.autoTagLoadWaiters;
+                obj.autoTagSysInfo = undefined; obj.autoTagCollected = undefined;
+                const newRules = getAutoTagRules();
+                if (newRules == null) { obj.autoTagInputsLoaded = true; for (var j in pendingWaiters) { pendingWaiters[j](); } return; }
+                whenAutoTagInputsLoaded(newRules, function () { for (var j in pendingWaiters) { pendingWaiters[j](); } });
+                return;
+            }
             obj.autoTagInputsLoaded = true;
             const waiters = obj.autoTagLoadWaiters;
             delete obj.autoTagLoadWaiters;
@@ -2238,21 +2275,21 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         return autoTags.update(rules, device, obj.autoTagSysInfo, mesh, obj.autoTagCollected);
     }
 
-    // Send the collectors the agent should run. An empty set stops collectors a previous config started, since the core keeps
-    // running across server restarts.
+    // Send the collectors the agent should run, when they differ from what was last sent. An empty set stops collectors an
+    // earlier config started, since the core keeps running across server restarts.
     function sendAutoTagCollectors(rules) {
-        const collectors = autoTags.agentCollectors(rules);
-        if ((collectors == null) && (obj.autoTagCollectorsSent !== true)) return;
-        obj.autoTagCollectorsSent = (collectors != null);
-        obj.send(JSON.stringify({ action: 'autotagcollect', collectors: (collectors || {}) }));
+        const json = JSON.stringify(autoTags.agentCollectors(rules) || {});
+        if (json === obj.autoTagCollectorsSent) return;
+        if ((json == '{}') && (obj.autoTagCollectorsSent == null)) return; // Nothing sent yet and nothing to run
+        obj.autoTagCollectorsSent = json;
+        obj.send('{"action":"autotagcollect","collectors":' + json + '}');
     }
 
     // Re-run the rules after an input changed outside of a core info update (new system information, new collector values).
     function UpdateAutoTags() {
         if ((obj.agentInfo == null) || (obj.agentInfo.capabilities & 0x40)) return;
         const rules = getAutoTagRules();
-        if (rules == null) return;
-        if (obj.autoTagInputsLoaded !== true) { whenAutoTagInputsLoaded(rules, UpdateAutoTags); return; }
+        if ((rules != null) && (obj.autoTagInputsLoaded !== true)) { whenAutoTagInputsLoaded(rules, UpdateAutoTags); return; }
         const mesh = parent.meshes[obj.dbMeshKey];
         if (mesh == null) return;
 
