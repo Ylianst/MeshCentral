@@ -44,7 +44,9 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_REMOTECOMMAND = 131072;
 var MESHRIGHT_NOSOFTWARE = 8388608;
+var MESHRIGHT_SOFTWAREMANAGE = 16777216;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
@@ -851,7 +853,7 @@ else {
 
 
 // MeshAgent JavaScript Core Module. This code is sent to and running on the mesh agent.
-var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot() }; // Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
+var meshCoreObj = { action: 'coreinfo', value: (require('MeshAgent').coreHash ? ((process.versions.compileTime ? process.versions.compileTime : '').split(', ')[1].replace('  ', ' ') + ', ' + crc32c(require('MeshAgent').coreHash)) : ('MeshCore v6')), caps: 14, root: require('user-sessions').isRoot(), swcaps: ['winupdates', 'installwinupdates', 'installmsi', 'installpackage', 'installflatpak'] }; // swcaps: Software tab features this core supports. Capability bitmask: 1 = Desktop, 2 = Terminal, 4 = Files, 8 = Console, 16 = JavaScript, 32 = Temporary Agent, 64 = Recovery Agent
 
 // Get the operating system description string
 try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreObjChanged(); }); } catch (ex) { }
@@ -1822,7 +1824,14 @@ function handleServerCommand(data) {
                 // Uninstall is for full administrators of the device only, the inventory for users without the No Software restriction, same as the web UI
                 var denied = (typeof data.rights != 'number');
                 if (!denied && (data.rights != MESHRIGHT_ADMIN)) { denied = (((data.rights & MESHRIGHT_NOSOFTWARE) != 0) || (data.type == 'uninstallapp') || (data.type == 'uninstallstoreapp')); }
-                if (denied) { sendSoftwareResponse({ success: false, error: 'Denied' }); break; }
+                // Installing updates needs Manage Software, installing a package (code that runs as SYSTEM/root) also needs Remote Commands
+                var swInstallTypes = { installwinupdates: false, installmsi: true, installpackage: true, installflatpak: true };
+                if (!denied && (data.rights != MESHRIGHT_ADMIN) && (swInstallTypes[data.type] != null)) { denied = (((data.rights & MESHRIGHT_SOFTWAREMANAGE) == 0) || ((swInstallTypes[data.type] === true) && ((data.rights & MESHRIGHT_REMOTECOMMAND) == 0))); }
+                if (denied) {
+                    if ((data.type == 'winupdates') || (swInstallTypes[data.type] != null)) { mesh.SendCommand({ action: 'software', type: data.type, value: JSON.stringify({ done: true, error: 'Denied' }), sessionid: data.sessionid }); } // Typed reply so the page stops waiting
+                    else { sendSoftwareResponse({ success: false, error: 'Denied' }); }
+                    break;
+                }
                 if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
@@ -1845,6 +1854,61 @@ function handleServerCommand(data) {
                     } else {
                         sendSoftwareResponse({ success: false, error: "Not supported" });
                     }
+                } else if (data.type == 'winupdates') {
+                    // List available Windows Updates using the Windows Update Agent COM API (no external process)
+                    var sendWuList = function (r) { mesh.SendCommand({ action: 'software', type: 'winupdates', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendWuList({ error: "Windows Update is only supported on Windows devices" }); return; }
+                    try {
+                        var wu = require('win-updates');
+                        var wuOnline = (data.online === true);
+                        wu.getAvailableUpdates({ online: wuOnline }).then(function (u) { sendWuList({ updates: u, online: wuOnline, installing: wu.isInstallInProgress() }); }, function (e) { sendWuList({ error: e.toString(), online: wuOnline }); });
+                    } catch (e) { sendWuList({ error: e.toString() }); }
+                } else if (data.type == 'installwinupdates') {
+                    // Download and install the selected Windows Updates using the Windows Update Agent COM API (no external process)
+                    var sendWuInstall = function (r) { mesh.SendCommand({ action: 'software', type: 'installwinupdates', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendWuInstall({ error: "Windows Update is only supported on Windows devices" }); return; }
+                    var ids = [];
+                    if (Array.isArray(data.updateids)) { for (var i = 0; i < data.updateids.length; i++) { if ((typeof data.updateids[i] == 'string') && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(data.updateids[i])) { ids.push(data.updateids[i]); } } }
+                    if (ids.length == 0) { sendWuInstall({ error: "No valid updates selected" }); return; }
+                    try {
+                        var wui = require('win-updates');
+                        if (wui.isInstallInProgress()) { sendWuInstall({ error: "An update installation is already in progress" }); return; }
+                        wui.installUpdates(ids).then(function (r) { r.done = true; sendWuInstall(r); }, function (e) { sendWuInstall({ done: true, error: e.toString() }); });
+                        sendWuInstall({ status: 'started', count: ids.length });
+                    } catch (e) { sendWuInstall({ error: e.toString() }); }
+                } else if (data.type == 'installmsi') {
+                    // Download an MSI from the server and install it through the Windows Installer API (no msiexec.exe process)
+                    var sendMsi = function (r) { r.name = data.name; mesh.SendCommand({ action: 'software', type: 'installmsi', value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'win32') { sendMsi({ done: true, error: "MSI install is only supported on Windows devices" }); return; }
+                    if ((typeof data.urlpath != 'string') || (data.urlpath.charAt(0) != '/') || (typeof data.hash != 'string') || (/^[0-9a-fA-F]{96}$/.test(data.hash) == false)) { sendMsi({ done: true, error: "Invalid request" }); return; }
+                    try {
+                        var msiMod = require('win-msi');
+                        if (msiMod.isBusy()) { sendMsi({ done: true, error: "An MSI installation is already in progress" }); return; }
+                        msiMod.installFromServer({
+                            url: 'http' + getServerTargetUrlEx('*' + data.urlpath).substring(2),
+                            hash: data.hash,
+                            servertlshash: data.servertlshash,
+                            properties: (typeof data.properties == 'string') ? data.properties : null,
+                            status: function (state) { sendMsi({ status: state }); }
+                        }).then(function (r) { r.done = true; sendMsi(r); }, function (e) { sendMsi({ done: true, error: e.toString() }); });
+                    } catch (e) { sendMsi({ done: true, error: e.toString() }); }
+                } else if ((data.type == 'installpackage') || (data.type == 'installflatpak')) {
+                    // Linux: install a package uploaded to the server (deb, rpm, flatpak, flatpakref, AppImage) or a Flatpak app by id.
+                    // The package tool is started directly, never through a shell.
+                    var sendPkg = function (r) { r.name = data.name; r.kind = data.kind; mesh.SendCommand({ action: 'software', type: data.type, value: JSON.stringify(r), sessionid: data.sessionid }); };
+                    if (process.platform != 'linux') { sendPkg({ done: true, error: "Package install is only supported on Linux devices" }); return; }
+                    try {
+                        var pkgMod = require('linux-software');
+                        if (pkgMod.isBusy()) { sendPkg({ done: true, error: "A package installation is already in progress" }); return; }
+                        var pkgStatus = function (state) { sendPkg({ status: state }); };
+                        var pkgDone = function (r) { r.done = true; sendPkg(r); }, pkgFail = function (e) { sendPkg({ done: true, error: e.toString() }); };
+                        if (data.type == 'installflatpak') {
+                            pkgMod.installFlatpak(data.remote, data.appid, pkgStatus).then(pkgDone, pkgFail);
+                        } else {
+                            if ((typeof data.urlpath != 'string') || (data.urlpath.charAt(0) != '/') || (typeof data.hash != 'string') || (/^[0-9a-fA-F]{96}$/.test(data.hash) == false)) { sendPkg({ done: true, error: "Invalid request" }); return; }
+                            pkgMod.installFromServer({ url: 'http' + getServerTargetUrlEx('*' + data.urlpath).substring(2), hash: data.hash, kind: data.kind, name: data.name, servertlshash: data.servertlshash, status: pkgStatus }).then(pkgDone, pkgFail);
+                        }
+                    } catch (e) { sendPkg({ done: true, error: e.toString() }); }
                 } else if (data.type == 'installedstoreapps') {
                     if (process.platform != 'win32') {
                         sendSoftwareResponse({ success: false, error: "Installed Store Apps is only supported on Windows devices" });

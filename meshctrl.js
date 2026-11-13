@@ -626,6 +626,7 @@ if (args['_'].length == 0) {
                         console.log("      65536 = No Remote Desktop           131072 = Remote Commands        ");
                         console.log("     262144 = Reset / Power off          4194304 = No Registry            ");
                         console.log("    8388608 = No Software                                                 ");
+                        console.log("   16777216 = Manage Software (install updates, uninstall)               ");
                         break;
                     }
                     case 'removefromusergroup': {
@@ -763,6 +764,7 @@ if (args['_'].length == 0) {
                         console.log("  --nofiles              - Hide the files tab from this user.");
                         console.log("  --noregistry           - Hide the registry tab from this user.");
                         console.log("  --nosoftware           - Hide the software tab from this user.");
+                        console.log("  --softwaremanage       - Allow installing updates and uninstalling software.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
                         console.log("  --limitedevents        - User can only see his own events.");
                         console.log("  --chatnotify           - Allow chat and notification options.");
@@ -811,6 +813,7 @@ if (args['_'].length == 0) {
                         console.log("  --nofiles              - Hide the files tab from this user.");
                         console.log("  --noregistry           - Hide the registry tab from this user.");
                         console.log("  --nosoftware           - Hide the software tab from this user.");
+                        console.log("  --softwaremanage       - Allow installing updates and uninstalling software.");
                         console.log("  --noamt                - Hide the Intel AMT tab from this user.");
                         console.log("  --limitedevents        - User can only see his own events.");
                         console.log("  --chatnotify           - Allow chat and notification options.");
@@ -1708,6 +1711,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
+                if (args.softwaremanage) { meshrights |= 16777216; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }
@@ -1737,6 +1741,7 @@ function serverConnect() {
                 if (args.nofiles) { meshrights |= 1024; }
                 if (args.noregistry) { meshrights |= 4194304; }
                 if (args.nosoftware) { meshrights |= 8388608; }
+                if (args.softwaremanage) { meshrights |= 16777216; }
                 if (args.noamt) { meshrights |= 2048; }
                 if (args.limiteddesktop) { meshrights |= 4096; }
                 if (args.limitedevents) { meshrights |= 8192; }

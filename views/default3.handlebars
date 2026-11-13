@@ -1728,6 +1728,9 @@
                 <div id="p18toolbar" class="areaHead d-flex flex-wrap">
                     <div class="d-flex align-items-center">
                         <input type="button" id="p18RefreshBtn" class="btn btn-primary btn-sm me-1" value="Refresh" onclick="loadInstalledApps()" />
+                        <input type="button" id="p18WinUpdatesBtn" class="btn btn-primary btn-sm me-1" value="Windows Updates" onclick="loadWinUpdates()" style="display:none" />
+                        <input type="button" id="p18InstallMsiBtn" class="btn btn-primary btn-sm me-1" value="Install MSI..." onclick="showInstallMsiDialog()" style="display:none" />
+                        <input type="button" id="p18InstallPkgBtn" class="btn btn-primary btn-sm me-1" value="Install Package..." onclick="showInstallPackageDialog()" style="display:none" />
                         <input type="text" id="p18SearchInput" class="form-control-sm" placeholder="Search software..." style="width:250px" onkeyup="filterInstalledApps()" />
                         <label style="margin-left:15px">
                             <input type="checkbox" id="p18ShowStore" onchange="toggleStoreApps()" /> Show Store Apps
@@ -1736,6 +1739,7 @@
                     </div>
                 </div>
                 <div id="p18info" style="overflow-y:auto;padding:10px">
+                    <div id="p18msihtml"></div><div id="p18wuhtml"></div>
                     <div id="p18html">
                         <div style="text-align:center;padding:50px">
                             <i>Click Refresh to load installed software...</i>
@@ -3715,6 +3719,8 @@
                     break;
                 }
                 case 'software': {
+                    if ((message.type == 'winupdates') || (message.type == 'installwinupdates')) { handleWinUpdatesResponse(message); break; }
+                    if ((message.type == 'installmsi') || (message.type == 'installpackage') || (message.type == 'installflatpak')) { handleMsiResponse(message); break; }
                     try {
                         var softwareData = message.value;
                         if (JSON.parse(message.value).error) {
@@ -8978,6 +8984,16 @@
                 }
 
                 // Clear installedAppsData for Software tab
+                winUpdatesData = null;
+                winUpdatesInstalling = false;
+                QH('p18wuhtml', '');
+                QV('p18WinUpdatesBtn', isWindowsAgentNode(currentNode));
+                QV('p18InstallMsiBtn', isWindowsAgentNode(currentNode) && canInstallMsi(currentNode));
+                QV('p18InstallPkgBtn', isLinuxAgentNode(currentNode) && canInstallMsi(currentNode));
+                msiInstalling = false;
+                msiStopWait();
+                winUpdatesStopWait();
+                QH('p18msihtml', '');
                 installedAppsData = { desktop: [], store: [] };
                 installedAppsLoading = false;
                 installedAppsLoadingType = 0;
@@ -9730,6 +9746,7 @@
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
+            if (rights & 16777216) str.push("Manage Software");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -9765,6 +9782,7 @@
             if (rights & 524288) str.push("Sharing");
             if (rights & 1048576) str.push("Details");
             if (rights & 2097152) str.push("Relay");
+            if (rights & 16777216) str.push("Manage Software");
             if (str.length == 0) return "No Rights";
             return str.join(', ');
         }
@@ -16185,7 +16203,7 @@
                     x += '<td>' + EscapeHtml(app.location || '-') + (app.arch ? ' (' + EscapeHtml(app.arch) + ')' : '') + '</td>';
                     x += '<td style="text-align:center">';
                     var userRights = GetNodeRights(currentNode);				
-					if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+					if (hasUninstall && (GetNodeRights(currentNode) == 0xFFFFFFFF)) {
 						x += '<button class="btn btn-sm btn-secondary" onclick="uninstallDesktopApp(\'' + encodeURIComponent(app.uninstall) + '\')">Uninstall</button>';
 					} else {
 						x += '<span style="color:var(--bs-secondary)">-</span>';
@@ -16239,7 +16257,7 @@
 						x += '<td style="text-align:center">' + scopeBadge + '</td>';
 						x += '<td style="text-align:center">';
 						var userRights = GetNodeRights(currentNode);
-						if (hasUninstall && (userRights == 0xFFFFFFFF)) {
+						if (hasUninstall && (GetNodeRights(currentNode) == 0xFFFFFFFF)) {
 							x += '<button class="btn btn-sm btn-secondary" onclick="uninstallStoreApp(\'' + encodeURIComponent(app.name) + '\')">Remove</button>';
 						} else {
 							x += '<span style="color:var(--bs-secondary)">-</span>';
@@ -16316,6 +16334,367 @@
                 }
             } catch(e) {}
         }
+
+        // ============================================
+        // WINDOWS UPDATES (Panel 18)
+        // Listing and installing is done by the agent through the Windows Update Agent COM API.
+        // ============================================
+
+        var winUpdatesData = null; // null = not loaded, otherwise array of available updates
+        var winUpdatesInstalling = false;
+
+        function isWindowsAgentNode(node) {
+            if ((node == null) || (node.agent == null)) return false;
+            var id = node.agent.id;
+            return ([1, 2, 3, 4, 21, 22, 42, 43, 10003, 10004, 10006, 11000, 11001, 11002].indexOf(id) >= 0);
+        }
+
+        function canManageSoftware(node) {
+            if ((node == null) || (serverinfo.softwaremanagement === false)) return false;
+            var rights = GetNodeRights(node);
+            return ((rights == 0xFFFFFFFF) || ((rights & 16777216) != 0));
+        }
+
+        var winUpdatesOnline = false;     // True when the shown list comes from an online scan
+        var winUpdatesWait = null;        // { timer, start } while waiting for the device
+
+        function winUpdatesStopWait() { if (winUpdatesWait != null) { clearInterval(winUpdatesWait.timer); winUpdatesWait = null; } }
+
+        // online: false uses the result of the last scan Windows made (a few seconds), true asks Windows to scan now (can take several minutes)
+        function loadWinUpdates(online) {
+            if ((currentNode == null) || (isWindowsAgentNode(currentNode) == false)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000"><b>' + "Device is offline." + '</b></div>'); return; }
+            online = (online === true);
+            winUpdatesData = null;
+            winUpdatesStopWait();
+            var nodeid = currentNode._id, limit = online ? (20 * 60) : 120; // Seconds before giving up
+            var msg = online ? "Windows is checking online for updates, this can take several minutes..." : "Loading the result of the last Windows update check...";
+            var show = function () {
+                var secs = Math.floor((Date.now() - winUpdatesWait.start) / 1000);
+                if (secs >= limit) { winUpdatesStopWait(); QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</div>'); return; }
+                QH('p18wuhtml', '<div style="padding:10px"><i>' + EscapeHtml(msg) + '</i> <span style="color:gray">(' + secs + 's)</span></div>');
+            };
+            winUpdatesWait = { start: Date.now(), timer: setInterval(function () { if ((currentNode == null) || (currentNode._id != nodeid)) { winUpdatesStopWait(); return; } show(); }, 1000) };
+            show();
+            var cmd = { action: 'software', nodeid: nodeid, type: 'winupdates' };
+            if (online) { cmd.online = true; }
+            meshserver.send(cmd);
+        }
+
+        function handleWinUpdatesResponse(message) {
+            if ((currentNode == null) || (message.nodeid != currentNode._id)) return;
+            var r = null;
+            try { r = JSON.parse(message.value); } catch (ex) { return; }
+            if (r == null) return;
+            if (message.type == 'winupdates') {
+                winUpdatesStopWait();
+                if (r.error) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</div>'); return; }
+                winUpdatesOnline = (r.online === true);
+                winUpdatesData = Array.isArray(r.updates) ? r.updates : [];
+                winUpdatesInstalling = (r.installing === true);
+                displayWinUpdates();
+            } else if (message.type == 'installwinupdates') {
+                if (r.status == 'started') {
+                    winUpdatesInstalling = true;
+                    QH('p18Status', EscapeHtml(format("Installing {0} Windows update(s)...", r.count)));
+                    displayWinUpdates();
+                    return;
+                }
+                winUpdatesInstalling = false;
+                if (r.error) { QH('p18Status', '<span>' + "ERROR: " + EscapeHtml(r.error) + '</span>'); displayWinUpdates(); return; }
+                displayWinUpdateResults(r);
+            }
+        }
+
+        function displayWinUpdates() {
+            if (winUpdatesData == null) { QH('p18wuhtml', ''); return; }
+            var manage = canManageSoftware(currentNode), cols = manage ? 5 : 4;
+            var x = '<div style="margin-bottom:20px">';
+            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Available Windows Updates" + ' (' + winUpdatesData.length + ')</h4>';
+            x += '<div style="padding:0 0 8px 0;font-size:12px;color:gray">' + (winUpdatesOnline ? "Result of an online check made just now." : "Result of the last update check made by Windows.") + ' ' + '<button class="btn btn-sm btn-secondary" onclick="loadWinUpdates(true)">' + "Check online" + '</button>' + '</div>';
+            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
+            if (manage) { x += '<th style="padding:8px;border:1px solid #ddd;width:30px"><input type=checkbox onclick="p18wuSelectAll(this.checked)"' + (winUpdatesInstalling ? ' disabled' : '') + ' /></th>'; }
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Severity" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Downloaded" + '</th>';
+            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Mandatory" + '</th>';
+            x += '</tr></thead><tbody>';
+            if (winUpdatesData.length == 0) {
+                x += '<tr><td colspan="' + cols + '" style="text-align:center;color:gray;padding:20px">' + "No Windows updates available" + '</td></tr>';
+            } else {
+                for (var i = 0; i < winUpdatesData.length; i++) {
+                    var u = winUpdatesData[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
+                    x += '<tr style="background-color:' + rowColor + '">';
+                    if (manage) { x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee"><input type=checkbox class=p18wucheck value="' + EscapeHtml(u.updateID || '') + '"' + ((winUpdatesInstalling || !u.updateID) ? ' disabled' : '') + ' /></td>'; }
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || '-') + '</td>';
+                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.severity || '-') + '</td>';
+                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isDownloaded ? "Yes" : "No") + '</td>';
+                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isMandatory ? "Yes" : "No") + '</td>';
+                    x += '</tr>';
+                }
+            }
+            x += '</tbody></table>';
+            if (winUpdatesInstalling) {
+                x += '<div style="padding:8px"><i>' + "Windows Update installation in progress on this device..." + '</i></div>';
+            } else if (manage && (winUpdatesData.length > 0)) {
+                x += '<div style="padding:8px 0"><button class="btn btn-sm btn-primary" onclick="installSelectedWinUpdates()">' + "Install Selected" + '</button></div>';
+            }
+            x += '</div>';
+            QH('p18wuhtml', x);
+        }
+
+        function p18wuSelectAll(v) {
+            var c = document.getElementsByClassName('p18wucheck');
+            for (var i = 0; i < c.length; i++) { if (!c[i].disabled) { c[i].checked = v; } }
+        }
+
+        function installSelectedWinUpdates() {
+            if (xxdialogMode || (currentNode == null) || winUpdatesInstalling || !canManageSoftware(currentNode)) return;
+            var ids = [], titles = [], c = document.getElementsByClassName('p18wucheck');
+            for (var i = 0; i < c.length; i++) {
+                if (c[i].checked) {
+                    ids.push(c[i].value);
+                    for (var j in winUpdatesData) { if (winUpdatesData[j].updateID == c[i].value) { titles.push(winUpdatesData[j].title); } }
+                }
+            }
+            if (ids.length == 0) { QH('p18Status', "No updates selected"); return; }
+            var x = '<div style="max-width:500px"><p><b>' + EscapeHtml(format("Install {0} Windows update(s) on this device?", ids.length)) + '</b></p>';
+            x += '<div style="background-color:#f5f5f5;padding:10px;border-radius:5px;font-size:11px;max-height:150px;overflow-y:auto">';
+            for (var i in titles) { x += EscapeHtml(titles[i]) + '<br />'; }
+            x += '</div><p style="margin-top:10px"><i>' + "Updates are downloaded and installed by Windows Update on the device. The device will not be restarted automatically." + '</i></p></div>';
+            var nodeid = currentNode._id;
+            setModalContent('xxAddAgent', "Install Windows Updates", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () {
+                meshserver.send({ action: 'software', nodeid: nodeid, type: 'installwinupdates', updateids: ids });
+                QH('p18Status', "Install request sent...");
+            });
+        }
+
+        function displayWinUpdateResults(r) {
+            var x = '<div style="margin-bottom:20px">';
+            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Windows Update Results" + '</h4>';
+            x += '<div style="padding:4px 0 8px 0">' + "Result" + ': <b>' + EscapeHtml(String(r.result)) + '</b>' + ((r.rebootRequired === true) ? (' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>') : '') + '</div>';
+            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:180px">' + "Status" + '</th>';
+            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Code" + '</th>';
+            x += '</tr></thead><tbody>';
+            var list = Array.isArray(r.updates) ? r.updates : [];
+            for (var i = 0; i < list.length; i++) {
+                var u = list[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
+                x += '<tr style="background-color:' + rowColor + '">';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || u.updateID || '-') + '</td>';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.status || '-') + (u.rebootRequired ? ' (' + "restart" + ')' : '') + '</td>';
+                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.hresult || '-') + '</td>';
+                x += '</tr>';
+            }
+            x += '</tbody></table>';
+            x += '<div style="padding:8px 0"><button class="btn btn-sm btn-secondary" onclick="loadWinUpdates()">' + "Check for Updates" + '</button></div></div>';
+            QH('p18wuhtml', x);
+            QH('p18Status', EscapeHtml("Windows Update" + ': ' + String(r.result)));
+        }
+
+        // ============================================
+        // END WINDOWS UPDATES
+        // ============================================
+
+        // ============================================
+        // MSI INSTALL (Panel 18)
+        // The package is uploaded to the server, then the agent downloads it, checks its hash and installs
+        // it through the Windows Installer API. Needs "Manage Software" and "Remote Commands" rights.
+        // ============================================
+
+        var msiInstalling = false;
+        var msiWaitTimer = null; // Fires if the device never answers an install request
+
+        function msiStopWait() { if (msiWaitTimer != null) { clearTimeout(msiWaitTimer); msiWaitTimer = null; } }
+        function msiStartWait() {
+            msiStopWait();
+            msiWaitTimer = setTimeout(function () {
+                msiWaitTimer = null;
+                if (msiInstalling) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</span>'); }
+            }, 60000);
+        }
+
+        function canInstallMsi(node) {
+            if (canManageSoftware(node) == false) return false;
+            var rights = GetNodeRights(node);
+            return ((rights == 0xFFFFFFFF) || ((rights & 131072) != 0));
+        }
+
+        function showInstallMsiDialog() {
+            if (xxdialogMode || (currentNode == null) || msiInstalling || !canInstallMsi(currentNode)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18Status', "Device is offline."); return; }
+            var x = '<div style="max-width:500px">';
+            x += '<p>' + "Select a Windows Installer package (.msi) to install on this device." + '</p>';
+            x += '<input type=file id=p18msifile class="form-control form-control-sm" accept=".msi" onchange="p18msiValidate()" /><br /><br />';
+            x += '<label for=p18msiprops>' + "MSI properties (optional)" + '</label><br />';
+            x += '<input type=text id=p18msiprops class="form-control form-control-sm" maxlength=1024 placeholder="ALLUSERS=1 INSTALLDIR=&quot;C:\\Program Files\\App&quot;" onkeyup="p18msiValidate()" />';
+            x += '<div id=p18msierror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<p><i>' + "The package is installed silently by the Windows Installer service. The device will not be restarted automatically." + '</i></p>';
+            x += '</div>';
+            var nodeid = currentNode._id;
+            setModalContent('xxAddAgent', "Install MSI Package", x);
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', function () { p18msiUpload(nodeid); });
+            p18msiValidate();
+        }
+
+        // Same check as the server (common.validateMsiProperties), a single pass instead of a regular expression
+        function p18msiPropsValid(v) {
+            if ((typeof v != 'string') || (v.length > 1024)) return false;
+            var i = 0, n = v.length, isSpace = function (c) { return (c == ' ') || (c == '\t') || (c == '\r') || (c == '\n'); };
+            while (i < n) {
+                while ((i < n) && isSpace(v[i])) { i++; }
+                if (i >= n) break;
+                var start = i, c = v[i];
+                if (!(((c >= 'A') && (c <= 'Z')) || (c == '_'))) return false; // Public properties are upper case
+                i++;
+                while ((i < n) && (((v[i] >= 'A') && (v[i] <= 'Z')) || ((v[i] >= '0') && (v[i] <= '9')) || (v[i] == '_') || (v[i] == '.'))) { i++; }
+                if (v.substring(start, i) == 'REBOOT') return false; // Always forced to ReallySuppress by the agent
+                if (v[i] != '=') return false;
+                i++;
+                if (v[i] == '"') { var e = v.indexOf('"', i + 1); if (e < 0) return false; i = e + 1; }
+                else { while ((i < n) && !isSpace(v[i]) && (v[i] != '"')) { i++; } }
+                if ((i < n) && !isSpace(v[i])) return false; // Pairs are separated by white space
+            }
+            return true;
+        }
+
+        function p18msiValidate() {
+            var f = Q('p18msifile'), props = Q('p18msiprops');
+            if ((f == null) || (props == null)) return;
+            var err = '';
+            if ((f.files.length == 1) && (f.files[0].name.toLowerCase().endsWith('.msi') == false)) { err = "Only .msi files can be installed"; }
+            else if (!p18msiPropsValid(props.value)) { err = "Use uppercase NAME=value pairs, quote values with spaces. REBOOT can't be set."; }
+            QH('p18msierror', EscapeHtml(err));
+            QE('idx_dlgOkButton', (f.files.length == 1) && (err == ''));
+        }
+
+        function p18msiUpload(nodeid) {
+            var f = Q('p18msifile'), props = Q('p18msiprops');
+            if ((f == null) || (f.files.length != 1)) return;
+            p18pkgUpload(nodeid, f.files[0], 'installmsi', props.value.trim());
+        }
+
+        function p18pkgUpload(nodeid, file, type, properties) {
+            var fd = new FormData();
+            fd.append('auth', authCookie);
+            fd.append('files', file, file.name);
+            msiInstalling = true;
+            p18msiShow('<i>' + EscapeHtml(format("Uploading {0}...", file.name)) + '</i>');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'uploadsoftware.ashx');
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { p18msiShow('<i>' + EscapeHtml(format("Uploading {0}... {1}%", file.name, Math.round(e.loaded * 100 / e.total))) + '</i>'); } };
+            xhr.onload = function () {
+                var r = null;
+                try { r = JSON.parse(xhr.responseText); } catch (ex) { }
+                if ((xhr.status != 200) || (r == null) || (r.id == null)) {
+                    msiInstalling = false;
+                    p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(((r != null) && r.error) ? r.error : ("Upload failed" + ' (' + xhr.status + ')')) + '</span>');
+                    return;
+                }
+                p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", r.name)) + '</i>');
+                var cmd = { action: 'software', nodeid: nodeid, type: type, uploadid: r.id };
+                if (properties) { cmd.properties = properties; }
+                meshserver.send(cmd);
+                msiStartWait();
+            };
+            xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + "Upload failed" + '</span>'); };
+            xhr.send(fd);
+        }
+
+        function p18msiShow(html) {
+            QH('p18msihtml', '<div style="margin-bottom:15px;padding:8px;border:1px solid #ddd;border-radius:4px"><b>' + "Software Install" + '</b>: ' + html + '</div>');
+        }
+
+        function handleMsiResponse(message) {
+            if ((currentNode == null) || (message.nodeid != currentNode._id)) return;
+            var r = null;
+            try { r = JSON.parse(message.value); } catch (ex) { return; }
+            if (r == null) return;
+            var name = EscapeHtml(r.name || '');
+            msiStopWait(); // The device answered, installs can then take as long as they need
+            if (r.error) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</span>'); return; }
+            if (r.status == 'downloading') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Device is downloading {0}...", r.name || '')) + '</i>'); return; }
+            if (r.status == 'installing') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Installing {0}...", r.name || '')) + '</i>'); return; }
+            if (r.done) {
+                msiInstalling = false;
+                var x = name + ' &mdash; <b style="color:' + (r.success ? '#28a745' : '#cc0000') + '">' + EscapeHtml(String(r.result)) + '</b> (' + EscapeHtml(String(r.code)) + ')';
+                if (r.rebootRequired) { x += ' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>'; }
+                if (r.log) { x += '<br /><span style="font-size:11px;color:gray">' + "Installer log on device" + ': ' + EscapeHtml(r.log) + '</span>'; }
+                if (r.path) { x += '<br /><span style="font-size:11px;color:gray">' + "Installed to" + ': ' + EscapeHtml(r.path) + '</span>'; }
+                if (r.output) { x += '<details style="margin-top:4px"><summary style="font-size:11px;color:gray;cursor:pointer">' + "Output" + (r.tool ? (' (' + EscapeHtml(r.tool) + ')') : '') + '</summary><pre style="font-size:11px;max-height:200px;overflow:auto;white-space:pre-wrap">' + EscapeHtml(r.output) + '</pre></details>'; }
+                p18msiShow(x);
+                if (r.success) { loadInstalledApps(); }
+            }
+        }
+
+        // ============================================
+        // END MSI INSTALL
+        // ============================================
+
+        // ============================================
+        // LINUX PACKAGE INSTALL (Panel 18)
+        // deb, rpm, flatpak, flatpakref and AppImage files are uploaded to the server, then the agent downloads them,
+        // checks the hash and installs them with the distribution tools. Flatpak apps can also be installed by id.
+        // Needs "Manage Software" and "Remote Commands" rights.
+        // ============================================
+
+        function isLinuxAgentNode(node) {
+            if ((node == null) || (node.agent == null)) return false;
+            return ([5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 18, 19, 20, 24, 25, 26, 27, 28, 32, 33, 35, 36, 37, 40, 41, 45].indexOf(node.agent.id) >= 0);
+        }
+
+        function p18openDialog(title, x, func) {
+            if ((typeof setModalContent == 'function') && (typeof showModal == 'function')) {
+                setModalContent('xxAddAgent', title, x);
+                showModal('xxAddAgentModal', 'idx_dlgOkButton', func);
+            } else {
+                setDialogMode(2, title, 3, func, x);
+            }
+        }
+
+        function showInstallPackageDialog() {
+            if (xxdialogMode || (currentNode == null) || msiInstalling || !canInstallMsi(currentNode)) return;
+            if ((currentNode.conn & 1) == 0) { QH('p18Status', "Device is offline."); return; }
+            var x = '<div style="max-width:500px">';
+            x += '<p>' + "Upload a package to install on this device:" + '<br /><span style="font-size:11px;color:gray">.deb, .rpm, .flatpak, .flatpakref, .AppImage</span></p>';
+            x += '<input type=file id=p18pkgfile class="form-control form-control-sm" accept=".deb,.rpm,.flatpak,.flatpakref,.AppImage,.appimage" style="width:100%" onchange="p18pkgValidate()" /><br /><br />';
+            x += '<p>' + "Or install a Flatpak application by ID:" + '</p>';
+            x += '<table style="width:100%"><tr><td style="width:90px"><label for=p18pkgremote>' + "Remote" + '</label></td><td><input type=text id=p18pkgremote class="form-control form-control-sm" maxlength=64 value="flathub" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr>';
+            x += '<tr><td><label for=p18pkgappid>' + "App ID" + '</label></td><td><input type=text id=p18pkgappid class="form-control form-control-sm" maxlength=255 placeholder="org.mozilla.firefox" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr></table>';
+            x += '<div id=p18pkgerror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<p><i>' + "The package is installed as root with the package tools of the device (apt, dnf, zypper, rpm or flatpak). AppImages are placed in /opt/AppImages." + '</i></p>';
+            x += '</div>';
+            var nodeid = currentNode._id;
+            p18openDialog("Install Package", x, function () {
+                var f = Q('p18pkgfile');
+                if (f.files.length == 1) { p18pkgUpload(nodeid, f.files[0], 'installpackage', null); }
+                else { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", Q('p18pkgappid').value)) + '</i>'); meshserver.send({ action: 'software', nodeid: nodeid, type: 'installflatpak', remote: Q('p18pkgremote').value.trim(), appid: Q('p18pkgappid').value.trim() }); msiStartWait(); }
+            });
+            p18pkgValidate();
+        }
+
+        function p18pkgValidate() {
+            var f = Q('p18pkgfile'), remote = Q('p18pkgremote'), appid = Q('p18pkgappid');
+            if ((f == null) || (remote == null) || (appid == null)) return;
+            var err = '', ok = false, a = appid.value.trim(), r = remote.value.trim();
+            if (f.files.length == 1) {
+                if (/\.(deb|rpm|flatpak|flatpakref|appimage)$/i.test(f.files[0].name) == false) { err = "Unsupported package type"; }
+                else if (a != '') { err = "Choose a file or a Flatpak app ID, not both"; }
+                else { ok = true; }
+            } else if (a != '') {
+                if (/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(r) == false) { err = "Invalid Flatpak remote"; }
+                else if (/^[A-Za-z][A-Za-z0-9_-]*(\.[A-Za-z0-9_-]+){2,}(\/\/[A-Za-z0-9_.-]+)?$/.test(a) == false) { err = "Invalid Flatpak application id"; }
+                else { ok = true; }
+            }
+            QH('p18pkgerror', EscapeHtml(err));
+            QE('idx_dlgOkButton', ok);
+        }
+
+        // ============================================
+        // END LINUX PACKAGE INSTALL
+        // ============================================
 
         // ============================================
         // END INSTALLED SOFTWARE
@@ -18351,6 +18730,7 @@
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20chatnotify>' + "Chat & Notify" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20uninstall>' + "Uninstall Agent / Delete Device" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20commands>' + "Remote Commands" + '</label><br>';
+            x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20softwaremanage>' + "Manage Software" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20resetoff>' + "Reset / Power Off" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20details>' + "Device Details" + '</label><br>';
             x += '<label><input type=checkbox class="form-check-input me-2" onchange=p20validateAddMeshUserDialog() id=p20relay>' + "Use as Relay" + '</label><br>';
@@ -18471,6 +18851,7 @@
                 if ((urights & 524288) && (serverinfo.guestdevicesharing !== false)) { Q('p20guestshare').checked = true; }
                 if (urights & 1048576) { Q('p20details').checked = true; }
                 if (urights & 2097152) { Q('p20relay').checked = true; }
+                if (urights & 16777216) { Q('p20softwaremanage').checked = true; }
             }
 
             p20validateAddMeshUserDialog(userid);
@@ -18522,6 +18903,7 @@
                 if (serverinfo.guestdevicesharing !== false) { Q('p20guestshare').checked = ((devrights & 524288) != 0); }
                 Q('p20details').checked = ((devrights & 1048576) != 0);
                 Q('p20relay').checked = ((devrights & 2097152) != 0);
+                Q('p20softwaremanage').checked = ((devrights & 16777216) != 0);
                 ok = (nodeid != '');
             }
 
@@ -18606,6 +18988,7 @@
             QE('p20resetoff', nc);
             QE('p20details', nc);
             QE('p20relay', nc);
+            QE('p20softwaremanage', nc);
         }
 
         function p20showAddMeshUserDialogEx(b, t) {
@@ -18638,6 +19021,7 @@
                 if ((serverinfo.guestdevicesharing !== false) && (Q('p20guestshare').checked == true) && (Q('p20remoteview').checked || (!Q('p20remoteview').checked && !Q('p20remotelimitedinput').checked))) meshadmin += 524288;
                 if (Q('p20details').checked == true) meshadmin += 1048576;
                 if (Q('p20relay').checked == true) meshadmin += 2097152;
+                if (Q('p20softwaremanage').checked == true) meshadmin += 16777216;
             }
 
             // Clean up incorrect rights. If Remote Control is not selected, remove flags that don't make sense.
@@ -18728,6 +19112,7 @@
                     if ((meshrights & 524288) != 0) r.push("Sharing");
                     if ((meshrights & 1048576) != 0) r.push("Details");
                     if ((meshrights & 2097152) != 0) r.push("Relay");
+                    if ((meshrights & 16777216) != 0) r.push("Manage Software");
                 }
                 if (r.length == 0) { r.push("No Rights"); }
                 var uname = xuserid.split('/')[2];
@@ -19604,7 +19989,14 @@
             161: "Disabled Duo two-factor authentication",
             162: "Started messenger session \"{0}\" from {1} to {2}",
             163: "Removed device {0} from user group {1}",
-            164: "Create file: \"{0}\""
+            164: "Create file: \"{0}\"",
+            165: "Started Windows Update installation of {0} update(s)",
+            166: "Windows Update installation finished: {0}, reboot required: {1}",
+            167: "Uninstall software: {0}",
+            168: "Started MSI installation of {0}",
+            169: "MSI installation of {0} finished: {1}",
+            170: "Started installation of package {0}",
+            171: "Installation of package {0} finished: {1}"
         };
 
         var eventsShortMessageId = {

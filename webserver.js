@@ -5278,6 +5278,87 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Upload a file to the server and then batch upload to many agents
+    // Handle the upload of a software package that will be installed on a device from the Software tab.
+    // Windows: .msi. Linux: .deb, .rpm, .flatpak, .flatpakref, .AppImage. The file signature is checked for each type.
+    // The package is held in the server temporary folder and referenced by a random id that only the uploading user can use.
+    // Rights are checked when the install is requested (see the "software" command, type "installmsi", in meshuser.js).
+    obj.softwareUploads = {};
+    const SOFTWARE_UPLOAD_MAX_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
+    const SOFTWARE_UPLOAD_LIFETIME = 2 * 60 * 60 * 1000; // Packages are removed after 2 hours
+    function handleUploadSoftware(req, res) {
+        const domain = checkUserIpAddress(req, res);
+        if (domain == null) { return; }
+        if (domain.softwaremanagement === false) { res.sendStatus(404); return; }
+        var authUserid = null;
+        if ((req.session != null) && (typeof req.session.userid == 'string')) { authUserid = req.session.userid; }
+        const multiparty = require('multiparty');
+        const form = new multiparty.Form({ maxFilesSize: SOFTWARE_UPLOAD_MAX_SIZE });
+        form.parse(req, function (err, fields, files) {
+            const removeUploads = function () { if ((files != null) && (files.files != null)) { for (var i in files.files) { var p = resolveSafeUploadTempPath(files.files[i].path); if (p != null) { try { obj.fs.unlinkSync(p); } catch (ex) { } } } } };
+            if (err != null) { removeUploads(); res.status(400).json({ error: 'Upload failed' }); return; }
+            // If an authentication cookie is embedded in the form, use that.
+            if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
+                var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+                if ((loginCookie != null) && (loginCookie.ip != null) && !checkCookieIp(loginCookie.ip, req.clientIp)) { loginCookie = null; } // Check cookie IP binding.
+                if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
+            }
+            if ((authUserid == null) || (obj.users[authUserid] == null)) { removeUploads(); res.sendStatus(401); return; }
+            if ((files == null) || (files.files == null) || (files.files.length != 1)) { removeUploads(); res.status(400).json({ error: 'Select one MSI file' }); return; }
+
+            const file = files.files[0];
+            const originalFilename = (typeof file.originalFilename === 'string') ? obj.path.basename(file.originalFilename) : '';
+            const uploadTempPath = resolveSafeUploadTempPath(file.path);
+            if (uploadTempPath == null) { res.sendStatus(400); return; }
+            const lname = originalFilename.toLowerCase();
+            var kind = null;
+            if (lname.endsWith('.msi')) { kind = 'msi'; }
+            else if (lname.endsWith('.deb')) { kind = 'deb'; }
+            else if (lname.endsWith('.rpm')) { kind = 'rpm'; }
+            else if (lname.endsWith('.flatpak')) { kind = 'flatpak'; }
+            else if (lname.endsWith('.flatpakref')) { kind = 'flatpakref'; }
+            else if (lname.endsWith('.appimage')) { kind = 'appimage'; }
+            if ((obj.common.IsFilenameValid(originalFilename) == false) || (kind == null) || (originalFilename.length > 255)) { removeUploads(); res.status(400).json({ error: 'Unsupported package type, use .msi, .deb, .rpm, .flatpak, .flatpakref or .AppImage' }); return; }
+
+            // Check the file signature of the package
+            var header = Buffer.alloc(64);
+            try { const fd = obj.fs.openSync(uploadTempPath, 'r'); obj.fs.readSync(fd, header, 0, 64, 0); obj.fs.closeSync(fd); } catch (ex) { }
+            var signatureOk = false;
+            if (kind == 'msi') { signatureOk = (header.toString('hex', 0, 8) == 'd0cf11e0a1b11ae1'); } // OLE compound file
+            else if (kind == 'deb') { signatureOk = (header.toString('binary', 0, 8) == '!<arch>\n'); } // ar archive
+            else if (kind == 'rpm') { signatureOk = (header.toString('hex', 0, 4) == 'edabeedb'); } // RPM lead
+            else if (kind == 'flatpakref') { signatureOk = (file.size <= 65536) && (header.toString('utf8').replace(/^\uFEFF/, '').trim().startsWith('[Flatpak Ref]')); }
+            else if (kind == 'appimage') { signatureOk = (header.toString('hex', 0, 4) == '7f454c46') && (header.toString('hex', 8, 10) == '4149'); } // ELF with AppImage marker
+            else if (kind == 'flatpak') { signatureOk = (file.size > 0); } // Flatpak bundles are checked by flatpak itself
+            if (signatureOk == false) { removeUploads(); res.status(400).json({ error: 'This file is not a valid ' + kind + ' package' }); return; }
+
+            // Move the package to the server temporary folder and hash it, the agent checks this hash after download
+            const serverpath = obj.path.join(obj.filespath, 'tmp');
+            try { obj.fs.mkdirSync(obj.parent.filespath); } catch (ex) { }
+            try { obj.fs.mkdirSync(serverpath); } catch (ex) { }
+            const id = obj.crypto.randomBytes(16).toString('hex');
+            const target = 'sw-' + id + '.' + kind;
+            const targetPath = obj.path.join(serverpath, target);
+            const registerUpload = function () {
+                const hash = require('crypto').createHash('sha384');
+                const stream = obj.fs.createReadStream(targetPath);
+                stream.on('error', function () { try { obj.fs.unlinkSync(targetPath); } catch (ex) { } res.status(500).json({ error: 'Upload failed' }); });
+                stream.on('data', function (d) { hash.update(d); });
+                stream.on('end', function () {
+                    const entry = { userid: authUserid, domainid: domain.id, name: originalFilename, kind: kind, target: target, hash: hash.digest('hex'), size: file.size, time: Date.now() };
+                    entry.timer = setTimeout(function () { delete obj.softwareUploads[id]; try { obj.fs.unlinkSync(targetPath); } catch (ex) { } }, SOFTWARE_UPLOAD_LIFETIME);
+                    obj.softwareUploads[id] = entry;
+                    res.json({ id: id, name: entry.name, kind: kind, size: entry.size });
+                });
+            };
+            obj.fs.rename(uploadTempPath, targetPath, function (err) {
+                if (err && (err.code === 'EXDEV')) {
+                    // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
+                    obj.common.copyFile(uploadTempPath, targetPath, function (err) { obj.fs.unlink(uploadTempPath, function () { }); if (err) { res.status(500).json({ error: 'Upload failed' }); } else { registerUpload(); } });
+                } else if (err) { res.status(500).json({ error: 'Upload failed' }); } else { registerUpload(); }
+            });
+        });
+    }
+
     function handleUploadFileBatch(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -7623,6 +7704,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 obj.app.get(url + 'commander.ashx', handleMeshCommander);
                 obj.app.post(url + 'uploadfile.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFile);
                 obj.app.post(url + 'uploadfilebatch.ashx', obj.bodyParser.urlencoded({ extended: false }), handleUploadFileBatch);
+                obj.app.post(url + 'uploadsoftware.ashx', handleUploadSoftware);
                 obj.app.post(url + 'customiconupload.ashx', handleCustomIconUpload);
                 obj.app.post(url + 'customicondelete.ashx', obj.bodyParser.urlencoded({ extended: false }), handleCustomIconDelete);
                 obj.app.get(url + 'icons/custom/*', handleCustomIconDownload);

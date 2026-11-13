@@ -61,6 +61,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     const MESHRIGHT_RELAY               = 0x00200000; // 2097152
     const MESHRIGHT_NOREGISTRY          = 0x00400000; // 4194304
     const MESHRIGHT_NOSOFTWARE          = 0x00800000; // 8388608
+    const MESHRIGHT_SOFTWAREMANAGE      = 0x01000000; // 16777216
     const MESHRIGHT_ADMIN               = 0xFFFFFFFF;
     const MESHRIGHT_RESTRICTIONS        = MESHRIGHT_REMOTEVIEWONLY | MESHRIGHT_NOTERMINAL | MESHRIGHT_NOFILES | MESHRIGHT_NOAMT | MESHRIGHT_DESKLIMITEDINPUT | MESHRIGHT_LIMITEVENTS | MESHRIGHT_NODESKTOP | MESHRIGHT_NOREGISTRY | MESHRIGHT_NOSOFTWARE;
 
@@ -625,6 +626,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             serverinfo.magenturl = 'mc://' + agentServerName + ((agentHttpsPort != 443) ? (':' + agentHttpsPort) : '') + ((xdomain != '') ? ('/' + xdomain) : '');
             serverinfo.domainsuffix = xdomain;
 
+            if (domain.softwaremanagement === false) { serverinfo.softwaremanagement = false; }
             if (domain.guestdevicesharing === false) { serverinfo.guestdevicesharing = false; } else {
                 if (typeof domain.guestdevicesharing == 'object') {
                     if (typeof domain.guestdevicesharing.maxsessiontime == 'number') { serverinfo.guestdevicesharingmaxtime = domain.guestdevicesharing.maxsessiontime; }
@@ -1011,17 +1013,108 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     break;
                 }
             case 'software': {
-                // The inventory needs the software right, an uninstall needs full administrator rights on the device, same as the web UI.
-                var swfunc = null;
-                if (command.responseid != null) { swfunc = function (r) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: r ? 'OK' : 'Denied' })); } catch (ex) { } }; }
-                if (common.validateString(command.nodeid, 1, 1024) == false) { if (swfunc) { swfunc(false); } break; }
-                if (command.nodeid.indexOf('/') == -1) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; }
+                // Software inventory and management. Read operations need the device to be visible and "No Software" not set.
+                // Installing updates also needs MESHRIGHT_SOFTWAREMANAGE or full rights. Uninstall needs full administrator rights on the device.
+                // Installing a package (MSI, deb, rpm, Flatpak, AppImage) runs arbitrary code as SYSTEM/root, so it additionally needs MESHRIGHT_REMOTECOMMAND.
+                if ((typeof command.nodeid == 'string') && (command.nodeid.indexOf('/') == -1)) { command.nodeid = 'node/' + domain.id + '/' + command.nodeid; } // Accept short device identifiers
+                if ((common.validateString(command.nodeid, 8, 128) == false) || (typeof command.type != 'string')) break;
+                const softwareReadTypes = ['installedapps', 'installedstoreapps', 'winupdates'];
+                const softwareManageTypes = ['uninstallapp', 'uninstallstoreapp', 'installwinupdates', 'installmsi', 'installpackage', 'installflatpak'];
+                const softwarePackageTypes = { installmsi: 'win32', installpackage: 'linux', installflatpak: 'linux' }; // Package installs and the agent platform they need
+                const softwareManage = (softwareManageTypes.indexOf(command.type) >= 0);
+                if ((softwareManage == false) && (softwareReadTypes.indexOf(command.type) < 0)) break;
+                const softwareError = function (err) { try { ws.send(JSON.stringify({ action: 'software', type: command.type, nodeid: command.nodeid, responseid: command.responseid, value: JSON.stringify({ error: err }) })); } catch (ex) { } };
+                if (softwareManage && (domain.softwaremanagement === false)) { softwareError('Software management is disabled on this server'); break; }
+
+                // Only forward the fields the agent needs
+                const swcmd = { action: 'software', nodeid: command.nodeid, type: command.type };
+                if ((command.type == 'winupdates') && (command.online === true)) { swcmd.online = true; } // Default is the cached result of the last Windows scan
+                var swEventMsg = null, swEventMsgId = 0, swEventArgs = null;
+                if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) {
+                    if (common.validateString(command.value, 1, 8192) == false) { softwareError('Invalid value'); break; }
+                    swcmd.value = command.value;
+                    var swAppName = command.value;
+                    if (command.type == 'uninstallapp') { try { swAppName = Buffer.from(command.value, 'base64').toString(); } catch (ex) { } }
+                    swAppName = swAppName.substring(0, 256);
+                    swEventMsgId = 167; swEventArgs = [swAppName]; swEventMsg = 'Uninstall software: ' + swAppName;
+                } else if (command.type == 'installwinupdates') {
+                    if ((Array.isArray(command.updateids) == false) || (command.updateids.length < 1) || (command.updateids.length > 100)) { softwareError('Invalid update list'); break; }
+                    var swIdsOk = true;
+                    for (var i in command.updateids) { if ((typeof command.updateids[i] != 'string') || (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(command.updateids[i]) == false)) { swIdsOk = false; } }
+                    if (swIdsOk == false) { softwareError('Invalid update identifier'); break; }
+                    swcmd.updateids = command.updateids.slice();
+                    swEventMsgId = 165; swEventArgs = [swcmd.updateids.length]; swEventMsg = 'Started Windows Update installation of ' + swcmd.updateids.length + ' update(s)';
+                } else if ((command.type == 'installmsi') || (command.type == 'installpackage')) {
+                    if (common.validateString(command.uploadid, 1, 64) == false) { softwareError('Invalid package'); break; }
+                    var swUpload = (parent.softwareUploads != null) ? parent.softwareUploads[command.uploadid] : null;
+                    if ((swUpload == null) || (swUpload.userid != user._id) || (swUpload.domainid != domain.id)) { softwareError('Package not found, upload it again'); break; }
+                    if ((command.type == 'installmsi') != (swUpload.kind == 'msi')) { softwareError('This package type can not be installed on this device'); break; }
+                    if ((command.type == 'installmsi') && (command.properties != null)) {
+                        // Public MSI properties only, NAME=value or NAME="value with spaces". REBOOT is always forced to ReallySuppress by the agent.
+                        if (common.validateMsiProperties(command.properties) == false) { softwareError('Invalid MSI properties'); break; }
+                        if (command.properties.trim() != '') { swcmd.properties = command.properties.trim(); }
+                    }
+                    swcmd.name = swUpload.name;
+                    swcmd.hash = swUpload.hash;
+                    if (command.type == 'installmsi') {
+                        swEventMsgId = 168; swEventArgs = [swUpload.name]; swEventMsg = 'Started MSI installation of ' + swUpload.name;
+                    } else {
+                        swcmd.kind = swUpload.kind;
+                        swEventMsgId = 170; swEventArgs = [swUpload.name]; swEventMsg = 'Started installation of package ' + swUpload.name;
+                    }
+                } else if (command.type == 'installflatpak') {
+                    // Install a Flatpak application by id from a remote already configured on the device, for example flathub
+                    if ((typeof command.remote != 'string') || (/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(command.remote) == false)) { softwareError('Invalid Flatpak remote'); break; }
+                    if ((typeof command.appid != 'string') || (command.appid.length > 255) || (/^[A-Za-z][A-Za-z0-9_-]*(\.[A-Za-z0-9_-]+){2,}(\/\/[A-Za-z0-9_.-]+)?$/.test(command.appid) == false)) { softwareError('Invalid Flatpak application id'); break; }
+                    swcmd.remote = command.remote;
+                    swcmd.appid = command.appid;
+                    swcmd.name = command.remote + '/' + command.appid;
+                    swEventMsgId = 170; swEventArgs = [swcmd.name]; swEventMsg = 'Started installation of package ' + swcmd.name;
+                }
+
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
-                    var allowed = false;
-                    if ((command.type == 'installedapps') || (command.type == 'installedstoreapps')) { allowed = ((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOSOFTWARE) == 0)); }
-                    else if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) { allowed = (rights == MESHRIGHT_ADMIN); }
-                    if ((node == null) || (allowed == false)) { if (swfunc) { swfunc(false); } return; }
-                    routeCommandToNode(command, null, null, swfunc);
+                    if ((node == null) || (visible == false) || (parent.meshes[node.meshid] == null)) { softwareError('Denied'); return; }
+                    if (rights != MESHRIGHT_ADMIN) {
+                        if ((rights & MESHRIGHT_REMOTECONTROL) == 0) { softwareError('Denied'); return; }
+                        if ((rights & MESHRIGHT_NOSOFTWARE) != 0) { softwareError('Denied'); return; }
+                        if ((command.type == 'uninstallapp') || (command.type == 'uninstallstoreapp')) { softwareError('Denied'); return; } // Full administrators only
+                        if (softwareManage && ((rights & MESHRIGHT_SOFTWAREMANAGE) == 0)) { softwareError('Denied'); return; }
+                        if ((softwarePackageTypes[command.type] != null) && ((rights & MESHRIGHT_REMOTECOMMAND) == 0)) { softwareError('Denied'); return; }
+                    }
+                    if (softwarePackageTypes[command.type] != null) {
+                        // Check the agent platform using the agent type table
+                        var swAgentType = ((node.agent != null) && (parent.parent.meshAgentsArchitectureNumbers != null)) ? parent.parent.meshAgentsArchitectureNumbers[node.agent.id] : null;
+                        if ((swAgentType == null) || (swAgentType.platform != softwarePackageTypes[command.type])) { softwareError((softwarePackageTypes[command.type] == 'win32') ? 'MSI install is only supported on Windows devices' : 'Package install is only supported on Linux devices'); return; }
+                    }
+                    if ((command.type == 'installmsi') || (command.type == 'installpackage')) {
+                        // The agent fetches the package with a short lived download cookie bound to this device.
+                        if (parent.wsagents[node._id] == null) { softwareError('Package install needs the device to be connected to this server'); return; } // The package is stored on this server
+                        swcmd.urlpath = domain.url + 'agentdownload.ashx?c=' + parent.parent.encodeCookie({ a: 'tmpdl', d: domain.id, nid: node._id, f: swUpload.target }, parent.parent.loginCookieEncryptionKey);
+                        if ((parent.parent.args.ignoreagenthashcheck == null) || (parent.parent.args.ignoreagenthashcheck === false)) {
+                            var swTlsHash = (parent.webCertificateFullHashs != null) ? parent.webCertificateFullHashs[domain.id] : null;
+                            if (swTlsHash != null) { swcmd.servertlshash = Buffer.from(swTlsHash, 'binary').toString('hex'); }
+                        }
+                    }
+                    if ((parent.wsagents[node._id] == null) && ((parent.parent.multiServer == null) || (parent.parent.GetRoutingServerIdNotSelf(node._id, 1) == null))) { softwareError('Agent offline'); return; }
+
+                    // Newer features need a core that supports them. Older cores silently ignore unknown requests, so say so instead of waiting forever.
+                    const swNewTypes = ['winupdates', 'installwinupdates', 'installmsi', 'installpackage', 'installflatpak'];
+                    const swAgent = parent.wsagents[node._id];
+                    if ((swNewTypes.indexOf(command.type) >= 0) && (swAgent != null) && ((Array.isArray(swAgent.softwareCaps) == false) || (swAgent.softwareCaps.indexOf(command.type) < 0))) {
+                        softwareError('The agent core on this device does not support this yet. Restart the MeshCentral server after updating it, then restart the agent or wait for it to reconnect so it receives the new core.');
+                        return;
+                    }
+
+                    // Audit operations that change the device
+                    if (swEventMsg != null) {
+                        var targets = parent.CreateNodeDispatchTargets(node.meshid, node._id, ['server-users', user._id]);
+                        var event = { etype: 'node', userid: user._id, username: user.name, nodeid: node._id, action: 'software', swtype: command.type, msgid: swEventMsgId, msgArgs: swEventArgs, msg: swEventMsg, domain: domain.id };
+                        if (command.type == 'installwinupdates') { event.updateids = swcmd.updateids; }
+                        if ((user._id === req.session.userid) && (req.session.tokenUser != null) && (req.session.tokenName != null)) { event.tokenName = req.session.tokenName; event.tokenUser = req.session.tokenUser; }
+                        parent.parent.DispatchEvent(targets, obj, event);
+                    }
+
+                    routeCommandToNode(swcmd, softwareManage ? MESHRIGHT_SOFTWAREMANAGE : null, MESHRIGHT_NOSOFTWARE, function (ok) { if (ok === false) { softwareError('Unable to route'); } });
                 });
                 break;
             }
