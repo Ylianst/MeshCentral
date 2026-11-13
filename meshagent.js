@@ -48,6 +48,11 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     obj.agentCoreCheck = 0;
     obj.remoteaddr = req.clientIp;
     obj.remoteaddrport = obj.remoteaddr + ':' + ws._socket.remotePort;
+	
+	// Preserve the original connection address for agent issue reporting.
+	obj.issueRemoteAddr = obj.remoteaddr || '';
+	obj.issueRemoteAddrPort = obj.remoteaddrport || '';
+	
     obj.nonce = parent.crypto.randomBytes(48).toString('binary');
     //ws._socket.setKeepAlive(true, 240000); // Set TCP keep alive, 4 minutes
     if (args.agentidletimeout != 0) { ws._socket.setTimeout(args.agentidletimeout, function () { obj.close(1); }); } // Inactivity timeout of 2:30 minutes, by default agent will WebSocket ping every 2 minutes and server will pong back.

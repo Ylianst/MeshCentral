@@ -13,7 +13,7 @@
 /*jshint esversion: 6 */
 "use strict";
 
-module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, user, meshid, nodeid) {
+module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, user, meshid, nodeid, cookie) {
     var obj = {};
     obj.ws = ws;
     obj.res = res;
@@ -43,6 +43,8 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
     const MESHRIGHT_WAKEDEVICE = 64;
     const MESHRIGHT_SETNOTES = 128;
     const MESHRIGHT_REMOTEVIEW = 256;
+    const MESHRIGHT_NOFILES = 1024;
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -86,7 +88,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                 // Check if we have permission to send a message to that node
                 rights = parent.GetNodeRights(user, agent.dbMeshKey, agent.dbNodeKey);
                 mesh = parent.meshes[agent.dbMeshKey];
-                if ((rights != null) && (mesh != null) || ((rights & MESHRIGHT_REMOTECONTROL) != 0)) { // 8 is device remote control
+                if ((mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) != 0) && ((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOFILES) == 0))) {
                     command.rights = rights;                    // Add user rights flags to the message
                     if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                     if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
@@ -104,7 +106,7 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
                     // Check if we have permission to send a message to that node
                     rights = parent.GetNodeRights(user, routing.meshid, command.nodeid);
                     mesh = parent.meshes[routing.meshid];
-                    if (rights != null || ((rights & MESHRIGHT_REMOTECONTROL) != 0)) { // 8 is device remote control
+                    if ((mesh != null) && ((rights & MESHRIGHT_REMOTECONTROL) != 0) && ((rights == MESHRIGHT_ADMIN) || ((rights & MESHRIGHT_NOFILES) == 0))) {
                         command.rights = rights;                // Add user rights flags to the message
                         if (typeof command.consent == 'number') { command.consent = command.consent | mesh.consent; } else { command.consent = mesh.consent; } // Add user consent
                         if (typeof domain.userconsentflags == 'number') { command.consent |= domain.userconsentflags; } // Add server required consent flags
@@ -286,7 +288,11 @@ module.exports.CreateMeshDeviceFile = function (parent, ws, res, req, domain, us
     if (obj.authenticated) {
         // Send connection request to agent
         const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
-        const command = { nodeid: nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/devicefile.ashx?id=' + obj.id + '&rauth=' + rcookie, soptions: {} };
+        const command = { nodeid: nodeid, action: 'msg', type: 'tunnel', userid: user._id, value: '*/devicefile.ashx?id=' + obj.id + '&rauth=' + rcookie, soptions: { usages: [10] } };
+        if (cookie != null) {
+            if (typeof cookie.cf == 'number') { command.consent = cookie.cf; }
+            if (typeof cookie.gn == 'string') { command.guestname = cookie.gn; }
+        }
         parent.parent.debug('relay', 'FileRelay: Sending agent tunnel command: ' + JSON.stringify(command));
         if (obj.sendAgentMessage(command, user, domain.id) == false) { delete obj.id; parent.parent.debug('relay', 'FileRelay: Unable to contact this agent (' + obj.req.clientIp + ')'); }
     }

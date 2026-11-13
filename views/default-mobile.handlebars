@@ -1648,6 +1648,8 @@
                     QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
                     if (serverinfo != null) updateSelf();
+                    // The server only accepts account security commands until a second factor is set up, so start there
+                    if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || (userinfo.otpduo > 0) || (userinfo.otpdev > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1))) && (xxcurrentView != 3)) { go(3); setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); }
                     break;
                 }
                 case 'users': {
@@ -2573,10 +2575,13 @@
         }
 
         function account_showLocalizationSettingsEx() {
-            // Set user language
-            var lang = Q('d2langselect').value;
-            if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
-            if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            // Set user language, the dropdown only exists when the server has translated pages
+            var langSelect = Q('d2langselect');
+            if (langSelect != null) {
+                var lang = langSelect.value;
+                if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
+                if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            }
 
             // Set date localization
             var n = getstore('loctag', 0);

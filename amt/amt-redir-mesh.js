@@ -61,6 +61,8 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
     const MESHRIGHT_SERVERFILES = 32;
     const MESHRIGHT_WAKEDEVICE = 64;
     const MESHRIGHT_SETNOTES = 128;
+    const MESHRIGHT_NOAMT = 2048;
+    const MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
     // Site rights
     const SITERIGHT_SERVERBACKUP = 1;
@@ -94,7 +96,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
 
         // Fetch information about the target
         meshcentral.db.Get(nodeid, function (err, docs) {
-            if (docs.length == 0) { console.log('ERR: Node not found'); obj.Stop(); return; }
+            if ((err != null) || (docs == null) || (docs.length != 1)) { console.log('ERR: Node not found'); obj.Stop(); return; }
             var node = docs[0];
             if (!node.intelamt) { console.log('ERR: Not AMT node'); obj.Stop(); return; }
 
@@ -102,8 +104,8 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
             obj.amtpass = node.intelamt.pass;
 
             // Check if this user has permission to manage this computer
-            var meshlinks = user.links[node.meshid];
-            if ((!meshlinks) || (!meshlinks.rights) || ((meshlinks.rights & MESHRIGHT_REMOTECONTROL) == 0)) { console.log('ERR: Access denied (2)'); obj.Stop(); return; }
+            var rights = webserver.GetNodeRights(user, node.meshid, node._id);
+            if (((rights & MESHRIGHT_REMOTECONTROL) == 0) || ((rights != MESHRIGHT_ADMIN) && ((rights & MESHRIGHT_NOAMT) != 0))) { console.log('ERR: Access denied (2)'); obj.Stop(); return; }
 
             // Check what connectivity is available for this node
             var state = meshcentral.GetConnectivityState(nodeid);
@@ -134,7 +136,7 @@ module.exports.CreateAmtRedirect = function (module, domain, user, webserver, me
             */
 
             // If Intel AMT CIRA connection is available, use it
-            var ciraconn = meshcentral.mpsserver.GetConnectionToNode(nodeid, null, true); // Request an OOB connection
+            var ciraconn = (meshcentral.mpsserver != null) ? meshcentral.mpsserver.GetConnectionToNode(nodeid, null, true) : null; // Request an OOB connection
             if (ciraconn != null) {
                 Debug(1, 'Opening Intel AMT CIRA transport connection to ' + nodeid + '.');
 

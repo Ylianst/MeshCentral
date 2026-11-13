@@ -30,30 +30,102 @@ function getRegistryHiveEnum(hiveName) {
     }
 }
 
+function getRegistryValueName(valueName) {
+    return (valueName == null) || (valueName === '') || (valueName === '(Default)') ? '' : valueName;
+}
+
+function getRegistryValueData(registry, hive, path, valueName) {
+    var normalizedName = getRegistryValueName(valueName);
+    var valueData = registry.QueryKey(hive, path, normalizedName);
+    if (normalizedName === '' && (valueData != null) && (typeof valueData == 'object')) {
+        if (Object.prototype.hasOwnProperty.call(valueData, 'default')) { return valueData.default; }
+        if (Object.prototype.hasOwnProperty.call(valueData, 'subkeys') || Object.prototype.hasOwnProperty.call(valueData, 'values')) { return ''; }
+    }
+    return valueData;
+}
+
 function guessRegistryValueType(value) {
     if (value == null) { return 'REG_NONE'; }
     if (typeof value == 'number') { return ((Math.floor(value) === value) && (value >= 0) && (value <= 0xFFFFFFFF)) ? 'REG_DWORD' : 'REG_QWORD'; }
     if (typeof value == 'string') { return 'REG_SZ'; }
     if (Array.isArray(value)) { return 'REG_MULTI_SZ'; }
-    if (Buffer.isBuffer(value)) { return 'REG_BINARY'; }
+    if (Buffer.isBuffer(value) || ((typeof Uint8Array != 'undefined') && (value instanceof Uint8Array))) { return 'REG_BINARY'; }
     return 'REG_UNKNOWN';
+}
+
+function isRegistryByteArray(value) {
+    return Buffer.isBuffer(value) || ((typeof Uint8Array != 'undefined') && (value instanceof Uint8Array));
+}
+
+function formatRegistryValue(value, valueType, commandValue) {
+    if (valueType == 'REG_MULTI_SZ') {
+        if (typeof commandValue == 'string' && commandValue != '') {
+            return commandValue.replace(/\\0+$/, '').replace(/\\0/g, '\r\n');
+        }
+        if (Array.isArray(value)) { return value.join('\r\n'); }
+        if (isRegistryByteArray(value)) {
+            var text = '';
+            for (var i = 0; i + 1 < value.length; i += 2) { text += String.fromCharCode(value[i] | (value[i + 1] << 8)); }
+            return text.replace(/\u0000+$/, '').split('\u0000').join('\r\n');
+        }
+    }
+    if (valueType == 'REG_QWORD') {
+        var qwordHex = null;
+        if (isRegistryByteArray(value) && (value.length >= 8)) {
+            qwordHex = '';
+            for (var i = 7; i >= 0; i--) {
+                var byteHex = value[i].toString(16);
+                qwordHex += (byteHex.length == 1) ? ('0' + byteHex) : byteHex;
+            }
+        } else if (typeof commandValue == 'string') {
+            var qwordMatch = commandValue.match(/^(?:0x)?[0-9a-fA-F]+$/);
+            if (qwordMatch != null) { qwordHex = commandValue.replace(/^0x/i, '').toLowerCase(); }
+        } else if (typeof value == 'number' && isFinite(value) && Math.floor(value) == value) {
+            qwordHex = value.toString(16);
+        }
+        if (qwordHex != null) {
+            while (qwordHex.length < 16) { qwordHex = '0' + qwordHex; }
+            var decimal = '0';
+            for (var j = 0; j < qwordHex.length; j++) {
+                var digit = parseInt(qwordHex.charAt(j), 16), carry = digit;
+                for (var k = decimal.length - 1; k >= 0; k--) {
+                    var product = (parseInt(decimal.charAt(k), 10) * 16) + carry;
+                    decimal = decimal.substring(0, k) + (product % 10) + decimal.substring(k + 1);
+                    carry = Math.floor(product / 10);
+                }
+                if (carry > 0) { decimal = carry + decimal; }
+            }
+            return decimal.replace(/^0+(?=\d)/, '');
+        }
+    }
+    if (value == null) { return ''; }
+    if (typeof value == 'object') {
+        try { return JSON.stringify(value); } catch (ex) { return String(value); }
+    }
+    return String(value);
+}
+
+function getRegistryValueCommandInfo(hiveName, path, valueName) {
+    valueName = getRegistryValueName(valueName);
+    var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
+    var args = ['query', fullPath];
+    if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
+    var output = runRegistryCommand(args, true);
+    if (typeof output != 'string') { return null; }
+    var lines = output.split(/\r?\n/);
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
+        var match = line.match(/\b(REG_[A-Z0-9_]+)(?:\s+(.*))?$/);
+        if (match != null) { return { type: match[1], value: match[2] || '' }; }
+    }
+    return null;
 }
 
 function getRegistryValueType(hiveName, path, valueName, fallbackValue) {
     try {
-        var fullPath = hiveName + (((path != null) && (path !== '')) ? ('\\' + path) : '');
-        var args = ['query', fullPath];
-        if ((valueName == null) || (valueName === '')) { args.push('/ve'); } else { args.push('/v', valueName); }
-        var output = runRegistryCommand(args, true);
-        if (typeof output == 'string') {
-            var lines = output.split(/\r?\n/);
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i].trim();
-                if ((line == '') || (line.indexOf('HKEY_') == 0)) { continue; }
-                var parts = line.split(/\s{2,}/);
-                if ((parts.length >= 2) && (parts[1].indexOf('REG_') == 0)) { return parts[1]; }
-            }
-        }
+        var info = getRegistryValueCommandInfo(hiveName, path, valueName);
+        if (info != null) { return info.type; }
     } catch (ex) { }
     return guessRegistryValueType(fallbackValue);
 }
@@ -67,19 +139,31 @@ function listRegistryKey(hiveName, path) {
     if (result == null) { return { hive: hiveName, path: path, subkeys: [], values: [] }; }
 
     var response = { hive: hiveName, path: path, subkeys: (result.subkeys || []), values: [] };
-    if (result.values != null) {
-        for (var i = 0; i < result.values.length; i++) {
-            var valueName = result.values[i], valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
-            try { valueData = registry.QueryKey(hive, path, valueName); } catch (ex) { valueData = null; }
-            valueType = getRegistryValueType(hiveName, path, valueName, valueData);
-            if (valueData == null) { valueText = ''; }
-            else if (typeof valueData == 'object') {
-                try { valueText = JSON.stringify(valueData); } catch (ex) { valueText = String(valueData); }
-            } else {
-                valueText = String(valueData);
-            }
-            response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
+    var valueNames = [], valueNameSet = Object.create(null);
+    for (var i = 0; i < (result.values || []).length; i++) {
+        var listedValueName = getRegistryValueName(result.values[i]);
+        if (valueNameSet[listedValueName] == null) {
+            valueNameSet[listedValueName] = true;
+            valueNames.push(listedValueName);
         }
+    }
+    if (valueNameSet[''] == null) {
+        valueNameSet[''] = true;
+        valueNames.push('');
+    }
+    for (var i = 0; i < valueNames.length; i++) {
+        var valueName = getRegistryValueName(valueNames[i]), valueData = null, valueText = '', valueType = 'REG_UNKNOWN';
+        try { valueData = getRegistryValueData(registry, hive, path, valueName); } catch (ex) { valueData = null; }
+        valueType = getRegistryValueType(hiveName, path, valueName, valueData);
+        var commandValue = '';
+        if ((valueType == 'REG_MULTI_SZ') || (valueType == 'REG_QWORD')) {
+            try {
+                var commandInfo = getRegistryValueCommandInfo(hiveName, path, valueName);
+                if (commandInfo != null) { commandValue = commandInfo.value; }
+            } catch (ex) { }
+        }
+        valueText = formatRegistryValue(valueData, valueType, commandValue);
+        response.values.push({ name: ((valueName === '') ? '(Default)' : valueName), rawname: valueName, type: valueType, value: valueText });
     }
     return response;
 }
@@ -89,7 +173,11 @@ function getRegistryFullPath(hiveName, path) {
 }
 
 function getRegistryExecutableCandidates() {
-    return ['C:\\Windows\\Sysnative\\reg.exe', 'C:\\Windows\\System32\\reg.exe', 'C:\\WINNT\\System32\\reg.exe'];
+    return [
+        (process.env.SystemRoot || process.env.windir || 'C:\\Windows') + '\\Sysnative\\reg.exe',
+        (process.env.SystemRoot || process.env.windir || 'C:\\Windows') + '\\System32\\reg.exe',
+        (process.env.SystemDrive || 'C:') + '\\WINNT\\System32\\reg.exe'
+    ];
 }
 
 // MeshAgent builds a Windows command line from this array, so arguments containing
@@ -157,7 +245,8 @@ function deleteRegistryEntries(items) {
             runRegistryCommand(['delete', getRegistryFullPath(item.hive, ((item.path != null) && (item.path !== '')) ? (item.path + '\\' + item.name) : item.name), '/f']);
         } else if (item.kind == 'value') {
             var args = ['delete', getRegistryFullPath(item.hive, item.path || '')];
-            if ((item.name == null) || (item.name === '')) { args.push('/ve'); } else { args.push('/v', item.name); }
+            var valueName = getRegistryValueName(item.name);
+            if (valueName === '') { args.push('/ve'); } else { args.push('/v', valueName); }
             args.push('/f');
             runRegistryCommand(args);
         } else {
@@ -167,11 +256,19 @@ function deleteRegistryEntries(items) {
 }
 
 function setRegistryValue(hiveName, path, valueName, valueType, valueData) {
+    valueName = getRegistryValueName(valueName);
     if ((valueType == null) || (valueType === '')) { throw ('Registry value type is required.'); }
     valueType = valueType.toUpperCase();
     if ((valueType == 'REG_DWORD') || (valueType == 'REG_QWORD')) {
         if ((typeof valueData != 'string') || (/^(0x[0-9a-fA-F]+|[0-9]+)$/.test(valueData.trim()) == false)) { throw ('Only decimal or 0x-prefixed numeric data is supported for ' + valueType + '.'); }
         valueData = valueData.trim();
+    } else if (valueType == 'REG_MULTI_SZ') {
+        var multiLines = String(valueData == null ? '' : valueData).split(/\r\n|\r|\n/), multiValue = [];
+        for (var i = 0; i < multiLines.length; i++) {
+            if (multiLines[i].trim() != '') { multiValue.push(multiLines[i]); }
+        }
+        valueData = multiValue.join('\\0');
+        if (valueData.slice(-2) != '\\0') { valueData += '\\0'; }
     } else if (valueData == null) {
         valueData = '';
     } else {
@@ -198,7 +295,7 @@ function renameRegistryEntry(item, newName) {
         if ((item.name == null) || (item.name === '')) { throw ('The default registry value cannot be renamed in this increment.'); }
         var hive = getRegistryHiveEnum(item.hive), valueData = null, valueType = 'REG_UNKNOWN';
         if (hive == null) { throw ('Unknown registry hive: ' + item.hive); }
-        try { valueData = require('win-registry').QueryKey(hive, item.path || '', item.name); } catch (ex) { valueData = null; }
+        try { valueData = getRegistryValueData(require('win-registry'), hive, item.path || '', item.name); } catch (ex) { valueData = null; }
         valueType = getRegistryValueType(item.hive, item.path || '', item.name, valueData);
         setRegistryValue(item.hive, item.path || '', newName, valueType, valueData);
         deleteRegistryEntries([{ kind: 'value', hive: item.hive, path: item.path || '', name: item.name }]);

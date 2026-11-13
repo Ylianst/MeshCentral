@@ -44,6 +44,7 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_NOSOFTWARE = 8388608;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
@@ -297,6 +298,8 @@ function getCoreTranslation() {
     if (global.coretranslations != null) {
         try {
             var lang = require('util-language').current;
+            lang = lang.toLowerCase();
+            lang = lang.replace('_', '-');
             if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
             if (coretranslations[lang] == null) { lang = 'en'; }
             if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
@@ -561,10 +564,10 @@ try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnecti
 obj.DAIPC._daipc = [];
 obj.DAIPC.on('connection', function (c) {
     c._send = function (j) {
-        var data = JSON.stringify(j);
+        var data = Buffer.from(JSON.stringify(j));
         var packet = Buffer.alloc(data.length + 4);
         packet.writeUInt32LE(data.length + 4, 0);
-        Buffer.from(data).copy(packet, 4);
+        data.copy(packet, 4);
         this.write(packet);
     };
     this._daipc.push(c);
@@ -855,18 +858,18 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 function onUserSessionChanged(user, locked) {
+    if (process.platform == 'linux' && user == null) {
+        // Older agents fire 'changed' in bursts from utmp churn. Coalesce them; the previous
+        // answer (removeAllListeners within 10s of start) went deaf for good and left the server
+        // showing the boot-time user until the agent restarted.
+        if (userSession._changeTimer != null) { return; }
+        userSession._changeTimer = setTimeout(function () { userSession._changeTimer = null; onUserSessionChangedNow(null, false); }, 1000);
+        return;
+    }
+    onUserSessionChangedNow(user, locked);
+}
+function onUserSessionChangedNow(user, locked) {
     userSession.enumerateUsers().then(function (users) {
-        if (process.platform == 'linux') {
-            if (userSession._startTime == null) {
-                userSession._startTime = Date.now();
-                userSession._count = users.length;
-            }
-            else if (Date.now() - userSession._startTime < 10000 && users.length == userSession._count) {
-                userSession.removeAllListeners('changed');
-                return;
-            }
-        }
-
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
@@ -972,6 +975,27 @@ sha = require('SHA256Stream');
 mesh = require('MeshAgent');
 childProcess = require('child_process');
 
+// monitor-info stops looking for a display 3 minutes after it loads, so a desktop that comes up later (a slow display
+// manager, a GUI started by hand) never got the Desktop tab until the agent restarted. Its check runs shell commands,
+// so only repeat it for a few minutes after the X or Wayland sockets change.
+var kvmSupportTimer = null, kvmSupportSockets = null, kvmSupportTries = 0;
+function kvmSupportCheck() {
+    if ((meshCoreObj.caps & 1) != 0) { clearInterval(kvmSupportTimer); kvmSupportTimer = null; return; }
+    var mi = require('monitor-info');
+    if ((typeof mi._kvmcheck != 'function') || (mi._xtries <= 18)) return; // Its own retries are still running
+    var sockets = [];
+    try { fs.readdirSync('/tmp/.X11-unix').forEach(function (f) { sockets.push('/tmp/.X11-unix/' + f); }); } catch (ex) { }
+    try {
+        fs.readdirSync('/run/user').forEach(function (uid) {
+            try { fs.readdirSync('/run/user/' + uid).forEach(function (f) { if (f.startsWith('wayland-') && !f.endsWith('.lock')) { sockets.push('/run/user/' + uid + '/' + f); } }); } catch (ex) { }
+        });
+    } catch (ex) { }
+    // A socket left behind by a display server that is gone keeps its time, a new one gets a new time
+    var key = sockets.map(function (s) { try { return s + ' ' + fs.statSync(s).mtime; } catch (ex) { return s; } }).join(',');
+    if (key != kvmSupportSockets) { kvmSupportSockets = key; kvmSupportTries = 3; }
+    if ((sockets.length > 0) && (kvmSupportTries > 0)) { kvmSupportTries--; try { mi._kvmcheck(); } catch (ex) { } }
+}
+
 if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
     // Check if this computer supports a desktop
     try {
@@ -979,6 +1003,8 @@ if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
             meshCoreObj.caps |= 1; meshCoreObjChanged();
         } else if (process.platform == 'linux' || process.platform == 'freebsd') {
             require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
+            kvmSupportTimer = setInterval(kvmSupportCheck, 60000);
+            kvmSupportTimer.metadata = 'meshcore (KVM Support Timer)';
         }
     } catch (ex) { }
 }
@@ -1346,6 +1372,12 @@ function tunnel_onError()
     sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e));
 }
 
+// The server stamps the user's rights on each command it routes. View only users can look, but not change anything on the device.
+function server_hasControlRights(data) {
+    if (typeof data.rights != 'number') return false;
+    return ((data.rights == MESHRIGHT_ADMIN) || (((data.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((data.rights & MESHRIGHT_REMOTEVIEW) == 0)));
+}
+
 // Handle a mesh agent command
 function handleServerCommand(data) {
     if (typeof data == 'object') {
@@ -1459,6 +1491,7 @@ function handleServerCommand(data) {
                     }
                     case 'messagebox': {
                         // Display a message box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
                             if (process.platform == 'win32') {
@@ -1541,6 +1574,7 @@ function handleServerCommand(data) {
                     }
                     case 'pskill': {
                         // Kill a process
+                        if (!server_hasControlRights(data)) break;
                         if (data.value) {
                             var info = data.value.split('|'), pid = data.value, msg = " (Unknown)";
                             if (info.length > 1) { pid = info[0]; msg = " (" + info[1] + ")"; } else { info[1] = "Unknown"; }
@@ -1593,6 +1627,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStop': {
                         // Stop a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.stop(); }
@@ -1601,6 +1636,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStart': {
                         // Start a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.start(); }
@@ -1609,6 +1645,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceRestart': {
                         // Restart a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.restart(); }
@@ -1618,6 +1655,7 @@ function handleServerCommand(data) {
                     case 'deskBackground':
                         {
                             // Toggle desktop background
+                            if (!server_hasControlRights(data)) break;
                             try {
                                 if (process.platform == 'win32') {
                                     var stype = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : 0;
@@ -1654,6 +1692,7 @@ function handleServerCommand(data) {
                         }
                     case 'openUrl': {
                         // Open a local web browser and return success/fail
+                        if (!server_hasControlRights(data)) break;
                         MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                         sendConsoleText("OpenURL: " + data.url);
                         if (data.url) { mesh.SendCommand({ action: 'msg', type: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
@@ -1680,6 +1719,7 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'setclip': {
+                        if (!server_hasControlRights(data)) break;
                         if (pendingSetClip) return;
                         // Set the load clipboard to a user value
                         if (typeof data.data == 'string') {
@@ -1751,6 +1791,7 @@ function handleServerCommand(data) {
                         break;
                     case 'alertbox': {
                         // Display an old style alert box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
                             try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
@@ -1778,6 +1819,10 @@ function handleServerCommand(data) {
                         sessionid: data.sessionid 
                     });
                 };
+                // Uninstall is for full administrators of the device only, the inventory for users without the No Software restriction, same as the web UI
+                var denied = (typeof data.rights != 'number');
+                if (!denied && (data.rights != MESHRIGHT_ADMIN)) { denied = (((data.rights & MESHRIGHT_NOSOFTWARE) != 0) || (data.type == 'uninstallapp') || (data.type == 'uninstallstoreapp')); }
+                if (denied) { sendSoftwareResponse({ success: false, error: 'Denied' }); break; }
                 if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
