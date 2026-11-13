@@ -3241,18 +3241,27 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return (siteadmin == 0xFFFFFFFF);
     }
 
-    // Number of remote desktop sessions this user may keep connected in the background while moving between
-    // devices, 0 if the feature is off for this user. Configured using "keepDesktopSessions" in the domain:
-    //   { "allow": "fulladmin" | "manageusers" | "everyone" | [ "user//name", "ugrp//xxx" ], "max": 4 }
-    // or true, which is the same as { "allow": "fulladmin", "max": 4 }.
-    function getKeepDesktopSessions(domain, user) {
-        var c = domain.keepdesktopsessions;
-        if ((c == null) || (c === false)) return 0;
+    // Which remote sessions this user may keep connected in the background while moving between devices.
+    // Configured using "keepRemoteSessions" in the domain section of config.json:
+    //   { "allow": "fulladmin" | "manageusers" | "everyone" | [ "user//name", "ugrp//xxx" ],
+    //     "sessions": [ "desktop", "terminal", "files" ], "max": 4 }
+    // or true, which is the same as { "allow": "fulladmin" } with all three session types and a max of 4.
+    // "max" is the number of background sessions of each type. "keepDesktopSessions" is accepted as an older name.
+    function getKeepRemoteSessions(domain, user) {
+        var r = { max: 0, desktop: false, terminal: false, files: false };
+        var c = (domain.keepremotesessions != null) ? domain.keepremotesessions : domain.keepdesktopsessions;
+        if ((c == null) || (c === false)) return r;
         if (typeof c != 'object') { c = {}; }
-        if (c.enabled === false) return 0;
-        if (userMatchesConfigScope(user, c.allow) == false) return 0;
+        if (c.enabled === false) return r;
+        if (userMatchesConfigScope(user, c.allow) == false) return r;
         var max = (typeof c.max == 'number') ? Math.floor(c.max) : 4;
-        return Math.max(0, Math.min(max, 20));
+        r.max = Math.max(0, Math.min(max, 20));
+        if (r.max == 0) return r;
+        var types = Array.isArray(c.sessions) ? c.sessions.map(function (x) { return String(x).toLowerCase(); }) : [ 'desktop', 'terminal', 'files' ];
+        r.desktop = (types.indexOf('desktop') >= 0);
+        r.terminal = (types.indexOf('terminal') >= 0);
+        r.files = (types.indexOf('files') >= 0);
+        return r;
     }
 
     function handleRootRequestEx(req, res, domain, direct) {
@@ -3556,7 +3565,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
                     collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
-                    keepDesktopSessions: getKeepDesktopSessions(domain, user),
+                    keepRemoteSessions: encodeURIComponent(JSON.stringify(getKeepRemoteSessions(domain, user))).replace(/'/g, '%27'),
                     activeSessionsPanel: encodeURIComponent(JSON.stringify(getActiveSessionsPanelSettings(domain, user))).replace(/'/g, '%27')
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }

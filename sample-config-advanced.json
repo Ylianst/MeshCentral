@@ -222,7 +222,7 @@
       "_showNotesPanel": true,
       "_collapseGroups": true,
       "_activeSessionsPanel": { "enabled": true, "defaultScope": "own", "allowAllScope": "fulladmin" },
-      "_keepDesktopSessions": { "allow": [ "user//admin", "ugrp//xxxxxxxxxxxxxxxxx" ], "max": 4 },
+      "_keepRemoteSessions": { "allow": [ "user//admin", "ugrp//xxxxxxxxxxxxxxxxx" ], "sessions": [ "desktop", "terminal", "files" ], "max": 4 },
       "_userSessionsSort": "Username",
       "_newAccounts": true,
       "_newAccountsUserGroups": [ "ugrp//xxxxxxxxxxxxxxxxx" ],

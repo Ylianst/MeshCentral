@@ -1694,7 +1694,8 @@
         var goBackStack = [];
         var CollapsedGroups = {};
         var collapseGroups = '{{{collapseGroups}}}';
-        var keepDesktopSessions = parseInt('{{{keepDesktopSessions}}}'); if (isNaN(keepDesktopSessions)) { keepDesktopSessions = 0; }
+        var keepSessions = { max: 0 };
+        try { keepSessions = JSON.parse(decodeURIComponent('{{{keepRemoteSessions}}}')); } catch (ex) { }
         var activeSessionsPanel = null;
         try { activeSessionsPanel = JSON.parse(decodeURIComponent('{{{activeSessionsPanel}}}')); } catch (ex) { }
         try { CollapsedGroups = JSON.parse(getstore('_collapse', '{}')); } catch(ex) {}
@@ -9536,17 +9537,17 @@
         //
 
         //
-        // Background desktop sessions. When "keepDesktopSessions" is set in the domain config, switching to
-        // another device no longer disconnects the remote desktop of the previous device. Instead the session
-        // is parked in the background (paused, so it uses almost no bandwidth) and picked up again, still
-        // connected, when the user comes back to that device's Desktop tab.
+        // Background sessions. When "keepRemoteSessions" in the domain config applies to this user, switching to
+        // another device no longer disconnects the desktop, terminal or files session of the previous device.
+        // Instead the session is parked in the background and picked up again, still connected, when the user
+        // comes back to that device. Desktops are paused while parked, so they use almost no bandwidth.
         //
 
         var parkedDesktops = {}; // nodeid --> desktop session
 
         // Park the current desktop session. Returns false if it can't be parked, in which case the caller stops it.
         function parkDesktop() {
-            if ((keepDesktopSessions <= 0) || (desktop == null) || (desktopNode == null)) return false;
+            if ((keepSessions.desktop !== true) || (desktop == null) || (desktopNode == null)) return false;
             if ((desktop.State == 0) || (desktop.contype != 1) || (desktop.m == null)) return false; // Only agent desktops, not Intel AMT or RDP
             if ((webRtcDesktop != null) || (desktop.m.recordedData != null)) return false; // Not while WebRTC or a local recording is active
             var d = desktop, nodeid = desktopNode._id, noop = function () { };
@@ -9567,10 +9568,7 @@
             d.xxparkedTime = Date.now();
             parkedDesktops[nodeid] = d;
 
-            // Too many parked sessions, disconnect the oldest ones
-            var ids = Object.keys(parkedDesktops);
-            ids.sort(function (a, b) { return parkedDesktops[a].xxparkedTime - parkedDesktops[b].xxparkedTime; });
-            while (ids.length > keepDesktopSessions) { var oldid = ids.shift(), old = parkedDesktops[oldid]; delete parkedDesktops[oldid]; old.Stop(); }
+            trimParkedSessions(parkedDesktops); // Too many parked sessions, disconnect the oldest ones
 
             // Reset the desktop tab for the next device, then take the canvas out of the page. It keeps its content while parked.
             desktop = desktopNode = null;
@@ -9596,6 +9594,119 @@
             if (d.m.SendUnPause) { d.m.SendUnPause(); }
             if (d.m.SendRefresh) { d.m.SendRefresh(); }
             multiDesktop[nodeid] = d;
+        }
+
+        // Disconnect the oldest parked sessions in a pool until it is within the allowed maximum
+        function trimParkedSessions(pool) {
+            var ids = Object.keys(pool);
+            ids.sort(function (a, b) { return pool[a].xxparkedTime - pool[b].xxparkedTime; });
+            while (ids.length > keepSessions.max) { var oldid = ids.shift(), old = pool[oldid]; delete pool[oldid]; old.Stop(); }
+        }
+
+        //
+        // Background terminal sessions, see the desktop ones above. The xterm and its screen are kept in a hidden
+        // element while parked, so the terminal keeps receiving output and shows it when the user comes back.
+        //
+
+        var parkedTerminals = {}; // nodeid --> terminal session
+
+        function parkTerminal() {
+            if ((keepSessions.terminal !== true) || (terminal == null) || (terminalNode == null) || (xterm == null)) return false;
+            if ((terminal.State != 3) || (terminal.contype == 2) || (terminal.contype == 3) || (terminal.urlname == 'sshterminalrelay.ashx')) return false; // Agent terminal only, not Intel AMT or SSH
+            var t = terminal, nodeid = terminalNode._id, xt = xterm;
+            if (parkedTerminals[nodeid] != null) return false;
+            t.xxparked = { xterm: xterm, xtermfit: xtermfit, xtermimage: xtermimage, onStateChanged: t.onStateChanged, onConsoleMessageChange: t.onConsoleMessageChange, onTunnelUpdate: t.m.onTunnelUpdate };
+            t.m.onTunnelUpdate = function (data) {
+                if (xt.writeUtf8) { if (typeof data == 'string') { xt.writeUtf8(data); } else { xt.writeUtf8(new Uint8Array(data)); } }
+                else { if (typeof data == 'string') { xt.write(data); } else { xt.write(new Uint8Array(data)); } }
+            };
+            t.onStateChanged = function (xterminal, state) { if ((state == 0) && (parkedTerminals[nodeid] == xterminal)) { delete parkedTerminals[nodeid]; try { xt.dispose(); } catch (ex) { } } };
+            t.onConsoleMessageChange = function () { };
+
+            // Move the terminal screen to a hidden holder
+            var holder = Q('parkedTerminalsHolder');
+            if (holder == null) { holder = document.createElement('div'); holder.id = 'parkedTerminalsHolder'; holder.style.display = 'none'; document.body.appendChild(holder); }
+            if (xt.element != null) { holder.appendChild(xt.element); }
+            t.xxparkedTime = Date.now();
+            parkedTerminals[nodeid] = t;
+            trimParkedSessions(parkedTerminals);
+
+            // Reset the terminal tab for the next device
+            terminal = terminalNode = null;
+            xterm = xtermfit = xtermimage = null;
+            QH('termtitle', '');
+            QH('termstatus', StatusStrs[0]);
+            QV('termRecordIcon', false);
+            return true;
+        }
+
+        // If the given device has a parked terminal session, put it back in the terminal tab. Returns true if it did.
+        function unparkTerminal(nodeid) {
+            var t = parkedTerminals[nodeid];
+            if (t == null) return false;
+            delete parkedTerminals[nodeid];
+            var p = t.xxparked;
+            delete t.xxparked;
+            if ((p == null) || (t.State == 0)) return false;
+            if ((terminal == null) && (xterm != null)) { try { xterm.dispose(); } catch (ex) { } } // Leftover screen from a closed session
+            t.m.onTunnelUpdate = p.onTunnelUpdate; t.onStateChanged = p.onStateChanged; t.onConsoleMessageChange = p.onConsoleMessageChange;
+            terminal = t; xterm = p.xterm; xtermfit = p.xtermfit; xtermimage = p.xtermimage;
+            QV('termarea3xdiv', true);
+            QV('Term', false);
+            if (xterm.element != null) { Q('termarea3xdiv').appendChild(xterm.element); }
+            var str = StatusStrs[3];
+            if (terminal.webRtcActive == true) { str += ", WebRTC"; }
+            QH('termstatus', str);
+            QV('termRecordIcon', terminal.serverIsRecording == true);
+            if (xtermfit) { try { xtermfit.fit(); } catch (ex) { } }
+            try { xterm.focus(); } catch (ex) { }
+            return true;
+        }
+
+        //
+        // Background file sessions. The connection stays open while parked and the folder list is loaded
+        // again when the user comes back.
+        //
+
+        var parkedFiles = {}; // nodeid --> files session
+
+        function parkFiles() {
+            if ((keepSessions.files !== true) || (files == null) || (filesNode == null)) return false;
+            if ((files.State != 3) || (files.contype == 2) || (files.urlname == 'sshfilesrelay.ashx')) return false; // Agent files only, not SFTP
+            if ((uploadFile != null) || (gdownloadFile != null)) return false; // Not while a transfer is running
+            var f = files, nodeid = filesNode._id, noop = function () { };
+            if (parkedFiles[nodeid] != null) return false;
+            f.xxparked = { onStateChanged: f.onStateChanged, onConsoleMessageChange: f.onConsoleMessageChange, onFileUpdate: f.m.onFileUpdate, onBinaryData: f.m.onBinaryData };
+            f.onStateChanged = function (xfiles, state) { if ((state == 0) && (parkedFiles[nodeid] == xfiles)) { delete parkedFiles[nodeid]; } };
+            f.onConsoleMessageChange = f.m.onFileUpdate = f.m.onBinaryData = noop;
+            f.xxparkedTime = Date.now();
+            parkedFiles[nodeid] = f;
+            trimParkedSessions(parkedFiles);
+
+            // Reset the files tab for the next device
+            files = filesNode = null;
+            QH('p13files', '');
+            p13filetree = null;
+            p13filetreelocation = [];
+            QH('p13currentpath', '');
+            QE('p13FolderUp', false);
+            QV('filesRecordIcon', false);
+            Q('p13Status').textContent = StatusStrs[0]; // setupFiles() updates the action buttons for the next device
+            return true;
+        }
+
+        // If the given device has a parked files session, put it back in the files tab. Returns true if it did.
+        function unparkFiles(nodeid) {
+            var f = parkedFiles[nodeid];
+            if (f == null) return false;
+            delete parkedFiles[nodeid];
+            var p = f.xxparked;
+            delete f.xxparked;
+            if ((p == null) || (f.State == 0)) return false;
+            f.onStateChanged = p.onStateChanged; f.onConsoleMessageChange = p.onConsoleMessageChange; f.m.onFileUpdate = p.onFileUpdate; f.m.onBinaryData = p.onBinaryData;
+            files = f;
+            onFilesStateChange(files, 3); // Shows the connected state and lists the last folder again
+            return true;
         }
 
         var desktopNode;
@@ -11275,10 +11386,12 @@
             // Setup the terminal
             if ((terminalNode != currentNode) && (terminal != null)) {
                 if (terminalNode._id != currentNode._id) {
-                    terminal.Stop(); terminalNode = null; terminal = null;
+                    if (parkTerminal() == false) { terminal.Stop(); } // Keep the session in the background if allowed, otherwise disconnect it
+                    terminalNode = null; terminal = null;
                 }
             }
             terminalNode = currentNode;
+            if (terminal == null) { unparkTerminal(currentNode._id); } // Bring back a background session for this device
             updateTerminalButtons();
         }
 
@@ -11600,7 +11713,8 @@
                         xterm.open(Q('termarea3xdiv')); // termarea3x
                         xterm.onData(function (data) { if (terminal != null) { if (terminal.urlname == 'sshterminalrelay.ashx') { terminal.socket.send('~' + data); } else { terminal.sendText(data); } } })
                         if (xtermfit) { xtermfit.fit(); }
-                        xterm.onTitleChange(function (title) { QH('termtitle', ' - ' + EscapeHtml(title)); });
+                        var thisXterm = xterm;
+                        xterm.onTitleChange(function (title) { if (thisXterm === xterm) { QH('termtitle', ' - ' + EscapeHtml(title)); } }); // Ignore background terminals
                         xterm.onResize(function (size) {
                             // Despam resize
                             if (xtermResizeTimer) clearTimeout(xtermResizeTimer);
@@ -11734,11 +11848,13 @@
             // Setup the files tab
             if ((filesNode != currentNode) && (files != null)) {
                 if (filesNode._id != currentNode._id) {
-                    files.Stop(); filesNode = null; files = null;
+                    if (parkFiles() == false) { files.Stop(); } // Keep the session in the background if allowed, otherwise disconnect it
+                    filesNode = null; files = null;
                 }
             }
             var samenode = (filesNode == currentNode);
             filesNode = currentNode;
+            if (files == null) { unparkFiles(currentNode._id); } // Bring back a background session for this device
             var online = ((filesNode.conn & 1) != 0) || (filesNode.mtype == 3); // If Agent (1) connected, enable Terminal
             QE('p13Connect', online);
             QE('p13Connects', online);

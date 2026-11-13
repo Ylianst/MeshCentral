@@ -2143,15 +2143,16 @@
               "allowAllScope": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": "fulladmin", "description": "Who may switch the panel to show all users' sessions: \"fulladmin\", \"manageusers\" (users with the manage users right), \"everyone\", \"none\", or an array of user ids (user//name) and user group ids (ugrp//xxx). Users only ever see sessions on devices they already have access to." }
             }
           },
-          "keepDesktopSessions": {
+          "keepRemoteSessions": {
             "type": [ "boolean", "object" ],
             "default": false,
-            "description": "When enabled for a user, moving to another device no longer disconnects the remote desktop of the previous device. The session is paused in the background and resumes, still connected, when the user returns to that device's Desktop tab. true is the same as { \"allow\": \"fulladmin\", \"max\": 4 }. Only applies to agent remote desktop, not Intel AMT or RDP.",
+            "description": "When enabled for a user, moving to another device no longer disconnects the remote desktop, terminal or files session of the previous device. The session stays connected in the background and is picked up again when the user returns to that device. Desktops are paused while in the background. true is the same as { \"allow\": \"fulladmin\", \"max\": 4 } with all session types. Applies to agent sessions, not Intel AMT, RDP, SSH or SFTP.",
             "additionalProperties": false,
             "properties": {
               "enabled": { "type": "boolean", "default": true, "description": "Set to false to disable." },
-              "allow": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": "fulladmin", "description": "Who may keep desktop sessions in the background: \"fulladmin\", \"manageusers\", \"everyone\", \"none\", or an array of user ids (user//name) and user group ids (ugrp//xxx)." },
-              "max": { "type": "integer", "minimum": 0, "maximum": 20, "default": 4, "description": "Maximum number of background desktop sessions per browser tab. When exceeded, the one parked longest is disconnected." }
+              "allow": { "type": [ "string", "array" ], "items": { "type": "string" }, "default": "fulladmin", "description": "Who may keep sessions in the background: \"fulladmin\", \"manageusers\", \"everyone\", \"none\", or an array of user ids (user//name) and user group ids (ugrp//xxx)." },
+              "sessions": { "type": "array", "items": { "type": "string", "enum": [ "desktop", "terminal", "files" ] }, "default": [ "desktop", "terminal", "files" ], "description": "Which session types are kept in the background." },
+              "max": { "type": "integer", "minimum": 0, "maximum": 20, "default": 4, "description": "Maximum number of background sessions of each type per browser tab. When exceeded, the one in the background longest is disconnected." }
             }
           },
           "terminalUserVariable": {
