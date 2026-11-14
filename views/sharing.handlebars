@@ -62,7 +62,7 @@
                     <span id=connectbutton1span><input type=button id=connectbutton1 cmenu="deskConnectButton" value="Connect" onclick=connectDesktop(event,3) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                     <span id=connectbutton1hspan>&nbsp;<input type=button id=connectbutton1h value="HW Connect" title="Connect using Intel AMT hardware KVM" onclick=connectDesktop(event,2) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                     <span id=disconnectbutton1span>&nbsp;<input type=button id=disconnectbutton1 value="Disconnect" onclick=connectDesktop(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                    &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span>
+                    &nbsp;<span id="deskstatus">Disconnected</span><span id="deskmetadata"></span><span id="deskIdleNotify" style="font-weight:bold"></span>
                 </div>
             </div>
             <div id=deskarea3x style="max-height:calc(100vh - 52px);height:calc(100vh - 56px);">
@@ -120,7 +120,7 @@
             <div>
                 <span id="connectbutton2span"><input type="button" id="connectbutton2" cmenu="termConnectButton" value="Connect" onclick=connectTerminal(event,1) onkeypress="return false" onkeydown="return false" disabled="disabled" /></span>
                 <span id="disconnectbutton2span">&nbsp;<input type="button" id="disconnectbutton2" value="Disconnect" onclick=connectTerminal(event,0) onkeypress="return false" onkeydown="return false" /></span>
-                &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span>
+                &nbsp;<span id="termstatus">Disconnected</span><span id="termtitle"></span><span id="termIdleNotify" style="font-weight:bold"></span>
             </div>
         </div>
         <div id="termarea3xdiv" style="position:absolute;top:28px;bottom:28px;left:0;right:0"></div>
@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <input id=p13Connect value="Connect" onclick=connectFiles(event) type="button" />
-                    &nbsp;<span id=p13Status>Disconnected</span>
+                    &nbsp;<span id=p13Status>Disconnected</span><span id="filesIdleNotify" style="font-weight:bold"></span>
                 </div>
             </div>
             <div id="fileArea2" class="areaHead2" valign=bottom>
@@ -322,6 +322,7 @@
         var features = parseInt('{{{features}}}');
         var features2 = parseInt('{{{features2}}}');
         var features3 = parseInt('{{{features3}}}');
+        var guestIdleTimeout = (parseInt('{{{guestIdleTimeout}}}') || 0) * 60000; // Guest idle timeout in milliseconds, 0 = none
 
         // Load desktop settings
         var t = null;
@@ -353,6 +354,14 @@
             setupDesktop();
             setupTerminal();
             setupFiles();
+            if (guestIdleTimeout > 0) {
+                // Terminal and files input does not go through the desktop key and mouse handlers, so also listen on the whole document.
+                document.addEventListener('keydown', setSessionActivity, true);
+                document.addEventListener('mousedown', setSessionActivity, true);
+                document.addEventListener('wheel', setSessionActivity, true);
+                document.addEventListener('touchstart', setSessionActivity, true);
+                setInterval(checkIdleSessionTimeout, 10000);
+            }
 
             // Set the file editor
             d4EditWrapVal = Number(getstore('editorWrap', 0));
@@ -2370,7 +2379,27 @@
         function haltEvent(e) { if (e.preventDefault) e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); return false; }
         function pad2(num) { var s = '00' + num; return s.substr(s.length - 2); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
-        function setSessionActivity() { sessionActivity = Date.now(); /*QH('idleTimeoutNotify', '');*/ }
+        function setSessionActivity() { sessionActivity = Date.now(); if (guestIdleTimeout > 0) { setIdleNotify(''); } }
+        // Guest idle timeout (domain guestSessionIdleTimeout, in minutes). Same behavior as userSessionIdleTimeout on the main page:
+        // after that long without keyboard or mouse input, disconnect remote desktop, terminal and files, with a countdown first.
+        function setIdleNotify(x) { QH('deskIdleNotify', x); QH('termIdleNotify', x); QH('filesIdleNotify', x); }
+        function checkIdleSessionTimeout() {
+            if ((desktop == null) && (terminal == null) && (files == null)) { sessionActivity = Date.now(); return; } // Only count idle time while connected
+            if (sessionActivity == null) { sessionActivity = Date.now(); }
+            var delta = (Date.now() - sessionActivity);
+            if (delta > guestIdleTimeout) {
+                if (desktop != null) { desktop.Stop(); webRtcDesktopReset(); desktop = null; } // Disconnect remote desktop
+                if (terminal != null) { terminal.Stop(); terminal = null; } // Disconnect terminal
+                if (files != null) { files.Stop(); files = null; } // Disconnect files
+                setIdleNotify(' - ' + "Idle timeout");
+            } else {
+                var ds = Math.round((guestIdleTimeout - delta) / 1000), theText = '';
+                if (ds <= 60) { theText = (ds == 1 ? "1 second until disconnect" : "{0} seconds until disconnect"); }
+                else { ds = Math.round(ds / 60); if (ds <= 5) { theText = (ds == 1 ? "1 minute until disconnect" : "{0} minutes until disconnect"); } }
+                setIdleNotify(theText ? (' - ' + format(theText, ds)) : '');
+            }
+        }
+
         function printDate(d) { return d.toLocaleDateString(urlargs.locale); }
         function printTime(d) { return d.toLocaleTimeString(urlargs.locale); }
         function printDateTime(d) { return d.toLocaleString(urlargs.locale); }
