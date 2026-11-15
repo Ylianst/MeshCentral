@@ -7037,37 +7037,41 @@
         * @param {*} [b=null] - An optional parameter passed to the callback.
         * @param {*} [tag=null] - Another optional parameter passed to the callback.
         */
+        var xxModalPendingOpen = null;
+
         function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
+            if (xxModal != null && (xxModalHidePending || xxModal._isTransitioning)) {
+                xxModalPendingOpen = function () { showModal(modalId, okButtonId, okCallback, b, tag); };
+                return;
+            }
             if (xxModal == null) {
-                ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
-                    Q(id).onclick = null;
-                    QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
-                    QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
-                });
                 xxModal = new bootstrap.Modal(document.getElementById(modalId));
                 xxModalShown = false; xxModalHidePending = false;
-                // mark shown so a hide deferred during the fade-in can fire
                 var shownModal = function (event) {
                     xxModalShown = true;
-                    document.getElementById(modalId).removeEventListener('shown.bs.modal', shownModal);
                     if (xxModalHidePending) { xxModalHidePending = false; if (xxModal) xxModal.hide(); }
-                }
+                };
                 document.getElementById(modalId).addEventListener('shown.bs.modal', shownModal);
                 var hiddenModal = function (event) {
-                    if (xxModal) { xxModal.dispose(); xxModal = null; }
                     xxModalShown = false; xxModalHidePending = false;
                     if (xxdialogMode != 0) { xxdialogMode = 0; }
-                    document.getElementById(modalId).removeEventListener('hidden.bs.modal', hiddenModal);
-                }
+                    if (xxModalPendingOpen) { var fn = xxModalPendingOpen; xxModalPendingOpen = null; fn(); }
+                };
                 document.getElementById(modalId).addEventListener('hidden.bs.modal', hiddenModal);
             }
-            xxModal.show();
+            ['idx_dlgOkButton', 'idx_dlgCancelButton', 'idx_dlgDeleteButton'].forEach(function (id) { // clear existing onclick, enable buttons and show them
+                Q(id).onclick = null;
+                QE(id, (id != 'idx_dlgDeleteButton' ? true : false));
+                QV(id, (id != 'idx_dlgDeleteButton' ? true : false));
+            });
+            var showCount = (xxModal._showCount = (xxModal._showCount || 0) + 1);
+            if (!xxModal._isShown) { xxModal.show(); }
             document.getElementById(okButtonId).onclick = function () {
                 if (typeof okCallback === 'function' && okCallback) {
                     xxdialogMode = 0; // reset xxdialogMode back to 0 because we might be opening up another dialog and it checks if one is already open
                     var callbackResult = okCallback(b, tag);
-                    // Close the modal by default unless `false` is explicitly returned from the callback function
-                    if (callbackResult !== false) { xxModal.hide(); }
+                    // Close the modal by default unless `false` is explicitly returned or okCallback opened another modal
+                    if (callbackResult !== false && xxModal && xxModal._showCount === showCount && !xxModalPendingOpen) { xxModal.hide(); }
                 } else {
                     if (xxModal) { xxModal.hide(); }
                 }
@@ -14356,24 +14360,38 @@
             // Display a dialog message
             if (data.action == 'dialogmessage') {
                 if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
+                        xxdialogTag = null;
+                        xxModalPendingOpen = null;
+                        setDialogMode(0); // Close the dialog box
+                        return;
+                    }
+
+                if (xxdialogMode && xxdialogTag != 'fileMsgDialog') return;
+
+                if ((data.msg == null) && (xxdialogTag == 'fileMsgDialog')) {
                     setDialogMode(0); // Close the dialog box
                 } else if ((data.msg == 'zipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
+                    xxdialogMode = 1; xxdialogTag = 'fileMsgDialog';
                     setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Compressing files..." + '</div>');
+                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
+                } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
+                    // Show the dialog box message
+                    xxdialogMode = 1; xxdialogTag = 'fileMsgDialog';
+                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />');
                     showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
                 } else if ((data.msg == 'unzipping') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
+                    xxdialogMode = 1; xxdialogTag = 'fileMsgDialog';
                     setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Unzipping file..." + '</div>');
                     showModal('xxAddAgentModal', 'idx_dlgOkButton');
                 } else if ((data.msg == 'unziperror') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
                     // Show the dialog box message
+                    xxdialogMode = 1; xxdialogTag = 'fileMsgDialog';
                     setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + "Unzipping Error" + '</div><br />' + EscapeHtml(data.error));
                     showModal('xxAddAgentModal', 'idx_dlgOkButton');
-                } else if ((data.msg == 'zippingFile') && ((!xxdialogMode) || (xxdialogTag == 'fileMsgDialog'))) {
-                    // Show the dialog box message
-                    setModalContent('xxAddAgent', "File Operation", '<div style=margin:10px>' + EscapeHtml(data.file) + '</div><br /><progress value=' + EscapeHtml(data.progress) + ' style=width:100% max=100 />');
-                    showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13fileOperationDialogEx(10));
                 }
+
                 return;
             }
 
@@ -14846,7 +14864,10 @@
                 }
             }
             setModalContent('xxAddAgent', "Unzip To Folder", '<input type=text id=p13unzipfolderinput maxlength=64 style=width:100% value="' + dest + '" />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', p13unzipFileEx(3, { action: 'unzip', input: input }));
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => {
+                xxdialogTag = 'fileMsgDialog';
+                p13unzipFileEx(3, { action: 'unzip', input: input });
+            });
             focusTextBox('p13unzipfolderinput');
         }
 
