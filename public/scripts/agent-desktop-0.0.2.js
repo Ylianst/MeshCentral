@@ -87,11 +87,13 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
     var mouseCursors = ['default', 'progress', 'crosshair', 'pointer', 'help', 'text', 'no-drop', 'move', 'nesw-resize', 'ns-resize', 'nwse-resize', 'w-resize', 'alias', 'wait', 'none', 'not-allowed', 'col-resize', 'row-resize', 'copy', 'zoom-in', 'zoom-out'];
 
     obj.Start = function () {
+        invalidateImages();
         obj.State = 0;
         obj.accumulator = null;
     }
 
     obj.Stop = function () {
+        invalidateImages();
         obj.setRotation(0);
         obj.UnGrabKeyInput();
         obj.UnGrabMouseInput();
@@ -126,27 +128,76 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
 
     // KVM Control.
     // Routines for processing incoming packets from the AJAX server, and handling individual messages.
-    obj.ProcessPictureMsg = function (data, X, Y) {
-        //if (obj.targetnode != null) obj.Debug("ProcessPictureMsg " + X + "," + Y + " - " + obj.targetnode.substring(0, 8));
-        var tile = new Image();
-        tile.xcount = obj.tilesReceived++;
-        var r = obj.tilesReceived, tdata = data.slice(4), ptr = 0, strs = [];
-        // String.fromCharCode.apply() can't handle very large argument count, so we have to split like this.
-        while ((tdata.byteLength - ptr) > 50000) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr, ptr + 50000))); ptr += 50000; }
-        if (ptr > 0) { strs.push(String.fromCharCode.apply(null, tdata.slice(ptr))); } else { strs.push(String.fromCharCode.apply(null, tdata)); }
-        tile.src = 'data:image/jpeg;base64,' + btoa(strs.join(''));
-        tile.onload = function () {
-            //console.log('DecodeTile #' + this.xcount);
-            if ((obj.Canvas != null) && (obj.KillDraw < r) && (obj.State != 0)) {
-                obj.PendingOperations.push([r, 2, tile, X, Y]);
-                while (obj.DoPendingOperations()) { }
-            } else {
-                obj.PendingOperations.push([r, 0]);
-            }
+    var imageGeneration = 0, refreshRequested = false, refreshSent = false, imageCancellations = [];
+    /** Invalidate outstanding decodes at connection/geometry boundaries.
+     * ImageBitmap promises cannot be cancelled: their completion checks the
+     * generation and closes stale bitmaps. Image fallback URLs are cancelled here.
+     */
+    function invalidateImages() {
+        imageGeneration++;
+        var cancellations = imageCancellations;
+        imageCancellations = [];
+        for (var c = 0; c < cancellations.length; c++) cancellations[c]();
+        for (var i = 0; i < obj.PendingOperations.length; i++) {
+            var picture = obj.PendingOperations[i][2];
+            if (picture && picture.close) picture.close();
         }
-        tile.onerror = function () { console.log('DecodeTileError'); obj.PendingOperations.push([r, 0]); if (obj.State != 0) { while (obj.DoPendingOperations()) { } } }
+        obj.PendingOperations = [];
+        obj.tilesReceived = obj.TilesDrawn = obj.KillDraw = 0;
+        refreshRequested = refreshSent = false;
+    }
+    /** Decode binary JPEG bytes without a base64/string copy.
+     * Every tile, including a failed decode, completes its sequence number so
+     * later copy/image operations cannot deadlock behind it. A generation owns
+     * the result; stale completions must never draw into a replacement desktop.
+     */
+    obj.ProcessPictureMsg = function (data, X, Y) {
+        var r = ++obj.tilesReceived, generation = imageGeneration;
+        var blob = new Blob([data.subarray(4)], { type: 'image/jpeg' });
+        function complete(picture) {
+            if (generation != imageGeneration || obj.State == 0) {
+                if (picture && picture.close) picture.close();
+                return;
+            }
+            obj.PendingOperations.push(picture ? [r, 2, picture, X, Y] : [r, 0]);
+            // Coalesce failures until an image draws after the refresh request.
+            // The microtask also lets disconnect/resize invalidate the request.
+            if (!picture && !refreshRequested) {
+                refreshRequested = true;
+                Promise.resolve().then(function () {
+                    if (generation == imageGeneration && obj.State != 0 && refreshRequested) { obj.SendRefresh(); refreshSent = true; }
+                });
+            }
+            while (obj.DoPendingOperations()) { }
+        }
+        if (typeof createImageBitmap === 'function') {
+            Promise.resolve().then(function () { return createImageBitmap(blob); }).then(complete, function () { complete(null); });
+        } else {
+            var tile = new Image(), url = URL.createObjectURL(blob);
+            var finished = false;
+            function cancel() { finish(false); }
+            imageCancellations.push(cancel);
+            // onload, onerror, assignment failure and cancellation share exactly
+            // one completion and URL release; cancellation may race an event.
+            function finish(success) {
+                if (finished) return;
+                finished = true;
+                var index = imageCancellations.indexOf(cancel);
+                if (index >= 0) imageCancellations.splice(index, 1);
+                tile.onload = tile.onerror = null;
+                URL.revokeObjectURL(url);
+                complete(success ? tile : null);
+            }
+            tile.onload = function () { finish(true); };
+            tile.onerror = function () { finish(false); };
+            try { tile.src = url; } catch (error) { finish(false); }
+        }
     }
 
+    /** Drain only the next wire-order operation, regardless of decode order.
+     * This queue owns completed bitmaps until drawing or invalidation closes
+     * them. Type 0 is a failed-tile marker and still advances the sequence.
+     */
     obj.DoPendingOperations = function () {
         if (obj.PendingOperations.length == 0) return false;
         for (var i = 0; i < obj.PendingOperations.length; i++) { // && KillDraw < tilesDrawn
@@ -154,7 +205,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             if (Msg[0] == (obj.TilesDrawn + 1)) {
                 if (obj.onPreDrawImage != null) obj.onPreDrawImage(); // Notify that we are about to draw on the canvas.
                 if (Msg[1] == 1) { obj.ProcessCopyRectMsg(Msg[2]); }
-                else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); delete Msg[2]; }
+                else if (Msg[1] == 2) { obj.Canvas.drawImage(Msg[2], obj.rotX(Msg[3], Msg[4]), obj.rotY(Msg[3], Msg[4])); if (Msg[2].close) Msg[2].close(); if (refreshSent) refreshRequested = refreshSent = false; delete Msg[2]; }
                 obj.PendingOperations.splice(i, 1);
                 obj.TilesDrawn++;
                 if ((obj.TilesDrawn == obj.tilesReceived) && (obj.KillDraw < obj.TilesDrawn)) { obj.KillDraw = obj.TilesDrawn = obj.tilesReceived = 0; }
@@ -207,8 +258,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         obj.FirstDraw = true;
         obj.ScreenWidth = obj.width = width;
         obj.ScreenHeight = obj.height = height;
-        obj.KillDraw = obj.tilesReceived;
-        while (obj.PendingOperations.length > 0) { obj.PendingOperations.shift(); }
+        invalidateImages();
         obj.SendCompressionLevel(obj.ImageType);
         obj.SendUnPause();
         obj.SendRemoteInputLock(2); // Query input lock state
@@ -221,12 +271,10 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
         if ((cmd == 3) || (cmd == 4) || (cmd == 7)) { X = (view[4] << 8) + view[5]; Y = (view[6] << 8) + view[7]; }
         if (obj.debugmode > 2) { console.log('CMD', cmd, cmdsize, X, Y); }
 
-        // Record the command if needed
+        // Convert to the legacy recording representation only when recording.
         if (obj.recordedData != null) {
-            // Fix for view being too large for String.fromCharCode.apply()
-            var chunkSize = 10000;
-            let result = '';
-            for (let i = 0; i < view.length; i += chunkSize) { result += String.fromCharCode.apply(null, view.slice(i, i + chunkSize)); }
+            var result = '', chunkSize = 10000;
+            for (var i = 0; i < view.length; i += chunkSize) result += String.fromCharCode.apply(null, view.subarray(i, i + chunkSize));
             if (cmdsize > 65000) {
                 obj.recordedData.push(recordingEntry(2, 1, obj.shortToStr(27) + obj.shortToStr(8) + obj.intToStr(cmdsize) + obj.shortToStr(cmd) + obj.shortToStr(0) + obj.shortToStr(0) + obj.shortToStr(0) + result));
             } else {
@@ -238,7 +286,7 @@ var CreateAgentRemoteDesktop = function (canvasid, scrolldiv) {
             case 3: // Tile
                 if (obj.FirstDraw) obj.onResize();
                 //console.log('TILE', X, Y, cmdsize);
-                obj.ProcessPictureMsg(view.slice(4), X, Y);
+                obj.ProcessPictureMsg(view.subarray(4), X, Y);
                 break;
             case 7: // Screen size
                 obj.ProcessScreenMsg(X, Y);

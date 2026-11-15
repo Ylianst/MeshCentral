@@ -2221,7 +2221,9 @@ function serverConnect() {
                     if ((args.id.split('/').length != 3) && (settings.currentDomain != null)) { args.id = 'node/' + settings.currentDomain + '/' + args.id; }
                     var id = getRandomHex(6);
                     ws.send(JSON.stringify({ action: 'msg', nodeid: args.id, type: 'tunnel', usage: 1, value: '*/meshrelay.ashx?p=' + protocol + '&nodeid=' + args.id + '&id=' + id + '&rauth=' + data.rcookie, responseid: 'meshctrl' }));
-                    connectTunnel(url.replace('/control.ashx', '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + encodeURIComponent(args.id) + '&id=' + id + '&auth=' + data.cookie));
+                    // A replacement string interprets $$ in an encrypted cookie as $.
+                    // Return the URL literally so relay authentication bytes stay intact.
+                    connectTunnel(url.replace('/control.ashx', function () { return '/meshrelay.ashx?browser=1&p=' + protocol + '&nodeid=' + encodeURIComponent(args.id) + '&id=' + id + '&auth=' + data.cookie; }));
                 }
                 break;
             }
