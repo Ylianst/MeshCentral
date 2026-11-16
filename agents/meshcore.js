@@ -4694,7 +4694,11 @@ function onTunnelControlData(data, ws) {
         case 'termsize': {
             // Indicates a change in terminal size
             if (process.platform == 'win32') {
-                if (ws.httprequest._dispatcher == null) return;
+                if (ws.httprequest._dispatcher == null) {
+                    // Legacy terminal running inside the agent itself (admin terminal on Windows without ConPTY)
+                    if ((ws.httprequest._term != null) && (typeof ws.httprequest._term.resizeTerminal == 'function')) { ws.httprequest._term.resizeTerminal(obj.cols, obj.rows); }
+                    return;
+                }
                 //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                 if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
             } else {
