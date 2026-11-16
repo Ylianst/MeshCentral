@@ -2021,6 +2021,20 @@ function handleServerCommand(data) {
                 if (!data.reply) sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
 
                 // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
+                // On Windows, the child_process 'uid' option only moves the new process into the user's session, it still runs with the
+                // agent's LocalSystem token. To really run as the logged in user, start a child agent with the user's own token
+                // (WTSQueryUserToken + CreateProcessAsUserW) and get the output back over named pipes.
+                if ((process.platform == 'win32') && (data.runAsUser > 0) && ((data.type == 1) || (data.type == 2))) {
+                    var runAsSession = getRunCommandsWindowsSession();
+                    if (runAsSession != null) { runCommandsAsWindowsUser(data, runAsSession); break; }
+                    if (data.runAsUser == 2) {
+                        // This command can only run as user and nobody is logged in
+                        if (data.reply) { mesh.SendCommand({ action: 'msg', type: 'runcommands', result: "No user logged in, commands not run.", sessionid: data.sessionid, responseid: data.responseid }); } else { sendConsoleText("Run commands: no user logged in, commands not run."); }
+                        break;
+                    }
+                    sendConsoleText("Run commands: no user logged in, running as agent.");
+                    data.runAsUser = 0; // No user logged in, run as agent
+                }
                 var options = {};
                 if (data.runAsUser > 0) {
                     try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
@@ -2871,7 +2885,12 @@ function terminal_consent_ask(ws) {
 function terminal_promise_connection_rejected(e)
 {
     // FAILED to connect terminal
-    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    // msgid 2 makes the web UI display "Denied" whatever the text is, so send "Failed to start..." errors without a msgid,
+    // then the web UI displays the actual error text instead.
+    var msg = e.toString();
+    var ctrl = { ctrlChannel: '102938', type: 'console', msg: msg };
+    if (msg.indexOf('Failed to start') != 0) { ctrl.msgid = 2; }
+    this.ws.write(JSON.stringify(ctrl));
     this.ws.end();
 }
 
@@ -2949,30 +2968,139 @@ function terminal_promise_consent_rejected(e)
     } else { } // no websocket, maybe log some messages somewhere?
 }
 function promise_init(res, rej) { this._res = res; this._rej = rej; }
+// Returns the Windows session to run user commands in (console user first, then any active user), or null if nobody is logged in.
+function getRunCommandsWindowsSession() {
+    try { return require('win-userdispatch').findSession({}); } catch (ex) { sendConsoleText("Run commands: no user session found, " + ex); return null; }
+}
+
+// Module sent to the child agent that runs under the user's account. It launches the shell, feeds it the commands and returns its output streams.
+var runCommandsUserModule = "var cp = require('child_process');\n\
+function run(type, cmds) {\n\
+    var child;\n\
+    if (type == 2) { child = cp.execFile(process.env['windir'] + '\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-']); }\n\
+    else { child = cp.execFile(process.env['windir'] + '\\\\system32\\\\cmd.exe', ['cmd']); }\n\
+    child.stderr.on('data', function (c) { try { global.ipcClient.write(c); } catch (ex) { } });\n\
+    child.on('exit', function () { setTimeout(function () { process.exit(); }, 1000); });\n\
+    child.stdin.write(cmds + '\\r\\nexit\\r\\n');\n\
+    return { out: child.stdout, in: child.stdin, child: child };\n\
+}\n\
+module.exports = { run: run };";
+
+// Wrapper module for the user terminal child agent. The child has no visible console, so anything the terminal module logs
+// with console.log() (for example 'Error calling SetWinEventHook' or 'Error Spawning CMD') or throws while starting is lost and
+// the remote terminal just stays blank. This sends those messages to the remote terminal instead.
+var userTerminalWrapperModule = "function report(msg) { try { global.ipcClient.write('\\r\\n[User terminal] ' + msg + '\\r\\n'); } catch (ex) { } }\n\
+var origLog = console.log;\n\
+console.log = function () { var a = []; for (var i = 0; i < arguments.length; ++i) { a.push(String(arguments[i])); } report(a.join(' ')); try { origLog.apply(console, arguments); } catch (ex) { } };\n\
+function start(mod, method, cols, rows) {\n\
+    try { return require(mod)[method](cols, rows); }\n\
+    catch (ex) { report('Failed to start: ' + ex); setTimeout(function () { process.exit(); }, 3000); throw ex; }\n\
+}\n\
+module.exports = { start: start };";
+
+// Run commands on Windows as the user logged into the given session. win-userdispatch starts a child agent with the user's
+// own token and no window, the child runs the shell and streams the output back to us.
+function runCommandsAsWindowsUser(data, session) {
+    var replydata = '', done = false, timer = null, dispatcher = null;
+    var finish = function (err) {
+        if (done) return;
+        done = true;
+        if (timer != null) { clearTimeout(timer); timer = null; }
+        if (err) { replydata += err; if (!data.reply) { sendConsoleText(err); } }
+        if (data.reply) {
+            mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+        } else {
+            sendConsoleText("Run commands completed.");
+        }
+        try { if ((dispatcher != null) && (dispatcher._runSocket != null)) { dispatcher._runSocket.end(); } } catch (ex) { }
+        try { if (dispatcher != null) { dispatcher.close(); } } catch (ex) { }
+        delete mesh.cmdchild;
+    };
+    mesh.cmdchild = {};
+    try {
+        // On Windows versions without ConPTY (Windows 7/8), the child must start with no console at all, having the system create
+        // its console at startup fails there (STATUS_DLL_INIT_FAILED). The shell the child starts gets its own windowless console.
+        var noConsole = false;
+        try { noConsole = !require('win-virtual-terminal').supported; } catch (ex) { }
+        dispatcher = require('win-userdispatch').dispatch({ sessionId: session.SessionId, noConsole: noConsole, modules: [{ name: 'meshcore-runcommands', script: runCommandsUserModule }], launch: { module: 'meshcore-runcommands', method: 'run', args: [data.type, data.cmds], split: true } });
+    } catch (ex) { finish("Unable to run commands as user: " + ex); return; }
+    mesh.cmdchild = dispatcher;
+    sendConsoleText("Run commands: running as " + dispatcher.user + (dispatcher.viaTaskScheduler ? " (using the Task Scheduler, the agent is not running as LocalSystem)." : (" (pid " + dispatcher.pid + ").")));
+    timer = setTimeout(function () { timer = null; var st = 'unknown'; try { st = dispatcher.status(); } catch (ex) { } finish("Unable to start commands as user " + dispatcher.user + " (timeout, " + st + ")."); }, 60000);
+    dispatcher.on('connection', function (s) {
+        if (timer != null) { clearTimeout(timer); timer = null; }
+        dispatcher._runSocket = s;
+        s.on('data', function (c) { replydata += c.toString(); if (!data.reply) { sendConsoleText(c.toString()); } });
+        s.on('end', function () { finish(); });
+        s.on('close', function () { finish(); });
+        s.on('error', function () { finish(); });
+    });
+}
+
+function terminal_userpromise_rejected(e)
+{
+    // Unable to list the logged in users
+    var that = this.that;
+    this.that = null;
+    if ((that != null) && (that.httprequest != null) && (that.httprequest.connectionPromise != null)) { that.httprequest.connectionPromise._rej('Failed to start user terminal session, unable to get the logged in users: ' + e); }
+}
+
 function terminal_userpromise_resolved(u)
 {
 
     var that = this.that;
+    if ((u.Active == null) || (u.Active.length == 0))
+    {
+        // Nobody is logged in, so there is no user to start the shell as. Fail right away instead of leaving the terminal waiting.
+        this.that = null;
+        that.httprequest.connectionPromise._rej('Failed to start user terminal session, no user is logged in.');
+        return;
+    }
     if (u.Active.length > 0)
     {
         var tmp;
         var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
 
 
-        if (require('win-virtual-terminal').supported)
+        // win-userdispatch starts the terminal process with the user's own token and without a console window (no Task Scheduler)
+        try
         {
-            // ConPTY PseudoTerminal
-            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            if (require('win-virtual-terminal').supported)
+            {
+                // ConPTY PseudoTerminal
+                tmp = require('win-userdispatch').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            }
+            else
+            {
+                // Legacy Terminal (Windows 7/8), it needs a real console window, win-terminal hides it once started
+                // It is started through a small wrapper that sends any startup error to the remote terminal instead of the hidden console.
+                tmp = require('win-userdispatch').dispatch({ user: username, console: true, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }, { name: 'meshcore-termwrap', script: userTerminalWrapperModule }], launch: { module: 'meshcore-termwrap', method: 'start', args: ['win-terminal', (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), this.cols, this.rows] } });
+            }
         }
-        else
+        catch (ex)
         {
-            // Legacy Terminal
-            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            that.httprequest.connectionPromise._rej('Failed to start user terminal session, ' + ex.toString());
+            this.that = null;
+            return;
         }
         that.httprequest._dispatcher = tmp;
         that.httprequest._dispatcher.connectionPromise = that.httprequest.connectionPromise;
         that.httprequest._dispatcher.on('connection', terminal_user_onconnection);
         that.httprequest._dispatcher.on('~', terminal_onfinalized);
+
+        // If the user's terminal process never connects back, report an error instead of leaving a blank terminal
+        tmp._startTimer = setTimeout(function (d, p) {
+            d._startTimer = null;
+            if (!p.completed) {
+                var st = 'unknown';
+                try { st = d.status(); } catch (ex) { }
+                var msg = 'Failed to start user terminal session, the terminal process for ' + d.user + ' did not connect back: ' + st + '.';
+                try { sendConsoleText(msg); } catch (ex) { } // The web UI only shows "Denied" for this error, so also log it to the agent console
+                try { d.close(); } catch (ex) { }
+                p._rej(msg);
+            }
+        }, 30000, tmp, that.httprequest.connectionPromise);
+        tmp.once('connection', function () { if (this._startTimer != null) { clearTimeout(this._startTimer); this._startTimer = null; } });
     }
     this.that = null;
     that = null;
@@ -3022,7 +3150,7 @@ function terminal_promise_consent_resolved()
                 userPromise.that = this;
                 userPromise.cols = cols;
                 userPromise.rows = rows;
-                userPromise.then(terminal_userpromise_resolved);
+                userPromise.then(terminal_userpromise_resolved, terminal_userpromise_rejected);
             }
         } catch (ex)
         {
