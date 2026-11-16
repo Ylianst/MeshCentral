@@ -51,6 +51,10 @@
                 </div>
                 <div id=XTermParent style="display:none;overflow:scroll;max-height:calc(100vh - 58px);height:calc(100vh - 58px);text-align:left">
                 </div>
+                <div id=FileParent style="display:none;overflow:hidden;max-height:calc(100vh - 58px);height:calc(100vh - 58px);background-color:black">
+                    <div id=fileBreadcrumb style="padding:8px 12px;background:#1c1c1c;color:#b8b8b8;font-size:12px;border-bottom:1px solid #333;overflow:hidden;white-space:nowrap;overflow-x:auto"></div>
+                    <div id=fileLog style="padding:10px 12px;background:#141414;font-size:13px;overflow:scroll;max-height:calc(100vh - 108px);color:#c9c9c9;line-height:1.55"></div>
+                </div>
                 <div id=p11DeskConsoleMsg style="display:none;cursor:pointer;position:absolute;left:30px;top:17px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=clearConsoleMsg()></div>
             </div>
             <div id=deskarea2 style="">
@@ -106,6 +110,8 @@
         var recFileLastTime = 0;
         var recFileEndTime = 0;
         var recFileMetadata = null;
+        var recFileStartAbsoluteMs = 0; // Absolute session start (ms epoch) parsed from metadata time, if available
+        var fileLocale = null; // Locale used for date/time formatting (mirrors default.handlebars args.locale)
         var recFileProtocol = 0;
         var recFileIndexBasePtr = null;
         var recFileExtras = null;
@@ -131,6 +137,20 @@
         var term = null;
         var termimage = null;
 
+        // File transfer (protocol 5) replay state
+        var fileLogDiv = null;
+        var fileBreadcrumbDiv = null;
+        var fileLogEntryCount = 0;
+        var fileTotalUploaded = 0;
+        var fileTotalUploadedBytes = 0;
+        var fileTotalDownloaded = 0;
+        var fileTotalDownloadedBytes = 0;
+        var fileCurrentPath = '';
+        var downloadAccum = null; // { path, bytes, logged }
+        var fileLogStartRelSec = 0;
+        var fileLastUploadReqid = null; // reqid of the last logged uploaddone (dedupe)
+        var fileLastNavigatePath = null; // path of the last logged navigation (dedupe consecutive duplicates)
+
         // Streaming values
         var ws = null;
         var streamingBlockSize = 102400; // 100k block
@@ -152,6 +172,10 @@
             })(window.navigator.userAgent.toLowerCase());
 
             urlargs = parseUriArgs(true);
+            // Date/time formatting mirrors default.handlebars: honor the user's
+            // locale preference (URL "locale" param, else the stored "loctag"
+            // preference) so the player shows whatever format the user expects.
+            if ((urlargs.locale != null) && (typeof urlargs.locale == 'string')) { fileLocale = urlargs.locale; } else { try { var _lt = getstore('loctag', 0); if ((_lt != null) && (_lt != '*')) { fileLocale = _lt; } } catch (ex) { fileLocale = null; } }
             window.onresize = deskAdjust;
             document.ondrop = ondrop;
             document.ondragover = ondragover;
@@ -395,6 +419,7 @@
             if ((type != 1) || (flags > 2)) { cleanup(); return; }
             try { recFileMetadata = JSON.parse(data) } catch (ex) { cleanup(); return; }
             if ((recFileMetadata == null) || (recFileMetadata.magic != 'MeshCentralRelaySession') || (recFileMetadata.ver != 1)) { cleanup(); return; }
+            if (recFileMetadata.time) { var _abs = Date.parse(recFileMetadata.time); if (!isNaN(_abs)) { recFileStartAbsoluteMs = _abs; } }
             if (recFileExtras) { for (var i in recFileExtras) { recFileMetadata[i] = recFileExtras[i]; } }
             var x = '';
             x += addInfo("Time", recFileMetadata.time);
@@ -416,6 +441,7 @@
                 else if (p == 101) { p = "Intel&reg; AMT Redirection"; }
                 else if ((p == 102) || (p == 200 && recFileMetadata.bpp != null)) { p = "Intel&reg; AMT KVM"; }
                 else if (p == 200) { p = "MeshMessenger"; }
+                else if (p == 5) { p = "MeshCentral Files"; }
                 x += addInfoNoEsc("Protocol", p);
             }
             var encQualityStr = "2 byte-per-pixel";
@@ -434,9 +460,16 @@
                 QV('SeekBackwardButton', false);
                 QV('SeekForwardButton', false);
             }
-            QV('DeskParent', true);
-            QV('TermParent', false);
-            QV('XTermParent', false);
+            if (recFileMetadata.protocol == 5) {
+                QV('DeskParent', false);
+                QV('TermParent', false);
+                QV('XTermParent', false);
+                QV('FileParent', true);
+            } else {
+                QV('DeskParent', true);
+                QV('TermParent', false);
+                QV('XTermParent', false);
+            }
             QV('ConvertAsWebM', false);
             if ((recFileMetadata.protocol == 1) || (recFileMetadata.protocol == 6) || (recFileMetadata.protocol == 8) || (recFileMetadata.protocol == 9)) {
                 // MeshCentral remote terminal
@@ -461,6 +494,17 @@
                 agentDesktop.State = 3;
                 deskAdjust();
                 QV('ConvertAsWebM', true);
+            }
+            else if (recFileMetadata.protocol == 5) {
+                // File transfer session (MeshCentral file browser)
+                recFileProtocol = 5;
+                x += '<br /><br /><span style=color:gray>' + "Press [space] to play/pause." + '</span>';
+                QE('PlayButton', true);
+                QE('PauseButton', false);
+                QE('RestartButton', false);
+                recFileStartTime = recFileLastTime = time;
+                fileLogStartRelSec = 0;
+                QV('ConvertAsWebM', false);
             }
             else if (recFileMetadata.protocol == 101) {
                 // Intel AMT Redirection
@@ -582,6 +626,11 @@
                 videoWriterCurrentFrame = time;
             }
 
+            // File transfer (protocol 5) replay - render each recorded file command/response
+            if ((recFileProtocol == 5) && (type == 2)) {
+                processFileTransferBlock(type, flags, time, data);
+            }
+
             // MeshCentral Terminal options
             if ((type == 2) && !flagBinary && flagUser && (data.length > 2) && (data[0] == '{')) {
                 var parsed = null;
@@ -650,6 +699,226 @@
             if (playing) { readNextBlock(processBlock); }
         }
 
+        //
+        // File transfer (protocol 5) replay - shows the recorded file commands as a live event log
+        //
+        function formatFileSize(bytes) {
+            if (typeof bytes != 'number' || isNaN(bytes)) return '0 B';
+            var units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            var i = 0;
+            while ((bytes >= 1024) && (i < units.length - 1)) { bytes /= 1024; i++; }
+            return ((i == 0) ? Math.round(bytes) : bytes.toFixed(1)) + ' ' + units[i];
+        }
+
+        function fileRelClock(time) {
+            var totalMs = (time - recFileStartTime);
+            if (totalMs < 0) { totalMs = 0; }
+            var totalSec = Math.floor(totalMs / 1000);
+            var hrs = Math.floor(totalSec / 3600);
+            var mins = Math.floor((totalSec % 3600) / 60);
+            var secs = totalSec % 60;
+            var ms = Math.floor((totalMs % 1000) / 10);
+            return (hrs > 0 ? pad2(hrs) + ':' : '') + pad2(mins) + ':' + pad2(secs) + '.' + pad2(ms);
+        }
+
+        // Prints a date/time using the user's locale, exactly like
+        // default.handlebars printDateTime(): d.toLocaleString(args.locale). The
+        // player mirrors args.locale with fileLocale (the URL "locale" param, or the
+        // stored "loctag" preference); when neither is set the browser's default
+        // locale is used.
+        function printDateTime(d) { return EscapeHtml(d.toLocaleString(fileLocale || undefined)); }
+
+        // Absolute wall-clock time for a recorded event: the session's start time
+        // (parsed from the metadata block, e.g. "11/9/2026, 2:42:40 PM") plus the
+        // event's recorded offset from the start. Formatted with printDateTime().
+        // Falls back to the relative clock when the metadata did not carry a usable
+        // timestamp.
+        function fileWallClock(time) {
+            var absMs = recFileStartAbsoluteMs + Math.max(0, (time - recFileStartTime));
+            if (!(recFileStartAbsoluteMs > 0) || isNaN(absMs)) { return fileRelClock(time); }
+            return printDateTime(new Date(absMs));
+        }
+
+        var fileLogKinds = {
+            navigate: { label: 'Navigate', color: '#4FC3F7', icon: '\u2192' },
+            response: { label: 'Response', color: '#90A4AE', icon: '\u21b6' },
+            upload: { label: 'Upload', color: '#66BB6A', icon: '\u2191' },
+            uploadok: { label: 'Upload OK', color: '#2E7D32', icon: '\u2713' },
+            download: { label: 'Download', color: '#42A5F5', icon: '\u2193' },
+            downloadok: { label: 'Download OK', color: '#1E88E5', icon: '\u2713' },
+            delete: { label: 'Delete', color: '#EF5350', icon: '\u2715' },
+            rename: { label: 'Rename', color: '#FFA726', icon: '\u270e' },
+            folder: { label: 'New Folder', color: '#FFB74D', icon: '\u25b8' },
+            file: { label: 'New File', color: '#FFCA28', icon: '\u2022' }
+        };
+
+        function addFileLogEntry(kind, title, detail, time) {
+            if (fileLogDiv == null) { fileLogDiv = Q('fileLog'); }
+            if (fileLogDiv == null) return;
+            fileLogEntryCount++;
+            var row = document.createElement('div');
+            row.setAttribute('style', 'display:flex;margin:0;padding:1px 0;border-bottom:1px solid #222222;');
+            var tc = document.createElement('span');
+            tc.setAttribute('style', 'flex:0 0 240px;color:#7a7a7a;white-space:nowrap;');
+            tc.textContent = fileWallClock(time);
+            row.appendChild(tc);
+            var k = fileLogKinds[kind] || fileLogKinds.response;
+            var kc = document.createElement('span');
+            kc.setAttribute('style', 'flex:0 0 150px;color:' + k.color + ';font-weight:bold;white-space:nowrap;');
+            kc.textContent = k.icon + '  ' + k.label;
+            row.appendChild(kc);
+            var dc = document.createElement('span');
+            dc.setAttribute('style', 'flex:1 1 auto;text-align:left;color:#cfcfcf;white-space:normal;word-break:break-word;');
+            dc.textContent = detail;
+            row.appendChild(dc);
+            fileLogDiv.appendChild(row);
+            fileLogDiv.scrollTop = fileLogDiv.scrollHeight;
+            // Keep the log from growing without bound during very long sessions.
+            if (fileLogDiv.childElementCount > 5000) { fileLogDiv.removeChild(fileLogDiv.firstChild); }
+        }
+
+        function updateFileBreadcrumb() {
+            if (fileBreadcrumbDiv == null) { fileBreadcrumbDiv = Q('fileBreadcrumb'); }
+            if (fileBreadcrumbDiv == null) return;
+            var crumb = (fileCurrentPath != null) ? fileCurrentPath : "(root)";
+            fileBreadcrumbDiv.innerHTML = '<span style="color:#6fb3e2;font-weight:bold;">MeshCentral File Session</span>' +
+                '<span style="margin-left:10px;color:#cfcfcf;border-left:1px solid #333;padding-left:10px;">' + EscapeHtml(crumb) + '</span>' +
+                '<span style="margin-left:10px;color:#66BB6A;border-left:1px solid #333;padding-left:10px;">' + "Uploaded:" + ' ' + fileTotalUploaded + ' ' + "file(s), " + formatFileSize(fileTotalUploadedBytes) + '</span>' +
+                '<span style="margin-left:10px;color:#42A5F5;border-left:1px solid #333;padding-left:10px;">' + "Downloaded:" + ' ' + fileTotalDownloaded + ' ' + "file(s), " + formatFileSize(fileTotalDownloadedBytes) + '</span>' +
+                '<span style="margin-left:10px;color:#888888;border-left:1px solid #333;padding-left:10px;">' + fileLogEntryCount + ' ' + "events" + '</span>';
+        }
+
+        function logFileResponse(obj, time) {
+            var dir = (Array.isArray(obj.dir)) ? obj.dir : [];
+            var files = 0, folders = 0, drives = 0, bytes = 0;
+            for (var i in dir) { if (!dir[i]) continue; if (typeof dir[i].t != 'number') continue; if (dir[i].t == 1) { drives++; } else if (dir[i].t == 2) { folders++; } else { files++; if (typeof dir[i].s == 'number') { bytes += dir[i].s; } } }
+            var p = (obj.path != null) ? obj.path : '';
+            var summary = '';
+            if (drives > 0) {
+                var parts = [];
+                for (var i in dir) {
+                    if (!dir[i] || (dir[i].t != 1)) continue;
+                    var tot = (typeof dir[i].s == 'number') ? formatFileSize(dir[i].s) : '0 B';
+                    var fr = (typeof dir[i].f == 'number') ? formatFileSize(dir[i].f) : '0 B';
+                    var disp = (dir[i].n != null) ? dir[i].n.replace(/\\/g, '/') : '';
+                    parts.push(disp + ' [' + tot + ', ' + fr + ' free]');
+                }
+                summary = (parts.length ? parts.join('    |    ') : p) + '  (' + dir.length + ' drive' + ((dir.length == 1) ? '' : 's') + ')';
+            } else {
+                summary = p + '  \u2192  ' + dir.length + ' item' + ((dir.length == 1) ? '' : 's') +
+                    '  (' + files + ' file' + ((files == 1) ? '' : 's') + ', ' + folders + ' folder' + ((folders == 1) ? '' : 's') + ', ' + formatFileSize(bytes) + ')';
+            }
+            addFileLogEntry('response', 'Response', summary, time);
+        }
+
+        function processFileTransferBlock(type, flags, time, data) {
+            if (type == 3) {
+                // End of the recording - flush any download that is still in progress.
+                if (downloadAccum != null) {
+                    fileTotalDownloaded++;
+                    fileTotalDownloadedBytes += downloadAccum.bytes;
+                    addFileLogEntry('downloadok', 'Download OK', (downloadAccum.path != null ? downloadAccum.path : fileCurrentPath) + '  (' + formatFileSize(downloadAccum.bytes) + ')', time);
+                    downloadAccum = null;
+                }
+                return;
+            }
+
+            // Parse JSON commands only (they start with '{'); binary blobs are file data.
+            var obj = null;
+            if ((data.length > 0) && (data.charAt(0) == '{')) {
+                try { obj = JSON.parse(data); } catch (ex) { obj = null; }
+            }
+
+            // Binary data blob. If a download is currently open, it is a download chunk.
+            if (obj == null) {
+                if ((downloadAccum != null) && ((flags & 1) != 0) && ((flags & 2) == 0)) {
+                    downloadAccum.bytes += data.length;
+                }
+                return;
+            }
+
+            // Any download sub-message keeps the download open and waits for the data.
+            if (obj.action == 'download') {
+                if (obj.sub == 'start') {
+                    if (downloadAccum == null) {
+                        fileCurrentPath = (obj.path != null) ? obj.path : '';
+                        downloadAccum = { path: obj.path, bytes: 0, logged: false };
+                        addFileLogEntry('download', 'Download', fileCurrentPath, time);
+                    } else { downloadAccum.path = (obj.path != null) ? obj.path : downloadAccum.path; }
+                }
+                return;
+            }
+
+            // Directory listing response (no action, but has a reqid).
+            if ((obj.action == null) && (typeof obj.reqid == 'number')) {
+                if (downloadAccum != null) {
+                    fileTotalDownloaded++;
+                    fileTotalDownloadedBytes += downloadAccum.bytes;
+                    addFileLogEntry('downloadok', 'Download OK', (downloadAccum.path != null ? downloadAccum.path : fileCurrentPath) + '  (' + formatFileSize(downloadAccum.bytes) + ')', time);
+                    downloadAccum = null;
+                }
+                logFileResponse(obj, time);
+                return;
+            }
+
+            // Everything else (options, handshake, close, transfer-control) is ignored.
+            if (obj.action == null) { return; }
+            // File relay transfer-control messages are not user-facing events.
+            if ((obj.action == 'uploadstart') || (obj.action == 'uploadack') || (obj.action == 'downloadstartack')) { return; }
+
+            // Flush any open download before processing a new command.
+            if (downloadAccum != null) {
+                fileTotalDownloaded++;
+                fileTotalDownloadedBytes += downloadAccum.bytes;
+                addFileLogEntry('downloadok', 'Download OK', (downloadAccum.path != null ? downloadAccum.path : fileCurrentPath) + '  (' + formatFileSize(downloadAccum.bytes) + ')', time);
+                downloadAccum = null;
+            }
+
+            switch (obj.action) {
+                case 'ls':
+                    fileCurrentPath = (obj.path != null) ? obj.path : '';
+                    updateFileBreadcrumb();
+                    // Skip a navigation that is identical to the immediately preceding one
+                    // (the relay sometimes echoes the same listing twice at the same time).
+                    if (fileLastNavigatePath !== fileCurrentPath) {
+                        addFileLogEntry('navigate', 'Navigate', fileCurrentPath || '(root)', time);
+                    }
+                    fileLastNavigatePath = fileCurrentPath;
+                    break;
+                case 'upload':
+                    fileTotalUploaded++;
+                    fileTotalUploadedBytes += (typeof obj.size == 'number') ? obj.size : 0;
+                    updateFileBreadcrumb();
+                    addFileLogEntry('upload', 'Upload', (obj.name || '') + '  (' + formatFileSize(obj.size) + ')  ->  ' + (obj.path || ''), time);
+                    break;
+                case 'uploaddone':
+                    if (fileLastUploadReqid != obj.reqid) {
+                        fileLastUploadReqid = obj.reqid;
+                        addFileLogEntry('uploadok', 'Upload OK', 'Total: ' + fileTotalUploaded + ' file(s), ' + formatFileSize(fileTotalUploadedBytes), time);
+                    }
+                    break;
+                case 'rm':
+                    addFileLogEntry('delete', 'Delete', (obj.delfiles || []).join(', '), time);
+                    break;
+                case 'rename':
+                    addFileLogEntry('rename', 'Rename', (obj.oldname || '') + '  ->  ' + (obj.newname || ''), time);
+                    break;
+                case 'mkdir':
+                    fileCurrentPath = (obj.path != null) ? obj.path : fileCurrentPath;
+                    updateFileBreadcrumb();
+                    addFileLogEntry('folder', 'New Folder', fileCurrentPath, time);
+                    break;
+                case 'mkfile':
+                    fileCurrentPath = (obj.path != null) ? obj.path : fileCurrentPath;
+                    updateFileBreadcrumb();
+                    addFileLogEntry('file', 'New File', fileCurrentPath, time);
+                    break;
+                default:
+                    addFileLogEntry('navigate', obj.action, (obj.path != null ? obj.path : ''), time);
+                    break;
+            }
+        }
+
         function cleanup() {
             clearXTerm();
             recFile = null;
@@ -675,13 +944,24 @@
             QH('timespan', '00:00:00');
             QV('metadatadiv', true);
             if (urlargs.stream == null) {
-                QH('metadatadiv', '<span style=\"font-family:Arial,Helvetica Neue,Helvetica,sans-serif;font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop a .mcrec file or click \"Open File...\"" + '</span>');
+                QH('metadatadiv', '<span style=\"font-size:28px\">MeshCentral Session Player</span><br /><br /><span style=color:gray>' + "Drag & drop a .mcrec file or click \"Open File...\"" + '</span>');
             } else {
                 QH('metadatadiv', '');
             }
             QV('DeskParent', true);
             QV('TermParent', false);
             QV('XTermParent', false);
+            QV('FileParent', false);
+            fileLogEntryCount = 0;
+            fileTotalUploaded = 0;
+            fileTotalUploadedBytes = 0;
+            fileTotalDownloaded = 0;
+            fileTotalDownloadedBytes = 0;
+            fileCurrentPath = '';
+            downloadAccum = null;
+            fileLastUploadReqid = null;
+            fileLastNavigatePath = null;
+            if (fileLogDiv != null) { fileLogDiv.innerHTML = ''; }
         }
 
         function ondrop(e) {
@@ -833,6 +1113,15 @@
                 //agentTerminal = CreateAmtRemoteTerminal('Term', {});
                 //agentTerminal.State = 3;
             }
+            else if (recFileProtocol == 5) {
+                QV('DeskParent', false);
+                QV('TermParent', false);
+                QV('XTermParent', false);
+                QV('FileParent', true);
+                if (fileLogDiv == null) { fileLogDiv = Q('fileLog'); }
+                if (fileBreadcrumbDiv == null) { fileBreadcrumbDiv = Q('fileBreadcrumb'); }
+                updateFileBreadcrumb();
+            }
             if (waitTimerArgs != null) {
                 // Resuming mid-gap: restart timer for remaining time from current position
                 var resumeArgs = waitTimerArgs;
@@ -877,10 +1166,32 @@
             QE('RestartButton', false);
             QS('progressbar').width = '0px';
             QH('timespan', '00:00:00');
-            QV('DeskParent', true);
-            QV('TermParent', false);
-            QV('XTermParent', false);
-            clearXTerm();
+            if (recFileProtocol == 5) {
+                // Reset the file transfer replay state
+                fileLogStartRelSec = 0;
+                fileLogEntryCount = 0;
+                fileTotalUploaded = 0;
+                fileTotalUploadedBytes = 0;
+                fileTotalDownloaded = 0;
+                fileTotalDownloadedBytes = 0;
+                fileCurrentPath = '';
+                downloadAccum = null;
+                fileLastUploadReqid = null;
+                fileLastNavigatePath = null;
+                if (fileLogDiv != null) { fileLogDiv.innerHTML = ''; }
+                QV('DeskParent', false);
+                QV('TermParent', false);
+                QV('XTermParent', false);
+                QV('FileParent', true);
+                if (fileLogDiv == null) { fileLogDiv = Q('fileLog'); }
+                if (fileBreadcrumbDiv == null) { fileBreadcrumbDiv = Q('fileBreadcrumb'); }
+                updateFileBreadcrumb();
+            } else {
+                QV('DeskParent', true);
+                QV('TermParent', false);
+                QV('XTermParent', false);
+                clearXTerm();
+            }
             recFileLastTime = recFileStartTime;
             if (agentDesktop) {
                 agentDesktop.Canvas.clearRect(0, 0, agentDesktop.CanvasId.width, agentDesktop.CanvasId.height);
