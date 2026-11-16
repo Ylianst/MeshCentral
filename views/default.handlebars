@@ -6802,7 +6802,7 @@
                     if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
 
                     // If the server has a specific terminal shell mode, don't show connection options
-                    if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
+                    if (serverinfo.linuxshell && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) return;
 
                     contextelement = elem;
                     var contextmenudiv = document.getElementById('termShellContextMenu'); // Windows options (Power Shell)
@@ -11504,7 +11504,7 @@
                     }
 
                     // If the server requires a shell type
-                    if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                    if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) {
                         if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
                         if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                         if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }

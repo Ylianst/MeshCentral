@@ -5854,7 +5854,7 @@
                 */
 
                 // If the server requires a shell type
-                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) {
                     if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }

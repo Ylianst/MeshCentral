@@ -7924,7 +7924,7 @@
                 case 1: { // Terminal connect button context menu
                     if ((currentNode == null) || (currentNode.agent == null) || (currentNode.mtype == 3)) return true;
                     // If the server has a specific terminal shell mode, don't show connection options
-                    if (serverinfo.linuxshell && (currentNode.agent.id > 4)) return;
+                    if (serverinfo.linuxshell && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) return;
                     var nextElement = event.target.nextElementSibling;
                     if (nextElement) {
                         var children = nextElement.children;  // This will get only element nodes
@@ -13395,7 +13395,7 @@
                     }
 
                     // If the server requires a shell type
-                    if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                    if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) {
                         if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
                         if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                         if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
