@@ -636,33 +636,56 @@ function CreateMeshCentralServer(config, args) {
                 const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
                 const env = Object.assign({}, process.env); // Shallow clone
                 if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
-                // always use --save-exact - https://stackoverflow.com/a/64507176/1210734
-                const xxprocess = child_process.exec(npmpath + ' install --save-exact --no-audit meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
-                    if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
-                });
-                xxprocess.data = '';
-                xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
-                xxprocess.on('close', function (code) {
-                    if (code == 0) { console.log('Update completed...'); }
-
-                    // Run the server updated script if present
-                    if (typeof obj.config.settings.runonserverupdated == 'string') {
-                        const child_process = require('child_process');
-                        var parentpath = __dirname;
-                        if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
-                        child_process.exec(obj.config.settings.runonserverupdated + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
+                // Before updating, check the remote package's required Node.js engine.
+                // If the host's Node.js version does not satisfy it, abort the update and
+                // keep the current running version intact instead of corrupting the install.
+                child_process.exec(npmpath + npmproxy + ' view meshcentral' + version + ' engines.node', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout) {
+                    var enginesNode = '';
+                    if (error == null && stdout) { try { enginesNode = stdout.split('\r').join('').split('\n').join('').trim(); } catch (ex) { } }
+                    var nodeCompatible = true;
+                    var nodeReason = '';
+                    if (enginesNode) {
+                        try {
+                            if (!common.nodeVersionSatisfies(process.versions.node, enginesNode)) {
+                                nodeCompatible = false;
+                                nodeReason = 'the requested MeshCentral package requires Node.js ' + enginesNode + ' but this host is running ' + process.version + '.';
+                            }
+                        } catch (ex) { /* If we can't parse the requirement, don't block the update. */ }
                     }
-
-                    if (obj.args.cleannpmcacheonupdate === true) {
-                        // Perform NPM cache clean
-                        console.log('Cleaning NPM cache...');
-                        const xxxprocess = child_process.exec(npmpath + ' cache clean --force', { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
-                        xxxprocess.on('close', function (code) { setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
-                    } else {
-                        // Run the updated server
+                    if (!nodeCompatible) {
+                        console.log('WARNING: MeshCentral self-update aborted. ' + nodeReason + ' The current version is being kept intact.');
+                        // Relaunch the current server so the installation stays intact.
                         setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
+                        return;
                     }
+                    // always use --save-exact - https://stackoverflow.com/a/64507176/1210734
+                    const xxprocess = child_process.exec(npmpath + ' install --save-exact --no-audit meshcentral' + version + npmproxy, { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) {
+                        if ((error != null) && (error != '')) { console.log('Update failed: ' + error); }
+                    });
+                    xxprocess.data = '';
+                    xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+                    xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
+                    xxprocess.on('close', function (code) {
+                        if (code == 0) { console.log('Update completed...'); }
+
+                        // Run the server updated script if present
+                        if (typeof obj.config.settings.runonserverupdated == 'string') {
+                            const child_process = require('child_process');
+                            var parentpath = __dirname;
+                            if ((__dirname.endsWith('/node_modules/meshcentral')) || (__dirname.endsWith('\\node_modules\\meshcentral')) || (__dirname.endsWith('/node_modules/meshcentral/')) || (__dirname.endsWith('\\node_modules\\meshcentral\\'))) { parentpath = require('path').join(__dirname, '../..'); }
+                            child_process.exec(obj.config.settings.runonserverupdated + ' ' + getCurrentVersion(), { maxBuffer: 512000, timeout: 120000, cwd: parentpath }, function (error, stdout, stderr) { });
+                        }
+
+                        if (obj.args.cleannpmcacheonupdate === true) {
+                            // Perform NPM cache clean
+                            console.log('Cleaning NPM cache...');
+                            const xxxprocess = child_process.exec(npmpath + ' cache clean --force', { maxBuffer: Infinity, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+                            xxxprocess.on('close', function (code) { setTimeout(function () { obj.launchChildServer(startArgs); }, 1000); });
+                        } else {
+                            // Run the updated server
+                            setTimeout(function () { obj.launchChildServer(startArgs); }, 1000);
+                        }
+                    });
                 });
             } else {
                 if (error != null) {
