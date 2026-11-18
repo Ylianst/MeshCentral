@@ -2647,6 +2647,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if (req.body.authcookie) {
             // If a authentication cookie is provided, decode it here
             var loginCookie = obj.parent.decodeCookie(req.body.authcookie, obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
+            if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
             if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { user = obj.users[loginCookie.userid]; }
         } else {
             // Check if the user is logged and we have all required parameters
@@ -4794,7 +4795,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
+                if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -4840,7 +4841,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
+                if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -5176,7 +5177,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
+                if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -5289,7 +5290,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
+                if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -6310,7 +6311,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             // If an authentication cookie is embedded in the form, use that.
             if ((fields != null) && (fields.auth != null) && (fields.auth.length == 1) && (typeof fields.auth[0] == 'string')) {
                 var loginCookie = obj.parent.decodeCookie(fields.auth[0], obj.parent.loginCookieEncryptionKey, 60); // 60 minute timeout
-                if ((loginCookie != null) && (checkAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding.
+                if ((loginCookie != null) && (checkUserAuthCookie(loginCookie, req) == false)) { loginCookie = null; } // Check cookie IP and session binding, device share guests are not users.
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if (authUserid == null) { res.sendStatus(401); return; }
@@ -7692,7 +7693,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         } else {
                             obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
                         }
-                    });
+                    }, true);
                 });
                 if (obj.args.wanonly != true) { // If the server is not in WAN mode, allow server relayed connections.
                     obj.app.ws(url + 'localrelay.ashx', function (ws, req) {
@@ -8169,7 +8170,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                             } else {
                                 obj.meshRelayHandler.CreateMeshRelay(obj, ws1, req1, domain, user, cookie); // Normal relay 1-to-1
                             }
-                        });
+                        }, true);
                     });
 
                     // Allows agents to transfer files
@@ -8196,7 +8197,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     obj.webRelayRouter = require('express').Router();
 
                     // This is the magic URL that will setup the relay session
-                    obj.webRelayRouter.get('/control-redirect.ashx', function (req, res, next) {
+                    obj.webRelayRouter.get('/control-redirect.ashx', obj.checkWebRelayShare, function (req, res, next) {
                         if (obj.args.relaydns.indexOf(req.hostname) == -1) { res.sendStatus(404); return; }
                         if ((req.session.userid == null) && obj.args.user && obj.users['user//' + obj.args.user.toLowerCase()]) { req.session.userid = 'user//' + obj.args.user.toLowerCase(); } // Use a default user if needed
                         res.set({ 'Cache-Control': 'no-store' });
@@ -9282,9 +9283,22 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.p == 'number') && (typeof cookie.gn == 'string'));
     }
 
+    // A guest's web relay link is good until the share's end time, so look the share up before a session is made: it may have been removed since
+    obj.checkWebRelayShare = function (req, res, next) {
+        const c = obj.parent.decodeCookie(req.query.c, obj.parent.loginCookieEncryptionKey, 32);
+        if ((c == null) || (c.r != 8)) { next(); return; }
+        if (((c.p != 8) && (c.p != 16)) || (typeof c.nid != 'string') || (typeof c.pid != 'string') || (typeof c.domainid != 'string')) { res.sendStatus(404); return; }
+        obj.db.GetAllTypeNodeFiltered([c.nid], c.domainid, 'deviceshare', null, function (err, docs) {
+            if ((err != null) || !Array.isArray(docs) || !docs.some(function (share) { return (share.publicid === c.pid); })) { res.sendStatus(404); return; }
+            next();
+        });
+    }
+
     // Authenticates a relay session, refused while force2factor still requires this user to set up 2FA. control.ashx stays open so the account page can do that.
-    function PerformWSRelayAuth(ws, req, noAuthOk, func) {
+    // Device share guests are only let in when guestOk is set, the relay then has to hold them to their share.
+    function PerformWSRelayAuth(ws, req, noAuthOk, func, guestOk) {
         PerformWSSessionAuth(ws, req, noAuthOk, function (ws1, req1, domain, user, cookie, authData) {
+            if ((guestOk !== true) && isDeviceShareGuestCookie(cookie)) { parent.debug('web', 'WSERROR: Device share cookie on a user relay.'); try { ws1.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: 'noauth' })); ws1.close(); ws1._socket.resume(); } catch (e) { } return; }
             if (obj.force2factorPending(domain, user, req1)) { parent.debug('web', 'WSERROR: 2FA setup required.'); try { ws1.send(JSON.stringify({ action: 'close', cause: 'noauth', msg: '2farequired' })); ws1.close(); ws1._socket.resume(); } catch (e) { } return; } // Resume the paused socket so the close handshake completes
             func(ws1, req1, domain, user, cookie, authData);
         });
@@ -11247,6 +11261,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         if ((cookie.ip != null) && !checkCookieIp(cookie.ip, req.clientIp)) { parent.debug('web', 'ERR: Invalid cookie IP address, got \"' + cookie.ip + '\", expected \"' + cleanRemoteAddr(req.clientIp) + '\".'); return false; }
         if ((cookie.x != null) && (obj.destroyedSessions[cookie.userid + '/' + cookie.x] != null)) { parent.debug('web', 'ERR: Cookie issued to a session that has logged out.'); return false; }
         return true;
+    }
+
+    // A device share cookie carries the userid of whoever made the share, so anything that acts as the cookie's user has to refuse it
+    function checkUserAuthCookie(cookie, req) {
+        if (isDeviceShareGuestCookie(cookie)) { parent.debug('web', 'ERR: Device share cookie used as a user cookie.'); return false; }
+        return checkAuthCookie(cookie, req);
     }
 
     // Takes a formating string like "this {{{a}}} is an {{{b}}} example" and fills the a and b with input o.a and o.b

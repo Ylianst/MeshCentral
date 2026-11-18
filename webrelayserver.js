@@ -202,7 +202,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
         });
 
         // This is the magic URL that will setup the relay session
-        obj.app.get('/control-redirect.ashx', function (req, res) {
+        obj.app.get('/control-redirect.ashx', function (req, res, next) { parent.webserver.checkWebRelayShare(req, res, next); }, function (req, res) {
             res.set({ 'Cache-Control': 'no-store' });
             parent.debug('webrelay', 'webRelaySetup');
 

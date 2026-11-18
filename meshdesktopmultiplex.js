@@ -1301,7 +1301,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
                 performRelay(0);
             });
             return obj;
-        } else if ((obj.req.query.nodeid != null) && ((obj.req.query.tcpport != null) || (obj.req.query.udpport != null))) {
+        } else if (((cookie == null) || (cookie.nid == null)) && (obj.req.query.nodeid != null) && ((obj.req.query.tcpport != null) || (obj.req.query.udpport != null))) { // A device share cookie is held to its share, it can't route to a port
             // We have routing instructions in the URL arguments, but first, check user access for this node.
             parent.db.Get(obj.req.query.nodeid, function (err, docs) {
                 if (obj.req == null) return; // This connection was closed.
