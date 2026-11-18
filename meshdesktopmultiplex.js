@@ -1302,6 +1302,8 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
             });
             return obj;
         } else if ((obj.req.query.nodeid != null) && ((obj.req.query.tcpport != null) || (obj.req.query.udpport != null))) {
+            // Device share guest sessions are limited to the shared device and protocol, they can't request TCP/UDP routing.
+            if (parent.isDeviceShareGuestCookie(cookie)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return obj; }
             // We have routing instructions in the URL arguments, but first, check user access for this node.
             parent.db.Get(obj.req.query.nodeid, function (err, docs) {
                 if (obj.req == null) return; // This connection was closed.
@@ -1331,6 +1333,7 @@ function CreateMeshRelayEx2(parent, ws, req, domain, user, cookie) {
             return obj;
         } else if ((cookie != null) && (cookie.nid != null) && (typeof cookie.r == 'number') && (typeof cookie.cf == 'number') && (typeof cookie.gn == 'string')) {
             // We have routing instructions in the cookie, but first, check user access for this node.
+            if ((typeof cookie.p != 'number') || ((cookie.p & 2) == 0)) { console.log('ERR: Invalid protocol usage'); try { obj.close(); } catch (ex) { } return obj; } // This share does not include the desktop
             parent.db.Get(cookie.nid, function (err, docs) {
                 if (obj.req == null) return; // This connection was closed.
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
