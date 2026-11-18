@@ -940,7 +940,7 @@
                             </div>
                             <div>
                                 <input id=p13AutoConnect value="AutoConnect" onclick=autoConnectFiles(event) type="button" style="display:none" />
-                                <input id=p13Connect value="Connect" cmenu="filesConnectButton" onclick=connectFiles(event,1) type="button" />
+                                <input id=p13Connect value="Connect" cmenu="filesConnectButton" onclick=connectFiles(event,3) type="button" />
                                 <input id=p13Disconnect value="Disconnect" onclick=connectFiles(event) type="button" />
                                 <input id=p13Connects value="SFTP Connect" cmenu=sshPortContextMenu onclick=connectFiles(event,2) type="button" />
                                 <span id=p13Status>Disconnected</span>
@@ -995,7 +995,11 @@
                         </td>
                     </tr>
                 </table>
-                <div id=p13FilesConsoleMsg style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" onclick=p13clearConsoleMsg()></div>
+                <div id=p13FilesConsoleMsg 
+                    style="display:none;text-align:left;cursor:pointer;position:absolute;left:30px;top:165px;color:yellow;background-color:rgba(0,0,0,0.6);padding:10px;border-radius:5px" 
+                    onclick=p13clearConsoleMsg()></div>
+                <div id=p13FilesSessionSelector
+                    style="display:none;position:absolute;left:30px;top:165px;right:30px;bottom:17px;overflow-y:auto"></div>
                 <div id="p13filetable" style="">
                     <div id="p13bigok" style="display:none"><b>&checkmark;</b></div>
                     <div id="p13bigfail" style="display:none"><b>&#10007;</b></div>
@@ -2917,6 +2921,27 @@
                                 // Display success/fail on the clipboard dialog box.
                                 QH('dlgClipStatus', message.success ? '<span style=color:green>' + "Success" + '</span>' : '<span style=color:red>' + "Failed" + '</span>')
                                 setTimeout(function () { try { QH('dlgClipStatus', ''); } catch (ex) { } }, 2000);
+                            } else if ((message.type === 'userSessions') && (currentNode != null) && (currentNode._id === message.nodeid) && ((message.tag == 32) || (message.tag == 33)) && (files == null)) {
+                                var fileSessions = [];
+                                var fileSessionTag = (message.tag == 32) ? 0x0020 : 0;
+                                if (message.data != null) { for (var i in message.data) { if ((message.data[i].State == 'Active') || (message.data[i].State == 'Connected') || (message.data[i].StationName == 'Console') || (debugmode == 3)) { fileSessions.push(message.data[i]); } } }
+                                if (fileSessions.length === 0) { connectFiles(null, 1, null, fileSessionTag); } // No active sessions, do a normal connection.
+                                else if (fileSessions.length === 1) {
+                                    var userSessionId = parseInt(fileSessions[0].SessionId);
+                                    connectFiles(null, 1, isNaN(userSessionId) ? null : userSessionId, fileSessionTag);
+                                } // One active session, connect to it
+                                else {
+                                    var x = '';
+                                    for (var i in fileSessions) {
+                                        var userSessionId = parseInt(fileSessions[i].SessionId);
+                                        if (isNaN(userSessionId)) continue;
+                                        x += '<div style="text-align:left;cursor:pointer;background-color:gray;margin:5px;padding:5px;border-radius:5px" onclick="connectFiles(event,1,' + userSessionId + ',' + fileSessionTag + ')">' + EscapeHtml(fileSessions[i].State) + (fileSessions[i].StationName ? (', ' + EscapeHtml(fileSessions[i].StationName)) : '');
+                                        if (fileSessions[i].Username) { if (fileSessions[i].Domain) { x += ' - ' + EscapeHtml(fileSessions[i].Domain) + '/' + EscapeHtml(fileSessions[i].Username); } else { x += ' - ' + EscapeHtml(fileSessions[i].Username); } }
+                                        x += '</div>';
+                                    }
+                                    QH('p13FilesSessionSelector', x);
+                                    QV('p13FilesSessionSelector', true);
+                                }
                             } else if ((message.type === 'userSessions') && (currentNode != null) && (currentNode._id === message.nodeid) && (desktop == null)) {
                                 // Got list of user sessions
                                 var userSessions = [];
@@ -6959,7 +6984,7 @@
         }
 
         function cmconnectfilesaction() {
-            connectFiles(null, 1, 0x0020);
+            meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: 32 });
         }
 
         function cmtermaction(action, consent) {
@@ -11733,14 +11758,20 @@
         function autoConnectFiles(e) { if (autoConnectFilesTimer == null) { autoConnectFilesTimer = setInterval(connectFiles, 100); } else { clearInterval(autoConnectFilesTimer); autoConnectFilesTimer = null; } }
 
         // 1 = Agent, 2 = SFTP
-        function connectFiles(e, contype, consent) {
+        function connectFiles(e, contype, tsid, consent) {
+            QV('p13FilesSessionSelector', false);
             p13clearConsoleMsg();
             if (!files) {
+                if (contype == 3) {
+                    meshserver.send({ action: 'msg', type: 'userSessions', nodeid: currentNode._id, tag: 33 });
+                    return;
+                }
                 // Setup a mesh agent files
                 files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles, p13gotFilesBinary), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.contype = contype;
                 files.options = { consent: consent }
+                if (typeof tsid == 'number') { files.options.tsid = tsid; }
                 files.attemptWebRTC = attemptWebRTC;
                 files.webrtcconfig = webrtcconfiguration;
                 files.onStateChanged = onFilesStateChange;
