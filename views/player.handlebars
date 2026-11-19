@@ -781,11 +781,11 @@
             if (fileBreadcrumbDiv == null) { fileBreadcrumbDiv = Q('fileBreadcrumb'); }
             if (fileBreadcrumbDiv == null) return;
             var crumb = (fileCurrentPath != null) ? fileCurrentPath : "(root)";
-            fileBreadcrumbDiv.innerHTML = '<span style="color:#6fb3e2;font-weight:bold;">MeshCentral File Session</span>' +
+            fileBreadcrumbDiv.innerHTML = '<span style="color:#6fb3e2;font-weight:bold;">' + "MeshCentral File Session" + '</span>' +
                 '<span style="margin-left:10px;color:#cfcfcf;border-left:1px solid #333;padding-left:10px;">' + EscapeHtml(crumb) + '</span>' +
-                '<span style="margin-left:10px;color:#66BB6A;border-left:1px solid #333;padding-left:10px;">' + "Uploaded:" + ' ' + fileTotalUploaded + ' ' + "file(s), " + formatFileSize(fileTotalUploadedBytes) + '</span>' +
-                '<span style="margin-left:10px;color:#42A5F5;border-left:1px solid #333;padding-left:10px;">' + "Downloaded:" + ' ' + fileTotalDownloaded + ' ' + "file(s), " + formatFileSize(fileTotalDownloadedBytes) + '</span>' +
-                '<span style="margin-left:10px;color:#888888;border-left:1px solid #333;padding-left:10px;">' + fileLogEntryCount + ' ' + "events" + '</span>';
+                '<span style="margin-left:10px;color:#66BB6A;border-left:1px solid #333;padding-left:10px;">' + "Uploaded:" + ' ' + fileTotalUploaded + ' ' + "file(s)" + ', ' + formatFileSize(fileTotalUploadedBytes) + '</span>' +
+                '<span style="margin-left:10px;color:#42A5F5;border-left:1px solid #333;padding-left:10px;">' + "Downloaded:" + ' ' + fileTotalDownloaded + ' ' + "file(s)" + ', ' + formatFileSize(fileTotalDownloadedBytes) + '</span>' +
+                '<span style="margin-left:10px;color:#888888;border-left:1px solid #333;padding-left:10px;">' + fileLogEntryCount + ' ' + "Events" + '</span>';
         }
 
         function logFileResponse(obj, time) {
