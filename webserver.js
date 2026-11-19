@@ -3204,6 +3204,66 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     }
 
+    // Compute the "Active Sessions" panel settings for a given user. This panel is shown at the top of the
+    // devices list and lists all devices the user currently has remote sessions open on, across device groups.
+    // Configured using "activeSessionsPanel" in the domain section of config.json, either as a boolean or as:
+    //   { "enabled": true, "defaultScope": "own" | "all", "allowAllScope": "fulladmin" | "manageusers" | "everyone" | "none" | [ "user//name", "ugrp//xxx" ] }
+    // The user picks the scope ("own" or "all") and collapses the panel from the panel itself, saved in their web state.
+    function getActiveSessionsPanelSettings(domain, user) {
+        var c = domain.activesessionspanel, r = { enabled: false, defaultScope: 'own', canSeeAll: false };
+        if ((c == null) || (c === false)) return r;
+        if (typeof c != 'object') { c = {}; }
+        if (c.enabled === false) return r;
+        r.enabled = true;
+        r.canSeeAll = userMatchesConfigScope(user, c.allowallscope);
+        if ((typeof c.defaultscope == 'string') && (c.defaultscope.toLowerCase() == 'all') && r.canSeeAll) { r.defaultScope = 'all'; }
+        return r;
+    }
+
+    // Returns true if the user matches a scope from config.json: "fulladmin", "manageusers", "everyone", "none",
+    // or an array of user ids ("user//name") and user group ids ("ugrp//xxx").
+    function userMatchesConfigScope(user, scope) {
+        if (user == null) return false;
+        var siteadmin = (typeof user.siteadmin == 'number') ? user.siteadmin : 0;
+        if (Array.isArray(scope)) {
+            for (var i in scope) {
+                if (typeof scope[i] != 'string') continue;
+                var id = scope[i].toLowerCase();
+                if (id == user._id.toLowerCase()) return true;
+                if (id.startsWith('ugrp/') && (user.links != null)) { for (var j in user.links) { if (j.toLowerCase() == id) return true; } }
+            }
+            return false;
+        }
+        scope = (typeof scope == 'string') ? scope.toLowerCase() : 'fulladmin';
+        if (scope == 'everyone') return true;
+        if (scope == 'none') return false;
+        if (scope == 'manageusers') return ((siteadmin == 0xFFFFFFFF) || ((siteadmin & 2) != 0));
+        return (siteadmin == 0xFFFFFFFF);
+    }
+
+    // Which remote sessions this user may keep connected in the background while moving between devices.
+    // Configured using "keepRemoteSessions" in the domain section of config.json:
+    //   { "allow": "fulladmin" | "manageusers" | "everyone" | [ "user//name", "ugrp//xxx" ],
+    //     "sessions": [ "desktop", "terminal", "files" ], "max": 4 }
+    // or true, which is the same as { "allow": "fulladmin" } with all three session types and a max of 4.
+    // "max" is the number of background sessions of each type. "keepDesktopSessions" is accepted as an older name.
+    function getKeepRemoteSessions(domain, user) {
+        var r = { max: 0, desktop: false, terminal: false, files: false };
+        var c = (domain.keepremotesessions != null) ? domain.keepremotesessions : domain.keepdesktopsessions;
+        if ((c == null) || (c === false)) return r;
+        if (typeof c != 'object') { c = {}; }
+        if (c.enabled === false) return r;
+        if (userMatchesConfigScope(user, c.allow) == false) return r;
+        var max = (typeof c.max == 'number') ? Math.floor(c.max) : 4;
+        r.max = Math.max(0, Math.min(max, 20));
+        if (r.max == 0) return r;
+        var types = Array.isArray(c.sessions) ? c.sessions.map(function (x) { return String(x).toLowerCase(); }) : [ 'desktop', 'terminal', 'files' ];
+        r.desktop = (types.indexOf('desktop') >= 0);
+        r.terminal = (types.indexOf('terminal') >= 0);
+        r.files = (types.indexOf('files') >= 0);
+        return r;
+    }
+
     function handleRootRequestEx(req, res, domain, direct) {
         var nologout = false, user = null;
         res.set({ 'Cache-Control': 'no-store' });
@@ -3504,7 +3564,9 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                     showNotesPanel: (domain.shownotespanel ? 'true' : 'false'),
                     userSessionsSort: (domain.usersessionssort ? domain.usersessionssort : 'SessionId'),
                     webrtcconfig: webRtcConfig,
-                    collapseGroups: (domain.collapsegroups ? 'true' : 'false')
+                    collapseGroups: (domain.collapsegroups ? 'true' : 'false'),
+                    keepRemoteSessions: encodeURIComponent(JSON.stringify(getKeepRemoteSessions(domain, user))).replace(/'/g, '%27'),
+                    activeSessionsPanel: encodeURIComponent(JSON.stringify(getActiveSessionsPanelSettings(domain, user))).replace(/'/g, '%27')
                 }, dbGetFunc.req, domain, uiViewMode), user);
             }
             xdbGetFunc.req = req;
