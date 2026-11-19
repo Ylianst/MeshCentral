@@ -803,16 +803,64 @@ function CreateMeshCentralServer(config, args) {
             xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
             xxprocess.stderr.on('data', function (data) { });
             xxprocess.on('close', function (code) {
-                var tags = { current: getCurrentVersion() };
+                var tags = { current: getCurrentVersion(), hostNodeVersion: process.versions.node };
                 if (code == 0) {
                     try {
                         var lines = xxprocess.data.split('\r\n').join('\n').split('\n');
                         for (var i in lines) { var s = lines[i].split(': '); if ((s.length == 2) && (obj.args.npmtag == null) || (obj.args.npmtag == s[0])) { tags[s[0]] = s[1]; } }
                     } catch (ex) { }
                 }
-                callback(tags);
+                // Determine whether the running Node.js version satisfies the engine requirement for
+                // each available update target, so the web UI can refuse incompatible self-updates
+                // instead of starting one that will be aborted after a restart.
+                var hostNode = process.versions.node;
+                var pending = 0;
+                function finish() {
+                    tags.latestUpdateOk = (tags.latestUpdateOk !== false);
+                    tags.stableUpdateOk = (tags.stableUpdateOk !== false);
+                    callback(tags);
+                }
+                if (tags.latest && tags.latest != 'Unknown') {
+                    pending++;
+                    obj.getServerEngines(tags.latest, function (eng) {
+                        if (eng) { tags.latestEnginesNode = eng; tags.latestUpdateOk = common.nodeVersionSatisfies(hostNode, eng); }
+                        else { tags.latestUpdateOk = true; } // Could not determine requirement -> don't block.
+                        if (--pending == 0) finish();
+                    });
+                }
+                if (tags.stable && tags.stable != 'Unknown') {
+                    pending++;
+                    obj.getServerEngines(tags.stable, function (eng) {
+                        if (eng) { tags.stableEnginesNode = eng; tags.stableUpdateOk = common.nodeVersionSatisfies(hostNode, eng); }
+                        else { tags.stableUpdateOk = true; }
+                        if (--pending == 0) finish();
+                    });
+                }
+                if (pending == 0) finish();
             });
         } catch (ex) { callback({ current: getCurrentVersion() }, ex); } // If the system is running out of memory, an exception here can easily happen.
+    };
+
+    // Use NPM to get the "engines.node" requirement for a given meshcentral tag/version
+    obj.getServerEngines = function (npmTag, callback) {
+        try {
+            const child_process = require('child_process');
+            const npmpath = ((typeof obj.args.npmpath == 'string') ? obj.args.npmpath : 'npm');
+            const npmproxy = ((typeof obj.args.npmproxy == 'string') ? (' --proxy ' + obj.args.npmproxy) : '');
+            const env = Object.assign({}, process.env); // Shallow clone
+            if (typeof obj.args.npmproxy == 'string') { env['HTTP_PROXY'] = env['HTTPS_PROXY'] = env['http_proxy'] = env['https_proxy'] = obj.args.npmproxy; }
+            var target = 'meshcentral';
+            if (typeof npmTag == 'string') { target += '@' + npmTag; }
+            const xxprocess = child_process.exec(npmpath + npmproxy + ' view ' + target + ' engines.node', { maxBuffer: 512000, cwd: obj.parentpath, env: env }, function (error, stdout, stderr) { });
+            xxprocess.data = '';
+            xxprocess.stdout.on('data', function (data) { xxprocess.data += data; });
+            xxprocess.stderr.on('data', function (data) { xxprocess.data += data; });
+            xxprocess.on('close', function (code) {
+                var enginesNode = '';
+                if (code == 0) { try { enginesNode = xxprocess.data.split('\r').join('').split('\n').join('').trim(); } catch (ex) { } }
+                callback(enginesNode);
+            });
+        } catch (ex) { callback(''); }
     };
 
     // Use NPM to get list of versions
