@@ -20,7 +20,8 @@ CheckStartupType() {
 
   # echo "Checking process autostart system..."
   starttype1=`cat /proc/1/status | grep 'Name:' | awk '{ print $2; }'`
-  starttype2=`ps -p 1 -o command= | awk '{a=split($0,res," "); b=split(res[a],tp,"/"); print tp[b]; }'`
+  # BusyBox ps does not support -p; filter its process list by PID instead.
+  starttype2=`(ps -p 1 -o command= 2>/dev/null || ps -o pid,args 2>/dev/null | awk '$1 == 1 { $1=""; print; }') | awk '{a=split($0,res," "); b=split(res[a],tp,"/"); print tp[b]; }'`
  
   # Systemd
   if [[ $starttype1 == 'systemd' ]]
@@ -149,6 +150,12 @@ DownloadAgent() {
   url=$2
   meshid=$3
   machineid=$4
+  # GNU and BusyBox wget use different options to bypass proxies.
+  local wgetnoproxy=(--no-proxy)
+  if wget --help 2>&1 | grep -q 'BusyBox'
+  then
+    wgetnoproxy=(-Y off)
+  fi
   echo "Downloading agent #$machineid..."
   wget $url/meshagents?id=$machineid {{{wgetoptionshttps}}}-O ./meshagent || curl {{{curloptionshttps}}}--output ./meshagent $url/meshagents?id=$machineid
 
