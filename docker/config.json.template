@@ -38,6 +38,7 @@
     "": {
       "_title": "MyServer",
       "_title2": "Servername",
+      "siteStyle": 3,
       "minify": false,
       "NewAccounts": true,
       "localSessionRecording": true,
