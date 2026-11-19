@@ -3982,11 +3982,21 @@
                         if (!message.tags.current) { message.tags.current = "Unknown"; }
                         if (!message.tags.stable) { message.tags.stable = "Unknown"; }
                         if (!message.tags.latest) { message.tags.latest = "Unknown"; }
+                        // Whether the running Node.js version satisfies the engine requirement for each target.
+                        var stableOk = (message.tags.stableUpdateOk !== false);
+                        var latestOk = (message.tags.latestUpdateOk !== false);
                         x += addHtmlValue2("Current Version", '<b>' + EscapeHtml(message.tags.current) + '</b>');
                         x += '<hr />';
-                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
-                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0)) ? ' disabled' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck1 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.stable == "Unknown") || (message.tags.current == message.tags.stable) || ((features & 2048) == 0) || (stableOk == false)) ? ' disabled' : '') + (message.tags.stableEnginesNode ? ' title="' + "This update requires Node.js" + ' ' + EscapeHtml(message.tags.stableEnginesNode) + '"' : '') + ' /> ' + "Stable Version" + '</label>', '<b>' + EscapeHtml(message.tags.stable) + '</b>');
+                        x += addHtmlValue2('<label><input id=d2updateCheck2 type=checkbox class="form-check-input me-2" onclick=server_showVersionDlgUpdate()' + (((message.tags.latest == "Unknown") || (message.tags.current == message.tags.latest) || ((features & 2048) == 0) || (latestOk == false)) ? ' disabled' : '') + (message.tags.latestEnginesNode ? ' title="' + "This update requires Node.js" + ' ' + EscapeHtml(message.tags.latestEnginesNode) + '"' : '') + ' /> ' + "Latest Version" + '</label>', '<b>' + EscapeHtml(message.tags.latest) + '</b>');
                         x += '</div>';
+                        // Warn about any Node.js version incompatibility for the available update targets.
+                        if ((features & 2048) != 0) {
+                            var warn = '';
+                            if (!stableOk) { warn += "Stable version is not compatible with the running Node.js version" + ' (' + EscapeHtml(message.tags.hostNodeVersion) + ').'; }
+                            if (!latestOk) { if (warn != '') { warn += ' '; } warn += "Latest version is not compatible with the running Node.js version" + ' (' + EscapeHtml(message.tags.hostNodeVersion) + ').'; }
+                            if (warn != '') { x += '<div style=color:red>' + warn + ' ' + "The current version is being kept." + '</div>'; }
+                        }
                         if (((message.tags.current == message.tags.latest) && (message.tags.current == message.tags.stable)) || ((features & 2048) == 0)) {
                             setModalContent('xxAddAgent', "MeshCentral Version", x);
                             showModal('xxAddAgentModal', 'idx_dlgOkButton');
