@@ -263,7 +263,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             }
 
             // Check that the user has rights to access this device
-            parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
+            parent.webserver.getWebRelayNodeWithRights(domain, userid, nodeid, publicid, urlCookie.k, function (node, rights, visible) {
                 // If there is no remote control or relay rights, reject this web relay
                 if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
 
