@@ -197,13 +197,14 @@
                 ws.onmessage = function (msg) {
                     if (typeof msg.data != 'string') {
                         var uint8View = new Uint8Array(msg.data);
-                        var blocknum = (((uint8View[4] << 24) + (uint8View[5] << 16) + (uint8View[6] << 8) + uint8View[7]) / streamingBlockSize);
+                        var ptr = ((((uint8View[0] << 24) + (uint8View[1] << 16) + (uint8View[2] << 8) + uint8View[3]) >>> 0) * 0x100000000 + (((uint8View[4] << 24) + (uint8View[5] << 16) + (uint8View[6] << 8) + uint8View[7]) >>> 0));
+                        blocknum = ptr / streamingBlockSize;
                         //console.log('Session Streaming - Got block: ' + blocknum);
                         streamingBlockCache[blocknum] = msg.data;
                         var pendingFetchStreamingData2 = [], pendingFetchStreamingData3 = [];
                         for (var i in pendingFetchStreamingData) {
                             var j = pendingFetchStreamingData[i].missingBlocks.indexOf(blocknum);
-                            if (j >= 0) { pendingFetchStreamingData[i].missingBlocks.splice(i, 1); }
+                            if (j >= 0) { pendingFetchStreamingData[i].missingBlocks.splice(j, 1); }
                             if (pendingFetchStreamingData[i].missingBlocks.length == 0) {
                                 pendingFetchStreamingData3.push(pendingFetchStreamingData[i]);
                             } else {
