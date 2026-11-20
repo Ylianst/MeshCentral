@@ -198,6 +198,50 @@ Then run Docker Compose:
 docker compose -f ./docker/compose.yaml --env-file .env up -d
 ```
 
+## Optional Apache Guacamole Web-RDP client
+
+The Guacamole Web-RDP client uses `guacd` for RDP protocol handling while all
+target traffic still passes through the authenticated MeshAgent tunnel. The
+`guacd` container must share MeshCentral's network namespace because the RDP
+tunnel is exposed through a one-shot loopback listener. Do not publish the
+`guacd` port.
+
+Add the following service to the Compose file:
+
+```yaml
+services:
+  meshcentral:
+    image: ghcr.io/ylianst/meshcentral:latest
+    # Existing MeshCentral configuration...
+
+  guacd:
+    image: guacamole/guacd:1.6.0
+    network_mode: service:meshcentral
+    restart: unless-stopped
+```
+
+Then enable the client in `config.json`:
+
+```json
+{
+  "settings": {
+    "guacd": {
+      "host": "127.0.0.1",
+      "port": 4822
+    }
+  },
+  "domains": {
+    "": {
+      "mstsc": true,
+      "mstscClient": "guacamole"
+    }
+  }
+}
+```
+
+RDP must already be enabled on the target. MeshCentral does not change the
+target's operating-system or desktop-sharing configuration.
+
 # Custom healthchecks at runtime
 
 If you want to add a custom healthcheck post-compilation/with precompiled images, then do the following:<br>
