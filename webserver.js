@@ -10278,7 +10278,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     const acceptableUserWebStateDesktopStrings = [
         'encoding', 'showfocus', 'showmouse', 'quality', 'scaling', 'framerate', 'agentencoding', 'swapmouse',
         'rmw', 'remotekeymap', 'autoclipboard', 'autolock', 'localkeymap', 'kvmrmw', 'rdpsize', 'rdpsmb',
-        'rdprmw', 'rdpautoclipboard', 'rdpflags'
+        'rdprmw', 'rdpautoclipboard', 'rdpflags', 'dropfolder', 'dropcustom'
     ];
     obj.filterUserWebState = function (state) {
         if (typeof state == 'string') { try { state = JSON.parse(state); } catch (ex) { return null; } }
@@ -10294,7 +10294,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             out.desktopsettings = {};
             for (var i in acceptableUserWebStateDesktopStrings) {
                 var n = acceptableUserWebStateDesktopStrings[i];
-                if ((state.desktopsettings[n] != null) && ((typeof state.desktopsettings[n] == 'number') || (typeof state.desktopsettings[n] == 'boolean') || ((typeof state.desktopsettings[n] == 'string') && (state.desktopsettings[n].length < 32)))) { out.desktopsettings[n] = state.desktopsettings[n]; }
+                var maxlen = (n == 'dropcustom') ? 260 : 32; // dropcustom is a folder path
+                if ((state.desktopsettings[n] != null) && ((typeof state.desktopsettings[n] == 'number') || (typeof state.desktopsettings[n] == 'boolean') || ((typeof state.desktopsettings[n] == 'string') && (state.desktopsettings[n].length < maxlen)))) { out.desktopsettings[n] = state.desktopsettings[n]; }
             }
             out.desktopsettings = JSON.stringify(out.desktopsettings);
         }
