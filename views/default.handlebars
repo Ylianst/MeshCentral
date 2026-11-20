@@ -10689,7 +10689,7 @@
             } else {
                 // Agent desktop
                 if (flags & 1)  { keyArray.push([desktop.m.KeyAction.DOWN,     16]); keyArray2.push([desktop.m.KeyAction.UP,     16]); } // Shift
-                if (flags & 2)  { keyArray.push([desktop.m.KeyAction.EXDOWN,   18]); keyArray2.push([desktop.m.KeyAction.EXUP,   18]); } // Left-alt
+                if (flags & 2)  { keyArray.push([desktop.m.KeyAction.DOWN,   18]); keyArray2.push([desktop.m.KeyAction.UP,   18]); } // Left-alt
                 if (flags & 8)  { keyArray.push([desktop.m.KeyAction.EXDOWN,   17]); keyArray2.push([desktop.m.KeyAction.EXUP,   17]); } // Ctrl
                 if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
                 if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }

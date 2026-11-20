@@ -986,7 +986,7 @@
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe9, 1], [0xffc1, 1], [0xffc1, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'F4' press, 'F4' release, Alt release
                 } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 115], [desktop.m.KeyAction.UP, 115], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'F4' press, 'F4' release, Alt release
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 18], [desktop.m.KeyAction.DOWN, 115], [desktop.m.KeyAction.UP, 115], [desktop.m.KeyAction.UP, 18]]); // MeshAgent: Alt press, 'F4' press, 'F4' release, Alt release
                 }
             } else if (ks == 8) { // CTRL-W
                 if (desktop.contype == 2) {
@@ -998,7 +998,7 @@
                 if (desktop.contype == 2) {
                     desktop.m.sendkey([[0xffe9, 1], [0xff09, 1], [0xff09, 0], [0xffe9, 0]]); // Intel AMT: Alt down, 'TAB' press, 'TAB' release, Alt release
                 } else {
-                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.EXDOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.EXUP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
+                    desktop.m.SendKeyMsgKC([[desktop.m.KeyAction.DOWN, 18], [desktop.m.KeyAction.DOWN, 9], [desktop.m.KeyAction.UP, 9], [desktop.m.KeyAction.UP, 18]]); // MeshAgent: Alt press, 'TAB' press, 'TAB' release, Alt release
                 }
             } else if (ks == 10) { // CTRL-ALT-DEL
                 desktop.m.sendcad();
