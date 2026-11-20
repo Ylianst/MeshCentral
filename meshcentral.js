@@ -3408,7 +3408,7 @@ function CreateMeshCentralServer(config, args) {
         if (obj.config.settings.agentsignlock) { signUrl += '?ServerID=' + obj.certificateOperations.getPublicKeyHash(obj.certificates.agent.cert).toUpperCase(); }
 
         // Setup the time server
-        var timeStampUrl = 'http://timestamp.comodoca.com/authenticode';
+        var timeStampUrl = 'http://timestamp.sectigo.com';
         if (obj.args.agenttimestampserver === false) { timeStampUrl = null; }
         else if (typeof obj.args.agenttimestampserver == 'string') { timeStampUrl = obj.args.agenttimestampserver; }
 

@@ -417,7 +417,7 @@
             "boolean",
             "string"
           ],
-          "default": "http://timestamp.comodoca.com/authenticode",
+          "default": "http://timestamp.sectigo.com",
           "description": "The time stamping server to use when code signing Windows executables. When set to false, the executables are not time stamped."
         },
         "agentTimeStampProxy": {
