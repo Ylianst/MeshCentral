@@ -3107,7 +3107,7 @@
                         // Warn about any Node.js version incompatibility for the available update targets.
                         if ((features & 2048) != 0) {
                             var warn = '';
-                            if (!stableOk) { warn += "Stable version is not compatible with the running Node.js version" + ' (' EscapeHtml(message.tags.hostNodeVersion) + ').'; }
+                            if (!stableOk) { warn += "Stable version is not compatible with the running Node.js version" + ' (' + EscapeHtml(message.tags.hostNodeVersion) + ').'; }
                             if (!latestOk) { if (warn != '') { warn += ' '; } warn += "Latest version is not compatible with the running Node.js version" + ' (' + EscapeHtml(message.tags.hostNodeVersion) + ').'; }
                             if (warn != '') { x += '<div style=color:red>' + warn + ' ' + "The current version is being kept." + '</div>'; }
                         }
