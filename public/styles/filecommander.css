@@ -1,0 +1,482 @@
+/* File Commander - dual pane file manager in the Files tab */
+
+.fc-root {
+    --fc-bg: var(--bs-body-bg, #fff);
+    --fc-fg: var(--bs-body-color, #222);
+    --fc-muted: var(--bs-secondary-color, #666);
+    --fc-border: var(--bs-border-color, #c8c8c8);
+    --fc-head: var(--bs-tertiary-bg, #f0f0f0);
+    --fc-hover: rgba(127, 127, 127, 0.12);
+    --fc-sel: var(--bs-primary-bg-subtle, #d4e6ff);
+    --fc-sel-fg: var(--bs-emphasis-color, #000);
+    --fc-accent: var(--bs-primary, #2667c6);
+    --fc-err: var(--bs-danger, #c62828);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    box-sizing: border-box;
+    min-height: 240px;
+    color: var(--fc-fg);
+    background: transparent; /* Blend with the page or theme behind the Files tab */
+    font-size: 13px;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Classic UI night mode. The modern UI sets data-bs-theme and the Bootstrap colors above follow it. */
+html:not([data-bs-theme]) body.night .fc-root {
+    --fc-bg: #111;
+    --fc-fg: #ddd;
+    --fc-muted: #999;
+    --fc-border: #444;
+    --fc-head: #222;
+    --fc-sel: #23406b;
+    --fc-sel-fg: #fff;
+    --fc-accent: #4c8de8;
+    --fc-err: #ef6b6b;
+}
+
+.fc-panes {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+}
+
+.fc-pane {
+    flex: 1 1 50%;
+    min-width: 0;
+    display: flex;
+    background: var(--fc-bg);
+    flex-direction: column;
+    border: 1px solid var(--fc-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.fc-pane.fc-active {
+    border-color: var(--fc-accent);
+    box-shadow: 0 0 0 1px var(--fc-accent);
+}
+
+.fc-pane.fc-drop {
+    box-shadow: 0 0 0 3px var(--fc-accent);
+}
+
+.fc-split {
+    flex: 0 0 6px;
+    cursor: col-resize;
+}
+
+.fc-head {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+    background: var(--fc-head);
+    border-bottom: 1px solid var(--fc-border);
+}
+
+.fc-head select,
+.fc-path,
+.fc-input {
+    font-size: 13px;
+    color: var(--fc-fg);
+    background: var(--fc-bg);
+    border: 1px solid var(--fc-border);
+    border-radius: 3px;
+    padding: 2px 4px;
+    min-width: 0;
+}
+
+.fc-src {
+    flex: 0 1 auto;
+    max-width: 45%;
+}
+
+.fc-drives {
+    flex: 1 1 auto;
+}
+
+.fc-path {
+    margin: 4px;
+    font-family: Consolas, Menlo, monospace;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.fc-active .fc-path {
+    border-color: var(--fc-accent);
+}
+
+.fc-btn {
+    font-size: 13px;
+    line-height: 1.3;
+    color: var(--fc-fg);
+    background: var(--fc-bg);
+    border: 1px solid var(--fc-border);
+    border-radius: 3px;
+    padding: 2px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fc-btn:hover:not(:disabled) {
+    background: var(--fc-hover);
+}
+
+.fc-btn.fc-primary {
+    color: #fff;
+    background: var(--fc-accent);
+    border-color: var(--fc-accent);
+}
+
+.fc-scroll {
+    flex: 1 1 auto;
+    overflow: auto;
+    outline: none;
+    position: relative;
+}
+
+.fc-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.fc-table col.fc-c-size {
+    width: 90px;
+}
+
+.fc-table col.fc-c-type {
+    width: 105px;
+}
+
+.fc-table col.fc-c-date {
+    width: 150px;
+}
+
+.fc-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--fc-head);
+    border-bottom: 1px solid var(--fc-border);
+    font-weight: 600;
+    text-align: left;
+    padding: 3px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fc-table th.fc-r,
+.fc-table td.fc-r {
+    text-align: right;
+}
+
+.fc-table th.fc-sorted[data-dir=asc]::after {
+    content: ' \25B2';
+    font-size: 9px;
+}
+
+.fc-table th.fc-sorted[data-dir=desc]::after {
+    content: ' \25BC';
+    font-size: 9px;
+}
+
+.fc-table td {
+    padding: 1px 6px;
+    height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--fc-muted);
+}
+
+.fc-table td.fc-name {
+    color: var(--fc-fg);
+}
+
+.fc-icon {
+    display: inline-block;
+    float: none !important;
+    vertical-align: -3px;
+    margin: 0 6px 0 0 !important;
+}
+
+.fc-row {
+    cursor: default;
+}
+
+.fc-row:hover {
+    background: var(--fc-hover);
+}
+
+.fc-row.fc-marked,
+.fc-row.fc-marked td {
+    background: var(--fc-sel);
+    color: var(--fc-sel-fg);
+}
+
+.fc-row.fc-cursor td {
+    box-shadow: inset 0 1px 0 var(--fc-muted), inset 0 -1px 0 var(--fc-muted);
+}
+
+.fc-active .fc-scroll:focus .fc-row.fc-cursor td {
+    box-shadow: inset 0 1px 0 var(--fc-accent), inset 0 -1px 0 var(--fc-accent);
+}
+
+.fc-empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: var(--fc-muted);
+    line-height: 1.6;
+}
+
+.fc-recent,
+.fc-hint {
+    margin-top: 10px;
+}
+
+.fc-recent .fc-btn {
+    margin: 2px;
+}
+
+.fc-hint {
+    font-size: 12px;
+}
+
+.fc-status {
+    padding: 3px 6px;
+    border-top: 1px solid var(--fc-border);
+    background: var(--fc-head);
+    color: var(--fc-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 18px;
+}
+
+.fc-status.fc-error {
+    color: var(--fc-err);
+}
+
+.fc-keys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+}
+
+.fc-key {
+    flex: 1 1 auto;
+    font-size: 12px;
+    color: var(--fc-fg);
+    background: var(--fc-head);
+    border: 1px solid var(--fc-border);
+    border-radius: 3px;
+    padding: 3px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fc-key b {
+    color: var(--fc-accent);
+    font-weight: 600;
+}
+
+.fc-key:hover:not(:disabled) {
+    background: var(--fc-hover);
+}
+
+.fc-key:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.fc-job {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border: 1px solid var(--fc-border);
+    border-radius: 4px;
+    background: var(--fc-head);
+}
+
+.fc-job-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fc-job progress {
+    flex: 0 0 160px;
+}
+
+.fc-menu {
+    position: absolute;
+    z-index: 20;
+    min-width: 170px;
+    padding: 3px 0;
+    background: var(--fc-bg);
+    border: 1px solid var(--fc-border);
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.fc-menu-item {
+    padding: 4px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.fc-menu-item:hover {
+    background: var(--fc-sel);
+    color: var(--fc-sel-fg);
+}
+
+.fc-modal-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.fc-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(460px, 92%);
+    max-height: 92%;
+    padding: 14px;
+    background: var(--fc-bg);
+    border: 1px solid var(--fc-border);
+    border-radius: 6px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.fc-modal:has(.fc-editor) {
+    width: 92%;
+    height: 92%;
+}
+
+.fc-modal-title {
+    font-weight: 600;
+    font-size: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fc-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-wrap: anywhere;
+}
+
+.fc-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.fc-editor {
+    flex: 1 1 auto;
+    min-height: 200px;
+    width: 100%;
+    box-sizing: border-box;
+    resize: none;
+    font-family: Consolas, Menlo, monospace;
+    font-size: 13px;
+    color: var(--fc-fg);
+    background: var(--fc-bg);
+    border: 1px solid var(--fc-border);
+    white-space: pre;
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+.fc-where {
+    margin-top: 4px;
+    font-family: Consolas, Menlo, monospace;
+    font-size: 12px;
+    color: var(--fc-muted);
+}
+
+.fc-errlist {
+    max-height: 300px;
+    overflow: auto;
+    font-family: Consolas, Menlo, monospace;
+    font-size: 12px;
+}
+
+.fc-modal-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+@media (max-width: 768px) {
+    .fc-panes {
+        flex-direction: column;
+    }
+
+    .fc-pane {
+        flex-basis: 50% !important;
+    }
+
+    .fc-split {
+        display: none;
+    }
+
+    .fc-table col.fc-c-type {
+        width: 0;
+    }
+
+    .fc-table th:nth-child(3),
+    .fc-table td:nth-child(3) {
+        padding: 0;
+        font-size: 0;
+    }
+}
+
+/* Folder row a drag will drop into */
+.fc-row.fc-droprow td {
+    background: var(--fc-sel);
+    color: var(--fc-sel-fg);
+    box-shadow: inset 0 0 0 2px var(--fc-accent) !important;
+}
+
+.fc-fav.fc-on {
+    color: #e0a400;
+}
+
+.fc-row.fc-place td.fc-name {
+    font-weight: 500;
+}
+
+.fc-empty.fc-hint {
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.fc-extra-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+}
