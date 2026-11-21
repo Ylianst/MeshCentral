@@ -592,6 +592,11 @@ module.exports.CreateMultiServer = function (parent, args) {
                 }
                 break;
             }
+            case 'meshDeployReply': {
+                // An agent connected to a peer server replied to a mass deployment command
+                if ((typeof msg.nodeid == 'string') && (obj.parent.webserver != null) && (obj.parent.webserver.meshDeploy != null)) { obj.parent.webserver.meshDeploy.handleAgentReply(msg.nodeid, msg); }
+                break;
+            }
             case 'agentCommand': {
                 if (msg.nodeid != null) {
                     // Route this message to a connected agent

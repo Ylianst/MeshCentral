@@ -123,6 +123,7 @@
     <Compile Include="interceptor.js" />
     <Compile Include="meshcentral.js" />
     <Compile Include="meshagent.js" />
+    <Compile Include="meshdeploy.js" />
     <Compile Include="meshdevicefile.js" />
     <Compile Include="meshuser.js" />
     <Compile Include="monitoring.js" />
@@ -238,6 +239,7 @@
     <Compile Include="public\scripts\amt-wsman-0.2.0.js" />
     <Compile Include="public\scripts\amt-wsman-ws-0.2.0.js" />
     <Compile Include="public\scripts\common-0.0.1.js" />
+    <Compile Include="public\scripts\meshdeploy-0.0.1.js" />
     <Compile Include="public\scripts\meshcentral.js" />
     <Compile Include="redirserver.js" />
     <Compile Include="taskmanager.js" />
