@@ -2192,6 +2192,11 @@
             "default": false,
             "description": "When enabled, the remote agents will submit there approximate location to MeshCentral, Use in combination with \"geoLocation\"."
           },
+          "softwareManagement": {
+            "type": "boolean",
+            "default": true,
+            "description": "When set to false, disables installing Windows updates, installing packages (MSI on Windows; deb, rpm, Flatpak and AppImage on Linux) and uninstalling software from the Software tab for all users in this domain. Users also need the \"Manage Software\" device right, and \"Remote Commands\" to install packages."
+          },
           "novnc": {
             "type": "boolean",
             "default": true,

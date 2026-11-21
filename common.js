@@ -188,6 +188,27 @@ module.exports.aceUnEscapeAllFieldNames = function (docs) { for (var i in docs) 
 
 // Validation methods
 module.exports.validateString = function (str, minlen, maxlen) { return ((str != null) && (typeof str == 'string') && ((minlen == null) || (str.length >= minlen)) && ((maxlen == null) || (str.length <= maxlen))); };
+// Check MSI properties given to an MSI install: public NAME=value or NAME="value with spaces" pairs separated by white space, REBOOT can't be set.
+// Single pass, no regular expression, so the time taken is linear in the length of the string.
+module.exports.validateMsiProperties = function (v) {
+    if ((typeof v != 'string') || (v.length > 1024)) return false;
+    var i = 0, n = v.length, isSpace = function (c) { return (c == ' ') || (c == '\t') || (c == '\r') || (c == '\n'); };
+    while (i < n) {
+        while ((i < n) && isSpace(v[i])) { i++; }
+        if (i >= n) break;
+        var start = i, c = v[i];
+        if (!(((c >= 'A') && (c <= 'Z')) || (c == '_'))) return false; // Public properties are upper case
+        i++;
+        while ((i < n) && (((v[i] >= 'A') && (v[i] <= 'Z')) || ((v[i] >= '0') && (v[i] <= '9')) || (v[i] == '_') || (v[i] == '.'))) { i++; }
+        if (v.substring(start, i) == 'REBOOT') return false; // Always forced to ReallySuppress by the agent
+        if (v[i] != '=') return false;
+        i++;
+        if (v[i] == '"') { var e = v.indexOf('"', i + 1); if (e < 0) return false; i = e + 1; }
+        else { while ((i < n) && !isSpace(v[i]) && (v[i] != '"')) { i++; } }
+        if ((i < n) && !isSpace(v[i])) return false; // Pairs are separated by white space
+    }
+    return true;
+};
 module.exports.validateInt = function (int, minval, maxval) { return ((int != null) && (typeof int == 'number') && ((minval == null) || (int >= minval)) && ((maxval == null) || (int <= maxval))); };
 module.exports.validateArray = function (array, minlen, maxlen) { return ((array != null) && Array.isArray(array) && ((minlen == null) || (array.length >= minlen)) && ((maxlen == null) || (array.length <= maxlen))); };
 module.exports.validateStrArray = function (array, minlen, maxlen) { if (((array != null) && Array.isArray(array)) == false) return false; for (var i in array) { if ( (typeof array[i] != 'string') || ((minlen != null) && (array[i].length < minlen)) || ((maxlen != null) && (array[i].length > maxlen))) return false; } return true; };
