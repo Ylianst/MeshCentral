@@ -236,7 +236,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                     if (state == 0) { obj.xxOnSocketClosed(); }
                     if (state == 2) {
                         // TLSSocket to encapsulate TLS communication, which then tunneled via SerialTunnel an then wrapped through CIRA APF
-                        var options = { socket: ser, ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                        var options = { socket: ser, ciphers: 'ECDHE+AESGCM:RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
                         if (obj.xtlsMethod == 1) {
                             options.secureProtocol = 'TLSv1_method';
                         } else {
@@ -278,7 +278,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls, tlsoptions, mpsConn
                 obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
             } else {
                 // Direct connect with TLS
-                var options = { ciphers: 'RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
+                var options = { ciphers: 'ECDHE+AESGCM:RSA+AES:!aNULL:!MD5:!DSS', secureOptions: obj.constants.SSL_OP_NO_SSLv2 | obj.constants.SSL_OP_NO_SSLv3 | obj.constants.SSL_OP_NO_COMPRESSION | obj.constants.SSL_OP_CIPHER_SERVER_PREFERENCE | obj.constants.SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION, rejectUnauthorized: false };
                 if (obj.xtlsMethod == 1) {
                     options.secureProtocol = 'TLSv1_method';
                 } else {
