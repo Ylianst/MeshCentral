@@ -1503,6 +1503,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         // Decrypt any session data
                         const sec = parent.decryptSessionData(req.session.e);
                         sec.duostate = client.generateState();
+                        if (req.body.remembertoken === 'on') { sec.duoremember = 1; } else { delete sec.duoremember; } // Keep the "remember this device" choice until we return from Duo
                         req.session.e = parent.encryptSessionData(sec);
                         parent.debug('web', 'Redirecting user ' + user._id + ' to Duo');
                         res.redirect(client.createAuthUrl(user._id.split('/')[2], sec.duostate));
@@ -8028,7 +8029,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                             delete sec.duostate;
                                             delete sec.tuser;
                                             delete sec.tpass;
+                                            const duoRemember = ((sec.duoremember == 1) && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))); // "Remember this device" choice made before the Duo redirect
+                                            delete sec.duoremember;
                                             req.session.e = parent.encryptSessionData(sec);
+                                            if (duoRemember) {
+                                                // Set the two-factor cookie to remember this device, same as the token login flow
+                                                var maxCookieAge = domain.twofactorcookiedurationdays;
+                                                if (typeof maxCookieAge != 'number') { maxCookieAge = 30; }
+                                                const twoFactorCookie = obj.parent.encodeCookie({ userid: userid, expire: maxCookieAge * 24 * 60 /*, ip: req.clientIp*/ }, obj.parent.loginCookieEncryptionKey);
+                                                res.cookie('twofactor', twoFactorCookie, { maxAge: (maxCookieAge * 24 * 60 * 60 * 1000), httpOnly: true, sameSite: parent.config.settings.sessionsamesite, secure: true });
+                                            }
                                             obj.parent.authLog('https', 'Accepted Duo authentication for ' + userid + ' from ' + req.clientIp + ':' + req.connection.remotePort, { useragent: req.headers['user-agent'], sessionid: req.session.x });
                                             // Notify account login
                                             var targets = ['*', 'server-users', user._id];
