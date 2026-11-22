@@ -8076,7 +8076,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                 clientId: domain.duo2factor.integrationkey,
                                 clientSecret: domain.duo2factor.secretkey,
                                 apiHost: domain.duo2factor.apihostname,
-                                redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('&key=' + domain.loginkey) : '')
+                                redirectUrl: obj.generateBaseURL(domain, req) + 'auth-duo' + (domain.loginkey != null ? ('?key=' + domain.loginkey) : '')
                             });
 
                             // Setup the Duo configuration
