@@ -1503,7 +1503,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                         // Decrypt any session data
                         const sec = parent.decryptSessionData(req.session.e);
                         sec.duostate = client.generateState();
-                        if (req.body.remembertoken === 'on') { sec.duoremember = 1; } else { delete sec.duoremember; } // Keep the "remember this device" choice until we return from Duo
+                        if ((req.body.remembertoken === 'on') && ((domain.twofactorcookiedurationdays == null) || (domain.twofactorcookiedurationdays > 0))) { sec.duoremember = 1; } else { delete sec.duoremember; } // Keep the "remember this device" choice until we return from Duo
                         req.session.e = parent.encryptSessionData(sec);
                         parent.debug('web', 'Redirecting user ' + user._id + ' to Duo');
                         res.redirect(client.createAuthUrl(user._id.split('/')[2], sec.duostate));
