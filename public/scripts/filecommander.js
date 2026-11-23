@@ -36,7 +36,7 @@ var FileCommander = (function () {
     }
 
     function fileType(item) {
-        if (item.sroot) return item.mine ? 'My files' : 'Device group files';
+        if (item.sroot) return ({ 1: 'My files', 4: 'Device group files', 5: 'User group files' }[item.st] || 'Shared files') + (item.ro ? ' (read only)' : '');
         if (item.kind == 'place') return item.fav ? 'Favorite' : 'Recent folder';
         if (item.kind == 'dlplace') return 'Browser downloads';
         if (item.kind == 'browse') return '';
@@ -139,16 +139,57 @@ var FileCommander = (function () {
             });
         }
 
-        // Ask the device for its path variables once per connection. Resolves to null when the agent is too old to answer.
+        // Work out the device's path variables once per connection. Over SFTP the server's relay reports the home
+        // folder. For agents they are worked out here, from the logged in user the server knows and folder listings.
         function requestEnv() {
             if (envPromise) return envPromise;
             envPromise = new Promise(function (resolve) {
                 if (!connected()) { resolve(null); return; }
+                if (!host.isSftp()) { agentEnv().then(function (e) { remoteEnv = e; resolve(e); }, function () { resolve(null); }); return; }
                 var reqid = nextId('e');
                 pending[reqid] = { raw: true, resolve: function (data) { remoteEnv = { platform: data.platform, user: data.user, env: data.env || {} }; resolve(remoteEnv); }, reject: function () { resolve(null); }, timer: setTimeout(function () { delete pending[reqid]; resolve(null); }, 6000) };
                 host.send({ action: 'envpaths', reqid: reqid });
             });
             return envPromise;
+        }
+
+        // The usual Windows and Unix folders. The user's folders are found by listing the folders that hold the
+        // profiles, since the profile of sam can be C:\Users\sam.CORP, and OneDrive can move Desktop and Documents.
+        async function agentEnv() {
+            var users = (host.deviceUsers ? host.deviceUsers() : null) || [], name = null, env = {}, k;
+            for (var i = 0; i < users.length; i++) { if (typeof users[i] == 'string') { name = users[i].split('\\').pop().split('@')[0]; break; } }
+            function names(dir) { return (dir || []).filter(function (f) { return f.t == 2; }).map(function (f) { return f.n; }); }
+            async function list(path) { try { return await rList(path); } catch (ex) { return null; } }
+            var folders = { DESKTOP: 'Desktop', DOCUMENTS: 'Documents', DOWNLOADS: 'Downloads', PICTURES: 'Pictures', MUSIC: 'Music', VIDEOS: 'Videos' };
+            if (host.isWindows()) {
+                env = { SYSTEMDRIVE: 'C:', SYSTEMROOT: 'C:\\Windows', WINDIR: 'C:\\Windows', PROGRAMDATA: 'C:\\ProgramData', ALLUSERSPROFILE: 'C:\\ProgramData', PROGRAMFILES: 'C:\\Program Files', 'PROGRAMFILES(X86)': 'C:\\Program Files (x86)', PUBLIC: 'C:\\Users\\Public', TEMP: 'C:\\Windows\\Temp', TMP: 'C:\\Windows\\Temp' };
+                if (name == null) return { platform: 'win32', user: null, env: env };
+                var n = name.toLowerCase(), profiles = names(await list('C:/Users')), dir = null;
+                profiles.forEach(function (d) { var l = d.toLowerCase(); if (l == n) { dir = d; } else if ((dir == null) && (l.indexOf(n + '.') == 0)) { dir = d; } });
+                if (dir == null) return { platform: 'win32', user: null, env: env };
+                var profile = 'C:\\Users\\' + dir;
+                env.USERNAME = name; env.USERPROFILE = profile; env.HOMEDRIVE = 'C:'; env.HOMEPATH = '\\Users\\' + dir;
+                env.APPDATA = profile + '\\AppData\\Roaming'; env.LOCALAPPDATA = profile + '\\AppData\\Local'; env.TEMP = env.TMP = env.LOCALAPPDATA + '\\Temp';
+                for (k in folders) { env[k] = profile + '\\' + folders[k]; }
+                // OneDrive folder backup moves Desktop, Documents and Pictures into the OneDrive folder
+                var od = names(await list('C:/Users/' + dir)).filter(function (d) { return (d == 'OneDrive') || (d.indexOf('OneDrive - ') == 0); });
+                if (od.length > 0) {
+                    env.ONEDRIVE = profile + '\\' + od[0];
+                    var inside = names(await list('C:/Users/' + dir + '/' + od[0]));
+                    ['DESKTOP', 'DOCUMENTS', 'PICTURES'].forEach(function (x) { if (inside.indexOf(folders[x]) >= 0) { env[x] = env.ONEDRIVE + '\\' + folders[x]; } });
+                }
+                return { platform: 'win32', user: name, env: env };
+            }
+            var mac = host.isMac ? host.isMac() : false, home = null;
+            if (name == 'root') { home = mac ? '/var/root' : '/root'; }
+            else if (name != null) {
+                var base = mac ? '/Users' : '/home';
+                if (names(await list(base)).indexOf(name) >= 0) { home = base + '/' + name; }
+            }
+            if (home == null) return { platform: mac ? 'darwin' : 'linux', user: null, env: env };
+            env.HOME = home;
+            for (k in folders) { env[k] = home + '/' + folders[k]; }
+            return { platform: mac ? 'darwin' : 'linux', user: name, env: env };
         }
 
         // Replace %VAR% (Windows) or $VAR, ${VAR} and a leading ~ (other systems) with the device's values.
@@ -425,21 +466,25 @@ var FileCommander = (function () {
             for (var i = 0; t && (i < segs.length); i++) { t = (t.f || {})[segs[i]]; }
             return (t && (t.f != null)) ? t : null;
         }
-        function serverItems(segs) {
+        // At the top, mine lists only My Files (type 1) and otherwise the shared folders: device groups (4), user groups (5).
+        function serverItems(segs, mine) {
             var n = serverNode(segs), r = [];
             if (n == null) return null;
             for (var k in n.f) {
                 var f = n.f[k];
-                if (segs.length == 0) { r.push({ name: f.n || k, key: k, kind: 'drive', sroot: true, mine: (f.t == 1) }); }
+                if (segs.length == 0) { if ((f.t == 1) == !!mine) { r.push({ name: f.n || k, key: k, kind: 'drive', sroot: true, st: f.t, ro: (f.ro == true) }); } }
                 else if (f.t == 3) { r.push({ name: k, kind: 'file', size: f.s || 0, date: (f.d > 1000) ? f.d : null }); }
                 else { r.push({ name: k, kind: 'dir', size: null, date: null }); }
             }
             return r;
         }
         function sKey(row) { return row.key || row.name; }
+        function myRootKey() { var t = serverTree(); if (t && t.f) { for (var k in t.f) { if (t.f[k].t == 1) return k; } } return null; }
+        // The server sends ro on shared folders the user can only read
+        function serverReadOnly(segs) { var t = serverTree(); return (segs.length == 0) || !!(t && t.f && t.f[segs[0]] && t.f[segs[0]].ro); }
         function sLink(segs) { return segs.join('/'); }
         function sDisplay(segs) {
-            if (segs.length == 0) return 'Files on server';
+            if (segs.length == 0) return 'Server files';
             var t = serverTree(), root = (t && t.f && t.f[segs[0]] && t.f[segs[0]].n) ? t.f[segs[0]].n : segs[0];
             return [root].concat(segs.slice(1)).join('\\') + '\\';
         }
@@ -475,9 +520,10 @@ var FileCommander = (function () {
             if ((t.f == null) || (Object.keys(t.f).length == 0)) { p.loading = true; renderStatus(p); await serverRefreshTree(); }
             if ((seq != p.loadSeq) || (p.type != 'server')) return false;
             p.loading = false;
-            var items = serverItems(segs);
+            if (p.mine && ((segs.length == 0) || (segs[0] != myRootKey()))) { segs = (myRootKey() != null) ? [myRootKey()] : []; } // My Files opens at its own top
+            var items = serverItems(segs, p.mine);
             if (items == null) {
-                if (segs.length > 0) { flash(p, 'Unable to open ' + sDisplay(segs)); return loadServer(p, segs.slice(0, -1)); }
+                if (segs.length > (p.mine ? 1 : 0)) { flash(p, 'Unable to open ' + sDisplay(segs)); return loadServer(p, segs.slice(0, -1)); }
                 items = [];
             }
             var samePath = (sLink(segs) == sLink(p.ssegs));
@@ -521,12 +567,12 @@ var FileCommander = (function () {
             p.rows = (atRoot(p) ? [] : [{ up: true, name: '..', kind: 'up' }]).concat(list);
         }
 
-        function atRoot(p) { return (p.type == 'remote') ? (p.segs.length == 0) : ((p.type == 'server') ? (p.ssegs.length == 0) : (p.stack.length == 0)); }
+        function atRoot(p) { return (p.type == 'remote') ? (p.segs.length == 0) : ((p.type == 'server') ? (p.ssegs.length <= (p.mine ? 1 : 0)) : (p.stack.length == 0)); }
         function localRoot(p) { return (p.type == 'local') && (p.stack.length == 0); }
         function isEntry(r) { return (r.kind == 'file') || (r.kind == 'dir'); }
 
         function saveState() {
-            storeSet('fcTypes2', [panes[0].type, panes[1].type]);
+            storeSet('fcTypes2', [srcValue(panes[0]), srcValue(panes[1])]);
             storeSet('fcSort', [[panes[0].sortKey, panes[0].sortDir], [panes[1].sortKey, panes[1].sortDir]]);
             if (host.nodeId()) {
                 var paths = storeGet('fcPaths', []).filter(function (x) { return x.n != host.nodeId(); });
@@ -616,7 +662,7 @@ var FileCommander = (function () {
             if (atRoot(p)) return;
             if (p.type == 'remote') { var name = p.segs[p.segs.length - 1]; loadRemote(p, p.segs.slice(0, -1), false, name); }
             else if (p.type == 'server') {
-                var up = p.ssegs.slice(0, -1), last = p.ssegs[p.ssegs.length - 1], root = (up.length == 0) ? (serverItems([]) || []).filter(function (x) { return x.key == last; })[0] : null;
+                var up = p.ssegs.slice(0, -1), last = p.ssegs[p.ssegs.length - 1], root = (up.length == 0) ? (serverItems([], false) || []).filter(function (x) { return x.key == last; })[0] : null;
                 loadServer(p, up, false, root ? root.name : last);
             }
             else { var h = p.stack[p.stack.length - 1]; loadLocal(p, p.stack.slice(0, -1), false, h.name); }
@@ -624,7 +670,7 @@ var FileCommander = (function () {
 
         function goRoot(p) {
             if (p.type == 'remote') { loadRemote(p, []); }
-            else if (p.type == 'server') { loadServer(p, []); }
+            else if (p.type == 'server') { loadServer(p, []); } // My Files goes to its own top
             else { loadLocal(p, []); }
         }
 
@@ -639,7 +685,8 @@ var FileCommander = (function () {
             }
             if (p.type == 'server') {
                 // The first part is the name shown for My Files or a device group
-                var sp = rParse(text), roots = serverItems([]) || [];
+                var sp = rParse(text), roots = serverItems([], false) || [];
+                if (p.mine) { if ((sp.length > 0) && (sp[0].toLowerCase() == 'my files')) { sp.shift(); } loadServer(p, [myRootKey()].concat(sp)); return; }
                 if (sp.length == 0) { loadServer(p, []); return; }
                 var r = roots.filter(function (x) { return (x.name.toLowerCase() == sp[0].toLowerCase()) || (x.key == sp[0]); })[0];
                 if (r == null) { flash(p, 'Not found on the server: ' + sp[0]); renderPath(p); return; }
@@ -770,7 +817,9 @@ var FileCommander = (function () {
             localFavIndex(hd).then(function (i) { if (p.stack[p.stack.length - 1] === hd) { set(i >= 0, true); } });
         }
 
+        // type is a source value: remote, local, myfiles or server. My Files and Server files are both server panes.
         function setPaneType(p, type) {
+            if ((type == 'myfiles') || (type == 'server')) { var mine = (type == 'myfiles'); if (mine != !!p.mine) { p.ssegs = []; } p.mine = mine; type = 'server'; }
             p.type = type; p.items = []; p.rows = []; p.marked = {}; p.cursor = 0; p.message = null; p.loadSeq++;
             renderPane(p);
             renderDrives(p);
@@ -862,11 +911,13 @@ var FileCommander = (function () {
             renderButtons();
         }
 
+        function srcValue(p) { return (p.type == 'server') ? (p.mine ? 'myfiles' : 'server') : p.type; }
+
         function renderSrc(p) {
             var e = p.el, name = host.nodeName() || 'Remote device';
             e.src.innerHTML = '<option value=remote>' + esc(name) + '</option>' + '<option value=local>This computer' + (localSupported ? '' : ' (not available)') + '</option>' +
-                ((serverAvailable() || (p.type == 'server')) ? '<option value=server>Files on server</option>' : '');
-            e.src.value = p.type;
+                ((serverAvailable() || (p.type == 'server')) ? '<option value=myfiles>My Files</option><option value=server>Server files</option>' : '');
+            e.src.value = srcValue(p);
         }
 
         function renderDrives(p) {
@@ -896,9 +947,12 @@ var FileCommander = (function () {
                 else if (w && (p.segs.length == 1)) { sel = 'd:' + p.segs[0]; }
                 else { p.locs.forEach(function (l, i) { if (l.segs && (rPath(l.segs).toLowerCase() == rPath(p.segs).toLowerCase())) { sel = 'loc:' + i; } }); }
             } else if (p.type == 'server') {
-                x += opt(':root', 'Files on server');
-                (serverItems([]) || []).forEach(function (r) { x += opt('sr:' + r.key, r.name); });
-                if (p.ssegs.length == 0) { sel = ':root'; } else if (p.ssegs.length == 1) { sel = 'sr:' + p.ssegs[0]; }
+                if (p.mine) { x += opt(':root', 'My Files'); if (p.ssegs.length <= 1) { sel = ':root'; } }
+                else {
+                    x += opt(':root', 'Server files');
+                    (serverItems([], false) || []).forEach(function (r) { x += opt('sr:' + r.key, r.name + (r.ro ? ' (read only)' : '')); });
+                    if (p.ssegs.length == 0) { sel = ':root'; } else if (p.ssegs.length == 1) { sel = 'sr:' + p.ssegs[0]; }
+                }
             } else {
                 x += opt(':root', 'This computer');
                 group('Favorites', favLocal.map(function (hd, i) { return opt('f:' + i, '\u2605 ' + hd.name); }));
@@ -993,6 +1047,7 @@ var FileCommander = (function () {
                     if (d && d.size) { s += ' — ' + sizeStr(d.free) + ' free of ' + sizeStr(d.size); }
                 }
             }
+            if ((p.type == 'server') && (p.ssegs.length > 0) && serverReadOnly(p.ssegs)) { s += ' \u2014 read only'; }
             if (p.flash) { s = p.flash + (s ? ' — ' + s : ''); }
             p.el.status.textContent = s;
             p.el.status.classList.toggle('fc-error', !!p.flash && !p.flashInfo);
@@ -1031,7 +1086,7 @@ var FileCommander = (function () {
 
         function canWrite(p) {
             if (p.type == 'local') return (p.stack.length > 0);
-            if (p.type == 'server') return serverAvailable() && (p.ssegs.length > 0); // The top level lists My Files and device groups
+            if (p.type == 'server') return serverAvailable() && !serverReadOnly(p.ssegs); // Not the top of Server files, nor a shared folder that is read only
             return connected() && (!host.isWindows() || (p.segs.length > 0)); // The Windows root only lists drives
         }
         function canTransfer(p) {
@@ -1067,7 +1122,7 @@ var FileCommander = (function () {
             e.drives.onchange = function () {
                 var v = e.drives.value, n = parseInt(v.split(':')[1]);
                 if (p.type == 'server') {
-                    if (v == ':root') { loadServer(p, []); }
+                    if (v == ':root') { goRoot(p); }
                     else if (v.indexOf('sr:') == 0) { loadServer(p, [v.substring(3)]); }
                 } else if (p.type == 'remote') {
                     if (v == ':root') { loadRemote(p, []); }
@@ -1170,7 +1225,7 @@ var FileCommander = (function () {
                 if (!fromRemote) return null;
                 return { row: null, tr: (row && (row.kind == 'dlplace')) ? tr : null, toBrowser: true };
             }
-            if (row && !row.up && ((row.kind == 'dir') || ((row.kind == 'drive') && ((p.type == 'server') || connected()))) && !((dragSource === p) && p.marked[row.name])) { return { row: row, tr: tr }; }
+            if (row && !row.up && ((row.kind == 'dir') || ((row.kind == 'drive') && ((p.type == 'server') ? !row.ro : connected()))) && !((dragSource === p) && p.marked[row.name])) { return { row: row, tr: tr }; }
             if ((dragSource === p) || !canWrite(p)) return null;
             return { row: null, tr: null };
         }
@@ -1927,7 +1982,8 @@ var FileCommander = (function () {
         var sorts = storeGet('fcSort', null);
         for (var i = 0; i < 2; i++) {
             panes.push(newPane(i));
-            panes[i].type = ((types[i] == 'local') && localSupported) ? 'local' : ((types[i] == 'server') ? 'server' : 'remote');
+            panes[i].type = ((types[i] == 'local') && localSupported) ? 'local' : (((types[i] == 'server') || (types[i] == 'myfiles')) ? 'server' : 'remote');
+            panes[i].mine = (types[i] == 'myfiles');
             var ss = storeGet('fcServerSegs', []);
             if (Array.isArray(ss[i])) { panes[i].ssegs = ss[i]; }
             if (sorts && sorts[i]) { panes[i].sortKey = sorts[i][0]; panes[i].sortDir = sorts[i][1]; }

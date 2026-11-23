@@ -2118,7 +2118,7 @@
           },
           "fileCommander": {
             "type": "object",
-            "description": "Locations offered in the device pane of the File Commander (Files tab, Commander button). Paths can use environment variables of the device: %VAR% on Windows, $VAR or ${VAR} and ~ elsewhere. On Windows %DESKTOP%, %DOCUMENTS%, %DOWNLOADS%, %PICTURES%, %MUSIC% and %VIDEOS% are the logged in user's folders, also when OneDrive moved them, and %USERPROFILE%, %APPDATA%, %LOCALAPPDATA% and %TEMP% are that user's. Locations whose variables the device does not have are not shown.",
+            "description": "Locations offered in the device pane of the File Commander (Files tab, Commander button). Paths can use these variables, worked out from the device's operating system and logged in user (they are not read from the device): on Windows %SystemDrive%, %SystemRoot%, %WINDIR%, %ProgramData%, %ProgramFiles%, %ProgramFiles(x86)%, %PUBLIC% and %TEMP%, and for the logged in user %USERPROFILE%, %USERNAME%, %APPDATA%, %LOCALAPPDATA%, %ONEDRIVE%, %DESKTOP%, %DOCUMENTS%, %DOWNLOADS%, %PICTURES%, %MUSIC% and %VIDEOS% (Desktop, Documents and Pictures follow OneDrive when it moved them); elsewhere $HOME or ~ and $DESKTOP, $DOCUMENTS, $DOWNLOADS, $PICTURES, $MUSIC and $VIDEOS. Locations using a variable that is not known for the device, for example a user folder when nobody is logged in, are not shown.",
             "additionalProperties": false,
             "properties": {
               "drives": {

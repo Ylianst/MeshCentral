@@ -12265,6 +12265,8 @@
                 isConnected: function () { return (files != null) && (files.State == 3); },
                 isWindows: function () { return (filesNode != null) && isWindowsNode(filesNode); },
                 isSftp: function () { return (files != null) && (files.contype == 2); },
+                isMac: function () { return (filesNode != null) && isMacNode(filesNode); },
+                deviceUsers: function () { return (filesNode != null) ? filesNode.users : null; }, // Logged in users the agent reported, used to find their folders
                 nodeId: function () { return (filesNode != null) ? filesNode._id : null; },
                 nodeName: function () { return (filesNode != null) ? filesNode.name : ''; },
                 chunkSize: function () { return attemptWebRTC ? 16384 : 65536; },
