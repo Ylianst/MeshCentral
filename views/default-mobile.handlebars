@@ -2942,7 +2942,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer;color:black onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer;color:black onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>' + (filetreex.ro ? (' (' + "read only" + ')') : '');
                     folderdepth++;
                 } else {
                     break;

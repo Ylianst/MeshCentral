@@ -19102,7 +19102,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>' + (filetreex.ro ? (' (' + "read only" + ')') : '');
                     folderdepth++;
                 } else {
                     break;
@@ -19246,7 +19246,7 @@
             var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
             var ro = p5readOnly();
             QE('p5DeleteFileButton', !ro && (cc > 0) && (filetreelocation.length > 0));
-            QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
+            QE('p5ViewFileButton', !ro && (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
             QE('p5NewFolderButton', !ro && (filetreelocation.length > 0));
             QE('p5UploadButton', !ro && (filetreelocation.length > 0));
             QE('p5DownloadButton', (cc > 0) && (cc == sfc) && (filetreelocation.length > 0));
