@@ -15,6 +15,13 @@ var FileCommander = (function () {
     'use strict';
 
     var localSupported = (typeof window.showDirectoryPicker == 'function') && (window.isSecureContext == true);
+
+    // Why this browser cannot show folders of this computer, so the pane can say what to change
+    function localUnsupportedReason() {
+        if (window.isSecureContext != true) return 'Folders on this computer can only be opened when MeshCentral is opened over HTTPS. This page was opened over HTTP.';
+        if (navigator.brave != null) return 'Brave turns off access to folders on this computer. Turn on the File System Access API at brave://flags (#file-system-access-api) and restart Brave, or use Chrome or Edge.';
+        return 'This browser cannot open folders on this computer (Firefox and Safari do not support it). Use Chrome or Edge, on Windows, Linux or macOS.';
+    }
     var uploadWindow = 8; // Upload blocks sent but not yet acknowledged by the agent
     var maxEditSize = 5 * 1024 * 1024;
 
@@ -659,7 +666,6 @@ var FileCommander = (function () {
         }
 
         function setPaneType(p, type) {
-            if ((type == 'local') && !localSupported) { type = 'remote'; }
             p.type = type; p.items = []; p.rows = []; p.marked = {}; p.cursor = 0; p.message = null; p.loadSeq++;
             renderPane(p);
             renderDrives(p);
@@ -752,7 +758,7 @@ var FileCommander = (function () {
 
         function renderSrc(p) {
             var e = p.el, name = host.nodeName() || 'Remote device';
-            e.src.innerHTML = '<option value=remote>' + esc(name) + '</option>' + '<option value=local' + (localSupported ? '' : ' disabled') + '>This computer</option>';
+            e.src.innerHTML = '<option value=remote>' + esc(name) + '</option>' + '<option value=local>This computer' + (localSupported ? '' : ' (not available)') + '</option>';
             e.src.value = p.type;
         }
 
@@ -844,7 +850,7 @@ var FileCommander = (function () {
             renderPath(p);
             var e = p.el, msg = '', hint = '';
             if (p.message) { msg = esc(p.message); }
-            else if ((p.type == 'local') && !localSupported) { msg = 'This browser cannot open folders on this computer. Use Chrome or Edge, or drag files from your desktop onto the device pane.'; }
+            else if ((p.type == 'local') && !localSupported) { msg = localUnsupportedReason() + ' You can still drag files from your desktop onto the device pane to upload them.'; }
             else if (localRoot(p)) {
                 hint = '<b>Browsers cannot list drives.</b> Use "Browse for a folder..." and the folder is kept here. Chrome blocks drive roots such as C:\\, your user folder and Downloads itself, so pick a folder inside them (for example Downloads\\Mesh). ' +
                     'To save device files to Downloads, copy or drag them onto "Downloads (save with the browser)". Use the &#x2606; button to add favorites.';
