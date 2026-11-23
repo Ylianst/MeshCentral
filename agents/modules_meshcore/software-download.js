@@ -9,20 +9,33 @@
 var promise = require('promise');
 var _requests = {}; // Keep references on active downloads
 var _counter = 0;
+var DOWNLOAD_TIMEOUT = 60 * 60 * 1000; // Give up on a download after 60 minutes
 
 function removeFile(path) { try { require('fs').unlinkSync(path); } catch (e) { } }
 
 function download(options) {
     var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
     if ((options == null) || (typeof options.url != 'string') || (typeof options.hash != 'string') || (typeof options.path != 'string')) { ret._rej(new Error('Invalid arguments')); return ret; }
-    var id = ++_counter, finished = false;
+    var id = ++_counter, finished = false, failed = false, timer = null, req = null, response = null, file = null;
 
     function finish(err) {
         if (finished) return;
         finished = true;
+        if (timer != null) { clearTimeout(timer); timer = null; }
         delete _requests[id];
-        if (err) { removeFile(options.path); ret._rej(err); } else { ret._res(options.path); }
+        if (err) {
+            failed = true;
+            // Stop the transfer, the partial file is removed now or once it is closed
+            if (response != null) { try { response.unpipe(); } catch (e) { } }
+            if (file != null) { try { file.end(); } catch (e) { } }
+            if (req != null) { try { req.abort(); } catch (e) { } }
+            removeFile(options.path);
+            ret._rej(err);
+        } else {
+            ret._res(options.path);
+        }
     }
+    timer = setTimeout(function () { finish(new Error('Download timed out after ' + (DOWNLOAD_TIMEOUT / 60000) + ' minutes')); }, DOWNLOAD_TIMEOUT);
 
     try {
         var opts = require('http').parseUri(options.url);
@@ -37,11 +50,12 @@ function download(options) {
             if ((typeof options.servertlshash == 'string') && (certs[0].digest != null) && (options.servertlshash.toLowerCase() == certs[0].digest.split(':').join('').toLowerCase())) return;
             throw new Error('BadCert');
         }
-        var req = require('https').get(opts);
+        req = require('https').get(opts);
         _requests[id] = req;
         req.on('error', function (e) { finish(new Error('Download failed: ' + e)); });
         req.on('response', function (res) {
             if (res.statusCode != 200) { finish(new Error('Download failed, HTTP ' + res.statusCode)); return; }
+            response = res;
             var hash = null, closed = false;
             var check = function () {
                 if ((hash == null) || (closed == false) || finished) return;
@@ -49,10 +63,10 @@ function download(options) {
                 finish(null);
             };
             try {
-                var file = require('fs').createWriteStream(options.path, { flags: 'wb' });
+                file = require('fs').createWriteStream(options.path, { flags: 'wb' });
                 var hasher = require('SHA384Stream').create();
                 hasher.on('hash', function (h) { hash = h.toString('hex').toLowerCase(); check(); });
-                file.on('close', function () { closed = true; check(); });
+                file.on('close', function () { closed = true; if (failed) { removeFile(options.path); return; } check(); });
                 res.pipe(file);
                 res.pipe(hasher);
             } catch (ex) { finish(ex); }

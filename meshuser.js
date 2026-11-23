@@ -1023,7 +1023,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 const softwarePackageTypes = { installmsi: 'win32', installpackage: 'linux', installflatpak: 'linux' }; // Package installs and the agent platform they need
                 const softwareManage = (softwareManageTypes.indexOf(command.type) >= 0);
                 if ((softwareManage == false) && (softwareReadTypes.indexOf(command.type) < 0)) break;
-                const softwareError = function (err) { try { ws.send(JSON.stringify({ action: 'software', type: command.type, nodeid: command.nodeid, responseid: command.responseid, value: JSON.stringify({ error: err }) })); } catch (ex) { } };
+                // Errors go back to the page as a typed reply. A caller that sent a responseid (meshctrl, scripts) also gets "result", as with other commands.
+                const softwareError = function (err) {
+                    var m = { action: 'software', type: command.type, nodeid: command.nodeid, value: JSON.stringify({ error: err }) };
+                    if (command.responseid != null) { m.responseid = command.responseid; m.result = err; }
+                    try { ws.send(JSON.stringify(m)); } catch (ex) { }
+                };
                 if (softwareManage && (domain.softwaremanagement === false)) { softwareError('Software management is disabled on this server'); break; }
 
                 // Only forward the fields the agent needs
@@ -1036,14 +1041,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     var swAppName = command.value;
                     if (command.type == 'uninstallapp') { try { swAppName = Buffer.from(command.value, 'base64').toString(); } catch (ex) { } }
                     swAppName = swAppName.substring(0, 256);
-                    swEventMsgId = 167; swEventArgs = [swAppName]; swEventMsg = 'Uninstall software: ' + swAppName;
+                    swEventMsgId = 169; swEventArgs = [swAppName]; swEventMsg = 'Uninstall software: ' + swAppName;
                 } else if (command.type == 'installwinupdates') {
                     if ((Array.isArray(command.updateids) == false) || (command.updateids.length < 1) || (command.updateids.length > 100)) { softwareError('Invalid update list'); break; }
                     var swIdsOk = true;
                     for (var i in command.updateids) { if ((typeof command.updateids[i] != 'string') || (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(command.updateids[i]) == false)) { swIdsOk = false; } }
                     if (swIdsOk == false) { softwareError('Invalid update identifier'); break; }
                     swcmd.updateids = command.updateids.slice();
-                    swEventMsgId = 165; swEventArgs = [swcmd.updateids.length]; swEventMsg = 'Started Windows Update installation of ' + swcmd.updateids.length + ' update(s)';
+                    swEventMsgId = 167; swEventArgs = [swcmd.updateids.length]; swEventMsg = 'Started Windows Update installation of ' + swcmd.updateids.length + ' update(s)';
                 } else if ((command.type == 'installmsi') || (command.type == 'installpackage')) {
                     if (common.validateString(command.uploadid, 1, 64) == false) { softwareError('Invalid package'); break; }
                     var swUpload = (parent.softwareUploads != null) ? parent.softwareUploads[command.uploadid] : null;
@@ -1057,10 +1062,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     swcmd.name = swUpload.name;
                     swcmd.hash = swUpload.hash;
                     if (command.type == 'installmsi') {
-                        swEventMsgId = 168; swEventArgs = [swUpload.name]; swEventMsg = 'Started MSI installation of ' + swUpload.name;
+                        swEventMsgId = 170; swEventArgs = [swUpload.name]; swEventMsg = 'Started MSI installation of ' + swUpload.name;
                     } else {
                         swcmd.kind = swUpload.kind;
-                        swEventMsgId = 170; swEventArgs = [swUpload.name]; swEventMsg = 'Started installation of package ' + swUpload.name;
+                        swEventMsgId = 172; swEventArgs = [swUpload.name]; swEventMsg = 'Started installation of package ' + swUpload.name;
                     }
                 } else if (command.type == 'installflatpak') {
                     // Install a Flatpak application by id from a remote already configured on the device, for example flathub
@@ -1069,7 +1074,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     swcmd.remote = command.remote;
                     swcmd.appid = command.appid;
                     swcmd.name = command.remote + '/' + command.appid;
-                    swEventMsgId = 170; swEventArgs = [swcmd.name]; swEventMsg = 'Started installation of package ' + swcmd.name;
+                    swEventMsgId = 172; swEventArgs = [swcmd.name]; swEventMsg = 'Started installation of package ' + swcmd.name;
                 }
 
                 parent.GetNodeWithRights(domain, user, command.nodeid, function (node, rights, visible) {
@@ -1089,6 +1094,11 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((command.type == 'installmsi') || (command.type == 'installpackage')) {
                         // The agent fetches the package with a short lived download cookie bound to this device.
                         if (parent.wsagents[node._id] == null) { softwareError('Package install needs the device to be connected to this server'); return; } // The package is stored on this server
+                        if (fs.existsSync(parent.path.join(parent.filespath, 'tmp', swUpload.target)) == false) { // Removed by the temporary file cleanup
+                            if (parent.softwareUploads != null) { delete parent.softwareUploads[command.uploadid]; }
+                            softwareError('The uploaded package has expired, upload it again');
+                            return;
+                        }
                         swcmd.urlpath = domain.url + 'agentdownload.ashx?c=' + parent.parent.encodeCookie({ a: 'tmpdl', d: domain.id, nid: node._id, f: swUpload.target }, parent.parent.loginCookieEncryptionKey);
                         if ((parent.parent.args.ignoreagenthashcheck == null) || (parent.parent.args.ignoreagenthashcheck === false)) {
                             var swTlsHash = (parent.webCertificateFullHashs != null) ? parent.webCertificateFullHashs[domain.id] : null;
@@ -1114,7 +1124,18 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         parent.parent.DispatchEvent(targets, obj, event);
                     }
 
-                    routeCommandToNode(swcmd, softwareManage ? MESHRIGHT_SOFTWAREMANAGE : null, MESHRIGHT_NOSOFTWARE, function (ok) { if (ok === false) { softwareError('Unable to route'); } });
+                    // Remember who started an install on this connection, so the result event names the right user (see meshagent.js)
+                    if ((swAgent != null) && (['installwinupdates', 'installmsi', 'installpackage', 'installflatpak'].indexOf(command.type) >= 0)) {
+                        if (swAgent.softwarePending == null) { swAgent.softwarePending = {}; }
+                        var swNow = Date.now();
+                        for (var k in swAgent.softwarePending) { if ((swNow - swAgent.softwarePending[k].time) > (24 * 60 * 60 * 1000)) { delete swAgent.softwarePending[k]; } }
+                        swAgent.softwarePending[ws.sessionId + '|' + command.type] = { userid: user._id, name: (typeof swcmd.name == 'string') ? swcmd.name : '', time: swNow };
+                    }
+
+                    routeCommandToNode(swcmd, softwareManage ? MESHRIGHT_SOFTWAREMANAGE : null, MESHRIGHT_NOSOFTWARE, function (ok) {
+                        if (ok === false) { softwareError('Unable to route'); }
+                        else if (command.responseid != null) { try { ws.send(JSON.stringify({ action: 'software', responseid: command.responseid, result: 'OK' })); } catch (ex) { } }
+                    });
                 });
                 break;
             }

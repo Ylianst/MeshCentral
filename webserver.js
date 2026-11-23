@@ -5284,7 +5284,15 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     // Rights are checked when the install is requested (see the "software" command, type "installmsi", in meshuser.js).
     obj.softwareUploads = {};
     const SOFTWARE_UPLOAD_MAX_SIZE = 2 * 1024 * 1024 * 1024; // 2 GB
-    const SOFTWARE_UPLOAD_LIFETIME = 2 * 60 * 60 * 1000; // Packages are removed after 2 hours
+    const SOFTWARE_UPLOAD_LIFETIME = 20 * 60 * 1000; // Packages are removed after 20 minutes, the server removes files in tmp older than 30 minutes anyway
+    const SOFTWARE_UPLOAD_PER_USER = 3; // Pending packages per user, a new upload replaces the oldest
+    function removeSoftwareUpload(id) {
+        const entry = obj.softwareUploads[id];
+        if (entry == null) return;
+        delete obj.softwareUploads[id];
+        if (entry.timer != null) { clearTimeout(entry.timer); }
+        try { obj.fs.unlinkSync(obj.path.join(obj.filespath, 'tmp', entry.target)); } catch (ex) { }
+    }
     function handleUploadSoftware(req, res) {
         const domain = checkUserIpAddress(req, res);
         if (domain == null) { return; }
@@ -5303,6 +5311,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if ((loginCookie != null) && (domain.id == loginCookie.domainid)) { authUserid = loginCookie.userid; } // Use cookie authentication
             }
             if ((authUserid == null) || (obj.users[authUserid] == null)) { removeUploads(); res.sendStatus(401); return; }
+            const swUser = obj.users[authUserid];
+            if ((swUser.siteadmin != null) && (swUser.siteadmin != 0xFFFFFFFF) && ((swUser.siteadmin & SITERIGHT_LOCKED) != 0)) { removeUploads(); res.sendStatus(401); return; } // Locked account
             if ((files == null) || (files.files == null) || (files.files.length != 1)) { removeUploads(); res.status(400).json({ error: 'Select one MSI file' }); return; }
 
             const file = files.files[0];
@@ -5345,7 +5355,12 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 stream.on('data', function (d) { hash.update(d); });
                 stream.on('end', function () {
                     const entry = { userid: authUserid, domainid: domain.id, name: originalFilename, kind: kind, target: target, hash: hash.digest('hex'), size: file.size, time: Date.now() };
-                    entry.timer = setTimeout(function () { delete obj.softwareUploads[id]; try { obj.fs.unlinkSync(targetPath); } catch (ex) { } }, SOFTWARE_UPLOAD_LIFETIME);
+                    // Keep at most SOFTWARE_UPLOAD_PER_USER pending packages for this user, removing the oldest
+                    var mine = [];
+                    for (var i in obj.softwareUploads) { if (obj.softwareUploads[i].userid == authUserid) { mine.push(i); } }
+                    mine.sort(function (a, b) { return obj.softwareUploads[a].time - obj.softwareUploads[b].time; });
+                    while (mine.length >= SOFTWARE_UPLOAD_PER_USER) { removeSoftwareUpload(mine.shift()); }
+                    entry.timer = setTimeout(function () { removeSoftwareUpload(id); }, SOFTWARE_UPLOAD_LIFETIME);
                     obj.softwareUploads[id] = entry;
                     res.json({ id: id, name: entry.name, kind: kind, size: entry.size });
                 });

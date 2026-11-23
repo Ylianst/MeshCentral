@@ -120,9 +120,9 @@ var UpdateHistoryEntryFunctions = [
     'GetTypeInfoCount', 'GetTypeInfo', 'GetIDsOfNames', 'Invoke',
     'get_Operation',        // 7
     'get_ResultCode',       // 8
-    'get_Date',             // 9
-    'get_UpdateIdentity',   // 10
-    'get_HResult',          // 11 (extra method between identity and title)
+    'get_HResult',          // 9
+    'get_Date',             // 10
+    'get_UpdateIdentity',   // 11
     'get_Title',            // 12
     'get_Description',      // 13
     'get_UnmappedResultCode', // 14
@@ -134,9 +134,14 @@ var UpdateHistoryEntryFunctions = [
     'get_SupportUrl'        // 20
 ];
 
-var active_handlers = {};
-var _cx_counter = 30;
+// ISearchJob: CleanUp and RequestAbort come right after IsCompleted (IDownloadJob and IInstallationJob also have Updates first)
+var SearchJobFunctions = [
+    'QueryInterface', 'AddRef', 'Release',
+    'GetTypeInfoCount', 'GetTypeInfo', 'GetIDsOfNames', 'Invoke',
+    'get_AsyncState', 'get_IsCompleted', 'CleanUp', 'RequestAbort'
+];
 
+var active_handlers = {};
 
 function releaseCOM(obj) {
     if (obj && obj.funcs) { try { obj.funcs.Release(obj); } catch (e) {} }
@@ -217,138 +222,86 @@ function readUpdates(searchResultPtr, COM, GM) {
     return result;
 }
 
-function makeSearchCallback(GM, COM, p, searcher) {
-    var cx = _cx_counter;
-    _cx_counter += 4;
-    var handler = COM.marshalInterface([
-        {
-            cx: cx, parms: 3, name: 'QueryInterface', func: function (j, riid, ppv)
-            {
-                var hex = riid.Deref(0, 16).toBuffer().toString('hex').toUpperCase();
-                var ret = GM.CreateVariable(4);
-                if (hex === '0000000000000000C000000000000046' || hex === IID_IUSCC) {
-                    j.pointerBuffer().copy(ppv.Deref(0, GM.PointerSize).toBuffer());
-                    ret.increment(++this.refcount, true);
-                } else {
-                    ret.increment(E_NOINTERFACE, true);
-                }
-                return ret;
-            }
-        },
-        { cx: cx+1, parms: 1, name: 'AddRef',   func: function () { return GM.CreateVariable(4).increment(++this.refcount, true); } },
-        { cx: cx+2, parms: 1, name: 'Release',  func: function () {
-            if (--this.refcount === 0) { cleanup(this); }
-            return GM.CreateVariable(4).increment(this.refcount >>> 0, true);
-        }},
-        {
-            cx: cx+3, parms: 3, name: 'Invoke', func: function (j, searchJob, callbackArgs)
-            {
-                var searchResultPtr = GM.CreatePointer();
-                var hr = this.searcher.funcs.EndSearch(this.searcher, searchJob, searchResultPtr).Val;
-                if (hr !== 0) {
-                    this.p._rej(new Error('EndSearch failed: 0x' + (hr >>> 0).toString(16)));
-                } else {
-                    try { this.p._res(readUpdates(searchResultPtr, COM, GM)); }
-                    catch (e) { this.p._rej(e); }
-                }
-                var self = this;
-                setImmediate(function () { if (--self.refcount === 0) { cleanup(self); } });
-                return GM.CreateVariable(4).increment(0, true);
-            }
-        }
-    ]);
-
-    handler.refcount = 1;
-    handler.p = p;
-    handler.searcher = searcher;
-    active_handlers[handler._hashCode()] = handler;
-    return handler;
+// COM callback objects use native callback slots (cx), 4 per object. Slots 10-14 are used by win-wmi-fixed. The slots below are
+// handed out from a pool and given back when the callback object is destroyed, so repeated searches never run out of them.
+var CX_SLOTS = [30, 34, 38, 42, 46];
+var _cxFree = CX_SLOTS.slice();
+function allocCx() {
+    if (_cxFree.length == 0) { throw new Error('Too many Windows Update operations at once, try again in a moment'); }
+    return _cxFree.shift();
 }
 
+// Destroy a callback object and give its slots back. Never called from inside one of the object's own methods.
 function cleanup(h) {
-    if (h.cleanup) { h.cleanup(); }
+    if ((h == null) || (h._cleaned === true)) return;
+    h._cleaned = true;
+    if (h.cleanup) { try { h.cleanup(); } catch (e) { } }
     delete active_handlers[h._hashCode()];
+    if (h._cx != null) { _cxFree.push(h._cx); h._cx = null; }
+}
+
+// Destroy the callback object later, once the current native call (for example WUA calling Release from its own thread) has returned
+function cleanupLater(h) { setImmediate(function () { if (h.refcount <= 0) { cleanup(h); } }); }
+
+// Run a Windows Update search and resolve with the list of updates. online === false uses the local data store only.
+// The search job is cleaned up and every COM object created here is released when the search ends.
+function runSearch(criteria, online) {
+    var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
+    var GM, COM, session = null, searcher = null, job = null, callback = null, finished = false;
+
+    function done(err, result) {
+        if (finished) return;
+        finished = true;
+        setImmediate(function () { // Let the WUA callback return first
+            if (job != null) { try { job.funcs.CleanUp(job); } catch (e) { } releaseCOM(job); }
+            releaseCallback(callback);
+            releaseCOM(searcher);
+            releaseCOM(session);
+            if (err) { ret._rej(err); } else { ret._res(result); }
+        });
+    }
+
+    try {
+        GM = require('_GenericMarshal');
+        COM = require('win-com');
+        session = COM.createInstance(COM.CLSIDFromString(CLSID_UpdateSession), COM.IID_IUnknown);
+        session.funcs = COM.marshalFunctions(session, UpdateSessionFunctions);
+
+        var searcherPtr = GM.CreatePointer();
+        var hr = session.funcs.CreateUpdateSearcher(session, searcherPtr).Val;
+        if (hr !== 0) { throw new Error('CreateUpdateSearcher failed: 0x' + (hr >>> 0).toString(16)); }
+        searcher = searcherPtr.Deref();
+        searcher.funcs = COM.marshalFunctions(searcher, UpdateSearcherFunctions);
+        if (online === false) { searcher.funcs.put_Online(searcher, 0); } // VARIANT_FALSE, use the result of the last scan
+
+        callback = makeCallback(GM, COM, IID_IUSCC, function (searchJob) {
+            var searchResultPtr = GM.CreatePointer();
+            var hr2 = searcher.funcs.EndSearch(searcher, searchJob, searchResultPtr).Val;
+            if (hr2 !== 0) { done(new Error('EndSearch failed: 0x' + (hr2 >>> 0).toString(16))); return; }
+            try { done(null, readUpdates(searchResultPtr, COM, GM)); } catch (e) { done(e); }
+        });
+
+        var criteriaBSTR = makeBSTR(criteria);
+        var jobPtr = GM.CreatePointer();
+        hr = searcher.funcs.BeginSearch(searcher, criteriaBSTR, callback, GM.CreateVariable(16), jobPtr).Val; // VT_EMPTY VARIANT state
+        OleAut32.SysFreeString(criteriaBSTR);
+        if (hr !== 0) { throw new Error('BeginSearch failed: 0x' + (hr >>> 0).toString(16)); }
+        job = jobPtr.Deref();
+        job.funcs = COM.marshalFunctions(job, SearchJobFunctions);
+    } catch (ex) {
+        done(ex);
+    }
+    return ret;
 }
 
 // getAvailableUpdates(options) - options.online === false searches the local Windows Update data store only.
 // That returns the result of the last scan Windows made in a few seconds; an online scan can take several minutes.
 function getAvailableUpdates(options) {
-    var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
-
-    try {
-        var GM = require('_GenericMarshal');
-        var COM = require('win-com');
-
-        var session = COM.createInstance(COM.CLSIDFromString(CLSID_UpdateSession), COM.IID_IUnknown);
-        session.funcs = COM.marshalFunctions(session, UpdateSessionFunctions);
-
-        var searcherPtr = GM.CreatePointer();
-        var hr = session.funcs.CreateUpdateSearcher(session, searcherPtr).Val;
-        if (hr !== 0) { throw new Error('CreateUpdateSearcher failed: 0x' + (hr >>> 0).toString(16)); }
-
-        var searcher = searcherPtr.Deref();
-        searcher.funcs = COM.marshalFunctions(searcher, UpdateSearcherFunctions);
-        if ((options != null) && (options.online === false)) { searcher.funcs.put_Online(searcher, 0); } // VARIANT_FALSE, use cached scan data
-
-        var criteriaBSTR = makeBSTR('IsInstalled=0 and IsHidden=0');
-        var searchJobPtr = GM.CreatePointer();
-        var stateV = GM.CreateVariable(16); // VT_EMPTY VARIANT
-        var callback = makeSearchCallback(GM, COM, ret, searcher);
-
-        hr = searcher.funcs.BeginSearch(searcher, criteriaBSTR, callback, stateV, searchJobPtr).Val;
-        OleAut32.SysFreeString(criteriaBSTR);
-
-        if (hr !== 0) {
-            cleanup(callback);
-            releaseCOM(searcher);
-            releaseCOM(session);
-            throw new Error('BeginSearch failed: 0x' + (hr >>> 0).toString(16));
-        }
-
-    } catch (ex) {
-        ret._rej(ex);
-    }
-
-    return ret;
+    return runSearch('IsInstalled=0 and IsHidden=0', ((options != null) && (options.online === false)) ? false : true);
 }
 
 function getInstalledUpdates() {
-    var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
-
-    try {
-        var GM = require('_GenericMarshal');
-        var COM = require('win-com');
-
-        var session = COM.createInstance(COM.CLSIDFromString(CLSID_UpdateSession), COM.IID_IUnknown);
-        session.funcs = COM.marshalFunctions(session, UpdateSessionFunctions);
-
-        var searcherPtr = GM.CreatePointer();
-        var hr = session.funcs.CreateUpdateSearcher(session, searcherPtr).Val;
-        if (hr !== 0) { throw new Error('CreateUpdateSearcher failed: 0x' + (hr >>> 0).toString(16)); }
-
-        var searcher = searcherPtr.Deref();
-        searcher.funcs = COM.marshalFunctions(searcher, UpdateSearcherFunctions);
-
-        var criteriaBSTR = makeBSTR('IsInstalled=1');
-        var searchJobPtr = GM.CreatePointer();
-        var stateV = GM.CreateVariable(16);
-        var callback = makeSearchCallback(GM, COM, ret, searcher);
-
-        hr = searcher.funcs.BeginSearch(searcher, criteriaBSTR, callback, stateV, searchJobPtr).Val;
-        OleAut32.SysFreeString(criteriaBSTR);
-
-        if (hr !== 0) {
-            cleanup(callback);
-            releaseCOM(searcher);
-            releaseCOM(session);
-            throw new Error('BeginSearch failed: 0x' + (hr >>> 0).toString(16));
-        }
-
-    } catch (ex) {
-        ret._rej(ex);
-    }
-
-    return ret;
+    return runSearch('IsInstalled=1', true);
 }
 
 function getInstalledUpdateHistory() {
@@ -543,8 +496,7 @@ var INSTALL_TIMEOUT_MS = 4 * 60 * 60 * 1000; // Give up waiting for WUA after 4 
 // Generic one-shot COM callback object (ISearchCompletedCallback, IDownloadCompletedCallback, ...).
 // All of these have the layout IUnknown + Invoke(this, job, args).
 function makeCallback(GM, COM, iidHex, onInvoke) {
-    var cx = _cx_counter;
-    _cx_counter += 4;
+    var cx = allocCx();
     var handler = COM.marshalInterface([
         {
             cx: cx, parms: 3, name: 'QueryInterface', func: function (j, riid, ppv) {
@@ -563,7 +515,7 @@ function makeCallback(GM, COM, iidHex, onInvoke) {
         { cx: cx + 1, parms: 1, name: 'AddRef', func: function () { return GM.CreateVariable(4).increment(++this.refcount, true); } },
         {
             cx: cx + 2, parms: 1, name: 'Release', func: function () {
-                if (--this.refcount === 0) { cleanup(this); }
+                if (--this.refcount === 0) { cleanupLater(this); } // Not while WUA is still inside this call
                 return GM.CreateVariable(4).increment(this.refcount >>> 0, true);
             }
         },
@@ -575,6 +527,7 @@ function makeCallback(GM, COM, iidHex, onInvoke) {
         }
     ]);
     handler.refcount = 1;
+    handler._cx = cx;
     handler.iidHex = iidHex;
     handler.onInvoke = onInvoke;
     active_handlers[handler._hashCode()] = handler;
@@ -583,9 +536,10 @@ function makeCallback(GM, COM, iidHex, onInvoke) {
 
 // Drop our own reference on a callback object once WUA is done with it.
 function releaseCallback(h) {
-    if (h == null) return;
+    if ((h == null) || (h._released === true)) return;
+    h._released = true;
     h.onInvoke = null;
-    if (--h.refcount <= 0) { cleanup(h); }
+    if (--h.refcount <= 0) { cleanupLater(h); }
 }
 
 function readInt32(v) { try { return v.toBuffer().readInt32LE(); } catch (e) { return -1; } }
@@ -632,14 +586,24 @@ function installUpdates(updateIds) {
         });
     }
 
-    function wrapJob(jobPtr) {
+    function wrapJob(jobPtr, functions) {
         var job = jobPtr.Deref();
-        job.funcs = COM.marshalFunctions(job, UpdateJobFunctions);
+        job.funcs = COM.marshalFunctions(job, functions || UpdateJobFunctions);
         return job;
     }
 
+    // Clean up the job of the previous phase, then release its callbacks, so at most two callback objects are in use at a time
+    function endPhase() {
+        releaseJob();
+        for (var i = 0; i < state.callbacks.length; i++) { releaseCallback(state.callbacks[i]); }
+        state.callbacks = [];
+    }
+
     // Step 3: install the downloaded updates
-    function startInstall() {
+    // Each phase starts after the previous phase's callback objects are destroyed (cleanupLater runs on the next turn)
+    function startInstall() { endPhase(); setImmediate(beginInstall); }
+    function beginInstall() {
+        if (state.done) return;
         try {
             var installerPtr = GM.CreatePointer();
             var hr = state.session.funcs.CreateUpdateInstaller(state.session, installerPtr).Val;
@@ -679,7 +643,6 @@ function installUpdates(updateIds) {
             });
             state.callbacks.push(progress, completed);
 
-            releaseJob();
             var jobPtr = GM.CreatePointer();
             hr = state.installer.funcs.BeginInstall(state.installer, progress, completed, GM.CreateVariable(16), jobPtr).Val;
             if (hr !== 0) { finish(new Error('BeginInstall failed: ' + hrHex(hr))); return; }
@@ -688,7 +651,9 @@ function installUpdates(updateIds) {
     }
 
     // Step 2: download the selected updates
-    function startDownload() {
+    function startDownload() { endPhase(); setImmediate(beginDownload); }
+    function beginDownload() {
+        if (state.done) return;
         try {
             var downloaderPtr = GM.CreatePointer();
             var hr = state.session.funcs.CreateUpdateDownloader(state.session, downloaderPtr).Val;
@@ -727,7 +692,6 @@ function installUpdates(updateIds) {
             });
             state.callbacks.push(progress, completed);
 
-            releaseJob();
             var jobPtr = GM.CreatePointer();
             hr = state.downloader.funcs.BeginDownload(state.downloader, progress, completed, GM.CreateVariable(16), jobPtr).Val;
             if (hr !== 0) { finish(new Error('BeginDownload failed: ' + hrHex(hr))); return; }
@@ -811,7 +775,7 @@ function installUpdates(updateIds) {
         hr = state.searcher.funcs.BeginSearch(state.searcher, criteriaBSTR, searchDone, GM.CreateVariable(16), jobPtr).Val;
         OleAut32.SysFreeString(criteriaBSTR);
         if (hr !== 0) { throw new Error('BeginSearch failed: ' + hrHex(hr)); }
-        state.job = wrapJob(jobPtr);
+        state.job = wrapJob(jobPtr, SearchJobFunctions);
     } catch (ex) {
         finish(ex);
     }

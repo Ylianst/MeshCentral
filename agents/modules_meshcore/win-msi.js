@@ -47,8 +47,13 @@ function getMsi() {
 function removeFile(path) { try { require('fs').unlinkSync(path); } catch (e) { } }
 
 // Install a local MSI file. Resolves with { code, result, success, rebootRequired }.
+var INSTALL_TIMEOUT = 2 * 60 * 60 * 1000; // Stop waiting for MsiInstallProductW after 2 hours
+var _pending = []; // Keep running installs referenced, even after a timeout
+
 function installProduct(packagePath, commandLine, logPath) {
     var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
+    var settled = false, timer = null;
+    var settle = function (err, result) { if (settled) return; settled = true; if (timer != null) { clearTimeout(timer); timer = null; } if (err) { ret._rej(err); } else { ret._res(result); } };
     try {
         var GM = require('_GenericMarshal');
         var msi = getMsi();
@@ -58,11 +63,17 @@ function installProduct(packagePath, commandLine, logPath) {
         var cmdV = GM.CreateVariable(commandLine || '', { wide: true });
         var p = msi.MsiInstallProductW.async(pathV, cmdV);
         p._args = [pathV, cmdV]; // Keep the strings alive while the worker thread uses them
+        _pending.push(p);
+        var forget = function () { var i = _pending.indexOf(p); if (i >= 0) { _pending.splice(i, 1); } };
+        // The installer can't be cancelled from here. After the timeout, stop waiting so the agent accepts new requests;
+        // a new install started while this one still runs gets InstallAlreadyRunning (1618) from Windows Installer.
+        timer = setTimeout(function () { settle(new Error('Timed out waiting for Windows Installer after ' + (INSTALL_TIMEOUT / 60000) + ' minutes, the installation may still be running')); }, INSTALL_TIMEOUT);
         p.then(function (r) {
+            forget();
             var code = r.Val >>> 0;
-            ret._res({ code: code, result: resultName(code), success: ((code == 0) || (code == 3010) || (code == 1641)), rebootRequired: ((code == 3010) || (code == 1641)) });
-        }, function (e) { ret._rej(e); });
-    } catch (ex) { ret._rej(ex); }
+            settle(null, { code: code, result: resultName(code), success: ((code == 0) || (code == 3010) || (code == 1641)), rebootRequired: ((code == 3010) || (code == 1641)) });
+        }, function (e) { forget(); settle(e); });
+    } catch (ex) { settle(ex); }
     return ret;
 }
 

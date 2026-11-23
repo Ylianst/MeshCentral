@@ -16363,7 +16363,7 @@
         // online: false uses the result of the last scan Windows made (a few seconds), true asks Windows to scan now (can take several minutes)
         function loadWinUpdates(online) {
             if ((currentNode == null) || (isWindowsAgentNode(currentNode) == false)) return;
-            if ((currentNode.conn & 1) == 0) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000"><b>' + "Device is offline." + '</b></div>'); return; }
+            if ((currentNode.conn & 1) == 0) { QH('p18wuhtml', '<div style="padding:10px;color:var(--bs-danger)"><b>' + "Device is offline." + '</b></div>'); return; }
             online = (online === true);
             winUpdatesData = null;
             winUpdatesStopWait();
@@ -16371,8 +16371,8 @@
             var msg = online ? "Windows is checking online for updates, this can take several minutes..." : "Loading the result of the last Windows update check...";
             var show = function () {
                 var secs = Math.floor((Date.now() - winUpdatesWait.start) / 1000);
-                if (secs >= limit) { winUpdatesStopWait(); QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</div>'); return; }
-                QH('p18wuhtml', '<div style="padding:10px"><i>' + EscapeHtml(msg) + '</i> <span style="color:gray">(' + secs + 's)</span></div>');
+                if (secs >= limit) { winUpdatesStopWait(); QH('p18wuhtml', '<div style="padding:10px;color:var(--bs-danger)">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</div>'); return; }
+                QH('p18wuhtml', '<div style="padding:10px"><i>' + EscapeHtml(msg) + '</i> <span style="color:var(--bs-secondary-color)">(' + secs + 's)</span></div>');
             };
             winUpdatesWait = { start: Date.now(), timer: setInterval(function () { if ((currentNode == null) || (currentNode._id != nodeid)) { winUpdatesStopWait(); return; } show(); }, 1000) };
             show();
@@ -16388,7 +16388,7 @@
             if (r == null) return;
             if (message.type == 'winupdates') {
                 winUpdatesStopWait();
-                if (r.error) { QH('p18wuhtml', '<div style="padding:10px;color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</div>'); return; }
+                if (r.error) { QH('p18wuhtml', '<div style="padding:10px;color:var(--bs-danger)">' + "ERROR: " + EscapeHtml(r.error) + '</div>'); return; }
                 winUpdatesOnline = (r.online === true);
                 winUpdatesData = Array.isArray(r.updates) ? r.updates : [];
                 winUpdatesInstalling = (r.installing === true);
@@ -16410,26 +16410,26 @@
             if (winUpdatesData == null) { QH('p18wuhtml', ''); return; }
             var manage = canManageSoftware(currentNode), cols = manage ? 5 : 4;
             var x = '<div style="margin-bottom:20px">';
-            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Available Windows Updates" + ' (' + winUpdatesData.length + ')</h4>';
-            x += '<div style="padding:0 0 8px 0;font-size:12px;color:gray">' + (winUpdatesOnline ? "Result of an online check made just now." : "Result of the last update check made by Windows.") + ' ' + '<button class="btn btn-sm btn-secondary" onclick="loadWinUpdates(true)">' + "Check online" + '</button>' + '</div>';
-            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
-            if (manage) { x += '<th style="padding:8px;border:1px solid #ddd;width:30px"><input type=checkbox onclick="p18wuSelectAll(this.checked)"' + (winUpdatesInstalling ? ' disabled' : '') + ' /></th>'; }
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Severity" + '</th>';
-            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Downloaded" + '</th>';
-            x += '<th style="text-align:center;padding:8px;border:1px solid #ddd;width:100px">' + "Mandatory" + '</th>';
+            x += '<h4 style="border-bottom:2px solid var(--bs-primary);padding-bottom:5px;margin-top:0">' + "Available Windows Updates" + ' (' + winUpdatesData.length + ')</h4>';
+            x += '<div style="padding:0 0 8px 0;font-size:12px;color:var(--bs-secondary-color)">' + (winUpdatesOnline ? "Result of an online check made just now." : "Result of the last update check made by Windows.") + ' ' + '<button class="btn btn-sm btn-secondary" onclick="loadWinUpdates(true)">' + "Check online" + '</button>' + '</div>';
+            x += '<table class="table table-striped table-bordered" style="width:100%;font-size:13px"><thead><tr>';
+            if (manage) { x += '<th style="width:30px"><input type=checkbox onclick="p18wuSelectAll(this.checked)"' + (winUpdatesInstalling ? ' disabled' : '') + ' /></th>'; }
+            x += '<th style="text-align:left;">' + "Title" + '</th>';
+            x += '<th style="text-align:left;width:110px">' + "Severity" + '</th>';
+            x += '<th style="text-align:center;width:100px">' + "Downloaded" + '</th>';
+            x += '<th style="text-align:center;width:100px">' + "Mandatory" + '</th>';
             x += '</tr></thead><tbody>';
             if (winUpdatesData.length == 0) {
-                x += '<tr><td colspan="' + cols + '" style="text-align:center;color:gray;padding:20px">' + "No Windows updates available" + '</td></tr>';
+                x += '<tr><td colspan="' + cols + '" style="text-align:center;color:var(--bs-secondary-color);padding:20px">' + "No Windows updates available" + '</td></tr>';
             } else {
                 for (var i = 0; i < winUpdatesData.length; i++) {
-                    var u = winUpdatesData[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
-                    x += '<tr style="background-color:' + rowColor + '">';
-                    if (manage) { x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee"><input type=checkbox class=p18wucheck value="' + EscapeHtml(u.updateID || '') + '"' + ((winUpdatesInstalling || !u.updateID) ? ' disabled' : '') + ' /></td>'; }
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || '-') + '</td>';
-                    x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.severity || '-') + '</td>';
-                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isDownloaded ? "Yes" : "No") + '</td>';
-                    x += '<td style="text-align:center;padding:6px 8px;border:1px solid #eee">' + (u.isMandatory ? "Yes" : "No") + '</td>';
+                    var u = winUpdatesData[i];
+                    x += '<tr>';
+                    if (manage) { x += '<td style="text-align:center;"><input type=checkbox class=p18wucheck value="' + EscapeHtml(u.updateID || '') + '"' + ((winUpdatesInstalling || !u.updateID) ? ' disabled' : '') + ' /></td>'; }
+                    x += '<td>' + EscapeHtml(u.title || '-') + '</td>';
+                    x += '<td>' + EscapeHtml(u.severity || '-') + '</td>';
+                    x += '<td style="text-align:center;">' + (u.isDownloaded ? "Yes" : "No") + '</td>';
+                    x += '<td style="text-align:center;">' + (u.isMandatory ? "Yes" : "No") + '</td>';
                     x += '</tr>';
                 }
             }
@@ -16472,20 +16472,20 @@
 
         function displayWinUpdateResults(r) {
             var x = '<div style="margin-bottom:20px">';
-            x += '<h4 style="border-bottom:2px solid #6f42c1;padding-bottom:5px;margin-top:0">' + "Windows Update Results" + '</h4>';
-            x += '<div style="padding:4px 0 8px 0">' + "Result" + ': <b>' + EscapeHtml(String(r.result)) + '</b>' + ((r.rebootRequired === true) ? (' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>') : '') + '</div>';
-            x += '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background-color:#e9ecef">';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd">' + "Title" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:180px">' + "Status" + '</th>';
-            x += '<th style="text-align:left;padding:8px;border:1px solid #ddd;width:110px">' + "Code" + '</th>';
+            x += '<h4 style="border-bottom:2px solid var(--bs-primary);padding-bottom:5px;margin-top:0">' + "Windows Update Results" + '</h4>';
+            x += '<div style="padding:4px 0 8px 0">' + "Result" + ': <b>' + EscapeHtml(String(r.result)) + '</b>' + ((r.rebootRequired === true) ? (' &mdash; <b style="color:var(--bs-danger)">' + "Restart required" + '</b>') : '') + '</div>';
+            x += '<table class="table table-striped table-bordered" style="width:100%;font-size:13px"><thead><tr>';
+            x += '<th style="text-align:left;">' + "Title" + '</th>';
+            x += '<th style="text-align:left;width:180px">' + "Status" + '</th>';
+            x += '<th style="text-align:left;width:110px">' + "Code" + '</th>';
             x += '</tr></thead><tbody>';
             var list = Array.isArray(r.updates) ? r.updates : [];
             for (var i = 0; i < list.length; i++) {
-                var u = list[i], rowColor = (i % 2 == 0) ? '#ffffff' : '#f8f9fa';
-                x += '<tr style="background-color:' + rowColor + '">';
-                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.title || u.updateID || '-') + '</td>';
-                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.status || '-') + (u.rebootRequired ? ' (' + "restart" + ')' : '') + '</td>';
-                x += '<td style="padding:6px 8px;border:1px solid #eee">' + EscapeHtml(u.hresult || '-') + '</td>';
+                var u = list[i];
+                x += '<tr>';
+                x += '<td>' + EscapeHtml(u.title || u.updateID || '-') + '</td>';
+                x += '<td>' + EscapeHtml(u.status || '-') + (u.rebootRequired ? ' (' + "restart" + ')' : '') + '</td>';
+                x += '<td>' + EscapeHtml(u.hresult || '-') + '</td>';
                 x += '</tr>';
             }
             x += '</tbody></table>';
@@ -16512,7 +16512,7 @@
             msiStopWait();
             msiWaitTimer = setTimeout(function () {
                 msiWaitTimer = null;
-                if (msiInstalling) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</span>'); }
+                if (msiInstalling) { msiInstalling = false; p18msiShow('<span style="color:var(--bs-danger)">' + "No response from the device." + ' ' + "Check that the agent is connected and running the current core (agent Console: modules)." + '</span>'); }
             }, 60000);
         }
 
@@ -16530,7 +16530,7 @@
             x += '<input type=file id=p18msifile class="form-control form-control-sm" accept=".msi" onchange="p18msiValidate()" /><br /><br />';
             x += '<label for=p18msiprops>' + "MSI properties (optional)" + '</label><br />';
             x += '<input type=text id=p18msiprops class="form-control form-control-sm" maxlength=1024 placeholder="ALLUSERS=1 INSTALLDIR=&quot;C:\\Program Files\\App&quot;" onkeyup="p18msiValidate()" />';
-            x += '<div id=p18msierror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<div id=p18msierror style="color:var(--bs-danger);font-size:11px;min-height:14px"></div>';
             x += '<p><i>' + "The package is installed silently by the Windows Installer service. The device will not be restarted automatically." + '</i></p>';
             x += '</div>';
             var nodeid = currentNode._id;
@@ -16590,7 +16590,7 @@
                 try { r = JSON.parse(xhr.responseText); } catch (ex) { }
                 if ((xhr.status != 200) || (r == null) || (r.id == null)) {
                     msiInstalling = false;
-                    p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(((r != null) && r.error) ? r.error : ("Upload failed" + ' (' + xhr.status + ')')) + '</span>');
+                    p18msiShow('<span style="color:var(--bs-danger)">' + "ERROR: " + EscapeHtml(((r != null) && r.error) ? r.error : ("Upload failed" + ' (' + xhr.status + ')')) + '</span>');
                     return;
                 }
                 p18msiShow('<i>' + EscapeHtml(format("Sending {0} to the device...", r.name)) + '</i>');
@@ -16599,12 +16599,12 @@
                 meshserver.send(cmd);
                 msiStartWait();
             };
-            xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + "Upload failed" + '</span>'); };
+            xhr.onerror = function () { msiInstalling = false; p18msiShow('<span style="color:var(--bs-danger)">' + "ERROR: " + "Upload failed" + '</span>'); };
             xhr.send(fd);
         }
 
         function p18msiShow(html) {
-            QH('p18msihtml', '<div style="margin-bottom:15px;padding:8px;border:1px solid #ddd;border-radius:4px"><b>' + "Software Install" + '</b>: ' + html + '</div>');
+            QH('p18msihtml', '<div style="margin-bottom:15px;border-radius:4px"><b>' + "Software Install" + '</b>: ' + html + '</div>');
         }
 
         function handleMsiResponse(message) {
@@ -16614,16 +16614,16 @@
             if (r == null) return;
             var name = EscapeHtml(r.name || '');
             msiStopWait(); // The device answered, installs can then take as long as they need
-            if (r.error) { msiInstalling = false; p18msiShow('<span style="color:#cc0000">' + "ERROR: " + EscapeHtml(r.error) + '</span>'); return; }
+            if (r.error) { msiInstalling = false; p18msiShow('<span style="color:var(--bs-danger)">' + "ERROR: " + EscapeHtml(r.error) + '</span>'); return; }
             if (r.status == 'downloading') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Device is downloading {0}...", r.name || '')) + '</i>'); return; }
             if (r.status == 'installing') { msiInstalling = true; p18msiShow('<i>' + EscapeHtml(format("Installing {0}...", r.name || '')) + '</i>'); return; }
             if (r.done) {
                 msiInstalling = false;
-                var x = name + ' &mdash; <b style="color:' + (r.success ? '#28a745' : '#cc0000') + '">' + EscapeHtml(String(r.result)) + '</b> (' + EscapeHtml(String(r.code)) + ')';
-                if (r.rebootRequired) { x += ' &mdash; <b style="color:#cc0000">' + "Restart required" + '</b>'; }
-                if (r.log) { x += '<br /><span style="font-size:11px;color:gray">' + "Installer log on device" + ': ' + EscapeHtml(r.log) + '</span>'; }
-                if (r.path) { x += '<br /><span style="font-size:11px;color:gray">' + "Installed to" + ': ' + EscapeHtml(r.path) + '</span>'; }
-                if (r.output) { x += '<details style="margin-top:4px"><summary style="font-size:11px;color:gray;cursor:pointer">' + "Output" + (r.tool ? (' (' + EscapeHtml(r.tool) + ')') : '') + '</summary><pre style="font-size:11px;max-height:200px;overflow:auto;white-space:pre-wrap">' + EscapeHtml(r.output) + '</pre></details>'; }
+                var x = name + ' &mdash; <b style="color:' + (r.success ? 'var(--bs-success)' : 'var(--bs-danger)') + '">' + EscapeHtml(String(r.result)) + '</b> (' + EscapeHtml(String(r.code)) + ')';
+                if (r.rebootRequired) { x += ' &mdash; <b style="color:var(--bs-danger)">' + "Restart required" + '</b>'; }
+                if (r.log) { x += '<br /><span style="font-size:11px;color:var(--bs-secondary-color)">' + "Installer log on device" + ': ' + EscapeHtml(r.log) + '</span>'; }
+                if (r.path) { x += '<br /><span style="font-size:11px;color:var(--bs-secondary-color)">' + "Installed to" + ': ' + EscapeHtml(r.path) + '</span>'; }
+                if (r.output) { x += '<details style="margin-top:4px"><summary style="font-size:11px;color:var(--bs-secondary-color);cursor:pointer">' + "Output" + (r.tool ? (' (' + EscapeHtml(r.tool) + ')') : '') + '</summary><pre style="font-size:11px;max-height:200px;overflow:auto;white-space:pre-wrap">' + EscapeHtml(r.output) + '</pre></details>'; }
                 p18msiShow(x);
                 if (r.success) { loadInstalledApps(); }
             }
@@ -16658,12 +16658,12 @@
             if (xxdialogMode || (currentNode == null) || msiInstalling || !canInstallMsi(currentNode)) return;
             if ((currentNode.conn & 1) == 0) { QH('p18Status', "Device is offline."); return; }
             var x = '<div style="max-width:500px">';
-            x += '<p>' + "Upload a package to install on this device:" + '<br /><span style="font-size:11px;color:gray">.deb, .rpm, .flatpak, .flatpakref, .AppImage</span></p>';
+            x += '<p>' + "Upload a package to install on this device:" + '<br /><span style="font-size:11px;color:var(--bs-secondary-color)">.deb, .rpm, .flatpak, .flatpakref, .AppImage</span></p>';
             x += '<input type=file id=p18pkgfile class="form-control form-control-sm" accept=".deb,.rpm,.flatpak,.flatpakref,.AppImage,.appimage" style="width:100%" onchange="p18pkgValidate()" /><br /><br />';
             x += '<p>' + "Or install a Flatpak application by ID:" + '</p>';
             x += '<table style="width:100%"><tr><td style="width:90px"><label for=p18pkgremote>' + "Remote" + '</label></td><td><input type=text id=p18pkgremote class="form-control form-control-sm" maxlength=64 value="flathub" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr>';
             x += '<tr><td><label for=p18pkgappid>' + "App ID" + '</label></td><td><input type=text id=p18pkgappid class="form-control form-control-sm" maxlength=255 placeholder="org.mozilla.firefox" style="width:100%" onkeyup="p18pkgValidate()" /></td></tr></table>';
-            x += '<div id=p18pkgerror style="color:#cc0000;font-size:11px;min-height:14px"></div>';
+            x += '<div id=p18pkgerror style="color:var(--bs-danger);font-size:11px;min-height:14px"></div>';
             x += '<p><i>' + "The package is installed as root with the package tools of the device (apt, dnf, zypper, rpm or flatpak). AppImages are placed in /opt/AppImages." + '</i></p>';
             x += '</div>';
             var nodeid = currentNode._id;
@@ -19990,13 +19990,13 @@
             162: "Started messenger session \"{0}\" from {1} to {2}",
             163: "Removed device {0} from user group {1}",
             164: "Create file: \"{0}\"",
-            165: "Started Windows Update installation of {0} update(s)",
-            166: "Windows Update installation finished: {0}, reboot required: {1}",
-            167: "Uninstall software: {0}",
-            168: "Started MSI installation of {0}",
-            169: "MSI installation of {0} finished: {1}",
-            170: "Started installation of package {0}",
-            171: "Installation of package {0} finished: {1}"
+            167: "Started Windows Update installation of {0} update(s)",
+            168: "Windows Update installation finished: {0}, reboot required: {1}",
+            169: "Uninstall software: {0}",
+            170: "Started MSI installation of {0}",
+            171: "MSI installation of {0} finished: {1}",
+            172: "Started installation of package {0}",
+            173: "Installation of package {0} finished: {1}"
         };
 
         var eventsShortMessageId = {

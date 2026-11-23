@@ -1307,39 +1307,38 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'software':
                     {
                         // Todo - save software into database for offline access but send to web clients for now
-                        if ((command.type == 'installwinupdates') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
-                            // Audit the outcome of a Windows Update installation, even if the requesting user is no longer connected
-                            var wuResult = null;
-                            try { wuResult = JSON.parse(command.value); } catch (ex) { }
-                            if ((wuResult != null) && (wuResult.done === true)) {
-                                var wuOutcome = (typeof wuResult.error == 'string') ? ('Error: ' + wuResult.error.substring(0, 256)) : String(wuResult.result).substring(0, 64);
-                                var wuReboot = (wuResult.rebootRequired === true) ? 'Yes' : 'No';
-                                var wuEvent = { etype: 'node', action: 'winupdatesinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 166, msgArgs: [wuOutcome, wuReboot], msg: 'Windows Update installation finished: ' + wuOutcome + ', reboot required: ' + wuReboot };
-                                var wuTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
-                                if (typeof command.sessionid == 'string') {
-                                    var wuSplit = command.sessionid.split('/');
-                                    if (wuSplit.length == 4) { var wuUser = parent.users[wuSplit[0] + '/' + wuSplit[1] + '/' + wuSplit[2]]; if (wuUser != null) { wuEvent.userid = wuUser._id; wuEvent.username = wuUser.name; wuTargets.push(wuUser._id); } }
+                        if ((typeof command.type == 'string') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null) && (['installwinupdates', 'installmsi', 'installpackage', 'installflatpak'].indexOf(command.type) >= 0)) {
+                            // Audit the outcome of an install, even if the requesting user is no longer connected.
+                            // Everything from the agent is untrusted: only plain strings and numbers are used, and the user and package
+                            // name come from what this server recorded when it sent the request, never from the agent reply.
+                            try {
+                                var swResult = null;
+                                try { swResult = JSON.parse(command.value); } catch (ex) { }
+                                if ((swResult != null) && (typeof swResult == 'object') && (swResult.done === true)) {
+                                    var swText = function (v, max) { return ((typeof v == 'string') || (typeof v == 'number')) ? String(v).substring(0, max) : ''; };
+                                    var swPending = null;
+                                    if ((obj.softwarePending != null) && (typeof command.sessionid == 'string')) {
+                                        var swKey = command.sessionid + '|' + command.type;
+                                        swPending = obj.softwarePending[swKey];
+                                        delete obj.softwarePending[swKey];
+                                    }
+                                    var swOutcome = (typeof swResult.error == 'string') ? ('Error: ' + swText(swResult.error, 256)) : swText(swResult.result, 64);
+                                    if ((command.type != 'installwinupdates') && (typeof swResult.code == 'number')) { swOutcome += ' (' + swResult.code + ')'; }
+                                    var swName = ((swPending != null) && (typeof swPending.name == 'string')) ? swPending.name : '';
+                                    var swEvent;
+                                    if (command.type == 'installwinupdates') {
+                                        var swReboot = (swResult.rebootRequired === true) ? 'Yes' : 'No';
+                                        swEvent = { etype: 'node', action: 'winupdatesinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 168, msgArgs: [swOutcome, swReboot], msg: 'Windows Update installation finished: ' + swOutcome + ', reboot required: ' + swReboot };
+                                    } else if (command.type == 'installmsi') {
+                                        swEvent = { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 171, msgArgs: [swName, swOutcome], msg: 'MSI installation of ' + swName + ' finished: ' + swOutcome };
+                                    } else {
+                                        swEvent = { etype: 'node', action: 'packageinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 173, msgArgs: [swName, swOutcome], msg: 'Installation of package ' + swName + ' finished: ' + swOutcome };
+                                    }
+                                    var swTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
+                                    if ((swPending != null) && (parent.users[swPending.userid] != null)) { swEvent.userid = swPending.userid; swEvent.username = parent.users[swPending.userid].name; swTargets.push(swPending.userid); }
+                                    parent.parent.DispatchEvent(swTargets, obj, swEvent);
                                 }
-                                parent.parent.DispatchEvent(wuTargets, obj, wuEvent);
-                            }
-                        }
-                        if (((command.type == 'installmsi') || (command.type == 'installpackage') || (command.type == 'installflatpak')) && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null)) {
-                            // Audit the outcome of a package installation
-                            var msiResult = null;
-                            try { msiResult = JSON.parse(command.value); } catch (ex) { }
-                            if ((msiResult != null) && (msiResult.done === true)) {
-                                var msiName = (typeof msiResult.name == 'string') ? msiResult.name.substring(0, 256) : '';
-                                var msiOutcome = (typeof msiResult.error == 'string') ? ('Error: ' + msiResult.error.substring(0, 256)) : (String(msiResult.result).substring(0, 64) + ' (' + parseInt(msiResult.code) + ')');
-                                var msiEvent = (command.type == 'installmsi') ?
-                                    { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 169, msgArgs: [msiName, msiOutcome], msg: 'MSI installation of ' + msiName + ' finished: ' + msiOutcome } :
-                                    { etype: 'node', action: 'packageinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 171, msgArgs: [msiName, msiOutcome], msg: 'Installation of package ' + msiName + ' finished: ' + msiOutcome };
-                                var msiTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
-                                if (typeof command.sessionid == 'string') {
-                                    var msiSplit = command.sessionid.split('/');
-                                    if (msiSplit.length == 4) { var msiUser = parent.users[msiSplit[0] + '/' + msiSplit[1] + '/' + msiSplit[2]]; if (msiUser != null) { msiEvent.userid = msiUser._id; msiEvent.username = msiUser.name; msiTargets.push(msiUser._id); } }
-                                }
-                                parent.parent.DispatchEvent(msiTargets, obj, msiEvent);
-                            }
+                            } catch (ex) { }
                         }
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
