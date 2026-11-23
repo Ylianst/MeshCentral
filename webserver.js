@@ -7420,7 +7420,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             // If this is a web relay connection, handle it here.
             if ((obj.webRelayRouter != null) && (obj.args.relaydns.indexOf(req.hostname) >= 0)) {
-                if (['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res); } else { res.sendStatus(404); return; }
+                if (['GET', 'POST', 'PUT', 'HEAD', 'DELETE', 'OPTIONS'].indexOf(req.method) >= 0) { return obj.webRelayRouter(req, res, next); } else { res.sendStatus(404); return; }
             }
 
             // Get the domain for this request
