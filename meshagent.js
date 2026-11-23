@@ -1307,12 +1307,47 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                 case 'software':
                     {
                         // Todo - save software into database for offline access but send to web clients for now
+                        if ((typeof command.type == 'string') && (typeof command.value == 'string') && (parent.meshes[obj.dbMeshKey] != null) && (['installwinupdates', 'installmsi', 'installpackage', 'installflatpak'].indexOf(command.type) >= 0)) {
+                            // Audit the outcome of an install, even if the requesting user is no longer connected.
+                            // Everything from the agent is untrusted: only plain strings and numbers are used, and the user and package
+                            // name come from what this server recorded when it sent the request, never from the agent reply.
+                            try {
+                                var swResult = null;
+                                try { swResult = JSON.parse(command.value); } catch (ex) { }
+                                if ((swResult != null) && (typeof swResult == 'object') && (swResult.done === true)) {
+                                    var swText = function (v, max) { return ((typeof v == 'string') || (typeof v == 'number')) ? String(v).substring(0, max) : ''; };
+                                    var swPending = null;
+                                    if ((obj.softwarePending != null) && (typeof command.sessionid == 'string')) {
+                                        var swKey = command.sessionid + '|' + command.type;
+                                        swPending = obj.softwarePending[swKey];
+                                        delete obj.softwarePending[swKey];
+                                    }
+                                    var swOutcome = (typeof swResult.error == 'string') ? ('Error: ' + swText(swResult.error, 256)) : swText(swResult.result, 64);
+                                    if ((command.type != 'installwinupdates') && (typeof swResult.code == 'number')) { swOutcome += ' (' + swResult.code + ')'; }
+                                    var swName = ((swPending != null) && (typeof swPending.name == 'string')) ? swPending.name : '';
+                                    var swEvent;
+                                    if (command.type == 'installwinupdates') {
+                                        var swReboot = (swResult.rebootRequired === true) ? 'Yes' : 'No';
+                                        swEvent = { etype: 'node', action: 'winupdatesinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 168, msgArgs: [swOutcome, swReboot], msg: 'Windows Update installation finished: ' + swOutcome + ', reboot required: ' + swReboot };
+                                    } else if (command.type == 'installmsi') {
+                                        swEvent = { etype: 'node', action: 'msiinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 171, msgArgs: [swName, swOutcome], msg: 'MSI installation of ' + swName + ' finished: ' + swOutcome };
+                                    } else {
+                                        swEvent = { etype: 'node', action: 'packageinstalled', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 173, msgArgs: [swName, swOutcome], msg: 'Installation of package ' + swName + ' finished: ' + swOutcome };
+                                    }
+                                    var swTargets = parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]);
+                                    if ((swPending != null) && (parent.users[swPending.userid] != null)) { swEvent.userid = swPending.userid; swEvent.username = parent.users[swPending.userid].name; swTargets.push(swPending.userid); }
+                                    parent.parent.DispatchEvent(swTargets, obj, swEvent);
+                                }
+                            } catch (ex) { }
+                        }
                         parent.routeAgentCommand(command, obj.domain.id, obj.dbNodeKey, obj.dbMeshKey);
                         break;
                     }
                 case 'coreinfo':
                     {
                         // Sent by the agent to update agent information
+                        // Remember which Software tab features the running core supports, older cores do not send this
+                        if (Array.isArray(command.swcaps)) { obj.softwareCaps = command.swcaps.filter(function (c) { return (typeof c == 'string') && (c.length < 64); }).slice(0, 32); }
                         ChangeAgentCoreInfo(command);
 
                         if ((obj.agentCoreUpdate === true) && (obj.agentExeInfo != null) && (typeof obj.agentExeInfo.url == 'string')) {
