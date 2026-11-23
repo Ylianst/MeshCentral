@@ -3638,6 +3638,7 @@
                 }
                 case 'files': {
                     filetree = setupBackPointers(message.filetree);
+                    if (fileCommander != null) { fileCommander.serverFilesChanged(); }
                     updateFiles();
                     d3updatefiles();
                     break;
@@ -14292,6 +14293,11 @@
                 },
                 downloadFile: function (url, name) { downloadFile(url, encodeURIComponentEx(name)); },
                 openOnDevice: function (path, isDir) { if (files != null) { files.sendText({ action: 'open', reqid: 1, path: path, dir: isDir }); } },
+                serverFiles: function () { // The "My Files" tree on the server, null when the account cannot use it
+                    if (((features & 8) != 0) || (userinfo == null) || ((userinfo.siteadmin & 8) == 0)) return null;
+                    return filetree;
+                },
+                serverSend: function (x) { meshserver.send(x); },
                 deviceConfig: function () { return (filesNode != null) ? filesNode.filecommander : null; }, // This device's own locations, set below
                 canEditDevice: function () { return (filesNode != null) && ((GetNodeRights(filesNode) & 4) != 0); }, // MESHRIGHT_MANAGECOMPUTERS, as the server checks
                 saveDeviceConfig: function (settings) {
