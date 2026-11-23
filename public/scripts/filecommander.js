@@ -1074,7 +1074,7 @@ var FileCommander = (function () {
             { k: 'F3', t: 'Download', f: function () { downloadToBrowser(activePane()); }, en: function (p) { return ((p.type == 'remote') || (p.type == 'server')) && selectedRows(p).some(function (x) { return x.kind == 'file'; }); } },
             { k: 'F4', t: 'Edit', f: function () { editCmd(); }, en: function (p) { var s = selectedRows(p); return (s.length == 1) && (s[0].kind == 'file'); } },
             { k: 'F5', t: 'Copy', f: function () { copyCmd(false); }, en: function (p) { return canTransfer(p); } },
-            { k: 'F6', t: 'Move', f: function () { copyCmd(true); }, en: function (p) { return canTransfer(p); } },
+            { k: 'F6', t: 'Move', f: function () { copyCmd(true); }, en: function (p) { return canTransfer(p) && canRemoveFrom(p); } },
             { k: 'F7', t: 'New Folder', f: function () { mkdirCmd(); }, en: function (p) { return canWrite(p); } },
             { k: 'F8', t: 'Delete', f: function () { deleteCmd(); }, en: function (p) { return canWrite(p) && selectedRows(p).some(isEntry); } },
             { k: 'S-F4', t: 'New File', f: function () { mkfileCmd(); }, en: function (p) { return canWrite(p); } },
@@ -1089,6 +1089,9 @@ var FileCommander = (function () {
             if (p.type == 'server') return serverAvailable() && !serverReadOnly(p.ssegs); // Not the top of Server files, nor a shared folder that is read only
             return connected() && (!host.isWindows() || (p.segs.length > 0)); // The Windows root only lists drives
         }
+        // A move removes the source, which a read only server folder does not allow
+        function canRemoveFrom(p) { return (p.type != 'server') || !serverReadOnly(p.ssegs); }
+
         function canTransfer(p) {
             var o = other(p), rows = selectedRows(p).filter(isEntry);
             if (rows.length == 0) return false;
@@ -1539,7 +1542,8 @@ var FileCommander = (function () {
             } catch (ex) { flash(p, ex.message); return; }
             var text = new TextDecoder('utf-8').decode(bytes);
             var crlf = (text.match(/\r\n/g) || []).length, lf = (text.match(/\n/g) || []).length - crlf;
-            var r = await modal('Edit - ' + row.name, '<div class=fc-where>' + esc(paneLabel(p)) + '</div>', [['Save', 'save', false], ['Close', null]], { multiline: true, value: text });
+            var readOnly = !canWrite(p); // Shown without Save in a read only server folder
+            var r = await modal((readOnly ? 'View - ' : 'Edit - ') + row.name, '<div class=fc-where>' + esc(paneLabel(p)) + (readOnly ? ' (read only)' : '') + '</div>', readOnly ? [['Close', null, true]] : [['Save', 'save', false], ['Close', null]], { multiline: true, value: text });
             if (r.value != 'save') return;
             var out = r.text;
             if (crlf > lf) { out = out.replace(/\r?\n/g, '\r\n'); }
@@ -1718,6 +1722,7 @@ var FileCommander = (function () {
         async function transfer(p, rows, o, dstRow, move) {
             rows = rows.filter(isEntry);
             if ((rows.length == 0) || busyCheck() || !connected() && ((p.type == 'remote') || (o.type == 'remote'))) return;
+            if (move && !canRemoveFrom(p)) { alertBox('Move', 'This folder is read only, its files can be copied but not moved.'); return; }
             var t = destInfo(o, dstRow), verb = move ? 'Move' : 'Copy';
             if (t.toBrowser) {
                 if ((p.type != 'remote') && (p.type != 'server')) return;
