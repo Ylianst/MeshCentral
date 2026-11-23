@@ -2878,7 +2878,7 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
@@ -2971,9 +2971,9 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3 || f.t == 4) {
-                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                if (f.t < 3 || f.t == 4 || f.t == 5) { // 5 is the files of a user group
+                    var right = (f.t == 1 || f.t == 4 || f.t == 5) ? p5getQuotabar(f) : '';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + (f.ro ? (' (' + "read only" + ')') : '') + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
@@ -3021,8 +3021,8 @@
         }
 
         function p5getQuotabar(f) {
-            while (f.t > 1 && f.t != 4) { f = f.parent; }
-            if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
+            while (f.t > 1 && f.t != 4 && f.t != 5) { f = f.parent; }
+            if ((f.t != 1 && f.t != 4 && f.t != 5) || (f.maxbytes == null)) return '';
             return getNiceSize(f.maxbytes - f.s) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
 
@@ -3044,17 +3044,22 @@
             return r;
         }
 
+        // User group files (type 5) use the icon of My Files. Members can only read them, the server marks those ro.
+        function p5folderIcon(f) { return (f.t == 5) ? 1 : f.t; }
+        function p5readOnly() { if ((filetreelocation.length == 0) || (filetree.f == null)) return false; var r = filetree.f[filetreelocation[0]]; return (r != null) && (r.ro == true); }
+
         function p5setActions() {
             var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-            QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
-            QE('p5NewFolderButton', filetreelocation.length > 0);
-            QE('p5UploadButton', filetreelocation.length > 0);
-            QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
+            var ro = p5readOnly();
+            QE('p5DeleteFileButton', !ro && (cc > 0) && (filetreelocation.length > 0));
+            QE('p5NewFolderButton', !ro && (filetreelocation.length > 0));
+            QE('p5UploadButton', !ro && (filetreelocation.length > 0));
+            QE('p5RenameFileButton', !ro && (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "None" : "All");
-            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CutButton', !ro && (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
-            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
+            QE('p5PasteButton', !ro && (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
         }
 
         function getFileSelCount(includeDirs) { var cc = 0, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }

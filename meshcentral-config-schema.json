@@ -1482,6 +1482,15 @@
             "type": "integer",
             "description": "This is the maximum amount of data in kilobytes that can be placed in the “My Files” tab for a given mesh"
           },
+          "userGroupFiles": {
+            "type": "boolean",
+            "default": true,
+            "description": "Gives each user group a folder of files on the server, shown in the “My Files” tab. Members of the user group can view and download the files, users who can manage user groups can also add, change and remove them. Users need server file access for either. Set to false to turn user group files off."
+          },
+          "userGroupQuota": {
+            "type": "integer",
+            "description": "This is the maximum amount of data, in bytes, that can be placed in the “My Files” tab for a given user group. Default: no limit."
+          },
           "loginKey": {
             "type": [
               "string",

@@ -237,8 +237,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
     };
 
     // Convert a mesh path array into a real path on the server side
-    function meshPathToRealPath(meshpath, user) {
+    // write is true when the path is going to be changed. User group files can be read by members, but only changed by user group managers.
+    function meshPathToRealPath(meshpath, user, write) {
         if (common.validateArray(meshpath, 1) == false) return null;
+        if (typeof meshpath[0] != 'string') return null;
         var splitid = meshpath[0].split('/');
         if (splitid[0] == 'user') {
             // Check user access
@@ -246,6 +248,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
         } else if (splitid[0] == 'mesh') {
             // Check mesh access
             if ((parent.GetMeshRights(user, meshpath[0]) & MESHRIGHT_SERVERFILES) == 0) return null; // This user must have mesh rights to "server files"
+        } else if (splitid[0] == 'ugrp') {
+            // Check user group access
+            var ugrights = parent.getUserGroupFileRights(user, meshpath[0], domain);
+            if ((ugrights == 0) || (write && (ugrights < 2))) return null;
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
         if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
@@ -929,8 +935,9 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                     if ((user.siteadmin & 8) != 0) {
                         // Perform a file operation (Create Folder, Delete Folder, Delete File...)
                         if (common.validateString(command.fileop, 3, 16) == false) return;
-                        var sendUpdate = true, path = meshPathToRealPath(command.path, user); // This will also check access rights
+                        var sendUpdate = true, path = meshPathToRealPath(command.path, user, (command.fileop != 'get')); // This will also check access rights, all operations but get change files
                         if (path == null) break;
+                        var fileTargets = parent.getFileChangeTargets(user, command.path[0]); // The user, and the members of a user group whose files change
 
                         if ((command.fileop == 'createfolder') && (common.IsFilenameValid(command.newfolder) == true)) {
                             // Create a new folder
@@ -957,7 +964,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (command.path.length == 1) {
                                 try {
                                     if (command.path[0].startsWith('mesh//')) {
-                                        path = meshPathToRealPath([command.path[0]], user);
+                                        path = meshPathToRealPath([command.path[0]], user, true);
                                         fs.readdir(path, function (err, dir) { if ((err == null) && (dir.length == 0)) { fs.rmdir(path, function (err) { }); } });
                                     }
                                 } catch (ex) { }
@@ -970,21 +977,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         else if ((command.fileop == 'copy') || (command.fileop == 'move')) {
                             // Copy or move of one or many files
                             if (common.validateArray(command.names, 1) == false) return;
-                            var scpath = meshPathToRealPath(command.scpath, user); // This will also check access rights
+                            var scpath = meshPathToRealPath(command.scpath, user, (command.fileop == 'move')); // This will also check access rights, a move removes the source
                             if (scpath == null) break;
+                            if ((command.fileop == 'move') && (typeof command.scpath[0] == 'string') && command.scpath[0].startsWith('ugrp/') && (fileTargets.indexOf(command.scpath[0]) == -1)) { fileTargets.push(command.scpath[0]); }
                             // TODO: Check quota if this is a copy
                             for (i in command.names) {
                                 if (common.IsFilenameValid(command.names[i]) === true) {
                                     var s = parent.path.join(scpath, command.names[i]), d = parent.path.join(path, command.names[i]);
                                     sendUpdate = false;
                                     try { fs.mkdirSync(path); } catch (ex) { } // try to create folder first incase folder is missing
-                                    copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
+                                    copyFile(s, d, function (op) { if (op != null) { fs.unlink(op, function (err) { parent.parent.DispatchEvent(fileTargets, obj, 'updatefiles'); }); } else { parent.parent.DispatchEvent(fileTargets, obj, 'updatefiles'); } }, ((command.fileop == 'move') ? s : null));
                                 }
                             }
                         } else if (command.fileop == 'get') {
                             // Get a short file and send it back on the web socket
                             if (common.validateString(command.file, 1, 4096) == false) return;
-                            const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            const scpath = meshPathToRealPath(command.path, user, false); // This will also check access rights
                             if ((scpath == null) || (command.file !== parent.path.basename(command.file))) break;
                             const filePath = parent.path.join(scpath, command.file);
                             fs.stat(filePath, function (err, stat) {
@@ -999,14 +1007,14 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             // Set a short file transfered on the web socket
                             if (common.validateString(command.file, 1, 4096) == false) return;
                             if (typeof command.data != 'string') return;
-                            const scpath = meshPathToRealPath(command.path, user); // This will also check access rights
+                            const scpath = meshPathToRealPath(command.path, user, true); // This will also check access rights
                             if ((scpath == null) || (command.file !== parent.path.basename(command.file))) break;
                             const filePath = parent.path.join(scpath, command.file);
                             var data = null;
                             try { data = Buffer.from(command.data, 'base64'); } catch (ex) { return; }
-                            fs.writeFile(filePath, data, function (err) { if (err == null) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } });
+                            fs.writeFile(filePath, data, function (err) { if (err == null) { parent.parent.DispatchEvent(fileTargets, obj, 'updatefiles'); } });
                         }
-                        if (sendUpdate == true) { parent.parent.DispatchEvent([user._id], obj, 'updatefiles'); } // Fire an event causing this user to update this files
+                        if (sendUpdate == true) { parent.parent.DispatchEvent(fileTargets, obj, 'updatefiles'); } // Fire an event causing this user, and members of a user group, to update their files
                     }
                     break;
                 }
@@ -1834,6 +1842,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         // Remove the user group from the database
                         db.Remove(group._id);
                         if (db.changeStream == false) { delete parent.userGroups[group._id]; }
+
+                        // Remove the files of the user group
+                        try {
+                            var ugrppath = parent.getServerRootFilePath(group);
+                            if (ugrppath != null) { parent.deleteFolderRec(ugrppath); }
+                        } catch (ex) { }
 
                         // Event the user group being removed
                         var event = { etype: 'ugrp', userid: user._id, username: user.name, ugrpid: group._id, action: 'deleteusergroup', msg: change, domain: delGroupDomain.id };
@@ -8934,6 +8948,22 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 files.filetree.f[mesh._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/mesh-' + meshsplit[2]));
             } catch (e) {
                 files.filetree.f[mesh._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
+            }
+        }
+
+        // Add files for each user group the user is a member of, or every user group for users who manage user groups.
+        // Members can only read them, ro tells the web page.
+        for (var i in parent.userGroups) {
+            const ugrp = parent.userGroups[i], ugrights = parent.getUserGroupFileRights(user, ugrp._id, domain);
+            if (ugrights == 0) continue;
+            const ugrpsplit = ugrp._id.split('/');
+            files.filetree.f[ugrp._id] = { t: 5, n: ugrp.name, f: {} };
+            if (ugrights < 2) { files.filetree.f[ugrp._id].ro = true; }
+            files.filetree.f[ugrp._id].maxbytes = parent.getQuota(ugrp._id, domain);
+            try {
+                files.filetree.f[ugrp._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/ugrp-' + ugrpsplit[2]));
+            } catch (e) {
+                files.filetree.f[ugrp._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
             }
         }
 
