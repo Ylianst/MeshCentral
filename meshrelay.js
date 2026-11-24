@@ -679,6 +679,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         // Perform traffic accounting
         parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
         parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
 
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
@@ -751,6 +753,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         // Perform traffic accounting
         parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
         parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
 
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
         closeBothSides();
