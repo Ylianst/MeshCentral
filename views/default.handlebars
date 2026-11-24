@@ -12977,9 +12977,9 @@
             if (p13connBusy(conn)) { conn.xferBackground = true; xferBgConns.push(conn); } else { conn.Stop(); }
         }
 
-        // Close a background connection once its transfers are done
+        // Close a connection kept in the background (by p13leaveFiles) once its transfers are done
         function p13connCheckIdle(conn) {
-            if ((conn == null) || (conn === files) || p13connBusy(conn)) return;
+            if ((conn == null) || (conn === files) || (conn.xferBackground !== true) || p13connBusy(conn)) return;
             var i = xferBgConns.indexOf(conn); if (i >= 0) { xferBgConns.splice(i, 1); }
             try { conn.Stop(); } catch (ex) { }
         }
