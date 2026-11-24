@@ -937,7 +937,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (common.validateString(command.fileop, 3, 16) == false) return;
                         var sendUpdate = true, path = meshPathToRealPath(command.path, user, (command.fileop != 'get')); // This will also check access rights, all operations but get change files
                         if (path == null) break;
-                        var fileTargets = parent.getFileChangeTargets(user, command.path[0]); // The user, and the members of a user group whose files change
+                        var fileTargets = parent.getFileChangeTargets(user, command.path[0]); // The user, and the users of a user group or device group whose files change
 
                         if ((command.fileop == 'createfolder') && (common.IsFilenameValid(command.newfolder) == true)) {
                             // Create a new folder
@@ -979,7 +979,7 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                             if (common.validateArray(command.names, 1) == false) return;
                             var scpath = meshPathToRealPath(command.scpath, user, (command.fileop == 'move')); // This will also check access rights, a move removes the source
                             if (scpath == null) break;
-                            if ((command.fileop == 'move') && (typeof command.scpath[0] == 'string') && command.scpath[0].startsWith('ugrp/') && (fileTargets.indexOf(command.scpath[0]) == -1)) { fileTargets.push(command.scpath[0]); }
+                            if (command.fileop == 'move') { parent.getFileChangeTargets(user, command.scpath[0], fileTargets); } // A move also changes the files of the source
                             // TODO: Check quota if this is a copy
                             for (i in command.names) {
                                 if (common.IsFilenameValid(command.names[i]) === true) {

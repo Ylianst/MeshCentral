@@ -546,6 +546,7 @@
                             <div id="p5rightOfButtons"></div>
                             <div>
                                 <input type=button id=p5FolderUp disabled="disabled" onclick="return p5folderup();" value="Up" />&nbsp;
+                                <input type=button id=p5RefreshButton onclick="p5refreshFiles();" value="Refresh" title="Get the latest list of files" />&nbsp;
                                 <input type=button id=p5SelectAllButton disabled="disabled" onclick="p5selectallfile();" value="Select All" />&nbsp;
                                 <input type=button id=p5RenameFileButton disabled="disabled" value="Rename" onclick="p5renamefile();" />&nbsp;
                                 <input type=button id=p5DeleteFileButton disabled="disabled" value="Delete" onclick="p5deletefile();" />&nbsp;
@@ -3586,9 +3587,11 @@
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
                             meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                            if ((userinfo.siteadmin & 8) != 0) { p5refreshFiles(); } // Our user group folders in My Files may have changed
                             break;
                         }
                         case 'deleteusergroup': {
+                            if ((userinfo.siteadmin & 8) != 0) { p5refreshFiles(); } // Remove the folder of this user group from My Files
                             // User group removed
                             if ((usergroups != null) && (usergroups[message.event.ugrpid] != null)) {
                                 delete usergroups[message.event.ugrpid];
@@ -4497,6 +4500,7 @@
             }
             if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
             if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 5) && (e.keyCode == 116)) { haltEvent(e); return false; } // F5 Refresh on My Files
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
             if (!xxdialogMode && (xxcurrentView == 4)) {
                 if ((e.keyCode === 8) && (userSearchFocus == 0)) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
@@ -4531,6 +4535,7 @@
             }
             if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { return terminal.m.TermHandleKeyUp(e); }
             if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 5) && (e.keyCode == 116)) { p5refreshFiles(); haltEvent(e); return false; } // F5 Refresh on My Files
             if (!xxdialogMode && (xxcurrentView == 4)) { if (((e.keyCode === 8) && (searchFocus == 0)) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && (e.keyCode == 27)) { dialogclose(0); }
             if ((e.shiftKey == true) && (e.keyCode == 27)) { dialogclose(0); Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(5); if (desktop != null) { connectDesktop(); } if (terminal != null) { connectTerminal(); } if (files != null) { connectFiles(); } go(1); return; } // Shift-ESC: Reset the web page
@@ -16699,6 +16704,14 @@
         var filetreelinkpath;
         var filetreelocation = [];
 
+        // Ask the server for the list of server files again. Requests made close together are sent once.
+        var p5refreshTimer = null;
+        function p5refreshFiles() {
+            if (((features & 8) != 0) || (meshserver == null)) return; // This server has no server files, or we are not connected yet
+            if (p5refreshTimer != null) return;
+            p5refreshTimer = setTimeout(function () { p5refreshTimer = null; meshserver.send({ action: 'files' }); }, 200);
+        }
+
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
@@ -20770,6 +20783,9 @@
 
             // Update Recordings
             if (x == 52) { if (p52recordings == null) { refreshRecodings(); } updateRecordings(); }
+
+            // Get the latest server files when opening My Files
+            if (x == 5) { p5refreshFiles(); }
 
             // Update terminal size
             if ((x == 12) && (xtermfit != null)) { xtermfit.fit(); xterm.focus(); }

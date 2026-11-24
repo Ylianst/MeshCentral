@@ -4739,10 +4739,16 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         return 0;
     };
 
-    // Who to tell that the files of objid changed: the user, and all members of a user group whose files changed
-    obj.getFileChangeTargets = function (user, objid) {
-        const targets = [user._id];
-        if ((typeof objid == 'string') && objid.startsWith('ugrp/') && (objid != user._id)) { targets.push(objid); }
+    // Who to tell that the files of objid changed: the user, the members of a user group whose files changed, and the users of a
+    // device group whose files changed (directly or through a user group). Site administrators who see all events are told too.
+    // Each of them then asks for its own list of files, built with its own rights. Pass targets to add to an existing list.
+    obj.getFileChangeTargets = function (user, objid, targets) {
+        if (targets == null) { targets = [user._id]; }
+        if ((typeof objid != 'string') || (objid == user._id)) return targets;
+        var added = [];
+        if (objid.startsWith('ugrp/')) { added = ['*', objid]; }
+        else if (objid.startsWith('mesh/')) { added = obj.CreateMeshDispatchTargets(objid); }
+        for (var i in added) { if (targets.indexOf(added[i]) == -1) { targets.push(added[i]); } }
         return targets;
     };
 

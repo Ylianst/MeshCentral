@@ -1996,9 +1996,11 @@
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
                             meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                            if ((userinfo.siteadmin & 8) != 0) { meshserver.send({ action: 'files' }); } // Our user group folders in My Files may have changed
                             break;
                         }
                         case 'deleteusergroup': {
+                            if ((userinfo.siteadmin & 8) != 0) { meshserver.send({ action: 'files' }); } // Remove the folder of this user group from My Files
                             // User group removed
                             if ((usergroups != null) && (usergroups[message.event.ugrpid] != null)) {
                                 delete usergroups[message.event.ugrpid];
@@ -8175,6 +8177,7 @@
             for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
             updateCurrentUrl();
+            if ((x == 5) && (meshserver != null) && (userinfo != null) && ((userinfo.siteadmin & 8) != 0)) { meshserver.send({ action: 'files' }); } // Get the latest server files when opening My Files
         }
 
         // Change the URL
