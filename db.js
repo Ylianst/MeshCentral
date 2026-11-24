@@ -1414,34 +1414,39 @@ module.exports.CreateDB = function (parent, func) {
         obj.file.ensureIndex({ fieldName: 'nodeid', sparse: true });
         obj.file.ensureIndex({ fieldName: 'email', sparse: true });
 
-        // Setup the events collection and setup indexes
-        obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.eventsfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
-        obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
-        obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
-        obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+        // One-shot commands that only use the main database don't load the other datastores
+        const mainOnly = ((parent.args.showall || parent.args.showusers || parent.args.showitem || parent.args.listuserids || parent.args.showusergroups || parent.args.shownodes || parent.args.showallmeshes || parent.args.showmeshes || parent.args.showiplocations || parent.args.logintoken || parent.args.logintokenkey) && !(parent.args.deletedomain || parent.args.deletedefaultdomain || parent.args.showevents || parent.args.showsmbios || parent.args.showpower || parent.args.clearpower));
 
-        // Setup the power collection and setup indexes
-        obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.powerfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
-        obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
-        obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+        if (!mainOnly) {
+            // Setup the events collection and setup indexes
+            obj.eventsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-events.db'), autoload: true, corruptAlertThreshold: 1 });
+            obj.eventsfile.setAutocompactionInterval(86400000); // Compact once a day
+            obj.eventsfile.ensureIndex({ fieldName: 'ids' }); // TODO: Not sure if this is a good index, this is a array field.
+            obj.eventsfile.ensureIndex({ fieldName: 'nodeid', sparse: true });
+            obj.eventsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireEventsSeconds });
+            obj.eventsfile.remove({ time: { '$lt': new Date(Date.now() - (expireEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
-        // Setup the SMBIOS collection, for NeDB we don't setup SMBIOS since NeDB will corrupt the database. Remove any existing ones.
-        //obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
-        fs.unlink(parent.getConfigFilePath('meshcentral-smbios.db'), function () { });
+            // Setup the power collection and setup indexes
+            obj.powerfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-power.db'), autoload: true, corruptAlertThreshold: 1 });
+            obj.powerfile.setAutocompactionInterval(86400000); // Compact once a day
+            obj.powerfile.ensureIndex({ fieldName: 'nodeid' });
+            obj.powerfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expirePowerEventsSeconds });
+            obj.powerfile.remove({ time: { '$lt': new Date(Date.now() - (expirePowerEventsSeconds * 1000)) } }, { multi: true }); // Force delete older events
 
-        // Setup the server stats collection and setup indexes
-        obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
-        obj.serverstatsfile.setAutocompactionInterval(86400000); // Compact once a day
-        obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
-        obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
-        obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+            // Setup the SMBIOS collection, for NeDB we don't setup SMBIOS since NeDB will corrupt the database. Remove any existing ones.
+            //obj.smbiosfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-smbios.db'), autoload: true, corruptAlertThreshold: 1 });
+            fs.unlink(parent.getConfigFilePath('meshcentral-smbios.db'), function () { });
+
+            // Setup the server stats collection and setup indexes
+            obj.serverstatsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-stats.db'), autoload: true, corruptAlertThreshold: 1 });
+            obj.serverstatsfile.setAutocompactionInterval(86400000); // Compact once a day
+            obj.serverstatsfile.ensureIndex({ fieldName: 'time', expireAfterSeconds: expireServerStatsSeconds });
+            obj.serverstatsfile.ensureIndex({ fieldName: 'expire', expireAfterSeconds: 0 }); // Auto-expire events
+            obj.serverstatsfile.remove({ time: { '$lt': new Date(Date.now() - (expireServerStatsSeconds * 1000)) } }, { multi: true }); // Force delete older events
+        }
 
         // Setup plugin info collection
-        if (obj.pluginsActive) {
+        if (obj.pluginsActive && !mainOnly) {
             obj.pluginsfile = new Datastore({ filename: parent.getConfigFilePath('meshcentral-plugins.db'), autoload: true });
             obj.pluginsfile.setAutocompactionInterval(86400000); // Compact once a day
         }
