@@ -2401,6 +2401,29 @@ a {
     margin-top: 1px;
 }
 
+.fileIcon7 {
+    background: url(../images/group-256.png) center / 16px 16px no-repeat;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+.p5section {
+    clear: both;
+    margin: 10px 0 4px 0;
+    padding: 0 0 2px 2px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.65;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+
 .filelist {
     -moz-user-select: none;
     -khtml-user-select: none;

@@ -19095,7 +19095,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', htmlMeshes = '', htmlGroups = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -19168,13 +19168,14 @@
                     h += '</div>';
                 }
 
-                if (f.t < 3) { html1 += h; } else { html2 += h; }
+                if (filetreelocation.length == 0) { if (f.t == 4) { htmlMeshes += h; } else if (f.t == 5) { htmlGroups += h; } else { html1 += h; } } // At the root, device groups and user groups each get their own section
+                else if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
             //if (f.parent == null) {  }
             QH('p5rightOfButtons', p5getQuotabar(filetreex));
 
-            QH('p5files', html1 + html2);
+            QH('p5files', html1 + html2 + p5section("Device Groups", htmlMeshes) + p5section("User Groups", htmlGroups));
             QH('p5currentpath', displayPath);
             QE('p5FolderUp', filetreelocation.length != 0);
             QV('p5PublicShare', publicfolder);
@@ -19236,7 +19237,7 @@
         }
 
         var sortorder;
-        function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
+        function p5sort_filename(a, b) { return a.ln.localeCompare(b.ln, undefined, { numeric: true }) * sortorder; } // Numbers in names sort by value: 2 before 10
         function p5sort_timestamp(a, b) { if (a.d > b.d) return (1 * sortorder); if (a.d < b.d) return (-1 * sortorder); return 0; }
         function p5sort_bysize(a, b) { if (a.s == b.s) return p5sort_filename(a, b); return (((a.s - b.s)) * sortorder); }
 
@@ -19251,8 +19252,9 @@
             return r;
         }
 
-        // User group files (type 5) use the icon of My Files. Members can only read them, the server marks those ro.
-        function p5folderIcon(f) { return (f.t == 5) ? 1 : f.t; }
+        // Members of a user group can only read its files, the server marks those ro.
+        function p5folderIcon(f) { return (f.t == 5) ? 7 : f.t; } // User group files (type 5) have the user group icon
+        function p5section(title, html) { return (html == '') ? '' : ('<div class=p5section>' + EscapeHtml(title) + '</div>' + html); }
         function p5readOnly() { if ((filetreelocation.length == 0) || (filetree.f == null)) return false; var r = filetree.f[filetreelocation[0]]; return (r != null) && (r.ro == true); }
 
         function p5setActions() {
