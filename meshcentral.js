@@ -710,7 +710,10 @@ function CreateMeshCentralServer(config, args) {
                 }
             }
         });
+        var partialOutput = [];
         childProcess.stdout.on('data', function (data) {
+            if (data[data.length - 1] != '\n') { partialOutput.push(data); return; } // Large output arrives in chunks (64k), wait for the end of the line
+            if (partialOutput.length > 0) { data = partialOutput.join('') + data; partialOutput = []; }
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
             if (data.indexOf('Updating settings folder...') >= 0) { childProcess.xrestart = 1; }
             else if (data.indexOf('Updating server certificates...') >= 0) { childProcess.xrestart = 1; }
@@ -755,7 +758,7 @@ function CreateMeshCentralServer(config, args) {
             if (data[data.length - 1] == '\n') { data = data.substring(0, data.length - 1); }
             obj.logError(data);
         });
-        childProcess.on('close', function (code) { if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
+        childProcess.on('close', function (code) { if (partialOutput.length > 0) { logFromChildProcess(partialOutput.join('')); } if ((code != 0) && (code != 123)) { /* console.log("Exited with code " + code); */ } });
     };
 
     obj.logError = function (err) {
@@ -1091,17 +1094,17 @@ function CreateMeshCentralServer(config, args) {
                     // See if any database operations needs to be completed
                     if (obj.args.deletedomain) { obj.db.DeleteDomain(obj.args.deletedomain, function () { console.log('Deleted domain ' + obj.args.deletedomain + '.'); process.exit(); }); return; }
                     if (obj.args.deletedefaultdomain) { obj.db.DeleteDomain('', function () { console.log('Deleted default domain.'); process.exit(); }); return; }
-                    if (obj.args.showall) { obj.db.GetAll(function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
+                    if (obj.args.showall) { obj.db.GetAll(function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showusers) { obj.db.GetAllType('user', function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
                     if (obj.args.showitem) { obj.db.Get(obj.args.showitem, function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
                     if (obj.args.listuserids) { obj.db.GetAllType('user', function (err, docs) { for (var i in docs) { console.log(docs[i]._id); } process.exit(); }); return; }
-                    if (obj.args.showusergroups) { obj.db.GetAllType('ugrp', function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showallmeshes) { obj.db.GetAllType('mesh', function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { var x = []; for (var i in docs) { if (docs[i].deleted == null) { x.push(docs[i]); } } console.log(JSON.stringify(x, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showsmbios) { obj.db.GetAllSMBIOS(function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
-                    if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { console.log(JSON.stringify(docs, null, 2)); process.exit(); }); return; }
+                    if (obj.args.showusergroups) { obj.db.GetAllType('ugrp', function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.shownodes) { obj.db.GetAllType('node', function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showallmeshes) { obj.db.GetAllType('mesh', function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showmeshes) { obj.db.GetAllType('mesh', function (err, docs) { var x = []; for (var i in docs) { if (docs[i].deleted == null) { x.push(docs[i]); } } process.stdout.write(JSON.stringify(x, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showevents) { obj.db.GetAllEvents(function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showsmbios) { obj.db.GetAllSMBIOS(function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
+                    if (obj.args.showpower) { obj.db.getAllPower(function (err, docs) { process.stdout.write(JSON.stringify(docs, null, 2) + '\n', function () { process.exit(); }); }); return; }
                     if (obj.args.clearpower) { obj.db.removeAllPowerEvents(function () { process.exit(); }); return; }
                     if (obj.args.showiplocations) { obj.db.GetAllType('iploc', function (err, docs) { console.log(docs); process.exit(); }); return; }
                     if (obj.args.logintoken) { obj.getLoginToken(obj.args.logintoken, function (r) { console.log(r); process.exit(); }); return; }
