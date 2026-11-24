@@ -3377,7 +3377,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 if (dbGetFunc.req.session.currentNode) {
                     currentNode = dbGetFunc.req.session.currentNode;
                     delete dbGetFunc.req.session.currentNode;
-                } else if (dbGetFunc.req.query.node) {
+                } else if ((typeof dbGetFunc.req.query.node == 'string') && (/^[A-Za-z0-9@$]{1,256}$/.test(dbGetFunc.req.query.node))) {
+					// only accept the characters a node identifier can contain, this value is rendered into the page script
                     currentNode = 'node/' + domain.id + '/' + dbGetFunc.req.query.node;
                 }
                 var logoutcontrols = {};
