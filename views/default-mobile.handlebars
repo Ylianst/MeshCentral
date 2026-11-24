@@ -325,6 +325,42 @@
             border-bottom: 1px solid rgba(128, 128, 128, 0.35);
         }
 
+        /* Background file transfers tray, always visible in the bottom right corner */
+        #xferTray {
+            display: none;
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            width: 320px;
+            max-width: calc(100vw - 32px);
+            max-height: 50vh;
+            overflow-y: auto;
+            z-index: 20000;
+            background: #fff;
+            color: #222;
+            border: 1px solid #b8b8b8;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            text-align: left;
+        }
+        #xferTray .xferHead { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; font-weight: bold; }
+        #xferTray .xferItem { padding: 6px 10px 8px 10px; border-top: 1px solid rgba(128, 128, 128, 0.3); }
+        #xferTray .xferRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        #xferTray .xferName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #xferTray .xferBtn { color: inherit; text-decoration: none; opacity: 0.6; padding: 0 2px; }
+        #xferTray .xferBtn:hover { opacity: 1; }
+        #xferTray .xferBar { height: 6px; margin: 5px 0 3px 0; background: rgba(128, 128, 128, 0.25); border-radius: 3px; overflow: hidden; }
+        #xferTray .xferBar div { height: 100%; background: #2f7fd0; border-radius: 3px; transition: width 0.2s; }
+        #xferTray .xferState1 .xferBar div { background: #3aa36a; }
+        #xferTray .xferState2 .xferBar div { background: #d04040; width: 100% !important; }
+        #xferTray .xferState3 .xferBar div { background: #999; }
+        #xferTray .xferState2 .xferStatus { color: #d04040; }
+        #xferTray .xferStatus { font-size: 11px; opacity: 0.75; }
+        .night #xferTray, [data-bs-theme=dark] #xferTray { background: #2b2b2b; color: #eee; border-color: #555; }
+        @media (max-width: 600px) { #xferTray { left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; } }
+
         .filelist {
             -moz-user-select: none;
             -khtml-user-select: none;
@@ -3114,8 +3150,80 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+        //
+        // Background file transfers. Uploads to the server run in the background while the user keeps working, and a small
+        // tray in the bottom right corner shows their progress on every screen. Use xferUpload() to start one.
+        //
+        var xferList = [], xferNextId = 1, xferCollapsed = false, xferRenderTimer = null;
+
+        // Upload files to the server files. link is the encoded server path, as used by uploadfile.ashx.
+        function xferUpload(files, link) {
+            if ((files == null) || (files.length == 0) || (window.FormData == null)) return false;
+            var fd = new FormData(), total = 0, names = [];
+            fd.append('link', link);
+            for (var i = 0; i < files.length; i++) { if (files[i].size > 0) { fd.append('files', files[i], files[i].name); total += files[i].size; names.push(files[i].name); } }
+            if (names.length == 0) return false;
+            var t = { id: xferNextId++, name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, sent: 0, state: 0, start: Date.now() }; // state: 0 sending, 1 done, 2 failed, 3 cancelled
+            var xhr = t.xhr = new XMLHttpRequest();
+            xhr.open('POST', 'uploadfile.ashx');
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { t.sent = e.loaded; t.total = e.total; } xferUpdate(false); };
+            xhr.onload = function () { if ((xhr.status >= 200) && (xhr.status < 300)) { t.state = 1; t.sent = t.total; } else { t.state = 2; } xferFinished(t); };
+            xhr.onerror = function () { t.state = 2; xferFinished(t); };
+            xhr.onabort = function () { t.state = 3; xferFinished(t); };
+            xferList.push(t);
+            xhr.send(fd);
+            xferUpdate(true);
+            return true;
+        }
+
+        function xferFinished(t) {
+            delete t.xhr;
+            t.end = Date.now();
+            xferUpdate(true);
+            if (typeof p5refreshFiles == 'function') { p5refreshFiles(); }
+            if (t.state != 2) { setTimeout(function () { xferRemove(t.id); }, 5000); } // Done and cancelled transfers go away on their own, failed ones stay until dismissed
+        }
+
+        function xferCancel(id) { for (var i in xferList) { if ((xferList[i].id == id) && (xferList[i].xhr != null)) { xferList[i].xhr.abort(); } } return false; }
+        function xferRemove(id) { for (var i = 0; i < xferList.length; i++) { if ((xferList[i].id == id) && (xferList[i].state != 0)) { xferList.splice(i, 1); break; } } xferUpdate(true); return false; }
+        function xferToggle() { xferCollapsed = !xferCollapsed; xferUpdate(true); return false; }
+        function xferSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(2) + ' GB'; }
+        function xferActive() { var c = 0; for (var i in xferList) { if (xferList[i].state == 0) { c++; } } return c; }
+        function xferFailed() { var c = 0; for (var i in xferList) { if (xferList[i].state == 2) { c++; } } return c; }
+
+        // Draw the tray. Progress events come often, so they redraw at most 5 times a second.
+        function xferUpdate(now) {
+            if (now !== true) { if (xferRenderTimer == null) { xferRenderTimer = setTimeout(function () { xferRenderTimer = null; xferUpdate(true); }, 200); } return; }
+            var tray = Q('xferTray');
+            if (tray == null) { tray = document.createElement('div'); tray.id = 'xferTray'; tray.setAttribute('role', 'status'); document.body.appendChild(tray); }
+            if (xferList.length == 0) { tray.style.display = 'none'; return; }
+            var active = xferActive(), sent = 0, total = 0, x = '';
+            for (var i in xferList) { var t = xferList[i]; if (t.state == 0) { sent += t.sent; total += t.total; } }
+            var head = (active > 0) ? ((active == 1) ? "1 upload in progress" : format("{0} uploads in progress", active)) + ((total > 0) ? (' - ' + Math.floor(sent * 100 / total) + '%') : '') : ((xferFailed() > 0) ? "Upload failed" : "Uploads finished");
+            x += '<div class=xferHead><span>' + head + '</span><a href=# class=xferBtn onclick="return xferToggle()" title="' + (xferCollapsed ? "Show transfers" : "Hide transfers") + '">' + (xferCollapsed ? '&#9650;' : '&#9660;') + '</a></div>';
+            if (xferCollapsed == false) {
+                for (var i in xferList) {
+                    var t = xferList[i], pct = (t.total > 0) ? Math.floor(t.sent * 100 / t.total) : 0, status;
+                    if (t.state == 0) {
+                        var secs = (Date.now() - t.start) / 1000, speed = (secs > 0.5) ? (t.sent / secs) : 0;
+                        status = pct + '% - ' + xferSize(t.sent) + ' / ' + xferSize(t.total) + ((speed > 0) ? (' - ' + xferSize(speed) + '/s') : '');
+                    } else if (t.state == 1) { status = "Done" + ' - ' + xferSize(t.total); }
+                    else if (t.state == 2) { status = "Upload failed"; }
+                    else { status = "Cancelled"; }
+                    x += '<div class="xferItem xferState' + t.state + '"><div class=xferRow><span class=xferName title="' + EscapeHtml(t.title) + '">' + EscapeHtml(t.name) + '</span>';
+                    if (t.state == 0) { x += '<a href=# class=xferBtn onclick="return xferCancel(' + t.id + ')" title="' + "Cancel" + '">&#10005;</a>'; } else { x += '<a href=# class=xferBtn onclick="return xferRemove(' + t.id + ')" title="' + "Dismiss" + '">&#10005;</a>'; }
+                    x += '</div><div class=xferBar><div style="width:' + ((t.state == 1) ? 100 : pct) + '%"></div></div><div class=xferStatus>' + status + '</div></div>';
+                }
+            }
+            tray.innerHTML = x;
+            tray.style.display = 'block';
+        }
+
+        // Warn before leaving the page while uploads are still running, leaving would stop them
+        window.addEventListener('beforeunload', function (e) { if (xferActive() > 0) { e.preventDefault(); e.returnValue = ''; } });
+
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
-        function p5uploadFileEx() { Q('p5loginSubmit').click(); }
+        function p5uploadFileEx() { if (xferUpload(Q('p5uploadinput').files, Q('p5uploadpath').value) == false) { Q('p5loginSubmit').click(); } } // Upload in the background with progress, the old form post if the browser can't
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
