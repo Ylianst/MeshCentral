@@ -27,6 +27,7 @@ const LAUNCH_DAEMON_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
     <key>ProgramArguments</key>
     <array>
       <string>/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###</string>
+      <string>--meshServiceName="###SERVICENAME###"</string>
     </array>
     <key>WorkingDirectory</key>
     <string>/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/</string>
@@ -35,7 +36,7 @@ const LAUNCH_DAEMON_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
     <key>KeepAlive</key>
     <true/>
     <key>ThrottleInterval</key>
-    <integer>1</integer>
+    <integer>5</integer>
   </dict>
 </plist>
 `;
@@ -66,9 +67,28 @@ const LAUNCH_AGENT_PLIST = `<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 `;
 
+// Users with a loginwindow process have a GUI session, the LaunchAgent is loaded into each of them
+const GUI_UIDS = `gui_uids() { /bin/ps -axo uid=,comm= | /usr/bin/awk '$2 ~ /loginwindow$/ && $1 != 0 { print $1 }' | /usr/bin/sort -u; }
+`;
+
+// An upgrade replaces the binary, so the running daemon and every session's KVM agent are stopped first
+const PREINSTALL = `#!/bin/bash
+` + GUI_UIDS + `
+SERVICENAME="###SERVICENAME###"
+if [ -f "/Library/LaunchDaemons/\${SERVICENAME}.plist" ]; then
+    /bin/launchctl bootout system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || true
+fi
+if [ -f "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" ]; then
+    for GUI_UID in $(gui_uids); do
+        /bin/launchctl bootout "gui/\${GUI_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
+    done
+fi
+exit 0
+`;
+
 const POSTINSTALL = `#!/bin/bash
 set -e
-
+` + GUI_UIDS + `
 SERVICENAME="###SERVICENAME###"
 COMPANYNAME="###COMPANYNAME###"
 EXECUTABLENAME="###EXECUTABLENAME###"
@@ -84,24 +104,21 @@ chmod 644 "\${INSTALLDIR}/\${EXECUTABLENAME}.msh" "/Library/LaunchDaemons/\${SER
 /bin/launchctl bootout system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || true
 /bin/launchctl bootstrap system "/Library/LaunchDaemons/\${SERVICENAME}.plist" >/dev/null 2>&1 || /bin/launchctl load "/Library/LaunchDaemons/\${SERVICENAME}.plist"
 
-CONSOLE_USER=$(stat -f '%Su' /dev/console 2>/dev/null || true)
-CONSOLE_UID=$(id -u "\${CONSOLE_USER}" 2>/dev/null || true)
-if [ -n "\${CONSOLE_UID}" ] && [ "\${CONSOLE_UID}" != "0" ]; then
-    /bin/launchctl bootout "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
-    /bin/launchctl bootstrap "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
-fi
+for GUI_UID in $(gui_uids); do
+    /bin/launchctl bootout "gui/\${GUI_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
+    /bin/launchctl bootstrap "gui/\${GUI_UID}" "/Library/LaunchAgents/\${SERVICENAME}-launchagent.plist" >/dev/null 2>&1 || true
+done
 `;
 
 const UNINSTALL = `#!/bin/bash
-
+` + GUI_UIDS + `
 echo "Stopping ###SERVICENAME###..."
 sudo /bin/launchctl bootout system "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null || sudo /bin/launchctl unload "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null
-sudo pkill -9 "###SERVICENAME###" &> /dev/null || true
-CONSOLE_USER=$(stat -f '%Su' /dev/console 2>/dev/null || true)
-CONSOLE_UID=$(id -u "\${CONSOLE_USER}" 2>/dev/null || true)
-if [ -n "\${CONSOLE_UID}" ] && [ "\${CONSOLE_UID}" != "0" ]; then
-    sudo /bin/launchctl bootout "gui/\${CONSOLE_UID}" "/Library/LaunchAgents/###SERVICENAME###-launchagent.plist" &> /dev/null || true
-fi
+for GUI_UID in $(gui_uids); do
+    sudo /bin/launchctl bootout "gui/\${GUI_UID}" "/Library/LaunchAgents/###SERVICENAME###-launchagent.plist" &> /dev/null || true
+done
+# The full path also matches when the binary name differs from the service name
+sudo pkill -9 -f "^/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###( |$)" &> /dev/null || true
 sudo /bin/launchctl unload "/Library/LaunchDaemons/meshagentDiagnostic_periodicStart.plist" &> /dev/null
 sudo /bin/launchctl unload "/Library/LaunchDaemons/meshagentDiagnostic.plist" &> /dev/null
 sudo rm "/Library/LaunchDaemons/meshagentDiagnostic_periodicStart.plist" &> /dev/null
@@ -114,19 +131,34 @@ if [ -n "\${BUNDLE_ID}" ] && [ "\${BUNDLE_ID}" != "(null)" ]; then
 fi
 sudo tccutil reset All "###SERVICENAME###" &> /dev/null || true
 
-sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###" &> /dev/null
-sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###.msh" &> /dev/null
-sudo rm "/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###/###EXECUTABLENAME###.db" &> /dev/null
+# The service folder also holds the log, the DAIPC socket and the rotated logs.
+# It is only removed when it holds this agent's binary, so an empty name can never remove the folder of every service.
+INSTALLDIR="/usr/local/mesh_services/###COMPANYNAME###/###SERVICENAME###"
+if [ -n "###SERVICENAME###" ] && [ -f "\${INSTALLDIR}/###EXECUTABLENAME###" ]; then
+    sudo rm -rf "\${INSTALLDIR}" &> /dev/null
+fi
+sudo rmdir "/usr/local/mesh_services/###COMPANYNAME###" &> /dev/null
 sudo rm "/usr/local/mesh_services/meshagentDiagnostic/meshagentDiagnostic" &> /dev/null
 sudo rm "/Library/LaunchDaemons/###SERVICENAME###.plist" &> /dev/null
 sudo rm "/Library/LaunchAgents/###SERVICENAME###-launchagent.plist" &> /dev/null
+# The KVM agents leave one socket per user, only names that end in a uid are removed so another service's sockets stay
+for SOCK in /tmp/meshagent-kvm-###SERVICENAME###-*.sock; do
+    SOCKUID="\${SOCK#/tmp/meshagent-kvm-###SERVICENAME###-}"
+    SOCKUID="\${SOCKUID%.sock}"
+    case "\${SOCKUID}" in
+        ''|*[!0-9]*) ;;
+        *) sudo rm -f "\${SOCK}" &> /dev/null ;;
+    esac
+done
+sudo pkgutil --forget "###PKGID###" &> /dev/null
 echo "###SERVICENAME### was uninstalled."
 `;
 
 function replaceTokens(str, tokens) {
     return str.split('###SERVICENAME###').join(tokens.serviceName)
         .split('###COMPANYNAME###').join(tokens.companyName)
-        .split('###EXECUTABLENAME###').join(tokens.executableName);
+        .split('###EXECUTABLENAME###').join(tokens.executableName)
+        .split('###PKGID###').join(tokens.pkgId);
 }
 
 function xmlEscape(str) {
@@ -318,7 +350,8 @@ async function createMacOSInstaller(opts) {
         const installDir = path.join(payloadRoot, 'usr', 'local', 'mesh_services', opts.companyName, opts.serviceName);
         const launchDaemons = path.join(payloadRoot, 'Library', 'LaunchDaemons');
         const launchAgents = path.join(payloadRoot, 'Library', 'LaunchAgents');
-        const tokens = { serviceName: opts.serviceName, companyName: opts.companyName, executableName: opts.executableName };
+        const pkgId = 'com.meshcentral.' + pkgIdentifierSegment(opts.serviceName) + '.pkg';
+        const tokens = { serviceName: opts.serviceName, companyName: opts.companyName, executableName: opts.executableName, pkgId: pkgId };
 
         await fsp.mkdir(installDir, { recursive: true });
         await fsp.mkdir(launchDaemons, { recursive: true });
@@ -331,6 +364,7 @@ async function createMacOSInstaller(opts) {
         await fsp.writeFile(path.join(installDir, opts.executableName + '.msh'), opts.meshSettings);
         await fsp.writeFile(path.join(launchDaemons, opts.serviceName + '.plist'), replaceTokens(LAUNCH_DAEMON_PLIST, tokens));
         await fsp.writeFile(path.join(launchAgents, opts.serviceName + '-launchagent.plist'), replaceTokens(LAUNCH_AGENT_PLIST, tokens));
+        await fsp.writeFile(path.join(scriptsRoot, 'preinstall'), replaceTokens(PREINSTALL, tokens));
         await fsp.writeFile(path.join(scriptsRoot, 'postinstall'), replaceTokens(POSTINSTALL, tokens));
 
         if (opts.backgroundPath) {
@@ -341,6 +375,7 @@ async function createMacOSInstaller(opts) {
         }
 
         await chmodIfExists(path.join(installDir, opts.executableName), 0o755);
+        await chmodIfExists(path.join(scriptsRoot, 'preinstall'), 0o755);
         await chmodIfExists(path.join(scriptsRoot, 'postinstall'), 0o755);
         await chmodIfExists(path.join(installDir, opts.executableName + '.msh'), 0o644);
         await chmodIfExists(path.join(launchDaemons, opts.serviceName + '.plist'), 0o644);
@@ -352,9 +387,10 @@ async function createMacOSInstaller(opts) {
         await createPayload(scriptsRoot, path.join(basePkg, 'Scripts'));
         await createBom(payloadRoot, path.join(basePkg, 'Bom'));
 
-        const packageInfo = '<pkg-info format-version="2" identifier="com.meshcentral.' + xmlEscape(pkgIdentifierSegment(opts.serviceName)) + '.pkg" version="1.0" install-location="/" relocatable="false" auth="root">\n'
+        const packageInfo = '<pkg-info format-version="2" identifier="' + xmlEscape(pkgId) + '" version="1.0" install-location="/" relocatable="false" auth="root">\n'
             + '  <payload installKBytes="' + installKBytes + '" numberOfFiles="' + payloadStats.files + '"/>\n'
             + '  <scripts>\n'
+            + '    <preinstall file="./preinstall"/>\n'
             + '    <postinstall file="./postinstall"/>\n'
             + '  </scripts>\n'
             + '</pkg-info>\n';

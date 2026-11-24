@@ -44,6 +44,7 @@ var MESHRIGHT_LIMITEVENTS = 8192;
 var MESHRIGHT_CHATNOTIFY = 16384;
 var MESHRIGHT_UNINSTALL = 32768;
 var MESHRIGHT_NODESKTOP = 65536;
+var MESHRIGHT_NOSOFTWARE = 8388608;
 var MESHRIGHT_ADMIN = 0xFFFFFFFF;
 
 var pendingSetClip = false; // This is a temporary hack to prevent multiple setclips at the same time to stop the agent from crashing.
@@ -297,6 +298,8 @@ function getCoreTranslation() {
     if (global.coretranslations != null) {
         try {
             var lang = require('util-language').current;
+            lang = lang.toLowerCase();
+            lang = lang.replace('_', '-');
             if (coretranslations[lang] == null) { lang = lang.split('-')[0]; }
             if (coretranslations[lang] == null) { lang = 'en'; }
             if (coretranslations[lang] != null) { ret = coretranslations[lang]; }
@@ -561,10 +564,10 @@ try { obj.DAIPC.listen({ path: obj.DAIPC.IPCPATH, writableAll: true, maxConnecti
 obj.DAIPC._daipc = [];
 obj.DAIPC.on('connection', function (c) {
     c._send = function (j) {
-        var data = JSON.stringify(j);
+        var data = Buffer.from(JSON.stringify(j));
         var packet = Buffer.alloc(data.length + 4);
         packet.writeUInt32LE(data.length + 4, 0);
-        Buffer.from(data).copy(packet, 4);
+        data.copy(packet, 4);
         this.write(packet);
     };
     this._daipc.push(c);
@@ -855,18 +858,18 @@ try { require('os').name().then(function (v) { meshCoreObj.osdesc = v; meshCoreO
 
 // Setup logged in user monitoring (THIS IS BROKEN IN WIN7)
 function onUserSessionChanged(user, locked) {
+    if (process.platform == 'linux' && user == null) {
+        // Older agents fire 'changed' in bursts from utmp churn. Coalesce them; the previous
+        // answer (removeAllListeners within 10s of start) went deaf for good and left the server
+        // showing the boot-time user until the agent restarted.
+        if (userSession._changeTimer != null) { return; }
+        userSession._changeTimer = setTimeout(function () { userSession._changeTimer = null; onUserSessionChangedNow(null, false); }, 1000);
+        return;
+    }
+    onUserSessionChangedNow(user, locked);
+}
+function onUserSessionChangedNow(user, locked) {
     userSession.enumerateUsers().then(function (users) {
-        if (process.platform == 'linux') {
-            if (userSession._startTime == null) {
-                userSession._startTime = Date.now();
-                userSession._count = users.length;
-            }
-            else if (Date.now() - userSession._startTime < 10000 && users.length == userSession._count) {
-                userSession.removeAllListeners('changed');
-                return;
-            }
-        }
-
         var u = [], a = users.Active;
         if(meshCoreObj.lusers == null) { meshCoreObj.lusers = []; }
         if(meshCoreObj.upnusers == null) { meshCoreObj.upnusers = []; }
@@ -972,6 +975,27 @@ sha = require('SHA256Stream');
 mesh = require('MeshAgent');
 childProcess = require('child_process');
 
+// monitor-info stops looking for a display 3 minutes after it loads, so a desktop that comes up later (a slow display
+// manager, a GUI started by hand) never got the Desktop tab until the agent restarted. Its check runs shell commands,
+// so only repeat it for a few minutes after the X or Wayland sockets change.
+var kvmSupportTimer = null, kvmSupportSockets = null, kvmSupportTries = 0;
+function kvmSupportCheck() {
+    if ((meshCoreObj.caps & 1) != 0) { clearInterval(kvmSupportTimer); kvmSupportTimer = null; return; }
+    var mi = require('monitor-info');
+    if ((typeof mi._kvmcheck != 'function') || (mi._xtries <= 18)) return; // Its own retries are still running
+    var sockets = [];
+    try { fs.readdirSync('/tmp/.X11-unix').forEach(function (f) { sockets.push('/tmp/.X11-unix/' + f); }); } catch (ex) { }
+    try {
+        fs.readdirSync('/run/user').forEach(function (uid) {
+            try { fs.readdirSync('/run/user/' + uid).forEach(function (f) { if (f.startsWith('wayland-') && !f.endsWith('.lock')) { sockets.push('/run/user/' + uid + '/' + f); } }); } catch (ex) { }
+        });
+    } catch (ex) { }
+    // A socket left behind by a display server that is gone keeps its time, a new one gets a new time
+    var key = sockets.map(function (s) { try { return s + ' ' + fs.statSync(s).mtime; } catch (ex) { return s; } }).join(',');
+    if (key != kvmSupportSockets) { kvmSupportSockets = key; kvmSupportTries = 3; }
+    if ((sockets.length > 0) && (kvmSupportTries > 0)) { kvmSupportTries--; try { mi._kvmcheck(); } catch (ex) { } }
+}
+
 if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
     // Check if this computer supports a desktop
     try {
@@ -979,6 +1003,8 @@ if (mesh.hasKVM == 1) {   // if the agent is compiled with KVM support
             meshCoreObj.caps |= 1; meshCoreObjChanged();
         } else if (process.platform == 'linux' || process.platform == 'freebsd') {
             require('monitor-info').on('kvmSupportDetected', function (value) { meshCoreObj.caps |= 1; meshCoreObjChanged(); });
+            kvmSupportTimer = setInterval(kvmSupportCheck, 60000);
+            kvmSupportTimer.metadata = 'meshcore (KVM Support Timer)';
         }
     } catch (ex) { }
 }
@@ -1346,6 +1372,12 @@ function tunnel_onError()
     sendConsoleText("ERROR: Unable to connect relay tunnel to: " + this.url + ", " + JSON.stringify(e));
 }
 
+// The server stamps the user's rights on each command it routes. View only users can look, but not change anything on the device.
+function server_hasControlRights(data) {
+    if (typeof data.rights != 'number') return false;
+    return ((data.rights == MESHRIGHT_ADMIN) || (((data.rights & MESHRIGHT_REMOTECONTROL) != 0) && ((data.rights & MESHRIGHT_REMOTEVIEW) == 0)));
+}
+
 // Handle a mesh agent command
 function handleServerCommand(data) {
     if (typeof data == 'object') {
@@ -1459,6 +1491,7 @@ function handleServerCommand(data) {
                     }
                     case 'messagebox': {
                         // Display a message box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(18, [data.title, data.msg], "Displaying message box, title=" + data.title + ", message=" + data.msg, data);
                             if (process.platform == 'win32') {
@@ -1541,6 +1574,7 @@ function handleServerCommand(data) {
                     }
                     case 'pskill': {
                         // Kill a process
+                        if (!server_hasControlRights(data)) break;
                         if (data.value) {
                             var info = data.value.split('|'), pid = data.value, msg = " (Unknown)";
                             if (info.length > 1) { pid = info[0]; msg = " (" + info[1] + ")"; } else { info[1] = "Unknown"; }
@@ -1593,6 +1627,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStop': {
                         // Stop a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.stop(); }
@@ -1601,6 +1636,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceStart': {
                         // Start a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.start(); }
@@ -1609,6 +1645,7 @@ function handleServerCommand(data) {
                     }
                     case 'serviceRestart': {
                         // Restart a service
+                        if (!server_hasControlRights(data)) break;
                         try {
                             var service = require('service-manager').manager.getService(data.serviceName);
                             if (service != null) { service.restart(); }
@@ -1618,6 +1655,7 @@ function handleServerCommand(data) {
                     case 'deskBackground':
                         {
                             // Toggle desktop background
+                            if (!server_hasControlRights(data)) break;
                             try {
                                 if (process.platform == 'win32') {
                                     var stype = require('user-sessions').getProcessOwnerName(process.pid).tsid == 0 ? 1 : 0;
@@ -1654,6 +1692,7 @@ function handleServerCommand(data) {
                         }
                     case 'openUrl': {
                         // Open a local web browser and return success/fail
+                        if (!server_hasControlRights(data)) break;
                         MeshServerLogEx(20, [data.url], "Opening: " + data.url, data);
                         sendConsoleText("OpenURL: " + data.url);
                         if (data.url) { mesh.SendCommand({ action: 'msg', type: 'openUrl', url: data.url, sessionid: data.sessionid, success: (openUserDesktopUrl(data.url) != null) }); }
@@ -1680,6 +1719,7 @@ function handleServerCommand(data) {
                         break;
                     }
                     case 'setclip': {
+                        if (!server_hasControlRights(data)) break;
                         if (pendingSetClip) return;
                         // Set the load clipboard to a user value
                         if (typeof data.data == 'string') {
@@ -1751,6 +1791,7 @@ function handleServerCommand(data) {
                         break;
                     case 'alertbox': {
                         // Display an old style alert box
+                        if ((typeof data.rights != 'number') || ((data.rights != MESHRIGHT_ADMIN) && ((data.rights & MESHRIGHT_CHATNOTIFY) == 0))) break;
                         if (data.title && data.msg) {
                             MeshServerLogEx(158, [data.title, data.msg], "Displaying alert box, title=" + data.title + ", message=" + data.msg, data);
                             try { require('message-box').create(data.title, data.msg, 9999, 1).then(function () { }).catch(function () { }); } catch (ex) { }
@@ -1778,6 +1819,10 @@ function handleServerCommand(data) {
                         sessionid: data.sessionid 
                     });
                 };
+                // Uninstall is for full administrators of the device only, the inventory for users without the No Software restriction, same as the web UI
+                var denied = (typeof data.rights != 'number');
+                if (!denied && (data.rights != MESHRIGHT_ADMIN)) { denied = (((data.rights & MESHRIGHT_NOSOFTWARE) != 0) || (data.type == 'uninstallapp') || (data.type == 'uninstallstoreapp')); }
+                if (denied) { sendSoftwareResponse({ success: false, error: 'Denied' }); break; }
                 if (data.type == 'installedapps') {
                     if (process.platform == 'win32') {
                         try {
@@ -1976,6 +2021,20 @@ function handleServerCommand(data) {
                 if (!data.reply) sendConsoleText("Run commands (" + data.runAsUser + "): " + data.cmds);
 
                 // data.runAsUser: 0=Agent,1=UserOrAgent,2=UserOnly
+                // On Windows, the child_process 'uid' option only moves the new process into the user's session, it still runs with the
+                // agent's LocalSystem token. To really run as the logged in user, start a child agent with the user's own token
+                // (WTSQueryUserToken + CreateProcessAsUserW) and get the output back over named pipes.
+                if ((process.platform == 'win32') && (data.runAsUser > 0) && ((data.type == 1) || (data.type == 2))) {
+                    var runAsSession = getRunCommandsWindowsSession();
+                    if (runAsSession != null) { runCommandsAsWindowsUser(data, runAsSession); break; }
+                    if (data.runAsUser == 2) {
+                        // This command can only run as user and nobody is logged in
+                        if (data.reply) { mesh.SendCommand({ action: 'msg', type: 'runcommands', result: "No user logged in, commands not run.", sessionid: data.sessionid, responseid: data.responseid }); } else { sendConsoleText("Run commands: no user logged in, commands not run."); }
+                        break;
+                    }
+                    sendConsoleText("Run commands: no user logged in, running as agent.");
+                    data.runAsUser = 0; // No user logged in, run as agent
+                }
                 var options = {};
                 if (data.runAsUser > 0) {
                     try { options.uid = require('user-sessions').consoleUid(); } catch (ex) { }
@@ -3036,7 +3095,12 @@ function terminal_consent_ask(ws) {
 function terminal_promise_connection_rejected(e)
 {
     // FAILED to connect terminal
-    this.ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: e.toString(), msgid: 2 }));
+    // msgid 2 makes the web UI display "Denied" whatever the text is, so send "Failed to start..." errors without a msgid,
+    // then the web UI displays the actual error text instead.
+    var msg = e.toString();
+    var ctrl = { ctrlChannel: '102938', type: 'console', msg: msg };
+    if (msg.indexOf('Failed to start') != 0) { ctrl.msgid = 2; }
+    this.ws.write(JSON.stringify(ctrl));
     this.ws.end();
 }
 
@@ -3114,30 +3178,139 @@ function terminal_promise_consent_rejected(e)
     } else { } // no websocket, maybe log some messages somewhere?
 }
 function promise_init(res, rej) { this._res = res; this._rej = rej; }
+// Returns the Windows session to run user commands in (console user first, then any active user), or null if nobody is logged in.
+function getRunCommandsWindowsSession() {
+    try { return require('win-userdispatch').findSession({}); } catch (ex) { sendConsoleText("Run commands: no user session found, " + ex); return null; }
+}
+
+// Module sent to the child agent that runs under the user's account. It launches the shell, feeds it the commands and returns its output streams.
+var runCommandsUserModule = "var cp = require('child_process');\n\
+function run(type, cmds) {\n\
+    var child;\n\
+    if (type == 2) { child = cp.execFile(process.env['windir'] + '\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-']); }\n\
+    else { child = cp.execFile(process.env['windir'] + '\\\\system32\\\\cmd.exe', ['cmd']); }\n\
+    child.stderr.on('data', function (c) { try { global.ipcClient.write(c); } catch (ex) { } });\n\
+    child.on('exit', function () { setTimeout(function () { process.exit(); }, 1000); });\n\
+    child.stdin.write(cmds + '\\r\\nexit\\r\\n');\n\
+    return { out: child.stdout, in: child.stdin, child: child };\n\
+}\n\
+module.exports = { run: run };";
+
+// Wrapper module for the user terminal child agent. The child has no visible console, so anything the terminal module logs
+// with console.log() (for example 'Error calling SetWinEventHook' or 'Error Spawning CMD') or throws while starting is lost and
+// the remote terminal just stays blank. This sends those messages to the remote terminal instead.
+var userTerminalWrapperModule = "function report(msg) { try { global.ipcClient.write('\\r\\n[User terminal] ' + msg + '\\r\\n'); } catch (ex) { } }\n\
+var origLog = console.log;\n\
+console.log = function () { var a = []; for (var i = 0; i < arguments.length; ++i) { a.push(String(arguments[i])); } report(a.join(' ')); try { origLog.apply(console, arguments); } catch (ex) { } };\n\
+function start(mod, method, cols, rows) {\n\
+    try { return require(mod)[method](cols, rows); }\n\
+    catch (ex) { report('Failed to start: ' + ex); setTimeout(function () { process.exit(); }, 3000); throw ex; }\n\
+}\n\
+module.exports = { start: start };";
+
+// Run commands on Windows as the user logged into the given session. win-userdispatch starts a child agent with the user's
+// own token and no window, the child runs the shell and streams the output back to us.
+function runCommandsAsWindowsUser(data, session) {
+    var replydata = '', done = false, timer = null, dispatcher = null;
+    var finish = function (err) {
+        if (done) return;
+        done = true;
+        if (timer != null) { clearTimeout(timer); timer = null; }
+        if (err) { replydata += err; if (!data.reply) { sendConsoleText(err); } }
+        if (data.reply) {
+            mesh.SendCommand({ action: 'msg', type: 'runcommands', result: replydata, sessionid: data.sessionid, responseid: data.responseid });
+        } else {
+            sendConsoleText("Run commands completed.");
+        }
+        try { if ((dispatcher != null) && (dispatcher._runSocket != null)) { dispatcher._runSocket.end(); } } catch (ex) { }
+        try { if (dispatcher != null) { dispatcher.close(); } } catch (ex) { }
+        delete mesh.cmdchild;
+    };
+    mesh.cmdchild = {};
+    try {
+        // On Windows versions without ConPTY (Windows 7/8), the child must start with no console at all, having the system create
+        // its console at startup fails there (STATUS_DLL_INIT_FAILED). The shell the child starts gets its own windowless console.
+        var noConsole = false;
+        try { noConsole = !require('win-virtual-terminal').supported; } catch (ex) { }
+        dispatcher = require('win-userdispatch').dispatch({ sessionId: session.SessionId, noConsole: noConsole, modules: [{ name: 'meshcore-runcommands', script: runCommandsUserModule }], launch: { module: 'meshcore-runcommands', method: 'run', args: [data.type, data.cmds], split: true } });
+    } catch (ex) { finish("Unable to run commands as user: " + ex); return; }
+    mesh.cmdchild = dispatcher;
+    sendConsoleText("Run commands: running as " + dispatcher.user + (dispatcher.viaTaskScheduler ? " (using the Task Scheduler, the agent is not running as LocalSystem)." : (" (pid " + dispatcher.pid + ").")));
+    timer = setTimeout(function () { timer = null; var st = 'unknown'; try { st = dispatcher.status(); } catch (ex) { } finish("Unable to start commands as user " + dispatcher.user + " (timeout, " + st + ")."); }, 60000);
+    dispatcher.on('connection', function (s) {
+        if (timer != null) { clearTimeout(timer); timer = null; }
+        dispatcher._runSocket = s;
+        s.on('data', function (c) { replydata += c.toString(); if (!data.reply) { sendConsoleText(c.toString()); } });
+        s.on('end', function () { finish(); });
+        s.on('close', function () { finish(); });
+        s.on('error', function () { finish(); });
+    });
+}
+
+function terminal_userpromise_rejected(e)
+{
+    // Unable to list the logged in users
+    var that = this.that;
+    this.that = null;
+    if ((that != null) && (that.httprequest != null) && (that.httprequest.connectionPromise != null)) { that.httprequest.connectionPromise._rej('Failed to start user terminal session, unable to get the logged in users: ' + e); }
+}
+
 function terminal_userpromise_resolved(u)
 {
 
     var that = this.that;
+    if ((u.Active == null) || (u.Active.length == 0))
+    {
+        // Nobody is logged in, so there is no user to start the shell as. Fail right away instead of leaving the terminal waiting.
+        this.that = null;
+        that.httprequest.connectionPromise._rej('Failed to start user terminal session, no user is logged in.');
+        return;
+    }
     if (u.Active.length > 0)
     {
         var tmp;
         var username = '"' + u.Active[0].Domain + '\\' + u.Active[0].Username + '"';
 
 
-        if (require('win-virtual-terminal').supported)
+        // win-userdispatch starts the terminal process with the user's own token and without a console window (no Task Scheduler)
+        try
         {
-            // ConPTY PseudoTerminal
-            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            if (require('win-virtual-terminal').supported)
+            {
+                // ConPTY PseudoTerminal
+                tmp = require('win-userdispatch').dispatch({ user: username, modules: [{ name: 'win-virtual-terminal', script: getJSModule('win-virtual-terminal') }], launch: { module: 'win-virtual-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            }
+            else
+            {
+                // Legacy Terminal (Windows 7/8), it needs a real console window, win-terminal hides it once started
+                // It is started through a small wrapper that sends any startup error to the remote terminal instead of the hidden console.
+                tmp = require('win-userdispatch').dispatch({ user: username, console: true, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }, { name: 'meshcore-termwrap', script: userTerminalWrapperModule }], launch: { module: 'meshcore-termwrap', method: 'start', args: ['win-terminal', (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), this.cols, this.rows] } });
+            }
         }
-        else
+        catch (ex)
         {
-            // Legacy Terminal
-            tmp = require('win-dispatcher').dispatch({ user: username, modules: [{ name: 'win-terminal', script: getJSModule('win-terminal') }], launch: { module: 'win-terminal', method: (that.httprequest.protocol == 9 ? 'StartPowerShell' : 'Start'), args: [this.cols, this.rows] } });
+            that.httprequest.connectionPromise._rej('Failed to start user terminal session, ' + ex.toString());
+            this.that = null;
+            return;
         }
         that.httprequest._dispatcher = tmp;
         that.httprequest._dispatcher.connectionPromise = that.httprequest.connectionPromise;
         that.httprequest._dispatcher.on('connection', terminal_user_onconnection);
         that.httprequest._dispatcher.on('~', terminal_onfinalized);
+
+        // If the user's terminal process never connects back, report an error instead of leaving a blank terminal
+        tmp._startTimer = setTimeout(function (d, p) {
+            d._startTimer = null;
+            if (!p.completed) {
+                var st = 'unknown';
+                try { st = d.status(); } catch (ex) { }
+                var msg = 'Failed to start user terminal session, the terminal process for ' + d.user + ' did not connect back: ' + st + '.';
+                try { sendConsoleText(msg); } catch (ex) { } // The web UI only shows "Denied" for this error, so also log it to the agent console
+                try { d.close(); } catch (ex) { }
+                p._rej(msg);
+            }
+        }, 30000, tmp, that.httprequest.connectionPromise);
+        tmp.once('connection', function () { if (this._startTimer != null) { clearTimeout(this._startTimer); this._startTimer = null; } });
     }
     this.that = null;
     that = null;
@@ -3187,7 +3360,7 @@ function terminal_promise_consent_resolved()
                 userPromise.that = this;
                 userPromise.cols = cols;
                 userPromise.rows = rows;
-                userPromise.then(terminal_userpromise_resolved);
+                userPromise.then(terminal_userpromise_resolved, terminal_userpromise_rejected);
             }
         } catch (ex)
         {
@@ -4750,7 +4923,11 @@ function onTunnelControlData(data, ws) {
         case 'termsize': {
             // Indicates a change in terminal size
             if (process.platform == 'win32') {
-                if (ws.httprequest._dispatcher == null) return;
+                if (ws.httprequest._dispatcher == null) {
+                    // Legacy terminal running inside the agent itself (admin terminal on Windows without ConPTY)
+                    if ((ws.httprequest._term != null) && (typeof ws.httprequest._term.resizeTerminal == 'function')) { ws.httprequest._term.resizeTerminal(obj.cols, obj.rows); }
+                    return;
+                }
                 //sendConsoleText('Win32-TermSize: ' + obj.cols + 'x' + obj.rows);
                 if (ws.httprequest._dispatcher.invoke) { ws.httprequest._dispatcher.invoke('resizeTerminal', [obj.cols, obj.rows]); }
             } else {

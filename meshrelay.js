@@ -70,12 +70,12 @@ function checkDeviceSharePublicIdentifier(parent, domain, nodeid, pid, extraKey,
     });
 }
 
-function isProtocolAllowedByRights(rights, protocol) {
+function isProtocolAllowedByRights(rights, protocol, tcpRouted) {
     if ((rights == null) || (rights == MESHRIGHT_ADMIN)) { return true; }
     if ((protocol == 1) && ((rights & MESHRIGHT_NOTERMINAL) != 0)) { return false; }
     if ((protocol == 2) && ((rights & MESHRIGHT_NODESKTOP) != 0)) { return false; }
     if ((protocol == 4) && ((rights & MESHRIGHT_NOREGISTRY) != 0)) { return false; }
-    if (((protocol == 5) || (protocol == 10)) && ((rights & MESHRIGHT_NOFILES) != 0)) { return false; }
+    if (((protocol == 5) || ((protocol == 10) && (tcpRouted !== true))) && ((rights & MESHRIGHT_NOFILES) != 0)) { return false; }
     return true;
 }
 
@@ -679,6 +679,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         // Perform traffic accounting
         parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
         parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
 
         if (this.peer != null) {
             //if (typeof data == 'string') { console.log('Relay: ' + data); } else { console.log('Relay:' + data.length + ' byte(s)'); }
@@ -751,6 +753,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
         // Perform traffic accounting
         parent.trafficStats.relayIn[this._socket.p] += (this._socket.bytesRead - this._socket.bytesReadEx);
         parent.trafficStats.relayOut[this._socket.p] += (this._socket.bytesWritten - this._socket.bytesWrittenEx);
+        this._socket.bytesReadEx = this._socket.bytesRead;
+        this._socket.bytesWrittenEx = this._socket.bytesWritten;
 
         if (obj.relaySessionCounted) { parent.relaySessionCount--; delete obj.relaySessionCounted; }
         closeBothSides();
@@ -900,7 +904,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
                 const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
                 if ((obj.nouser !== true) && ((rights & 0x00200008) == 0)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return; }
-                if ((obj.nouser !== true) && (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false)) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                if ((obj.nouser !== true) && (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p), true) == false)) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
@@ -951,7 +955,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
                 const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
                 if ((rights & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-                if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+                if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p), true) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
 
                 // Set nodeid and meshid
                 obj.nodeid = node._id;
@@ -1340,7 +1344,7 @@ function CreateLocalRelayEx(parent, ws, req, domain, user, cookie) {
             // Check if this user has permission to relay thru this computer (MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY rights)
             const rights = parent.GetNodeRights(obj.user, node.meshid, node._id);
             if ((rights & 0x00200008) == 0) { console.log('ERR: Access denied (2)'); try { obj.close(); } catch (ex) { } return; }
-            if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p)) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
+            if (isProtocolAllowedByRights(rights, parseInt(obj.req.query.p), true) == false) { console.log('ERR: Access denied (3)'); try { obj.close(); } catch (ex) { } return; }
 
             // Setup TCP client
             obj.client = new net.Socket();

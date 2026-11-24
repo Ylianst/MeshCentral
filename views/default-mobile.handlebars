@@ -1648,6 +1648,8 @@
                     QH('p3userName', userinfo.name);
                     //updateSiteAdmin();
                     if (serverinfo != null) updateSelf();
+                    // The server only accepts account security commands until a second factor is set up, so start there
+                    if ((features & 0x00040000) && !((userinfo.otpsecret == 1) || (userinfo.otphkeys > 0) || (userinfo.otpkeys > 0) || (userinfo.otpduo > 0) || (userinfo.otpdev > 0) || ((features & 0x00800000) && (userinfo.otpekey == 1))) && (xxcurrentView != 3)) { go(3); setDialogMode(2, "Account Security", 1, null, "Unable to access this feature until two-factor authentication is enabled. This is required for extra security. Go to the \"My Account\" and look at the \"Account Security\" section."); }
                     break;
                 }
                 case 'users': {
@@ -2573,10 +2575,13 @@
         }
 
         function account_showLocalizationSettingsEx() {
-            // Set user language
-            var lang = Q('d2langselect').value;
-            if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
-            if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            // Set user language, the dropdown only exists when the server has translated pages
+            var langSelect = Q('d2langselect');
+            if (langSelect != null) {
+                var lang = langSelect.value;
+                if ((lang == '*') && (userinfo.lang == null)) { lang = userinfo.lang; }
+                if (lang != userinfo.lang) { meshserver.send({ action: 'changelang', lang: lang }); }
+            }
 
             // Set date localization
             var n = getstore('loctag', 0);
@@ -5155,7 +5160,7 @@
             } else {
                 // Agent desktop
                 if (flags & 1) { keyArray.push([desktop.m.KeyAction.DOWN, 16]); keyArray2.push([desktop.m.KeyAction.UP, 16]); } // Shift
-                if (flags & 2) { keyArray.push([desktop.m.KeyAction.EXDOWN, 18]); keyArray2.push([desktop.m.KeyAction.EXUP, 18]); } // Left-alt
+                if (flags & 2) { keyArray.push([desktop.m.KeyAction.DOWN, 18]); keyArray2.push([desktop.m.KeyAction.UP, 18]); } // Left-alt
                 if (flags & 8) { keyArray.push([desktop.m.KeyAction.EXDOWN, 17]); keyArray2.push([desktop.m.KeyAction.EXUP, 17]); } // Ctrl
                 if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
                 if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }
@@ -5849,7 +5854,7 @@
                 */
 
                 // If the server requires a shell type
-                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4)) {
+                if ((serverinfo.linuxshell) != null && (currentNode.agent.id > 4) && !isWindowsNode(currentNode)) {
                     if (serverinfo.linuxshell == 'root') { termoptions.protocol = 1; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'user') { termoptions.protocol = 8; delete termoptions.requireLogin; }
                     if (serverinfo.linuxshell == 'login') { termoptions.protocol = 1; termoptions.requireLogin = true; }
@@ -8400,11 +8405,11 @@
         function getUserName(userid) { 
             var useridsplit = userid.split('/'), userid2 = useridsplit[0] + '/' + useridsplit[1] + '/' + useridsplit[2], guestname = '';
             if ((useridsplit.length == 4) && (useridsplit[3].startsWith('guest:'))) { guestname = ' - ' + EscapeHtml(decode_utf8(atob(useridsplit[3].substring(6)))); }
-            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (users[userid2].realname + guestname); else return (users[userid2].name + guestname); }
-            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (currentNode.links[userid].name + guestname); }
-            if (userid == userinfo._id) { return (userinfo.name + guestname); }
-            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (nodes[a].links[b].name + guestname); } } } }
-            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (meshes[a].links[b].name + guestname); } } } }
+            if (users && users[userid2] != null) { if (users[userid2].realname != null) return (EscapeHtml(users[userid2].realname) + guestname); else return (EscapeHtml(users[userid2].name) + guestname); }
+            if (currentNode && currentNode.links && currentNode.links[userid] && currentNode.links[userid].name != null) { return (EscapeHtml(currentNode.links[userid].name) + guestname); }
+            if (userid == userinfo._id) { return (EscapeHtml(userinfo.name) + guestname); }
+            if (nodes) { for (var a in nodes) { if (nodes[a].links) { for (var b in nodes[a].links) { if (nodes[a].links[b].name && b == userid) return (EscapeHtml(nodes[a].links[b].name) + guestname); } } } }
+            if (meshes) { for (var a in meshes) { if (meshes[a].links) { for (var b in meshes[a].links) { if (meshes[a].links[b].name && b == userid) return (EscapeHtml(meshes[a].links[b].name) + guestname); } } } }
             return (EscapeHtml(useridsplit[2]) + guestname);
         }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right' + (state === true ? ';word-break:break-all' : '') + '>' + value + '</table>'; }

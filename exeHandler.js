@@ -68,6 +68,29 @@ module.exports.streamExeWithJavaScript = function (options) {
     }
 };
 
+// Same as streamExeWithJavaScript() but writes a file. The server signs the result as MeshCmd.
+//
+// options = {
+//   sourceFileName: 'pathToBinary',
+//   destinationFileName: 'pathToOutput',
+//   js: 'jsContent',
+//   peinfo {} // Optional, if PE header already parsed place it here.
+// }
+//
+module.exports.writeExeWithJavaScript = function (options) {
+    if (!options.sourceFileName) { throw ('source file not specified'); }
+    if (!options.destinationFileName) { throw ('destination file not specified'); }
+    if (!options.js) { throw ('js content not specified'); }
+    if (!options.peinfo) { options.peinfo = module.exports.parseWindowsExecutable(options.sourceFileName); }
+    if (options.peinfo.CertificateTableAddress != 0) { throw ('writeExeWithJavaScript(): Cannot add JavaScript to a signed executable.'); }
+    const exe = require('fs').readFileSync(options.sourceFileName), sz = Buffer.alloc(4);
+    sz.writeUInt32BE(options.js.length, 0);
+    // The PE checksum and the certificate table both want the file length aligned. The runtime finds the script
+    // from the tail, so the padding goes in front of it.
+    const padding = Buffer.alloc((8 - ((exe.length + options.js.length + 20) % 8)) % 8);
+    require('fs').writeFileSync(options.destinationFileName, Buffer.concat([exe, padding, options.js, sz, Buffer.from(exeJavaScriptGuid, 'hex')]));
+};
+
 
 // Changes a Windows Executable to add the MSH inside of it.
 // This method will write to destination stream and close it.

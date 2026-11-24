@@ -6,24 +6,6 @@
       "tag": "legacy-1.2.6",
       "files": [
         {
-          "filename": "MeshCmd.exe",
-          "asset": "MeshCmd.exe",
-          "size": 4629608,
-          "sha384": "b1fe076d82fa63401aaa3b8c4cde44108ae7e1400a15e4df57b6f7b77492130fe352b878edb12ec71a22f6359a79ff95"
-        },
-        {
-          "filename": "MeshCmd64.exe",
-          "asset": "MeshCmd64.exe",
-          "size": 4257384,
-          "sha384": "0f0b70c3ef31ff5ad1a59d89a5685770987334699a915874bc05d631b0984398bdd62d72de109c87e18afc4f1a6fd31c"
-        },
-        {
-          "filename": "MeshCmdARM64.exe",
-          "asset": "MeshCmdARM64.exe",
-          "size": 4450408,
-          "sha384": "faf78f0c8e19e8ebd5596ae917e535a3ef1e1acc29f2beb945ddbf66b7c0a2191bcc7bc6cce1e795be886c3e4235950a"
-        },
-        {
           "filename": "MeshService.exe",
           "asset": "MeshService.exe",
           "size": 3816960,

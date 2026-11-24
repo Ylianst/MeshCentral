@@ -31,6 +31,7 @@ module.exports.IntToStrX = function (v) { return String.fromCharCode(v & 0xFF, (
 module.exports.MakeToArray = function (v) { if (!v || v == null || typeof v == 'object') return v; return [v]; };
 module.exports.SplitArray = function (v) { return v.split(','); };
 module.exports.Clone = function (v) { return JSON.parse(JSON.stringify(v)); };
+module.exports.StringifyRedacted = function (v) { return JSON.stringify(v, function (k, x) { return ((x != null) && /secret|password|passwd|private|pvk|token$/i.test(k)) ? '****' : x; }); }; // For logs, keeps keys but masks credential values
 module.exports.IsFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return module.exports.validateString(fname, 1, 4096) && x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); }; })();
 module.exports.makeFilename = function (v) { return v.split('\\').join('').split('/').join('').split(':').join('').split('*').join('').split('?').join('').split('"').join('').split('<').join('').split('>').join('').split('|').join('').split(' ').join('').split('\'').join(''); }
 module.exports.joinPath = function (base, path_) { return path.isAbsolute(path_) ? path_ : path.join(base, path_); }
@@ -630,4 +631,60 @@ module.exports.replacePlaceholders = function (template, values) {
       return values !== undefined ? values : match;
     }
   });
+}
+
+// Check number is at least above
+module.exports.versionAtLeast = function (cur, min) {
+    const a = cur.split('.').map(Number), b = min.split('.').map(Number);
+    for (let i = 0; i < 3; i++) { const x = a[i] || 0, y = b[i] || 0; if (x !== y) return x > y; }
+    return true;
+}
+
+// Check if a Node.js version (e.g. "22.21.1") satisfies an npm "engines.node" requirement
+// (e.g. ">=22.12.0"). Self-contained, no external semver dependency. Handles operators
+// (>=, >, <=, <, =, ~, ^), exact versions, space/comma-separated ranges (AND) and "||" alternatives (OR).
+module.exports.nodeVersionSatisfies = function (cur, engineReq) {
+    if (typeof engineReq != 'string') return true; // No requirement / can't parse -> don't block.
+    engineReq = engineReq.trim();
+    if (!engineReq) return true;
+    function parseVersion(v) {
+        var parts = String(v).trim().split('.');
+        var out = [0, 0, 0];
+        for (var i = 0; i < 3; i++) { var n = parseInt(parts[i], 10); out[i] = isNaN(n) ? 0 : n; }
+        return out;
+    }
+    function compare(a, b) {
+        var pa = parseVersion(a), pb = parseVersion(b);
+        for (var i = 0; i < 3; i++) { if (pa[i] < pb[i]) return -1; if (pa[i] > pb[i]) return 1; }
+        return 0;
+    }
+    function satisfiesBranch(branch) {
+        var tokens = branch.trim().replace(/,/g, ' ').split(/\s+/);
+        for (var k = 0; k < tokens.length; k++) {
+            var token = tokens[k];
+            if (!token) continue;
+            var op = '=';
+            var req = token;
+            if (/^>=[^<]/.test(token)) { op = '>='; req = token.slice(2); }
+            else if (/^<=[^>]/.test(token)) { op = '<='; req = token.slice(2); }
+            else if (token.charAt(0) == '>') { op = '>'; req = token.slice(1); }
+            else if (token.charAt(0) == '<') { op = '<'; req = token.slice(1); }
+            else if (token.charAt(0) == '=') { op = '='; req = token.slice(1); }
+            else if (token.charAt(0) == '~' || token.charAt(0) == '^') { op = '~'; req = token.slice(1); }
+            else { op = '='; req = token; }
+            req = req.trim().replace(/^v/, '').trim();
+            if (!/[0-9]/.test(req)) return true; // Can't parse this requirement -> don't block the update.
+            var c = compare(cur, req);
+            if (op == '>=' && !(c >= 0)) return false;
+            else if (op == '>' && !(c > 0)) return false;
+            else if (op == '<=' && !(c <= 0)) return false;
+            else if (op == '<' && !(c < 0)) return false;
+            else if (op == '=' && c != 0) return false;
+            else if (op == '~' && !(c >= 0)) return false; // Approximate prerelease/range as >=
+        }
+        return true;
+    }
+    var branches = engineReq.split('||');
+    for (var j = 0; j < branches.length; j++) { if (satisfiesBranch(branches[j])) return true; }
+    return false;
 }

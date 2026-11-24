@@ -49,8 +49,9 @@ module.exports = function () {
         10004: { id: 10004, localname: 'MeshService64.exe', rname: 'meshagent64.exe', desc: 'Windows x86-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', unsigned: true },
         10005: { id: 10005, localname: 'meshagent_osx-universal-64', rname: 'meshagent', desc: 'Apple macOS Universal Binary', update: true, amt: false, platform: 'osx', core: 'linux-noamt', rcore: 'linux-recovery', arcore: 'linux-agentrecovery', tcore: 'linux-tiny' }, // Apple Silicon + x86 universal binary
         10006: { id: 10006, localname: 'MeshCentralAssistant.exe', rname: 'MeshCentralAssistant.exe', desc: 'MeshCentral Assistant for Windows', update: false, amt: false, platform: 'win32' }, // MeshCentral Assistant
-        11000: { id: 11000, localname: 'MeshCmd.exe', rname: 'MeshCmd.exe', desc: 'Windows x86-32 meshcmd', update: false, amt: true, platform: 'win32', codesign: true }, // MeshCMD for Windows x86 32-bit
-        11001: { id: 11001, localname: 'MeshCmd64.exe', rname: 'MeshCmd64.exe', desc: 'Windows x86-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true }, // MeshCMD for Windows x86 64-bit
-        11002: { id: 11002, localname: 'MeshCmdARM64.exe', rname: 'MeshCmdARM64.exe', desc: 'Windows ARM-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true } // MeshCMD for Windows ARM 64-bit
+        10043: { id: 10043, localname: 'MeshServiceARM64.exe', rname: 'meshagentarm64.exe', desc: 'Windows ARM-64 service', update: true, amt: true, platform: 'win32', core: 'windows-amt', rcore: 'windows-recovery', arcore: 'windows-agentrecovery', tcore: 'windows-tiny', unsigned: true },
+        11000: { id: 11000, localname: 'MeshCmd.exe', rname: 'MeshCmd.exe', desc: 'Windows x86-32 meshcmd', update: false, amt: true, platform: 'win32', codesign: true, base: 'MeshService.exe' }, // MeshCMD for Windows x86 32-bit
+        11001: { id: 11001, localname: 'MeshCmd64.exe', rname: 'MeshCmd64.exe', desc: 'Windows x86-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true, base: 'MeshService64.exe' }, // MeshCMD for Windows x86 64-bit
+        11002: { id: 11002, localname: 'MeshCmdARM64.exe', rname: 'MeshCmdARM64.exe', desc: 'Windows ARM-64 meshcmd', update: false, amt: true, platform: 'win32', codesign: true, base: 'MeshServiceARM64.exe' } // MeshCMD for Windows ARM 64-bit
     };
 };
