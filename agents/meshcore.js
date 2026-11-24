@@ -2540,6 +2540,20 @@ function getDirectoryInfo(reqpath) {
 // screen), the desktop itself, the foreground Explorer window, or the only open Explorer window; on macOS the front
 // Finder window; else the Downloads folder. Calls func({ path, kind, note, error }): note tells why the folder
 // under the drop point was not used, path is null if nothing was found and error then says why.
+// Module sent to the helper agent that runs as the logged in Windows user (win-userdispatch). It runs the drop folder lookup
+// script, passed in base64 in an environment variable, and returns PowerShell's output stream.
+var dropTargetUserModule = "var cp = require('child_process');\n\
+function run(script) {\n\
+    var env = {};\n\
+    for (var e in process.env) { env[e] = process.env[e]; }\n\
+    env['MESHDROPTARGET'] = script;\n\
+    var child = cp.execFile(process.env['windir'] + '\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe', ['powershell', '-NoProfile', '-NonInteractive', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-Command', '& ([ScriptBlock]::Create([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:MESHDROPTARGET))))'], { env: env });\n\
+    child.stderr.on('data', function (c) { try { global.ipcClient.write(c); } catch (ex) { } });\n\
+    child.on('exit', function () { setTimeout(function () { process.exit(); }, 1000); });\n\
+    return { out: child.stdout, in: child.stdin, child: child };\n\
+}\n\
+module.exports = { run: run };";
+
 // Lookups in progress, keeps the helper process and timer referenced so they are not collected before they finish
 var dropTargetLookups = {}, dropTargetLookupId = 0;
 function getDropTarget(x, y, display, mode, func, trace) {
@@ -2565,7 +2579,7 @@ function getDropTarget(x, y, display, mode, func, trace) {
         }
         return false;
     }
-    lookup.timer = setTimeout(function () { reply(null, null, null, 'The folder lookup timed out'); }, 20000); // Give up if the helper hangs
+    lookup.timer = setTimeout(function () { reply(null, null, null, 'The folder lookup timed out'); }, 30000); // Give up if the helper hangs
     step('start, mode ' + mode + ', point ' + x + ',' + y + ', display ' + display);
     var find = ((mode != 'desktop') && (mode != 'downloads'));
     x = ((typeof x == 'number') && (x >= 0)) ? Math.floor(x) : -1;
@@ -2640,34 +2654,67 @@ function getDropTarget(x, y, display, mode, func, trace) {
                 "[Console]::Out.Write(([string][char]2) + (B64 $folder) + '|' + (B64 $desktop) + '|' + (B64 $downloads) + '|' + (B64 $note) + ([string][char]3))", // Start from a string, [char] + string is not a concatenation
                 "[Console]::Out.Flush()"
             ].join('\r\n');
-            // The script is passed in an environment variable (as win-deskutils does), which keeps the command line short
-            var env = {};
-            for (var e in process.env) { env[e] = process.env[e]; }
-            env['MESHDROPTARGET'] = Buffer.from(ps).toString('base64');
-            var args = ['powershell', '-NoProfile', '-NonInteractive', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-Command', '& ([ScriptBlock]::Create([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:MESHDROPTARGET))))'];
-            var options = { type: 1, env: env }; // ILibProcessPipe_SpawnTypes_USER, the logged in user
-            if (require('MeshAgent')._tsid != null) { options = { type: 5, uid: require('MeshAgent')._tsid, env: env }; } // The session picked for remote desktop
-            step('starting PowerShell as ' + ((options.type == 5) ? ('session ' + options.uid) : 'the logged in user'));
-            var child = lookup.child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', args, options);
-            step('PowerShell started');
-            child.stdout.str = '';
-            child.stdout.on('data', function (c) { this.str += c.toString(); });
-            child.stderr.str = '';
-            child.stderr.on('data', function (c) { this.str += c.toString(); });
-            child.on('exit', function (code) {
-                step('PowerShell exited, code ' + code + ', output ' + child.stdout.str.length + ' chars, errors ' + child.stderr.str.length + ' chars');
-                // Output can still be in the pipe when the exit event fires, read it a moment later
-                lookup.readTimer = setTimeout(function () {
-                    var s = child.stdout.str, i = s.indexOf('\x02'), j = s.indexOf('\x03', i);
-                    var v = ((i < 0) || (j < 0)) ? [] : s.substring(i + 1, j).split('|');
-                    var folder = v[0] ? b64(v[0]) : null, desktop = v[1] ? b64(v[1]) : null, downloads = v[2] ? b64(v[2]) : null, note = v[3] ? b64(v[3]) : null;
-                    var err = (child.stderr.str + ' ' + ((i < 0) ? child.stdout.str : '')).trim().substring(0, 300);
-                    if (v.length == 0) { note = 'the folder lookup printed nothing (exit code ' + code + ')' + (err ? (': ' + err) : ''); }
-                    if (!downloads) { downloads = getWindowsDownloadsFolder(); }
-                    if (pick(folder, desktop, downloads, note)) return;
-                    reply(null, null, null, 'Folder lookup failed (exit code ' + code + ')' + (err ? (': ' + err) : ''));
-                }, 300);
-            });
+            // Read the helper's output: folder for the drop, desktop, downloads and note, in base64 between \x02 and \x03
+            var finishWindows = function (out, errText, how) {
+                var i = out.indexOf('\x02'), j = out.indexOf('\x03', i);
+                var v = ((i < 0) || (j < 0)) ? [] : out.substring(i + 1, j).split('|');
+                var folder = v[0] ? b64(v[0]) : null, desktop = v[1] ? b64(v[1]) : null, downloads = v[2] ? b64(v[2]) : null, note = v[3] ? b64(v[3]) : null;
+                var err = (errText + ' ' + ((i < 0) ? out : '')).trim().substring(0, 300);
+                if (v.length == 0) { note = 'the folder lookup printed nothing (' + how + ')' + (err ? (': ' + err) : ''); }
+                if (!downloads) { downloads = getWindowsDownloadsFolder(); }
+                if (pick(folder, desktop, downloads, note)) return;
+                reply(null, null, null, 'Folder lookup failed (' + how + ')' + (err ? (': ' + err) : ''));
+            };
+            var psb64 = Buffer.from(ps).toString('base64');
+
+            // Run PowerShell as the logged in user with their own token (win-userdispatch). The child_process 'uid' option only moves a
+            // process into the user's session, it keeps the agent's LocalSystem token, and then it can not see the user's Explorer windows.
+            var dispatcher = null;
+            try {
+                var dopts = { modules: [{ name: 'meshcore-droptarget', script: dropTargetUserModule }], launch: { module: 'meshcore-droptarget', method: 'run', args: [psb64], split: true } };
+                if (require('MeshAgent')._tsid != null) { dopts.sessionId = require('MeshAgent')._tsid; } // The session picked for remote desktop
+                try { dopts.noConsole = !require('win-virtual-terminal').supported; } catch (ex) { }
+                dispatcher = lookup.child = require('win-userdispatch').dispatch(dopts);
+            } catch (ex) { step('win-userdispatch not available: ' + ex); dispatcher = null; }
+            if (dispatcher != null) {
+                step('helper started as ' + dispatcher.user + (dispatcher.viaTaskScheduler ? ' (Task Scheduler)' : ''));
+                var dout = '';
+                dispatcher.on('connection', function (sock) {
+                    lookup.socket = sock;
+                    step('helper connected');
+                    var dend = function () {
+                        if (lookup.ended) return;
+                        lookup.ended = true;
+                        step('helper finished, output ' + dout.length + ' chars');
+                        try { dispatcher.close(); } catch (ex) { }
+                        finishWindows(dout, '', 'user helper');
+                    };
+                    sock.on('data', function (c) { dout += c.toString(); });
+                    sock.on('end', dend);
+                    sock.on('close', dend);
+                    sock.on('error', dend);
+                });
+            } else {
+                // Older agent cores without win-userdispatch: start PowerShell in the user's session directly.
+                // The script is passed in an environment variable (as win-deskutils does), which keeps the command line short
+                var env = {};
+                for (var e in process.env) { env[e] = process.env[e]; }
+                env['MESHDROPTARGET'] = psb64;
+                var args = ['powershell', '-NoProfile', '-NonInteractive', '-NoLogo', '-ExecutionPolicy', 'Bypass', '-Command', '& ([ScriptBlock]::Create([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:MESHDROPTARGET))))'];
+                var options = { type: 1, env: env }; // ILibProcessPipe_SpawnTypes_USER, the logged in user
+                if (require('MeshAgent')._tsid != null) { options = { type: 5, uid: require('MeshAgent')._tsid, env: env }; } // The session picked for remote desktop
+                step('starting PowerShell in ' + ((options.type == 5) ? ('session ' + options.uid) : 'the user session'));
+                var child = lookup.child = require('child_process').execFile(process.env['windir'] + '\\System32\\WindowsPowerShell\\v1.0\\powershell.exe', args, options);
+                child.stdout.str = '';
+                child.stdout.on('data', function (c) { this.str += c.toString(); });
+                child.stderr.str = '';
+                child.stderr.on('data', function (c) { this.str += c.toString(); });
+                child.on('exit', function (code) {
+                    step('PowerShell exited, code ' + code + ', output ' + child.stdout.str.length + ' chars, errors ' + child.stderr.str.length + ' chars');
+                    // Output can still be in the pipe when the exit event fires, read it a moment later
+                    lookup.readTimer = setTimeout(function () { finishWindows(child.stdout.str, child.stderr.str, 'exit code ' + code); }, 300);
+                });
+            }
         } else if (process.platform == 'darwin') {
             // Ask Finder for its front window, run as the console user in their GUI session
             var uid = require('user-sessions').consoleUid();

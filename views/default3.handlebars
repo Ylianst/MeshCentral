@@ -11983,7 +11983,7 @@
                 if (state == 3) {
                     if (tunnel.xtimer) { clearTimeout(tunnel.xtimer); delete tunnel.xtimer; }
                     QH('p13dfileName', "Finding the destination folder...");
-                    tunnel.xtimer = setTimeout(function () { deskDropDone(tunnel, false, "The remote device did not answer, it may need an agent update."); }, 25000);
+                    tunnel.xtimer = setTimeout(function () { deskDropDone(tunnel, false, "The remote device did not answer, it may need an agent update."); }, 40000);
                     if ((t.xmode == 'custom') && desktopsettings.dropcustom) {
                         // Folder set in the desktop settings, list it to avoid overwriting files
                         t.xpath = desktopsettings.dropcustom;
