@@ -252,6 +252,10 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
             // Check user group access
             var ugrights = parent.getUserGroupFileRights(user, meshpath[0], domain);
             if ((ugrights == 0) || (write && (ugrights < 2))) return null;
+        } else if (splitid[0] == 'shared') {
+            // Check shared files access
+            var shrights = parent.getSharedFileRights(user, meshpath[0], domain);
+            if ((shrights == 0) || (write && (shrights < 2))) return null;
         } else return null;
         var rootfolder = meshpath[0], rootfoldersplit = rootfolder.split('/'), domainx = 'domain';
         if (rootfoldersplit[1].length > 0) domainx = 'domain-' + rootfoldersplit[1];
@@ -8964,6 +8968,19 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                 files.filetree.f[ugrp._id].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/ugrp-' + ugrpsplit[2]));
             } catch (e) {
                 files.filetree.f[ugrp._id].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
+            }
+        }
+
+        // Add the shared files of the domain, available to all its users. Most can only read them, ro tells the web page.
+        const sharedid = parent.getSharedFilesId(domain), shrights = parent.getSharedFileRights(user, sharedid, domain);
+        if (shrights > 0) {
+            files.filetree.f[sharedid] = { t: 6, n: ((typeof domain.sharedfilesname == 'string') && (domain.sharedfilesname != '')) ? domain.sharedfilesname : 'Shared Files', f: {} };
+            if (shrights < 2) { files.filetree.f[sharedid].ro = true; }
+            files.filetree.f[sharedid].maxbytes = parent.getQuota(sharedid, domain);
+            try {
+                files.filetree.f[sharedid].f = readFilesRec(parent.path.join(parent.filespath, domainx + '/shared-all'));
+            } catch (e) {
+                files.filetree.f[sharedid].f = {}; // Got an error, return empty folder. We will create the folder only when needed.
             }
         }
 

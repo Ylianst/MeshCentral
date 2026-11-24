@@ -303,6 +303,16 @@
             margin-top: 1px;
         }
 
+        .fileIcon8 {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M.5 3.5h5l1.5 1.5h8.5v9H.5z' fill='%23f0cd66' stroke='%23b8932a'/%3E%3Ccircle cx='8' cy='8.4' r='1.5' fill='%232f7fd0'/%3E%3Ccircle cx='4.6' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Ccircle cx='11.4' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Cpath d='M5.3 13.5c0-1.9 1.2-2.9 2.7-2.9s2.7 1 2.7 2.9z' fill='%232f7fd0'/%3E%3Cpath d='M2.4 13.5c0-1.5.9-2.3 2.2-2.3.6 0 1 .1 1.4.4-.6.5-.9 1.1-.9 1.9zM13.6 13.5c0-1.5-.9-2.3-2.2-2.3-.6 0-1 .1-1.4.4.6.5.9 1.1.9 1.9z' fill='%233aa36a'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
         .p5section {
             clear: both;
             margin: 10px 0 4px 0;
@@ -2946,7 +2956,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', htmlMeshes = '', htmlGroups = '', displayPath = '<a style=cursor:pointer;color:black onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', htmlMeshes = '', htmlGroups = '', htmlShared = '', displayPath = '<a style=cursor:pointer;color:black onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -2995,8 +3005,8 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3 || f.t == 4 || f.t == 5) { // 5 is the files of a user group
-                    var right = (f.t == 1 || f.t == 4 || f.t == 5) ? p5getQuotabar(f) : '';
+                if (f.t < 3 || f.t == 4 || f.t == 5 || f.t == 6) { // 5 is the files of a user group, 6 the shared files of all users
+                    var right = (f.t == 1 || f.t == 4 || f.t == 5 || f.t == 6) ? p5getQuotabar(f) : '';
                     h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + (f.ro ? (' (' + "read only" + ')') : '') + '</a></span></div>';
                 } else {
                     var link = shortname;
@@ -3006,14 +3016,14 @@
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
-                if (filetreelocation.length == 0) { if (f.t == 4) { htmlMeshes += h; } else if (f.t == 5) { htmlGroups += h; } else { html1 += h; } } // At the root, device groups and user groups each get their own section
+                if (filetreelocation.length == 0) { if (f.t == 4) { htmlMeshes += h; } else if (f.t == 5) { htmlGroups += h; } else if (f.t == 6) { htmlShared += h; } else { html1 += h; } } // At the root: My Files, the shared files, then device groups and user groups each in their own section
                 else if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
             //if (f.parent == null) {  }
             QH('p5rightOfButtons', p5getQuotabar(filetreex));
 
-            QH('p5files', html1 + html2 + p5section("Device Groups", htmlMeshes) + p5section("User Groups", htmlGroups));
+            QH('p5files', html1 + htmlShared + html2 + p5section("Device Groups", htmlMeshes) + p5section("User Groups", htmlGroups));
             QH('p5currentpath', displayPath);
             QE('p5FolderUp', filetreelocation.length != 0);
             QV('p5PublicShare', publicfolder);
@@ -3046,7 +3056,7 @@
         }
 
         function p5getQuotabar(f) {
-            while (f.t > 1 && f.t != 4 && f.t != 5) { f = f.parent; }
+            while (f.t > 1 && f.t != 4 && f.t != 5 && f.t != 6) { f = f.parent; }
             if ((f.t != 1 && f.t != 4 && f.t != 5) || (f.maxbytes == null)) return '';
             return getNiceSize(f.maxbytes - f.s) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
@@ -3070,7 +3080,7 @@
         }
 
         // Members of a user group can only read its files, the server marks those ro.
-        function p5folderIcon(f) { return (f.t == 5) ? 7 : f.t; } // User group files (type 5) have the user group icon
+        function p5folderIcon(f) { return (f.t == 5) ? 7 : ((f.t == 6) ? 8 : f.t); } // User group files (type 5) have the user group icon, shared files (type 6) the shared folder icon
         function p5section(title, html) { return (html == '') ? '' : ('<div class=p5section>' + EscapeHtml(title) + '</div>' + html); }
         function p5readOnly() { if ((filetreelocation.length == 0) || (filetree.f == null)) return false; var r = filetree.f[filetreelocation[0]]; return (r != null) && (r.ro == true); }
 

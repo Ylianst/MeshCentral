@@ -2508,6 +2508,17 @@ nav .lbbuttonsel2 {
     margin-top: 1px;
 }
 
+.fileIcon8 {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M.5 3.5h5l1.5 1.5h8.5v9H.5z' fill='%23f0cd66' stroke='%23b8932a'/%3E%3Ccircle cx='8' cy='8.4' r='1.5' fill='%232f7fd0'/%3E%3Ccircle cx='4.6' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Ccircle cx='11.4' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Cpath d='M5.3 13.5c0-1.9 1.2-2.9 2.7-2.9s2.7 1 2.7 2.9z' fill='%232f7fd0'/%3E%3Cpath d='M2.4 13.5c0-1.5.9-2.3 2.2-2.3.6 0 1 .1 1.4.4-.6.5-.9 1.1-.9 1.9zM13.6 13.5c0-1.5-.9-2.3-2.2-2.3-.6 0-1 .1-1.4.4.6.5.9 1.1.9 1.9z' fill='%233aa36a'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+
 .p5section {
     clear: both;
     margin: 10px 0 4px 0;
