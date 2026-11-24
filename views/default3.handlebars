@@ -11969,6 +11969,7 @@
             setModalContent('xxAddAgent', "Upload File", '<div id=p13dfileName>' + "Connecting to the remote device..." + '</div><br /><progress id=d2progressBar style="display:block;width:100%;margin-bottom:5px"></progress>');
             showModal('xxAddAgentModal', 'idx_dlgCancelButton', function () { deskDropDone(deskDropTunnel, false); });
             document.getElementById('idx_dlgOkButton').style.display = 'none'; // hide OK button
+            xxdialogTag = 'deskdrop'; // Same tag as the classic UI, code that takes over the upload uses it to close this dialog
             var t = CreateAgentRedirect(meshserver, CreateRemoteFiles(function (data) { deskDropGotData(t, data); }, function (data) { if ((data.length > 0) && (data[0] == 123)) { var x = ''; for (var i = 0; i < data.length; i += 8192) { x += String.fromCharCode.apply(null, data.subarray(i, i + 8192)); } deskDropGotData(t, x); } }), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
             deskDropTunnel = t;
             t.xfinding = true; // Showing the "finding the destination" dialog
@@ -12079,7 +12080,7 @@
             if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
             if (t.xacktimer) { clearTimeout(t.xacktimer); delete t.xacktimer; }
             if ((uploadFile != null) && (uploadFile.tunnel == t)) { p13uploadFileCancel(); }
-            if (t.xfinding) { setDialogMode(0); }
+            if (t.xfinding || (xxdialogTag == 'deskdrop')) { setDialogMode(0); }
             try { t.Stop(); } catch (ex) { }
             if (ok) {
                 msg = (t.xnames.length == 1) ? format("Uploaded {0} to {1}", t.xnames[0], t.xpath) : format("Uploaded {0} files to {1}", t.xnames.length, t.xpath);
