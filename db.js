@@ -1405,6 +1405,18 @@ module.exports.CreateDB = function (parent, func) {
             }
         }
 
+        // One-shot commands that only read the database work on a temporary copy, so loading never rewrites the live database file.
+        const readOnlyCommand = (parent.args.showall || parent.args.showusers || parent.args.showitem || parent.args.listuserids || parent.args.showusergroups || parent.args.shownodes || parent.args.showallmeshes || parent.args.showmeshes || parent.args.showevents || parent.args.showsmbios || parent.args.showpower || parent.args.showiplocations || parent.args.logintoken || parent.args.logintokenkey);
+        if (readOnlyCommand) {
+            const realOptions = Object.assign({}, datastoreOptions);
+            const tmpdir = fs.mkdtempSync(require('path').join(require('os').tmpdir(), 'meshcentral-'));
+            process.on('exit', function () { try { fs.rmSync(tmpdir, { recursive: true, force: true }); } catch (ex) { } });
+            try { fs.copyFileSync(datastoreOptions.filename, require('path').join(tmpdir, 'meshcentral.db')); } catch (ex) { }
+            datastoreOptions.filename = require('path').join(tmpdir, 'meshcentral.db');
+            // Commands that need to store something, like a new login key, call this to switch to the real database file.
+            obj.openWritable = function (func) { obj.file = new Datastore(Object.assign(realOptions, { onload: func })); };
+        }
+
         // Start NeDB main collection and setup indexes
         obj.file = new Datastore(datastoreOptions);
         obj.file.setAutocompactionInterval(86400000); // Compact once a day
