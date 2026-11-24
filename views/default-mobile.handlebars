@@ -358,6 +358,8 @@
         #xferTray .xferState3 .xferBar div { background: #999; }
         #xferTray .xferState2 .xferStatus { color: #d04040; }
         #xferTray .xferStatus { font-size: 11px; opacity: 0.75; }
+        #xferTray .xferDir { font-weight: bold; opacity: 0.7; }
+        #xferTray .xferWhere { font-size: 11px; opacity: 0.75; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .night #xferTray, [data-bs-theme=dark] #xferTray { background: #2b2b2b; color: #eee; border-color: #555; }
         @media (max-width: 600px) { #xferTray { left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; } }
 
@@ -3151,10 +3153,21 @@
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
         //
-        // Background file transfers. Uploads to the server run in the background while the user keeps working, and a small
-        // tray in the bottom right corner shows their progress on every screen. Use xferUpload() to start one.
+        // Background file transfers. Uploads and downloads run in the background while the user keeps working, and a small
+        // tray in the bottom right corner shows their progress on every screen.
+        // xferUpload() uploads to the server files. Other transfers use xferAdd(), xferProgress() and xferEnd().
         //
         var xferList = [], xferNextId = 1, xferCollapsed = false, xferRenderTimer = null;
+
+        // Add a transfer to the tray. o: { name, title, total, dir: 'up' or 'down', device, cancel: function }. Returns the transfer.
+        function xferAdd(o) {
+            var t = { id: xferNextId++, name: o.name, title: (o.title != null) ? o.title : o.name, total: o.total || 0, sent: 0, state: 0, start: Date.now(), dir: o.dir || 'up', device: o.device || null, cancel: o.cancel || null, server: (o.server == true) }; // state: 0 running, 1 done, 2 failed, 3 cancelled
+            xferList.push(t);
+            xferUpdate(true);
+            return t;
+        }
+        function xferProgress(t, sent) { if ((t == null) || (t.state != 0)) return; if (t.waiting) { t.waiting = false; t.start = Date.now(); } t.sent = sent; xferUpdate(false); }
+        function xferEnd(t, state) { if ((t == null) || (t.state != 0)) return; t.state = state; if (state == 1) { t.sent = t.total; } xferFinished(t); }
 
         // Upload files to the server files. link is the encoded server path, as used by uploadfile.ashx.
         function xferUpload(files, link) {
@@ -3163,28 +3176,26 @@
             fd.append('link', link);
             for (var i = 0; i < files.length; i++) { if (files[i].size > 0) { fd.append('files', files[i], files[i].name); total += files[i].size; names.push(files[i].name); } }
             if (names.length == 0) return false;
-            var t = { id: xferNextId++, name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, sent: 0, state: 0, start: Date.now() }; // state: 0 sending, 1 done, 2 failed, 3 cancelled
-            var xhr = t.xhr = new XMLHttpRequest();
+            var xhr = new XMLHttpRequest();
+            var t = xferAdd({ name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, dir: 'up', server: true, cancel: function () { xhr.abort(); } });
             xhr.open('POST', 'uploadfile.ashx');
-            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { t.sent = e.loaded; t.total = e.total; } xferUpdate(false); };
-            xhr.onload = function () { if ((xhr.status >= 200) && (xhr.status < 300)) { t.state = 1; t.sent = t.total; } else { t.state = 2; } xferFinished(t); };
-            xhr.onerror = function () { t.state = 2; xferFinished(t); };
-            xhr.onabort = function () { t.state = 3; xferFinished(t); };
-            xferList.push(t);
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { t.total = e.total; xferProgress(t, e.loaded); } };
+            xhr.onload = function () { xferEnd(t, ((xhr.status >= 200) && (xhr.status < 300)) ? 1 : 2); };
+            xhr.onerror = function () { xferEnd(t, 2); };
+            xhr.onabort = function () { xferEnd(t, 3); };
             xhr.send(fd);
-            xferUpdate(true);
             return true;
         }
 
         function xferFinished(t) {
-            delete t.xhr;
+            t.cancel = null;
             t.end = Date.now();
             xferUpdate(true);
-            if (typeof p5refreshFiles == 'function') { p5refreshFiles(); }
+            if (t.server && (typeof p5refreshFiles == 'function')) { p5refreshFiles(); }
             if (t.state != 2) { setTimeout(function () { xferRemove(t.id); }, 5000); } // Done and cancelled transfers go away on their own, failed ones stay until dismissed
         }
 
-        function xferCancel(id) { for (var i in xferList) { if ((xferList[i].id == id) && (xferList[i].xhr != null)) { xferList[i].xhr.abort(); } } return false; }
+        function xferCancel(id) { for (var i in xferList) { var t = xferList[i]; if ((t.id == id) && (t.state == 0) && (t.cancel != null)) { var f = t.cancel; t.cancel = null; f(); if (t.state == 0) { xferEnd(t, 3); } } } return false; }
         function xferRemove(id) { for (var i = 0; i < xferList.length; i++) { if ((xferList[i].id == id) && (xferList[i].state != 0)) { xferList.splice(i, 1); break; } } xferUpdate(true); return false; }
         function xferToggle() { xferCollapsed = !xferCollapsed; xferUpdate(true); return false; }
         function xferSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(2) + ' GB'; }
@@ -3199,27 +3210,32 @@
             if (xferList.length == 0) { tray.style.display = 'none'; return; }
             var active = xferActive(), sent = 0, total = 0, x = '';
             for (var i in xferList) { var t = xferList[i]; if (t.state == 0) { sent += t.sent; total += t.total; } }
-            var head = (active > 0) ? ((active == 1) ? "1 upload in progress" : format("{0} uploads in progress", active)) + ((total > 0) ? (' - ' + Math.floor(sent * 100 / total) + '%') : '') : ((xferFailed() > 0) ? "Upload failed" : "Uploads finished");
+            var head = (active > 0) ? ((active == 1) ? "1 transfer in progress" : format("{0} transfers in progress", active)) + ((total > 0) ? (' - ' + Math.floor(sent * 100 / total) + '%') : '') : ((xferFailed() > 0) ? "Transfer failed" : "Transfers finished");
             x += '<div class=xferHead><span>' + head + '</span><a href=# class=xferBtn onclick="return xferToggle()" title="' + (xferCollapsed ? "Show transfers" : "Hide transfers") + '">' + (xferCollapsed ? '&#9650;' : '&#9660;') + '</a></div>';
             if (xferCollapsed == false) {
                 for (var i in xferList) {
-                    var t = xferList[i], pct = (t.total > 0) ? Math.floor(t.sent * 100 / t.total) : 0, status;
+                    var t = xferList[i], pct = (t.total > 0) ? Math.min(100, Math.floor(t.sent * 100 / t.total)) : 0, status;
                     if (t.state == 0) {
-                        var secs = (Date.now() - t.start) / 1000, speed = (secs > 0.5) ? (t.sent / secs) : 0;
-                        status = pct + '% - ' + xferSize(t.sent) + ' / ' + xferSize(t.total) + ((speed > 0) ? (' - ' + xferSize(speed) + '/s') : '');
+                        if (t.waiting) { status = "Waiting..."; }
+                        else {
+                            var secs = (Date.now() - t.start) / 1000, speed = (secs > 0.5) ? (t.sent / secs) : 0;
+                            status = pct + '% - ' + xferSize(t.sent) + ' / ' + xferSize(t.total) + ((speed > 0) ? (' - ' + xferSize(speed) + '/s') : '');
+                        }
                     } else if (t.state == 1) { status = "Done" + ' - ' + xferSize(t.total); }
-                    else if (t.state == 2) { status = "Upload failed"; }
+                    else if (t.state == 2) { status = (t.dir == 'down') ? "Download failed" : "Upload failed"; }
                     else { status = "Cancelled"; }
-                    x += '<div class="xferItem xferState' + t.state + '"><div class=xferRow><span class=xferName title="' + EscapeHtml(t.title) + '">' + EscapeHtml(t.name) + '</span>';
+                    var where = (t.dir == 'down') ? ((t.device != null) ? format("From {0}", t.device) : "Download") : ((t.device != null) ? format("To {0}", t.device) : "To server files");
+                    x += '<div class="xferItem xferState' + t.state + '"><div class=xferRow><span class=xferName title="' + EscapeHtml(t.title) + '"><span class=xferDir>' + ((t.dir == 'down') ? '&#8595;' : '&#8593;') + '</span> ' + EscapeHtml(t.name) + '</span>';
                     if (t.state == 0) { x += '<a href=# class=xferBtn onclick="return xferCancel(' + t.id + ')" title="' + "Cancel" + '">&#10005;</a>'; } else { x += '<a href=# class=xferBtn onclick="return xferRemove(' + t.id + ')" title="' + "Dismiss" + '">&#10005;</a>'; }
-                    x += '</div><div class=xferBar><div style="width:' + ((t.state == 1) ? 100 : pct) + '%"></div></div><div class=xferStatus>' + status + '</div></div>';
+                    x += '</div><div class=xferWhere>' + where + ((t.detail && (t.state == 0)) ? (' - ' + EscapeHtml(t.detail)) : '') + '</div>';
+                    x += '<div class=xferBar><div style="width:' + ((t.state == 1) ? 100 : pct) + '%"></div></div><div class=xferStatus>' + status + '</div></div>';
                 }
             }
             tray.innerHTML = x;
             tray.style.display = 'block';
         }
 
-        // Warn before leaving the page while uploads are still running, leaving would stop them
+        // Warn before leaving the page while transfers are still running, leaving would stop them
         window.addEventListener('beforeunload', function (e) { if (xferActive() > 0) { e.preventDefault(); e.returnValue = ''; } });
 
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }

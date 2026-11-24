@@ -2564,6 +2564,8 @@ nav .lbbuttonsel2 {
 #xferTray .xferState3 .xferBar div { background: #999; }
 #xferTray .xferState2 .xferStatus { color: #d04040; }
 #xferTray .xferStatus { font-size: 11px; opacity: 0.75; }
+#xferTray .xferDir { font-weight: bold; opacity: 0.7; }
+#xferTray .xferWhere { font-size: 11px; opacity: 0.75; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .night #xferTray, [data-bs-theme=dark] #xferTray { background: #2b2b2b; color: #eee; border-color: #555; }
 @media (max-width: 600px) { #xferTray { left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; } }
 
