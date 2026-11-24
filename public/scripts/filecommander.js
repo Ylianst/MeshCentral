@@ -640,23 +640,64 @@ var FileCommander = (function () {
         }
 
         // Home lists the sources a pane can show, so one double-click opens any of them
-        function homeItems() {
-            var r = [{ name: host.nodeName() || 'Remote device', kind: 'source', src: 'remote', icon: 4, desc: 'Remote device' },
-                { name: 'This computer', kind: 'source', src: 'local', icon: 1, desc: localSupported ? 'Folders on this computer' : 'Not available in this browser' }];
+        // Home lists the sources a pane can show, each followed by shortcuts into it, so one double-click opens any of them.
+        // Rows have an id (the source, or source|name for a shortcut) to keep the cursor in place when Home is rebuilt.
+        async function homeItems() {
+            var r = [], conn = connected();
+            function src(name, s, icon, desc) { r.push({ id: s, name: name, kind: 'source', src: s, icon: icon, desc: desc }); }
+            function link(s, name, icon, desc, go) { r.push({ id: s + '|' + name, name: name, kind: 'shortcut', src: s, icon: icon, desc: desc, go: go }); }
+
+            src(host.nodeName() || 'Remote device', 'remote', 4, conn ? 'Remote device' : 'Remote device, not connected');
+            if (conn) {
+                if (host.isWindows() && (cfg.drives !== false)) { (remoteDrives || []).forEach(function (d) { link('remote', d.name, (d.dt == 'REMOVABLE') ? 5 : ((d.dt == 'CDROM') ? 6 : 1), fileType(d), function (p) { p.segs = [d.name]; setPaneType(p, 'remote'); }); }); }
+                deviceLocations().forEach(function (l) { if (l.segs) { link('remote', l.name, 2, l.own ? 'This device' : 'Location', function (p) { p.segs = l.segs.slice(); setPaneType(p, 'remote'); }); } });
+                favRemote.forEach(function (f) {
+                    if (f.w != host.isWindows()) return;
+                    var x = expandVars(f.path);
+                    if (x != null) { link('remote', '\u2605 ' + f.path, 2, 'Favorite', function (p) { p.segs = rParse(x); setPaneType(p, 'remote'); }); }
+                });
+            }
+
+            src('This computer', 'local', 1, localSupported ? 'Folders on this computer' : 'Not available in this browser');
+            if (localSupported) {
+                (await placeItems()).forEach(function (pl) {
+                    if (pl.kind != 'place') return;
+                    link('local', (pl.fav ? '\u2605 ' : '') + pl.name, 2, pl.fav ? 'Favorite' : 'Recent folder', function (p) { p.stack = []; setPaneType(p, 'local'); chooseLocalFolder(p, pl.handle); });
+                });
+            }
+
             if (serverAvailable()) {
-                r.push({ name: 'My Files', kind: 'source', src: 'myfiles', icon: 2, desc: 'Your files on the server' });
-                r.push({ name: 'Server files', kind: 'source', src: 'server', icon: 1, desc: 'Shared files on the server' });
+                src('My Files', 'myfiles', 2, 'Your files on the server');
+                src('Server files', 'server', 1, 'Shared files on the server');
+                (serverItems([], false) || []).forEach(function (sr) { link('server', sr.name, (sr.st == 4) ? 4 : 1, fileType(sr), function (p) { p.mine = false; p.ssegs = [sr.key]; setPaneType(p, 'server'); }); });
             }
             return r;
         }
 
-        function loadHome(p, focusSrc) {
+        async function loadHome(p, focusId) {
             if (p.type != 'home') return;
-            p.loadSeq++; p.loading = false; p.message = null;
-            p.items = homeItems();
-            var f = p.items.filter(function (x) { return x.src == focusSrc; })[0];
-            finishLoad(p, false, f ? f.name : null);
+            var seq = ++p.loadSeq;
+            if (focusId == null) { focusId = (p.rows[p.cursor] || {}).id; }
+            var items = await homeItems();
+            if ((seq != p.loadSeq) || (p.type != 'home')) return;
+            p.loading = false; p.message = null;
+            p.items = items;
+            finishLoad(p, false, null);
+            for (var i = 0; i < p.rows.length; i++) { if (p.rows[i].id == focusId) { setCursor(p, i); break; } }
+            // Fill in what is only known later, once per connection: the drives and the variables of the device
+            if (connected() && !homeExtrasAsked) {
+                homeExtrasAsked = true;
+                var later = [requestEnv()];
+                if (host.isWindows() && (remoteDrives == null)) { later.push(rList('').then(function (dir) { if (dir) { remoteDrives = dir.map(remoteItem).filter(function (x) { return x.kind == 'drive'; }); } }, function () { })); }
+                Promise.all(later).then(refreshHomes);
+            }
+            // The page only has the server files once asked for them; the reply refreshes Home
+            var t = serverTree();
+            if ((t != null) && ((t.f == null) || (Object.keys(t.f).length == 0)) && !homeTreeAsked) { homeTreeAsked = true; serverRefreshTree(); }
         }
+
+        var homeExtrasAsked = false, homeTreeAsked = false;
+        function refreshHomes() { panes.forEach(function (p) { if (p.type == 'home') { loadHome(p); } }); }
 
         function goHome(p) { var from = srcValue(p); setPaneType(p, 'home'); loadHome(p, from); }
 
@@ -673,6 +714,7 @@ var FileCommander = (function () {
             if (row == null) return;
             if (row.up) { goUp(p); return; }
             if (row.kind == 'source') { setPaneType(p, row.src); return; }
+            if (row.kind == 'shortcut') { row.go(p); return; }
             if (row.kind == 'place') { chooseLocalFolder(p, row.handle); return; }
             if (row.kind == 'browse') { chooseLocalFolder(p); return; }
             if (row.kind == 'dlplace') { flash(p, 'Copy or drag device files here to save them to your Downloads folder', true); return; }
@@ -750,6 +792,7 @@ var FileCommander = (function () {
             idbSet('recent', recentLocal);
             idbSet('last' + p.idx, handle);
             renderDrives(panes[0]); renderDrives(panes[1]);
+            refreshHomes();
             loadLocal(p, [handle]);
         }
 
@@ -795,6 +838,7 @@ var FileCommander = (function () {
             var lines = r.text.split(/\r?\n/).map(function (l) { return l.trim(); }).filter(function (l) { return l != ''; });
             favRemote = others.concat(lines.map(function (l) { return { w: w, path: l }; }));
             storeSet('fcFavRemote', favRemote);
+            refreshHomes();
             renderDrives(panes[0]); renderDrives(panes[1]);
             updateFavButton(panes[0]); updateFavButton(panes[1]);
         }
@@ -819,6 +863,7 @@ var FileCommander = (function () {
             }
             renderDrives(panes[0]); renderDrives(panes[1]);
             updateFavButton(panes[0]); updateFavButton(panes[1]);
+            refreshHomes();
         }
 
         async function removePlaces(p, rows) {
@@ -832,6 +877,7 @@ var FileCommander = (function () {
             }
             idbSet('recent', recentLocal); idbSet('favorites', favLocal);
             renderDrives(panes[0]); renderDrives(panes[1]);
+            refreshHomes();
             loadLocal(p, []);
         }
 
@@ -1005,8 +1051,8 @@ var FileCommander = (function () {
             if (p.marked[row.name] && !row.up) { cls += ' fc-marked'; }
             if (i == p.cursor) { cls += ' fc-cursor'; }
             if (row.up) { return '<tr class="' + cls + '" data-i=' + i + ' title="Double-click to go up a folder"><td class=fc-name><span class="fc-icon fileIcon2"></span>..</td><td class=fc-r></td><td>Up</td><td></td></tr>'; }
-            if (row.kind == 'source') {
-                return '<tr class="' + cls + ' fc-place" data-i=' + i + ' title="Double-click to open"><td class=fc-name><span class="fc-icon fileIcon' + row.icon + '"></span>' + esc(row.name) + '</td><td class=fc-r></td><td title="' + esc(row.desc) + '">' + esc(row.desc) + '</td><td></td></tr>';
+            if ((row.kind == 'source') || (row.kind == 'shortcut')) {
+                return '<tr class="' + cls + ' fc-place' + ((row.kind == 'source') ? ' fc-home-src' : ' fc-home-link') + '" data-i=' + i + ' title="Double-click to open"><td class=fc-name><span class="fc-icon fileIcon' + row.icon + '"></span>' + esc(row.name) + '</td><td class=fc-r></td><td title="' + esc(row.desc) + '">' + esc(row.desc) + '</td><td></td></tr>';
             }
             if ((row.kind == 'place') || (row.kind == 'browse') || (row.kind == 'dlplace')) {
                 var t = (row.kind == 'browse') ? 'Pick a folder on this computer' : ((row.kind == 'dlplace') ? 'Device files copied here are saved by the browser to your Downloads folder' : 'Double-click to open');
@@ -1927,14 +1973,14 @@ var FileCommander = (function () {
         obj.processBinary = function (data) { return downloadBlock(data); };
 
         // The device's own locations changed, from this browser or another
-        obj.refreshLocations = function () { renderDrives(panes[0]); renderDrives(panes[1]); };
+        obj.refreshLocations = function () { renderDrives(panes[0]); renderDrives(panes[1]); refreshHomes(); };
 
         // The page received a new tree of the server files
         obj.serverFilesChanged = function () {
             var w = serverWaiters;
             serverWaiters = [];
             w.forEach(function (f) { f(); });
-            panes.forEach(function (p) { if (p.type == 'server') { loadServer(p, p.ssegs, true); } else if (p.type == 'home') { loadHome(p, (p.rows[p.cursor] || {}).src); } else { renderSrc(p); } }); // My Files and Server files appear once the tree arrives
+            panes.forEach(function (p) { if (p.type == 'server') { loadServer(p, p.ssegs, true); } else if (p.type == 'home') { loadHome(p); } else { renderSrc(p); } }); // My Files and Server files appear once the tree arrives
         };
 
         obj.processBinaryString = function (str) {
@@ -1948,11 +1994,11 @@ var FileCommander = (function () {
             remoteDrives = null;
             var saved = null;
             storeGet('fcPaths', []).forEach(function (x) { if (x.n == host.nodeId()) { saved = x.p; } });
-            remoteEnv = null; envPromise = null;
+            remoteEnv = null; envPromise = null; homeExtrasAsked = false;
             panes.forEach(function (p, i) {
                 p.needStart = !(saved && Array.isArray(saved[i])); // A device seen before reopens its last folders
                 p.segs = p.needStart ? [] : saved[i];
-                if (p.type == 'home') { loadHome(p, (p.rows[p.cursor] || {}).src); } // The device may have changed
+                if (p.type == 'home') { loadHome(p); } // The device may have changed
                 if (p.type != 'remote') return;
                 p.items = []; p.rows = []; p.marked = {}; p.message = null;
                 renderPane(p);
@@ -1978,7 +2024,7 @@ var FileCommander = (function () {
         obj.onDisconnect = function () {
             for (var k in pending) { clearTimeout(pending[k].timer); pending[k].reject(new Error('Disconnected')); }
             pending = {};
-            remoteEnv = null; envPromise = null;
+            remoteEnv = null; envPromise = null; homeExtrasAsked = false;
             if (job) { job.canceled = true; }
             uploadCancel(); downloadCancel();
             panes.forEach(function (p) { if (p.type == 'remote') { p.loadSeq++; p.loading = false; p.items = []; p.rows = []; p.marked = {}; p.message = 'Not connected. Use the Connect button above.'; renderPane(p); } });
@@ -2044,6 +2090,7 @@ var FileCommander = (function () {
             Promise.all([idbGet('recent'), idbGet('favorites'), idbGet('last0'), idbGet('last1')]).then(async function (r) {
                 if (Array.isArray(r[0])) { recentLocal = r[0]; }
                 if (Array.isArray(r[1])) { favLocal = r[1]; }
+                refreshHomes();
                 for (var i = 0; i < 2; i++) {
                     var p = panes[i], last = r[2 + i], ok = false;
                     if (p.type != 'local') continue;

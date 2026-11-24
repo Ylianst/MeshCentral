@@ -480,3 +480,12 @@ html:not([data-bs-theme]) body.night .fc-root {
     gap: 4px;
     font-size: 12px;
 }
+
+/* Home: the sources in bold, their shortcuts indented below them */
+.fc-row.fc-home-src td.fc-name {
+    font-weight: 600;
+}
+
+.fc-row.fc-home-link td.fc-name {
+    padding-left: 26px;
+}
