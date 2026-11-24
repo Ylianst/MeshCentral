@@ -4692,6 +4692,7 @@ function onTunnelData(data)
                     {
                         // Find the folder for files dropped on the remote desktop
                         var tunnel = this;
+                        try { tunnel.write(Buffer.from(JSON.stringify({ action: 'droptarget', reqid: cmd.reqid, ack: true }))); } catch (ex) { } // Tell the browser this core does folder lookups, the lookup can take a few seconds
                         var droptargetReply = function (r) { try { tunnel.write(Buffer.from(JSON.stringify({ action: 'droptarget', reqid: cmd.reqid, path: r.path, kind: r.kind, note: r.note, error: r.error, v: 3 }))); } catch (ex) { } };
                         try { getDropTarget(cmd.x, cmd.y, cmd.display, cmd.mode, droptargetReply, (cmd.trace === true) ? sendConsoleText : null); } catch (ex) { droptargetReply({ path: null, error: 'Folder lookup failed: ' + ex }); }
                         break;

@@ -10516,6 +10516,8 @@
                         return;
                     }
                     tunnel.sendText({ action: 'droptarget', reqid: 1, mode: t.xmode, x: (pos ? pos.x : null), y: (pos ? pos.y : null), display: (pos ? pos.display : null) });
+                    // The agent acknowledges the request right away, if it does not its core has no folder lookup
+                    tunnel.xacktimer = setTimeout(function () { deskDropFallback(tunnel, "this device's agent core has no folder lookup, a meshcore.js in the server's data folder may be replacing the built-in one"); }, 8000);
                 } else if (state == 0) {
                     deskDropDone(tunnel, false, "Lost the connection to the remote device.");
                 }
@@ -10528,14 +10530,30 @@
             if (t != deskDropTunnel) return;
             try { data = JSON.parse(decode_utf8(data)); } catch (ex) { try { data = JSON.parse(data); } catch (ex) { return; } }
             if ((data.action != null) && (data.action.startsWith('upload'))) { if ((uploadFile != null) && (uploadFile.tunnel == t)) { p13gotUploadData(data); } return; }
-            if ((data.action == 'droptarget') && (t.xpath == null)) {
+            if ((data.action == 'droptarget') && (data.ack === true)) { if (t.xacktimer) { clearTimeout(t.xacktimer); delete t.xacktimer; } return; }
+            if ((data.action == 'droptarget') && (t.xpath == null) && (t.xprobe == null)) {
+                if (t.xacktimer) { clearTimeout(t.xacktimer); delete t.xacktimer; }
+                if (typeof data.path != 'string') { deskDropFallback(t, (typeof data.error == 'string') ? data.error : "the agent found no folder"); return; }
                 if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
-                if (typeof data.path != 'string') { deskDropDone(t, false, "Could not find a folder on the remote device for the dropped files." + ((typeof data.error == 'string') ? ('<br />' + EscapeHtml(data.error)) : '')); return; }
                 t.xpath = data.path;
                 t.xkind = data.kind;
                 t.xnote = data.note;
                 if ((data.v == null) && (data.kind == 'downloads')) { t.xnote = "the agent is running older code, reconnect it to update"; }
                 t.sendText({ action: 'ls', reqid: 2, path: t.xpath }); // List the folder to avoid overwriting files
+            } else if ((data.reqid == 3) && (t.xprobe != null) && (t.xpath == null)) {
+                // Listing of a folder holding user folders: find the logged in user's folder
+                var p = t.xprobe, u = p.user.toLowerCase(), home = null;
+                for (var i in data.dir) { var n = data.dir[i].n, ln = n.toLowerCase(); if ((data.dir[i].t == 2) && ((ln == u) || ((home == null) && (ln.startsWith(u + '.'))))) { home = n; } }
+                if (home == null) { deskDropProbeNext(t); return; }
+                p.home = p.root + p.sep + home;
+                t.sendText({ action: 'ls', reqid: 4, path: p.home });
+            } else if ((data.reqid == 4) && (t.xprobe != null) && (t.xpath == null)) {
+                // Listing of the user's folder: use its Downloads (or Desktop) folder, else the user's folder itself
+                var p = t.xprobe, sub = null;
+                for (var i in data.dir) { if ((data.dir[i].t == 2) && (data.dir[i].n.toLowerCase() == p.sub.toLowerCase())) { sub = data.dir[i].n; } }
+                t.xpath = (sub != null) ? (p.home + p.sep + sub) : p.home;
+                t.xkind = (sub != null) ? p.sub.toLowerCase() : 'home';
+                t.sendText({ action: 'ls', reqid: 2, path: t.xpath });
             } else if ((data.reqid == 2) && (t.xpath != null) && (t.xnames == null)) {
                 if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
                 if (data.dir == null) { deskDropDone(t, false, format("Could not open {0} on the remote device.", t.xpath)); return; }
@@ -10545,6 +10563,26 @@
                 for (var i = 0; i < t.xfiles.length; i++) { t.xnames.push(deskDropUniqueName(t.xfiles[i].name, used)); }
                 p13startUpload(t.xfiles, { tunnel: t, path: t.xpath, names: t.xnames, drop: true, done: function (ok) { deskDropDone(t, ok); } });
             }
+        }
+
+        // When the agent can't say where dropped files go, find the logged in user's Downloads (or Desktop) folder by listing
+        // folders, which every agent core can do. Why is shown with the result.
+        function deskDropFallback(t, why) {
+            if ((t != deskDropTunnel) || (t.xpath != null) || (t.xprobe != null)) return;
+            if (t.xacktimer) { clearTimeout(t.xacktimer); delete t.xacktimer; }
+            var user = ((desktopNode != null) && Array.isArray(desktopNode.users) && (desktopNode.users.length > 0)) ? desktopNode.users[0] : null;
+            if (typeof user != 'string') { deskDropDone(t, false, "Could not find a folder on the remote device for the dropped files." + '<br />' + EscapeHtml(why)); return; }
+            if (user.indexOf('\\') >= 0) { user = user.substring(user.indexOf('\\') + 1); } // DOMAIN\User
+            var win = isWindowsNode(desktopNode);
+            t.xnote = why;
+            t.xprobe = { user: user, sub: (t.xmode == 'desktop') ? 'Desktop' : 'Downloads', sep: (win ? '\\' : '/'), roots: (win ? ['C:\\Users'] : ['/Users', '/home']), why: why };
+            deskDropProbeNext(t);
+        }
+        function deskDropProbeNext(t) {
+            var p = t.xprobe;
+            if (p.roots.length == 0) { deskDropDone(t, false, "Could not find a folder on the remote device for the dropped files." + '<br />' + EscapeHtml(p.why)); return; }
+            p.root = p.roots.shift();
+            t.sendText({ action: 'ls', reqid: 3, path: p.root });
         }
 
         // Show the custom folder box when the custom drop folder is picked in the desktop settings
@@ -10563,12 +10601,14 @@
             if ((t == null) || (t != deskDropTunnel)) return;
             deskDropTunnel = null;
             if (t.xtimer) { clearTimeout(t.xtimer); delete t.xtimer; }
+            if (t.xacktimer) { clearTimeout(t.xacktimer); delete t.xacktimer; }
             if ((uploadFile != null) && (uploadFile.tunnel == t)) { p13uploadFileCancel(); }
             if (xxdialogTag == 'deskdrop') { setDialogMode(0); }
             try { t.Stop(); } catch (ex) { }
             if (ok) {
                 msg = (t.xnames.length == 1) ? format("Uploaded {0} to {1}", t.xnames[0], t.xpath) : format("Uploaded {0} files to {1}", t.xnames.length, t.xpath);
-                if ((t.xmode == 'auto') && (typeof t.xnote == 'string')) { msg += '<br /><span style="opacity:0.7;font-size:smaller">' + format("No folder window found where the files were dropped ({0})", t.xnote) + '</span>'; }
+                if (t.xprobe != null) { msg += '<br /><span style="opacity:0.7;font-size:smaller">' + format("The agent could not give the folder, it was found from the logged in user ({0})", t.xnote) + '</span>'; }
+                else if ((t.xmode == 'auto') && (typeof t.xnote == 'string')) { msg += '<br /><span style="opacity:0.7;font-size:smaller">' + format("No folder window found where the files were dropped ({0})", t.xnote) + '</span>'; }
             }
             if (msg) {
                 QH('p11DeskConsoleMsg', msg); // format() escapes the names and paths
