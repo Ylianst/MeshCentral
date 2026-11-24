@@ -2511,7 +2511,6 @@
         function printDateTime(d) { return d.toLocaleString(args.locale); }
         function format(format) { var args = Array.prototype.slice.call(arguments, 1); return format.replace(/{(\d+)}/g, function (match, number) { return typeof args[number] != 'undefined' ? args[number] : match; }); };
         function nobreak(x) { return x.split(' ').join('&nbsp;'); }
-        function getUserName(userid) { if (users && users[userid] != null) return users[userid].name; return userid.split('/')[2]; }
         function addDetailItem(title, value, state) { return '<table style=width:100%><td>' + nobreak(title) + '<td style=text-align:right>' + value + '</table>'; }
         function isPrivateIP(a) { if (a.indexOf(':') != a.lastIndexOf(':')) { return /^(::1?$|f[cd]|fe[89ab])/i.test(a); } return /^(10\.|127\.|169\.254\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.)/.test(a); }
         function encodeURIComponentEx(txt) { return encodeURIComponent(txt).replace(/'/g, '%27'); };
