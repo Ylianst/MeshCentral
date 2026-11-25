@@ -8404,6 +8404,46 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                 }
             });
 
+                // Minified file fallback. When "minify" is enabled, templates request
+                // "<file>-min.js" (or third-party "<file>.min.js"). If that minified file
+                // was never generated, fall back to the normal "<file>.js" version instead
+                // of returning a 404. Only affects minified JS/CSS requests.
+                obj.app.use(url, function (req, res, next) {
+                    if ((req.method !== 'GET') && (req.method !== 'HEAD')) { return next(); }
+                    var requestPath = (typeof req.path === 'string') ? req.path : '';
+                    var minMatch = requestPath.match(/[-.]min(\.js|\.css)$/i);
+                    if (minMatch == null) { return next(); } // Not a minified file, carry on.
+
+                    // Public directories that may serve this request, in priority order.
+                    var domain = getDomain(req);
+                    var candidates = [];
+                    if ((domain != null) && (domain.webpublicpath != null)) { candidates.push(domain.webpublicpath); }
+                    if (obj.parent.webPublicOverridePath != null) { candidates.push(obj.parent.webPublicOverridePath); }
+                    if (obj.parent.webPublicPath != null) { candidates.push(obj.parent.webPublicPath); }
+
+                    // If the requested minified file exists somewhere, serve it as-is.
+                    for (var i = 0; i < candidates.length; i++) {
+                        if (obj.fs.existsSync(obj.path.join(candidates[i], requestPath))) { return next(); }
+                    }
+
+                    // Otherwise, rewrite the request to the non-minified version if it exists.
+                    var fallbackPath = requestPath.replace(/[-.]min(\.js|\.css)$/i, '$1');
+                    var query = '';
+                    var urlPath = req.url;
+                    var qIndex = urlPath.indexOf('?');
+                    if (qIndex >= 0) { query = urlPath.substring(qIndex); urlPath = urlPath.substring(0, qIndex); }
+                    var newUrlPath = urlPath.replace(/[-.]min(\.js|\.css)$/i, '$1');
+                    for (var j = 0; j < candidates.length; j++) {
+                        if (obj.fs.existsSync(obj.path.join(candidates[j], fallbackPath))) {
+                            req.url = newUrlPath + query;
+                            return next();
+                        }
+                    }
+
+                    // Nothing available, let normal 404 handling proceed.
+                    return next();
+                });
+
                 // Indicates to ExpressJS that the override public folder should be used to serve static files.
                 obj.app.use(url, function(req, res, next){
                     var domain = getDomain(req);
