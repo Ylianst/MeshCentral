@@ -17,6 +17,7 @@ var jsdom = null; //require('jsdom');
 var esprima = null; //require('esprima'); // https://www.npmjs.com/package/esprima
 var minifyLib = 2; // 0 = None, 1 = minify-js, 2 = HTMLMinifier
 var minify = null;
+var terser = null;
 
 var meshCentralSourceFiles = [
     "../views/agentinvite.handlebars",
@@ -145,6 +146,7 @@ if (directRun && (NodeJSVer >= 12)) {
             esprima = require('esprima'); // https://www.npmjs.com/package/esprima
             if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
             if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier
+            if (minifyLib == 2) { terser = require('terser'); } // https://www.npmjs.com/package/terser
 
             switch (op) {
                 case 'translate': {
@@ -174,6 +176,7 @@ async function startEx(argv) {
     esprima = require('esprima'); // https://www.npmjs.com/package/esprima
     if (minifyLib == 1) { log("minify-js is no longer used, please switch to \"html-minifier-terser\""); process.exit(); return; }
     if (minifyLib == 2) { minify = require('html-minifier-terser').minify; } // https://www.npmjs.com/package/html-minifier-terser
+    if (minifyLib == 2) { terser = require('terser'); } // https://www.npmjs.com/package/terser
 
     var command = null;
     if (argv.length > 2) { command = argv[2].toLowerCase(); }
@@ -199,7 +202,7 @@ async function startEx(argv) {
         log('  TRANSLATEALL (languagefile) (language code)');
         log('    Translate all MeshCentral strings using the languages.json file.');
         log('');
-        log('  MINIFY [sourcefile]');
+        log('  MINIFY [sourcefile] [outputfile]');
         log('    Minify a single file.');
         log('');
         log('  MINIFYDIR [sourcedir] [destinationdir]');
@@ -361,31 +364,38 @@ async function startEx(argv) {
                     const destinationFile = path.join(argv[4], sourceFiles[i].substring(0, sourceFiles[i].length - 3) + '.min.js');
                     if (minifyLib == 2) {
                         var inFile = fs.readFileSync(sourceFile).toString();
+                        var minifiedOut = null;
 
-                        // Perform minification pre-processing
-                        if (sourceFile.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-                        if (sourceFile.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
+                        // .js files go through terser directly. Wrapping in <script> and running
+                        // through html-minifier-terser mangles string literals containing "?>"
+                        // (e.g. meshcore.js plist declaration), producing broken JavaScript.
+                        if (sourceFile.endsWith('.js')) {
+                            const terserOut = await terser.minify(inFile, { compress: true });
+                            minifiedOut = terserOut.code;
+                        } else {
+                            // Perform minification pre-processing
+                            if (sourceFile.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
 
-                        var minifiedOut = await minify(inFile, {
-                            collapseBooleanAttributes: true,
-                            collapseInlineTagWhitespace: false, // This is not good.
-                            collapseWhitespace: true,
-                            minifyCSS: true,
-                            minifyJS: true,
-                            removeComments: true,
-                            removeOptionalTags: true,
-                            removeEmptyAttributes: true,
-                            removeAttributeQuotes: true,
-                            removeRedundantAttributes: true,
-                            removeScriptTypeAttributes: true,
-                            removeTagWhitespace: true,
-                            preserveLineBreaks: false,
-                            useShortDoctype: true
-                        });
+                            minifiedOut = await minify(inFile, {
+                                collapseBooleanAttributes: true,
+                                collapseInlineTagWhitespace: false, // This is not good.
+                                collapseWhitespace: true,
+                                minifyCSS: true,
+                                minifyJS: true,
+                                removeComments: true,
+                                removeOptionalTags: true,
+                                removeEmptyAttributes: true,
+                                removeAttributeQuotes: true,
+                                removeRedundantAttributes: true,
+                                removeScriptTypeAttributes: true,
+                                removeTagWhitespace: true,
+                                preserveLineBreaks: false,
+                                useShortDoctype: true
+                            });
 
-                        // Perform minification post-processing
-                        if (sourceFile.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
-                        if (sourceFile.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                            // Perform minification post-processing
+                            if (sourceFile.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                        }
                         fs.writeFileSync(destinationFile, minifiedOut, { flag: 'w+' });
                     }
                 } else if (sourceFiles[i].endsWith('.json')) {
@@ -433,13 +443,23 @@ async function startEx(argv) {
             // Minify the file
             if (minifyLib == 2) {
                 var inFile = fs.readFileSync(outname).toString();
-
-                // Perform minification pre-processing
-                if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-                if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
-
                 var minifiedOut = null;
-                try {
+
+                // .js files go through terser directly. Wrapping in <script> and running
+                // through html-minifier-terser mangles string literals containing "?>"
+                // (e.g. meshcore.js plist declaration), producing broken JavaScript.
+                if (outname.endsWith('.js')) {
+                    try {
+                        const terserOut = await terser.minify(inFile, { compress: true });
+                        minifiedOut = terserOut.code;
+                    } catch (ex) {
+                        console.log(ex);
+                    }
+                } else {
+                    // Perform minification pre-processing
+                    if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+
+                    try {
                     minifiedOut = await minify(inFile, {
                         collapseBooleanAttributes: true,
                         collapseInlineTagWhitespace: false, // This is not good.
@@ -460,9 +480,9 @@ async function startEx(argv) {
                     console.log(ex);
                 }
 
-                // Perform minification post-processing
-                if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+                // Perform minification post-processing (handlebars only; .js handled via terser)
                 if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+                }
                 fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
 
                 /*
@@ -497,17 +517,28 @@ async function startEx(argv) {
         } else {
             outnamemin = (outname, outname + '.min');
         }
+        // Optional explicit output filename, e.g. "translate.js minify meshcore.js meshcore.min.js".
+        // Needed because the server loads the main agent as "meshcore.min.js" (dot), whereas the
+        // auto-computed name uses a hyphen ("meshcore-min.js"). minifydir already takes a dest folder.
+        if (argv.length > 4) { outnamemin = argv[4]; }
         log('Generating ' + path.basename(outnamemin) + '...');
 
         // Minify the file
         if (minifyLib == 2) {
             var inFile = fs.readFileSync(outname).toString()
+            var minifiedOut = null;
 
-            // Perform minification pre-processing
-            if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-            if (outname.endsWith('.js')) { inFile = '<script>' + inFile + '</script>'; }
+            // .js files go through terser directly. Wrapping in <script> and running
+            // through html-minifier-terser mangles string literals containing "?>"
+            // (e.g. meshcore.js plist declaration), producing broken JavaScript.
+            if (outname.endsWith('.js')) {
+                const terserOut = await terser.minify(inFile, { compress: true });
+                minifiedOut = terserOut.code;
+            } else {
+                // Perform minification pre-processing
+                if (outname.endsWith('.handlebars') >= 0) { inFile = inFile.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
 
-            var minifiedOut = await minify(inFile, {
+                minifiedOut = await minify(inFile, {
                 collapseBooleanAttributes: true,
                 collapseInlineTagWhitespace: false, // This is not good.
                 collapseWhitespace: true,
@@ -524,9 +555,9 @@ async function startEx(argv) {
                 useShortDoctype: true
             });
 
-            // Perform minification post-processing
-            if (outname.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+            // Perform minification post-processing (handlebars only; .js handled via terser)
             if (outname.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+            }
             fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' });
 
         }
@@ -988,27 +1019,34 @@ async function translateFromHtml(lang, file, createSubDir) {
 
     // Minify the file
     if (minifyLib == 2) {
-        if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
-        // The minifier takes html, so a bare script goes in wrapped the way minifyall does it.
-        if (outnamemin.endsWith('.js')) { out = '<script>' + out + '</script>'; }
-        var minifiedOut = await minify(out, {
-            collapseBooleanAttributes: true,
-            collapseInlineTagWhitespace: false, // This is not good.
-            collapseWhitespace: true,
-            minifyCSS: true,
-            minifyJS: true,
-            removeComments: true,
-            removeOptionalTags: true,
-            removeEmptyAttributes: true,
-            removeAttributeQuotes: true,
-            removeRedundantAttributes: true,
-            removeScriptTypeAttributes: true,
-            removeTagWhitespace: true,
-            preserveLineBreaks: false,
-            useShortDoctype: true
-        });
-        if (outnamemin.endsWith('.js')) { minifiedOut = minifiedOut.substring(8, minifiedOut.length - 9); }
+        var minifiedOut = null;
+        // .js files go through terser directly. Wrapping in <script> and running
+        // through html-minifier-terser mangles string literals containing "?>"
+        // (e.g. meshcore.js plist declaration), producing broken JavaScript.
+        if (outnamemin.endsWith('.js')) {
+            const terserOut = await terser.minify(out, { compress: true });
+            minifiedOut = terserOut.code;
+        } else {
+                    if (outnamemin.endsWith('.handlebars') >= 0) { out = out.split('{{{pluginHandler}}}').join('"{{{pluginHandler}}}"'); }
+            // The minifier takes html, so a bare script goes in wrapped the way minifyall does it.
+            minifiedOut = await minify(out, {
+                collapseBooleanAttributes: true,
+                collapseInlineTagWhitespace: false, // This is not good.
+                collapseWhitespace: true,
+                minifyCSS: true,
+                minifyJS: true,
+                removeComments: true,
+                removeOptionalTags: true,
+                removeEmptyAttributes: true,
+                removeAttributeQuotes: true,
+                removeRedundantAttributes: true,
+                removeScriptTypeAttributes: true,
+                removeTagWhitespace: true,
+                preserveLineBreaks: false,
+                useShortDoctype: true
+            });
         if (outnamemin.endsWith('.handlebars') >= 0) { minifiedOut = minifiedOut.split('"{{{pluginHandler}}}"').join('{{{pluginHandler}}}'); }
+        }
         fs.writeFileSync(outnamemin, minifiedOut, { flag: 'w+' }); 
     }
 }

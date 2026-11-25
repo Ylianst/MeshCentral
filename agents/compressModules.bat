@@ -2,8 +2,8 @@
 MD modules_meshcmd_min
 MD modules_meshcore_min
 
-"..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe" meshcore.js
-"..\..\WebSiteCompiler\bin\Debug\WebSiteCompiler.exe" meshcmd.js
+node ..\translate\translate.js minify ..\agents\meshcore.js ..\agents\meshcore.min.js
+node ..\translate\translate.js minify ..\agents\meshcmd.js ..\agents\meshcmd.min.js
 
-%LOCALAPPDATA%\..\Roaming\nvm\v14.16.0\node ..\translate\translate.js minifydir C:\Users\Default.DESKTOP-9CGK2DI\Desktop\AmtWebApp\meshcentral\agents\modules_meshcore C:\Users\Default.DESKTOP-9CGK2DI\Desktop\AmtWebApp\meshcentral\agents\modules_meshcore_min
-%LOCALAPPDATA%\..\Roaming\nvm\v14.16.0\node ..\translate\translate.js minifydir C:\Users\Default.DESKTOP-9CGK2DI\Desktop\AmtWebApp\meshcentral\agents\modules_meshcmd C:\Users\Default.DESKTOP-9CGK2DI\Desktop\AmtWebApp\meshcentral\agents\modules_meshcmd_min
+node ..\translate\translate.js minifydir ..\agents\modules_meshcore ..\agents\modules_meshcore_min
+node ..\translate\translate.js minifydir ..\agents\modules_meshcmd ..\agents\modules_meshcmd_min
