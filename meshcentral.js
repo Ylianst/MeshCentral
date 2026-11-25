@@ -4120,6 +4120,9 @@ function CreateMeshCentralServer(config, args) {
                 // Use a fixed cookie expire time
                 if (timeout == null) { timeout = 2; }
                 if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            } else if (o.r === 8) {
+                // Device share guest cookies carry the share's end as an absolute time in milliseconds.
+                if ((o.expire <= Date.now()) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to share expiration'); return null; }
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
                 if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
@@ -4149,6 +4152,9 @@ function CreateMeshCentralServer(config, args) {
                 // Use a fixed cookie expire time
                 if (timeout == null) { timeout = 2; }
                 if ((o.dtime > (timeout * 60000)) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)
+            } else if (o.r === 8) {
+                // Device share guest cookies carry the share's end as an absolute time in milliseconds.
+                if ((o.expire <= Date.now()) || (o.dtime < -30000)) { obj.debug('cookie', 'ERR: Bad cookie due to share expiration'); return null; }
             } else {
                 // An expire time is included in the cookie (in minutes), use this.
                 if ((o.expire !== 0) && ((o.dtime > (o.expire * 60000)) || (o.dtime < -30000))) { obj.debug('cookie', 'ERR: Bad cookie due to timeout'); return null; } // The cookie is only valid 120 seconds, or 30 seconds back in time (in case other server's clock is not quite right)

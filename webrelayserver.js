@@ -234,6 +234,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
                 // Check that all the required arguments are present
                 if ((req.session.userid == null) || (req.session.x == null) || (req.query.n == null) || (req.query.p == null) || (parent.webserver.destroyedSessions[webSessionId] != null) || ((req.query.appid != 1) && (req.query.appid != 2))) { res.redirect('/'); return; }
             } else if (urlCookie.r == 8) {
+                if ((urlCookie.p != 8) && (urlCookie.p != 16)) { res.sendStatus(404); return; }
                 // This is a guest user, figure out what our web relay will be.
                 userid = urlCookie.userid;
                 domainid = userid.split('/')[1];
@@ -263,7 +264,7 @@ module.exports.CreateWebRelayServer = function (parent, db, args, certificates, 
             }
 
             // Check that the user has rights to access this device
-            parent.webserver.GetNodeWithRights(domain, userid, nodeid, function (node, rights, visible) {
+            parent.webserver.getWebRelayNodeWithRights(domain, userid, nodeid, publicid, urlCookie.k, function (node, rights, visible) {
                 // If there is no remote control or relay rights, reject this web relay
                 if ((rights & 0x00200008) == 0) { res.sendStatus(404); return; } // MESHRIGHT_REMOTECONTROL or MESHRIGHT_RELAY
 

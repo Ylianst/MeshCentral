@@ -948,6 +948,8 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
             return obj;
         } else if ((obj.req.query.nodeid != null) && ((obj.req.query.tcpport != null) || (obj.req.query.udpport != null))) {
             // We have routing instructions in the URL arguments, but first, check user access for this node.
+            // Device share guest sessions are limited to the shared device and protocol, they can't request TCP/UDP routing.
+            if (parent.isDeviceShareGuestCookie(cookie)) { console.log('ERR: Access denied (1)'); try { obj.close(); } catch (ex) { } return obj; }
             parent.db.Get(obj.req.query.nodeid, function (err, docs) {
                 if (docs.length == 0) { console.log('ERR: Node not found'); try { obj.close(); } catch (e) { } return; } // Disconnect websocket
                 const node = docs[0];
@@ -1043,6 +1045,7 @@ function CreateMeshRelayEx(parent, ws, req, domain, user, cookie) {
                 const rcookie = parent.parent.encodeCookie(rcookieData, parent.parent.loginCookieEncryptionKey);
                 const command = { nodeid: node._id, action: 'msg', type: 'tunnel', value: '*/' + xdomain + 'meshrelay.ashx?p=' + obj.req.query.p + '&id=' + obj.id + '&rauth=' + rcookie + '&nodeid=' + node._id, soptions: {}, rights: cookie.r, guestuserid: user._id, guestname: cookie.gn, consent: cookie.cf, remoteaddr: cleanRemoteAddr(obj.req.clientIp) };
                 obj.guestname = cookie.gn;
+                if (cookie.vo == 1) { command.desktopviewonly = true; }
 
                 // Limit what this relay connection can do
                 if (typeof cookie.p == 'number') {
