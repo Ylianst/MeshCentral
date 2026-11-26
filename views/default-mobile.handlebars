@@ -4798,6 +4798,7 @@
         }
 
         function connectDesktop(e, contype, tsid, consent) {
+            trackpadCancelGesture();
             setSessionActivity();
             QV('p11DeskSessionSelector', false);
             p11clearConsoleMsg();
@@ -4902,6 +4903,7 @@
         }
 
         function onDesktopStateChange(xdesktop, state) {
+            if (state !== 3) trackpadCancelGesture();
             var xstate = state;
             if ((xstate == 3) && (xdesktop.contype == 2)) { xstate++; }
             var str = StatusStrs[xstate];
@@ -5403,13 +5405,50 @@
         var trackpadLastX = null, trackpadLastY = null;
         var trackpadCurX = 0, trackpadCurY = 0;
         var trackpadDown = false;
+        // Long-press starts a drag; cancellation must release the button.
+        var trackpadHoldTimer = null;
+        var trackpadDragDesktop = null;
+        var trackpadTwoFingerTap = false;
+        var trackpadTwoFingerTimer = null;
+        var trackpadTwoFingerPoints = [];
+        var trackpadScrollAllowed = false;
+        var trackpadScrollY = 0;
+        var trackpadScrollPending = 0;
+        var trackpadScrolling = false;
+        function trackpadReleaseDrag() {
+            if (trackpadHoldTimer != null) { clearTimeout(trackpadHoldTimer); trackpadHoldTimer = null; }
+            if (trackpadDown && desktop === trackpadDragDesktop && desktop != null) {
+                desktop.m.mouseup(trackpadMakeEvent(0, 0));
+            }
+            trackpadDown = false;
+            trackpadDragDesktop = null;
+        }
+        function trackpadCancelGesture() {
+            if (trackpadTwoFingerTimer != null) clearTimeout(trackpadTwoFingerTimer);
+            trackpadTwoFingerTimer = null;
+            trackpadTwoFingerTap = false;
+            trackpadTwoFingerPoints = [];
+            trackpadScrollAllowed = false;
+            trackpadScrollPending = 0;
+            trackpadScrolling = false;
+            trackpadReleaseDrag();
+            if (trackpadTapTimer != null) { clearTimeout(trackpadTapTimer); trackpadTapTimer = null; }
+            trackpadLastX = null; trackpadLastY = null;
+            trackpadStopEdgeScroll();
+        }
+        window.addEventListener('blur', trackpadCancelGesture);
+        window.addEventListener('touchcancel', trackpadCancelGesture);
+        window.addEventListener('touchend', function () { if (trackpadDown) trackpadCancelGesture(); });
+        document.addEventListener('visibilitychange', function () { if (document.hidden) trackpadCancelGesture(); });
         var trackpadTapTimer = null;
         var trackpadTapMoved = false;
         var trackpadEdgeTimer = null;
         var trackpadEdgeDX = 0, trackpadEdgeDY = 0;
 
         function deskToggleTrackpad() {
+            trackpadCancelGesture();
             trackpadMode = !trackpadMode;
+            Q('Desk').style.touchAction = trackpadMode ? 'none' : '';
             var rights = GetNodeRights(currentNode);
             var inputAllowed = ((features2 & 0x2000) == 0) && (currentNode.agent.id != 14) && ((rights == 0xFFFFFFFF) || (((rights & 8) != 0) && ((rights & 256) == 0) && ((rights & 4096) == 0)));
             QV('deskkeybutton6a', fullscreen && inputAllowed && !trackpadMode);
@@ -5464,7 +5503,7 @@
 
         function trackpadSendClick(button) {
             if (!xxdialogMode && desktop != null) {
-                desktop.m.mousedown(trackpadMakeEvent(button, 1));
+                desktop.m.mousedown(trackpadMakeEvent(button, button === 2 ? 2 : 1));
                 desktop.m.mouseup(trackpadMakeEvent(button, 0));
             }
         }
@@ -5504,6 +5543,18 @@
             if (xxdialogMode || desktop == null) return;
             if (!trackpadMode) return;
             e.preventDefault();
+            var allowTwoFingerTap = !trackpadDown && !trackpadTapMoved;
+            var allowScroll = !trackpadDown;
+            trackpadCancelGesture();
+            if (e.touches.length === 2) {
+                trackpadTwoFingerTap = true;
+                trackpadScrollAllowed = allowScroll;
+                trackpadScrollY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                trackpadTwoFingerPoints = Array.from(e.touches).map(function (t) { return { id: t.identifier, x: t.clientX, y: t.clientY }; });
+                if (allowTwoFingerTap) trackpadTwoFingerTimer = setTimeout(function () { trackpadTwoFingerTimer = null; }, 300);
+                return;
+            }
+            if (e.touches.length !== 1) return;
             trackpadStopEdgeScroll();
             var t = e.touches[0];
             trackpadLastX = t.clientX;
@@ -5511,6 +5562,17 @@
             trackpadTapMoved = false;
             trackpadTapTimer = setTimeout(function() { trackpadTapTimer = null; }, 250);
             trackpadDown = false;
+            var startedDesktop = desktop;
+            trackpadHoldTimer = setTimeout(function () {
+                trackpadHoldTimer = null;
+                if (!trackpadMode || xxdialogMode || desktop !== startedDesktop || desktop == null || desktop.State !== 3 || trackpadTapMoved) return;
+                var rights = GetNodeRights(currentNode);
+                if ((features2 & 0x2000) || currentNode.agent.id === 14 || !(rights === 0xFFFFFFFF || ((rights & 8) && !(rights & 256) && !(rights & 4096)))) return;
+                trackpadTapTimer = null;
+                desktop.m.mousedown(trackpadMakeEvent(0, 1));
+                trackpadDragDesktop = desktop;
+                trackpadDown = true;
+            }, 450);
         }
 
         function dtouchmove(e) {
@@ -5518,13 +5580,45 @@
             if (xxdialogMode || desktop == null) return;
             if (!trackpadMode) return;
             e.preventDefault();
+            if (trackpadTwoFingerTap) {
+                var moved = e.touches.length !== 2 || Array.from(e.touches).some(function (t) {
+                    var p = trackpadTwoFingerPoints.find(function (p) { return p.id === t.identifier; });
+                    return !p || Math.abs(t.clientX - p.x) > 8 || Math.abs(t.clientY - p.y) > 8;
+                });
+                if (moved && trackpadTwoFingerTimer != null) { clearTimeout(trackpadTwoFingerTimer); trackpadTwoFingerTimer = null; }
+                if (e.touches.length !== 2) { trackpadScrollAllowed = false; return; }
+                var y = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                var delta = y - trackpadScrollY;
+                trackpadScrollY = y;
+                if (moved) trackpadScrolling = true;
+                if (trackpadScrolling && trackpadScrollAllowed && desktop.State === 3 && typeof desktop.m.mousewheel === 'function') {
+                    var rights = GetNodeRights(currentNode);
+                    if (!(features2 & 0x2000) && currentNode.agent.id !== 14 && (rights === 0xFFFFFFFF || ((rights & 8) && !(rights & 256) && !(rights & 4096)))) {
+                        trackpadScrollPending += delta;
+                        var steps = Math.trunc(trackpadScrollPending / 24);
+                        if (steps) {
+                            trackpadScrollPending -= steps * 24;
+                            var wheel = trackpadMakeEvent(0, 0);
+                            wheel.wheelDelta = Math.max(-480, Math.min(480, steps * 120));
+                            wheel.wheelDeltaY = wheel.wheelDelta;
+                            wheel.deltaY = -wheel.wheelDelta;
+                            desktop.m.mousewheel(wheel);
+                        }
+                    }
+                }
+                return;
+            }
+            if (e.touches.length !== 1) { trackpadCancelGesture(); return; }
             var t = e.touches[0];
             if (trackpadLastX == null) { trackpadLastX = t.clientX; trackpadLastY = t.clientY; return; }
             var dx = t.clientX - trackpadLastX;
             var dy = t.clientY - trackpadLastY;
             trackpadLastX = t.clientX;
             trackpadLastY = t.clientY;
-            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) { trackpadTapMoved = true; }
+            if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                trackpadTapMoved = true;
+                if (!trackpadDown && trackpadHoldTimer != null) { clearTimeout(trackpadHoldTimer); trackpadHoldTimer = null; }
+            }
             var rect = Q('Desk').getBoundingClientRect();
             trackpadMoveCursor(rect.left + trackpadCurX + dx * 1.5, rect.top + trackpadCurY + dy * 1.5);
             trackpadSendMove();
@@ -5533,7 +5627,21 @@
 
         function dtouchend(e) {
             setSessionActivity();
-            if (xxdialogMode || desktop == null) return;
+            if (trackpadTwoFingerTap) {
+                e.preventDefault();
+                trackpadScrollAllowed = false;
+                if (e.touches.length > 0) return;
+                var clickRight = trackpadTwoFingerTimer != null;
+                trackpadCancelGesture();
+                if (clickRight && trackpadMode && !xxdialogMode && desktop != null && desktop.State === 3) {
+                    var rights = GetNodeRights(currentNode);
+                    if (!(features2 & 0x2000) && currentNode.agent.id !== 14 && (rights === 0xFFFFFFFF || ((rights & 8) && !(rights & 256) && !(rights & 4096)))) trackpadSendClick(2);
+                }
+                return;
+            }
+            var wasDragging = trackpadDown;
+            trackpadReleaseDrag();
+            if (xxdialogMode || desktop == null) { trackpadCancelGesture(); return; }
             if (!trackpadMode) return;
             e.preventDefault();
             trackpadStopEdgeScroll();
@@ -5541,11 +5649,13 @@
             trackpadLastY = null;
             trackpadDown = false;
             // Tap = left click (short touch, minimal movement)
-            if (trackpadTapTimer != null && !trackpadTapMoved) {
+            if (!wasDragging && trackpadTapTimer != null && !trackpadTapMoved) {
                 clearTimeout(trackpadTapTimer);
                 trackpadTapTimer = null;
                 trackpadSendClick(0);
             }
+            if (trackpadTapTimer != null) { clearTimeout(trackpadTapTimer); trackpadTapTimer = null; }
+            trackpadTapMoved = false;
         }
 
 
