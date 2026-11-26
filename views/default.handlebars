@@ -10766,7 +10766,7 @@
             if ((features2 & 0x1000) == 0) x += '<input id=dlgClipSet type=button value="' + "Set Clipboard" + '" style=width:160px onclick=showDeskClipSet()>';
             x += '<div id=dlgClipStatus style="display:inline-block;margin-left:8px" ></div>';
             x += '<textarea id=d2clipText style="width:100%;height:184px;resize:none" maxlength=65535></textarea>';
-            x += '<input type=button value="Close" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
+            x += '<input type=button value="' + "Close" + '" style=width:80px;float:right onclick=dialogclose(0)><div style=height:26px;margin-top:3px><span id=linuxClipWarn style=display:none>' + "Remote clipboard is valid for 60 seconds." + '</span>&nbsp;</div><div></div>';
             setDialogMode(2, "Remote Clipboard", 8, null, x, 'clipboard');
             Q('d2clipText').focus();
         }
