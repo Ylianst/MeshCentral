@@ -12276,6 +12276,8 @@
             xxdialogTag = 'clipboard';
             setModalContent('xxAddAgent', "Remote Clipboard", x);
             showModal('xxAddAgentModal', 'idx_dlgOkButton');
+            QV('idx_dlgCancelButton', false);
+            Q('idx_dlgOkButton').textContent = 'Close';
             Q('d2clipText').focus();
         }
 
