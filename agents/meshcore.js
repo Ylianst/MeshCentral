@@ -2980,7 +2980,7 @@ function run(type, cmds) {\n\
     if (type == 2) { child = cp.execFile(process.env['windir'] + '\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe', ['powershell', '-noprofile', '-nologo', '-command', '-']); }\n\
     else { child = cp.execFile(process.env['windir'] + '\\\\system32\\\\cmd.exe', ['cmd']); }\n\
     child.stderr.on('data', function (c) { try { global.ipcClient.write(c); } catch (ex) { } });\n\
-    child.on('exit', function () { setTimeout(function () { process.exit(); }, 1000); });\n\
+    child.on('exit', function () { var exitTimer = setTimeout(function () { process.exit(); }, 1000); });\n\
     child.stdin.write(cmds + '\\r\\nexit\\r\\n');\n\
     return { out: child.stdout, in: child.stdin, child: child };\n\
 }\n\
@@ -2992,9 +2992,10 @@ module.exports = { run: run };";
 var userTerminalWrapperModule = "function report(msg) { try { global.ipcClient.write('\\r\\n[User terminal] ' + msg + '\\r\\n'); } catch (ex) { } }\n\
 var origLog = console.log;\n\
 console.log = function () { var a = []; for (var i = 0; i < arguments.length; ++i) { a.push(String(arguments[i])); } report(a.join(' ')); try { origLog.apply(console, arguments); } catch (ex) { } };\n\
+var exitTimer = null;\n\
 function start(mod, method, cols, rows) {\n\
     try { return require(mod)[method](cols, rows); }\n\
-    catch (ex) { report('Failed to start: ' + ex); setTimeout(function () { process.exit(); }, 3000); throw ex; }\n\
+    catch (ex) { report('Failed to start: ' + ex); exitTimer = setTimeout(function () { process.exit(); }, 3000); throw ex; }\n\
 }\n\
 module.exports = { start: start };";
 
