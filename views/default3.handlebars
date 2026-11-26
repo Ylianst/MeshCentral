@@ -2313,7 +2313,7 @@
                 </div>
             </div>
         </div>
-            <div id="deskTypeWindow" class="card shadow" role="dialog" aria-labelledby="deskTypeTitle" aria-modal="false" aria-hidden="true" style="display:none;position:fixed;z-index:1080;top:15%;left:max(12px, calc(50% - 220px));width:min(440px, calc(100vw - 24px))">
+            <div id="deskTypeWindow" class="card shadow" role="dialog" aria-labelledby="deskTypeTitle" aria-modal="false" aria-hidden="true" style="display:none;position:fixed;z-index:1080;top:15%;left:max(12px, calc(50% - 220px));width:min(505px, calc(100vw - 24px))">
                 <div id="deskTypeDialogHeader" class="card-header d-flex align-items-center" style="background-color:#003366;color:#fff;cursor:move">
                     <h5 id="deskTypeTitle" class="mb-0 me-auto">Remote Keyboard Entry</h5>
                     <button type="button" class="btn-close btn-close-white" onclick="hideDeskType()" aria-label="Close"></button>
@@ -12134,9 +12134,9 @@
         }
 
         // Remote desktop special key combos for Windows
-        function deskSendKeys(ks, fromDeskType) {
-            if (!fromDeskType) Q('DeskWD').blur();
-            if ((xxdialogMode && !fromDeskType) || desktop == null || desktop.State != 3) return;
+        function deskSendKeys(ks) {
+            Q('DeskWD').blur();
+            if (xxdialogMode || desktop == null || desktop.State != 3) return;
 
             // Construct the key command
             if (typeof ks != 'number') { ks = parseInt(Q('deskkeys').value); }
@@ -12256,7 +12256,7 @@
         }
 
         function deskTypeSendWindowsKey() {
-            deskSendKeys(0x100000, true);
+            deskSendKeys(0x100000);
         }
 
         function hideDeskType() {
@@ -12274,7 +12274,7 @@
         function deskTypeSendKey(key) {
             var flags = 0, buttons = document.querySelectorAll('#deskTypeWindow [data-flag]');
             for (var i = 0; i < buttons.length; i++) { if (buttons[i].classList.contains('active')) flags |= parseInt(buttons[i].getAttribute('data-flag')); }
-            deskSendKeys((flags << 16) | key, true);
+            deskSendKeys((flags << 16) | key);
         }
 
         var AmtDeskTypeTimer = null;
