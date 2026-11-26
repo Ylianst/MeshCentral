@@ -522,6 +522,47 @@ function windows_execve(name, agentfilename, sessionid) {
     libc._wexecve(cmd, args, 0);
 }
 
+// Run a downloaded agent file with -info, which every agent build answers by printing its ARCHID and exiting. A file
+// that cannot start here, built for another C library, a newer OS or another CPU, fails now instead of after it has
+// replaced the running agent.
+function agentUpdate_Test(filename, archids, func) {
+    var run = null, attempt = 0, next = 0;
+    function done(error, archid) {
+        clearInterval(agentUpdate_Test._timer);
+        agentUpdate_Test._timer = null;
+        func(error, (archid != null) ? archid : null);
+    }
+    // Agents built before September 2026 drop a timer that nothing refers to, so the one timer that drives the test is
+    // kept here. A loader error can reach stderr after the exit, so the result is read a moment after it.
+    agentUpdate_Test._timer = setInterval(function () {
+        var now = Date.now();
+        if (run == null) {
+            if (now < next) return;
+            var r = run = { output: '', code: null, started: now, exited: 0 };
+            attempt++;
+            try {
+                if (process.platform != 'win32') { require('fs').chmodSync(filename, require('fs').statSync(process.execPath).mode); }
+                r.child = require('child_process').execFile(filename, [filename.split(process.platform == 'win32' ? '\\' : '/').pop(), '-info']);
+            } catch (ex) { done('the file could not be started: ' + ex); return; }
+            r.child.stdout.on('data', function (c) { if (r.output.length < 8192) { r.output += c.toString(); } });
+            r.child.stderr.on('data', function (c) { if (r.output.length < 8192) { r.output += c.toString(); } });
+            r.child.on('exit', function (code) { r.code = code; r.exited = Date.now(); });
+            return;
+        }
+        if ((run.code == null) && ((now - run.started) < 60000)) return;
+        if ((run.code != null) && ((now - run.exited) < 500)) return;
+        if (run.code == null) { try { run.child.kill(); } catch (ex) { } done('the file did not finish within 60 seconds'); return; }
+        // Right after the download the file can still be busy, which fails without a word, so a silent failure is tried
+        // again before it counts.
+        if ((run.code !== 0) && (run.output.trim() == '') && (attempt < 3)) { run = null; next = now + 1000; return; }
+        var match = /Agent ARCHID: (\d+)/.exec(run.output), archid = (match != null) ? parseInt(match[1]) : null, detail = run.output.trim().split('\n')[0];
+        if (run.code !== 0) { done('the file did not start (exit code ' + run.code + ')' + (detail ? (': ' + detail) : ''), archid); return; }
+        if (archid == null) { done('the file did not report an agent type'); return; }
+        if ((archids != null) && (archids.indexOf(archid) < 0)) { done('the file is agent type ' + archid + ', not ' + archids.join(' or '), archid); return; }
+        done(null, archid);
+    }, 250);
+}
+
 // Start a JavaScript based Agent Self-Update
 function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
@@ -707,53 +748,68 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     // Send an indication to the server that we got the update download correctly.
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
-                    if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                    if (process.platform == 'win32')
+                    // The file replaces the running agent only once it has started on this device.
+                    var updatefile = process.cwd() + agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update');
+                    agentUpdate_Test(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid)
                     {
-                        // Use _wexecve() equivalent to perform the update
-                        windows_execve(name, agentfilename, sessionid);
-                    }
-                    else
-                    {
-                        var m = require('fs').statSync(process.execPath).mode;
-                        require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
-
-                        // remove binary
-                        require('fs').unlinkSync(process.execPath);
-
-                        // copy update
-                        require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
-                        require('fs').chmodSync(process.execPath, m);
-
-                        // erase update
-                        require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
-
-                        switch (process.platform)
+                        if (error != null)
                         {
-                            case 'freebsd':
-                                bsd_execv(name, agentfilename, sessionid);
-                                break;
-                            case 'linux':
-                                linux_execv(name, agentfilename, sessionid);
-                                break;
-                            default:
-                                try
-                                {
-                                    // restart service
-                                    var s = require('service-manager').manager.getService(name);
-                                    s.restart();
-                                }
-                                catch (zz)
-                                {
-                                    if (zz.toString() != 'waitExit() aborted because thread is exiting')
-                                    {
-                                        sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                        sendAgentMessage('Self Update encountered an error trying to restart service', 3);
-                                    }
-                                }
-                                break;
+                            try { require('fs').unlinkSync(updatefile); } catch (e) { }
+                            agentUpdate_Start._selfupdate = null;
+                            if ((updateoptions != null) && (updateoptions.hash != null)) { try { require('MeshAgent').SendCommand({ action: 'agentpreflight', hash: updateoptions.hash, result: 'failed', reason: error, archid: archid }); } catch (e) { } }
+                            sendConsoleText('Self Update stopped, ' + error, sessionid);
+                            sendAgentMessage('Self Update stopped, ' + error, 3);
+                            return;
                         }
-                    }
+
+                        if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
+                        if (process.platform == 'win32')
+                        {
+                            // Use _wexecve() equivalent to perform the update
+                            windows_execve(name, agentfilename, sessionid);
+                        }
+                        else
+                        {
+                            var m = require('fs').statSync(process.execPath).mode;
+                            require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
+
+                            // remove binary
+                            require('fs').unlinkSync(process.execPath);
+
+                            // copy update
+                            require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+                            require('fs').chmodSync(process.execPath, m);
+
+                            // erase update
+                            require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
+
+                            switch (process.platform)
+                            {
+                                case 'freebsd':
+                                    bsd_execv(name, agentfilename, sessionid);
+                                    break;
+                                case 'linux':
+                                    linux_execv(name, agentfilename, sessionid);
+                                    break;
+                                default:
+                                    try
+                                    {
+                                        // restart service
+                                        var s = require('service-manager').manager.getService(name);
+                                        s.restart();
+                                    }
+                                    catch (zz)
+                                    {
+                                        if (zz.toString() != 'waitExit() aborted because thread is exiting')
+                                        {
+                                            sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                            sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    });
                 });
 
                 if (!needStreamFix)
@@ -946,7 +1002,7 @@ require('MeshAgent').AddCommandHandler(function (data)
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
             case 'agentupdate':
-                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid });
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids });
                 break;
             case 'msg':
                 {

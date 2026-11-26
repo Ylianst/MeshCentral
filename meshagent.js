@@ -154,6 +154,12 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             delete obj.agentCoreUpdateTaskId;
         }
 
+        // If the meshcore was testing an agent update, clean that up.
+        if (obj.agentPreflight != null) {
+            parent.parent.taskLimiter.completed(obj.agentPreflight.taskid);
+            delete obj.agentPreflight;
+        }
+
         // Perform timer cleanup
         if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
         if (obj.pongtimer) { clearInterval(obj.pongtimer); delete obj.pongtimer; }
@@ -297,7 +303,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             else if (cmdid == 12) { // MeshCommand_AgentHash
                 if ((msg.length == 52) && (obj.agentExeInfo != null) && (obj.agentExeInfo.update == true)) {
                     const agenthash = msg.substring(4);
-                    const agentUpdateMethod = compareAgentBinaryHash(obj.agentExeInfo, agenthash);
+                    var agentUpdateMethod = compareAgentBinaryHash(obj.agentExeInfo, agenthash);
+                    if (agentUpdateMethod === 0) { delete parent.agentUpdatePreflights[obj.dbNodeKey]; } else if (agentUpdateHeld(agentUpdateMethod)) { agentUpdateMethod = 0; }
                     if (agentUpdateMethod === 2) { // Use meshcore agent update system
                         // Send the recovery core to the agent, if the agent is capable of running one
                         if (((obj.agentInfo.capabilities & 16) != 0) && (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core != null)) {
@@ -1096,6 +1103,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             return;
         }
 
+        // An agent update waiting on the meshcore to test the new agent
+        obj.agentCoreStable = true;
+        if (obj.agentUpdatePreflightPending === true) { delete obj.agentUpdatePreflightPending; startAgentUpdatePreflight(); }
+
         // Fetch the the diagnostic agent nodeid
         db.Get('ra' + obj.dbNodeKey, function (err, nodes) {
             if ((nodes != null) && (nodes.length == 1)) {
@@ -1323,11 +1334,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                                 // Agent update. The recovery core was loaded in the agent, send a command to update the agent
                                 obj.agentCoreUpdateTaskId = taskid;
-                                var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: obj.agentExeInfo.hashhex };
+                                var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: getAgentUpdateHash(), archids: getAgentUpdateArchIds() };
                                 parent.parent.debug('agentupdate', "Sending agent update url: " + cmd.url);
-
-                                // Add the hash
-                                if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
 
                                 // Add server TLS cert hash
                                 if (isIgnoreHashCheck() == false) {
@@ -1681,11 +1689,8 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
 
                             // Agent is requesting an agent update
                             obj.agentCoreUpdateTaskId = taskid;
-                            var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: obj.agentExeInfo.hashhex, sessionid: agentUpdateFunc.sessionid };
+                            var cmd = { action: 'agentupdate', url: getAgentUpdateUrl(), hash: getAgentUpdateHash(), archids: getAgentUpdateArchIds(), sessionid: agentUpdateFunc.sessionid };
                             parent.parent.debug('agentupdate', "Sending user requested agent update url: " + cmd.url);
-
-                            // Add the hash
-                            if (obj.agentExeInfo.fileHash != null) { cmd.hash = obj.agentExeInfo.fileHashHex; } else { cmd.hash = obj.agentExeInfo.hashhex; }
 
                             // Add server TLS cert hash
                             if (isIgnoreHashCheck() == false) {
@@ -1708,6 +1713,32 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // Indicate this udpate task is complete
                         parent.parent.taskLimiter.completed(obj.agentCoreUpdateTaskId);
                         delete obj.agentCoreUpdateTaskId;
+                    }
+                    break;
+                }
+                case 'agentpreflight': {
+                    // The meshcore ran the agent update file with -info, for a preflight or right before replacing the agent with it
+                    if ((obj.agentExeInfo == null) || (command.hash !== getAgentUpdateHash())) break;
+                    if ((obj.agentPreflight != null) && (obj.agentPreflight.hash == command.hash)) {
+                        parent.parent.taskLimiter.completed(obj.agentPreflight.taskid);
+                        delete obj.agentPreflight;
+                    }
+                    const preflightReason = (typeof command.reason == 'string') ? command.reason.substring(0, 1024) : '';
+                    parent.parent.debug('agentupdate', "Agent update test " + command.result + ", NodeID=0x" + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc + (preflightReason ? (', ' + preflightReason) : ''));
+                    if (command.result == 'failed') {
+                        const previous = parent.agentUpdatePreflights[obj.dbNodeKey];
+                        parent.agentUpdatePreflights[obj.dbNodeKey] = { hash: command.hash, ok: false, time: Date.now() };
+                        parent.agentStats.agentUpdateHeldCount++;
+                        if ((previous == null) || (previous.hash != command.hash) || (previous.ok !== false)) {
+                            const event = { etype: 'node', action: 'agentlog', nodeid: obj.dbNodeKey, domain: domain.id, msgid: 165, msgArgs: [preflightReason], msg: 'Agent update not installed: ' + preflightReason };
+                            parent.parent.DispatchEvent(parent.CreateMeshDispatchTargets(obj.dbMeshKey, [obj.dbNodeKey]), obj, event);
+                        }
+                        // The meshcore update method swapped in the recovery core to update with, put the normal core back
+                        if (obj.agentCoreUpdate === true) { obj.agentCoreUpdate = false; obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); }
+                    } else if ((command.result == 'ok') || (command.result == 'error')) {
+                        // A file the meshcore could not download or test is installed the way it was before this test existed
+                        parent.agentUpdatePreflights[obj.dbNodeKey] = { hash: command.hash, ok: true, time: Date.now() };
+                        if ((obj.agentUpdate == null) && (obj.agentCoreUpdate !== true)) { obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0)); } // Command 12, ask for the agent binary hash.
                     }
                     break;
                 }
@@ -2264,6 +2295,52 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
     function getAgentUpdateUrl() {
         const getme = new URL(obj.agentExeInfo.url);
         return '*' + getme.pathname + getme.search + '&auth=' + encodeURIComponent(parent.parent.encodeCookie({ a: 'aupd', i: obj.agentExeInfo.id }, parent.parent.loginCookieEncryptionKey));
+    }
+
+    // The hash the meshcore checks a downloaded agent update against
+    function getAgentUpdateHash() { return (obj.agentExeInfo.fileHash != null) ? obj.agentExeInfo.fileHashHex : obj.agentExeInfo.hashhex; }
+
+    // Agent types the update file can be built for, several types are served the same file
+    function getAgentUpdateArchIds() {
+        const archs = parent.parent.meshAgentsArchitectureNumbers, ids = [];
+        if (archs[obj.agentExeInfo.id] == null) return null;
+        for (var i in archs) { if (archs[i].localname == archs[obj.agentExeInfo.id].localname) { ids.push(parseInt(i)); } }
+        return ids;
+    }
+
+    // The native update replaces the agent without starting the new file first, so it waits until the meshcore has
+    // downloaded the file and run it on the device. A file that did not run there is not sent again for a day.
+    function agentUpdateHeld(agentUpdateMethod) {
+        if (args.agentupdatepreflight === false) return false;
+        const preflight = parent.agentUpdatePreflights[obj.dbNodeKey];
+        if ((preflight != null) && (preflight.hash == getAgentUpdateHash())) {
+            if (preflight.ok === true) return false;
+            if ((Date.now() - preflight.time) < 86400000) return true;
+        }
+        if (agentUpdateMethod === 2) return false; // The meshcore update tests the file itself
+        if (((obj.agentInfo.capabilities & 16) == 0) || (obj.agentInfo.capabilities & 0x40) || (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core == null) || (typeof obj.agentExeInfo.url != 'string')) return false;
+        // An agent whose binary loaded after it connected can already have a running core
+        if (obj.agentCoreStable === true) { startAgentUpdatePreflight(); } else { obj.agentUpdatePreflightPending = true; }
+        return true;
+    }
+
+    // Ask the meshcore to download the agent update and run it with -info, the update goes ahead once the file started
+    function startAgentUpdatePreflight() {
+        parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
+            // If agent disconnection, complete and exit now.
+            if ((obj.authenticated != 2) || (obj.agentExeInfo == null)) { parent.parent.taskLimiter.completed(taskid); return; }
+            obj.agentPreflight = { hash: getAgentUpdateHash(), taskid: taskid };
+            const cmd = { action: 'agentpreflight', url: getAgentUpdateUrl(), hash: obj.agentPreflight.hash, archids: getAgentUpdateArchIds() };
+            parent.parent.debug('agentupdate', "Sending agent update test url: " + cmd.url);
+            parent.agentStats.agentUpdatePreflightCount++;
+
+            // Add server TLS cert hash
+            if (isIgnoreHashCheck() == false) {
+                const tlsCertHash = parent.webCertificateFullHashs[domain.id];
+                if (tlsCertHash != null) { cmd.servertlshash = Buffer.from(tlsCertHash, 'binary').toString('hex'); }
+            }
+            obj.send(JSON.stringify(cmd));
+        }, null, 1);
     }
 
     // Check if we need to update this agent, return true if agent binary update required.

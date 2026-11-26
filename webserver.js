@@ -355,6 +355,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     obj.wsagentsDisconnections = {};
     obj.wsagentsDisconnectionsTimer = null;
     obj.duplicateAgentsLog = {};
+    obj.agentUpdatePreflights = {};   // NodeId --> Agent update test result { hash, ok, time }
     obj.wssessions = {};              // UserId --> Array Of Sessions
     obj.wssessions2 = {};             // "UserId + SessionRnd" --> Session  (Note that the SessionId is the UserId + / + SessionRnd)
     obj.wsPeerSessions = {};          // ServerId --> Array Of "UserId + SessionRnd"
@@ -523,6 +524,8 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         agentClose: 0,
         agentBinaryUpdate: 0,
         agentMeshCoreBinaryUpdate: 0,
+        agentUpdatePreflightCount: 0,
+        agentUpdateHeldCount: 0,
         coreIsStableCount: 0,
         verifiedAgentConnectionCount: 0,
         clearingCoreCount: 0,
