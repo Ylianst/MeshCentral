@@ -7049,9 +7049,9 @@
         */
         var xxModalPendingOpen = null;
 
-        function showModal(modalId, okButtonId, okCallback, b = null, tag = null) {
+        function showModal(modalId, okButtonId, okCallback, b = null, tag = null, onShow = null) {
             if (xxModal != null && (xxModalHidePending || xxModal._isTransitioning)) {
-                xxModalPendingOpen = function () { showModal(modalId, okButtonId, okCallback, b, tag); };
+                xxModalPendingOpen = function () { showModal(modalId, okButtonId, okCallback, b, tag, onShow); };
                 return;
             }
             if (xxModal == null) {
@@ -7086,6 +7086,7 @@
                     if (xxModal) { xxModal.hide(); }
                 }
             };
+            if (typeof onShow === 'function') onShow();
         }
 
         // Bootstrap drops hide() during the fade-in, which left tiny-file uploads with a stuck-open dialog.
@@ -12275,9 +12276,10 @@
             x += '</div>'
             xxdialogTag = 'clipboard';
             setModalContent('xxAddAgent', "Remote Clipboard", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton');
-            QV('idx_dlgCancelButton', false);
-            Q('idx_dlgOkButton').textContent = 'Close';
+            showModal('xxAddAgentModal', 'idx_dlgOkButton', null, null, null, function () {
+                QV('idx_dlgCancelButton', false);
+                Q('idx_dlgOkButton').textContent = "Close";
+            });
             Q('d2clipText').focus();
         }
 
