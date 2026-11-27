@@ -2842,7 +2842,7 @@ module.exports.CreateAmtManager = function (parent) {
                 var vs = getInstance(amtlogicalelements, 'AMT')['VersionString'];
                 if (vs != null) {
                     dev.aquired.version = vs;
-                    version = dev.aquired.version.split('.')
+                    var version = dev.aquired.version.split('.');
                     dev.aquired.versionmajor = parseInt(version[0]);
                     dev.aquired.versionminor = parseInt(version[1]);
                     if (version.length > 2) { dev.aquired.versionmaintenance = parseInt(version[2]); }
@@ -2902,7 +2902,7 @@ module.exports.CreateAmtManager = function (parent) {
         } else {
             // Set the admin password
             dev.consoleMsg('Setting admin password...');
-            dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), activateIntelAmtTlsAcmEx3);
+            dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, Buffer.from(hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), 'hex').toString('base64'), activateIntelAmtTlsAcmEx3); // DigestPassword is base64Binary
         }
     }
 
@@ -2914,24 +2914,60 @@ module.exports.CreateAmtManager = function (parent) {
         dev.consoleMsg('MEBx password set. Setting admin password...');
 
         // Set the admin password
-        dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), activateIntelAmtTlsAcmEx3);
+        dev.amtstack.AMT_AuthorizationService_SetAdminAclEntryEx(dev.aquired.user, Buffer.from(hex_md5(dev.aquired.user + ':' + dev.aquired.realm + ':' + dev.aquired.pass), 'hex').toString('base64'), activateIntelAmtTlsAcmEx3); // DigestPassword is base64Binary
     }
 
     // Response from setting admin password
     function activateIntelAmtTlsAcmEx3(stack, name, responses, status) {
         const dev = stack.dev;
         if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
-        if (status != 200) { dev.consoleMsg('Failed to set admin password, status=' + status + '.'); removeAmtDevice(dev); return; }
+        var setReturn = ((responses != null) && (responses.Body != null)) ? responses.Body['ReturnValue'] : null;
+        if ((status != 200) || (setReturn != 0)) { dev.consoleMsg('Failed to set admin password, status=' + status + ', ReturnValue=' + setReturn + '.'); removeAmtDevice(dev); return; }
         dev.consoleMsg('Admin password set.');
 
-        // Switch the state of Intel AMT.
-        if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) { dev.mpsConnection.tag.meiState.ProvisioningState = 2; }
-        dev.aquired.controlMode = 2; // 1 = CCM, 2 = ACM
-        dev.aquired.state = 2; // Activated
-        dev.hbacmtls = 1; // Indicate that we are doing a Host
+        // Commit the activation right away. Other changes made before this commit (TLS, clock) leave
+        // Intel AMT 19+ returning 2057 (data missing). TLS is set up by the normal sync once activated.
+        activateIntelAmtTlsAcmEx4(dev);
+    }
 
-        // Proceed to going the normal Intel AMT sync. This will trigger a commit when the TLS cert is setup.
-        dev.amtstack.BatchEnum(null, ['*AMT_GeneralSettings', '*IPS_HostBasedSetupService'], attemptLocalConnectResponse);
+    // Commit the host-based TLS ACM activation, setting the MEBx password if Intel AMT asks for it (2057).
+    function activateIntelAmtTlsAcmEx4(dev) {
+        dev.consoleMsg('Committing activation...');
+        dev.amtstack.AMT_SetupAndConfigurationService_CommitChanges(null, function (stack, name, responses, status) {
+            const dev = stack.dev;
+            if (isAmtDeviceValid(dev) == false) return; // Device no longer exists, ignore this request.
+            var commitReturn = ((responses != null) && (responses.Body != null)) ? responses.Body['ReturnValue'] : null;
+            if ((status == 200) && (commitReturn == 2057) && (dev.mebxCommitRetry !== 1)) {
+                dev.mebxCommitRetry = 1;
+                dev.consoleMsg('Commit returned 2057 (data missing), setting MEBx password and committing again...');
+                dev.amtstack.AMT_SetupAndConfigurationService_SetMEBxPassword(dev.aquired.pass, function (stack, name, responses, status) {
+                    const dev = stack.dev;
+                    if (isAmtDeviceValid(dev) == false) return;
+                    var mebxReturn = ((responses != null) && (responses.Body != null)) ? responses.Body['ReturnValue'] : null;
+                    if ((status != 200) || (mebxReturn != 0)) { dev.consoleMsg('Failed to set MEBx password (' + status + ', ' + mebxReturn + ').'); removeAmtDevice(dev, 27); return; }
+                    activateIntelAmtTlsAcmEx4(dev);
+                });
+                return;
+            }
+            delete dev.mebxCommitRetry;
+            if ((status == 200) && (commitReturn != 0)) { dev.consoleMsg('Failed to commit activation (' + commitReturn + ').'); removeAmtDevice(dev, 27); return; }
+            // On Intel AMT 19+ the commit restarts the port stack and can drop this connection, the reconnect below tells if it worked.
+            dev.consoleMsg((status == 200) ? 'Activation committed, holding 10 seconds...' : ('Commit connection closed (' + status + '), holding 10 seconds...'));
+
+            // Switch the state of Intel AMT.
+            if ((dev.mpsConnection != null) && (dev.mpsConnection.tag != null) && (dev.mpsConnection.tag.meiState != null)) { dev.mpsConnection.tag.meiState.ProvisioningState = 2; }
+            dev.aquired.controlMode = 2; // 1 = CCM, 2 = ACM
+            dev.aquired.state = 2; // Activated
+            dev.intelamt.user = dev.aquired.user;
+            dev.intelamt.pass = dev.aquired.pass;
+            dev.intelamt.tls = 1; // Intel AMT 19+ only listens on TLS
+            delete dev.acctry;
+
+            // Reconnect with the new admin credentials and continue with the normal Intel AMT sync.
+            var f = function doManage() { if (isAmtDeviceValid(doManage.dev)) { attemptInitialContact(doManage.dev); } }
+            f.dev = dev;
+            setTimeout(f, 10000);
+        });
     }
 
     // Attempt Intel AMT ACM activation
