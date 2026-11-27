@@ -4716,16 +4716,73 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Take a "user/domain/userid/path/file" format and return the actual server disk file path if access is allowed
-    obj.getServerFilePath = function (user, domain, path) {
+    // write is true when the file is going to be changed, user group files can be read by members but only changed by user group managers
+    obj.getServerFilePath = function (user, domain, path, write) {
         var splitpath = path.split('/'), serverpath = obj.path.join(obj.filespath, 'domain'), filename = '';
-        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh') || (splitpath[1] != domain.id)) return null; // Basic validation
+        if ((splitpath.length < 3) || (splitpath[0] != 'user' && splitpath[0] != 'mesh' && splitpath[0] != 'ugrp' && splitpath[0] != 'shared') || (splitpath[1] != domain.id)) return null; // Basic validation
         var objid = splitpath[0] + '/' + splitpath[1] + '/' + splitpath[2];
         if (splitpath[0] == 'user' && (objid != user._id)) return null; // User validation, only self allowed
         if (splitpath[0] == 'mesh') { if ((obj.GetMeshRights(user, objid) & 32) == 0) { return null; } } // Check mesh server file rights
+        if (splitpath[0] == 'ugrp') { var ugrights = obj.getUserGroupFileRights(user, objid, domain); if ((ugrights == 0) || (write && (ugrights < 2))) { return null; } } // Check user group file rights
+        if (splitpath[0] == 'shared') { var shrights = obj.getSharedFileRights(user, objid, domain); if ((shrights == 0) || (write && (shrights < 2))) { return null; } } // Check shared files rights
         if (splitpath[1] != '') { serverpath += '-' + splitpath[1]; } // Add the domain if needed
         serverpath += ('/' + splitpath[0] + '-' + splitpath[2]);
         for (var i = 3; i < splitpath.length; i++) { if (obj.common.IsFilenameValid(splitpath[i]) == true) { serverpath += '/' + splitpath[i]; filename = splitpath[i]; } else { return null; } } // Check that each folder is correct
-        return { fullpath: obj.path.resolve(obj.filespath, serverpath), path: serverpath, name: filename, quota: obj.getQuota(objid, domain) };
+        return { fullpath: obj.path.resolve(obj.filespath, serverpath), path: serverpath, name: filename, quota: obj.getQuota(objid, domain), objid: objid };
+    };
+
+    // Rights of a user on the files of a user group: 0 none, 1 read (members of the group), 2 read and write (users who can manage user groups).
+    // Users without server file access have none. domain.userGroupFiles set to false turns user group files off.
+    obj.getUserGroupFileRights = function (user, ugrpid, domain) {
+        if ((user == null) || (domain == null) || (domain.usergroupfiles === false) || (typeof ugrpid != 'string')) return 0;
+        const ugrp = obj.userGroups[ugrpid];
+        if ((ugrp == null) || (ugrp.domain != domain.id) || (user.domain != domain.id)) return 0;
+        if ((user.siteadmin == null) || ((user.siteadmin & 8) == 0)) return 0; // SITERIGHT_FILEACCESS
+        if ((user.siteadmin & 256) != 0) return 2; // SITERIGHT_USERGROUPS
+        if ((user.links != null) && (user.links[ugrpid] != null)) return 1;
+        return 0;
+    };
+
+    // The shared files of a domain, available to all its users, have this id. Their folder on the server is shared-all.
+    obj.getSharedFilesId = function (domain) { return 'shared/' + domain.id + '/all'; };
+
+    // Rights of a user on the shared files of the domain: 0 none, 1 read, 2 read and write. Users without server file access have none.
+    // domain.sharedFiles set to false turns them off. domain.sharedFilesUserGroups, a list of user groups, limits them to the members of
+    // those groups (and full administrators). domain.sharedFilesWrite says who can change them:
+    //   "managers" (default) full administrators and users who can manage users or user groups, "admins" full administrators only, "all" everyone.
+    obj.getSharedFileRights = function (user, objid, domain) {
+        if ((user == null) || (domain == null) || (domain.sharedfiles === false) || (objid != obj.getSharedFilesId(domain)) || (user.domain != domain.id)) return 0;
+        if ((user.siteadmin == null) || ((user.siteadmin & 8) == 0)) return 0; // SITERIGHT_FILEACCESS
+        const fullAdmin = (user.siteadmin == 0xFFFFFFFF);
+        if (Array.isArray(domain.sharedfilesusergroups) && (domain.sharedfilesusergroups.length > 0) && !fullAdmin) {
+            var member = false;
+            for (var i in domain.sharedfilesusergroups) {
+                var g = domain.sharedfilesusergroups[i];
+                if (typeof g != 'string') continue;
+                if (g.indexOf('/') < 0) { // A user group name or the last part of its id
+                    for (var j in obj.userGroups) { const ug = obj.userGroups[j]; if ((ug.domain == domain.id) && ((ug.name == g) || (j.split('/')[2] == g)) && (user.links != null) && (user.links[j] != null)) { member = true; } }
+                } else if ((user.links != null) && (user.links[g] != null)) { member = true; }
+            }
+            if (member == false) return 0;
+        }
+        const write = (typeof domain.sharedfileswrite == 'string') ? domain.sharedfileswrite.toLowerCase() : 'managers';
+        if (write == 'all') return 2;
+        if (write == 'admins') return fullAdmin ? 2 : 1;
+        return (fullAdmin || ((user.siteadmin & (2 + 256)) != 0)) ? 2 : 1; // SITERIGHT_MANAGEUSERS, SITERIGHT_USERGROUPS
+    };
+
+    // Who to tell that the files of objid changed: the user, the members of a user group whose files changed, and the users of a
+    // device group whose files changed (directly or through a user group). Site administrators who see all events are told too.
+    // Each of them then asks for its own list of files, built with its own rights. Pass targets to add to an existing list.
+    obj.getFileChangeTargets = function (user, objid, targets) {
+        if (targets == null) { targets = [user._id]; }
+        if ((typeof objid != 'string') || (objid == user._id)) return targets;
+        var added = [];
+        if (objid.startsWith('ugrp/')) { added = ['*', objid]; }
+        else if (objid.startsWith('shared/')) { added = ['server-allusers']; } // Every logged in user
+        else if (objid.startsWith('mesh/')) { added = obj.CreateMeshDispatchTargets(objid); }
+        for (var i in added) { if (targets.indexOf(added[i]) == -1) { targets.push(added[i]); } }
+        return targets;
     };
 
     // Return the maximum number of bytes allowed in the user account "My Files".
@@ -4744,6 +4801,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
             if ((mesh.quota != null) && (typeof mesh.quota == 'number')) { return mesh.quota; }
             if ((domain != null) && (domain.meshquota != null) && (typeof domain.meshquota == 'number')) { return domain.meshquota; }
             return null; // By default, the mesh will have no limit
+        } else if (objid.startsWith('ugrp/')) {
+            if (obj.userGroups[objid] == null) return 0;
+            if ((domain != null) && (domain.usergroupquota != null) && (typeof domain.usergroupquota == 'number')) { return domain.usergroupquota; }
+            return null; // By default, user group files have no limit
+        } else if (objid.startsWith('shared/')) {
+            if ((domain != null) && (domain.sharedfilesquota != null) && (typeof domain.sharedfilesquota == 'number')) { return domain.sharedfilesquota; }
+            return null; // By default, shared files have no limit
         }
         return 0;
     };
@@ -5195,7 +5259,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
 
             if ((fields == null) || (fields.link == null) || (fields.link.length != 1)) { /*console.log('UploadFile, Invalid Fields:', fields, files);*/ console.log('err4'); res.sendStatus(404); return; }
             var xfile = null;
-            try { xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0])); } catch (ex) { }
+            try { xfile = obj.getServerFilePath(user, domain, decodeURIComponent(fields.link[0]), true); } catch (ex) { }
             if (xfile == null) { res.sendStatus(404); return; }
             // Get total bytes in the path
             var totalsize = readTotalFileSize(xfile.fullpath);
@@ -5227,7 +5291,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     obj.fs.mkdir(xfile.fullpath, function () {
                                         // Write the file
                                         obj.fs.writeFile(obj.path.join(xfile.fullpath, filename), filedata, function () {
-                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                                            obj.parent.DispatchEvent(obj.getFileChangeTargets(user, xfile.objid), obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
                                 })(xfile.fullpath, safeName, filedata);
@@ -5262,11 +5326,11 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
                                     // On some Linux, the rename will fail with a "EXDEV" error, do a copy+unlink instead.
                                     obj.common.copyFile(uploadTempPath, fpath, function (err) {
                                         obj.fs.unlink(uploadTempPath, function (err) {
-                                            obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                                            obj.parent.DispatchEvent(obj.getFileChangeTargets(user, xfile.objid), obj, 'updatefiles'); // Fire an event causing this user to update this files
                                         });
                                     });
                                 } else {
-                                    obj.parent.DispatchEvent([user._id], obj, 'updatefiles'); // Fire an event causing this user to update this files
+                                    obj.parent.DispatchEvent(obj.getFileChangeTargets(user, xfile.objid), obj, 'updatefiles'); // Fire an event causing this user to update this files
                                 }
                             });
                         } else {
@@ -6166,6 +6230,7 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
     }
 
     // Delete a folder and all sub items.  (TODO: try to make all async version)
+    obj.deleteFolderRec = deleteFolderRec;
     function deleteFolderRec(path) {
         if (obj.fs.existsSync(path) == false) return;
         try {
@@ -9803,12 +9868,13 @@ module.exports.CreateWebServer = function (parent, db, args, certificates, doneF
         }
     };
 
-    // Get the server path of a user or mesh object
-    function getServerRootFilePath(obj) {
-        if ((typeof obj != 'object') || (obj.domain == null) || (obj._id == null)) return null;
-        var domainname = 'domain', splitname = obj._id.split('/');
+    // Get the server path of the files of a user, mesh or user group object.
+    // This was called by meshuser.js but not exported, and its parameter hid obj, so deleted accounts kept their files.
+    obj.getServerRootFilePath = function (x) {
+        if ((typeof x != 'object') || (x.domain == null) || (x._id == null)) return null;
+        var domainname = 'domain', splitname = x._id.split('/');
         if (splitname.length != 3) return null;
-        if (obj.domain !== '') domainname = 'domain-' + obj.domain;
+        if (x.domain !== '') domainname = 'domain-' + x.domain;
         return obj.path.join(obj.filespath, domainname + "/" + splitname[0] + "-" + splitname[2]);
     }
 

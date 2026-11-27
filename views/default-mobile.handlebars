@@ -293,6 +293,76 @@
             margin-top: 1px;
         }
 
+        .fileIcon7 {
+            background: url(images/group-256.png) center / 16px 16px no-repeat;
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .fileIcon8 {
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M.5 3.5h5l1.5 1.5h8.5v9H.5z' fill='%23f0cd66' stroke='%23b8932a'/%3E%3Ccircle cx='8' cy='8.4' r='1.5' fill='%232f7fd0'/%3E%3Ccircle cx='4.6' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Ccircle cx='11.4' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Cpath d='M5.3 13.5c0-1.9 1.2-2.9 2.7-2.9s2.7 1 2.7 2.9z' fill='%232f7fd0'/%3E%3Cpath d='M2.4 13.5c0-1.5.9-2.3 2.2-2.3.6 0 1 .1 1.4.4-.6.5-.9 1.1-.9 1.9zM13.6 13.5c0-1.5-.9-2.3-2.2-2.3-.6 0-1 .1-1.4.4.6.5.9 1.1.9 1.9z' fill='%233aa36a'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+            height: 16px;
+            width: 16px;
+            cursor: pointer;
+            border: none;
+            float: left;
+            margin-top: 1px;
+        }
+
+        .p5section {
+            clear: both;
+            margin: 10px 0 4px 0;
+            padding: 0 0 2px 2px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.65;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+        }
+
+        /* Background file transfers tray, always visible in the bottom right corner */
+        #xferTray {
+            display: none;
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            width: 320px;
+            max-width: calc(100vw - 32px);
+            max-height: 50vh;
+            overflow-y: auto;
+            z-index: 20000;
+            background: #fff;
+            color: #222;
+            border: 1px solid #b8b8b8;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            text-align: left;
+        }
+        #xferTray .xferHead { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; font-weight: bold; }
+        #xferTray .xferItem { padding: 6px 10px 8px 10px; border-top: 1px solid rgba(128, 128, 128, 0.3); }
+        #xferTray .xferRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        #xferTray .xferName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #xferTray .xferBtn { color: inherit; text-decoration: none; opacity: 0.6; padding: 0 2px; }
+        #xferTray .xferBtn:hover { opacity: 1; }
+        #xferTray .xferBar { height: 6px; margin: 5px 0 3px 0; background: rgba(128, 128, 128, 0.25); border-radius: 3px; overflow: hidden; }
+        #xferTray .xferBar div { height: 100%; background: #2f7fd0; border-radius: 3px; transition: width 0.2s; }
+        #xferTray .xferState1 .xferBar div { background: #3aa36a; }
+        #xferTray .xferState2 .xferBar div { background: #d04040; width: 100% !important; }
+        #xferTray .xferState3 .xferBar div { background: #999; }
+        #xferTray .xferState2 .xferStatus { color: #d04040; }
+        #xferTray .xferStatus { font-size: 11px; opacity: 0.75; }
+        #xferTray .xferDir { font-weight: bold; opacity: 0.7; }
+        #xferTray .xferWhere { font-size: 11px; opacity: 0.75; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .night #xferTray, [data-bs-theme=dark] #xferTray { background: #2b2b2b; color: #eee; border-color: #555; }
+        @media (max-width: 600px) { #xferTray { left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; } }
+
         .filelist {
             -moz-user-select: none;
             -khtml-user-select: none;
@@ -1996,9 +2066,11 @@
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
                             meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                            if ((userinfo.siteadmin & 8) != 0) { meshserver.send({ action: 'files' }); } // Our user group folders in My Files may have changed
                             break;
                         }
                         case 'deleteusergroup': {
+                            if ((userinfo.siteadmin & 8) != 0) { meshserver.send({ action: 'files' }); } // Remove the folder of this user group from My Files
                             // User group removed
                             if ((usergroups != null) && (usergroups[message.event.ugrpid] != null)) {
                                 delete usergroups[message.event.ugrpid];
@@ -2878,7 +2950,7 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
@@ -2922,7 +2994,7 @@
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a style=cursor:pointer;color:black onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', htmlMeshes = '', htmlGroups = '', htmlShared = '', displayPath = '<a style=cursor:pointer;color:black onclick=p5folderup(0)>' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -2942,7 +3014,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a style=cursor:pointer;color:black onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a style=cursor:pointer;color:black onclick=p5folderup(' + folderdepth + ')>' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>' + (filetreex.ro ? (' (' + "read only" + ')') : '');
                     folderdepth++;
                 } else {
                     break;
@@ -2971,9 +3043,9 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3 || f.t == 4) {
-                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '';
-                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + '</a></span></div>';
+                if (f.t < 3 || f.t == 4 || f.t == 5 || f.t == 6) { // 5 is the files of a user group, 6 the shared files of all users
+                    var right = (f.t == 1 || f.t == 4 || f.t == 5 || f.t == 6) ? p5getQuotabar(f) : '';
+                    h = '<div class=filelist file=999><input file=999 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(name) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + right + '</span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + '></div><a style=cursor:pointer onclick=p5folderset("' + encodeURIComponent(f.nx) + '")>' + shortname + (f.ro ? (' (' + "read only" + ')') : '') + '</a></span></div>';
                 } else {
                     var link = shortname;
                     var publiclink = '';
@@ -2982,13 +3054,14 @@
                     h = '<div class=filelist file=3><input file=3 style=float:left name=fc class=fcb type=checkbox onchange=p5setActions() value=\'' + EscapeHtml(f.nx) + '\'>&nbsp;<span style=float:right;padding-right:4px>' + EscapeHtml(fsize) + '</span><span title="' + shortname + '"><div class=fileIcon' + f.t + '></div>' + link + '</span></div>';
                 }
 
-                if (f.t < 3) { html1 += h; } else { html2 += h; }
+                if (filetreelocation.length == 0) { if (f.t == 4) { htmlMeshes += h; } else if (f.t == 5) { htmlGroups += h; } else if (f.t == 6) { htmlShared += h; } else { html1 += h; } } // At the root: My Files, the shared files, then device groups and user groups each in their own section
+                else if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
             //if (f.parent == null) {  }
             QH('p5rightOfButtons', p5getQuotabar(filetreex));
 
-            QH('p5files', html1 + html2);
+            QH('p5files', html1 + htmlShared + html2 + p5section("Device Groups", htmlMeshes) + p5section("User Groups", htmlGroups));
             QH('p5currentpath', displayPath);
             QE('p5FolderUp', filetreelocation.length != 0);
             QV('p5PublicShare', publicfolder);
@@ -3021,15 +3094,15 @@
         }
 
         function p5getQuotabar(f) {
-            while (f.t > 1 && f.t != 4) { f = f.parent; }
-            if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
+            while (f.t > 1 && f.t != 4 && f.t != 5 && f.t != 6) { f = f.parent; }
+            if ((f.t != 1 && f.t != 4 && f.t != 5) || (f.maxbytes == null)) return '';
             return getNiceSize(f.maxbytes - f.s) + ' <progress style=height:10px;width:100px value=' + f.s + ' max=' + f.maxbytes + ' />';
         }
 
         function p5showPublicLink(u) { setDialogMode(2, "Public Link", 1, null, '<input type=text style=width:100% value="' + u + '" readonly />'); }
 
         var sortorder;
-        function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
+        function p5sort_filename(a, b) { return a.ln.localeCompare(b.ln, undefined, { numeric: true }) * sortorder; } // Numbers in names sort by value: 2 before 10
         function p5sort_timestamp(a, b) { if (a.d > b.d) return (1 * sortorder); if (a.d < b.d) return (-1 * sortorder); return 0; }
         function p5sort_bysize(a, b) { if (a.s == b.s) return p5sort_filename(a, b); return (((a.s - b.s)) * sortorder); }
 
@@ -3044,17 +3117,23 @@
             return r;
         }
 
+        // Members of a user group can only read its files, the server marks those ro.
+        function p5folderIcon(f) { return (f.t == 5) ? 7 : ((f.t == 6) ? 8 : f.t); } // User group files (type 5) have the user group icon, shared files (type 6) the shared folder icon
+        function p5section(title, html) { return (html == '') ? '' : ('<div class=p5section>' + EscapeHtml(title) + '</div>' + html); }
+        function p5readOnly() { if ((filetreelocation.length == 0) || (filetree.f == null)) return false; var r = filetree.f[filetreelocation[0]]; return (r != null) && (r.ro == true); }
+
         function p5setActions() {
             var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-            QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
-            QE('p5NewFolderButton', filetreelocation.length > 0);
-            QE('p5UploadButton', filetreelocation.length > 0);
-            QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
+            var ro = p5readOnly();
+            QE('p5DeleteFileButton', !ro && (cc > 0) && (filetreelocation.length > 0));
+            QE('p5NewFolderButton', !ro && (filetreelocation.length > 0));
+            QE('p5UploadButton', !ro && (filetreelocation.length > 0));
+            QE('p5RenameFileButton', !ro && (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "None" : "All");
-            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CutButton', !ro && (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
-            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
+            QE('p5PasteButton', !ro && (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
         }
 
         function getFileSelCount(includeDirs) { var cc = 0, checkboxes = document.getElementsByName('fc'); for (var i = 0; i < checkboxes.length; i++) { if ((checkboxes[i].checked) && ((includeDirs != false) || (checkboxes[i].attributes.file.value == '3'))) cc++; } return cc; }
@@ -3073,8 +3152,94 @@
         function p5renamefileEx(b, t) { t.newname = Q('p5renameinput').value; meshserver.send(t); }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+        //
+        // Background file transfers. Uploads and downloads run in the background while the user keeps working, and a small
+        // tray in the bottom right corner shows their progress on every screen.
+        // xferUpload() uploads to the server files. Other transfers use xferAdd(), xferProgress() and xferEnd().
+        //
+        var xferList = [], xferNextId = 1, xferCollapsed = false, xferRenderTimer = null;
+
+        // Add a transfer to the tray. o: { name, title, total, dir: 'up' or 'down', device, cancel: function }. Returns the transfer.
+        function xferAdd(o) {
+            var t = { id: xferNextId++, name: o.name, title: (o.title != null) ? o.title : o.name, total: o.total || 0, sent: 0, state: 0, start: Date.now(), dir: o.dir || 'up', device: o.device || null, cancel: o.cancel || null, server: (o.server == true) }; // state: 0 running, 1 done, 2 failed, 3 cancelled
+            xferList.push(t);
+            xferUpdate(true);
+            return t;
+        }
+        function xferProgress(t, sent) { if ((t == null) || (t.state != 0)) return; if (t.waiting) { t.waiting = false; t.start = Date.now(); } t.sent = sent; xferUpdate(false); }
+        function xferEnd(t, state) { if ((t == null) || (t.state != 0)) return; t.state = state; if (state == 1) { t.sent = t.total; } xferFinished(t); }
+
+        // Upload files to the server files. link is the encoded server path, as used by uploadfile.ashx.
+        function xferUpload(files, link) {
+            if ((files == null) || (files.length == 0) || (window.FormData == null)) return false;
+            var fd = new FormData(), total = 0, names = [];
+            fd.append('link', link);
+            for (var i = 0; i < files.length; i++) { if (files[i].size > 0) { fd.append('files', files[i], files[i].name); total += files[i].size; names.push(files[i].name); } }
+            if (names.length == 0) return false;
+            var xhr = new XMLHttpRequest();
+            var t = xferAdd({ name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, dir: 'up', server: true, cancel: function () { xhr.abort(); } });
+            xhr.open('POST', 'uploadfile.ashx');
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { t.total = e.total; xferProgress(t, e.loaded); } };
+            xhr.onload = function () { xferEnd(t, ((xhr.status >= 200) && (xhr.status < 300)) ? 1 : 2); };
+            xhr.onerror = function () { xferEnd(t, 2); };
+            xhr.onabort = function () { xferEnd(t, 3); };
+            xhr.send(fd);
+            return true;
+        }
+
+        function xferFinished(t) {
+            t.cancel = null;
+            t.end = Date.now();
+            xferUpdate(true);
+            if (t.server && (typeof p5refreshFiles == 'function')) { p5refreshFiles(); }
+            if (t.state != 2) { setTimeout(function () { xferRemove(t.id); }, 5000); } // Done and cancelled transfers go away on their own, failed ones stay until dismissed
+        }
+
+        function xferCancel(id) { for (var i in xferList) { var t = xferList[i]; if ((t.id == id) && (t.state == 0) && (t.cancel != null)) { var f = t.cancel; t.cancel = null; f(); if (t.state == 0) { xferEnd(t, 3); } } } return false; }
+        function xferRemove(id) { for (var i = 0; i < xferList.length; i++) { if ((xferList[i].id == id) && (xferList[i].state != 0)) { xferList.splice(i, 1); break; } } xferUpdate(true); return false; }
+        function xferToggle() { xferCollapsed = !xferCollapsed; xferUpdate(true); return false; }
+        function xferSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(2) + ' GB'; }
+        function xferActive() { var c = 0; for (var i in xferList) { if (xferList[i].state == 0) { c++; } } return c; }
+        function xferFailed() { var c = 0; for (var i in xferList) { if (xferList[i].state == 2) { c++; } } return c; }
+
+        // Draw the tray. Progress events come often, so they redraw at most 5 times a second.
+        function xferUpdate(now) {
+            if (now !== true) { if (xferRenderTimer == null) { xferRenderTimer = setTimeout(function () { xferRenderTimer = null; xferUpdate(true); }, 200); } return; }
+            var tray = Q('xferTray');
+            if (tray == null) { tray = document.createElement('div'); tray.id = 'xferTray'; tray.setAttribute('role', 'status'); document.body.appendChild(tray); }
+            if (xferList.length == 0) { tray.style.display = 'none'; return; }
+            var active = xferActive(), sent = 0, total = 0, x = '';
+            for (var i in xferList) { var t = xferList[i]; if (t.state == 0) { sent += t.sent; total += t.total; } }
+            var head = (active > 0) ? ((active == 1) ? "1 transfer in progress" : format("{0} transfers in progress", active)) + ((total > 0) ? (' - ' + Math.floor(sent * 100 / total) + '%') : '') : ((xferFailed() > 0) ? "Transfer failed" : "Transfers finished");
+            x += '<div class=xferHead><span>' + head + '</span><a href=# class=xferBtn onclick="return xferToggle()" title="' + (xferCollapsed ? "Show transfers" : "Hide transfers") + '">' + (xferCollapsed ? '&#9650;' : '&#9660;') + '</a></div>';
+            if (xferCollapsed == false) {
+                for (var i in xferList) {
+                    var t = xferList[i], pct = (t.total > 0) ? Math.min(100, Math.floor(t.sent * 100 / t.total)) : 0, status;
+                    if (t.state == 0) {
+                        if (t.waiting) { status = "Waiting..."; }
+                        else {
+                            var secs = (Date.now() - t.start) / 1000, speed = (secs > 0.5) ? (t.sent / secs) : 0;
+                            status = pct + '% - ' + xferSize(t.sent) + ' / ' + xferSize(t.total) + ((speed > 0) ? (' - ' + xferSize(speed) + '/s') : '');
+                        }
+                    } else if (t.state == 1) { status = "Done" + ' - ' + xferSize(t.total); }
+                    else if (t.state == 2) { status = (t.dir == 'down') ? "Download failed" : "Upload failed"; }
+                    else { status = "Cancelled"; }
+                    var where = (t.dir == 'down') ? ((t.device != null) ? format("From {0}", t.device) : "Download") : ((t.device != null) ? format("To {0}", t.device) : "To server files");
+                    x += '<div class="xferItem xferState' + t.state + '"><div class=xferRow><span class=xferName title="' + EscapeHtml(t.title) + '"><span class=xferDir>' + ((t.dir == 'down') ? '&#8595;' : '&#8593;') + '</span> ' + EscapeHtml(t.name) + '</span>';
+                    if (t.state == 0) { x += '<a href=# class=xferBtn onclick="return xferCancel(' + t.id + ')" title="' + "Cancel" + '">&#10005;</a>'; } else { x += '<a href=# class=xferBtn onclick="return xferRemove(' + t.id + ')" title="' + "Dismiss" + '">&#10005;</a>'; }
+                    x += '</div><div class=xferWhere>' + where + ((t.detail && (t.state == 0)) ? (' - ' + EscapeHtml(t.detail)) : '') + '</div>';
+                    x += '<div class=xferBar><div style="width:' + ((t.state == 1) ? 100 : pct) + '%"></div></div><div class=xferStatus>' + status + '</div></div>';
+                }
+            }
+            tray.innerHTML = x;
+            tray.style.display = 'block';
+        }
+
+        // Warn before leaving the page while transfers are still running, leaving would stop them
+        window.addEventListener('beforeunload', function (e) { if (xferActive() > 0) { e.preventDefault(); e.returnValue = ''; } });
+
         function p5uploadFile() { setDialogMode(2, "Upload File", 3, p5uploadFileEx, '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponent(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput style=width:100% multiple=multiple onchange="updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit style=display:none /></form>'); updateUploadDialogOk('p5uploadinput'); }
-        function p5uploadFileEx() { Q('p5loginSubmit').click(); }
+        function p5uploadFileEx() { if (xferUpload(Q('p5uploadinput').files, Q('p5uploadpath').value) == false) { Q('p5loginSubmit').click(); } } // Upload in the background with progress, the old form post if the browser can't
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q(x).value != ''); }
 
         var p5clipboard = null, p5clipboardFolder = null, p5clipboardCut = 0;
@@ -8170,6 +8335,7 @@
             for (var i = 0; i < 32; i++) { QV('p' + i, i == x); }
             xxcurrentView = x;
             updateCurrentUrl();
+            if ((x == 5) && (meshserver != null) && (userinfo != null) && ((userinfo.siteadmin & 8) != 0)) { meshserver.send({ action: 'files' }); } // Get the latest server files when opening My Files
         }
 
         // Change the URL

@@ -1482,6 +1482,40 @@
             "type": "integer",
             "description": "This is the maximum amount of data in kilobytes that can be placed in the “My Files” tab for a given mesh"
           },
+          "userGroupFiles": {
+            "type": "boolean",
+            "default": true,
+            "description": "Gives each user group a folder of files on the server, shown in the “My Files” tab. Members of the user group can view and download the files, users who can manage user groups can also add, change and remove them. Users need server file access for either. Set to false to turn user group files off."
+          },
+          "userGroupQuota": {
+            "type": "integer",
+            "description": "This is the maximum amount of data, in bytes, that can be placed in the “My Files” tab for a given user group. Default: no limit."
+          },
+          "sharedFiles": {
+            "type": "boolean",
+            "default": true,
+            "description": "Gives the domain a folder of shared files on the server, shown at the top of the “My Files” tab for all users who have server file access. Set to false to turn shared files off."
+          },
+          "sharedFilesWrite": {
+            "type": "string",
+            "enum": [ "managers", "admins", "all" ],
+            "default": "managers",
+            "description": "Who can add, change and remove shared files; everyone else can only view and download them. managers: full administrators and users who can manage users or user groups. admins: full administrators only. all: every user who can see the shared files."
+          },
+          "sharedFilesUserGroups": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Limits the shared files to the members of these user groups, given by name or id. Full administrators always see them. Default: all users."
+          },
+          "sharedFilesName": {
+            "type": "string",
+            "default": "Shared Files",
+            "description": "The name of the shared files folder in the “My Files” tab."
+          },
+          "sharedFilesQuota": {
+            "type": "integer",
+            "description": "This is the maximum amount of data, in bytes, that can be placed in the shared files. Default: no limit."
+          },
           "loginKey": {
             "type": [
               "string",

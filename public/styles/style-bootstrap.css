@@ -2498,6 +2498,79 @@ nav .lbbuttonsel2 {
     margin-top: 1px;
 }
 
+.fileIcon7 {
+    background: url(../images/group-256.png) center / 16px 16px no-repeat;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+.fileIcon8 {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M.5 3.5h5l1.5 1.5h8.5v9H.5z' fill='%23f0cd66' stroke='%23b8932a'/%3E%3Ccircle cx='8' cy='8.4' r='1.5' fill='%232f7fd0'/%3E%3Ccircle cx='4.6' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Ccircle cx='11.4' cy='9.2' r='1.2' fill='%233aa36a'/%3E%3Cpath d='M5.3 13.5c0-1.9 1.2-2.9 2.7-2.9s2.7 1 2.7 2.9z' fill='%232f7fd0'/%3E%3Cpath d='M2.4 13.5c0-1.5.9-2.3 2.2-2.3.6 0 1 .1 1.4.4-.6.5-.9 1.1-.9 1.9zM13.6 13.5c0-1.5-.9-2.3-2.2-2.3-.6 0-1 .1-1.4.4.6.5.9 1.1.9 1.9z' fill='%233aa36a'/%3E%3C/svg%3E") center / 16px 16px no-repeat;
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    border: none;
+    float: left;
+    margin-top: 1px;
+}
+
+
+.p5section {
+    clear: both;
+    margin: 10px 0 4px 0;
+    padding: 0 0 2px 2px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.65;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.35);
+}
+
+/* Background file transfers tray, always visible in the bottom right corner */
+#xferTray {
+    display: none;
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: 20000;
+    background: #fff;
+    color: #222;
+    border: 1px solid #b8b8b8;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    text-align: left;
+}
+#xferTray .xferHead { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; font-weight: bold; }
+#xferTray .xferItem { padding: 6px 10px 8px 10px; border-top: 1px solid rgba(128, 128, 128, 0.3); }
+#xferTray .xferRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#xferTray .xferName { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#xferTray .xferBtn { color: inherit; text-decoration: none; opacity: 0.6; padding: 0 2px; }
+#xferTray .xferBtn:hover { opacity: 1; }
+#xferTray .xferBar { height: 6px; margin: 5px 0 3px 0; background: rgba(128, 128, 128, 0.25); border-radius: 3px; overflow: hidden; }
+#xferTray .xferBar div { height: 100%; background: #2f7fd0; border-radius: 3px; transition: width 0.2s; }
+#xferTray .xferState1 .xferBar div { background: #3aa36a; }
+#xferTray .xferState2 .xferBar div { background: #d04040; width: 100% !important; }
+#xferTray .xferState3 .xferBar div { background: #999; }
+#xferTray .xferState2 .xferStatus { color: #d04040; }
+#xferTray .xferStatus { font-size: 11px; opacity: 0.75; }
+#xferTray .xferDir { font-weight: bold; opacity: 0.7; }
+#xferTray .xferWhere { font-size: 11px; opacity: 0.75; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.night #xferTray, [data-bs-theme=dark] #xferTray { background: #2b2b2b; color: #eee; border-color: #555; }
+@media (max-width: 600px) { #xferTray { left: 8px; right: 8px; bottom: 8px; width: auto; max-width: none; } }
+
+
+
 .filelist {
     -moz-user-select: none;
     -khtml-user-select: none;

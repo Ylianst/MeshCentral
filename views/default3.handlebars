@@ -844,6 +844,7 @@
                             <div id="p5rightOfButtons" class="d-flex align-items-center"></div>
                             <div class="m-1 d-flex align-items-center">
                                 <input type=button id=p5FolderUp class="btn btn-secondary btn-sm me-1" disabled="disabled" onclick="return p5folderup();" value="Up" />
+                                <input type=button id=p5RefreshButton class="btn btn-secondary btn-sm me-1" onclick="p5refreshFiles();" value="Refresh" title="Get the latest list of files" />
                                 <input type=button id=p5SelectAllButton class="btn btn-secondary btn-sm me-1" disabled="disabled" onclick="p5selectallfile();" value="Select All" />
                                 <input type=button id=p5RenameFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Rename" onclick="p5renamefile();" />
                                 <input type=button id=p5DeleteFileButton class="btn btn-primary btn-sm me-1" disabled="disabled" value="Delete" onclick="p5deletefile();" />
@@ -3443,10 +3444,7 @@
                     terminal.Stop();
                     terminal = null;
                 }
-                if (files != null) { // Disconnect files
-                    files.Stop();
-                    files = null;
-                }
+                p13stopAllFiles(); // Disconnect files, with the ones kept in the background for transfers
                 if (serverinfo.logoutonidlesessiontimeout) {
                     if (urlargs.key) { window.location.href = 'logout?key=' + urlargs.key; }
 					else { window.location.href = 'logout'; }
@@ -4488,9 +4486,11 @@
                             // Group update, refresh all our device groups and nodes. TODO: Optimize this to only do this when needed.
                             meshserver.send({ action: 'meshes' });
                             meshserver.send({ action: 'nodes', skip: (devicePagingState == null) ? 0 : devicePagingState.skip });
+                            if ((userinfo.siteadmin & 8) != 0) { p5refreshFiles(); } // Our user group folders in My Files may have changed
                             break;
                         }
                         case 'deleteusergroup': {
+                            if ((userinfo.siteadmin & 8) != 0) { p5refreshFiles(); } // Remove the folder of this user group from My Files
                             // User group removed
                             if ((usergroups != null) && (usergroups[message.event.ugrpid] != null)) {
                                 delete usergroups[message.event.ugrpid];
@@ -5410,6 +5410,7 @@
             }
             if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { terminal.m.TermHandleKeyDown(e); if ((e.keyCode >= 37) && (e.keyCode <= 40)) { haltEvent(e); } }
             if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 5) && (e.keyCode == 116)) { haltEvent(e); return false; } // F5 Refresh on My Files
             if (!xxdialogMode && ((xxcurrentView == 15) || (xxcurrentView == 115))) { return agentConsoleHandleKeys(e); }
             if (!xxdialogMode && (xxcurrentView == 4)) {
                 if ((e.keyCode === 8) && (userSearchFocus == 0)) { var x = Q('UserSearchInput').value; Q('UserSearchInput').value = (x.substring(0, x.length - 1)); processed = 1; }
@@ -5446,6 +5447,7 @@
             }
             if (!xxdialogMode && (xxcurrentView == 12) && terminal && (terminal.State == 3) && xterm == null) { return terminal.m.TermHandleKeyUp(e); }
             if (!xxdialogMode && (xxcurrentView == 13) && (e.keyCode == 116) && (p13filetree != null)) { p13folderup(9999); haltEvent(e); return false; } // F5 Refresh on files
+            if (!xxdialogMode && (xxcurrentView == 5) && (e.keyCode == 116)) { p5refreshFiles(); haltEvent(e); return false; } // F5 Refresh on My Files
             if (!xxdialogMode && (xxcurrentView == 4)) { if (((e.keyCode === 8) && (searchFocus == 0)) || e.keyCode === 27) { return haltEvent(e); } }
             if (xxdialogMode && (e.keyCode == 27)) { dialogclose(0); }
             if ((e.shiftKey == true) && (e.keyCode == 27)) { dialogclose(0); Q('KvmSearchInput').value = Q('SearchInput').value = ''; mainUpdate(5); if (desktop != null) { connectDesktop(); } if (terminal != null) { connectTerminal(); } if (files != null) { connectFiles(); } go(1); return; } // Shift-ESC: Reset the web page
@@ -13567,7 +13569,7 @@
             // Setup the files tab
             if ((filesNode != currentNode) && (files != null)) {
                 if (filesNode._id != currentNode._id) {
-                    files.Stop(); filesNode = null; files = null;
+                    p13leaveFiles(); filesNode = null; // A connection with transfers keeps going in the background
                 }
             }
             var samenode = (filesNode == currentNode);
@@ -13582,6 +13584,7 @@
         }
 
         function onFilesStateChange(xfiles, state) {
+            if ((xfiles != null) && (xfiles !== files)) { p13bgConnState(xfiles, state); return; } // A connection kept in the background for its transfers
             setSessionActivity();
             QV('p13Connectspan', (state == 0) && (filesNode.mtype == 2)); // Files Connect button and dropdown
             QV('p13Connectsspan', (state == 0) && (features2 & 0x200) && (filesNode.agent != null) && (filesNode.agent.id != 3) && (filesNode.agent.id != 4) && ((features2 & 0x800000) == 0));  // Files SFTP Connect button and dropdown
@@ -13609,7 +13612,7 @@
                     p13setActions();
                     if (files != null) { files.Stop(); files = null; }
                     if (xxdialogTag == 'fileMsgDialog') { setDialogMode(0); }
-                    if (uploadFile != null) { p13uploadFileTransferDone(); uploadFile = null; }
+                    p13connTransfersEnd(xfiles, 2); // Transfers that did not finish failed
                     break;
                 case 3:
                     p13filetreelocation = [];
@@ -13650,7 +13653,7 @@
             p13clearConsoleMsg();
             if (!files) {
                 // Setup a mesh agent files
-                files = CreateAgentRedirect(meshserver, CreateRemoteFiles(p13gotFiles, p13gotFilesBinary), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
+                var conn = files = CreateAgentRedirect(meshserver, CreateRemoteFiles(function (data) { p13gotFiles(data, conn); }, function (data) { p13gotFilesBinary(data, conn); }), serverPublicNamePort, authCookie, authRelayCookie, domainUrl);
                 if (contype == 2) { files.urlname = 'sshfilesrelay.ashx'; } // If this is a SSH session, change the URL to the SSH application relay.
                 files.contype = contype;
                 files.options = { consent: consent }
@@ -13670,6 +13673,7 @@
                 files.Start(filesNode._id);
             } else {
                 //QH('Term', '');
+                p13connTransfersEnd(files, 3); // Disconnecting cancels the transfers of this device
                 files.Stop();
                 files = null;
             }
@@ -14335,13 +14339,16 @@
 
         function p13fileOperationDialogEx(b) { if ((b == 0) && (files != null)) { files.sendText({ action: 'cancel' }); } }
 
-        function p13gotFiles(data) {
-            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data); return; } // This is ok because 4 first bytes is a control value.
+        function p13gotFiles(data, conn) {
+            if (conn == null) { conn = files; }
+            if ((data.length > 0) && (data.charCodeAt(0) != 123)) { p13gotDownloadBinaryData(data, conn); return; } // This is ok because 4 first bytes is a control value.
             //console.log('p13gotFiles', data);
             try { data = JSON.parse(decode_utf8(data)); } catch (ex) {
                 try { data = JSON.parse(data); } catch (ex) { console.log('Unable to parse: ' + data); return; }
             }
-            if (data.action == 'download') { p13gotDownloadCommand(data); return; }
+            if (data.action == 'download') { p13gotDownloadCommand(data, conn); return; }
+            if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data, conn); return; } // Process file upload commands
+            if (conn !== files) return; // A connection kept in the background for its transfers only handles them
 
             // Find file result
             if (data.action == 'findfile') {
@@ -14358,8 +14365,6 @@
                 return;
             }
 
-            // Process file upload commands
-            if ((data.action != null) && (data.action.startsWith('upload'))) { p13gotUploadData(data); return; }
 
             // Process any SSH actions
             switch (data.action) {
@@ -14854,7 +14859,7 @@
             updateUploadDialogOk('p13uploadinput');
         }
         function updateUploadDialogOk(x) { QE('idx_dlgOkButton', Q('p13uploadinput').files.length > 0); }
-        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); return false; }
+        function p13uploadFileEx() { p13doUploadFiles(Q('p13uploadinput').files); } // The upload runs in the background, so the dialog closes (an overwrite question opens its own)
         function p13viewfile() {
             var checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
@@ -14978,32 +14983,6 @@
         // FILES DOWNLOAD
         //
 
-        var gdownloadFile; // Global state for file download
-
-        // Called by the html page to start a download, arguments are: path, file name and file size.
-        function p13downloadfile(x, y, z, tag) {
-            if (xxdialogMode || !files) return;
-            gdownloadFile = { path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, chunks: [], data: '', state: 0, id: Math.random(), tag: tag }
-            //console.log('p13downloadFileCancel', gdownloadFile);
-            files.sendText({ action: 'download', sub: 'start', id: gdownloadFile.id, path: gdownloadFile.path });
-            setModalContent('xxAddAgent', "Download File", '<div>' + EscapeHtml(gdownloadFile.file) + '</div><br /><progress id=d2progressBar style=width:100% value=0 max=' + z + ' />');
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => p13downloadFileCancel());
-        }
-
-        // Called by the html page to cancel the download
-        function p13downloadFileCancel() {
-            setDialogMode(0);
-            files.sendText({ action: 'download', sub: 'cancel', id: gdownloadFile.id }); gdownloadFile = null;
-        }
-
-        // Called by the transport when download control command is received
-        function p13gotDownloadCommand(cmd) {
-            //console.log('p13gotDownloadCommand', cmd);
-            if ((gdownloadFile == null) || (cmd.id != gdownloadFile.id)) return;
-            if (cmd.sub == 'start') { gdownloadFile.state = 1; files.sendText({ action: 'download', sub: 'startack', id: gdownloadFile.id }); }
-            else if (cmd.sub == 'cancel') { gdownloadFile = null; setDialogMode(0); }
-        }
-
         // Show a completed text download (gdownloadFile.data) in the editor dialog
         function p13showDownloadInViewer() {
             // View the file in the dialog box
@@ -15044,33 +15023,139 @@
             }
         }
 
-        // Called by the transport when binary data is received
-        function p13gotDownloadBinaryData(data) {
-            if (!gdownloadFile || gdownloadFile.state == 0) return;
+        var gdownloadFile; // The download shown in the file viewer
+
+        // Device file transfers run in the background, shown in the transfers tray. Each one belongs to the files connection
+        // of its device (conn.xferUploads, conn.xferDownloads, first one active, the others waiting). If the user moves to
+        // another device during a transfer, that connection stays open in the background until its transfers end.
+        var xferBgConns = [];
+        function p13connBusy(conn) { return (conn != null) && (((conn.xferUploads != null) && (conn.xferUploads.length > 0)) || ((conn.xferDownloads != null) && (conn.xferDownloads.length > 0))); }
+
+        // Stop using the files connection of the current device. A connection with transfers keeps going in the background.
+        function p13leaveFiles() {
+            if (files == null) return;
+            var conn = files; files = null;
+            if (p13connBusy(conn)) { conn.xferBackground = true; xferBgConns.push(conn); } else { conn.Stop(); }
+        }
+
+        // Close a connection kept in the background (by p13leaveFiles) once its transfers are done
+        function p13connCheckIdle(conn) {
+            if ((conn == null) || (conn === files) || (conn.xferBackground !== true) || p13connBusy(conn)) return;
+            var i = xferBgConns.indexOf(conn); if (i >= 0) { xferBgConns.splice(i, 1); }
+            try { conn.Stop(); } catch (ex) { }
+        }
+
+        // The connection of a transfer closed: its transfers that did not finish failed, or were cancelled
+        function p13connTransfersEnd(conn, state) {
+            if (conn == null) return;
+            var ups = conn.xferUploads || [], downs = conn.xferDownloads || [];
+            conn.xferUploads = []; conn.xferDownloads = [];
+            for (var i in ups) { ups[i].finished = true; xferEnd(ups[i].t, state); }
+            for (var i in downs) { downs[i].finished = true; xferEnd(downs[i].t, state); }
+        }
+
+        // State of a background connection changed
+        function p13bgConnState(conn, state) {
+            if (state != 0) return;
+            p13connTransfersEnd(conn, 2);
+            var i = xferBgConns.indexOf(conn); if (i >= 0) { xferBgConns.splice(i, 1); }
+        }
+
+        // Stop all files connections, including the ones in the background
+        function p13stopAllFiles() {
+            if (files != null) { p13connTransfersEnd(files, 3); files.Stop(); files = null; }
+            var bg = xferBgConns; xferBgConns = [];
+            for (var i in bg) { p13connTransfersEnd(bg[i], 3); try { bg[i].Stop(); } catch (ex) { } }
+        }
+
+        //
+        // FILES DOWNLOAD
+        //
+
+        // Called by the html page to start a download, arguments are: path, file name and file size.
+        function p13downloadfile(x, y, z, tag) {
+            if (!files) return;
+            var conn = files;
+            var dn = { conn: conn, path: decodeURIComponent(x), file: decodeURIComponent(y), size: z, tsize: 0, chunks: [], data: '', state: 0, id: Math.random(), tag: tag };
+            dn.t = xferAdd({ name: dn.file, total: z, dir: 'down', device: (filesNode ? filesNode.name : null), cancel: function () { p13downloadCancel(dn); } });
+            if (conn.xferDownloads == null) { conn.xferDownloads = []; }
+            conn.xferDownloads.push(dn);
+            if (conn.xferDownloads.length == 1) { p13downloadStart(dn); } else { dn.t.waiting = true; xferUpdate(true); }
+        }
+
+        function p13downloadStart(dn) { dn.t.waiting = false; dn.t.start = Date.now(); dn.conn.sendText({ action: 'download', sub: 'start', id: dn.id, path: dn.path }); xferUpdate(true); }
+
+        // A download ended. state: 1 done, 2 failed, 3 cancelled
+        function p13downloadEnd(dn, state) {
+            if (dn.finished) return;
+            dn.finished = true;
+            var list = dn.conn.xferDownloads || [], i = list.indexOf(dn);
+            if (i >= 0) { list.splice(i, 1); }
+            xferEnd(dn.t, state);
+            if ((i == 0) && (list.length > 0)) { p13downloadStart(list[0]); } // Start the next download of this device
+            p13connCheckIdle(dn.conn);
+        }
+
+        function p13downloadCancel(dn) {
+            if (dn.finished) return;
+            if (dn.state != 0 || ((dn.conn.xferDownloads || [])[0] === dn)) { try { dn.conn.sendText({ action: 'download', sub: 'cancel', id: dn.id }); } catch (ex) { } }
+            p13downloadEnd(dn, 3);
+        }
+
+        // Kept for older callers: cancel the current download of the current device
+        function p13downloadFileCancel() { if ((files != null) && (files.xferDownloads != null) && (files.xferDownloads.length > 0)) { p13downloadCancel(files.xferDownloads[0]); } }
+
+        // Called by the transport when download control command is received
+        function p13gotDownloadCommand(cmd, conn) {
+            if (conn == null) { conn = files; }
+            var dn = ((conn != null) && (conn.xferDownloads != null)) ? conn.xferDownloads[0] : null;
+            if ((dn == null) || (cmd.id != dn.id)) return;
+            if (cmd.sub == 'start') { dn.state = 1; conn.sendText({ action: 'download', sub: 'startack', id: dn.id }); }
+            else if (cmd.sub == 'cancel') { p13downloadEnd(dn, 2); }
+        }
+
+        // Add received data to a download, data is a string (from text frames) or a Uint8Array
+        function p13downloadData(conn, data, isString) {
+            var dn = ((conn != null) && (conn.xferDownloads != null)) ? conn.xferDownloads[0] : null;
+            if ((dn == null) || (dn.state == 0)) return;
+            var header = isString ? ReadInt(data, 0) : ((data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3]);
             if (data.length > 4) {
-                gdownloadFile.tsize += (data.length - 4); // Add to the total bytes received
-                gdownloadFile.data += data.substring(4); // Append the data
-                Q('d2progressBar').value = gdownloadFile.tsize; // Change the progress bar
-            }
-            if ((ReadInt(data, 0) & 1) != 0) { // Check end flag
-                if (gdownloadFile.tag == 'viewer') {
-                    p13showDownloadInViewer();
-                    gdownloadFile = null;
+                if (isString) {
+                    var str = data.substring(4);
+                    dn.tsize += str.length;
+                    if (dn.tag == 'viewer') { dn.data += str; } else { var a = new Uint8Array(str.length); for (var i = 0; i < str.length; i++) { a[i] = str.charCodeAt(i); } dn.chunks.push(a); }
                 } else {
-                    // Save the file to disk
-                    saveAs(data2blob(gdownloadFile.data), gdownloadFile.file); gdownloadFile = null; setDialogMode(0); // Save the file
+                    var payload = data.subarray(4);
+                    dn.tsize += payload.length;
+                    if (dn.tag == 'viewer') {
+                        var s = '';
+                        if (payload.length < 16000) { s = String.fromCharCode.apply(null, payload); } else { for (var i = 0; i < payload.length; i++) { s += String.fromCharCode(payload[i]); } }
+                        dn.data += s;
+                    } else { dn.chunks.push(payload); }
                 }
+                xferProgress(dn.t, dn.tsize);
+            }
+            if ((header & 1) != 0) { // End flag
+                if (dn.tag == 'viewer') {
+                    if ((conn === files) && !xxdialogMode) { gdownloadFile = dn; p13showDownloadInViewer(); gdownloadFile = null; } // Show it if the user is still on this device
+                } else {
+                    saveAs(new Blob(dn.chunks, { type: 'application/octet-stream' }), dn.file); // Save the file
+                }
+                p13downloadEnd(dn, 1);
             } else {
-                files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id }); // Send the ACK
+                conn.sendText({ action: 'download', sub: 'ack', id: dn.id }); // Send the ACK
             }
         }
+
+        // Called by the transport when binary data is received
+        function p13gotDownloadBinaryData(data, conn) { p13downloadData((conn != null) ? conn : files, data, true); }
 
         function p13downloadButton() {
             var checkboxes = document.getElementsByName('fd');
             for (var i = 0; i < checkboxes.length; i++) {
                 if (checkboxes[i].checked) {
                     var thefile = p13filetree.dir[checkboxes[i].value];
-                    p13downloadDeviceFile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n));
+                    p13downloadDeviceFile(encodeURIComponentEx(p13filetreelocation.join('/') + '/' + thefile.n), thefile.s);
                 }
             }
         }
@@ -15133,7 +15218,6 @@
         // FILES UPLOAD
         //
 
-        var uploadFile;
         function p13doUploadFiles(files) {
             if (xxdialogMode) return;
 
@@ -15159,159 +15243,151 @@
             }
         }
 
-        function p13uploadFileContinue(b, files) {
-            uploadFile = {};
-            uploadFile.xpath = p13filetreelocation.join('/');
-            uploadFile.xfiles = files;
-            uploadFile.xfilePtr = -1;
-            setModalContent('xxAddAgent', "Upload File", '<div id=p13dfileName>' + "Connecting..." + '</div><br /><progress id=d2progressBar style="display:block;width:100%;margin-bottom:5px" value=0 max=0></progress><div id=d2progressLabel style="text-align:center;margin-top:5px">0%</div>');
-            showModal('xxAddAgentModal', 'idx_dlgCancelButton', () => p13uploadFileCancel(10));
-            document.getElementById('idx_dlgOkButton').style.display = 'none'; // hide OK button
-            p13uploadNextFile();
-            if (b == 3) return false; // if overwritten, dont close the dialog
+        // Start uploading files to the current folder of the current device, in the background with progress in the transfers tray
+        function p13uploadFileContinue(b, xfiles) {
+            if ((files == null) || (xfiles == null) || (xfiles.length == 0)) return;
+            var conn = files, names = [], total = 0;
+            for (var i = 0; i < xfiles.length; i++) { names.push(xfiles[i].name); total += ((xfiles[i].xdata != null) ? xfiles[i].xdata.byteLength : xfiles[i].size); }
+            var up = { conn: conn, xpath: p13filetreelocation.join('/'), xfiles: xfiles, xfilePtr: -1, done: 0, dir: ((p13filetree != null) ? p13filetree.dir : null) };
+            up.t = xferAdd({ name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, dir: 'up', device: (filesNode ? filesNode.name : null), cancel: function () { p13uploadCancel(up); } });
+            if (conn.xferUploads == null) { conn.xferUploads = []; }
+            conn.xferUploads.push(up);
+            if (conn.xferUploads.length == 1) { p13uploadNextFile(up); } else { up.t.waiting = true; xferUpdate(true); } // One upload at a time on a connection, the others wait
         }
 
         // Perform SHA-384 hashing
         const byteToHex = [];
         for (var n = 0; n <= 0xff; ++n) { var hexOctet = n.toString(16).padStart(2, '0'); byteToHex.push(hexOctet); }
-        function arrayBufferToHex(arrayBuffer) { return Array.prototype.map.call(new Uint8Array(arrayBuffer), n => byteToHex[n]).join(''); }
-        function performHash(data, f) { window.crypto.subtle.digest('SHA-384', data).then(function (v) { f(arrayBufferToHex(v)); }, function () { f(null); }); }
+        function arrayBufferToHex(arrayBuffer) { return Array.prototype.map.call( new Uint8Array(arrayBuffer), n => byteToHex[n] ).join(''); }
+        function performHash(data, f) { window.crypto.subtle.digest('SHA-384', data).then(function (v) { f(arrayBufferToHex(v)); }, function() { f(null); }); }
         function performHashOnFile(file, f) {
             // TODO: At some point, try to make this work for files of unlimited size using a digest stream
             var reader = new FileReader();
             reader.onerror = function (err) { f(null); }
-            reader.onload = function () { window.crypto.subtle.digest('SHA-384', reader.result).then(function (v) { f(arrayBufferToHex(v)); }, function () { f(null); }); };
+            reader.onload = function () { window.crypto.subtle.digest('SHA-384', reader.result).then(function (v) { f(arrayBufferToHex(v)); }, function() { f(null); }); };
             reader.readAsArrayBuffer(file);
         }
 
+        function p13uploadFileSize(up) { var file = up.xfiles[up.xfilePtr]; return (file == null) ? 0 : ((file.xdata != null) ? file.xdata.byteLength : file.size); }
+        function p13uploadProgress(up) { xferProgress(up.t, up.done + Math.min(up.xptr || 0, Math.max(p13uploadFileSize(up) - 1, 0))); }
+
         // Push the next file
-        function p13uploadNextFile() {
-            uploadFile.xfilePtr++;
-            if (uploadFile.xfiles.length > uploadFile.xfilePtr) {
-                uploadFile.xptr = 0;
-                uploadFile.blocksInFlight = 0;
-                uploadFile.uploadComplete = false;
-                uploadFile.uploaddoneSent = false;
-                var file = uploadFile.xfiles[uploadFile.xfilePtr];
-                QH('p13dfileName', EscapeHtml(file.name));
-                Q('d2progressBar').max = file.size;
-                Q('d2progressBar').value = 0;
-                Q('d2progressLabel').textContent = '0%';
+        function p13uploadNextFile(up) {
+            if (up.finished) return;
+            up.t.waiting = false;
+            up.xfilePtr++;
+            if (up.xfiles.length > up.xfilePtr) {
+                up.xptr = 0;
+                up.blocksInFlight = 0;
+                up.uploadComplete = false;
+                up.uploaddoneSent = false;
+                var file = up.xfiles[up.xfilePtr];
+                if (up.xfiles.length > 1) { up.t.detail = file.name; }
+                p13uploadProgress(up);
                 if (file.xdata == null) {
-                    uploadFile.xfile = file;
+                    up.xfile = file; up.xdata = null;
                     // If the remote file already exists and is smaller then our file, see if we can resume the trasfer
                     var f = null;
-                    for (var i in p13filetree.dir) { if (p13filetree.dir[i].n == file.name) { f = p13filetree.dir[i]; } }
-                    if ((f != null) && (f.s <= uploadFile.xfile.size)) {
-                        performHashOnFile(uploadFile.xfile, function (hash) { files.sendText(JSON.stringify({ action: 'uploadhash', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == uploadFile.xfile.size } })); });
+                    for (var i in up.dir) { if (up.dir[i].n == file.name) { f = up.dir[i]; } }
+                    if ((f != null) && (f.s <= up.xfile.size)) {
+                        performHashOnFile(up.xfile, function (hash) {
+                            if (up.finished) return;
+                            if (hash == null) { up.conn.sendText(JSON.stringify({ action: 'upload', reqid: up.xfilePtr, path: up.xpath, name: file.name, size: up.xfile.size })); return; }
+                            up.conn.sendText(JSON.stringify({ action: 'uploadhash', reqid: up.xfilePtr, path: up.xpath, name: file.name, tag: { h: hash.toUpperCase(), s: f.s, skip: f.s == up.xfile.size } }));
+                        });
                     } else {
-                        files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size }));
+                        up.conn.sendText(JSON.stringify({ action: 'upload', reqid: up.xfilePtr, path: up.xpath, name: file.name, size: up.xfile.size }));
                     }
                 } else {
                     // Data already loaded
-                    uploadFile.xdata = file.xdata;
-                    files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xdata.byteLength }));
+                    up.xfile = null; up.xdata = file.xdata;
+                    up.conn.sendText(JSON.stringify({ action: 'upload', reqid: up.xfilePtr, path: up.xpath, name: file.name, size: up.xdata.byteLength }));
                 }
             } else {
-                p13uploadFileTransferDone();
+                p13uploadEnd(up, 1);
             }
         }
 
-        // Used to cancel the entire transfer.
-        function p13uploadFileCancel(button, tag) {
-            if (uploadFile != null) { files.sendText(JSON.stringify({ action: 'uploadcancel', reqid: uploadFile.xfilePtr })); uploadFile = null; }
-            p13uploadFileTransferDone();
+        // An upload ended. state: 1 done, 2 failed, 3 cancelled
+        function p13uploadEnd(up, state) {
+            if (up.finished) return;
+            up.finished = true;
+            var list = up.conn.xferUploads || [], i = list.indexOf(up);
+            if (i >= 0) { list.splice(i, 1); }
+            xferEnd(up.t, state);
+            if (up.conn === files) { p13folderup(9999); } // Refresh the files of this device if the user is looking at it
+            if ((i == 0) && (list.length > 0)) { p13uploadNextFile(list[0]); } // Start the next upload to this device
+            p13connCheckIdle(up.conn);
         }
 
-        // Used to cancel the entire transfer.
-        function p13uploadFileTransferDone() {
-            uploadFile = null; // No more files to upload, clean up.
-            setDialogMode(0); // Close the dialog box
-            p13folderup(9999); // Refresh the current folder
+        // Cancel an upload
+        function p13uploadCancel(up) {
+            if (up.finished) return;
+            if ((up.conn.xferUploads || [])[0] === up) { try { up.conn.sendText(JSON.stringify({ action: 'uploadcancel', reqid: up.xfilePtr })); } catch (ex) { } }
+            p13uploadEnd(up, 3);
         }
 
-        // Binary data straight from the websocket (avoids the per-byte string conversion for downloads)
-        function p13gotFilesBinary(data) {
+        // Kept for older callers: cancel the current upload of the current device
+        function p13uploadFileCancel() { if ((files != null) && (files.xferUploads != null) && (files.xferUploads.length > 0)) { p13uploadCancel(files.xferUploads[0]); } }
+        function p13uploadFileTransferDone() { p13folderup(9999); }
+
+        function p13gotFilesBinary(data, conn) {
+            if (conn == null) { conn = files; }
             if (data.length > 0 && data[0] != 1) {
-                // Not a download block, hand it to the normal text path
-                var binStr = '';
+                var binStr = "";
                 if (data.length < 16000) {
                     binStr = String.fromCharCode.apply(null, data);
                 } else {
                     for (var i = 0; i < data.length; i++) { binStr += String.fromCharCode(data[i]); }
                 }
-                p13gotFiles(binStr);
+                p13gotFiles(binStr, conn);
                 return;
             }
-            if (!gdownloadFile || gdownloadFile.state == 0) return;
-            if (data.length > 4) {
-                var payload = data.subarray(4);
-                gdownloadFile.tsize += payload.length;
-                if (gdownloadFile.tag == 'viewer') {
-                    var str = '';
-                    if (payload.length < 16000) {
-                        str = String.fromCharCode.apply(null, payload);
-                    } else {
-                        for (var i = 0; i < payload.length; i++) { str += String.fromCharCode(payload[i]); }
-                    }
-                    gdownloadFile.data += str;
-                } else {
-                    gdownloadFile.chunks.push(payload);
-                }
-                Q('d2progressBar').value = gdownloadFile.tsize;
-            }
-            var header = (data[0] << 24) + (data[1] << 16) + (data[2] << 8) + data[3];
-            if ((header & 1) != 0) { // End flag
-                if (gdownloadFile.tag == 'viewer') {
-                    p13showDownloadInViewer();
-                    gdownloadFile = null;
-                } else {
-                    var blob = new Blob(gdownloadFile.chunks, { type: 'application/octet-stream' });
-                    saveAs(blob, gdownloadFile.file); gdownloadFile = null; setDialogMode(0);
-                }
-            } else {
-                files.sendText({ action: 'download', sub: 'ack', id: gdownloadFile.id });
-            }
+            p13downloadData(conn, data, false);
         }
 
         // Receive upload ack from the mesh agent, use this to keep sending more data
-        function p13gotUploadData(cmd) {
-            if ((uploadFile == null) || (parseInt(uploadFile.xfilePtr) != parseInt(cmd.reqid))) { return; }
-            if (cmd.action == 'uploadack' && uploadFile.uploaddoneSent) { return; }
+        function p13gotUploadData(cmd, conn) {
+            if (conn == null) { conn = files; }
+            var up = ((conn != null) && (conn.xferUploads != null)) ? conn.xferUploads[0] : null;
+            if ((up == null) || up.finished || (parseInt(up.xfilePtr) != parseInt(cmd.reqid))) { return; }
+            if (cmd.action == 'uploadack' && up.uploaddoneSent) { return; }
             switch (cmd.action) {
                 case 'uploadstart':
-                    uploadFile.blocksInFlight = 0;
-                    uploadFile.uploadComplete = false;
-                    p13uploadNextPart();
+                    up.blocksInFlight = 0;
+                    up.uploadComplete = false;
+                    p13uploadNextPart(up);
                     break;
                 case 'uploadack':
-                    if (uploadFile.blocksInFlight > 0) { uploadFile.blocksInFlight--; }
-                    if (uploadFile.blocksInFlight == 0 && uploadFile.uploadComplete) {
-                        uploadFile.uploaddoneSent = true;
-                        files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                    if (up.uploaddoneSent) { break; }
+                    if (up.blocksInFlight > 0) { up.blocksInFlight--; }
+                    if (up.blocksInFlight == 0 && up.uploadComplete) {
+                        up.uploaddoneSent = true;
+                        conn.sendText(JSON.stringify({ action: 'uploaddone', reqid: up.xfilePtr }));
                     } else {
-                        p13uploadNextPart();
+                        p13uploadNextPart(up);
                     }
                     break;
                 case 'uploaddone':
-                    Q('d2progressBar').value = uploadFile.xfile ? uploadFile.xfile.size : uploadFile.xdata.byteLength;
-                    Q('d2progressLabel').textContent = "Upload complete. Remote device saving file to disk...";
-                    p13folderup(9999); // Refresh file list after each file
-                    if (uploadFile.xfiles.length > uploadFile.xfilePtr + 1) { p13uploadNextFile(); } else { p13uploadFileTransferDone(); }
+                    up.done += p13uploadFileSize(up); up.xptr = 0;
+                    xferProgress(up.t, up.done);
+                    if (conn === files) { p13folderup(9999); } // Refresh file list after each file
+                    p13uploadNextFile(up);
                     break;
-                case 'uploaderror': { p13uploadFileCancel(); break; }
+                case 'uploaderror': { try { conn.sendText(JSON.stringify({ action: 'uploadcancel', reqid: up.xfilePtr })); } catch (ex) { } p13uploadEnd(up, 2); break; }
                 case 'uploadhash': {
-                    var file = uploadFile.xfiles[uploadFile.xfilePtr];
+                    var file = up.xfiles[up.xfilePtr];
                     if (file) {
                         if (cmd.tag.h === cmd.hash) {
                             if (cmd.tag.skip) {
-                                p13uploadNextFile();
+                                up.done += p13uploadFileSize(up); // Same file is already there
+                                p13uploadNextFile(up);
                             } else {
-                                uploadFile.xptr = cmd.tag.s;
-                                files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: true }));
+                                up.xptr = cmd.tag.s;
+                                conn.sendText(JSON.stringify({ action: 'upload', reqid: up.xfilePtr, path: up.xpath, name: file.name, size: up.xfile.size, append: true }));
                             }
                         } else {
-                            files.sendText(JSON.stringify({ action: 'upload', reqid: uploadFile.xfilePtr, path: uploadFile.xpath, name: file.name, size: uploadFile.xfile.size, append: false }));
+                            conn.sendText(JSON.stringify({ action: 'upload', reqid: up.xfilePtr, path: up.xpath, name: file.name, size: up.xfile.size, append: false }));
                         }
                     }
                     break;
@@ -15319,65 +15395,65 @@
             }
         }
 
-        // Push the next part of the file into the websocket, keeping up to windowSize unacked blocks in flight.
-        function p13uploadNextPart() {
-            if (uploadFile == null) return;
-            if (uploadFile.xdata && uploadFile.xptr >= uploadFile.xdata.byteLength) return;
-            if (uploadFile.xfile && uploadFile.xptr >= uploadFile.xfile.size) return;
-            var windowSize = 8; // Max blocks sent but not yet acked
-            if (uploadFile.xdata) {
-                var data = uploadFile.xdata, start = uploadFile.xptr;
+        // Push the next part of the file into the websocket
+        function p13uploadNextPart(up) {
+            if ((up == null) || up.finished) return;
+            if (up.xdata && up.xptr >= up.xdata.byteLength) return;
+            if (up.xfile && up.xptr >= up.xfile.size) return;
+            var windowSize = 8;
+            var conn = up.conn;
+            if (up.xdata) {
+                var data = up.xdata, start = up.xptr;
                 if (start >= data.byteLength) {
-                    files.sendText(JSON.stringify({ action: 'uploaddone', reqid: uploadFile.xfilePtr }));
+                    conn.sendText(JSON.stringify({ action: 'uploaddone', reqid: up.xfilePtr }));
                     return;
                 } else {
-                    var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
+                    var end = up.xptr + (attemptWebRTC ? 16384 : 65536);
                     if (end > data.byteLength) { end = data.byteLength; }
                     var dataslice = new Uint8Array(data.slice(start, end))
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
                         var datapart = new Uint8Array(end - start + 1);
                         datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
-                        files.send(datapart);
+                        conn.send(datapart);
                     } else {
-                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                        conn.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
                     }
-                    uploadFile.blocksInFlight++;
-                    uploadFile.xptr = end;
-                    var total = data.byteLength;
-                    Q('d2progressBar').value = Math.min(end, total - 1);
-                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, total - 1) / total) * 100)) + '%';
-                    if (uploadFile.xptr >= data.byteLength) {
-                        uploadFile.uploadComplete = true;
-                    } else if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
+                    up.blocksInFlight++;
+                    up.xptr = end;
+                    p13uploadProgress(up);
+                    if (up.xptr >= data.byteLength) {
+                        up.uploadComplete = true;
+                    } else if (up.blocksInFlight < windowSize) { p13uploadNextPart(up); }
                 }
-            } else if (uploadFile.xfile) {
-                if (uploadFile.xreader != null) return; // Data reading already in process
-                if (uploadFile.xptr >= uploadFile.xfile.size) return;
-                var end = uploadFile.xptr + (attemptWebRTC ? 16384 : 65536);
-                if (end > uploadFile.xfile.size) { end = uploadFile.xfile.size; }
-                uploadFile.xreader = new FileReader();
-                uploadFile.xreader.onerror = function (err) { console.log(err); }
-                uploadFile.xreader.onload = function () {
-                    var data = uploadFile.xreader.result;
-                    delete uploadFile.xreader;
-                    if (data == null) return;
+            } else if (up.xfile) {
+                if (up.xreader != null) return;
+                if (up.xptr >= up.xfile.size) return;
+                var end = up.xptr + (attemptWebRTC ? 16384 : 65536);
+                if (end > up.xfile.size) { end = up.xfile.size; }
+                up.xreader = new FileReader();
+                up.xreader.onerror = function (err) { console.log(err); }
+                up.xreader.onload = function () {
+                    var data = up.xreader.result;
+                    delete up.xreader;
+                    if ((data == null) || up.finished) return;
                     var dataslice = new Uint8Array(data)
                     if ((dataslice[0] == 123) || (dataslice[0] == 0)) {
                         var datapart = new Uint8Array(data.byteLength + 1);
                         datapart.set(dataslice, 1); // Add a zero char at the start of the send, this will indicate that it's not a JSON command.
-                        files.send(datapart);
+                        conn.send(datapart);
                     } else {
-                        files.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
+                        conn.send(dataslice); // The data does not start with 0 or 123 "{" so it can't be confused for JSON.
                     }
-                    uploadFile.blocksInFlight++;
-                    uploadFile.xptr = end;
-                    Q('d2progressBar').value = Math.min(end, uploadFile.xfile.size - 1);
-                    Q('d2progressLabel').textContent = Math.min(99, Math.round((Math.min(end, uploadFile.xfile.size - 1) / uploadFile.xfile.size) * 100)) + '%';
-                    if (uploadFile.xptr >= uploadFile.xfile.size) {
-                        uploadFile.uploadComplete = true;
-                    } else if (uploadFile.blocksInFlight < windowSize) { p13uploadNextPart(); }
+                    up.blocksInFlight++;
+                    up.xptr = end;
+                    p13uploadProgress(up);
+                    if (up.xptr >= up.xfile.size) {
+                        up.uploadComplete = true;
+                    } else {
+                        if (up.blocksInFlight < windowSize) { p13uploadNextPart(up); }
+                    }
                 };
-                uploadFile.xreader.readAsArrayBuffer(uploadFile.xfile.slice(uploadFile.xptr, end));
+                up.xreader.readAsArrayBuffer(up.xfile.slice(up.xptr, end));
             }
         }
 
@@ -19082,10 +19158,18 @@
         var filetreelinkpath;
         var filetreelocation = [];
 
+        // Ask the server for the list of server files again. Requests made close together are sent once.
+        var p5refreshTimer = null;
+        function p5refreshFiles() {
+            if (((features & 8) != 0) || (meshserver == null)) return; // This server has no server files, or we are not connected yet
+            if (p5refreshTimer != null) return;
+            p5refreshTimer = setTimeout(function () { p5refreshTimer = null; meshserver.send({ action: 'files' }); }, 200);
+        }
+
         function updateFiles() {
             QV('MainMenuMyFiles', ((features & 8) == 0));
             if ((features & 8) != 0) return; // If running on a server without files, exit now.
-            var html1 = '', html2 = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
+            var html1 = '', html2 = '', htmlMeshes = '', htmlGroups = '', htmlShared = '', displayPath = '<a href=# style=cursor:pointer onclick="return p5folderup(0)">' + "Root" + '</a>', fullPath = 'Root', publicPath, filetreex = filetree, folderdepth = 1;
 
             // Navigate to path location, build the paths at the same time
             var filetreelocation2 = [], oldlinkpath = filetreelinkpath, checkedBoxes = [], checkboxes = document.getElementsByName('fc');
@@ -19105,7 +19189,7 @@
                         if (filetreelinkpath != '') { filetreelinkpath += '/' + filetreelocation[i]; if (folderdepth > 2) { publicPath += '/' + filetreelocation[i]; } }
                     }
                     filetreex = filetreex.f[filetreelocation[i]];
-                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>';
+                    displayPath += ' / <a href=# style=cursor:pointer onclick="return p5folderup(' + folderdepth + ')">' + EscapeHtml(filetreex.n != null ? filetreex.n : filetreelocation[i]) + '</a>' + (filetreex.ro ? (' (' + "read only" + ')') : '');
                     folderdepth++;
                 } else {
                     break;
@@ -19134,14 +19218,14 @@
                 if (f.s != null) { fsize = getFileSizeStr(f.s); }
 
                 var h = '';
-                if (f.t < 3 || f.t == 4) {
-                    var right = (f.t == 1 || f.t == 4) ? p5getQuotabar(f) : '', title = '';
+                if (f.t < 3 || f.t == 4 || f.t == 5 || f.t == 6) { // 5 is the files of a user group, 6 the shared files of all users
+                    var right = (f.t == 1 || f.t == 4 || f.t == 5 || f.t == 6) ? p5getQuotabar(f) : '', title = '';
                     h = '<div class=filelist file=999>';
                     h += '<input file=999 style=float:left name=fc class="fcb form-check-input m-1" type=checkbox onchange=p5setActions() value="' + EscapeHtml(name) + '">&nbsp;';
                     h += '<span style=float:right title="' + title + '">' + right + '</span>';
                     h += '<span title="' + shortname + '">';
-                    h += '<div class="fileIcon' + f.t + ' mt-1" onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div>';
-                    h += '<a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a>';
+                    h += '<div class="fileIcon' + p5folderIcon(f) + ' mt-1" onclick=p5folderset("' + encodeURIComponentEx(f.nx) + '")></div>';
+                    h += '<a href=# style=cursor:pointer onclick=\'return p5folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + (f.ro ? (' (' + "read only" + ')') : '') + '</a>';
                     h += '</span></div>';
                 } else {
                     var link = shortname, publiclink = '', loginkey = (urlargs.key) ? ('&key=' + urlargs.key) : '';
@@ -19158,13 +19242,14 @@
                     h += '</div>';
                 }
 
-                if (f.t < 3) { html1 += h; } else { html2 += h; }
+                if (filetreelocation.length == 0) { if (f.t == 4) { htmlMeshes += h; } else if (f.t == 5) { htmlGroups += h; } else if (f.t == 6) { htmlShared += h; } else { html1 += h; } } // At the root: My Files, the shared files, then device groups and user groups each in their own section
+                else if (f.t < 3) { html1 += h; } else { html2 += h; }
             }
 
             //if (f.parent == null) {  }
             QH('p5rightOfButtons', p5getQuotabar(filetreex));
 
-            QH('p5files', html1 + html2);
+            QH('p5files', html1 + htmlShared + html2 + p5section("Device Groups", htmlMeshes) + p5section("User Groups", htmlGroups));
             QH('p5currentpath', displayPath);
             QE('p5FolderUp', filetreelocation.length != 0);
             QV('p5PublicShare', publicfolder);
@@ -19211,8 +19296,8 @@
         }
 
         function p5getQuotabar(f) {
-            while (f.t > 1 && f.t != 4) { f = f.parent; }
-            if ((f.t != 1 && f.t != 4) || (f.maxbytes == null)) return '';
+            while (f.t > 1 && f.t != 4 && f.t != 5 && f.t != 6) { f = f.parent; }
+            if ((f.t != 1 && f.t != 4 && f.t != 5) || (f.maxbytes == null)) return '';
             var tf = Math.floor(f.s / 1024), tq = (f.maxbytes - f.s);
             var title;
             if (f.c > 1) { title = format("{0}k in {1} files. {2}k maximum", tf, f.c, (Math.floor(f.maxbytes / 1024 / 1024))); } else { title = format("{0}k in 1 file. {1}k maximum", tf, (Math.floor(f.maxbytes / 1024 / 1024))); }
@@ -19226,7 +19311,7 @@
         }
 
         var sortorder;
-        function p5sort_filename(a, b) { if (a.ln > b.ln) return (1 * sortorder); if (a.ln < b.ln) return (-1 * sortorder); return 0; }
+        function p5sort_filename(a, b) { return a.ln.localeCompare(b.ln, undefined, { numeric: true }) * sortorder; } // Numbers in names sort by value: 2 before 10
         function p5sort_timestamp(a, b) { if (a.d > b.d) return (1 * sortorder); if (a.d < b.d) return (-1 * sortorder); return 0; }
         function p5sort_bysize(a, b) { if (a.s == b.s) return p5sort_filename(a, b); return (((a.s - b.s)) * sortorder); }
 
@@ -19241,19 +19326,25 @@
             return r;
         }
 
+        // Members of a user group can only read its files, the server marks those ro.
+        function p5folderIcon(f) { return (f.t == 5) ? 7 : ((f.t == 6) ? 8 : f.t); } // User group files (type 5) have the user group icon, shared files (type 6) the shared folder icon
+        function p5section(title, html) { return (html == '') ? '' : ('<div class=p5section>' + EscapeHtml(title) + '</div>' + html); }
+        function p5readOnly() { if ((filetreelocation.length == 0) || (filetree.f == null)) return false; var r = filetree.f[filetreelocation[0]]; return (r != null) && (r.ro == true); }
+
         function p5setActions() {
             var cc = getFileSelCount(), tc = getFileCount(), sfc = getFileSelCount(false); // In order: number of entires selected, number of total entries, number of selected entires that are files (not folders)
-            QE('p5DeleteFileButton', (cc > 0) && (filetreelocation.length > 0));
-            QE('p5ViewFileButton', (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
-            QE('p5NewFolderButton', filetreelocation.length > 0);
-            QE('p5UploadButton', filetreelocation.length > 0);
+            var ro = p5readOnly();
+            QE('p5DeleteFileButton', !ro && (cc > 0) && (filetreelocation.length > 0));
+            QE('p5ViewFileButton', !ro && (cc == 1) && (sfc == 1) && (filetreelocation.length > 0));
+            QE('p5NewFolderButton', !ro && (filetreelocation.length > 0));
+            QE('p5UploadButton', !ro && (filetreelocation.length > 0));
             QE('p5DownloadButton', (cc > 0) && (cc == sfc) && (filetreelocation.length > 0));
-            QE('p5RenameFileButton', (cc == 1) && (filetreelocation.length > 0));
+            QE('p5RenameFileButton', !ro && (cc == 1) && (filetreelocation.length > 0));
             QE('p5SelectAllButton', tc > 0);
             Q('p5SelectAllButton').value = (cc > 0 ? "Select None" : "Select All");
-            QE('p5CutButton', (sfc > 0) && (cc == sfc));
+            QE('p5CutButton', !ro && (sfc > 0) && (cc == sfc));
             QE('p5CopyButton', (sfc > 0) && (cc == sfc));
-            QE('p5PasteButton', (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
+            QE('p5PasteButton', !ro && (p5clipboard != null) && (p5clipboard.length > 0) && (filetreelocation.length > 0));
             [
                 ['p5NewFolderButton', 'p5MobileNewFolderButton'],
                 ['p5UploadButton', 'p5MobileUploadButton'],
@@ -19296,12 +19387,98 @@
         }
         function p5fileNameCheck(e) { var x = isFilenameValid(Q('p5renameinput').value); QE('idx_dlgOkButton', x); if ((x == true) && (e && e.keyCode == 13)) { dialogclose(1); } }
         var isFilenameValid = (function () { var x1 = /^[^\\/:\*\?"<>\|]+$/, x2 = /^\./, x3 = /^(nul|prn|con|lpt[0-9]|com[0-9])(\.|$)/i; return function isFilenameValid(fname) { return x1.test(fname) && !x2.test(fname) && !x3.test(fname) && (fname[0] != '.'); } })();
+        //
+        // Background file transfers. Uploads and downloads run in the background while the user keeps working, and a small
+        // tray in the bottom right corner shows their progress on every screen.
+        // xferUpload() uploads to the server files. Other transfers use xferAdd(), xferProgress() and xferEnd().
+        //
+        var xferList = [], xferNextId = 1, xferCollapsed = false, xferRenderTimer = null;
+
+        // Add a transfer to the tray. o: { name, title, total, dir: 'up' or 'down', device, cancel: function }. Returns the transfer.
+        function xferAdd(o) {
+            var t = { id: xferNextId++, name: o.name, title: (o.title != null) ? o.title : o.name, total: o.total || 0, sent: 0, state: 0, start: Date.now(), dir: o.dir || 'up', device: o.device || null, cancel: o.cancel || null, server: (o.server == true) }; // state: 0 running, 1 done, 2 failed, 3 cancelled
+            xferList.push(t);
+            xferUpdate(true);
+            return t;
+        }
+        function xferProgress(t, sent) { if ((t == null) || (t.state != 0)) return; if (t.waiting) { t.waiting = false; t.start = Date.now(); } t.sent = sent; xferUpdate(false); }
+        function xferEnd(t, state) { if ((t == null) || (t.state != 0)) return; t.state = state; if (state == 1) { t.sent = t.total; } xferFinished(t); }
+
+        // Upload files to the server files. link is the encoded server path, as used by uploadfile.ashx.
+        function xferUpload(files, link) {
+            if ((files == null) || (files.length == 0) || (window.FormData == null)) return false;
+            var fd = new FormData(), total = 0, names = [];
+            fd.append('link', link);
+            for (var i = 0; i < files.length; i++) { if (files[i].size > 0) { fd.append('files', files[i], files[i].name); total += files[i].size; names.push(files[i].name); } }
+            if (names.length == 0) return false;
+            var xhr = new XMLHttpRequest();
+            var t = xferAdd({ name: (names.length == 1) ? names[0] : format("{0} files", names.length), title: names.join(', '), total: total, dir: 'up', server: true, cancel: function () { xhr.abort(); } });
+            xhr.open('POST', 'uploadfile.ashx');
+            xhr.upload.onprogress = function (e) { if (e.lengthComputable) { t.total = e.total; xferProgress(t, e.loaded); } };
+            xhr.onload = function () { xferEnd(t, ((xhr.status >= 200) && (xhr.status < 300)) ? 1 : 2); };
+            xhr.onerror = function () { xferEnd(t, 2); };
+            xhr.onabort = function () { xferEnd(t, 3); };
+            xhr.send(fd);
+            return true;
+        }
+
+        function xferFinished(t) {
+            t.cancel = null;
+            t.end = Date.now();
+            xferUpdate(true);
+            if (t.server && (typeof p5refreshFiles == 'function')) { p5refreshFiles(); }
+            if (t.state != 2) { setTimeout(function () { xferRemove(t.id); }, 5000); } // Done and cancelled transfers go away on their own, failed ones stay until dismissed
+        }
+
+        function xferCancel(id) { for (var i in xferList) { var t = xferList[i]; if ((t.id == id) && (t.state == 0) && (t.cancel != null)) { var f = t.cancel; t.cancel = null; f(); if (t.state == 0) { xferEnd(t, 3); } } } return false; }
+        function xferRemove(id) { for (var i = 0; i < xferList.length; i++) { if ((xferList[i].id == id) && (xferList[i].state != 0)) { xferList.splice(i, 1); break; } } xferUpdate(true); return false; }
+        function xferToggle() { xferCollapsed = !xferCollapsed; xferUpdate(true); return false; }
+        function xferSize(b) { if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KB'; if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB'; return (b / 1073741824).toFixed(2) + ' GB'; }
+        function xferActive() { var c = 0; for (var i in xferList) { if (xferList[i].state == 0) { c++; } } return c; }
+        function xferFailed() { var c = 0; for (var i in xferList) { if (xferList[i].state == 2) { c++; } } return c; }
+
+        // Draw the tray. Progress events come often, so they redraw at most 5 times a second.
+        function xferUpdate(now) {
+            if (now !== true) { if (xferRenderTimer == null) { xferRenderTimer = setTimeout(function () { xferRenderTimer = null; xferUpdate(true); }, 200); } return; }
+            var tray = Q('xferTray');
+            if (tray == null) { tray = document.createElement('div'); tray.id = 'xferTray'; tray.setAttribute('role', 'status'); document.body.appendChild(tray); }
+            if (xferList.length == 0) { tray.style.display = 'none'; return; }
+            var active = xferActive(), sent = 0, total = 0, x = '';
+            for (var i in xferList) { var t = xferList[i]; if (t.state == 0) { sent += t.sent; total += t.total; } }
+            var head = (active > 0) ? ((active == 1) ? "1 transfer in progress" : format("{0} transfers in progress", active)) + ((total > 0) ? (' - ' + Math.floor(sent * 100 / total) + '%') : '') : ((xferFailed() > 0) ? "Transfer failed" : "Transfers finished");
+            x += '<div class=xferHead><span>' + head + '</span><a href=# class=xferBtn onclick="return xferToggle()" title="' + (xferCollapsed ? "Show transfers" : "Hide transfers") + '">' + (xferCollapsed ? '&#9650;' : '&#9660;') + '</a></div>';
+            if (xferCollapsed == false) {
+                for (var i in xferList) {
+                    var t = xferList[i], pct = (t.total > 0) ? Math.min(100, Math.floor(t.sent * 100 / t.total)) : 0, status;
+                    if (t.state == 0) {
+                        if (t.waiting) { status = "Waiting..."; }
+                        else {
+                            var secs = (Date.now() - t.start) / 1000, speed = (secs > 0.5) ? (t.sent / secs) : 0;
+                            status = pct + '% - ' + xferSize(t.sent) + ' / ' + xferSize(t.total) + ((speed > 0) ? (' - ' + xferSize(speed) + '/s') : '');
+                        }
+                    } else if (t.state == 1) { status = "Done" + ' - ' + xferSize(t.total); }
+                    else if (t.state == 2) { status = (t.dir == 'down') ? "Download failed" : "Upload failed"; }
+                    else { status = "Cancelled"; }
+                    var where = (t.dir == 'down') ? ((t.device != null) ? format("From {0}", t.device) : "Download") : ((t.device != null) ? format("To {0}", t.device) : "To server files");
+                    x += '<div class="xferItem xferState' + t.state + '"><div class=xferRow><span class=xferName title="' + EscapeHtml(t.title) + '"><span class=xferDir>' + ((t.dir == 'down') ? '&#8595;' : '&#8593;') + '</span> ' + EscapeHtml(t.name) + '</span>';
+                    if (t.state == 0) { x += '<a href=# class=xferBtn onclick="return xferCancel(' + t.id + ')" title="' + "Cancel" + '">&#10005;</a>'; } else { x += '<a href=# class=xferBtn onclick="return xferRemove(' + t.id + ')" title="' + "Dismiss" + '">&#10005;</a>'; }
+                    x += '</div><div class=xferWhere>' + where + ((t.detail && (t.state == 0)) ? (' - ' + EscapeHtml(t.detail)) : '') + '</div>';
+                    x += '<div class=xferBar><div style="width:' + ((t.state == 1) ? 100 : pct) + '%"></div></div><div class=xferStatus>' + status + '</div></div>';
+                }
+            }
+            tray.innerHTML = x;
+            tray.style.display = 'block';
+        }
+
+        // Warn before leaving the page while transfers are still running, leaving would stop them
+        window.addEventListener('beforeunload', function (e) { if (xferActive() > 0) { e.preventDefault(); e.returnValue = ''; } });
+
         function p5uploadFile() {
             setModalContent('xxAddAgent', "Upload File", '<form method=post enctype=multipart/form-data action=uploadfile.ashx target=fileUploadFrame><input type=text name=link style=display:none id=p5uploadpath value="' + encodeURIComponentEx(filetreelinkpath) + '" /><input type=file name=files id=p5uploadinput class="form-control" multiple=multiple onchange="p5updateUploadDialogOk(\'p5uploadinput\')" /><input type=hidden name=authCookie value=' + authCookie + ' /><input type=submit id=p5loginSubmit class="btn btn-outline-success mt-2" style="display:none" /><span id=p5confirmOverwriteSpan style=display:none><br/><label><input type=checkbox class="form-check-input me-2" id=p5confirmOverwrite onchange="p5updateUploadDialogOk(\'p5uploadinput\')" />' + "Confirm overwrite?" + '</label></span></ >');
             showModal('xxAddAgentModal', 'idx_dlgOkButton', p5uploadFileEx);
             p5updateUploadDialogOk('p5uploadinput');
         }
-        function p5uploadFileEx() { Q('p5loginSubmit').click(); }
+        function p5uploadFileEx() { if (xferUpload(Q('p5uploadinput').files, Q('p5uploadpath').value) == false) { Q('p5loginSubmit').click(); } } // Upload in the background with progress, the old form post if the browser can't
         function p5GetFileInfo(name) { var filetreex = filetree; for (var i in filetreelocation) { if ((filetreex.f != null) && (filetreex.f[filetreelocation[i]] != null)) { filetreex = filetreex.f[filetreelocation[i]]; } } return filetreex.f[name]; }
         function p5updateUploadDialogOk() {
             // Check if these are files we can upload, remove all folders.
@@ -19392,6 +19569,9 @@
         }
 
         function p5PerformUpload(b, files) {
+            // Upload in the background, with its progress in the transfers tray
+            if (xferUpload(files, encodeURIComponentEx(filetreelinkpath))) return;
+
             // For Chrome & Firefox
             var error = 0;
             p5uploadFile(); // Display the the dialog box
@@ -22180,7 +22360,7 @@
                 var h = '';
                 if (f.t != 3) {
                     var title = '';
-                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + f.t + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
+                    h = '<div class=filelist file=999><span style=float:right title="' + title + '"></span><span title="' + shortname + '"><div class=fileIcon' + p5folderIcon(f) + ' onclick=d3folderset("' + encodeURIComponentEx(f.nx) + '")></div>&nbsp;<a href=# style=cursor:pointer onclick=\'return d3folderset("' + encodeURIComponentEx(f.nx) + '")\'>' + shortname + '</a></span></div>';
                 } else {
                     var link = shortname;
                     //if (f.s > 0) { link = "<a rel=\"noreferrer noopener\" target=\"_blank\" href=\"downloadfile.ashx?link=" + encodeURIComponentEx(filetreelinkpath + '/' + f.nx) + "\">" + shortname + "</a>"; }
@@ -23529,6 +23709,9 @@
             // Update Recordings
             if (x == 52) { if (p52recordings == null) { refreshRecodings(); } updateRecordings(); }
 
+            // Get the latest server files when opening My Files
+            if (x == 5) { p5refreshFiles(); }
+
             // Update terminal size
             if ((x == 12) && (xtermfit != null)) { xtermfit.fit(); xterm.focus(); }
             if (x == 9) { setupRegistry(); }
@@ -24740,12 +24923,33 @@
         }
 
         // Device file downloads are posted so the authentication cookie stays out of the URL, the browser history and proxy logs.
-        function p13downloadDeviceFile(path) {
+        // Download a file of the current device through the server (devicefile.ashx), with its progress in the transfers tray.
+        // The file is kept in memory until it is complete, so files over 1 GB, or browsers without fetch streams, use a plain browser download.
+        function p13downloadDeviceFile(path, size) {
+            var fields = { c: authCookie, m: currentNode.meshid.split('/')[2], n: currentNode._id.split('/')[2], f: decodeURIComponent(path) };
+            if ((window.fetch != null) && (window.AbortController != null) && (window.ReadableStream != null) && (typeof size == 'number') && (size <= 1073741824)) {
+                var name = fields.f.split('/').pop(), ctrl = new AbortController(), cancelled = false, body = new URLSearchParams();
+                for (var i in fields) { body.append(i, fields[i]); }
+                var t = xferAdd({ name: name, total: size, dir: 'down', device: currentNode.name, cancel: function () { cancelled = true; ctrl.abort(); } });
+                fetch('devicefile.ashx', { method: 'POST', body: body, signal: ctrl.signal, credentials: 'same-origin' }).then(function (r) {
+                    if (!r.ok || (r.body == null)) { xferEnd(t, 2); return; }
+                    var len = parseInt(r.headers.get('Content-Length')); if (len > 0) { t.total = len; }
+                    var reader = r.body.getReader(), chunks = [], got = 0;
+                    function pump() {
+                        return reader.read().then(function (x) {
+                            if (x.done) { saveAs(new Blob(chunks, { type: 'application/octet-stream' }), name); xferEnd(t, 1); return; }
+                            chunks.push(x.value); got += x.value.length; xferProgress(t, got);
+                            return pump();
+                        });
+                    }
+                    return pump();
+                }).catch(function () { xferEnd(t, cancelled ? 3 : 2); });
+                return;
+            }
             var form = document.createElement('form'), iframe = document.createElement('iframe');
             iframe.name = 'p13dl' + Math.random().toString(36).substring(2);
             iframe.style.cssText = 'display:none;width:0;height:0;border:0;visibility:hidden;';
             form.method = 'post'; form.action = 'devicefile.ashx'; form.target = iframe.name; form.style.display = 'none';
-            var fields = { c: authCookie, m: currentNode.meshid.split('/')[2], n: currentNode._id.split('/')[2], f: decodeURIComponent(path) };
             for (var i in fields) { var input = document.createElement('input'); input.type = 'hidden'; input.name = i; input.value = fields[i]; form.appendChild(input); }
             document.body.appendChild(iframe); document.body.appendChild(form); form.submit();
             setTimeout(function () { try { document.body.removeChild(form); document.body.removeChild(iframe); } catch (e) { } }, 10000);
