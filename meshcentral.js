@@ -3156,6 +3156,12 @@ function CreateMeshCentralServer(config, args) {
                             }
                         }
 
+                        // The recovery cores install agent updates too, so they run the same update check
+                        if (moduleName == 'agent-update-check') {
+                            if (modulesAdd['windows-recovery'] != null) { modulesAdd['windows-recovery'].push(...moduleData); }
+                            if (modulesAdd['linux-recovery'] != null) { modulesAdd['linux-recovery'].push(...moduleData); }
+                        }
+
                         // Merge this module to agent recovery modules if needed
                         if (modulesAdd['windows-agentrecovery'] != null) {
                             if ((moduleName == 'win-console') || (moduleName == 'win-message-pump') || (moduleName == 'win-terminal') || (moduleName == 'win-virtual-terminal')) {

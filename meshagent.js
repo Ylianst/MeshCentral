@@ -159,6 +159,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
             parent.parent.taskLimiter.completed(obj.agentPreflight.taskid);
             delete obj.agentPreflight;
         }
+        if (obj.agentUpdatePreflightTimer != null) { clearTimeout(obj.agentUpdatePreflightTimer); delete obj.agentUpdatePreflightTimer; }
 
         // Perform timer cleanup
         if (obj.pingtimer) { clearInterval(obj.pingtimer); delete obj.pingtimer; }
@@ -1725,6 +1726,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                     }
                     const preflightReason = (typeof command.reason == 'string') ? command.reason.substring(0, 1024) : '';
                     parent.parent.debug('agentupdate', "Agent update test " + command.result + ", NodeID=0x" + obj.nodeid.substring(0, 16) + ', ' + obj.agentExeInfo.desc + (preflightReason ? (', ' + preflightReason) : ''));
+                    if ((obj.agentUpdatePreflightTimer != null) && (command.result != 'busy')) { clearTimeout(obj.agentUpdatePreflightTimer); delete obj.agentUpdatePreflightTimer; }
                     if (command.result == 'failed') {
                         const previous = parent.agentUpdatePreflights[obj.dbNodeKey];
                         parent.agentUpdatePreflights[obj.dbNodeKey] = { hash: command.hash, ok: false, time: Date.now() };
@@ -1736,9 +1738,7 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
                         // The meshcore update method swapped in the recovery core to update with, put the normal core back
                         if (obj.agentCoreUpdate === true) { obj.agentCoreUpdate = false; obj.sendBinary(common.ShortToStr(11) + common.ShortToStr(0)); }
                     } else if ((command.result == 'ok') || (command.result == 'error')) {
-                        // A file the meshcore could not download or test is installed the way it was before this test existed
-                        parent.agentUpdatePreflights[obj.dbNodeKey] = { hash: command.hash, ok: true, time: Date.now() };
-                        if ((obj.agentUpdate == null) && (obj.agentCoreUpdate !== true)) { obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0)); } // Command 12, ask for the agent binary hash.
+                        agentUpdateAllowed();
                     }
                     break;
                 }
@@ -2321,7 +2321,23 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         if (((obj.agentInfo.capabilities & 16) == 0) || (obj.agentInfo.capabilities & 0x40) || (parent.parent.meshAgentsArchitectureNumbers[obj.agentInfo.agentId].core == null) || (typeof obj.agentExeInfo.url != 'string')) return false;
         // An agent whose binary loaded after it connected can already have a running core
         if (obj.agentCoreStable === true) { startAgentUpdatePreflight(); } else { obj.agentUpdatePreflightPending = true; }
+
+        // A core that never starts or never answers, such as a custom core, gets the update the way it did before the test
+        if (obj.agentUpdatePreflightTimer == null) {
+            obj.agentUpdatePreflightTimer = setTimeout(function () {
+                delete obj.agentUpdatePreflightTimer;
+                delete obj.agentUpdatePreflightPending;
+                parent.parent.debug('agentupdate', "Agent update not tested, no result within 10 minutes, NodeID=0x" + obj.nodeid.substring(0, 16));
+                agentUpdateAllowed();
+            }, 600000);
+        }
         return true;
+    }
+
+    // The native update goes ahead once the file started on the device, or when the meshcore could not test it
+    function agentUpdateAllowed() {
+        parent.agentUpdatePreflights[obj.dbNodeKey] = { hash: getAgentUpdateHash(), ok: true, time: Date.now() };
+        if ((obj.agentUpdate == null) && (obj.agentCoreUpdate !== true)) { obj.sendBinary(common.ShortToStr(12) + common.ShortToStr(0)); } // Command 12, ask for the agent binary hash.
     }
 
     // Ask the meshcore to download the agent update and run it with -info, the update goes ahead once the file started
@@ -2329,6 +2345,10 @@ module.exports.CreateMeshAgent = function (parent, db, ws, req, args, domain) {
         parent.parent.taskLimiter.launch(function (argument, taskid, taskLimiterQueue) { // Medium priority task
             // If agent disconnection, complete and exit now.
             if ((obj.authenticated != 2) || (obj.agentExeInfo == null)) { parent.parent.taskLimiter.completed(taskid); return; }
+
+            // The update may have gone ahead while this task waited its turn
+            const decided = parent.agentUpdatePreflights[obj.dbNodeKey];
+            if ((decided != null) && (decided.hash == getAgentUpdateHash()) && (decided.ok === true)) { parent.parent.taskLimiter.completed(taskid); return; }
             obj.agentPreflight = { hash: getAgentUpdateHash(), taskid: taskid };
             const cmd = { action: 'agentpreflight', url: getAgentUpdateUrl(), hash: obj.agentPreflight.hash, archids: getAgentUpdateArchIds() };
             parent.parent.debug('agentupdate', "Sending agent update test url: " + cmd.url);

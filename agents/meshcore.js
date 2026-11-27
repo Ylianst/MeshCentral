@@ -7289,47 +7289,6 @@ function windows_execve(name, agentfilename, sessionid) {
     libc._wexecve(cmd, args, 0);
 }
 
-// Run a downloaded agent file with -info, which every agent build answers by printing its ARCHID and exiting. A file
-// that cannot start here, built for another C library, a newer OS or another CPU, fails now instead of after it has
-// replaced the running agent.
-function agentUpdate_Test(filename, archids, func) {
-    var run = null, attempt = 0, next = 0;
-    function done(error, archid) {
-        clearInterval(agentUpdate_Test._timer);
-        agentUpdate_Test._timer = null;
-        func(error, (archid != null) ? archid : null);
-    }
-    // Agents built before September 2026 drop a timer that nothing refers to, so the one timer that drives the test is
-    // kept here. A loader error can reach stderr after the exit, so the result is read a moment after it.
-    agentUpdate_Test._timer = setInterval(function () {
-        var now = Date.now();
-        if (run == null) {
-            if (now < next) return;
-            var r = run = { output: '', code: null, started: now, exited: 0 };
-            attempt++;
-            try {
-                if (process.platform != 'win32') { require('fs').chmodSync(filename, require('fs').statSync(process.execPath).mode); }
-                r.child = require('child_process').execFile(filename, [filename.split(process.platform == 'win32' ? '\\' : '/').pop(), '-info']);
-            } catch (ex) { done('the file could not be started: ' + ex); return; }
-            r.child.stdout.on('data', function (c) { if (r.output.length < 8192) { r.output += c.toString(); } });
-            r.child.stderr.on('data', function (c) { if (r.output.length < 8192) { r.output += c.toString(); } });
-            r.child.on('exit', function (code) { r.code = code; r.exited = Date.now(); });
-            return;
-        }
-        if ((run.code == null) && ((now - run.started) < 60000)) return;
-        if ((run.code != null) && ((now - run.exited) < 500)) return;
-        if (run.code == null) { try { run.child.kill(); } catch (ex) { } done('the file did not finish within 60 seconds'); return; }
-        // Right after the download the file can still be busy, which fails without a word, so a silent failure is tried
-        // again before it counts.
-        if ((run.code !== 0) && (run.output.trim() == '') && (attempt < 3)) { run = null; next = now + 1000; return; }
-        var match = /Agent ARCHID: (\d+)/.exec(run.output), archid = (match != null) ? parseInt(match[1]) : null, detail = run.output.trim().split('\n')[0];
-        if (run.code !== 0) { done('the file did not start (exit code ' + run.code + ')' + (detail ? (': ' + detail) : ''), archid); return; }
-        if (archid == null) { done('the file did not report an agent type'); return; }
-        if ((archids != null) && (archids.indexOf(archid) < 0)) { done('the file is agent type ' + archid + ', not ' + archids.join(' or '), archid); return; }
-        done(null, archid);
-    }, 250);
-}
-
 // Start a JavaScript based Agent Self-Update
 function agentUpdate_Start(updateurl, updateoptions) {
     // If this value is null
@@ -7478,7 +7437,14 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     }
 
                     // The file replaces the running agent only once it has started on this device.
-                    agentUpdate_Test(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid) {
+                    var updateCheck = null;
+                    try { updateCheck = require('agent-update-check').check; } catch (ex) { }
+                    if (updateCheck == null) {
+                        // A core bundled without the check installs the file the way it did before the check existed
+                        if (preflight) { try { require('fs').unlinkSync(updatefile); } catch (ex) { } preflightError('the update check is not in this core'); return; }
+                        updateCheck = function (filename, archids, func) { func(null, null); };
+                    }
+                    updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid) {
                         var hash = (updateoptions != null) ? updateoptions.hash : null;
                         if (preflight || (error != null)) {
                             try { require('fs').unlinkSync(updatefile); } catch (ex) { }
