@@ -710,11 +710,11 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     // The file replaces the running agent only once it has started on this device.
                     var updatefile = process.cwd() + agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update');
                     var updateCheck = null;
-                    try { updateCheck = require('agent-update-check').check; } catch (e) { }
+                    if ((updateoptions == null) || (updateoptions.check !== false)) { try { updateCheck = require('agent-update-check').check; } catch (e) { } }
 
-                    // A core bundled without the check installs the file the way it did before the check existed
+                    // A core bundled without the check, or a server with the test turned off, installs the file the way it did before the check existed
                     if (updateCheck == null) { updateCheck = function (filename, archids, func) { func(null, null); }; }
-                    updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid)
+                    var checking = updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid)
                     {
                         if (error != null)
                         {
@@ -774,6 +774,8 @@ function agentUpdate_Start(updateurl, updateoptions) {
                             }
                         }
                     });
+                    // A check that was already running on this file reports when it is done
+                    if ((checking === false) && (sessionid != null)) { sendConsoleText('Self update already in progress...', sessionid); }
                 });
 
                 if (!needStreamFix)
@@ -966,7 +968,7 @@ require('MeshAgent').AddCommandHandler(function (data)
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
             case 'agentupdate':
-                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids });
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids, check: data.check });
                 break;
             case 'msg':
                 {

@@ -1384,7 +1384,7 @@ function handleServerCommand(data) {
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
             case 'agentupdate':
-                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids });
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids, check: data.check });
                 break;
             case 'agentpreflight':
                 agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, archids: data.archids, preflight: true });
@@ -7438,13 +7438,13 @@ function agentUpdate_Start(updateurl, updateoptions) {
 
                     // The file replaces the running agent only once it has started on this device.
                     var updateCheck = null;
-                    try { updateCheck = require('agent-update-check').check; } catch (ex) { }
+                    if ((updateoptions == null) || (updateoptions.check !== false)) { try { updateCheck = require('agent-update-check').check; } catch (ex) { } }
                     if (updateCheck == null) {
-                        // A core bundled without the check installs the file the way it did before the check existed
+                        // A core bundled without the check, or a server with the test turned off, installs the file the way it did before the check existed
                         if (preflight) { try { require('fs').unlinkSync(updatefile); } catch (ex) { } preflightError('the update check is not in this core'); return; }
                         updateCheck = function (filename, archids, func) { func(null, null); };
                     }
-                    updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid) {
+                    var checking = updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid) {
                         var hash = (updateoptions != null) ? updateoptions.hash : null;
                         if (preflight || (error != null)) {
                             try { require('fs').unlinkSync(updatefile); } catch (ex) { }
@@ -7497,6 +7497,11 @@ function agentUpdate_Start(updateurl, updateoptions) {
                             }
                         }
                     });
+                    // A check that was already running on this file reports when it is done
+                    if (checking === false) {
+                        if (preflight) { try { require('MeshAgent').SendCommand({ action: 'agentpreflight', hash: updateoptions.hash, result: 'busy' }); } catch (ex) { } }
+                        else if (sessionid != null) { sendConsoleText('Self update already in progress...', sessionid); }
+                    }
                 });
                 img.pipe(this._file);
                 img.pipe(this._filehash);
