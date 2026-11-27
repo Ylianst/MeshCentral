@@ -707,53 +707,75 @@ function agentUpdate_Start(updateurl, updateoptions) {
                     // Send an indication to the server that we got the update download correctly.
                     try { require('MeshAgent').SendCommand({ action: 'agentupdatedownloaded' }); } catch (e) { }
 
-                    if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
-                    if (process.platform == 'win32')
+                    // The file replaces the running agent only once it has started on this device.
+                    var updatefile = process.cwd() + agentfilename + (process.platform == 'win32' ? '.update.exe' : '.update');
+                    var updateCheck = null;
+                    if ((updateoptions == null) || (updateoptions.check !== false)) { try { updateCheck = require('agent-update-check').check; } catch (e) { } }
+
+                    // A core bundled without the check, or a server with the test turned off, installs the file the way it did before the check existed
+                    if (updateCheck == null) { updateCheck = function (filename, archids, func) { func(null, null); }; }
+                    var checking = updateCheck(updatefile, (updateoptions != null) ? updateoptions.archids : null, function (error, archid)
                     {
-                        // Use _wexecve() equivalent to perform the update
-                        windows_execve(name, agentfilename, sessionid);
-                    }
-                    else
-                    {
-                        var m = require('fs').statSync(process.execPath).mode;
-                        require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
-
-                        // remove binary
-                        require('fs').unlinkSync(process.execPath);
-
-                        // copy update
-                        require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
-                        require('fs').chmodSync(process.execPath, m);
-
-                        // erase update
-                        require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
-
-                        switch (process.platform)
+                        if (error != null)
                         {
-                            case 'freebsd':
-                                bsd_execv(name, agentfilename, sessionid);
-                                break;
-                            case 'linux':
-                                linux_execv(name, agentfilename, sessionid);
-                                break;
-                            default:
-                                try
-                                {
-                                    // restart service
-                                    var s = require('service-manager').manager.getService(name);
-                                    s.restart();
-                                }
-                                catch (zz)
-                                {
-                                    if (zz.toString() != 'waitExit() aborted because thread is exiting')
-                                    {
-                                        sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
-                                        sendAgentMessage('Self Update encountered an error trying to restart service', 3);
-                                    }
-                                }
-                                break;
+                            try { require('fs').unlinkSync(updatefile); } catch (e) { }
+                            agentUpdate_Start._selfupdate = null;
+                            if ((updateoptions != null) && (updateoptions.hash != null)) { try { require('MeshAgent').SendCommand({ action: 'agentpreflight', hash: updateoptions.hash, result: 'failed', reason: error, archid: archid }); } catch (e) { } }
+                            sendConsoleText('Self Update stopped, ' + error, sessionid);
+                            sendAgentMessage('Self Update stopped, ' + error, 3);
+                            return;
                         }
-                    }
+
+                        if (sessionid != null) { sendConsoleText('Updating and restarting agent...', sessionid); }
+                        if (process.platform == 'win32')
+                        {
+                            // Use _wexecve() equivalent to perform the update
+                            windows_execve(name, agentfilename, sessionid);
+                        }
+                        else
+                        {
+                            var m = require('fs').statSync(process.execPath).mode;
+                            require('fs').chmodSync(process.cwd() + agentfilename + '.update', m);
+
+                            // remove binary
+                            require('fs').unlinkSync(process.execPath);
+
+                            // copy update
+                            require('fs').copyFileSync(process.cwd() + agentfilename + '.update', process.execPath);
+                            require('fs').chmodSync(process.execPath, m);
+
+                            // erase update
+                            require('fs').unlinkSync(process.cwd() + agentfilename + '.update');
+
+                            switch (process.platform)
+                            {
+                                case 'freebsd':
+                                    bsd_execv(name, agentfilename, sessionid);
+                                    break;
+                                case 'linux':
+                                    linux_execv(name, agentfilename, sessionid);
+                                    break;
+                                default:
+                                    try
+                                    {
+                                        // restart service
+                                        var s = require('service-manager').manager.getService(name);
+                                        s.restart();
+                                    }
+                                    catch (zz)
+                                    {
+                                        if (zz.toString() != 'waitExit() aborted because thread is exiting')
+                                        {
+                                            sendConsoleText('Self Update encountered an error trying to restart service', sessionid);
+                                            sendAgentMessage('Self Update encountered an error trying to restart service', 3);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                    });
+                    // A check that was already running on this file reports when it is done
+                    if ((checking === false) && (sessionid != null)) { sendConsoleText('Self update already in progress...', sessionid); }
                 });
 
                 if (!needStreamFix)
@@ -946,7 +968,7 @@ require('MeshAgent').AddCommandHandler(function (data)
         // If this is a console command, parse it and call the console handler
         switch (data.action) {
             case 'agentupdate':
-                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid });
+                agentUpdate_Start(data.url, { hash: data.hash, tlshash: data.servertlshash, sessionid: data.sessionid, archids: data.archids, check: data.check });
                 break;
             case 'msg':
                 {

@@ -79,6 +79,7 @@
     },
     "_noAgentUpdate": 1,
     "_agentUpdateSystem": 1,
+    "_agentUpdatePreflight": false,
     "_temporaryAgentUpdate": false,
     "_disableRecoveryAgent": false,
     "_amtScanner": false,

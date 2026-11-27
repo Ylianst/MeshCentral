@@ -636,6 +636,11 @@
           "default": 1,
           "description": "When set to 2, all agents that need to be updated will use the meshcore.js update system. With the default value of 1, the native update system is used."
         },
+        "agentUpdatePreflight": {
+          "type": "boolean",
+          "default": true,
+          "description": "Before an agent update replaces the running agent, the meshcore runs the new agent file on the device with -info. A file that does not start there is not installed and the update is held for a day. Set to false to update without this test."
+        },
         "temporaryAgentUpdate": {
           "type": "boolean",
           "default": true,
