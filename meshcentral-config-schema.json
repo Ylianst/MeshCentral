@@ -2568,6 +2568,11 @@
             "default": null,
             "description": "When set, idle users will be disconnected after a set amounts of minutes."
           },
+          "guestSessionIdleTimeout": {
+            "type": "integer",
+            "default": null,
+            "description": "When set, guests using a device sharing link will be disconnected from remote desktop, terminal and files after this many minutes without keyboard or mouse input."
+          },
           "logoutOnIdleSessionTimeout": {
             "type": "boolean",
             "default": true,
