@@ -319,6 +319,28 @@ function defender(){
         return ({});
     }
 }
+// Windows activation status, from the licensing product of the Windows OS (ApplicationID 55c92734-...); Office and other
+// products in SoftwareLicensingProduct are filtered out. The query takes seconds, so it runs asynchronously.
+var LICENSE_STATES = ['Unlicensed', 'Licensed', 'OOBGrace', 'OOTGrace', 'NonGenuineGrace', 'Notification', 'ExtendedGrace'];
+function activation() {
+    var ret = new promise(function (res, rej) { this._res = res; this._rej = rej; });
+    try {
+        require('win-wmi-fixed').queryAsync('ROOT\\CIMV2', "SELECT Name, Description, LicenseStatus FROM SoftwareLicensingProduct WHERE ApplicationID='55c92734-d682-4d71-983e-d6ec3f16059f' AND PartialProductKey IS NOT NULL", ['Name', 'Description', 'LicenseStatus']).then(function (rows) {
+            // Several rows only show up in odd setups; prefer the licensed one.
+            var row = null;
+            for (var i = 0; i < rows.length; i++) { if ((row == null) || (rows[i].LicenseStatus == 1)) { row = rows[i]; } }
+            if (row == null) { ret._res({ status: 0, state: 'Unlicensed', activated: false }); return; } // No product key installed
+            var status = parseInt(row.LicenseStatus);
+            var r = { status: status, state: LICENSE_STATES[status] || ('Status' + status), activated: (status == 1) };
+            if (row.Name) { r.name = String(row.Name); }
+            var m = /,\s*(\S+)\s+channel/i.exec(row.Description || ''); // "Windows(R) Operating System, RETAIL channel"
+            if (m) { r.channel = m[1]; }
+            ret._res(r);
+        }, function (e) { ret._rej(e); });
+    } catch (ex) { ret._rej(ex); }
+    return ret;
+}
+
 function printers() {
     var wmi = require('win-wmi-fixed');
     var reg = require('win-registry');
@@ -455,10 +477,10 @@ function printers() {
 
 if (process.platform == 'win32')
 {
-    module.exports = { qfe: qfe, av: av, defrag: defrag, pendingReboot: pendingReboot, installedApps: installedApps, installedStoreApps: installedStoreApps, defender: defender, printers: printers };
+    module.exports = { qfe: qfe, av: av, defrag: defrag, pendingReboot: pendingReboot, installedApps: installedApps, installedStoreApps: installedStoreApps, defender: defender, printers: printers, activation: activation };
 }
 else
 {
     var not_supported = function () { throw (process.platform + ' not supported'); };
-    module.exports = { qfe: not_supported, av: not_supported, defrag: not_supported, pendingReboot: not_supported, installedApps: not_supported, installedStoreApps: not_supported, defender: not_supported, printers: not_supported };
+    module.exports = { qfe: not_supported, av: not_supported, defrag: not_supported, pendingReboot: not_supported, installedApps: not_supported, installedStoreApps: not_supported, defender: not_supported, printers: not_supported, activation: not_supported };
 }

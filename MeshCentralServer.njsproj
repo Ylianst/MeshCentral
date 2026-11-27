@@ -61,6 +61,7 @@
     <Compile Include="agents\modules_meshcore\monitor-border.js" />
     <Compile Include="agents\modules_meshcore\smbios.js" />
     <Compile Include="agents\modules_meshcore\sysinfo.js" />
+    <Compile Include="agents\modules_meshcore\autotag-collect.js" />
     <Compile Include="agents\modules_meshcore\util-agentlog.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner-windows.js" />
     <Compile Include="agents\modules_meshcore\wifi-scanner.js" />
@@ -101,6 +102,7 @@
     <Compile Include="amt\amt-xml.js" />
     <Compile Include="amt\amt.js" />
     <Compile Include="authenticode.js" />
+    <Compile Include="autotags.js" />
     <Compile Include="crowdsec.js" />
     <Compile Include="exeHandler.js" />
     <Compile Include="amtprovisioningserver.js" />
