@@ -31,6 +31,15 @@ module.exports.CreateDB = function (parent, func) {
     var expireEventsSeconds = (60 * 60 * 24 * 20);              // By default, expire events after 20 days (1728000). (Seconds * Minutes * Hours * Days)
     var expirePowerEventsSeconds = (60 * 60 * 24 * 10);         // By default, expire power events after 10 days (864000). (Seconds * Minutes * Hours * Days)
     var expireServerStatsSeconds = (60 * 60 * 24 * 30);         // By default, expire server stats after 30 days (2592000). (Seconds * Minutes * Hours * Days)
+    // Session telemetry uses the timeline store under a separate key. It is
+    // retained and deleted with power data but does not change power history.
+    function sessionTimelineKey(nodeid) { return 'session:' + nodeid; }
+    obj.storeSessionTimelineEvent = function (nodeid, state, time, validUntil) {
+        obj.storePowerEvent({ nodeid: sessionTimelineKey(nodeid), time: new Date(time), sessionState: state, validUntil: validUntil }, parent.multiServer);
+    };
+    obj.getSessionTimeline = function (nodeid, func) { obj.getPowerTimeline(sessionTimelineKey(nodeid), func); };
+    obj.getSessionTimelineCheckpointInterval = function () { return Math.max(1000, Math.min(900000, expirePowerEventsSeconds * 500)); };
+
     const common = require('./common.js');
     const path = require('path');
     const fs = require('fs');
@@ -1941,7 +1950,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (NULL, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN ($1, $2)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2201,7 +2210,7 @@ module.exports.CreateDB = function (parent, func) {
             };
             obj.removeAllPowerEventsForNode = function (nodeid) {
                 if (nodeid == null) return;
-                obj.file.query('power').filter('nodeid', '==', nodeid).remove().then(function () { if (func) { func(); } });
+                obj.file.query('power').filter('nodeid', 'in', [nodeid, sessionTimelineKey(nodeid)]).remove().then(function () { if (func) { func(); } });
             };
 
             // Database actions on the SMBIOS collection
@@ -2494,7 +2503,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUES (DEFAULT, $1, $2, $3)', [event.time, event.nodeid ? event.nodeid : null, event], func); };
             obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = $1) OR (nodeid = \'*\')) ORDER BY time ASC', [nodeid], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = $1', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN ($1, $2)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -2746,9 +2755,9 @@ module.exports.CreateDB = function (parent, func) {
             // Database actions on the power collection
             obj.getAllPower = function (func) { sqlDbQuery('SELECT doc FROM power', null, func); };
             obj.storePowerEvent = function (event, multiServer, func) { obj.dbCounters.powerSet++; if (multiServer != null) { event.server = multiServer.serverid; } sqlDbQuery('INSERT INTO power VALUE (?, ?, ?, ?)', [null, event.time, event.nodeid ? event.nodeid : null, JSON.stringify(event)], func); };
-            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE ((nodeid = ?) OR (nodeid = "*")) ORDER BY time ASC', [nodeid], func); };
+            obj.getPowerTimeline = function (nodeid, func) { sqlDbQuery('SELECT doc FROM power WHERE nodeid IN (?, ?) ORDER BY time ASC', [nodeid, '*'], func); };
             obj.removeAllPowerEvents = function () { sqlDbQuery('DELETE FROM power', null, function (err, docs) { }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid = ?', [nodeid], function (err, docs) { }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; sqlDbQuery('DELETE FROM power WHERE nodeid IN (?, ?)', [nodeid, sessionTimelineKey(nodeid)], function (err, docs) { }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { sqlDbQuery('SELECT doc FROM smbios', null, func); };
@@ -3035,7 +3044,7 @@ module.exports.CreateDB = function (parent, func) {
 
             obj.getPowerTimeline = function (nodeid, func) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }).project({ _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).toArray(func); };
             obj.removeAllPowerEvents = function () { obj.powerfile.deleteMany({}, { multi: true }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.deleteMany({ nodeid: nodeid }, { multi: true }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.deleteMany({ nodeid: { $in: [nodeid, sessionTimelineKey(nodeid)] } }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
             obj.GetAllSMBIOS = function (func) { obj.smbiosfile.find({}).toArray(func); };
@@ -3243,7 +3252,7 @@ module.exports.CreateDB = function (parent, func) {
             obj.storePowerEvent = function (event, multiServer, func) { if (multiServer != null) { event.server = multiServer.serverid; } obj.powerfile.insert(event, func); };
             obj.getPowerTimeline = function (nodeid, func) { if (obj.databaseType == DB_NEDB) { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }).exec(func); } else { obj.powerfile.find({ nodeid: { $in: ['*', nodeid] } }, { _id: 0, nodeid: 0, s: 0 }).sort({ time: 1 }, func); } };
             obj.removeAllPowerEvents = function () { obj.powerfile.remove({}, { multi: true }); };
-            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.remove({ nodeid: nodeid }, { multi: true }); };
+            obj.removeAllPowerEventsForNode = function (nodeid) { if (nodeid == null) return; obj.powerfile.remove({ nodeid: { $in: [nodeid, sessionTimelineKey(nodeid)] } }, { multi: true }); };
 
             // Database actions on the SMBIOS collection
             if (obj.smbiosfile != null) {
