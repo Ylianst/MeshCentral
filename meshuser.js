@@ -1066,6 +1066,12 @@ module.exports.CreateMeshUser = function (parent, db, ws, req, args, domain, use
                         if (url == null) break; // Bad URL
                         if (url.searchParams.get('nodeid') && (url.searchParams.get('nodeid') != command.nodeid)) break; // Bad NodeID in URL query string
 
+                        // The device only needs to know which user is on the other side of the relay, give it a cookie that carries nothing else
+                        if (command.value.indexOf('rauth=') >= 0) {
+                            const rcookie = parent.parent.encodeCookie({ ruserid: user._id }, parent.parent.loginCookieEncryptionKey);
+                            command.value = command.value.replace(/([?&#]rauth=)[^&#]*/g, function (m, p1) { return p1 + rcookie; });
+                        }
+
                         // Check rights
                         if (url.searchParams.get('p') == '1') { requiredNonRights = MESHRIGHT_NOTERMINAL; }
                         else if (url.searchParams.get('p') == '4') { requiredNonRights = MESHRIGHT_NOREGISTRY; }
