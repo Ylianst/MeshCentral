@@ -3533,6 +3533,7 @@ function files_consent_ok(ws){
 function files_consent_ask(ws){
     // Send a console message back using the console channel, "\n" is supported.
     ws.write(JSON.stringify({ ctrlChannel: '102938', type: 'console', msg: "Waiting for user to grant access...", msgid: 1 }));
+    if ((ws.httprequest.xoptions != null) && (typeof ws.httprequest.xoptions.tsid == 'number')) { ws.tsid = ws.httprequest.xoptions.tsid; }
     var consentMessage = currentTranslation['fileConsent'].replace(/\{0\}/g, ws.httprequest.realname).replace(/\{1\}/g, ws.httprequest.username);
     var consentTitle = 'MeshCentral';
 
@@ -3561,10 +3562,10 @@ function files_consent_ask(ws){
                 return (this.consent);
             });
         } else {
-            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+            pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, ws.tsid);
         }
     } else {
-        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null);
+        pr = require('message-box').create(consentTitle, consentMessage, ws.httprequest.consentTimeout, null, ws.tsid);
     }
     pr.ws = ws;
     ws.pause();
