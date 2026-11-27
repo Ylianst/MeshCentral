@@ -2313,6 +2313,14 @@
                 </div>
             </div>
         </div>
+            <div id="deskTypeWindow" class="card shadow" role="dialog" aria-labelledby="deskTypeTitle" aria-modal="false" aria-hidden="true" style="display:none;position:fixed;z-index:1080;top:15%;left:max(12px, calc(50% - 220px));width:min(505px, calc(100vw - 24px))">
+                <div id="deskTypeDialogHeader" class="card-header d-flex align-items-center" style="background-color:#003366;color:#fff;cursor:move">
+                    <h5 id="deskTypeTitle" class="mb-0 me-auto">Remote Keyboard Entry</h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="hideDeskType()" aria-label="Close"></button>
+                </div>
+                <div id="deskTypeWindowBody" class="card-body" style="max-height:calc(100vh - 110px);overflow-y:auto"></div>
+            </div>
+        </div>
         <iframe name="fileUploadFrame" style="display:none"></iframe>
         <form style="display:none" method=post action=uploadfile.ashx enctype=multipart/form-data
             target=fileUploadFrame><input id=p5fileDragName name="name" /><input id=p5fileDragAuthCookie
@@ -2536,6 +2544,10 @@
             document.onkeypress = ondockeypress;
             document.onkeydown = ondockeydown;
             document.onkeyup = ondockeyup;
+            document.addEventListener('mousedown', function (e) {
+                var typeWindow = Q('deskTypeWindow');
+                if ((typeWindow.style.display != 'none') && !typeWindow.contains(e.target) && typeWindow.contains(document.activeElement)) { document.activeElement.blur(); }
+            });
             //window.addEventListener('focus', ondocfocus, false);
             window.addEventListener('blur', ondocblur, false);
             window.onresize = function () {
@@ -2702,6 +2714,7 @@
 
             // Make the dialog box movable
             dialogBoxDrag();
+            dialogBoxDrag('deskTypeWindow', 'deskTypeDialogHeader');
 
             // Hide night mode button if needed
             QV('uiViewButton4', (features2 & 0x00300000) == 0);
@@ -5336,6 +5349,7 @@
             if (document.querySelector('.modal.show')) {
                 return;
             }
+            if (e.target && e.target.closest && e.target.closest('#deskTypeWindow')) return;
             mobileKbdGotKeypress = true; // tells onSoftKeyboardInput not to double-send
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
@@ -5396,6 +5410,7 @@
         }
 
         function ondockeydown(e) {
+            if (e.target && e.target.closest && e.target.closest('#deskTypeWindow')) return;
             setSessionActivity();
             if (!xxdialogMode && (xxcurrentView == 11) && desktop && Q('DeskControl').checked) {
                 // Check what keys we are allows to send
@@ -5430,6 +5445,7 @@
         }
 
         function ondockeyup(e) {
+            if (e.target && e.target.closest && e.target.closest('#deskTypeWindow')) return;
             mobileKbdGotKeypress = false;
             var sk = Q('softKeyboard'); if (sk && document.activeElement === sk) { sk.value = ''; if (typeof _releaseMobileModifiers === 'function') _releaseMobileModifiers(); }
             setSessionActivity();
@@ -12117,12 +12133,12 @@
         }
 
         // Remote desktop special key combos for Windows
-        function deskSendKeys() {
+        function deskSendKeys(ks) {
             Q('DeskWD').blur();
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
 
             // Construct the key command
-            var ks = parseInt(Q('deskkeys').value);
+            if (typeof ks != 'number') { ks = parseInt(Q('deskkeys').value); }
             if (ks == 0x0A002E) { desktop.m.sendcad(); return; } // CTRL-ALT-DEL
             //if ((desktop.contype == 1) && (ks == 0x10004C)) { desktop.sendCtrlMsg('{"action":"lock"}'); return; } // Lock desktop, WIN + L
 
@@ -12195,6 +12211,10 @@
                 if (flags & 2) { keyArray.push([desktop.m.KeyAction.DOWN, 18]); keyArray2.push([desktop.m.KeyAction.UP, 18]); } // Left-alt
                 if (flags & 8) { keyArray.push([desktop.m.KeyAction.EXDOWN, 17]); keyArray2.push([desktop.m.KeyAction.EXUP, 17]); } // Ctrl
                 if (flags & 16) { keyArray.push([desktop.m.KeyAction.EXDOWN, 0x5B]); keyArray2.push([desktop.m.KeyAction.EXUP, 0x5B]); } // Windows key
+                if ((flags & 2) && key == 9) {
+                    for (var i = 0; i < keyArray.length; i++) { if (keyArray[i][1] == 18) { keyArray[i][0] = desktop.m.KeyAction.EXDOWN; break; } }
+                    for (var i = 0; i < keyArray2.length; i++) { if (keyArray2[i][1] == 18) { keyArray2[i][0] = desktop.m.KeyAction.EXUP; break; } }
+                } // Left-alt + Tab
                 if (key != 0) { keyArray.push([desktop.m.KeyAction.DOWN, key]); keyArray2.push([desktop.m.KeyAction.UP, key]); }
                 keyArray2.reverse();
                 for (var i = 0; i < keyArray2.length; i++) { keyArray.push(keyArray2[i]); }
@@ -12206,11 +12226,54 @@
         function showDeskType(text) {
             if (xxdialogMode || desktop == null || desktop.State != 3) return;
             Q('DeskType').blur();
-            var x = '<div>' + "Enter text and click OK to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." + '<div>';
-            x += '<textarea id=d2typeText style="margin-top:5px;width:100%;height:184px;resize:none" maxlength=2000>' + (text ? EscapeHtml(text) : '') + '</textarea>';
-            setModalContent('xxAddAgent', "Remote Keyboard Entry", x);
-            showModal('xxAddAgentModal', 'idx_dlgOkButton', () => showDeskTypeEx());
+            deskDialogReleaseKeys();
+            var x = '<div>' + "Enter text and click Send to remotely type it. Make sure to place the remote cursor at the correct position before proceeding." + '</div>';
+            x += '<div class="d-flex gap-2 align-items-start" style="margin-top:5px"><textarea id=d2typeText style="flex:1;min-width:0;height:184px;resize:none" maxlength=2000>' + (text ? EscapeHtml(text) : '') + '</textarea>';
+            x += '<button type=button class="btn btn-primary" onclick="deskTypeSendText()">Send</button></div>';
+            x += '<div class="mt-2"><div class="small text-muted mb-1">Select modifiers, then press a key. Click a modifier again to turn it off.</div><div class="d-flex flex-wrap gap-1 mb-2">';
+            x += '<button type=button class="btn btn-outline-secondary btn-sm" data-flag=1 aria-pressed=false onclick="deskTypeToggleModifier(this)">Shift</button>';
+            x += '<button type=button class="btn btn-outline-secondary btn-sm" data-flag=8 aria-pressed=false onclick="deskTypeToggleModifier(this)">Ctrl</button>';
+            x += '<button type=button class="btn btn-outline-secondary btn-sm" data-flag=2 aria-pressed=false onclick="deskTypeToggleModifier(this)">Alt</button>';
+            x += '<button type=button class="btn btn-outline-secondary btn-sm" data-flag=16 aria-pressed=false onclick="deskTypeSendWindowsKey()">Win</button>';
+            x += '</div><div class="d-flex flex-nowrap gap-1 mb-2 overflow-auto">';
+            for (var i = 1; i <= 12; i++) { x += '<button type=button class="btn btn-outline-secondary btn-sm flex-shrink-0" onclick="deskTypeSendKey(' + (111 + i) + ')">F' + i + '</button>'; }
+            x += '</div><div class="d-flex flex-wrap gap-1">';
+            var typeKeys = [[9, 'Tab'], [27, 'Esc'], [13, 'Enter'], [8, 'Backspace'], [46, 'Delete'], [36, 'Home'], [35, 'End'], [33, 'Page Up'], [34, 'Page Down']];
+            for (var i in typeKeys) { x += '<button type=button class="btn btn-outline-secondary btn-sm" onclick="deskTypeSendKey(' + typeKeys[i][0] + ')">' + typeKeys[i][1] + '</button>'; }
+            x += '</div><div class="d-flex flex-nowrap gap-1 mt-1">';
+            var arrowKeys = [[37, 'Left'], [38, 'Up'], [39, 'Right'], [40, 'Down']];
+            for (var i in arrowKeys) { x += '<button type=button class="btn btn-outline-secondary btn-sm" onclick="deskTypeSendKey(' + arrowKeys[i][0] + ')">' + arrowKeys[i][1] + '</button>'; }
+            x += '</div></div>';
+            Q('deskTypeWindowBody').innerHTML = x;
+            Q('deskTypeWindow').style.display = 'block';
+            Q('deskTypeWindow').setAttribute('aria-hidden', 'false');
             Q('d2typeText').focus();
+        }
+
+        function deskTypeSendText() {
+            showDeskTypeEx();
+        }
+
+        function deskTypeSendWindowsKey() {
+            deskSendKeys(0x100000);
+        }
+
+        function hideDeskType() {
+            var typeWindow = Q('deskTypeWindow');
+            if (typeWindow.contains(document.activeElement)) { document.activeElement.blur(); }
+            typeWindow.style.display = 'none';
+            typeWindow.setAttribute('aria-hidden', 'true');
+        }
+
+        function deskTypeToggleModifier(button) {
+            var active = button.classList.toggle('active');
+            button.setAttribute('aria-pressed', active);
+        }
+
+        function deskTypeSendKey(key) {
+            var flags = 0, buttons = document.querySelectorAll('#deskTypeWindow [data-flag]');
+            for (var i = 0; i < buttons.length; i++) { if (buttons[i].classList.contains('active')) flags |= parseInt(buttons[i].getAttribute('data-flag')); }
+            deskSendKeys((flags << 16) | key);
         }
 
         var AmtDeskTypeTimer = null;
@@ -24752,10 +24815,10 @@
         }
 
         // Make the dialog box movable
-        function dialogBoxDrag() {
-            var elmnt = Q('xxAddAgentModal');
+        function dialogBoxDrag(modalId = 'xxAddAgentModal', headerId = 'dialogHeader') {
+            var elmnt = Q(modalId);
             var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            Q('dialogHeader').onmousedown = dragMouseDown;
+            Q(headerId).onmousedown = dragMouseDown;
             function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
