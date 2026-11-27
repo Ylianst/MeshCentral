@@ -3973,7 +3973,8 @@ function CreateMeshCentralServer(config, args) {
                     } else {
                         // Key is not present, generate one.
                         obj.loginCookieEncryptionKey = obj.generateCookieKey();
-                        obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey)); });
+                        const saveKey = function () { obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.encodeCookie({ u: userid, a: 3 }, obj.loginCookieEncryptionKey)); }); };
+                        if (obj.db.openWritable) { obj.db.openWritable(saveKey); } else { saveKey(); }
                     }
                 });
             }
@@ -3990,7 +3991,8 @@ function CreateMeshCentralServer(config, args) {
             } else {
                 // Key is not present, generate one.
                 obj.loginCookieEncryptionKey = obj.generateCookieKey();
-                obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.loginCookieEncryptionKey.toString('hex')); });
+                const saveKey = function () { obj.db.Set({ _id: 'LoginCookieEncryptionKey', key: obj.loginCookieEncryptionKey.toString('hex'), time: Date.now() }, function () { func(obj.loginCookieEncryptionKey.toString('hex')); }); };
+                if (obj.db.openWritable) { obj.db.openWritable(saveKey); } else { saveKey(); }
             }
         });
     };
