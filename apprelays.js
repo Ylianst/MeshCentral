@@ -2202,13 +2202,16 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
                             }
                             case 'startack': {
                                 if ((obj.downloadHandle == null) || (obj.downloadId != msg.id)) break;
-                                obj.downloadPendingBlockCount = (typeof msg.ack == 'number') ? msg.ack : 8;
+                                obj.downloadPendingBlockCount = (typeof msg.ack == 'number') ? Math.max(1, Math.min(msg.ack, 64)) : 8; // Blocks the browser allows in flight
+                                if (typeof msg.bs == 'number') { obj.downloadBuffer = Buffer.alloc(Math.max(4096, Math.min(msg.bs, 65536))); } // Block size the browser asks for
                                 uploadNextBlock();
                                 break;
                             }
                             case 'ack': {
+                                // Each ack releases one more block
                                 if ((obj.downloadHandle == null) || (obj.downloadId != msg.id)) break;
-                                if (obj.downloadPendingBlockCount == 0) { obj.downloadPendingBlockCount = 1; uploadNextBlock(); }
+                                obj.downloadPendingBlockCount++;
+                                uploadNextBlock();
                                 break;
                             }
                             case 'stop': {
@@ -2274,22 +2277,27 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
         } catch (ex) { obj.close(); }
     });
 
+    // Read and send download blocks one after the other while the browser allows more blocks in flight
     function uploadNextBlock() {
-        if (obj.downloadBuffer == null) return;
-        obj.sftp.read(obj.downloadHandle, obj.downloadBuffer, 4, obj.downloadBuffer.length - 4, obj.downloadPosition, function (err, len, buf) {
+        if ((obj.downloadBuffer == null) || (obj.downloadReading === true) || !(obj.downloadPendingBlockCount > 0)) return;
+        obj.downloadReading = true;
+        const block = Buffer.alloc(obj.downloadBuffer.length); // New buffer each block, the previous one may still be queued in the websocket
+        obj.sftp.read(obj.downloadHandle, block, 4, block.length - 4, obj.downloadPosition, function (err, len) {
+            obj.downloadReading = false;
             obj.downloadPendingBlockCount--;
             if (obj.downloadBuffer == null) return;
             if (err != null) {
                 try { obj.ws.send(Buffer.from(JSON.stringify({ action: 'download', sub: 'cancel', id: obj.downloadId }))) } catch (ex) { }
             } else {
                 obj.downloadPosition += len;
-                if (len < (obj.downloadBuffer.length - 4)) {
-                    obj.downloadBuffer.writeInt32BE(0x01000001, 0)
-                    if (len > 0) { try { obj.ws.send(obj.downloadBuffer.slice(0, len + 4)); } catch (ex) { console.log(ex); } }
+                if (len == 0) {
+                    // End of file. A short read is not taken as the end, SFTP servers may return less than asked.
+                    block.writeInt32BE(0x01000001, 0);
+                    try { obj.ws.send(block.slice(0, 4)); } catch (ex) { console.log(ex); }
                 } else {
-                    obj.downloadBuffer.writeInt32BE(0x01000000, 0);
-                    try { obj.ws.send(obj.downloadBuffer.slice(0, len + 4)); } catch (ex) { console.log(ex); }
-                    if (obj.downloadPendingBlockCount > 0) { uploadNextBlock(); }
+                    block.writeInt32BE(0x01000000, 0);
+                    try { obj.ws.send(block.slice(0, len + 4)); } catch (ex) { console.log(ex); }
+                    uploadNextBlock();
                     return;
                 }
             }
@@ -2300,6 +2308,7 @@ module.exports.CreateSshFilesRelay = function (parent, db, ws, req, domain, user
             delete obj.downloadFullpath;
             delete obj.downloadPosition;
             delete obj.downloadPendingBlockCount;
+            delete obj.downloadReading;
         });
     }
 

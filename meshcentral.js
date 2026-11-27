@@ -3055,6 +3055,11 @@ function CreateMeshCentralServer(config, args) {
     obj.updateMeshCore = function (func, dumpToFile) {
         // Figure out where meshcore.js is
         var meshcorePath = obj.datapath;
+        if ((obj.meshCoreFromDataWarned !== true) && (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == true)) {
+            obj.meshCoreFromDataWarned = true;
+            // A meshcore.js in the data folder replaces the agent core that comes with this version of MeshCentral, agents then miss its fixes and features
+            addServerWarning('The agent core is loaded from meshcore.js in the meshcentral-data folder instead of the one that comes with this version of MeshCentral. Remove it from meshcentral-data to use the built-in agent core.', 28);
+        }
         if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
             meshcorePath = obj.path.join(__dirname, 'agents');
             if (obj.fs.existsSync(obj.path.join(meshcorePath, 'meshcore.js')) == false) {
